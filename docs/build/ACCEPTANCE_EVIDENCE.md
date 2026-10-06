@@ -1,3 +1,9 @@
+## 2026-10-06: etapa 24 em execução; etapas 22 e 23 encerradas
+
+A etapa 22 está concluída em `9732563b3a8c8172139bfa8b43de9eafdf5a9508`; a etapa 23, em `932239519a2869d0a38cbfe1b4b60d282e1dc0ba`. Os respectivos completions externos na raiz do workspace registram CI, journals, catálogo e produção. Os registros anteriores abaixo são históricos, não o estado atual.
+
+A etapa 24 reúne os 21 critérios técnicos do roteiro, o percurso integrado do primeiro procedimento e a verificação da mesma revisão nos ambientes. Nenhum DDL funcional novo. O avaliador recusa prova ausente, duplicada, com fonte divergente ou revisão/implantação erradas; seus fixtures unitários não comprovam prontidão. O E2E usa pergunta sem intake, o executor v4 publicado, duas pessoas reais, contribuição privada/publicada, revisão, nova premissa e negação após revogação. A CI executa todos os SQLs e esse percurso. Publicação e completion desta etapa ainda dependem dos resultados reais. Referência: `docs/build/arcabouco/FRAMEWORK-READINESS.md`.
+
 ## 2026-10-06: etapa 22 em verificação final e publicação
 
 Etapa 21 concluída em `90e3c7d248cb4ba604a4519fd08239054b28f14a`. O inventário de abertura da onda foi publicado pela PR 883 (`97e47b33`). Esta fonte implementa a etapa 22; **o fechamento ainda depende da CI da fonte final, merge e deploy web/worker no SHA canônico**. Etapas 23 e 24 não foram iniciadas.

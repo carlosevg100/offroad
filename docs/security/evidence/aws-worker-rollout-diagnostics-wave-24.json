@@ -1,0 +1,42 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "validThrough": null,
+  "source": "Codex read-only AWS CLI delivery and IAM observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-delivery-observation",
+    "version": "4",
+    "principalClass": "Codex AWS CLI using an existing authenticated temporary AWS login session"
+  },
+  "verificationState": "unverified_operator_observation",
+  "freshness": "wave_bound",
+  "capturedAt": "2026-10-06T19:45:27.692337Z",
+  "waveId": "wave-24",
+  "scope": "Wave 24 opening: existing service read-only; no IAM reassessment.",
+  "observation": "Worker revision 526 PRIMARY COMPLETED, desired=running=1, pending=0.",
+  "collection": {
+    "baselineCommit": "932239519a2869d0a38cbfe1b4b60d282e1dc0ba",
+    "transport": "Existing authenticated AWS CLI; ECS DescribeServices only",
+    "runtimeReadOnly": {
+      "captured_at": "2026-10-06T19:45:27.692337Z",
+      "taskDefinition": "arn:aws:ecs:sa-east-1:389642461544:task-definition/offroad-document-worker:526",
+      "desired": 1,
+      "running": 1,
+      "pending": 0,
+      "deployments": [
+        {
+          "status": "PRIMARY",
+          "rolloutState": "COMPLETED"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "IAM effective permissions remain unknown; no new IAM grant or independent assurance."
+  ]
+}

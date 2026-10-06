@@ -145,17 +145,18 @@ select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 create temporary table untouched as
 select m.id,m.xmin::text as row_version,to_jsonb(m) as row_image from public.work_milestones m
 where m.work_id='a11b0000-0000-4000-9000-000000000002' and m.kind in ('execution_result','decision');
-create temporary table untouched_results as select r.id,r.xmin::text as row_version,to_jsonb(r) as row_image from private.execution_result_receipts r;
+create temporary table untouched_results as select r.id,r.xmin::text as row_version,to_jsonb(r) as row_image from private.execution_result_receipts r where r.organization_id='a11b0000-0000-4000-9000-000000000001';
 do $$begin
  if (select count(*) from untouched where row_image->>'kind'='execution_result')<>1 or (select count(*) from untouched where row_image->>'kind'='decision')<1 then
   raise exception 'setup: expected a result milestone and a decision milestone';
  end if;
 end $$;
 
+-- Assertions below concern this rollback-only work, never historical staging runs.
 -- Every setup event is delivered: nothing has moved yet, so no fact and no request.
 select pg_temp.drain_outbox();
 do $$begin
- if exists(select 1 from private.execution_invalidations) or exists(select 1 from public.work_continuation_requests) then
+ if exists(select 1 from private.execution_invalidations where work_id='a11b0000-0000-4000-9000-000000000002') or exists(select 1 from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002') then
   raise exception 'setup events recorded an impact';
  end if;
  raise notice 'PASS: events of unchanged inputs record no impact';
@@ -218,9 +219,9 @@ do $$ declare r public.work_continuation_requests;expected jsonb;m public.work_m
    from (select pg_temp.id('X1') as id union all select pg_temp.id('X2')) x) then
   raise exception 'request does not name the roots and result milestones: %',r.affected_executions;
  end if;
- select * into strict m from public.work_milestones where kind='continuation_proposed' and subject_id=r.id;
+ select * into strict m from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='continuation_proposed' and subject_id=r.id;
  if m.work_id<>r.work_id or m.subject_kind<>'work_continuation_request' or m.label<>'dependency_update' or m.created_by is not null or m.occurred_at<>r.created_at
- or (select count(*) from public.work_milestones where kind='continuation_proposed')<>1 then
+ or (select count(*) from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='continuation_proposed')<>1 then
   raise exception 'continuation_proposed milestone mismatch: %',to_jsonb(m);
  end if;
  raise notice 'PASS: two changes to one work end in one open request containing both, with one continuation_proposed milestone';
@@ -228,14 +229,14 @@ end $$;
 
 -- 4. Duplicate delivery: the same event applied again, directly and redelivered by the outbox.
 do $$ declare before public.work_continuation_requests;facts bigint;result jsonb;begin
- select * into strict before from public.work_continuation_requests;
- select count(*) into facts from private.execution_invalidations;
+ select * into strict before from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002';
+ select count(*) into facts from private.execution_invalidations where work_id='a11b0000-0000-4000-9000-000000000002';
  result:=private.apply_dependency_event_v1('a11b0000-0000-4000-9000-000000000001',pg_temp.id('E_S2'));
  if (result->>'facts')::integer<>0 or (result->>'opened')::integer<>0 or (result->>'merged')::integer<>0 then raise exception 'second application changed state: %',result; end if;
  update private.event_outbox set status='pending',completed_at=null,lease_expires_at=null,capability_sha256=null,worker_token_id=null,leased_account_user_id=null
  where event_id in (pg_temp.id('E_S2'),pg_temp.id('E_V3'));
  if pg_temp.drain_outbox()<>2 then raise exception 'redelivered events not completed'; end if;
- if (select count(*) from private.execution_invalidations)<>facts or (select to_jsonb(r) from public.work_continuation_requests r)<>to_jsonb(before) then
+ if (select count(*) from private.execution_invalidations where work_id='a11b0000-0000-4000-9000-000000000002')<>facts or (select to_jsonb(r) from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002')<>to_jsonb(before) then
   raise exception 'duplicate delivery changed facts or the request';
  end if;
  raise notice 'PASS: the same event applied twice changes nothing the second time';
@@ -263,7 +264,7 @@ do $$begin
   jsonb_build_object('execution','X4','dependency_kind','source_version','reason_class','data_change','gap',null,'pinned',pg_temp.source_ref('S2'),'head',pg_temp.source_ref('S3'),'via','{}'::text[])] then
   raise exception 'rebuilt execution not judged: %',array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_S3')) f);
  end if;
- if (select jsonb_array_length(payload->'affectedExecutionIds') from public.work_continuation_requests)<>3 then raise exception 'rebuilt execution not merged'; end if;
+ if (select jsonb_array_length(payload->'affectedExecutionIds') from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002')<>3 then raise exception 'rebuilt execution not merged'; end if;
  raise notice 'PASS: graph incomplete: the projection is rebuilt before the execution is judged';
 end $$;
 
@@ -289,7 +290,7 @@ do $$ declare claim jsonb;order_seen uuid[]:='{}';r public.work_continuation_req
  or array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_S4')) f) is distinct from array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_S5')) f) then
   raise exception 'older event regressed the head';
  end if;
- select * into strict r from public.work_continuation_requests;
+ select * into strict r from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002';
  if (select x->>'version' from jsonb_array_elements(r.payload->'aggregateVersions') x where x->>'aggregateKind'='source_version')<>'5'
  or array(select (x->>'aggregateVersion')::integer from jsonb_array_elements(r.payload->'events') x where x->>'aggregateKind'='source_version')<>array[2,3,4,5] then
   raise exception 'request lost the order of versions: %',r.payload;
@@ -347,7 +348,7 @@ do $$ declare e private.domain_events;head record;begin
  select * into strict head from private.method_release_head_v1('a11b0000-0000-4000-9000-000000000001','synthetic-execution',false);
  if head.platform_release_id<>'synthetic-execution-test-v2' or head.house_release_id is not null or head.profile_id<>'a4183000-0000-4000-9000-0000000000b2'
  or head.max_cost_microusd<>0 or head.max_model_calls<>0 then raise exception 'method head mismatch: %',to_jsonb(head); end if;
- if (select jsonb_array_length(payload->'affectedExecutionIds') from public.work_continuation_requests)<>4 then raise exception 'method impact not merged'; end if;
+ if (select jsonb_array_length(payload->'affectedExecutionIds') from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002')<>4 then raise exception 'method impact not merged'; end if;
  raise notice 'PASS: a newer method release affects only executions on the older release, as method_update';
 end $$;
 
@@ -382,7 +383,7 @@ select pg_temp.drain_outbox();
 -- 9. The request contract: one open update per work, forward-only status, immutable identity and
 -- history, a fingerprint that matches continuation.ts.
 do $$ declare r public.work_continuation_requests;begin
- select * into strict r from public.work_continuation_requests;
+ select * into strict r from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002';
  begin
   insert into public.work_continuation_requests(organization_id,work_id,kind,payload,payload_fingerprint,affected_executions)
   values(r.organization_id,r.work_id,'dependency_update',r.payload,r.payload_fingerprint,r.affected_executions);
@@ -447,11 +448,11 @@ do $$ declare r public.work_continuation_requests;begin
 end $$;
 
 -- 10. Read authority is the work's; nobody writes through the API; facts and writers are closed.
-select set_config('test.dependency.request',(select id::text from public.work_continuation_requests),true);
+select set_config('test.dependency.request',(select id::text from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002'),true);
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 set local role authenticated;
 do $$ declare attempt text;begin
- if (select count(*) from public.work_continuation_requests)<>1 or not exists(select 1 from public.work_milestones where kind='continuation_proposed') then
+ if (select count(*) from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002')<>1 or not exists(select 1 from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='continuation_proposed') then
   raise exception 'work owner does not read the request of the work';
  end if;
  foreach attempt in array array[
@@ -470,7 +471,7 @@ reset role;
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
 set local role authenticated;
 do $$begin
- if exists(select 1 from public.work_continuation_requests) or exists(select 1 from public.work_continuation_requests where id=current_setting('test.dependency.request')::uuid) then
+ if exists(select 1 from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002') or exists(select 1 from public.work_continuation_requests where id=current_setting('test.dependency.request')::uuid) then
   raise exception 'member without access to the work reads its request';
  end if;
  raise notice 'PASS: a member without access to the work neither sees nor probes its request';
@@ -565,7 +566,7 @@ do $$ declare claim jsonb;result jsonb;begin
  if array(select f.execution||':'||(f.head->>'versionNo') from pg_temp.facts_of(pg_temp.id('E_S6')) f) is distinct from array['X1:6'] then
   raise exception 'recovered event facts: %',array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_S6')) f);
  end if;
- if not (select payload->'events' @> jsonb_build_array(jsonb_build_object('eventId',pg_temp.id('E_S6'))) from public.work_continuation_requests) then
+ if not (select payload->'events' @> jsonb_build_array(jsonb_build_object('eventId',pg_temp.id('E_S6'))) from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002') then
   raise exception 'recovered event not merged';
  end if;
  raise notice 'PASS: a lost event is recovered by the outbox: the next claim after the lease expires applies it';
@@ -644,7 +645,7 @@ do $$begin
  if exists(select 1 from untouched u left join public.work_milestones m on m.id=u.id where m.id is null or m.xmin::text<>u.row_version or to_jsonb(m)<>u.row_image)
  or (select count(*) from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind in ('execution_result','decision'))<>(select count(*) from untouched)
  or exists(select 1 from untouched_results u left join private.execution_result_receipts r on r.id=u.id where r.id is null or r.xmin::text<>u.row_version or to_jsonb(r)<>u.row_image)
- or (select count(*) from private.execution_result_receipts)<>(select count(*) from untouched_results) then
+ or (select count(*) from private.execution_result_receipts where organization_id='a11b0000-0000-4000-9000-000000000001')<>(select count(*) from untouched_results) then
   raise exception 'a result or a decision was rewritten';
  end if;
  if not exists(select 1 from public.work_continuation_requests r,jsonb_array_elements(r.affected_executions) x
@@ -654,11 +655,11 @@ do $$begin
  -- Since increment 3B plans in every dependency effect, a request whose candidates are scheduled leaves
  -- open and the next change opens a newer one, which supersedes it: one request is not superseded, every
  -- superseded one points at a newer request of the work, and each request has one proposal.
- if (select count(*) from public.work_continuation_requests where status<>'superseded')<>1
- or exists(select 1 from public.work_continuation_requests r where r.status='superseded' and not exists(select 1 from public.work_continuation_requests n
+ if (select count(*) from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002' and status<>'superseded')<>1
+ or exists(select 1 from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002' and r.status='superseded' and not exists(select 1 from public.work_continuation_requests n
   where n.id=r.superseded_by_request_id and n.work_id=r.work_id and n.id<>r.id))
- or exists(select 1 from public.work_continuation_requests r where (select count(*) from public.work_milestones m where m.kind='continuation_proposed' and m.subject_id=r.id)<>1)
- or (select count(*) from public.work_milestones where kind='continuation_proposed')<>(select count(*) from public.work_continuation_requests) then
+ or exists(select 1 from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002' and (select count(*) from public.work_milestones m where m.kind='continuation_proposed' and m.subject_id=r.id)<>1)
+ or (select count(*) from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='continuation_proposed')<>(select count(*) from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002') then
   raise exception 'more than one live request or proposal for one work';
  end if;
  raise notice 'PASS: results and decisions untouched; the request refers to them';
@@ -806,9 +807,9 @@ select pg_temp.source_version('S2',pg_temp.id('S'));
 insert into dep values('E_S2',pg_temp.id('S2'));
 select pg_temp.drain_outbox();
 do $$ declare r public.work_continuation_requests;c public.work_recompute_candidates;h private.dependency_recompute_holds;expected jsonb;begin
- select * into strict r from public.work_continuation_requests;
+ select * into strict r from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002';
  insert into dep values('R1',r.id);
- select * into strict c from public.work_recompute_candidates;
+ select * into strict c from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002';
  expected:=pg_temp.identity(array['S2'],array[pg_temp.id('dA1')],'synthetic-execution-test-v1');
  if c.request_id<>r.id or c.base_execution_id<>pg_temp.id('X1') or c.execution_ids<>array[pg_temp.id('X1')] or c.action<>'recompute' or c.state<>'scheduled'
  or c.max_cost_microusd<>0 or c.max_model_calls<>0 or c.execution_id is not null or c.reason is not null or c.revision<>1 or c.head_inputs<>expected
@@ -816,13 +817,13 @@ do $$ declare r public.work_continuation_requests;c public.work_recompute_candid
  or c.idempotency_key<>private.dependency_recompute_key_v1(r.work_id,pg_temp.id('X1'),private.continuation_fingerprint_v1(expected)) then
   raise exception 'zero-budget candidate mismatch: %',to_jsonb(c);
  end if;
- select * into strict h from private.dependency_recompute_holds;
+ select * into strict h from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002';
  if h.request_id<>r.id or h.execution_id<>pg_temp.id('X2') or h.hold_kind<>'derived_source_not_rederived' or h.signal<>'source_version:'||pg_temp.id('D')::text
  or h.released_at is not null or h.subject->>'ancestorVersionId'<>pg_temp.id('S2')::text then
   raise exception 'derived source hold mismatch: %',to_jsonb(h);
  end if;
- if r.status<>'open' or exists(select 1 from private.work_recompute_leases) or (select count(*) from public.work_executions)<>3
- or exists(select 1 from public.work_milestones where kind='awaiting_human') then
+ if r.status<>'open' or exists(select 1 from private.work_recompute_leases where organization_id='a11b0000-0000-4000-9000-000000000001') or (select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002')<>3
+ or exists(select 1 from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='awaiting_human') then
   raise exception 'planning enqueued, leased or waited: %',to_jsonb(r);
  end if;
  insert into dep values('C1',c.id);
@@ -834,7 +835,7 @@ end $$;
 select pg_temp.remember('first',pg_temp.produce(array['S2']));
 do $$ declare s jsonb:=pg_temp.step('first');c public.work_recompute_candidates;l private.execution_lineage;again jsonb;begin
  select * into strict c from public.work_recompute_candidates where id=pg_temp.id('C1');
- select * into strict l from private.execution_lineage;
+ select * into strict l from private.execution_lineage where work_id='a11b0000-0000-4000-9000-000000000002';
  if not (s->>'produced')::boolean or (s->>'replayed')::boolean or s->>'requestStatus'<>'open' or c.execution_id<>(s->>'executionId')::uuid or c.state<>'scheduled' or c.revision<>2
  or l.execution_id<>c.execution_id or l.root_execution_id<>pg_temp.id('X1') or l.candidate_id<>c.id or l.work_id<>c.work_id
  or not exists(select 1 from public.processing_jobs j where j.execution_id=c.execution_id and j.kind='work_execution' and j.status='queued')
@@ -842,14 +843,14 @@ do $$ declare s jsonb:=pg_temp.step('first');c public.work_recompute_candidates;
  or (select w.request_id from public.work_executions w where w.id=c.execution_id)<>c.id
  or (select p.user_id from public.work_executions w join private.principals p on p.id=w.principal_id where w.id=c.execution_id)<>'a11b0000-0000-4000-8000-000000000001'
  or not exists(select 1 from private.execution_dependencies d where d.execution_id=c.execution_id and d.source_version_id=pg_temp.id('S2'))
- or (select count(*) from public.work_executions)<>4 then
+ or (select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002')<>4 then
   raise exception 'produced candidate mismatch: % %',s,to_jsonb(c);
  end if;
  insert into dep values('X1b',c.execution_id);
  -- The same submission again only names the execution, and nothing is left to claim.
  again:=pg_temp.submit(pg_temp.step('claim'),pg_temp.step('contract'),pg_temp.recompute_gates(pg_temp.step('basis')));
  if not (again->>'produced')::boolean or not (again->>'replayed')::boolean or again->>'executionId'<>c.execution_id::text
- or (pg_temp.claim()->>'claimed')::boolean or (select count(*) from public.work_executions)<>4 then
+ or (pg_temp.claim()->>'claimed')::boolean or (select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002')<>4 then
   raise exception 'candidate produced twice: %',again;
  end if;
  raise notice 'PASS: zero-budget candidate produced once by the worker for the original requester, with lineage, gates receipt and job in one transaction';
@@ -857,19 +858,19 @@ end $$;
 
 -- 17. Duplicate delivery of the change changes nothing: no second candidate, no second execution.
 do $$ declare before jsonb;begin
- select jsonb_build_object('requests',(select jsonb_agg(to_jsonb(r) order by r.id) from public.work_continuation_requests r),
-  'candidates',(select jsonb_agg(to_jsonb(c) order by c.id) from public.work_recompute_candidates c),
-  'holds',(select jsonb_agg(to_jsonb(h) order by h.id) from private.dependency_recompute_holds h)) into before;
+ select jsonb_build_object('requests',(select jsonb_agg(to_jsonb(r) order by r.id) from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002'),
+  'candidates',(select jsonb_agg(to_jsonb(c) order by c.id) from public.work_recompute_candidates c where c.work_id='a11b0000-0000-4000-9000-000000000002'),
+  'holds',(select jsonb_agg(to_jsonb(h) order by h.id) from private.dependency_recompute_holds h where h.work_id='a11b0000-0000-4000-9000-000000000002')) into before;
  perform set_config('test.recompute.before',before::text,true);
 end $$;
 update private.event_outbox set status='pending',completed_at=null,lease_expires_at=null,capability_sha256=null,worker_token_id=null,leased_account_user_id=null
 where event_id=pg_temp.id('E_S2');
 select pg_temp.drain_outbox();
 do $$begin
- if jsonb_build_object('requests',(select jsonb_agg(to_jsonb(r) order by r.id) from public.work_continuation_requests r),
-  'candidates',(select jsonb_agg(to_jsonb(c) order by c.id) from public.work_recompute_candidates c),
-  'holds',(select jsonb_agg(to_jsonb(h) order by h.id) from private.dependency_recompute_holds h))<>current_setting('test.recompute.before')::jsonb
- or (select count(*) from public.work_executions)<>4 then
+ if jsonb_build_object('requests',(select jsonb_agg(to_jsonb(r) order by r.id) from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002'),
+  'candidates',(select jsonb_agg(to_jsonb(c) order by c.id) from public.work_recompute_candidates c where c.work_id='a11b0000-0000-4000-9000-000000000002'),
+  'holds',(select jsonb_agg(to_jsonb(h) order by h.id) from private.dependency_recompute_holds h where h.work_id='a11b0000-0000-4000-9000-000000000002'))<>current_setting('test.recompute.before')::jsonb
+ or (select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002')<>4 then
   raise exception 'duplicate delivery changed the plan';
  end if;
  raise notice 'PASS: duplicate delivery plans nothing new: same request, candidates and holds, one execution';
@@ -883,7 +884,7 @@ do $$ declare c public.work_recompute_candidates;r public.work_continuation_requ
  c:=pg_temp.candidate('X2','scheduled');
  select * into strict r from public.work_continuation_requests where id=pg_temp.id('R1');
  if c.base_execution_id<>pg_temp.id('X2') or c.head_inputs<>pg_temp.identity(array['D2','S2'],array[pg_temp.id('dB1')],'synthetic-execution-test-v1')
- or exists(select 1 from private.dependency_recompute_holds where released_at is null)
+ or exists(select 1 from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and released_at is null)
  or not exists(select 1 from private.dependency_recompute_holds where execution_id=pg_temp.id('X2') and released_at is not null)
  or r.status<>'scheduled' then
   raise exception 'derived source release mismatch: % %',to_jsonb(c),to_jsonb(r);
@@ -929,9 +930,9 @@ do $$begin
 end $$;
 select pg_temp.commit_result(pg_temp.id('X2b'));
 do $$begin
- if exists(select 1 from public.work_recompute_candidates where state<>'settled')
+ if exists(select 1 from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002' and state<>'settled')
  or (select status from public.work_continuation_requests where id=pg_temp.id('R1'))<>'ready'
- or (select count(*) from public.work_milestones where kind='decision')<>(select count(*) from untouched where row_image->>'kind'='decision')
+ or (select count(*) from public.work_milestones where kind='decision' and work_id='a11b0000-0000-4000-9000-000000000002')<>(select count(*) from untouched where row_image->>'kind'='decision')
  or (select count(*) from public.work_milestones where kind='execution_result' and subject_id in (pg_temp.id('X1b'),pg_temp.id('X2b')))<>2
  or exists(select 1 from untouched u left join public.work_milestones m on m.id=u.id where m.id is null or m.xmin::text<>u.row_version or to_jsonb(m)<>u.row_image)
  or exists(select 1 from untouched_results u left join private.execution_result_receipts r on r.id=u.id where r.id is null or r.xmin::text<>u.row_version or to_jsonb(r)<>u.row_image) then
@@ -946,7 +947,7 @@ end $$;
 select pg_temp.source_version('S3',pg_temp.id('S'));
 select pg_temp.drain_outbox();
 do $$ declare r public.work_continuation_requests;c public.work_recompute_candidates;begin
- select * into strict r from public.work_continuation_requests where status='open';
+ select * into strict r from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002' and status='open';
  insert into dep values('R2',r.id);
  c:=pg_temp.candidate('X1b','scheduled');
  if c.request_id<>r.id or c.base_execution_id<>pg_temp.id('X1') or c.execution_ids<>(select array_agg(x order by x) from unnest(array[pg_temp.id('X1'),pg_temp.id('X1b')]) x)
@@ -997,7 +998,7 @@ select pg_temp.source_version('S5',pg_temp.id('S'));
 select pg_temp.drain_outbox();
 do $$ declare r public.work_continuation_requests;newer public.work_continuation_requests;begin
  select * into strict r from public.work_continuation_requests where id=pg_temp.id('R2');
- select * into strict newer from public.work_continuation_requests where status='open';
+ select * into strict newer from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002' and status='open';
  if r.status<>'superseded' or r.superseded_by_request_id<>newer.id
  or exists(select 1 from public.work_recompute_candidates where request_id=r.id and not (state='declined' and reason='superseded'))
  or not exists(select 1 from public.work_recompute_candidates where request_id=newer.id and base_execution_id=pg_temp.id('X1') and state='scheduled')
@@ -1058,11 +1059,11 @@ end $$;
 
 -- 24. Read authority is the work's; nobody writes through the API; the private storage is closed;
 -- the worker RPCs refuse a caller that is not the bound worker account.
-select set_config('test.recompute.candidates',(select count(*) from public.work_recompute_candidates)::text,true);
+select set_config('test.recompute.candidates',(select count(*) from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')::text,true);
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 set local role authenticated;
 do $$ declare attempt text;begin
- if (select count(*) from public.work_recompute_candidates)<>current_setting('test.recompute.candidates')::bigint or current_setting('test.recompute.candidates')::bigint<5 then
+ if (select count(*) from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')<>current_setting('test.recompute.candidates')::bigint or current_setting('test.recompute.candidates')::bigint<5 then
   raise exception 'work owner does not read the candidates of the work';
  end if;
  foreach attempt in array array[
@@ -1084,7 +1085,7 @@ reset role;
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
 set local role authenticated;
 do $$begin
- if exists(select 1 from public.work_recompute_candidates) then raise exception 'member without access to the work reads its candidates'; end if;
+ if exists(select 1 from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002') then raise exception 'member without access to the work reads its candidates'; end if;
  raise notice 'PASS: a member without access to the work sees none of its candidates';
 end $$;
 reset role;
@@ -1130,7 +1131,7 @@ rollback to savepoint stage18_3b_ready;
 select pg_temp.unverified_source_version('T2',pg_temp.id('T'));
 select pg_temp.drain_outbox();
 do $$begin
- if exists(select 1 from public.work_recompute_candidates)
+ if exists(select 1 from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')
  or not exists(select 1 from private.dependency_recompute_holds where execution_id=pg_temp.id('X3') and hold_kind='source_not_bindable'
   and signal='source_bindable:'||pg_temp.id('T2')::text and released_at is null) then
   raise exception 'unverified head not held';
@@ -1138,7 +1139,7 @@ do $$begin
 end $$;
 select pg_temp.verify('T2');
 do $$begin
- if exists(select 1 from private.dependency_recompute_holds where released_at is null)
+ if exists(select 1 from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and released_at is null)
  or (pg_temp.candidate('X3','scheduled')).head_inputs<>pg_temp.identity(array['T2'],array[]::uuid[],'synthetic-execution-test-v1') then
   raise exception 'verification did not release the hold';
  end if;
@@ -1159,7 +1160,7 @@ insert into private.source_rights_versions(organization_id,source_version_id,rev
 select organization_id,id,1,array['read','process','store','derive'],array['analysis'],'authorized_workspace',clock_timestamp()-interval '1 minute','human_declaration',id,
  encode(extensions.digest('SYNTHETIC DECLARATION: '||id::text,'sha256'),'hex'),created_by from public.source_versions where id=pg_temp.id('T3');
 do $$begin
- if exists(select 1 from private.dependency_recompute_holds where released_at is null)
+ if exists(select 1 from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and released_at is null)
  or (pg_temp.candidate('X3','scheduled')).head_inputs<>pg_temp.identity(array['T3'],array[]::uuid[],'synthetic-execution-test-v1') then
   raise exception 'rights did not release the hold';
  end if;
@@ -1183,8 +1184,8 @@ from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platform
  from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
 select pg_temp.drain_outbox();
 do $$begin
- if exists(select 1 from public.work_recompute_candidates)
- or (select count(distinct execution_id) from private.dependency_recompute_holds where hold_kind='method_not_executable' and signal='method_release:synthetic-execution' and released_at is null)<>3
+ if exists(select 1 from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')
+ or (select count(distinct execution_id) from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and hold_kind='method_not_executable' and signal='method_release:synthetic-execution' and released_at is null)<>3
  or not exists(select 1 from private.domain_events where aggregate_kind='method_release' and protected_state->>'source'='execution_method_profiles') then
   raise exception 'a head release without an executable profile did not hold';
  end if;
@@ -1200,8 +1201,8 @@ do $$begin
 end $$;
 select pg_temp.drain_outbox();
 do $$begin
- if exists(select 1 from private.dependency_recompute_holds where released_at is null)
- or (select count(*) from public.work_recompute_candidates where state='scheduled' and head_inputs->'inputs' @> jsonb_build_array(jsonb_build_array(
+ if exists(select 1 from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and released_at is null)
+ or (select count(*) from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002' and state='scheduled' and head_inputs->'inputs' @> jsonb_build_array(jsonb_build_array(
    private.continuation_logical_key_v1('method_release','synthetic-execution'),jsonb_build_object('platformReleaseId','synthetic-execution-test-v2','houseReleaseId',null))))<>3 then
   raise exception 'capability release did not release the holds';
  end if;
@@ -1279,24 +1280,24 @@ from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{metho
 alter table private.execution_method_profiles enable trigger execution_method_profiles_validate;
 select pg_temp.drain_outbox();
 do $$ declare c public.work_recompute_candidates;m public.work_milestones;jobs bigint;begin
- if (select count(*) from public.work_recompute_candidates)<>3 then raise exception 'paid head not planned for every lineage'; end if;
- for c in select * from public.work_recompute_candidates loop
-  select * into strict m from public.work_milestones where kind='awaiting_human' and subject_kind='work_recompute_candidate' and subject_id=c.id;
+ if (select count(*) from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')<>3 then raise exception 'paid head not planned for every lineage'; end if;
+ for c in select * from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002' loop
+  select * into strict m from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002' and kind='awaiting_human' and subject_kind='work_recompute_candidate' and subject_id=c.id;
   if c.state<>'awaiting_authorization' or c.action<>'await_authorization' or c.max_cost_microusd<>250000 or c.max_model_calls<>3 or c.execution_id is not null
   or m.work_id<>c.work_id or m.label<>'dependency_recompute_authorization' or m.created_by is not null or m.supersedes_milestone_id is not null then
    raise exception 'paid candidate does not wait for a person: % %',to_jsonb(c),to_jsonb(m);
   end if;
  end loop;
- select count(*) into jobs from public.processing_jobs where kind='work_execution';
- if exists(select 1 from private.work_recompute_leases) or (pg_temp.claim()->>'claimed')::boolean or jobs<>3
- or (select count(distinct request_id) from public.work_recompute_candidates)<>1
- or (select r.status from public.work_continuation_requests r where r.id=(select min(request_id::text)::uuid from public.work_recompute_candidates))<>'awaiting_authorization' then
+ select count(*) into jobs from public.processing_jobs where organization_id='a11b0000-0000-4000-9000-000000000001' and kind='work_execution';
+ if exists(select 1 from private.work_recompute_leases where organization_id='a11b0000-0000-4000-9000-000000000001') or (pg_temp.claim()->>'claimed')::boolean or jobs<>3
+ or (select count(distinct request_id) from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')<>1
+ or (select r.status from public.work_continuation_requests r where r.id=(select min(request_id::text)::uuid from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002'))<>'awaiting_authorization' then
   raise exception 'a paid candidate was enqueued, leased or claimed';
  end if;
  -- The release, its profile and its capability are three events of one change: the requests they
  -- opened after the first are covered by its candidates and point at it.
- if exists(select 1 from public.work_continuation_requests r where r.id<>(select min(request_id::text)::uuid from public.work_recompute_candidates)
-  and (r.status<>'superseded' or r.superseded_by_request_id<>(select min(request_id::text)::uuid from public.work_recompute_candidates))) then
+ if exists(select 1 from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002' and r.id<>(select min(request_id::text)::uuid from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002')
+  and (r.status<>'superseded' or r.superseded_by_request_id<>(select min(request_id::text)::uuid from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002'))) then
   raise exception 'a request that only repeats covered changes was left open';
  end if;
  raise notice 'PASS: positive budget waits with its awaiting_human milestone: no job, no lease, nothing to claim; the request awaits authorization';
@@ -1366,7 +1367,7 @@ end $$;
 -- declined for the requester's authority, ends declined, and so does the first one, whose candidates
 -- were declined (authority) and failed (cancelled execution).
 do $$ declare first uuid:=(select request_id from public.work_recompute_candidates where id=pg_temp.id('C2'));c public.work_recompute_candidates;begin
- select * into strict c from public.work_recompute_candidates where request_id<>first;
+ select * into strict c from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002' and request_id<>first;
  if c.state<>'declined' or c.reason<>'requester_not_authorized:execution_access_denied'
  or (select status from public.work_continuation_requests where id=c.request_id)<>'declined'
  or (select status from public.work_continuation_requests where id=first)<>'declined'
@@ -1374,7 +1375,7 @@ do $$ declare first uuid:=(select request_id from public.work_recompute_candidat
   <>'declined:requester_not_authorized:execution_access_denied,failed:execution_cancelled' then
   raise exception 'a request without a settled candidate did not end declined: %',
    (select jsonb_agg(jsonb_build_object('status',r.status,'candidates',(select jsonb_agg(x.state||':'||coalesce(x.reason,'')) from public.work_recompute_candidates x where x.request_id=r.id)))
-    from public.work_continuation_requests r);
+    from public.work_continuation_requests r where r.work_id='a11b0000-0000-4000-9000-000000000002');
  end if;
  raise notice 'PASS: a request whose only candidate was declined for the requester''s authority ends declined, not ready; so does one whose candidates were declined and failed';
 end $$;
@@ -1386,7 +1387,7 @@ select pg_temp.source_version('S2',pg_temp.id('S'));
 select pg_temp.source_version('D2',pg_temp.id('D'));
 select pg_temp.derive('D2','S2');
 select pg_temp.drain_outbox();
-do $$ declare c jsonb;b jsonb;result jsonb;executions bigint:=(select count(*) from public.work_executions);begin
+do $$ declare c jsonb;b jsonb;result jsonb;executions bigint:=(select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002');begin
  c:=pg_temp.claim();b:=pg_temp.basis(c);
  result:=pg_temp.submit(c,pg_temp.recompute_contract(c,b,array['S2','D2']),pg_temp.recompute_gates(b,true));
  if (result->>'produced')::boolean or result->>'state'<>'failed' or result->>'reason'<>'execution_gates_blocked' then raise exception 'blocked gates not failed: %',result; end if;
@@ -1397,7 +1398,7 @@ do $$ declare c jsonb;b jsonb;result jsonb;executions bigint:=(select count(*) f
  end;
  result:=pg_temp.as_worker(format('select public.worker_fail_dependency_recompute_v1(''synthetic-dependency-outbox-token'',%s,%L)',pg_temp.lease_args(c),'voice_blocked'));
  if not (result->>'failed')::boolean or (select state||':'||reason from public.work_recompute_candidates where id=(c->>'candidateId')::uuid)<>'failed:voice_blocked'
- or (select count(*) from public.work_executions)<>executions then
+ or (select count(*) from public.work_executions where work_id='a11b0000-0000-4000-9000-000000000002')<>executions then
   raise exception 'gate refusal of the worker not recorded: %',result;
  end if;
  raise notice 'PASS: gate refusal: blocked gates fail the candidate with the gate code at submission; the worker records its own gate refusal by code; no execution';
@@ -1444,10 +1445,10 @@ do $$ declare h private.dependency_recompute_holds;r public.work_continuation_re
  if array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_B')) f) is distinct from array[
   jsonb_build_object('execution','X4','dependency_kind','method_release','reason_class','graph_incomplete','gap','head_unknown',
    'pinned',jsonb_build_object('platformReleaseId','synthetic-execution-b-test-v1','houseReleaseId',null),'head',null,'via','{}'::text[])]
- or exists(select 1 from private.execution_invalidations where execution_id<>pg_temp.id('X4')) then
+ or exists(select 1 from private.execution_invalidations where work_id='a11b0000-0000-4000-9000-000000000002' and execution_id<>pg_temp.id('X4')) then
   raise exception 'graph_incomplete fact mismatch: %',array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_B')) f);
  end if;
- select * into strict h from private.dependency_recompute_holds;
+ select * into strict h from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002';
  if h.execution_id<>pg_temp.id('X4') or h.hold_kind<>'graph_incomplete' or h.signal<>'method_release:synthetic-execution-b' or h.released_at is not null
  or h.subject<>jsonb_build_object('code','head_unknown','key',private.continuation_logical_key_v1('method_release','synthetic-execution-b')) then
   raise exception 'graph_incomplete hold mismatch: %',to_jsonb(h);
@@ -1456,8 +1457,8 @@ do $$ declare h private.dependency_recompute_holds;r public.work_continuation_re
  -- stays open on the hold, neither covered nor superseded.
  select * into strict r from public.work_continuation_requests where id=h.request_id;
  a:=private.execution_recompute_assessment_v1('a11b0000-0000-4000-9000-000000000001',pg_temp.id('X4'));
- if exists(select 1 from public.work_recompute_candidates) or r.status<>'open' or r.payload->'affectedExecutionIds'<>jsonb_build_array(pg_temp.id('X4'))
- or (select count(*) from public.work_continuation_requests)<>1
+ if exists(select 1 from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002') or r.status<>'open' or r.payload->'affectedExecutionIds'<>jsonb_build_array(pg_temp.id('X4'))
+ or (select count(*) from public.work_continuation_requests where work_id='a11b0000-0000-4000-9000-000000000002')<>1
  or a->>'status'<>'graph_incomplete' or a->'gaps'<>jsonb_build_array(h.subject) or a->>'currentFingerprint' is not null or a->>'key' is not null
  or not (a#>'{pinnedInputs,inputs}' @> (select jsonb_build_array(jsonb_build_array(private.continuation_logical_key_v1('source_version',v.source_id::text),
    jsonb_build_object('versionNo',v.version_no,'versionId',v.id))) from public.source_versions v where v.id=pg_temp.id('T1'))) then
@@ -1476,13 +1477,13 @@ from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{metho
  from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
 select pg_temp.drain_outbox();
 do $$ declare c public.work_recompute_candidates;begin
- select * into strict c from public.work_recompute_candidates;
+ select * into strict c from public.work_recompute_candidates where work_id='a11b0000-0000-4000-9000-000000000002';
  if c.base_execution_id<>pg_temp.id('X4') or c.execution_ids<>array[pg_temp.id('X4')] or c.state<>'scheduled' or c.action<>'recompute' or c.max_cost_microusd<>0
  or c.head_inputs<>(select private.continuation_input_identity_v1(jsonb_build_array(
    jsonb_build_array(private.continuation_logical_key_v1('source_version',v.source_id::text),jsonb_build_object('versionNo',v.version_no,'versionId',v.id)),
    jsonb_build_array(private.continuation_logical_key_v1('method_release','synthetic-execution-b'),
     jsonb_build_object('platformReleaseId','synthetic-execution-b-test-v2','houseReleaseId',null)))) from public.source_versions v where v.id=pg_temp.id('T1'))
- or exists(select 1 from private.dependency_recompute_holds where released_at is null)
+ or exists(select 1 from private.dependency_recompute_holds where work_id='a11b0000-0000-4000-9000-000000000002' and released_at is null)
  or not exists(select 1 from private.dependency_recompute_holds where execution_id=pg_temp.id('X4') and hold_kind='graph_incomplete' and released_at is not null)
  or (select status from public.work_continuation_requests where id=c.request_id)<>'scheduled' then
   raise exception 'restored head: %',to_jsonb(c);
