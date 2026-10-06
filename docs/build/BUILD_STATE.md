@@ -5571,3 +5571,7 @@ O fechamento final deve usar os runs, journals e deploys reais da correção, re
 Etapa 21 concluída na main `90e3c7d248cb4ba604a4519fd08239054b28f14a`, com CI Quality/Security, web READY e worker revisão 522 nesse commit. O completion final está no registro local `outputs/etapa-21-2026-10-05/COMPLETION-ETAPA21.md`; a PR de isolamento registra a prova pública de publicação. As notas anteriores da etapa 21 são históricas.
 
 O fundador autorizou a etapa 22. O inventário de segurança foi revalidado contra essa main, com leitura AWS CLI pelo login temporário existente, runtime ECS e metadados da role, trust e política inline. A observação registra o coletor real; simulação apenas em `*` não comprova permissões por recurso. A revisão continua vinculada à onda e sem certificação externa. Esta atualização não declara os controles da etapa 22 entregues.
+
+## Onda 23 autorizada em 6 de outubro de 2026
+
+Etapa 22 concluída na main `9732563b3a8c8172139bfa8b43de9eafdf5a9508`. Inventário renovado por onda, com fontes fixadas nesse commit e observação ECS atual. Escopo autorizado: retirada de caminhos antigos e fechamento da superfície. A etapa 23 continua aberta; não antecipar 24.
