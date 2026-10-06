@@ -9,6 +9,8 @@ import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
+import {createRetentionWorker} from "./retention-worker";
+import {createAuditArchive} from "./audit-archive";
 import {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputePass} from "./dependency-recompute";
 import {processNativeProviderJob} from "./capital-native-provider-processor";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
@@ -121,6 +123,10 @@ async function main(): Promise<void> {
   });
 
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
+  const retentionWorker = createRetentionWorker(supabase, config.OFFROAD_WORKER_TOKEN, log);
+  const auditArchive = config.OFFROAD_AUDIT_BUCKET
+    ? createAuditArchive(supabase, config.OFFROAD_WORKER_TOKEN, config.OFFROAD_AUDIT_BUCKET, config.OFFROAD_AUDIT_REGION, log)
+    : null;
   const dependencyRecompute = createDependencyRecomputeQueue(supabase, config.OFFROAD_WORKER_TOKEN);
   const recomputeHealth = createRecomputeHealthMonitor(supabase, config.OFFROAD_WORKER_TOKEN, log);
   const capitalCaptureStorage = createCapitalPublicCaptureStorage(supabase);
@@ -349,6 +355,24 @@ async function main(): Promise<void> {
     }
   })();
 
+  const retentionLoop = (async () => {
+    while (!stopping) {
+      for (let batch = 0; batch < 10 && !stopping; batch++) {
+        if (!await retentionWorker.poll()) break;
+      }
+      await sleep(30000, shuttingDown.signal);
+    }
+  })();
+  const auditArchiveLoop = (async () => {
+    if (!auditArchive) return;
+    while (!stopping) {
+      for (let batch = 0; batch < 10 && !stopping; batch++) {
+        if (!await auditArchive.poll()) break;
+      }
+      await sleep(5000, shuttingDown.signal);
+    }
+  })();
+
   // A bounded, separately leased pass leaves analysis and revocation consumers free.
   const roundtripRenderer = createArtifactRoundtripRenderer(supabase);
   const artifactRoundtripLoop = (async () => {
@@ -539,7 +563,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop]);
+    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop, retentionLoop, auditArchiveLoop]);
   }
   log("worker.stopped");
 }

@@ -21,7 +21,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIGURATION = ROOT / 'apps/document-worker/monitoring/event-outbox-alarms.json'
 FIELD = re.compile(r'^\$\.([A-Za-z][A-Za-z0-9]*)$')
-EVENT = re.compile(r'\$\.event = "([a-z][a-z.]*)"')
+EVENT = re.compile(r'\$\.event = "([a-z][a-z._]*)"')
 
 
 def load_configuration(path):
@@ -72,6 +72,13 @@ def main(argv=None):
 
     prior = call('cloudwatch', 'describe-alarms', {'AlarmNames': [item['name'] for item in config['alarms']]})
     prior_alarms = {item['AlarmName']: item for item in prior.get('MetricAlarms', [])}
+    inherited_actions = None
+    if args.apply and config.get('alarmActionsFrom'):
+        donor = call('cloudwatch', 'describe-alarms', {'AlarmNames': [config['alarmActionsFrom']]})
+        inherited_actions = next((a.get('AlarmActions') for a in donor.get('MetricAlarms', [])
+                                  if a['AlarmName'] == config['alarmActionsFrom']), None)
+        if not inherited_actions:
+            raise SystemExit('Reviewed notification source has no configured alarm actions')
     for alarm in config['alarms']:
         existing = prior_alarms.get(alarm['name'])
         if existing and (existing.get('Namespace') != config['namespace'] or existing.get('MetricName') != alarm['metric']):
@@ -99,6 +106,8 @@ def main(argv=None):
                 'TreatMissingData': alarm['missing'],
             }
             previous = prior_alarms.get(alarm['name'], {})
+            if inherited_actions and not previous.get('AlarmActions'):
+                payload['AlarmActions'] = inherited_actions
             # PutMetricAlarm replaces configuration: preserve existing notifications.
             for key in ['AlarmActions', 'OKActions', 'InsufficientDataActions', 'ActionsEnabled']:
                 if key in previous:

@@ -13,6 +13,8 @@ spec.loader.exec_module(module)
 
 MONITORING = module.ROOT / 'apps/document-worker/monitoring'
 FILES = {
+    'retention': (MONITORING / 'retention-alarms.json', 'offroad-retention-', 'Offroad stage 22 bounded retention cleanup'),
+    'audit': (MONITORING / 'audit-alarms.json', 'offroad-audit-', 'Offroad stage 22 immutable audit archive'),
     'outbox': (MONITORING / 'event-outbox-alarms.json', 'offroad-outbox-', 'Offroad stage 4 durable authority-event consumer'),
     'recompute': (MONITORING / 'dependency-recompute-alarms.json', 'offroad-recompute-',
                   'Offroad stage 18 dependency recompute: health, backlog, expired leases and loop errors'),
@@ -36,6 +38,8 @@ class MonitoringBoundaryTests(unittest.TestCase):
                     'metricTransformations': [{'metricName': f['metric'], 'metricValue': f['value'],
                      'metricNamespace': config['namespace']}]} for f in config['filters']]}
             if operation == 'describe-alarms':
+                if payload['AlarmNames'] == ['offroad-outbox-errors']:
+                    return {'MetricAlarms': [{'AlarmName': 'offroad-outbox-errors', 'AlarmActions': ['arn:aws:sns:sa-east-1:000000000000:existing-test-topic']}]}
                 return {'MetricAlarms': [{'AlarmName': a['name'], 'MetricName': a['metric'],
                     'Namespace': 'unrelated' if corrupt else config['namespace'],
                     'ComparisonOperator': a['comparison'], 'Threshold': a['threshold'],
@@ -80,6 +84,9 @@ class MonitoringBoundaryTests(unittest.TestCase):
                                  sorted([f['name'] for f in config['filters']] + [a['name'] for a in config['alarms']]))
                 for service, operation, payload in mutations:
                     self.assertIn((service, operation), WRITES)
+                if config.get('alarmActionsFrom'):
+                    self.assertEqual(payload['AlarmActions'], ['arn:aws:sns:sa-east-1:000000000000:existing-test-topic'])
+                else:
                     self.assertNotIn('AlarmActions', payload)
                     if service == 'logs':
                         self.assertEqual(payload['logGroupName'], '/ecs/offroad-document-worker')

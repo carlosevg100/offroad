@@ -32,6 +32,7 @@ export async function GET(request: Request, {params}: Context) {
   const receiptId = url.searchParams.get("receiptId");
   if (!z.uuid().safeParse(receiptId).success) return Response.json({ok: false}, {status: 400, headers: importNoStore});
   const first = await rpc("read_artifact_export_receipt_v1", {p_receipt_id: receiptId});
+  if (first.error?.code === "42501") await supabase.rpc("record_artifact_access_denial_v1", {p_receipt_id: receiptId ?? undefined});
   const parsed = receiptSchema.safeParse(first.data);
   if (first.error || !parsed.success || parsed.data.artifactId !== raw.artifactId) return Response.json({ok: false}, {status: 403, headers: importNoStore});
   const receipt = parsed.data, revision = await readArtifactRevision(supabase, {revisionId: receipt.revisionId});
@@ -44,6 +45,7 @@ export async function GET(request: Request, {params}: Context) {
   // Rights and revision authority may have changed while Storage was read. Recheck both before
   // serving bytes, without signing a URL that could outlive a revocation.
   const [receiptAfter, revisionAfter] = await Promise.all([rpc("read_artifact_export_receipt_v1", {p_receipt_id: receiptId}), readArtifactRevision(supabase, {revisionId: receipt.revisionId})]);
+  if (receiptAfter.error?.code === "42501") await supabase.rpc("record_artifact_access_denial_v1", {p_receipt_id: receiptId ?? undefined});
   const after = receiptSchema.safeParse(receiptAfter.data);
   if (receiptAfter.error || !after.success || JSON.stringify(after.data) !== JSON.stringify(receipt) || !revisionAfter.ok || revisionAfter.read.withheld || revisionAfter.read.artifact.id !== raw.artifactId || revisionAfter.read.summary.manifestFingerprint !== revision.read.summary.manifestFingerprint) return Response.json({ok: false}, {status: 403, headers: importNoStore});
   return new Response(bytes, {headers: {...importNoStore, "content-type": receipt.format === "pdf" ? "application/pdf" : artifactImportMime[receipt.format], "content-length": String(bytes.length), "content-disposition": `attachment; filename="offroad.${receipt.format}"`, "x-content-type-options": "nosniff", "x-artifact-sha256": receipt.sha256, "x-artifact-revision": receipt.revisionId, "x-artifact-manifest-fingerprint": revision.read.summary.manifestFingerprint}});

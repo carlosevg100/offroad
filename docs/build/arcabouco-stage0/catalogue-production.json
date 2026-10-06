@@ -537,6 +537,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.append_sensitive_operation_v1(p_org uuid, p_resource uuid, p_version uuid, p_operation text, p_allowed boolean, p_actor uuid)",
+      "kind": "function",
+      "name": "append_sensitive_operation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid, p_version uuid, p_operation text, p_allowed boolean, p_actor uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)",
       "kind": "function",
       "name": "append_work_decision_v1",
@@ -2179,6 +2197,24 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.audit_batch_immutable_v1()",
+      "kind": "function",
+      "name": "audit_batch_immutable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.authorize_capital_project_private_work(p_project_id uuid, p_information_rights_declared boolean)",
@@ -6233,6 +6269,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_export_object_identity_v1()",
+      "kind": "function",
+      "name": "capture_export_object_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capture_identity_audit_v1()",
       "kind": "function",
       "name": "capture_identity_audit_v1",
@@ -6272,6 +6326,24 @@
       "id": "function:private.capture_legacy_observation_v1()",
       "kind": "function",
       "name": "capture_legacy_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_lifecycle_command_operation_v1()",
+      "kind": "function",
+      "name": "capture_lifecycle_command_operation_v1",
       "grants": [
         [
           "postgres",
@@ -6362,6 +6434,24 @@
       "id": "function:private.capture_policy_domain_event_v1()",
       "kind": "function",
       "name": "capture_policy_domain_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_processing_operation_v1()",
+      "kind": "function",
+      "name": "capture_processing_operation_v1",
       "grants": [
         [
           "postgres",
@@ -7589,6 +7679,24 @@
         "search_path=\"\""
       ],
       "signature": "p_candidate_id uuid, p_command_id uuid, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dispose_typed_retention_payloads_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "dispose_typed_retention_payloads_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
       "security_definer": true
     },
     {
@@ -9059,6 +9167,29 @@
         "search_path=\"\""
       ],
       "signature": "p_resource_id uuid, p_action text, p_purpose text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.export_authorized_audit_v1(p_after_id bigint, p_limit integer)",
+      "kind": "function",
+      "name": "export_authorized_audit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_after_id bigint, p_limit integer",
       "security_definer": true
     },
     {
@@ -13271,6 +13402,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.place_legal_hold_v1(p_resource_id uuid, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "place_legal_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_basis_reference uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)",
       "kind": "function",
       "name": "plan_dependency_recompute_v1",
@@ -13322,6 +13476,24 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.plan_retention_actions_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "plan_retention_actions_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
       "security_definer": true
     },
     {
@@ -13697,6 +13869,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.process_revocation_targets_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "process_revocation_targets_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
       "security_definer": true
     },
     {
@@ -15096,6 +15286,75 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_audited_artifact_head_v1(p_work uuid, p_kind text, p_subject text)",
+      "kind": "function",
+      "name": "read_audited_artifact_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid, p_kind text, p_subject text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_audited_artifact_revision_v1(p_revision uuid)",
+      "kind": "function",
+      "name": "read_audited_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_audited_export_receipt_v1(p_receipt uuid)",
+      "kind": "function",
+      "name": "read_audited_export_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_receipt uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_capital_debt_artifact_review_basis_v1(p_project_id uuid, p_artifact_id uuid, p_revision_id uuid)",
       "kind": "function",
       "name": "read_capital_debt_artifact_review_basis_v1",
@@ -16007,6 +16266,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_revocation_status_v1(p_run_id uuid)",
+      "kind": "function",
+      "name": "read_revocation_status_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_run_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_source_version_v1(p_version_id uuid)",
       "kind": "function",
       "name": "read_source_version_v1",
@@ -16411,6 +16693,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_entities jsonb, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_artifact_access_denial_v1(p_revision uuid, p_receipt uuid)",
+      "kind": "function",
+      "name": "record_artifact_access_denial_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision uuid, p_receipt uuid",
       "security_definer": true
     },
     {
@@ -17182,6 +17487,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_revocation_outbox_receipt_v1()",
+      "kind": "function",
+      "name": "record_revocation_outbox_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_revocation_run_v1()",
+      "kind": "function",
+      "name": "record_revocation_run_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)",
       "kind": "function",
       "name": "record_storage_rotation_v1",
@@ -17647,6 +17988,29 @@
       ],
       "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
       "security_definer": false
+    },
+    {
+      "id": "function:private.release_legal_hold_v1(p_hold_id uuid, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "release_legal_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_hold_id uuid, p_basis_reference uuid",
+      "security_definer": true
     },
     {
       "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
@@ -18709,6 +19073,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.resource_is_within_v1(p_org uuid, p_resource uuid, p_scope uuid)",
+      "kind": "function",
+      "name": "resource_is_within_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid, p_scope uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.resource_legal_hold_v1(p_org uuid, p_resource uuid)",
+      "kind": "function",
+      "name": "resource_legal_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.resource_root_v1(p_organization_id uuid, p_resource_id uuid)",
       "kind": "function",
       "name": "resource_root_v1",
@@ -18747,6 +19147,65 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.retention_access_allowed_v1(p_org uuid, p_resource uuid)",
+      "kind": "function",
+      "name": "retention_access_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.retention_action_authorized_v1(p_worker_token text, p_action_id uuid, p_capability text, p_completed boolean)",
+      "kind": "function",
+      "name": "retention_action_authorized_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text, p_completed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.retention_storage_allowed_v1(p_bucket text, p_path text, p_mode text)",
+      "kind": "function",
+      "name": "retention_storage_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text, p_mode text",
       "security_definer": true
     },
     {
@@ -19534,6 +19993,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.search_audited_resources_v1(p_org uuid, p_resource uuid, p_query text, p_limit integer, p_purpose text)",
+      "kind": "function",
+      "name": "search_audited_resources_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid, p_query text, p_limit integer, p_purpose text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
       "kind": "function",
       "name": "search_authorized_resources_v1",
@@ -20030,6 +20512,29 @@
         "search_path=\"\""
       ],
       "signature": "p_resource_id uuid, p_purposes text[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_retention_rule_v1(p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "set_retention_rule_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid",
       "security_definer": true
     },
     {
@@ -20850,6 +21355,29 @@
       "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
       "kind": "function",
       "name": "storage_export_purpose_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.storage_has_legal_hold_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "name": "storage_has_legal_hold_v1",
       "grants": [
         [
           "postgres",
@@ -22525,6 +23053,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_ack_audit_batch_v1(p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text)",
+      "kind": "function",
+      "name": "worker_ack_audit_batch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)",
       "kind": "function",
       "name": "worker_ack_capital_capture_purge_v1",
@@ -22545,6 +23096,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_ack_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean)",
+      "kind": "function",
+      "name": "worker_ack_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean",
       "security_definer": true
     },
     {
@@ -23257,6 +23831,47 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_claim_audit_batch_for_scope_v1(p_worker_token text, p_org uuid)",
+      "kind": "function",
+      "name": "worker_claim_audit_batch_for_scope_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_org uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_claim_audit_batch_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_audit_batch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)",
       "kind": "function",
       "name": "worker_claim_capital_capture_purge_v1",
@@ -23420,6 +24035,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_claim_retention_action_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": true
     },
     {
@@ -30216,6 +30854,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_retry_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_reason text)",
+      "kind": "function",
+      "name": "worker_retry_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text, p_reason text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_revalidate_artifact_roundtrip_v1",
@@ -30351,6 +31012,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_revalidate_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "worker_revalidate_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text",
       "security_definer": true
     },
     {
@@ -32350,6 +33034,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.export_authorized_audit_v1(p_after_id bigint, p_limit integer)",
+      "kind": "function",
+      "name": "export_authorized_audit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_after_id bigint, p_limit integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.fail_intake_session(p_organization_id uuid, p_session_id uuid, p_reason text)",
       "kind": "function",
       "name": "fail_intake_session",
@@ -33105,6 +33812,29 @@
         "search_path=\"\""
       ],
       "signature": "p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.place_legal_hold_v1(p_resource_id uuid, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "place_legal_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_basis_reference uuid",
       "security_definer": false
     },
     {
@@ -34389,6 +35119,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.read_revocation_status_v1(p_run_id uuid)",
+      "kind": "function",
+      "name": "read_revocation_status_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_run_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.read_source_version_v1(p_version_id uuid)",
       "kind": "function",
       "name": "read_source_version_v1",
@@ -34644,6 +35397,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_proposal jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.record_artifact_access_denial_v1(p_revision_id uuid, p_receipt_id uuid)",
+      "kind": "function",
+      "name": "record_artifact_access_denial_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid, p_receipt_id uuid",
       "security_definer": false
     },
     {
@@ -35322,6 +36098,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.release_legal_hold_v1(p_hold_id uuid, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "release_legal_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_hold_id uuid, p_basis_reference uuid",
       "security_definer": false
     },
     {
@@ -36715,6 +37514,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.set_retention_rule_v1(p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid)",
+      "kind": "function",
+      "name": "set_retention_rule_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
       "kind": "function",
       "name": "set_source_rights_v1",
@@ -37877,6 +38699,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_ack_audit_batch_v1(p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text)",
+      "kind": "function",
+      "name": "worker_ack_audit_batch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)",
       "kind": "function",
       "name": "worker_ack_capital_capture_purge_v1",
@@ -37897,6 +38742,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_ack_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean)",
+      "kind": "function",
+      "name": "worker_ack_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean",
       "security_definer": false
     },
     {
@@ -38334,6 +39202,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_claim_audit_batch_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_audit_batch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)",
       "kind": "function",
       "name": "worker_claim_capital_capture_purge_v1",
@@ -38525,6 +39416,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_claim_retention_action_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": false
     },
     {
@@ -44693,6 +45607,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_retry_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_reason text)",
+      "kind": "function",
+      "name": "worker_retry_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text, p_reason text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_revalidate_artifact_roundtrip_v1",
@@ -44828,6 +45765,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_revalidate_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "worker_revalidate_retention_action_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_action_id uuid, p_capability text",
       "security_definer": false
     },
     {
@@ -45428,6 +46388,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.artifact_export_object_identities.artifact_export_object_identities_deny",
+      "kind": "policy",
+      "name": "artifact_export_object_identities_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_export_object_identities",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.artifact_import_events.artifact_import_events_deny",
       "kind": "policy",
       "name": "artifact_import_events_deny",
@@ -45845,6 +46819,48 @@
         "authenticated"
       ],
       "table": "assumption_version_items",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.audit_archive_wakes.audit_archive_wakes_deny",
+      "kind": "policy",
+      "name": "audit_archive_wakes_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "audit_archive_wakes",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.audit_export_batch_events.audit_batch_events_deny",
+      "kind": "policy",
+      "name": "audit_batch_events_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "audit_export_batch_events",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.audit_export_batches.audit_export_batches_deny",
+      "kind": "policy",
+      "name": "audit_export_batches_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "audit_export_batches",
       "schema": "private",
       "command": "ALL",
       "permissive": "PERMISSIVE",
@@ -53174,6 +54190,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.legal_holds.legal_holds_deny",
+      "kind": "policy",
+      "name": "legal_holds_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "legal_holds",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.material_package_review_intents.material_package_review_intents_no_delete",
       "kind": "policy",
       "name": "material_package_review_intents_no_delete",
@@ -54537,6 +55567,48 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.retention_actions.retention_actions_deny",
+      "kind": "policy",
+      "name": "retention_actions_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "retention_actions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.retention_plan_receipts.retention_plans_deny",
+      "kind": "policy",
+      "name": "retention_plans_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "retention_plan_receipts",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.retention_rules.retention_rules_deny",
+      "kind": "policy",
+      "name": "retention_rules_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "retention_rules",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.review_assignment_history.review_assignment_history_delete",
       "kind": "policy",
       "name": "review_assignment_history_delete",
@@ -54775,6 +55847,34 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.revocation_runs.revocation_runs_deny",
+      "kind": "policy",
+      "name": "revocation_runs_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "revocation_runs",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.revocation_targets.revocation_targets_deny",
+      "kind": "policy",
+      "name": "revocation_targets_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "revocation_targets",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.source_rights_versions.source_rights_versions_deny_clients",
       "kind": "policy",
       "name": "source_rights_versions_deny_clients",
@@ -54812,6 +55912,20 @@
         "authenticated"
       ],
       "table": "storage_path_rotations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.typed_payload_disposals.typed_disposals_deny",
+      "kind": "policy",
+      "name": "typed_disposals_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "typed_payload_disposals",
       "schema": "private",
       "command": "ALL",
       "permissive": "PERMISSIVE",
@@ -60860,6 +61974,20 @@
       "with_check": null
     },
     {
+      "id": "policy:storage.objects.lifecycle_storage_legal_hold",
+      "kind": "policy",
+      "name": "lifecycle_storage_legal_hold",
+      "qual": "(NOT private.storage_has_legal_hold_v1(bucket_id, name))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:storage.objects.opportunity_documents_delete",
       "kind": "policy",
       "name": "opportunity_documents_delete",
@@ -60942,6 +62070,34 @@
       "command": "ALL",
       "permissive": "RESTRICTIVE",
       "with_check": "( SELECT private.storage_operation_is_revocable_v1() AS storage_operation_is_revocable_v1)"
+    },
+    {
+      "id": "policy:storage.objects.retention_storage_delete",
+      "kind": "policy",
+      "name": "retention_storage_delete",
+      "qual": "private.retention_storage_allowed_v1(bucket_id, name, 'delete'::text)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.retention_storage_metadata",
+      "kind": "policy",
+      "name": "retention_storage_metadata",
+      "qual": "private.retention_storage_allowed_v1(bucket_id, name, 'metadata'::text)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
     },
     {
       "id": "policy:storage.objects.source_version_storage_no_delete",
@@ -61282,6 +62438,56 @@
       "rls": true,
       "kind": "table",
       "name": "artifact_dependency_links",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.artifact_export_object_identities",
+      "rls": true,
+      "kind": "table",
+      "name": "artifact_export_object_identities",
       "grants": [
         [
           "postgres",
@@ -61882,6 +63088,156 @@
       "rls": true,
       "kind": "table",
       "name": "assumption_version_items",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.audit_archive_wakes",
+      "rls": true,
+      "kind": "table",
+      "name": "audit_archive_wakes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.audit_export_batch_events",
+      "rls": true,
+      "kind": "table",
+      "name": "audit_export_batch_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.audit_export_batches",
+      "rls": true,
+      "kind": "table",
+      "name": "audit_export_batches",
       "grants": [
         [
           "postgres",
@@ -69228,6 +70584,56 @@
       "force_rls": false
     },
     {
+      "id": "r:private.legal_holds",
+      "rls": true,
+      "kind": "table",
+      "name": "legal_holds",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.material_package_review_intents",
       "rls": true,
       "kind": "table",
@@ -71828,6 +73234,156 @@
       "force_rls": true
     },
     {
+      "id": "r:private.retention_actions",
+      "rls": true,
+      "kind": "table",
+      "name": "retention_actions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.retention_plan_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "retention_plan_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.retention_rules",
+      "rls": true,
+      "kind": "table",
+      "name": "retention_rules",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.retrieval_audit_events",
       "rls": false,
       "kind": "table",
@@ -72128,6 +73684,106 @@
       "force_rls": true
     },
     {
+      "id": "r:private.revocation_runs",
+      "rls": true,
+      "kind": "table",
+      "name": "revocation_runs",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.revocation_targets",
+      "rls": true,
+      "kind": "table",
+      "name": "revocation_targets",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.source_rights_versions",
       "rls": true,
       "kind": "table",
@@ -72232,6 +73888,56 @@
       "rls": true,
       "kind": "table",
       "name": "storage_path_rotations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.typed_payload_disposals",
+      "rls": true,
+      "kind": "table",
+      "name": "typed_payload_disposals",
       "grants": [
         [
           "postgres",
@@ -86868,6 +88574,46 @@
       "definition": "CREATE TRIGGER artifact_dependency_links_truncate_guard BEFORE TRUNCATE ON private.artifact_dependency_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
     },
     {
+      "id": "trigger:private.artifact_export_object_identities.artifact_export_object_identities_audit",
+      "kind": "trigger",
+      "name": "artifact_export_object_identities_audit",
+      "table": "artifact_export_object_identities",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER artifact_export_object_identities_audit AFTER INSERT OR DELETE OR UPDATE ON private.artifact_export_object_identities FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.artifact_export_object_identities.artifact_export_object_identities_immutable",
+      "kind": "trigger",
+      "name": "artifact_export_object_identities_immutable",
+      "table": "artifact_export_object_identities",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_export_object_identities_immutable BEFORE DELETE OR UPDATE ON private.artifact_export_object_identities FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.artifact_export_object_identities.artifact_export_object_identities_no_truncate",
+      "kind": "trigger",
+      "name": "artifact_export_object_identities_no_truncate",
+      "table": "artifact_export_object_identities",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_export_object_identities_no_truncate BEFORE TRUNCATE ON private.artifact_export_object_identities FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.artifact_export_object_identities.artifact_export_object_identities_updated",
+      "kind": "trigger",
+      "name": "artifact_export_object_identities_updated",
+      "table": "artifact_export_object_identities",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER artifact_export_object_identities_updated BEFORE UPDATE ON private.artifact_export_object_identities FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.artifact_import_events.artifact_import_events_audit",
       "kind": "trigger",
       "name": "artifact_import_events_audit",
@@ -87186,6 +88932,66 @@
       "enabled": "O",
       "function": "private.reject_assumption_mutation_v1()",
       "definition": "CREATE TRIGGER assumption_version_items_immutable BEFORE DELETE OR UPDATE ON private.assumption_version_items FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.audit_archive_wakes.audit_archive_wakes_updated",
+      "kind": "trigger",
+      "name": "audit_archive_wakes_updated",
+      "table": "audit_archive_wakes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER audit_archive_wakes_updated BEFORE UPDATE ON private.audit_archive_wakes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.audit_export_batch_events.audit_batch_events_immutable",
+      "kind": "trigger",
+      "name": "audit_batch_events_immutable",
+      "table": "audit_export_batch_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER audit_batch_events_immutable BEFORE DELETE OR UPDATE ON private.audit_export_batch_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.audit_export_batch_events.audit_batch_events_no_truncate",
+      "kind": "trigger",
+      "name": "audit_batch_events_no_truncate",
+      "table": "audit_export_batch_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER audit_batch_events_no_truncate BEFORE TRUNCATE ON private.audit_export_batch_events FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.audit_export_batches.audit_batch_immutable",
+      "kind": "trigger",
+      "name": "audit_batch_immutable",
+      "table": "audit_export_batches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.audit_batch_immutable_v1()",
+      "definition": "CREATE TRIGGER audit_batch_immutable BEFORE DELETE OR UPDATE ON private.audit_export_batches FOR EACH ROW EXECUTE FUNCTION private.audit_batch_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.audit_export_batches.audit_batch_no_truncate",
+      "kind": "trigger",
+      "name": "audit_batch_no_truncate",
+      "table": "audit_export_batches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.audit_batch_immutable_v1()",
+      "definition": "CREATE TRIGGER audit_batch_no_truncate BEFORE TRUNCATE ON private.audit_export_batches FOR EACH STATEMENT EXECUTE FUNCTION private.audit_batch_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.audit_export_batches.audit_export_batches_updated",
+      "kind": "trigger",
+      "name": "audit_export_batches_updated",
+      "table": "audit_export_batches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER audit_export_batches_updated BEFORE UPDATE ON private.audit_export_batches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
@@ -90268,6 +92074,16 @@
       "definition": "CREATE TRIGGER dependency_recompute_holds_updated BEFORE UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.domain_events.domain_event_revocation_run",
+      "kind": "trigger",
+      "name": "domain_event_revocation_run",
+      "table": "domain_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.record_revocation_run_v1()",
+      "definition": "CREATE TRIGGER domain_event_revocation_run AFTER INSERT ON private.domain_events FOR EACH ROW EXECUTE FUNCTION private.record_revocation_run_v1()"
+    },
+    {
       "id": "trigger:private.domain_events.domain_events_immutable",
       "kind": "trigger",
       "name": "domain_events_immutable",
@@ -90356,6 +92172,16 @@
       "enabled": "O",
       "function": "private.guard_platform_ledger_truncate_v1()",
       "definition": "CREATE TRIGGER evaluation_result_receipts_truncate_guard BEFORE TRUNCATE ON private.evaluation_result_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.event_outbox.event_outbox_revocation_receipt",
+      "kind": "trigger",
+      "name": "event_outbox_revocation_receipt",
+      "table": "event_outbox",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.record_revocation_outbox_receipt_v1()",
+      "definition": "CREATE TRIGGER event_outbox_revocation_receipt AFTER UPDATE OF status ON private.event_outbox FOR EACH ROW WHEN ((new.status = ANY (ARRAY['completed'::text, 'blocked'::text]))) EXECUTE FUNCTION private.record_revocation_outbox_receipt_v1()"
     },
     {
       "id": "trigger:private.event_outbox.event_outbox_updated_at",
@@ -91958,6 +93784,36 @@
       "definition": "CREATE TRIGGER institutional_setup_source_links_updated BEFORE UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.legal_holds.legal_holds_audit",
+      "kind": "trigger",
+      "name": "legal_holds_audit",
+      "table": "legal_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER legal_holds_audit AFTER INSERT OR DELETE OR UPDATE ON private.legal_holds FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.legal_holds.legal_holds_updated",
+      "kind": "trigger",
+      "name": "legal_holds_updated",
+      "table": "legal_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER legal_holds_updated BEFORE UPDATE ON private.legal_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.legal_holds.lifecycle_hold_admin_operation",
+      "kind": "trigger",
+      "name": "lifecycle_hold_admin_operation",
+      "table": "legal_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_hold_admin_operation AFTER INSERT OR UPDATE ON private.legal_holds FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
+    },
+    {
       "id": "trigger:private.material_package_review_intents.material_package_review_intents_audit",
       "kind": "trigger",
       "name": "material_package_review_intents_audit",
@@ -92828,6 +94684,16 @@
       "definition": "CREATE TRIGGER processing_eligibility_decisions_immutable BEFORE DELETE OR UPDATE ON private.processing_eligibility_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
     },
     {
+      "id": "trigger:private.processing_eligibility_decisions.processing_operation_audit",
+      "kind": "trigger",
+      "name": "processing_operation_audit",
+      "table": "processing_eligibility_decisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_processing_operation_v1()",
+      "definition": "CREATE TRIGGER processing_operation_audit AFTER INSERT ON private.processing_eligibility_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_processing_operation_v1()"
+    },
+    {
       "id": "trigger:private.processing_run_method_pins.method_pins_audit",
       "kind": "trigger",
       "name": "method_pins_audit",
@@ -93008,6 +94874,16 @@
       "definition": "CREATE TRIGGER receivables_release_pause_events_truncate_guard BEFORE TRUNCATE ON private.receivables_release_pause_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
+      "id": "trigger:private.resource_access_grants.lifecycle_grant_admin_operation",
+      "kind": "trigger",
+      "name": "lifecycle_grant_admin_operation",
+      "table": "resource_access_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_grant_admin_operation AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
+    },
+    {
       "id": "trigger:private.resource_access_grants.resource_access_grants_audit",
       "kind": "trigger",
       "name": "resource_access_grants_audit",
@@ -93116,6 +94992,106 @@
       "enabled": "O",
       "function": "private.capture_source_rights_event_v1()",
       "definition": "CREATE TRIGGER resource_dependency_event AFTER INSERT ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_source_rights_event_v1()"
+    },
+    {
+      "id": "trigger:private.retention_actions.retention_actions_audit",
+      "kind": "trigger",
+      "name": "retention_actions_audit",
+      "table": "retention_actions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER retention_actions_audit AFTER INSERT OR DELETE OR UPDATE ON private.retention_actions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.retention_actions.retention_actions_updated",
+      "kind": "trigger",
+      "name": "retention_actions_updated",
+      "table": "retention_actions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER retention_actions_updated BEFORE UPDATE ON private.retention_actions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.retention_plan_receipts.retention_plan_immutable",
+      "kind": "trigger",
+      "name": "retention_plan_immutable",
+      "table": "retention_plan_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER retention_plan_immutable BEFORE DELETE OR UPDATE ON private.retention_plan_receipts FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.retention_plan_receipts.retention_plan_no_truncate",
+      "kind": "trigger",
+      "name": "retention_plan_no_truncate",
+      "table": "retention_plan_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER retention_plan_no_truncate BEFORE TRUNCATE ON private.retention_plan_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.retention_rules.lifecycle_retention_admin_operation",
+      "kind": "trigger",
+      "name": "lifecycle_retention_admin_operation",
+      "table": "retention_rules",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_retention_admin_operation AFTER INSERT ON private.retention_rules FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
+    },
+    {
+      "id": "trigger:private.retention_rules.retention_rules_audit",
+      "kind": "trigger",
+      "name": "retention_rules_audit",
+      "table": "retention_rules",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER retention_rules_audit AFTER INSERT OR DELETE OR UPDATE ON private.retention_rules FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.retention_rules.retention_rules_immutable",
+      "kind": "trigger",
+      "name": "retention_rules_immutable",
+      "table": "retention_rules",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER retention_rules_immutable BEFORE DELETE OR UPDATE ON private.retention_rules FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.retention_rules.retention_rules_no_truncate",
+      "kind": "trigger",
+      "name": "retention_rules_no_truncate",
+      "table": "retention_rules",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER retention_rules_no_truncate BEFORE TRUNCATE ON private.retention_rules FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.retention_rules.retention_rules_updated",
+      "kind": "trigger",
+      "name": "retention_rules_updated",
+      "table": "retention_rules",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER retention_rules_updated BEFORE UPDATE ON private.retention_rules FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.retrieval_audit_events.retrieval_operation_audit",
+      "kind": "trigger",
+      "name": "retrieval_operation_audit",
+      "table": "retrieval_audit_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_processing_operation_v1()",
+      "definition": "CREATE TRIGGER retrieval_operation_audit AFTER INSERT ON private.retrieval_audit_events FOR EACH ROW EXECUTE FUNCTION private.capture_processing_operation_v1()"
     },
     {
       "id": "trigger:private.review_assignment_history.review_assignment_history_audit",
@@ -93298,6 +95274,66 @@
       "definition": "CREATE TRIGGER review_reassignment_commands_updated BEFORE UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.revocation_runs.revocation_runs_audit",
+      "kind": "trigger",
+      "name": "revocation_runs_audit",
+      "table": "revocation_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER revocation_runs_audit AFTER INSERT OR DELETE OR UPDATE ON private.revocation_runs FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.revocation_runs.revocation_runs_immutable",
+      "kind": "trigger",
+      "name": "revocation_runs_immutable",
+      "table": "revocation_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER revocation_runs_immutable BEFORE DELETE OR UPDATE ON private.revocation_runs FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.revocation_runs.revocation_runs_no_truncate",
+      "kind": "trigger",
+      "name": "revocation_runs_no_truncate",
+      "table": "revocation_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER revocation_runs_no_truncate BEFORE TRUNCATE ON private.revocation_runs FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.revocation_runs.revocation_runs_updated",
+      "kind": "trigger",
+      "name": "revocation_runs_updated",
+      "table": "revocation_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER revocation_runs_updated BEFORE UPDATE ON private.revocation_runs FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.revocation_targets.revocation_targets_audit",
+      "kind": "trigger",
+      "name": "revocation_targets_audit",
+      "table": "revocation_targets",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER revocation_targets_audit AFTER INSERT OR DELETE OR UPDATE ON private.revocation_targets FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.revocation_targets.revocation_targets_updated",
+      "kind": "trigger",
+      "name": "revocation_targets_updated",
+      "table": "revocation_targets",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER revocation_targets_updated BEFORE UPDATE ON private.revocation_targets FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.source_rights_versions.capital_body_rights_wake",
       "kind": "trigger",
       "name": "capital_body_rights_wake",
@@ -93436,6 +95472,36 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER storage_path_rotations_updated_at BEFORE UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.typed_payload_disposals.typed_disposals_audit",
+      "kind": "trigger",
+      "name": "typed_disposals_audit",
+      "table": "typed_payload_disposals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER typed_disposals_audit AFTER INSERT ON private.typed_payload_disposals FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.typed_payload_disposals.typed_disposals_immutable",
+      "kind": "trigger",
+      "name": "typed_disposals_immutable",
+      "table": "typed_payload_disposals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER typed_disposals_immutable BEFORE DELETE OR UPDATE ON private.typed_payload_disposals FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.typed_payload_disposals.typed_disposals_no_truncate",
+      "kind": "trigger",
+      "name": "typed_disposals_no_truncate",
+      "table": "typed_payload_disposals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER typed_disposals_no_truncate BEFORE TRUNCATE ON private.typed_payload_disposals FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
     },
     {
       "id": "trigger:private.vault_source_dependencies.vault_dependencies_audit",
@@ -93858,6 +95924,16 @@
       "definition": "CREATE TRIGGER artifact_blocks_truncate_guard BEFORE TRUNCATE ON public.artifact_blocks FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
     },
     {
+      "id": "trigger:public.artifact_export_receipts.artifact_export_object_identity",
+      "kind": "trigger",
+      "name": "artifact_export_object_identity",
+      "table": "artifact_export_receipts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_export_object_identity_v1()",
+      "definition": "CREATE TRIGGER artifact_export_object_identity BEFORE INSERT ON public.artifact_export_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_export_object_identity_v1()"
+    },
+    {
       "id": "trigger:public.artifact_export_receipts.artifact_export_receipts_audit",
       "kind": "trigger",
       "name": "artifact_export_receipts_audit",
@@ -93996,6 +96072,16 @@
       "enabled": "O",
       "function": "private.project_capital_s11_artifact_review_v1()",
       "definition": "CREATE TRIGGER capital_s11_artifact_review_bridge AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.project_capital_s11_artifact_review_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.lifecycle_review_operation",
+      "kind": "trigger",
+      "name": "lifecycle_review_operation",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_review_operation AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('review')"
     },
     {
       "id": "trigger:public.artifact_reviews.material_package_review_projection",
@@ -94156,6 +96242,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER assumption_versions_updated BEFORE UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.audit_events.audit_events_append_only",
+      "kind": "trigger",
+      "name": "audit_events_append_only",
+      "table": "audit_events",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER audit_events_append_only BEFORE DELETE OR UPDATE ON public.audit_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.audit_events.audit_events_no_truncate",
+      "kind": "trigger",
+      "name": "audit_events_no_truncate",
+      "table": "audit_events",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER audit_events_no_truncate BEFORE TRUNCATE ON public.audit_events FOR EACH STATEMENT EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
     },
     {
       "id": "trigger:public.authority_evidence.authority_evidence_audit",
@@ -96028,6 +98134,16 @@
       "definition": "CREATE TRIGGER method_release_components_updated BEFORE UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.method_releases.lifecycle_method_publication_operation",
+      "kind": "trigger",
+      "name": "lifecycle_method_publication_operation",
+      "table": "method_releases",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_method_publication_operation AFTER INSERT OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('publication')"
+    },
+    {
       "id": "trigger:public.method_releases.method_release_immutable",
       "kind": "trigger",
       "name": "method_release_immutable",
@@ -96306,6 +98422,16 @@
       "enabled": "O",
       "function": "private.wake_capital_body_subject_v1()",
       "definition": "CREATE TRIGGER capital_body_membership_wake AFTER DELETE OR UPDATE OF status ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.wake_capital_body_subject_v1()"
+    },
+    {
+      "id": "trigger:public.organization_memberships.lifecycle_membership_admin_operation",
+      "kind": "trigger",
+      "name": "lifecycle_membership_admin_operation",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_membership_admin_operation AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
     },
     {
       "id": "trigger:public.organization_memberships.membership_domain_event",
@@ -97578,6 +99704,16 @@
       "definition": "CREATE TRIGGER vault_request_immutable BEFORE DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
+      "id": "trigger:public.vault_publications.lifecycle_vault_publication_operation",
+      "kind": "trigger",
+      "name": "lifecycle_vault_publication_operation",
+      "table": "vault_publications",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_lifecycle_command_operation_v1()",
+      "definition": "CREATE TRIGGER lifecycle_vault_publication_operation AFTER INSERT OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('publication')"
+    },
+    {
       "id": "trigger:public.vault_publications.vault_publication_history",
       "kind": "trigger",
       "name": "vault_publication_history",
@@ -98633,5 +100769,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-10-05T19:00:37.89929+00:00"
+  "captured_at": "2026-10-06T14:55:07.278028+00:00"
 }

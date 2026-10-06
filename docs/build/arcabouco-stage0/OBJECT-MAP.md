@@ -3712,3 +3712,92 @@ linha vazia e dois CASE redundantes já conciliados individualmente. Os hashes p
 iguais à prova anterior; nenhum corpo de banco/snapshot foi modificado para escondê-las.
 Os recibos completos estão em `STAGE21-INSTALLED-VERIFICATION.json` e
 `schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json`.
+
+## Etapa 22: ciclo de vida e auditoria
+
+85 objetos novos e 0 atualizados. Autoridade atual, retenção contratual explícita, hold sem acesso, recibos por destino e auditoria imutável; SQL e SDK verificados em staging e instalado em produção.
+- `function:private.append_sensitive_operation_v1(p_org uuid, p_resource uuid, p_version uuid, p_operation text, p_allowed boolean, p_actor uuid)`
+- `function:private.audit_batch_immutable_v1()`
+- `function:private.capture_export_object_identity_v1()`
+- `function:private.capture_lifecycle_command_operation_v1()`
+- `function:private.capture_processing_operation_v1()`
+- `function:private.dispose_typed_retention_payloads_v1(p_worker_token text, p_limit integer)`
+- `function:private.export_authorized_audit_v1(p_after_id bigint, p_limit integer)`
+- `function:private.place_legal_hold_v1(p_resource_id uuid, p_basis_reference uuid)`
+- `function:private.plan_retention_actions_v1(p_worker_token text, p_limit integer)`
+- `function:private.process_revocation_targets_v1(p_worker_token text, p_limit integer)`
+- `function:private.read_audited_artifact_head_v1(p_work uuid, p_kind text, p_subject text)`
+- `function:private.read_audited_artifact_revision_v1(p_revision uuid)`
+- `function:private.read_audited_export_receipt_v1(p_receipt uuid)`
+- `function:private.read_revocation_status_v1(p_run_id uuid)`
+- `function:private.record_artifact_access_denial_v1(p_revision uuid, p_receipt uuid)`
+- `function:private.record_revocation_outbox_receipt_v1()`
+- `function:private.record_revocation_run_v1()`
+- `function:private.release_legal_hold_v1(p_hold_id uuid, p_basis_reference uuid)`
+- `function:private.resource_is_within_v1(p_org uuid, p_resource uuid, p_scope uuid)`
+- `function:private.resource_legal_hold_v1(p_org uuid, p_resource uuid)`
+- `function:private.retention_access_allowed_v1(p_org uuid, p_resource uuid)`
+- `function:private.retention_action_authorized_v1(p_worker_token text, p_action_id uuid, p_capability text, p_completed boolean)`
+- `function:private.retention_storage_allowed_v1(p_bucket text, p_path text, p_mode text)`
+- `function:private.search_audited_resources_v1(p_org uuid, p_resource uuid, p_query text, p_limit integer, p_purpose text)`
+- `function:private.set_retention_rule_v1(p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid)`
+- `function:private.storage_has_legal_hold_v1(p_bucket text, p_path text)`
+- `function:private.worker_ack_audit_batch_v1(p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text)`
+- `function:private.worker_ack_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean)`
+- `function:private.worker_claim_audit_batch_for_scope_v1(p_worker_token text, p_org uuid)`
+- `function:private.worker_claim_audit_batch_v1(p_worker_token text)`
+- `function:private.worker_claim_retention_action_v1(p_worker_token text)`
+- `function:private.worker_retry_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_reason text)`
+- `function:private.worker_revalidate_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text)`
+- `function:public.export_authorized_audit_v1(p_after_id bigint, p_limit integer)`
+- `function:public.place_legal_hold_v1(p_resource_id uuid, p_basis_reference uuid)`
+- `function:public.read_revocation_status_v1(p_run_id uuid)`
+- `function:public.record_artifact_access_denial_v1(p_revision_id uuid, p_receipt_id uuid)`
+- `function:public.release_legal_hold_v1(p_hold_id uuid, p_basis_reference uuid)`
+- `function:public.set_retention_rule_v1(p_resource_id uuid, p_mode text, p_expires_at timestamp with time zone, p_basis_reference uuid)`
+- `function:public.worker_ack_audit_batch_v1(p_worker_token text, p_batch_id uuid, p_capability text, p_verified_sha256 text, p_s3_version_id text)`
+- `function:public.worker_ack_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_storage_absence_confirmed boolean)`
+- `function:public.worker_claim_audit_batch_v1(p_worker_token text)`
+- `function:public.worker_claim_retention_action_v1(p_worker_token text)`
+- `function:public.worker_retry_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text, p_reason text)`
+- `function:public.worker_revalidate_retention_action_v1(p_worker_token text, p_action_id uuid, p_capability text)`
+- `policy:private.audit_export_batch_events.audit_batch_events_deny`
+- `policy:private.retention_plan_receipts.retention_plans_deny`
+- `policy:private.typed_payload_disposals.typed_disposals_deny`
+- `policy:storage.objects.lifecycle_storage_legal_hold`
+- `policy:storage.objects.retention_storage_delete`
+- `policy:storage.objects.retention_storage_metadata`
+- `r:private.artifact_export_object_identities`
+- `r:private.audit_archive_wakes`
+- `r:private.audit_export_batch_events`
+- `r:private.audit_export_batches`
+- `r:private.legal_holds`
+- `r:private.retention_actions`
+- `r:private.retention_plan_receipts`
+- `r:private.retention_rules`
+- `r:private.revocation_runs`
+- `r:private.revocation_targets`
+- `r:private.typed_payload_disposals`
+- `trigger:private.audit_export_batch_events.audit_batch_events_immutable`
+- `trigger:private.audit_export_batch_events.audit_batch_events_no_truncate`
+- `trigger:private.audit_export_batches.audit_batch_immutable`
+- `trigger:private.audit_export_batches.audit_batch_no_truncate`
+- `trigger:private.domain_events.domain_event_revocation_run`
+- `trigger:private.event_outbox.event_outbox_revocation_receipt`
+- `trigger:private.legal_holds.lifecycle_hold_admin_operation`
+- `trigger:private.processing_eligibility_decisions.processing_operation_audit`
+- `trigger:private.resource_access_grants.lifecycle_grant_admin_operation`
+- `trigger:private.retention_plan_receipts.retention_plan_immutable`
+- `trigger:private.retention_plan_receipts.retention_plan_no_truncate`
+- `trigger:private.retention_rules.lifecycle_retention_admin_operation`
+- `trigger:private.retrieval_audit_events.retrieval_operation_audit`
+- `trigger:private.typed_payload_disposals.typed_disposals_audit`
+- `trigger:private.typed_payload_disposals.typed_disposals_immutable`
+- `trigger:private.typed_payload_disposals.typed_disposals_no_truncate`
+- `trigger:public.artifact_export_receipts.artifact_export_object_identity`
+- `trigger:public.artifact_reviews.lifecycle_review_operation`
+- `trigger:public.audit_events.audit_events_append_only`
+- `trigger:public.audit_events.audit_events_no_truncate`
+- `trigger:public.method_releases.lifecycle_method_publication_operation`
+- `trigger:public.organization_memberships.lifecycle_membership_admin_operation`
+- `trigger:public.vault_publications.lifecycle_vault_publication_operation`

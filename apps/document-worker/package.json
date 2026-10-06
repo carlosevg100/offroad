@@ -11,6 +11,7 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1146.0",
     "@offroad/agent-contracts": "workspace:*",
     "@offroad/case-engine": "workspace:*",
     "@offroad/case-export": "workspace:*",

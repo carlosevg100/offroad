@@ -74,6 +74,9 @@ const schema = z.object({
   WORKER_ACCOUNT_PASSWORD: z.string().min(16),
   /** Plaintext of a row in private.worker_tokens; only the hash lives in the database. */
   OFFROAD_WORKER_TOKEN: z.string().min(32),
+  OFFROAD_AUDIT_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/).optional(),
+  OFFROAD_AUDIT_REGION: z.literal("sa-east-1").default("sa-east-1"),
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
   ANTHROPIC_API_KEY: z.string().min(20).optional(),
   OPENAI_API_KEY: z.string().min(20).optional(),
@@ -121,6 +124,9 @@ const schema = z.object({
 
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 }).superRefine((config, context) => {
+  if (config.NODE_ENV === "production" && !config.OFFROAD_AUDIT_BUCKET) {
+    context.addIssue({code: "custom", path: ["OFFROAD_AUDIT_BUCKET"], message: "required for production audit archive"});
+  }
   if (config.ENABLE_OPENAI_WEB_SEARCH && !config.OPENAI_API_KEY) {
     context.addIssue({code: "custom", path: ["OPENAI_API_KEY"], message: "required when OpenAI web search is enabled"});
   }
@@ -167,5 +173,6 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB ?? "job_kind_ceiling",
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,
     documentaryWorkPlanningEnabled: config.DOCUMENTARY_WORK_PLANNING_ENABLED,
+    immutableAuditArchiveConfigured: Boolean(config.OFFROAD_AUDIT_BUCKET),
   };
 }

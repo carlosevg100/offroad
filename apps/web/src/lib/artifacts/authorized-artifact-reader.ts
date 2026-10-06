@@ -179,7 +179,14 @@ function readError(error: {code?: string; message?: string} | null): ArtifactRea
 export async function readArtifactRevision(supabase: SupabaseClient<Database>, input: {revisionId: string}): Promise<ArtifactReadResult> {
   if (!uuid.safeParse(input.revisionId).success) return {ok: false, error: "artifact_revision_not_found"};
   const {data, error} = await supabase.rpc("read_artifact_revision_v1", {p_revision_id: input.revisionId});
-  if (error) return {ok: false, error: readError(error)};
+  if (error) {
+    // A thrown SQL denial rolls back its own audit insert. Re-evaluate in a separate
+    // transaction; the closed RPC cannot create an allowed event or reveal existence.
+    if (error.code === "42501" || readError(error) === "artifact_revision_not_found") {
+      await supabase.rpc("record_artifact_access_denial_v1", {p_revision_id: input.revisionId});
+    }
+    return {ok: false, error: readError(error)};
+  }
   const result = parseArtifactRead(data);
   return result.ok && result.read.summary.id !== input.revisionId ? {ok: false, error: "artifact_read_invalid"} : result;
 }

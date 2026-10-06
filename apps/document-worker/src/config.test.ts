@@ -10,6 +10,12 @@ const baseEnv = (): NodeJS.ProcessEnv => ({
 });
 
 describe("worker provider data-policy configuration", () => {
+  it("requires the immutable audit destination before a production worker can boot", () => {
+    expect(() => loadConfig({...baseEnv(), NODE_ENV: "production"})).toThrow(/OFFROAD_AUDIT_BUCKET/);
+    const config = loadConfig({...baseEnv(), NODE_ENV: "production", OFFROAD_AUDIT_BUCKET: "offroad-audit-synthetic"});
+    expect(describeConfig(config).immutableAuditArchiveConfigured).toBe(true);
+    expect(() => loadConfig({...baseEnv(), OFFROAD_AUDIT_BUCKET: "offroad-audit-synthetic", OFFROAD_AUDIT_REGION: "us-east-1"})).toThrow(/OFFROAD_AUDIT_REGION/);
+  });
   it("cannot disable enforcement through the retired flag", () => {
     const config = loadConfig({...baseEnv(), ENFORCE_PROVIDER_DATA_POLICY: "false"});
     expect(describeConfig(config).providerDataPolicyEnforced).toBe(true);

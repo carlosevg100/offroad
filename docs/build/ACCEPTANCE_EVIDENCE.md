@@ -1,3 +1,13 @@
+## 2026-10-06: etapa 22 em verificação final e publicação
+
+Etapa 21 concluída em `90e3c7d248cb4ba604a4519fd08239054b28f14a`. O inventário de abertura da onda foi publicado pela PR 883 (`97e47b33`). Esta fonte implementa a etapa 22; **o fechamento ainda depende da CI da fonte final, merge e deploy web/worker no SHA canônico**. Etapas 23 e 24 não foram iniciadas.
+
+As 12 migrações de ciclo de vida estão instaladas nos dois ambientes; os arquivos usam os carimbos reais de produção `20261006145144`–`20261006145358`. Os journals e catálogos foram capturados ao vivo. O checker passou com 4.862 objetos em produção e 4.923 em staging; as distribuições históricas exclusivas de staging permanecem separadas. Os 119 corpos acompanhados foram conferidos, preservando os equivalentes históricos já provados.
+
+SQL de autoridade/hold/retenção/auditoria e testes negativos passaram em staging. O SDK real gerou, leu, reteve sob hold e apagou bytes via Storage API; identidade e recibo Office permaneceram. CI `37481419151` aprovou o ensaio de recuperação lógica, as duas corridas hold/lease com Lock observado e o descarte físico; os demais gates dessa fonte anterior ainda tinham expectativas corrigidas nesta fonte. `etapa-22-execucao.md` documenta escopo e limites. Segurança Supabase: zero lints nos dois ambientes antes da promoção; repetir após a instalação final.
+
+Armazenamento de auditoria: bucket existente na infraestrutura AWS `offroad-audit-evidence-389642461544-sa-east-1`, Object Lock COMPLIANCE 365 dias para metadados operacionais, versionamento, bloqueio público/TLS e IAM restrito. Oito alarmes ativos aguardam heartbeat do worker novo. Nenhuma fixture ou regra de descarte automático de cliente foi inserida em produção. Nenhum projeto adicional do Supabase foi criado.
+
 ## 2026-10-04: fonte aprovada, SQL aplicado em produção; promoção canônica ainda aberta
 
 A fonte aprovada da PR 874 é `c1fa0b731ae0db45d0f71c631f03050b4ae6464f`. Quality `37211586920` terminou **SUCCESS**, com os três jobs aprovados, e Security `37211586914` terminou **SUCCESS**. Isso comprova os gates dessa fonte; a CI terminal do futuro commit canônico permanece **PENDING**, ainda sem identificador. A etapa 20 continua aberta; 21–24 não foram iniciadas.
