@@ -18,6 +18,7 @@ test("a signed-in creator loses the work immediately after an explicit read deni
   expect(await response.text()).not.toContain(`Synthetic content review ${suffix}`);
   await page.goto(route);
   await expect(page.locator(".advisor-work-surface")).toHaveCount(0);
+  await expect(page.locator(".error-page")).toBeVisible();
   expect(sql(`select count(*) from private.revocation_runs where organization_id='${f.organizationId}';`)).not.toBe("0");
 });
 
@@ -33,6 +34,7 @@ test("expiry denies the same cookie while a legal hold preserves the work", asyn
   const response=await page.request.get(route);expect([200,403,404]).toContain(response.status());
   expect(await response.text()).not.toContain(`Synthetic content review ${suffix}`);
   await page.goto(route);await expect(page.locator(".advisor-work-surface")).toHaveCount(0);
+  await expect(page.locator(".error-page")).toBeVisible();
   expect(sql(`select count(*)from public.capital_projects where id='${f.workId}';`)).toBe("1");
   expect(sql(`select private.resource_legal_hold_v1('${f.organizationId}','${f.workId}');`)).toBe("t");
 });
