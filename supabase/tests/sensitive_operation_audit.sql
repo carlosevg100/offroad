@@ -15,9 +15,15 @@ begin
  raise notice 'PASS sensitive_read_search_and_download_version_policy_receipts';
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');set local role authenticated;
  perform public.search_authorized_resources_v1(org,work,'synthetic',12,'analysis');
+ begin perform public.read_artifact_revision_v1(version);raise exception 'unauthorized_read_allowed';exception when sqlstate 'P0002' or insufficient_privilege then null;end;
+ perform public.record_artifact_access_denial_v1(version,null);
+ perform public.record_artifact_access_denial_v1(null,pg_temp.val('rt_receipt','receiptId')::uuid);
  begin perform private.append_sensitive_operation_v1(org,work,version,'read',true);raise exception 'human forged audit allowed';exception when insufficient_privilege then null;end;reset role;
  if not exists(select 1 from public.audit_events where organization_id=org and actor_user_id='a11b0000-0000-4000-8000-000000000002'and action='search.denied'and metadata->>'result'='deny')then raise exception 'denial absent';end if;
  raise notice 'PASS sensitive_denial_does_not_grant_content_or_forge_success';
+ if not exists(select 1 from public.audit_events where organization_id=org and actor_user_id='a11b0000-0000-4000-8000-000000000002'and action='read.denied'and metadata->>'resourceVersionId'=version::text)
+ or not exists(select 1 from public.audit_events where organization_id=org and actor_user_id='a11b0000-0000-4000-8000-000000000002'and action='download.denied'and metadata->>'resourceVersionId'=version::text)then raise exception 'rolled_back_denials_not_recorded';end if;
+ raise notice 'PASS rejected_rpc_separate_transaction_denial_receipts';
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
  perform public.set_capital_project_review_assignment_v1(work,'a11b0000-0000-4000-8000-000000000001','preparer',true);
  perform public.set_capital_project_review_assignment_v1(work,'a11b0000-0000-4000-8000-000000000001','approver',true);

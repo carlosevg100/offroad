@@ -36,10 +36,17 @@ def contend(actor, statement, second_actor, second_statement, expected_code=None
         holder.stdin.write('\\o /dev/null\nbegin;' + auth(actor) + statement + '\n\\echo LIFECYCLE_LOCK_HELD\n')
         holder.stdin.flush()
         deadline = time.monotonic() + 15
+        buffer = ''
         while True:
             remaining = deadline - time.monotonic()
-            assert remaining > 0 and select.select([holder.stdout], [], [], remaining)[0], 'holder_barrier_missing'
-            line = holder.stdout.readline().strip()
+            if '\n' not in buffer:
+                assert remaining > 0 and select.select([holder.stdout], [], [], remaining)[0], 'holder_barrier_missing'
+                chunk = os.read(holder.stdout.fileno(), 65536)
+                assert chunk, 'holder_closed_before_barrier'
+                buffer += chunk.decode('utf-8')
+                continue
+            line, buffer = buffer.split('\n', 1)
+            line = line.strip()
             if line.startswith('LIFECYCLE_CLAIM:'):
                 claimed = json.loads(line.removeprefix('LIFECYCLE_CLAIM:'))
             if line == 'LIFECYCLE_LOCK_HELD':

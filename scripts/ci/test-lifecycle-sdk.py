@@ -39,6 +39,9 @@ with tempfile.TemporaryDirectory(prefix='offroad-lifecycle-sdk-') as temporary:
             ['password_hex=' + password.encode().hex(), 'worker_token_hex=' + token.encode().hex()])
         prepared = True
         environment = dict(os.environ, OFFROAD_LIFECYCLE_FIXTURE_FILE=str(fixture))
+        restored = subprocess.run(['python3', '-B', 'scripts/ci/test-lifecycle-logical-restore.py'],
+                                 cwd=ROOT, env=environment, timeout=120)
+        assert restored.returncode == 0, 'lifecycle_logical_restore_failed'
         for phase in ('prepare', 'configure', 'held', 'release', 'purge'):
             if phase == 'held':
                 time.sleep(6)  # Exercise the real expiry clock, not a mocked timestamp.

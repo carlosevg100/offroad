@@ -250,6 +250,20 @@ jobs:
         id: database_deps
         run: pnpm install --frozen-lockfile
 
+      - name: Retention hold and actual Storage erasure through the authenticated SDK
+        if: ${{ (!cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success') && !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
+            python3 -B scripts/ci/test-lifecycle-sdk.py
+
+      - name: Rebuild the isolated database after lifecycle recovery and erasure
+        if: ${{ !inputs.native_diagnostic }}
+        run: supabase db reset --local
+
       - name: Install unpublished native consumer drafts in isolated CI only
         id: native_consumers_install
         env:
@@ -647,16 +661,6 @@ jobs:
           started=$SECONDS
           supabase db reset --local
           echo "wait_proof_reset_seconds=$((SECONDS - started))"
-
-      - name: Retention hold and actual Storage erasure through the authenticated SDK
-        if: ${{ (!cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' && steps.wait_reset.outcome == 'success') && !inputs.native_diagnostic }}
-        env:
-          DATABASE_URL: ${{ steps.db.outputs.url }}
-        run: |
-          set -euo pipefail
-          eval "$(supabase status -o env)"
-          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
-            python3 -B scripts/ci/test-lifecycle-sdk.py
 
       # A costed candidate waits for a person as an awaiting_human milestone, with no job and no lease,
       # through the worker loop and a restarted worker with its own token; after the owner's

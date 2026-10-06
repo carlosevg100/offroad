@@ -13349,6 +13349,10 @@ export type Database = {
         }
         Returns: string
       }
+      record_artifact_access_denial_v1: {
+        Args: { p_receipt_id?: string; p_revision_id?: string }
+        Returns: undefined
+      }
       record_capital_project_work_request_v1: {
         Args: {
           p_capability: string
