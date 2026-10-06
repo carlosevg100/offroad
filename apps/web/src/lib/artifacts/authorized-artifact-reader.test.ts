@@ -144,7 +144,8 @@ describe("reading through the two RPCs", () => {
     const rpc = vi.fn(artifactRpc([]));
     expect(await readArtifactRevision({rpc} as never, {revisionId})).toEqual({ok: false, error: "artifact_revision_not_found"});
     expect(await readArtifactRevision({rpc} as never, {revisionId: "not-a-uuid"})).toEqual({ok: false, error: "artifact_revision_not_found"});
-    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc).toHaveBeenNthCalledWith(2, "record_artifact_access_denial_v1", {p_revision_id: revisionId});
     const failing = vi.fn(async () => ({data: null, error: {code: "57014", message: "canceling statement"}}));
     expect(await readArtifactRevision({rpc: failing} as never, {revisionId})).toEqual({ok: false, error: "artifact_read_failed"});
   });
