@@ -144,7 +144,7 @@ test("framework readiness keeps one work from a question without intake to pinne
  // The two explicit human observations coexist; ranking does not pick a winner.
  const cashDefinition=(await page.locator('select[name="definitionVersionId"] option').filter({hasText:"liquidity.available_cash"}).getAttribute("value"))!;
  const companyId=(await page.locator('select[name="entityId"] option').filter({hasText:company}).getAttribute("value"))!;
- const dossierId=sql(`select d.dossier_id from public.metric_definitions d join public.definition_versions v on v.definition_id=d.id where v.id='${cashDefinition}'`);
+ const dossierId=sql(`select d.dossier_id from public.metric_definitions d join public.definition_versions v on v.metric_definition_id=d.id where v.id='${cashDefinition}'`);
  const dims={entityId:companyId,perimeter:"consolidated",periodStart:null,periodEnd:"2025-12-31",currency:"BRL",unit:"currency",scale:"1",scenario:"actual",definitionVersionId:cashDefinition};
  const actorSql=(command:string)=>`begin;select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${projectId}'),true);select set_config('request.headers',json_build_object('x-offroad-workspace',(select organization_id from public.capital_projects where id='${projectId}'))::text,true);set local role authenticated;${command};commit;`;
  for(const source of ownSources){
