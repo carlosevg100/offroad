@@ -13,6 +13,8 @@ spec.loader.exec_module(module)
 
 MONITORING = module.ROOT / 'apps/document-worker/monitoring'
 FILES = {
+    'retention': (MONITORING / 'retention-alarms.json', 'offroad-retention-', 'Offroad stage 22 bounded retention cleanup'),
+    'audit': (MONITORING / 'audit-alarms.json', 'offroad-audit-', 'Offroad stage 22 immutable audit archive'),
     'outbox': (MONITORING / 'event-outbox-alarms.json', 'offroad-outbox-', 'Offroad stage 4 durable authority-event consumer'),
     'recompute': (MONITORING / 'dependency-recompute-alarms.json', 'offroad-recompute-',
                   'Offroad stage 18 dependency recompute: health, backlog, expired leases and loop errors'),

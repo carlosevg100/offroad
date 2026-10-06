@@ -1,0 +1,88 @@
+{
+  "region": "sa-east-1",
+  "logGroup": "/ecs/offroad-document-worker",
+  "namespace": "Offroad/DocumentWorker",
+  "description": "Offroad stage 22 bounded retention cleanup",
+  "filters": [
+    {
+      "name": "offroad-retention-heartbeat",
+      "pattern": "{ $.event = \"retention.health\" }",
+      "metric": "RetentionHeartbeat",
+      "value": "1",
+      "sample": {
+        "event": "retention.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-retention-pending-age",
+      "pattern": "{ $.event = \"retention.health\" }",
+      "metric": "RetentionOldestPendingSeconds",
+      "value": "$.oldestPendingSeconds",
+      "sample": {
+        "event": "retention.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-retention-blocked",
+      "pattern": "{ $.event = \"retention.health\" }",
+      "metric": "RetentionBlockedCount",
+      "value": "$.blockedCount",
+      "sample": {
+        "event": "retention.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-retention-errors",
+      "pattern": "{ ($.event = \"retention.poll.failed\") || ($.event = \"retention.ack.failed\") || ($.event = \"retention.retry\") }",
+      "metric": "RetentionErrors",
+      "value": "1",
+      "sample": {
+        "event": "retention.poll.failed"
+      }
+    }
+  ],
+  "alarms": [
+    {
+      "name": "offroad-retention-heartbeat",
+      "metric": "RetentionHeartbeat",
+      "comparison": "LessThanThreshold",
+      "threshold": 1,
+      "statistic": "Sum",
+      "periods": 3,
+      "missing": "breaching"
+    },
+    {
+      "name": "offroad-retention-pending-age",
+      "metric": "RetentionOldestPendingSeconds",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 300,
+      "statistic": "Maximum",
+      "periods": 2,
+      "missing": "missing"
+    },
+    {
+      "name": "offroad-retention-blocked",
+      "metric": "RetentionBlockedCount",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 0,
+      "statistic": "Maximum",
+      "periods": 1,
+      "missing": "missing"
+    },
+    {
+      "name": "offroad-retention-errors",
+      "metric": "RetentionErrors",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 0,
+      "statistic": "Sum",
+      "periods": 1,
+      "missing": "notBreaching"
+    }
+  ]
+}

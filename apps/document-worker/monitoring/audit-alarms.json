@@ -1,0 +1,90 @@
+{
+  "region": "sa-east-1",
+  "logGroup": "/ecs/offroad-document-worker",
+  "namespace": "Offroad/DocumentWorker",
+  "description": "Offroad stage 22 immutable audit archive",
+  "filters": [
+    {
+      "name": "offroad-audit-heartbeat",
+      "pattern": "{ $.event = \"audit_archive.health\" }",
+      "metric": "AuditArchiveHeartbeat",
+      "value": "1",
+      "sample": {
+        "event": "audit_archive.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-audit-pending-age",
+      "pattern": "{ $.event = \"audit_archive.health\" }",
+      "metric": "AuditArchiveOldestPendingSeconds",
+      "value": "$.oldestPendingSeconds",
+      "sample": {
+        "event": "audit_archive.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-audit-blocked",
+      "pattern": "{ $.event = \"audit_archive.health\" }",
+      "metric": "AuditArchiveBlockedCount",
+      "value": "$.blockedCount",
+      "sample": {
+        "event": "audit_archive.health",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    },
+    {
+      "name": "offroad-audit-errors",
+      "pattern": "{ $.event = \"audit_archive.failed\" }",
+      "metric": "AuditArchiveErrors",
+      "value": "1",
+      "sample": {
+        "event": "audit_archive.failed",
+        "blockedCount": 1,
+        "oldestPendingSeconds": 301
+      }
+    }
+  ],
+  "alarms": [
+    {
+      "name": "offroad-audit-heartbeat",
+      "metric": "AuditArchiveHeartbeat",
+      "comparison": "LessThanThreshold",
+      "threshold": 1,
+      "statistic": "Sum",
+      "periods": 3,
+      "missing": "breaching"
+    },
+    {
+      "name": "offroad-audit-pending-age",
+      "metric": "AuditArchiveOldestPendingSeconds",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 300,
+      "statistic": "Maximum",
+      "periods": 2,
+      "missing": "missing"
+    },
+    {
+      "name": "offroad-audit-blocked",
+      "metric": "AuditArchiveBlockedCount",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 0,
+      "statistic": "Maximum",
+      "periods": 1,
+      "missing": "missing"
+    },
+    {
+      "name": "offroad-audit-errors",
+      "metric": "AuditArchiveErrors",
+      "comparison": "GreaterThanThreshold",
+      "threshold": 0,
+      "statistic": "Sum",
+      "periods": 1,
+      "missing": "notBreaching"
+    }
+  ]
+}

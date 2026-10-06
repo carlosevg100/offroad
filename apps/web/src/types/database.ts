@@ -506,6 +506,295 @@ export type Database = {
           },
         ]
       }
+      artifact_export_receipts: {
+        Row: {
+          artifact_id: string
+          bucket_id: string
+          byte_length: number
+          command_id: string
+          content_sha256: string
+          created_at: string
+          created_by: string
+          format: string
+          id: string
+          issued_at: string
+          locale: string
+          logical_manifest_fingerprint: string
+          object_path: string
+          organization_id: string
+          renderer_version: string
+          revision_id: string
+          revision_manifest_fingerprint: string
+          roundtrip_manifest: Json
+          storage_object_id: string
+          template_fingerprint: string | null
+          updated_at: string
+          variant: string
+          work_id: string
+        }
+        Insert: {
+          artifact_id: string
+          bucket_id: string
+          byte_length: number
+          command_id: string
+          content_sha256: string
+          created_at?: string
+          created_by: string
+          format: string
+          id?: string
+          issued_at: string
+          locale: string
+          logical_manifest_fingerprint: string
+          object_path: string
+          organization_id: string
+          renderer_version: string
+          revision_id: string
+          revision_manifest_fingerprint: string
+          roundtrip_manifest: Json
+          storage_object_id: string
+          template_fingerprint?: string | null
+          updated_at?: string
+          variant?: string
+          work_id: string
+        }
+        Update: {
+          artifact_id?: string
+          bucket_id?: string
+          byte_length?: number
+          command_id?: string
+          content_sha256?: string
+          created_at?: string
+          created_by?: string
+          format?: string
+          id?: string
+          issued_at?: string
+          locale?: string
+          logical_manifest_fingerprint?: string
+          object_path?: string
+          organization_id?: string
+          renderer_version?: string
+          revision_id?: string
+          revision_manifest_fingerprint?: string
+          roundtrip_manifest?: Json
+          storage_object_id?: string
+          template_fingerprint?: string | null
+          updated_at?: string
+          variant?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_export_receipts_organization_id_artifact_id_fkey"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: false
+            referencedRelation: "artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_export_receipts_organization_id_artifact_id_revis_fkey"
+            columns: ["organization_id", "artifact_id", "revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_export_receipts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_export_receipts_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      artifact_import_candidates: {
+        Row: {
+          applied_revision_id: string | null
+          artifact_id: string
+          base_manifest_fingerprint: string | null
+          base_revision_id: string | null
+          byte_length: number
+          command_id: string
+          compared_head_revision_id: string | null
+          comparison: Json | null
+          comparison_fingerprint: string | null
+          continuation_request_id: string | null
+          contributions: Json | null
+          created_at: string
+          decision_id: string | null
+          export_receipt_id: string | null
+          format: string
+          head_revision_id_at_submit: string
+          id: string
+          locale: string
+          manual_mappings: Json
+          organization_id: string
+          pending_configuration_ids: string[]
+          pending_contributions: Json | null
+          reason: string | null
+          source_version_id: string
+          status: string
+          submitted_by: string
+          updated_at: string
+          upload_sha256: string
+          work_id: string
+        }
+        Insert: {
+          applied_revision_id?: string | null
+          artifact_id: string
+          base_manifest_fingerprint?: string | null
+          base_revision_id?: string | null
+          byte_length: number
+          command_id: string
+          compared_head_revision_id?: string | null
+          comparison?: Json | null
+          comparison_fingerprint?: string | null
+          continuation_request_id?: string | null
+          contributions?: Json | null
+          created_at?: string
+          decision_id?: string | null
+          export_receipt_id?: string | null
+          format: string
+          head_revision_id_at_submit: string
+          id: string
+          locale: string
+          manual_mappings?: Json
+          organization_id: string
+          pending_configuration_ids?: string[]
+          pending_contributions?: Json | null
+          reason?: string | null
+          source_version_id: string
+          status: string
+          submitted_by: string
+          updated_at?: string
+          upload_sha256: string
+          work_id: string
+        }
+        Update: {
+          applied_revision_id?: string | null
+          artifact_id?: string
+          base_manifest_fingerprint?: string | null
+          base_revision_id?: string | null
+          byte_length?: number
+          command_id?: string
+          compared_head_revision_id?: string | null
+          comparison?: Json | null
+          comparison_fingerprint?: string | null
+          continuation_request_id?: string | null
+          contributions?: Json | null
+          created_at?: string
+          decision_id?: string | null
+          export_receipt_id?: string | null
+          format?: string
+          head_revision_id_at_submit?: string
+          id?: string
+          locale?: string
+          manual_mappings?: Json
+          organization_id?: string
+          pending_configuration_ids?: string[]
+          pending_contributions?: Json | null
+          reason?: string | null
+          source_version_id?: string
+          status?: string
+          submitted_by?: string
+          updated_at?: string
+          upload_sha256?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_applied_revisio_fkey"
+            columns: ["organization_id", "applied_revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_artifact_id_bas_fkey"
+            columns: ["organization_id", "artifact_id", "base_revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_artifact_id_com_fkey"
+            columns: [
+              "organization_id",
+              "artifact_id",
+              "compared_head_revision_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_artifact_id_fkey"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: false
+            referencedRelation: "artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_artifact_id_hea_fkey"
+            columns: [
+              "organization_id",
+              "artifact_id",
+              "head_revision_id_at_submit",
+            ]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_continuation_re_fkey"
+            columns: ["organization_id", "continuation_request_id"]
+            isOneToOne: false
+            referencedRelation: "work_continuation_requests"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_decision_id_fkey"
+            columns: ["organization_id", "decision_id"]
+            isOneToOne: false
+            referencedRelation: "work_decisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_export_receipt__fkey"
+            columns: ["organization_id", "export_receipt_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_export_receipts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_source_version__fkey"
+            columns: ["organization_id", "source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_import_candidates_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       artifact_reviews: {
         Row: {
           act: string
@@ -1312,7 +1601,7 @@ export type Database = {
           {
             foreignKeyName: "capital_project_artifact_decis_organization_id_artifact_id_fkey"
             columns: ["organization_id", "artifact_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "capital_project_artifacts"
             referencedColumns: ["organization_id", "id"]
           },
@@ -5537,6 +5826,155 @@ export type Database = {
         }
         Relationships: []
       }
+      information_pack_items: {
+        Row: {
+          artifact_fingerprint: string
+          created_at: string
+          deliverable_id: string
+          format: string
+          id: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids: Json
+          template_fingerprint: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Insert: {
+          artifact_fingerprint: string
+          created_at?: string
+          deliverable_id: string
+          format: string
+          id?: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Update: {
+          artifact_fingerprint?: string
+          created_at?: string
+          deliverable_id?: string
+          format?: string
+          id?: string
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key?: string
+          template_origin?: string
+          template_version?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_items_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      information_pack_revisions: {
+        Row: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status: string
+          superseded_at: string | null
+          superseded_by_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at?: string
+          created_by: string
+          id?: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capital_project_id?: string
+          case_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          intake_session_id?: string
+          manifest?: Json
+          material_fingerprint?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          revision_number?: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_capital_project_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_intake_session__fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_superseded_by_fkey"
+            columns: ["organization_id", "superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       institution_capability_profiles: {
         Row: {
           capability_notes: string | null
@@ -7805,6 +8243,466 @@ export type Database = {
           },
         ]
       }
+      pack_access_events: {
+        Row: {
+          access_kind: string
+          accessed_at: string
+          accessed_by: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Insert: {
+          access_kind: string
+          accessed_at?: string
+          accessed_by: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id?: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Update: {
+          access_kind?: string
+          accessed_at?: string
+          accessed_by?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_item_id?: string | null
+          pack_revision_id?: string
+          recipient_organization_id?: string
+          share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_access_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_item_id_fkey"
+            columns: ["organization_id", "pack_item_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_authorizations: {
+        Row: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at: string
+          consented_by: string
+          created_at: string
+          id: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+          wave_limit: number
+        }
+        Insert: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at?: string
+          consented_by: string
+          created_at?: string
+          id?: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit: number
+        }
+        Update: {
+          capital_project_id?: string
+          consent_basis?: string
+          consent_statement?: string
+          consented_at?: string
+          consented_by?: string
+          created_at?: string
+          id?: string
+          identity_policy?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          pack_revision_id?: string
+          policy_version?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_next_steps: {
+        Row: {
+          id: string
+          intake_session_id: string
+          note: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Insert: {
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at?: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Update: {
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          organization_id?: string
+          pack_revision_id?: string
+          recorded_at?: string
+          recorded_by?: string
+          share_id?: string
+          step_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_intake_sessio_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_pack_revision_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      pack_distribution_shares: {
+        Row: {
+          authorization_id: string
+          created_at: string
+          created_by: string
+          delivery_state: string
+          id: string
+          intake_session_id: string
+          issuer_display_name: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          authorization_id: string
+          created_at?: string
+          created_by: string
+          delivery_state: string
+          id?: string
+          intake_session_id: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id?: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          authorization_id?: string
+          created_at?: string
+          created_by?: string
+          delivery_state?: string
+          id?: string
+          intake_session_id?: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed?: boolean
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          recipient_directory_id?: string | null
+          recipient_kind?: string
+          recipient_label?: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_authorization_id_fkey"
+            columns: ["organization_id", "authorization_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_authorizations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_directory_id_fkey"
+            columns: ["recipient_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_recipient_responses: {
+        Row: {
+          created_at: string
+          id: string
+          intake_session_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis: string | null
+          pricing_max: number | null
+          pricing_min: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id: string | null
+          tenor_months: number | null
+          term_objections: Json
+          ticket_amount: number | null
+          ticket_currency: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          occurred_at?: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions?: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          pack_revision_id?: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id?: string
+          recorded_by?: string
+          requested_conditions?: Json
+          response_state?: string
+          share_id?: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_supersedes_respon_fkey"
+            columns: ["organization_id", "supersedes_response_id"]
+            isOneToOne: false
+            referencedRelation: "pack_recipient_responses"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_legal_documents: {
         Row: {
           acceptance_statement: string
@@ -9079,6 +9977,106 @@ export type Database = {
             columns: ["organization_id", "source_output_version_id"]
             isOneToOne: false
             referencedRelation: "output_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      qualified_contact_preparations: {
+        Row: {
+          candidate_fit: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string | null
+          pack_revision_id: string | null
+          plan_id: string
+          prepared_at: string
+          prepared_by: string
+          rationale: string
+          released_at: string | null
+          released_by: string | null
+          share_id: string | null
+          status: string
+          target_id: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_fit: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id: string
+          prepared_at?: string
+          prepared_by: string
+          rationale: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_fit?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id?: string
+          prepared_at?: string
+          prepared_by?: string
+          rationale?: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_target_id_fkey"
+            columns: ["organization_id", "target_id"]
+            isOneToOne: true
+            referencedRelation: "qualified_introduction_targets"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -11406,6 +12404,38 @@ export type Database = {
         Args: { p_action?: string; p_user_id: string; p_work_id: string }
         Returns: string
       }
+      adopt_artifact_import_group_v1: {
+        Args: {
+          p_base_decision_id: string
+          p_base_milestone_id: string
+          p_base_revision: number
+          p_candidate_id: string
+          p_command_id: string
+          p_configuration_id: string
+          p_expected_comparison_fingerprint: string
+          p_expected_head_revision_id: string
+          p_locale: string
+          p_rebase_declared: boolean
+          p_resolutions: Json
+          p_self_approval_declared: boolean
+        }
+        Returns: Json
+      }
+      adopt_artifact_import_v1: {
+        Args: {
+          p_base_decision_id: string
+          p_base_milestone_id: string
+          p_base_revision: number
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_comparison_fingerprint: string
+          p_expected_head_revision_id: string
+          p_locale: string
+          p_resolutions: Json
+          p_self_approval_declared: boolean
+        }
+        Returns: Json
+      }
       adopt_observation_for_work_v1: {
         Args: { p_payload: Json }
         Returns: string
@@ -11414,6 +12444,16 @@ export type Database = {
         Args: {
           p_command_id: string
           p_expected_revision: number
+          p_update_id: string
+        }
+        Returns: Json
+      }
+      adopt_work_update_v2: {
+        Args: {
+          p_command_id: string
+          p_expected_basis_fingerprint: string
+          p_expected_revision: number
+          p_self_approval_declared: boolean
           p_update_id: string
         }
         Returns: Json
@@ -11502,6 +12542,17 @@ export type Database = {
       authorize_capital_project_private_work: {
         Args: { p_information_rights_declared: boolean; p_project_id: string }
         Returns: string
+      }
+      authorize_pack_distribution: {
+        Args: {
+          p_consent_statement: string
+          p_organization_id: string
+          p_pack_fingerprint: string
+          p_pack_revision_id: string
+          p_recipients: Json
+          p_session_id: string
+        }
+        Returns: Json
       }
       authorize_qualified_introduction_plan: {
         Args: { p_material_fingerprint: string; p_plan_id: string }
@@ -11643,6 +12694,16 @@ export type Database = {
         }
         Returns: Json
       }
+      contest_work_decision_v1: {
+        Args: {
+          p_command_id: string
+          p_decision_id: string
+          p_expected_fingerprint: string
+          p_note: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
       create_artifact_revision_v1: {
         Args: {
           p_audience: string
@@ -11711,6 +12772,20 @@ export type Database = {
         }
         Returns: string
       }
+      decide_capital_project_artifact_v2: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_command_id: string
+          p_decision: string
+          p_manifest_fingerprint: string
+          p_note: string
+          p_project_id: string
+          p_revision_id: string
+          p_self_approval_declared: boolean
+        }
+        Returns: Json
+      }
       decide_material_package_v1: {
         Args: {
           p_act: string
@@ -11769,6 +12844,10 @@ export type Database = {
         }
         Returns: Json
       }
+      discard_artifact_import_v1: {
+        Args: { p_candidate_id: string; p_command_id: string; p_reason: string }
+        Returns: Json
+      }
       enqueue_deal_state_analysis: {
         Args: {
           p_organization_id: string
@@ -11801,6 +12880,10 @@ export type Database = {
       }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
+        Returns: Json
+      }
+      export_authorized_audit_v1: {
+        Args: { p_after_id?: number; p_limit?: number }
         Returns: Json
       }
       fail_intake_session: {
@@ -11845,6 +12928,10 @@ export type Database = {
         Args: { p_email: string; p_role: string }
         Returns: string
       }
+      keep_artifact_import_as_source_v1: {
+        Args: { p_candidate_id: string; p_command_id: string; p_reason: string }
+        Returns: Json
+      }
       link_commercial_account_v1: {
         Args: { p_account_id: string; p_expected_account_id: string }
         Returns: string
@@ -11865,6 +12952,10 @@ export type Database = {
       link_work_dossier_v1: {
         Args: { p_dossier_id: string; p_work_id: string }
         Returns: string
+      }
+      list_artifact_export_receipts_v1: {
+        Args: { p_artifact_id: string }
+        Returns: Json
       }
       list_method_releases_v1: { Args: { p_offset?: number }; Returns: Json }
       list_my_workspace_invites_v1: { Args: never; Returns: Json }
@@ -11888,6 +12979,14 @@ export type Database = {
       }
       list_vault_publication_receipts_v1: {
         Args: { p_offset?: number }
+        Returns: Json
+      }
+      list_work_artifact_heads_v1: {
+        Args: { p_work_id: string }
+        Returns: Json
+      }
+      list_work_artifact_imports_v1: {
+        Args: { p_work_id: string }
         Returns: Json
       }
       list_work_executions_v1: {
@@ -11917,6 +13016,33 @@ export type Database = {
       manage_workspace_project_group: {
         Args: { p_action: string; p_group_id: string; p_name?: string }
         Returns: Json
+      }
+      match_artifact_import_v1: {
+        Args: {
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_head_revision_id: string
+          p_export_receipt_id: string
+          p_mappings: Json
+        }
+        Returns: Json
+      }
+      open_shared_information_pack_item: {
+        Args: { p_item_id: string; p_share_id: string }
+        Returns: Json
+      }
+      place_legal_hold_v1: {
+        Args: { p_basis_reference: string; p_resource_id: string }
+        Returns: string
+      }
+      prepare_qualified_contact: {
+        Args: {
+          p_candidate_fit: string
+          p_rationale: string
+          p_share_id?: string
+          p_target_id: string
+        }
+        Returns: string
       }
       prepare_qualified_introduction_plan: {
         Args: {
@@ -11958,6 +13084,10 @@ export type Database = {
         }
         Returns: string
       }
+      publish_capital_preview_consumed_basis_v1: {
+        Args: { p_bindings: Json; p_expires_at: string; p_request_id: string }
+        Returns: Json
+      }
       publish_method_release_v1: {
         Args: {
           p_manifest_fingerprint: string
@@ -11987,8 +13117,20 @@ export type Database = {
         Args: { p_execution_brief_id: string; p_project_id: string }
         Returns: Json
       }
+      read_artifact_export_options_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
+      read_artifact_export_receipt_v1: {
+        Args: { p_receipt_id: string }
+        Returns: Json
+      }
       read_artifact_head_v1: {
         Args: { p_kind: string; p_subject: string; p_work_id: string }
+        Returns: Json
+      }
+      read_artifact_import_candidate_v1: {
+        Args: { p_candidate_id: string }
         Returns: Json
       }
       read_artifact_revision_reviews_v1: {
@@ -11999,8 +13141,36 @@ export type Database = {
         Args: { p_revision_id: string }
         Returns: Json
       }
+      read_artifact_roundtrip_task_v1: {
+        Args: { p_task_id: string }
+        Returns: Json
+      }
+      read_assessment_review_basis_v2: {
+        Args: { p_assessment_id: string; p_work_id: string }
+        Returns: Json
+      }
+      read_capital_debt_result_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
       read_capital_m07_result_v1: {
         Args: { p_revision_id: string }
+        Returns: Json
+      }
+      read_capital_native_provider_result_body_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
+      read_capital_preview_result_body_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
+      read_capital_project_artifact_review_v2: {
+        Args: {
+          p_artifact_id: string
+          p_project_id: string
+          p_revision_id: string
+        }
         Returns: Json
       }
       read_capital_project_execution_brief_narrative_v1: {
@@ -12017,6 +13187,14 @@ export type Database = {
       }
       read_capital_project_review_context_v2: {
         Args: { p_project_id: string }
+        Returns: Json
+      }
+      read_capital_project_revision_candidates_v2: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
+      read_capital_s11_result_v1: {
+        Args: { p_revision_id: string }
         Returns: Json
       }
       read_documentary_plan_job_v1: {
@@ -12100,6 +13278,15 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      read_revocation_status_v1: { Args: { p_run_id: string }; Returns: Json }
+      read_shared_information_pack: {
+        Args: { p_share_id: string }
+        Returns: Json
+      }
+      read_shared_pack_item_material: {
+        Args: { p_item_id: string; p_share_id: string }
+        Returns: Json
+      }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
       read_work_decision_v1: { Args: { p_decision_id: string }; Returns: Json }
       read_work_execution_v1: {
@@ -12110,7 +13297,31 @@ export type Database = {
         Args: { p_execution_id: string }
         Returns: Json
       }
+      read_work_review_dashboard_v1: {
+        Args: {
+          p_before_decision_id?: string
+          p_before_id?: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
+      read_work_update_adoption_basis_v2: {
+        Args: { p_update_id: string }
+        Returns: Json
+      }
       read_workspace_access_v1: { Args: never; Returns: Json }
+      reaffirm_work_revision_v1: {
+        Args: {
+          p_basis_review_id: string
+          p_command_id: string
+          p_declared: boolean
+          p_expected_fingerprint: string
+          p_note: string
+          p_revision_id: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
       reassign_pending_review_v1: {
         Args: {
           p_command_id: string
@@ -12119,6 +13330,14 @@ export type Database = {
           p_project_id: string
           p_reason: string
           p_to_user: string
+        }
+        Returns: Json
+      }
+      recompare_artifact_import_v1: {
+        Args: {
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_head_revision_id: string
         }
         Returns: Json
       }
@@ -12255,6 +13474,10 @@ export type Database = {
         }
         Returns: string
       }
+      record_information_pack_revision: {
+        Args: { p_items: Json; p_organization_id: string; p_session_id: string }
+        Returns: Json
+      }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
@@ -12313,6 +13536,27 @@ export type Database = {
         Returns: string
       }
       record_observation_v1: { Args: { p_payload: Json }; Returns: string }
+      record_pack_distribution_next_step: {
+        Args: { p_note?: string; p_share_id: string; p_step_code: string }
+        Returns: string
+      }
+      record_pack_recipient_response: {
+        Args: {
+          p_note?: string
+          p_pricing_basis?: string
+          p_pricing_max?: number
+          p_pricing_min?: number
+          p_requested_conditions?: Json
+          p_response_state: string
+          p_share_id: string
+          p_supersedes_response_id?: string
+          p_tenor_months?: number
+          p_term_objections?: Json
+          p_ticket_amount?: number
+          p_ticket_currency?: string
+        }
+        Returns: string
+      }
       record_qualified_introduction_feedback: {
         Args: {
           p_amount?: number
@@ -12350,6 +13594,16 @@ export type Database = {
           p_note: string
           p_origin: string
           p_outcome?: string
+          p_report: Json
+          p_work_id: string
+        }
+        Returns: Json
+      }
+      record_work_report_v1: {
+        Args: {
+          p_command_id: string
+          p_key: string
+          p_note: string
           p_report: Json
           p_work_id: string
         }
@@ -12400,6 +13654,14 @@ export type Database = {
         }
         Returns: Json
       }
+      release_legal_hold_v1: {
+        Args: { p_basis_reference: string; p_hold_id: string }
+        Returns: boolean
+      }
+      release_qualified_contact: {
+        Args: { p_pack_fingerprint: string; p_preparation_id: string }
+        Returns: string
+      }
       remember_workspace_v1: {
         Args: { p_organization_id: string }
         Returns: undefined
@@ -12410,6 +13672,30 @@ export type Database = {
           p_event_id: string
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      request_artifact_export_v1: {
+        Args: {
+          p_command_id: string
+          p_format: string
+          p_locale: string
+          p_revision_id: string
+          p_variant?: string
+        }
+        Returns: Json
+      }
+      request_artifact_import_upload_v1: {
+        Args: {
+          p_artifact_id: string
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_head_revision_id: string
+          p_export_receipt_id: string
+          p_format: string
+          p_locale: string
+          p_source_version_id: string
+          p_work_id: string
         }
         Returns: Json
       }
@@ -12499,6 +13785,10 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_pack_distribution_candidates: {
+        Args: { p_organization_id: string; p_session_id: string }
+        Returns: Json
+      }
       restart_onboarding_intake: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -12517,6 +13807,20 @@ export type Database = {
           p_note: string
           p_revision_id: string
           p_self_approval_declared: boolean
+        }
+        Returns: Json
+      }
+      review_assessment_v2: {
+        Args: {
+          p_assessment_id: string
+          p_command_id: string
+          p_expected_decision_fingerprint: string
+          p_expected_proposal_fingerprint: string
+          p_expected_revision: number
+          p_freeze: boolean
+          p_outcome: string
+          p_self_approval_declared: boolean
+          p_work_id: string
         }
         Returns: Json
       }
@@ -12629,6 +13933,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      revoke_pack_distribution: {
+        Args: { p_authorization_id: string }
+        Returns: string
       }
       revoke_principal_access_v1: {
         Args: { p_principal_id: string }
@@ -12874,6 +14182,15 @@ export type Database = {
       set_resource_purposes_v1: {
         Args: { p_purposes: string[]; p_resource_id: string }
         Returns: undefined
+      }
+      set_retention_rule_v1: {
+        Args: {
+          p_basis_reference: string
+          p_expires_at: string
+          p_mode: string
+          p_resource_id: string
+        }
+        Returns: Json
       }
       set_source_rights_v1: {
         Args: {
@@ -13133,6 +14450,19 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_advisor_artifact_revision_turn_v2: {
+        Args: {
+          p_artifact_fingerprint: string
+          p_artifact_id: string
+          p_content: string
+          p_locale: string
+          p_manifest_fingerprint: string
+          p_message_id: string
+          p_project_id: string
+          p_revision_id: string
+        }
+        Returns: Json
+      }
       submit_advisor_execution_brief_edit_v1: {
         Args: {
           p_content: string
@@ -13172,6 +14502,20 @@ export type Database = {
           p_message_id: string
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      submit_artifact_import_v1: {
+        Args: {
+          p_artifact_id: string
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_head_revision_id: string
+          p_export_receipt_id: string
+          p_format: string
+          p_locale: string
+          p_source_version_id: string
+          p_work_id: string
         }
         Returns: Json
       }
@@ -13322,7 +14666,31 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_authorize_capital_debt_processing_v1: {
+        Args: {
+          p_attempt: Json
+          p_capability_token: string
+          p_job_id: string
+          p_purpose: string
+          p_recipe_id: string
+          p_resources: string[]
+          p_route: Json
+        }
+        Returns: Json
+      }
       worker_authorize_capital_m07_processing_v1: {
+        Args: {
+          p_attempt: Json
+          p_capability_token: string
+          p_job_id: string
+          p_purpose: string
+          p_recipe_id: string
+          p_resources: string[]
+          p_route: Json
+        }
+        Returns: Json
+      }
+      worker_authorize_capital_preview_processing_v1: {
         Args: {
           p_attempt: Json
           p_capability_token: string
@@ -13342,6 +14710,18 @@ export type Database = {
           p_format: string
           p_job_id: string
           p_mime_type: string
+        }
+        Returns: Json
+      }
+      worker_authorize_capital_s11_processing_v1: {
+        Args: {
+          p_attempt: Json
+          p_capability_token: string
+          p_job_id: string
+          p_purpose: string
+          p_recipe_id: string
+          p_resources: string[]
+          p_route: Json
         }
         Returns: Json
       }
@@ -13367,6 +14747,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_capital_preview_boundary_usage_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_capture_capital_project_delivery_v1: {
         Args: {
           p_capability_token: string
@@ -13386,12 +14774,25 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_capture_m07_assessment_inputs_v1: {
+        Args: {
+          p_capability_token: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: string
+      }
       worker_capture_material_production_v1: {
         Args: {
           p_capability_token: string
           p_job_id: string
           p_request_id: string
         }
+        Returns: Json
+      }
+      worker_claim_artifact_roundtrip_v1: {
+        Args: { p_worker_token: string }
         Returns: Json
       }
       worker_claim_capital_capture_purge_v1: {
@@ -13426,6 +14827,25 @@ export type Database = {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
       }
+      worker_commit_artifact_export_v1: {
+        Args: {
+          p_capability_token: string
+          p_roundtrip_manifest: Json
+          p_storage_object_id: string
+          p_task_id: string
+          p_template_fingerprint: string
+        }
+        Returns: Json
+      }
+      worker_commit_artifact_import_comparison_v1: {
+        Args: {
+          p_capability_token: string
+          p_comparison: Json
+          p_contributions: Json
+          p_task_id: string
+        }
+        Returns: Json
+      }
       worker_commit_capital_body_v1: {
         Args: {
           p_allocation_id: string
@@ -13435,6 +14855,64 @@ export type Database = {
           p_storage_version: string
           p_verified_sha256: string
           p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_debt_body_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_storage_object_id: string
+          p_storage_version: string
+          p_verified_sha256: string
+          p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_debt_recovered_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_debt_recovered_task_projection_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_debt_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_debt_task_projection_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -13476,6 +14954,39 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_commit_capital_native_result_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_seal_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_preview_body_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_storage_object_id: string
+          p_storage_version: string
+          p_verified_sha256: string
+          p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_preview_task_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+          p_role: string
+          p_run_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
       worker_commit_capital_public_payload_v1: {
         Args: {
           p_allocation_id: string
@@ -13485,6 +14996,64 @@ export type Database = {
           p_storage_version: string
           p_verified_sha256: string
           p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_s11_body_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_storage_object_id: string
+          p_storage_version: string
+          p_verified_sha256: string
+          p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_s11_recovered_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_s11_recovered_task_projection_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_s11_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_s11_task_projection_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -13654,6 +15223,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_fail_artifact_roundtrip_v1: {
+        Args: {
+          p_capability_token: string
+          p_failure_code: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
       worker_fail_dependency_recompute_v1: {
         Args: {
           p_candidate: string
@@ -13674,6 +15251,23 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_finalize_capital_debt_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_components: Json
+          p_context_retained_payload_id: string
+          p_fallback_request_fingerprint: string
+          p_job_id: string
+          p_operator_budget_micro_usd: number
+          p_operator_max_dispatches: number
+          p_primary_request_fingerprint: string
+          p_prompt_fingerprint: string
+          p_recipe_id: string
+          p_reconstruction_fingerprint: string
+          p_research_status: string
+        }
+        Returns: Json
+      }
       worker_finalize_capital_m07_recipe_v1: {
         Args: {
           p_capability_token: string
@@ -13691,8 +15285,65 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_finalize_capital_native_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_catalog_payload?: Json
+          p_catalog_retained_payload_id?: string
+          p_context_retained_payload_id: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_finalize_capital_preview_run_v1: {
+        Args: {
+          p_capability_token: string
+          p_consumed_basis: Json
+          p_job_id: string
+          p_run_id: string
+        }
+        Returns: Json
+      }
+      worker_finalize_capital_s11_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_components: Json
+          p_context_retained_payload_id: string
+          p_fallback_request_fingerprint: string
+          p_job_id: string
+          p_jurisdiction: string
+          p_jurisdiction_needs_confirmation: boolean
+          p_operator_budget_micro_usd: number
+          p_operator_max_dispatches: number
+          p_primary_request_fingerprint: string
+          p_prompt_fingerprint: string
+          p_recipe_id: string
+          p_reconstruction_fingerprint: string
+          p_research_status: string
+          p_strategy_fingerprint: string
+        }
+        Returns: Json
+      }
+      worker_find_capital_debt_recovery_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_find_capital_m07_recovery_v1: {
         Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_find_capital_s11_recovery_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_finish_capital_preview_task_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_run_id: string
+          p_task_run_id: string
+        }
         Returns: Json
       }
       worker_finish_capital_project_task: {
@@ -13749,6 +15400,34 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_assessment_institutional_context_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_assessment_retrieval_v2: {
+        Args: {
+          p_allowed_fund_ids?: string[]
+          p_capability_token: string
+          p_job_id: string
+          p_limit?: number
+          p_precedent_purpose?: string
+          p_query: string
+        }
+        Returns: Json
+      }
+      worker_load_capital_debt_recovered_projection_state_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      worker_load_capital_debt_revision_inputs_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_capital_project_capture_context_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -13774,6 +15453,27 @@ export type Database = {
         Returns: Json
       }
       worker_load_capital_project_context_v6: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_capital_s11_recovered_projection_state_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      worker_load_capital_s11_revision_inputs_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_case_assessment_input_v4: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_case_assessment_input_v5: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -13838,6 +15538,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_latest_objective_workflow_selection_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_preliminary_assessment_input_v3: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -13912,6 +15616,28 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_lookup_capital_preview_boundary_v1: {
+        Args: {
+          p_boundary: string
+          p_capability_token: string
+          p_job_id: string
+          p_run_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_artifact_export_storage_v1: {
+        Args: {
+          p_byte_length: number
+          p_capability_token: string
+          p_sha256: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_assessment_research_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_prepare_capital_body_v1: {
         Args: {
           p_body?: Json
@@ -13921,6 +15647,95 @@ export type Database = {
           p_kind: string
           p_origin_or_accepted_id: string
           p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_recipe_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_recovered_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_recovered_task_projection_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id: string
+          p_recipe_id: string
+          p_request_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_revision_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_predecessor_bodies: Json
+          p_prior_body: Json
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_revision_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_predecessor_bodies: Json
+          p_prior_body: Json
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_debt_task_projection_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id: string
+          p_recipe_id: string
+          p_request_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -13965,6 +15780,57 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_prepare_capital_native_recipe_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_prepare_capital_native_result_v1: {
+        Args: {
+          p_artifact_type: string
+          p_capability_token: string
+          p_content: Json
+          p_job_id: string
+          p_predecessor_revision_id?: string
+          p_recipe_id: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_preview_body_v1: {
+        Args: {
+          p_accepted_invocation_id?: string
+          p_body: Json
+          p_capability_token: string
+          p_file_name?: string
+          p_job_id: string
+          p_kind: string
+          p_recipe_id?: string
+          p_request_id: string
+          p_run_id: string
+          p_semantic_fingerprint?: string
+          p_task_id?: string
+          p_task_run_id?: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_preview_boundary_v1: {
+        Args: {
+          p_boundary: string
+          p_capability_token: string
+          p_job_id: string
+          p_run_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_preview_run_v1: {
+        Args: {
+          p_basis_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_publisher_org: string
+        }
+        Returns: Json
+      }
       worker_prepare_capital_public_payload_v1: {
         Args: {
           p_capability_token: string
@@ -13972,6 +15838,95 @@ export type Database = {
           p_job_id: string
           p_payload: Json
           p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_recipe_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_recovered_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_recovered_task_projection_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id: string
+          p_recipe_id: string
+          p_request_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_revision_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_predecessor_bodies: Json
+          p_prior_body: Json
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_revision_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_predecessor_bodies: Json
+          p_prior_body: Json
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_s11_task_projection_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id: string
+          p_recipe_id: string
+          p_request_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -13994,6 +15949,15 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_read_assessment_research_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+          p_snapshot_id: string
+        }
+        Returns: Json
+      }
       worker_read_capital_body_allocation_v1: {
         Args: {
           p_allocation_id: string
@@ -14007,6 +15971,74 @@ export type Database = {
           p_capability_token: string
           p_job_id: string
           p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_recovered_task_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_recovery_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_recovery_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_revision_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_revision_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_revision_task_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_debt_task_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -14036,6 +16068,46 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_read_capital_native_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_artifact_type?: string
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_id?: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_native_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_scope: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_native_result_v1: {
+        Args: {
+          p_artifact_type: string
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_preview_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
       worker_read_capital_public_payload_allocation_v1: {
         Args: {
           p_allocation_id: string
@@ -14049,6 +16121,74 @@ export type Database = {
           p_capability_token: string
           p_job_id: string
           p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_recovered_task_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_recovery_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_recovery_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_revision_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_revision_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_revision_task_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_task_run_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_s11_task_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_task_run_id: string
         }
         Returns: Json
       }
@@ -14073,6 +16213,14 @@ export type Database = {
         Returns: Json
       }
       worker_record_agent_assessment_v1: {
+        Args: {
+          p_assessment: Json
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_agent_assessment_v2: {
         Args: {
           p_assessment: Json
           p_capability_token: string
@@ -14217,6 +16365,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_artifact_import_quarantine_v1: {
+        Args: { p_capability_token: string; p_receipt: Json; p_task_id: string }
+        Returns: Json
+      }
       worker_record_candidates: {
         Args: {
           p_candidates: Json
@@ -14277,6 +16429,55 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_capital_debt_accepted_v1: {
+        Args: {
+          p_accepted: Json
+          p_capability_token: string
+          p_input_receipt_id: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_debt_attempt_outcome_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_outcome: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_debt_execution_failure_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_outcome_ids?: string[]
+          p_reason: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_debt_input_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_debt_quality_failure_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_record_capital_m07_accepted_v1: {
         Args: {
           p_accepted: Json
@@ -14326,6 +16527,41 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_capital_preview_accepted_v1: {
+        Args: {
+          p_accepted: Json
+          p_capability_token: string
+          p_input_receipt_id: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_preview_attempt_outcome_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_outcome: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_preview_execution_failure_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_reason: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_preview_input_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
       worker_record_capital_project_artifact: {
         Args: {
           p_artifact_type: string
@@ -14349,6 +16585,55 @@ export type Database = {
           p_job_id: string
           p_parent_brief_id?: string
           p_visible_snapshot: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_s11_accepted_v1: {
+        Args: {
+          p_accepted: Json
+          p_capability_token: string
+          p_input_receipt_id: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_s11_attempt_outcome_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_outcome: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_s11_execution_failure_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_outcome_ids?: string[]
+          p_reason: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_s11_input_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_s11_quality_failure_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
         }
         Returns: Json
       }
@@ -14461,6 +16746,15 @@ export type Database = {
           p_model: string
         }
         Returns: string
+      }
+      worker_record_m07_assessment_index_v1: {
+        Args: {
+          p_capability_token: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
       }
       worker_record_material_production_terminal_v1: {
         Args: {
@@ -14597,7 +16891,39 @@ export type Database = {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
       }
+      worker_recover_capital_debt_result_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_recover_capital_m07_result_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_recover_capital_native_provider_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_recover_capital_preview_accepted_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_recover_capital_preview_run_v1: {
+        Args: { p_capability_token: string; p_job_id: string; p_run_id: string }
+        Returns: Json
+      }
+      worker_recover_capital_s11_result_v1: {
         Args: {
           p_capability_token: string
           p_job_id: string
@@ -14655,7 +16981,35 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_revalidate_artifact_roundtrip_v1: {
+        Args: { p_capability_token: string; p_task_id: string }
+        Returns: Json
+      }
+      worker_revalidate_capital_debt_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_revalidate_capital_m07_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_revalidate_capital_preview_boundary_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_revalidate_capital_s11_recipe_v1: {
         Args: {
           p_capability_token: string
           p_job_id: string
@@ -14672,6 +17026,18 @@ export type Database = {
         Returns: Json
       }
       worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
+      worker_seal_capital_preview_boundary_v1: {
+        Args: {
+          p_capability_token: string
+          p_consumed_basis_fingerprint: string
+          p_input_retained_payload_id: string
+          p_job_id: string
+          p_model_input: Json
+          p_pins: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_seal_material_production_context_v1: {
         Args: {
           p_capability_token: string
