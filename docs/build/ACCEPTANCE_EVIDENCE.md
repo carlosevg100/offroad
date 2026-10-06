@@ -4239,3 +4239,7 @@ Histórico/pendências de revisão, reafirmação cosmética, reassociação, re
 ## 2026-10-06: onda 22, pré-condição de publicação
 
 Baseline main `90e3c7d248cb4ba604a4519fd08239054b28f14a`. Evidência `docs/security/evidence/aws-worker-rollout-diagnostics-wave-22.json`: leitura AWS em sessão temporária existente; ECS revisão 522 PRIMARY COMPLETED, desired=running=1, pending=0. Role, política inline, trust e presença/ausência de boundary coletados; simulação wildcard implicitDeny não equivale à leitura efetiva por recurso. Hashes do inventário refeitos com bytes reais de git, renderer trusted com relógio corrente e testes negativos conservados. Nenhuma mudança IAM ou novo acesso foi feita.
+
+## Onda 23 autorizada em 6 de outubro de 2026
+
+Etapa 22 concluída na main `9732563b3a8c8172139bfa8b43de9eafdf5a9508`. Inventário renovado por onda, com fontes fixadas nesse commit e observação ECS atual. Escopo autorizado: retirada de caminhos antigos e fechamento da superfície. A etapa 23 continua aberta; não antecipar 24.

@@ -6284,3 +6284,7 @@ Histórico/pendências de revisão, reafirmação cosmética, reassociação, re
 ## 2026-10-06: continuidade autorizada: etapa 22
 
 A etapa 21 terminou na main `90e3c7d248cb4ba604a4519fd08239054b28f14a`; worker 522 e web implantados nesse commit. O completion local contém CI e publicação final. Próxima onda autorizada pelo fundador: 22, auditoria/retenção/revogação, com telas administrativas adiadas conforme decisão vigente. Inventário renovado para `wave-22` contra main e observação AWS CLI real, sem confundir observação técnica com assurance independente. Nenhuma regra automática de prazo para documentos de clientes foi adotada.
+
+## Onda 23 autorizada em 6 de outubro de 2026
+
+Etapa 22 concluída na main `9732563b3a8c8172139bfa8b43de9eafdf5a9508`. Inventário renovado por onda, com fontes fixadas nesse commit e observação ECS atual. Escopo autorizado: retirada de caminhos antigos e fechamento da superfície. A etapa 23 continua aberta; não antecipar 24.
