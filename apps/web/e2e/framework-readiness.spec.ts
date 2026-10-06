@@ -12,6 +12,7 @@ const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&
 const whole = (text: string) => new RegExp(`^${escapeRegExp(text)}$`);
 /** Set while this journey holds the capability released; the hook puts it back even after a timeout. */
 let restoreRelease: (() => void) | undefined;
+test.use({actionTimeout: 20_000, navigationTimeout: 30_000});
 test.afterEach(() => {
  const restore = restoreRelease;
  restoreRelease = undefined;
@@ -245,7 +246,11 @@ test("framework readiness keeps one work from a question without intake to pinne
  await person.getByRole("button",{name:"Adicionar ao trabalho"}).click();
  await expect(person.getByRole("button",{name:"Remover acesso"})).toBeVisible();
  await second.goto(workUrl);
+ // The pre-grant denial left this exact URL open. Navigating to the same URL with
+ // the same fragment can be a browser no-op; reload to read the new authority.
+ await second.reload();
  const secondContributions=second.getByTestId("work-contributions");
+ await expect(secondContributions).toBeVisible();
  await secondContributions.locator('textarea[name="contribution"]').fill(`Synthetic alternative capital structure ${id}`);
  await secondContributions.getByRole("button",{name:"Salvar no meu canal",exact:true}).click();
  const personal=secondContributions.locator("article").filter({hasText:`Synthetic alternative capital structure ${id}`});
