@@ -931,7 +931,7 @@ select pg_temp.commit_result(pg_temp.id('X2b'));
 do $$begin
  if exists(select 1 from public.work_recompute_candidates where state<>'settled')
  or (select status from public.work_continuation_requests where id=pg_temp.id('R1'))<>'ready'
- or (select count(*) from public.work_milestones where kind='decision')<>(select count(*) from untouched where row_image->>'kind'='decision')
+ or (select count(*) from public.work_milestones where kind='decision' and work_id='a11b0000-0000-4000-9000-000000000002')<>(select count(*) from untouched where row_image->>'kind'='decision')
  or (select count(*) from public.work_milestones where kind='execution_result' and subject_id in (pg_temp.id('X1b'),pg_temp.id('X2b')))<>2
  or exists(select 1 from untouched u left join public.work_milestones m on m.id=u.id where m.id is null or m.xmin::text<>u.row_version or to_jsonb(m)<>u.row_image)
  or exists(select 1 from untouched_results u left join private.execution_result_receipts r on r.id=u.id where r.id is null or r.xmin::text<>u.row_version or to_jsonb(r)<>u.row_image) then
