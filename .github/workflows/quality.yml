@@ -205,6 +205,7 @@ jobs:
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/end_to_end_revocation.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/end_to_end_retention_worker.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/immutable_audit_archive.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/sensitive_operation_audit.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/institutional_configuration_ancestry.sql

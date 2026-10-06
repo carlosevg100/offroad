@@ -86,5 +86,6 @@
       "periods": 1,
       "missing": "notBreaching"
     }
-  ]
+  ],
+  "alarmActionsFrom": "offroad-outbox-errors"
 }
