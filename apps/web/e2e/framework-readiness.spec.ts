@@ -302,8 +302,10 @@ test("framework readiness keeps one work from a question without intake to pinne
  expect(resumedId).not.toBe(executionId);
  await expect.poll(async()=>{
   await page.getByRole("button",{name:copy.detail.refresh,exact:true}).click();
-  return sql(`select status from public.work_executions where id='${resumedId}'`);
- },{timeout:180_000,intervals:[2000]}).toBe("succeeded");
+  // Execution identities are immutable. Completion belongs to the worker job
+  // and its committed result receipt, not to a mutable execution column.
+  return sql(`select j.status||'|'||r.outcome from public.processing_jobs j join private.execution_result_receipts r on r.organization_id=j.organization_id and r.execution_id=j.execution_id where j.execution_id='${resumedId}' and j.kind='work_execution'`);
+ },{timeout:180_000,intervals:[2000]}).toBe("succeeded|succeeded");
  expect(sql(`select canonical_result from private.execution_result_receipts where execution_id='${executionId}'`)).toBe(originalResult);
  expect(sql(`select count(*) from public.work_executions where work_id='${projectId}'`)).toBe("2");
  expect(sql(`select b.work_id from public.work_executions b where b.id='${resumedId}'`)).toBe(projectId);
