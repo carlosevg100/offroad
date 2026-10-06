@@ -10,6 +10,8 @@ Em verificação. A presença deste documento ou um teste unitário positivo nã
 
 O operador fixa a revisão pelo Git, confere o run e os jobs pela API da CI, calcula hashes dos arquivos e preserva as respostas efetivas das ferramentas. Um `exitCode: 0` só é registrado após término efetivo com sucesso. O SQL executado em staging é expandido com suas dependências, conserva BEGIN/ROLLBACK e não é aplicado em produção. Todos os testes SQL são executados pelo job database; o percurso usa o job E2E e seu worker real.
 
+As contagens e snapshots de continuidade ficam no trabalho/organização da fixture. Histórico auditável de outros ensaios não entra na quantidade esperada; as operações e os negativos continuam nos RPCs e tabelas reais, sem apagar registros ou trocar as regras de acesso.
+
 ## Percurso integrado
 
 `apps/web/e2e/framework-readiness.spec.ts` inicia o trabalho com a pergunta sobre alternativas de estrutura de capital, sem companhia, intake ou plano. Adiciona dois arquivos sintéticos pelos caminhos reais de upload, verifica hashes pelo pipeline do worker, conserva duas observações divergentes e adota uma por finalidade. Adiciona contexto depois no mesmo ID, registra entidades e definições, fixa premissas, executa o procedimento v4 publicado e confere manifesto, perfil, recibo e autoria do worker. Uma segunda pessoa autentica, recebe grant explícito, conserva seu canal privado, compartilha contribuição e revisa a revisão exata. Uma nova premissa gera execução nova no mesmo trabalho; a anterior conserva seus bytes. A revogação fecha a URL anteriormente lida, inclusive para o criador.
