@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {createHash,randomUUID}from"node:crypto";
-import {readFile,writeFile,stat}from"node:fs/promises";
+import {constants}from"node:fs";
+import {open}from"node:fs/promises";
 import {createClient,type SupabaseClient}from"@supabase/supabase-js";
 import {z}from"zod";
 import{createArtifactRoundtripRenderer}from"../src/artifact-roundtrip-renderer";
@@ -12,8 +13,17 @@ let phase="target_validation";
 async function main(){
  const path=process.env.OFFROAD_LIFECYCLE_FIXTURE_FILE;if(!path)throw new Error("fixture_required");
  const mode=process.argv[2];if(!["prepare","configure","held","release","purge"].includes(mode??""))throw new Error("phase_required");
- const permissions=await stat(path);if(permissions.mode&0o077)throw new Error("private_fixture_required");
- const raw=JSON.parse(await readFile(path,"utf8")),f=schema.parse(raw),url=new URL(f.apiUrl);
+ // Keep one descriptor from validation through all reads/writes. A pathname cannot
+ // be replaced by a symlink between stat and use, including during network awaits.
+ const fixture=await open(path,constants.O_RDWR|constants.O_NOFOLLOW);
+ try{
+ const permissions=await fixture.stat();if(!permissions.isFile()||(permissions.mode&0o077)||(process.getuid&&permissions.uid!==process.getuid()))throw new Error("private_fixture_required");
+ const raw=JSON.parse(await fixture.readFile("utf8")),f=schema.parse(raw),url=new URL(f.apiUrl);
+ async function writeFixture(value:unknown){
+  const bytes=Buffer.from(JSON.stringify(value));let offset=0;
+  while(offset<bytes.length){const result=await fixture.write(bytes,offset,bytes.length-offset,offset);if(!result.bytesWritten)throw new Error("fixture_write_failed");offset+=result.bytesWritten;}
+  await fixture.truncate(bytes.length);await fixture.sync();
+ }
  if(f.projectRef==="ifnogpksgdadruooqydi"||url.hostname.includes("ifnogpksgdadruooqydi")||f.publishableKey.startsWith("sb_secret_")||url.username||url.password||url.search||url.hash)throw new Error("production_or_privileged_target_forbidden");
  if(f.environment==="staging"&&(f.projectRef!=="gjkkjtbfnssdsbmlhmwk"||url.hostname!==`${f.projectRef}.supabase.co`||process.env.OFFROAD_STAGING_PROJECT_REF!==f.projectRef))throw new Error("staging_allowlist_required");
  if(f.environment==="local"&&!["localhost","127.0.0.1"].includes(url.hostname))throw new Error("local_target_required");
@@ -47,12 +57,12 @@ async function main(){
   const receipt=await rpc(owner,"read_artifact_export_receipt_v1",{p_receipt_id:completed.receiptId});
   const downloaded=await owner.storage.from(receipt.storage.bucket).download(receipt.storage.path);assert.ok(downloaded.data);assert.equal(downloaded.error,null);
   assert.equal(createHash("sha256").update(Buffer.from(await downloaded.data.arrayBuffer())).digest("hex"),receipt.sha256);
-  await writeFile(path,JSON.stringify({...raw,revision,task,receipt}),{mode:0o600});
+  await writeFixture({...raw,revision,task,receipt});
  }else if(mode==="configure"){
   phase="explicit_client_retention_and_hold";
   const rule=await rpc(owner,"set_retention_rule_v1",{p_resource_id:f.workId,p_mode:"expire",p_expires_at:new Date(Date.now()+5000).toISOString(),p_basis_reference:randomUUID()});
   const hold=await rpc(owner,"place_legal_hold_v1",{p_resource_id:f.workId,p_basis_reference:randomUUID()});
-  await writeFile(path,JSON.stringify({...raw,rule,hold}),{mode:0o600});
+  await writeFixture({...raw,rule,hold});
  }else if(mode==="release"){
   phase="explicit_hold_release";
   assert.equal(await rpc(owner,"release_legal_hold_v1",{p_hold_id:uuid.parse(raw.hold),p_basis_reference:randomUUID()}),true);
@@ -77,5 +87,6 @@ async function main(){
  }
  await Promise.all([owner.auth.signOut(),worker.auth.signOut()]);
  process.stdout.write(JSON.stringify({eval:"lifecycle_sdk",phase:mode,result:"PASS",environment:f.environment})+"\n");
+ }finally{await fixture.close();}
 }
 main().catch(error=>{const message=error instanceof Error?error.message:"";const rpc=/^rpc_([a-z0-9_]+)_([A-Z0-9]{5}|transport)$/.exec(message);process.stderr.write(JSON.stringify({eval:"lifecycle_sdk",result:"FAIL",phase,rpc:rpc?.[1],code:rpc?.[2]})+"\n");process.exitCode=1;});

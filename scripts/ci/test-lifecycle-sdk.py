@@ -33,6 +33,15 @@ with tempfile.TemporaryDirectory(prefix='offroad-lifecycle-sdk-') as temporary:
         password=password, workerToken=token)))
     fixture.chmod(0o600)
     assert sql(f"select count(*) from auth.users where id in ('{actor}','{worker}');") == '0'
+    link = Path(temporary) / 'fixture-symlink.json'
+    link.symlink_to(fixture)
+    rejected = subprocess.run(['node', 'scripts/ci/test-lifecycle-sdk.mjs', 'prepare'], cwd=ROOT,
+        env=dict(os.environ, OFFROAD_LIFECYCLE_FIXTURE_FILE=str(link)),
+        text=True, capture_output=True, timeout=60)
+    assert rejected.returncode != 0
+    assert json.loads(rejected.stderr.strip().splitlines()[-1])['phase'] == 'target_validation'
+    assert json.loads(fixture.read_text())['workId'] == work
+    print('PASS lifecycle_sdk_symlink_rejected_before_auth_or_write')
     prepared = False
     try:
         sql((ROOT / 'supabase/tests/support/lifecycle_sdk_setup.sql').read_text(),
