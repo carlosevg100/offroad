@@ -54,7 +54,7 @@ import {createAssessmentNativeRuntime} from "./assessment-native-runtime";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
-import {processNativePreviewJob,previewPublishedBasisFromEnvironment} from "./integration-preview-native-processor";
+import {rejectRetiredFrameworkJob} from "./framework-dispatch-policy";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
@@ -439,6 +439,11 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
+    if (await rejectRetiredFrameworkJob(job, queue)) {
+      stopHeartbeat();
+      continue;
+    }
+
     if (job.kind === "execution_brief_proposal") {
       current = processExecutionBriefProposalJob(job, queue, {documentaryWorkEnabled:config.DOCUMENTARY_WORK_PLANNING_ENABLED})
         .then((outcome) => { log("job.finished", {job: job.job_id, status: outcome.status, ms: Date.now() - startedAt, modelCalls: 0, costUsd: 0}); })
@@ -489,14 +494,7 @@ async function main(): Promise<void> {
           : job.payload.analysis_scope === "provider_research"
           ? processNativeProviderJob(job, {queue})
           : job.payload.analysis_scope === "integration_preview"
-          // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
-          ? (job.integration_preview === true
-              ? processNativePreviewJob(job, {queue,client:supabase,log,adapters,connections:config.PROVIDER_CONNECTIONS_JSON,
-                  budget:{maxCostUsd:gatewayRun.maxCostUsd,maxCalls:gatewayRun.maxCalls},
-                  publishedBasis:previewPublishedBasisFromEnvironment(process.env.OFFROAD_PREVIEW_PUBLISHED_BASIS_JSON),
-                  ...(process.env.OFFROAD_PREVIEW_EVIDENCE_DIR?{evidenceDir:process.env.OFFROAD_PREVIEW_EVIDENCE_DIR}:{}),
-                })
-              : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
+          ? Promise.reject(new Error("integration_preview_retired"))
           : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {
               queue,

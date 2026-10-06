@@ -2266,11 +2266,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -2743,6 +2738,29 @@
       ],
       "signature": "p_name text, p_purpose text",
       "security_definer": false
+    },
+    {
+      "id": "function:private.brand_template_object_read_allowed_v1(p_path text)",
+      "kind": "function",
+      "name": "brand_template_object_read_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_path text",
+      "security_definer": true
     },
     {
       "id": "function:private.can_access_capital_project(p_organization_id uuid, p_project_id uuid)",
@@ -13361,11 +13379,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -13402,11 +13415,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -13423,11 +13431,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -13847,11 +13850,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -16466,11 +16464,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -16487,11 +16480,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -17408,11 +17396,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -17592,11 +17575,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -17613,11 +17591,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -18321,11 +18294,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -19347,11 +19315,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -20150,11 +20113,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -25844,11 +25802,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -25867,11 +25820,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -25888,11 +25836,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -25934,11 +25877,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -26138,11 +26076,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -26159,11 +26092,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -26184,11 +26112,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -26205,11 +26128,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -26251,11 +26169,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -26531,6 +26444,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_compatibility_context_v1(p_job_id uuid, p_capability_token text, p_loader text)",
+      "kind": "function",
+      "name": "worker_load_compatibility_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_loader text",
       "security_definer": true
     },
     {
@@ -32403,16 +32339,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -34204,16 +34130,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -34253,16 +34169,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -35587,16 +35493,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -35613,16 +35509,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -36240,16 +36126,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -36431,16 +36307,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -36457,16 +36323,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -36707,16 +36563,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -37087,16 +36933,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -37477,16 +37313,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -41344,11 +41170,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -41372,11 +41193,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -41398,11 +41214,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -41454,11 +41265,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -41627,11 +41433,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -41653,11 +41454,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -41683,11 +41479,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -41709,11 +41500,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -41765,11 +41551,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -60586,20 +60367,6 @@
       "with_check": null
     },
     {
-      "id": "policy:public.pack_access_events.pack_access_events_recipient_select",
-      "kind": "policy",
-      "name": "pack_access_events_recipient_select",
-      "qual": "( SELECT private.is_org_member(pack_access_events.recipient_organization_id) AS is_org_member)",
-      "roles": [
-        "authenticated"
-      ],
-      "table": "pack_access_events",
-      "schema": "public",
-      "command": "SELECT",
-      "permissive": "PERMISSIVE",
-      "with_check": null
-    },
-    {
       "id": "policy:public.pack_distribution_authorizations.pack_distribution_authorizations_select",
       "kind": "policy",
       "name": "pack_distribution_authorizations_select",
@@ -60660,20 +60427,6 @@
       "kind": "policy",
       "name": "pack_recipient_responses_issuer_select",
       "qual": "( SELECT private.can_access_intake_session(pack_recipient_responses.organization_id, pack_recipient_responses.intake_session_id) AS can_access_intake_session)",
-      "roles": [
-        "authenticated"
-      ],
-      "table": "pack_recipient_responses",
-      "schema": "public",
-      "command": "SELECT",
-      "permissive": "PERMISSIVE",
-      "with_check": null
-    },
-    {
-      "id": "policy:public.pack_recipient_responses.pack_recipient_responses_recipient_select",
-      "kind": "policy",
-      "name": "pack_recipient_responses_recipient_select",
-      "qual": "( SELECT private.is_org_member(pack_recipient_responses.recipient_organization_id) AS is_org_member)",
       "roles": [
         "authenticated"
       ],
@@ -60827,7 +60580,7 @@
       "id": "policy:public.presentation_templates.presentation_templates_select",
       "kind": "policy",
       "name": "presentation_templates_select",
-      "qual": "\nCASE\n    WHEN (capital_project_id IS NULL) THEN ( SELECT private.is_org_member(presentation_templates.organization_id) AS is_org_member)\n    ELSE ( SELECT private.can_access_capital_project(presentation_templates.organization_id, presentation_templates.capital_project_id) AS can_access_capital_project)\nEND",
+      "qual": "private.can_read_presentation_template_v1(organization_id, id)",
       "roles": [
         "authenticated"
       ],
@@ -62582,7 +62335,7 @@
       "id": "policy:storage.objects.brand_templates_objects_delete",
       "kind": "policy",
       "name": "brand_templates_objects_delete",
-      "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+      "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
       "roles": [
         "authenticated"
       ],
@@ -62604,13 +62357,13 @@
       "schema": "storage",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+      "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
     },
     {
       "id": "policy:storage.objects.brand_templates_objects_select",
       "kind": "policy",
       "name": "brand_templates_objects_select",
-      "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.is_org_member(private.storage_organization_id(objects.name)) AS is_org_member))",
+      "qual": "((bucket_id = 'brand-templates'::text) AND private.brand_template_object_read_allowed_v1(name))",
       "roles": [
         "authenticated"
       ],
@@ -62624,7 +62377,7 @@
       "id": "policy:storage.objects.brand_templates_objects_update",
       "kind": "policy",
       "name": "brand_templates_objects_update",
-      "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+      "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
       "roles": [
         "authenticated"
       ],
@@ -62632,7 +62385,7 @@
       "schema": "storage",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+      "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
     },
     {
       "id": "policy:storage.objects.brand_templates_worker_select",
@@ -81923,51 +81676,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -82016,51 +81724,6 @@
         ],
         [
           "postgres",
-          "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
           "UPDATE",
           false
         ]
@@ -85313,51 +84976,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -85406,51 +85024,6 @@
         ],
         [
           "postgres",
-          "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
           "UPDATE",
           false
         ]
@@ -85503,51 +85076,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -85598,51 +85126,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -85691,51 +85174,6 @@
         ],
         [
           "postgres",
-          "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
           "UPDATE",
           false
         ]
@@ -87486,51 +86924,6 @@
         ],
         [
           "postgres",
-          "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
           "UPDATE",
           false
         ]
@@ -102494,5 +101887,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-10-06T14:55:31.067101+00:00"
+  "captured_at": "2026-10-06T17:27:10.04562+00:00"
 }

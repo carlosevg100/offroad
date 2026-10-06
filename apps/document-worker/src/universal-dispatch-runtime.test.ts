@@ -30,7 +30,7 @@ import {
   createInternalUniversalDispatchRuntime,
   issueInternalFixtureAuthorization,
   type InternalBundledExecutor,
-} from "./universal-dispatch-runtime";
+} from "./testing/universal-dispatch-runtime";
 
 const sha = (character: string) => character.repeat(64);
 const now = () => new Date("2026-09-07T12:00:00.000Z");

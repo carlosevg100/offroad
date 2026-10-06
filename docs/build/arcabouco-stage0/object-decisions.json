@@ -7544,11 +7544,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -7561,8 +7556,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -7575,6 +7570,12 @@
           "line": 602,
           "anchor": "create or replace function public.authorize_pack_distribution(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -42468,11 +42469,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -42485,8 +42481,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -42499,6 +42495,12 @@
           "line": 639,
           "anchor": "create or replace function public.open_shared_information_pack_item(p_share_id uuid, p_item_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -42597,11 +42599,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -42614,14 +42611,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
           "line": 139,
           "anchor": "create or replace function private.pack_response_codes_valid(p_entries jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -42639,11 +42642,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -42656,14 +42654,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
           "line": 188,
           "anchor": "create or replace function private.pack_share_live_for_recipient(p_organization_id uuid, p_share_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -43916,11 +43920,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -43932,9 +43931,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
@@ -43947,6 +43946,12 @@
           "line": 283,
           "anchor": "create or replace function public.prepare_qualified_contact(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -52172,11 +52177,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -52188,9 +52188,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -52203,6 +52203,12 @@
           "line": 630,
           "anchor": "create or replace function public.read_shared_information_pack(p_share_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -52220,11 +52226,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -52237,8 +52238,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911020048_read_shared_pack_item_material.sql",
@@ -52251,6 +52252,12 @@
           "line": 95,
           "anchor": "create or replace function public.read_shared_pack_item_material(p_share_id uuid, p_item_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -55060,11 +55067,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -55077,8 +55079,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013814_information_pack_fingerprint_variable_scope.sql",
@@ -55091,6 +55093,12 @@
           "line": 26,
           "anchor": "create or replace function private.record_information_pack_revision(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -55600,11 +55608,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -55617,8 +55620,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
@@ -55631,6 +55634,12 @@
           "line": 302,
           "anchor": "create or replace function public.record_pack_distribution_next_step(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -55648,11 +55657,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -55665,8 +55669,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
@@ -55679,6 +55683,12 @@
           "line": 276,
           "anchor": "create or replace function public.record_pack_recipient_response(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -57802,11 +57812,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -57818,9 +57823,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "3, 4, 22",
-      "reason": "controle atual integra autoridade, trilha e estado de liberação verificável",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
@@ -57833,6 +57838,12 @@
           "line": 297,
           "anchor": "create or replace function public.release_qualified_contact(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -61060,11 +61071,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -61076,9 +61082,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "8, 9, 15",
-      "reason": "distinguir observação, adoção e cálculo; conservar versão e autoridade da base",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911020229_resolve_pack_distribution_candidates.sql",
@@ -61091,6 +61097,12 @@
           "line": 108,
           "anchor": "create or replace function public.resolve_pack_distribution_candidates(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -63598,11 +63610,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -63615,8 +63622,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -63629,6 +63636,12 @@
           "line": 621,
           "anchor": "create or replace function public.revoke_pack_distribution(p_authorization_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -75765,6 +75778,12 @@
           "line": 561,
           "anchor": "create function private.worker_can_read_brand_template_v1(p_object_path text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 135,
+          "anchor": "create or replace function private.worker_can_read_brand_template_v1(p_object_path text) returns boolean",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -81213,11 +81232,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81236,11 +81250,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81252,9 +81261,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260907051254_receivables_information_request_bindings.sql",
@@ -81267,6 +81276,18 @@
           "line": 155,
           "anchor": "create or replace function private.worker_load_agent_context(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -81524,11 +81545,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81547,11 +81563,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81563,9 +81574,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260908035026_explicit_execution_brief_approval.sql",
@@ -81578,6 +81589,18 @@
           "line": 163,
           "anchor": "create or replace function private.worker_load_agent_context_v2(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -81595,11 +81618,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81618,11 +81636,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81634,9 +81647,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260908145944_sector_planning_job_knowledge_date.sql",
@@ -81649,6 +81662,18 @@
           "line": 110,
           "anchor": "create or replace function private.worker_load_agent_context_v3(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -81664,11 +81689,6 @@
           "grants": [
             [
               "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
               "EXECUTE",
               false
             ]
@@ -81689,11 +81709,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -81705,9 +81720,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260908181852_confirmed_receivables_scope_reader_fence.sql",
@@ -81726,6 +81741,18 @@
           "line": 99,
           "anchor": "alter function private.worker_load_agent_context_v4(uuid,text) rename to worker_load_agent_context_before_institutional_v1;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -82354,11 +82381,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82377,11 +82399,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82393,9 +82410,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035319_origination_thesis_vertical.sql",
@@ -82408,6 +82425,18 @@
           "line": 359,
           "anchor": "create or replace function private.worker_load_capital_project_context(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -82425,11 +82454,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82448,11 +82472,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82464,9 +82483,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260902035123_capital_planning_dag.sql",
@@ -82479,6 +82498,18 @@
           "line": 404,
           "anchor": "create or replace function public.worker_load_capital_project_context_v2(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -82496,11 +82527,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82519,11 +82545,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82535,9 +82556,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260902050257_resume_capital_project_dag.sql",
@@ -82550,6 +82571,18 @@
           "line": 58,
           "anchor": "create or replace function public.worker_load_capital_project_context_v3(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -82565,11 +82598,6 @@
           "grants": [
             [
               "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
               "EXECUTE",
               false
             ]
@@ -82590,11 +82618,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82606,9 +82629,9 @@
         }
       },
       "owner": "Codex, etapa 14",
-      "decision": "refatorar",
-      "stage": "14",
-      "reason": "Loader fixa publicação de R01 ou retira metodologia ativa legada; corpo conferido por hash nos dois ambientes.",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260916005712_role_free_reasoning_context.sql",
@@ -82633,6 +82656,18 @@
           "line": 334,
           "anchor": " for f in select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.prokind='f' and p.prosrc like '%public.organization_methodologies%' and p.prosrc like '%methodology.status%' loop",
           "mechanism": "bounded_function_rewrite"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -82649,11 +82684,6 @@
           "grants": [
             [
               "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
               "EXECUTE",
               false
             ]
@@ -82674,11 +82704,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -82690,9 +82715,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "decision": "consolidar",
+      "stage": "23",
+      "reason": "Alias público usa autoridade atual; implementação histórica privada sem grants de Data API, mantida só pelas dependências internas.",
       "sources": [
         {
           "path": "supabase/migrations/20260904015543_capital_task_retry_feedback.sql",
@@ -82705,6 +82730,18 @@
           "line": 57,
           "anchor": "create or replace function public.worker_load_capital_project_context_v5(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 20,
+          "anchor": "revoke all on function private.worker_load_compatibility_context_v1(uuid,text,text) from public,anon,authenticated,service_role;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -101656,16 +101693,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -101678,8 +101705,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -101692,6 +101719,12 @@
           "line": 602,
           "anchor": "create or replace function public.authorize_pack_distribution(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -107006,16 +107039,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -107028,8 +107051,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -107042,6 +107065,12 @@
           "line": 639,
           "anchor": "create or replace function public.open_shared_information_pack_item(p_share_id uuid, p_item_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -107123,16 +107152,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -107144,9 +107163,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
@@ -107159,6 +107178,12 @@
           "line": 283,
           "anchor": "create or replace function public.prepare_qualified_contact(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -111037,16 +111062,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -111058,9 +111073,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -111073,6 +111088,12 @@
           "line": 630,
           "anchor": "create or replace function public.read_shared_information_pack(p_share_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -111090,16 +111111,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -111112,8 +111123,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911020048_read_shared_pack_item_material.sql",
@@ -111126,6 +111137,12 @@
           "line": 95,
           "anchor": "create or replace function public.read_shared_pack_item_material(p_share_id uuid, p_item_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -112913,16 +112930,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -112935,8 +112942,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013814_information_pack_fingerprint_variable_scope.sql",
@@ -112949,6 +112956,12 @@
           "line": 26,
           "anchor": "create or replace function private.record_information_pack_revision(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -113436,16 +113449,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -113458,8 +113461,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
@@ -113472,6 +113475,12 @@
           "line": 302,
           "anchor": "create or replace function public.record_pack_distribution_next_step(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -113489,16 +113498,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -113511,8 +113510,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
@@ -113525,6 +113524,12 @@
           "line": 276,
           "anchor": "create or replace function public.record_pack_recipient_response(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -114189,16 +114194,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -114210,9 +114205,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "3, 4, 22",
-      "reason": "controle atual integra autoridade, trilha e estado de liberação verificável",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
@@ -114225,6 +114220,12 @@
           "line": 297,
           "anchor": "create or replace function public.release_qualified_contact(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -115291,16 +115292,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -115312,9 +115303,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "8, 9, 15",
-      "reason": "distinguir observação, adoção e cálculo; conservar versão e autoridade da base",
+      "decision": "congelar",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911020229_resolve_pack_distribution_candidates.sql",
@@ -115327,6 +115318,12 @@
           "line": 108,
           "anchor": "create or replace function public.resolve_pack_distribution_candidates(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -116391,16 +116388,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -116413,8 +116400,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
@@ -116427,6 +116414,12 @@
           "line": 621,
           "anchor": "create or replace function public.revoke_pack_distribution(p_authorization_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -127842,11 +127835,6 @@
               "authenticated",
               "EXECUTE",
               false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -127868,11 +127856,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -127901,6 +127884,12 @@
           "line": 155,
           "anchor": "create or replace function private.worker_load_agent_context(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 24,
+          "anchor": "create or replace function public.worker_load_agent_context(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -127921,11 +127910,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -127949,11 +127933,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -127982,6 +127961,12 @@
           "line": 163,
           "anchor": "create or replace function private.worker_load_agent_context_v2(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 31,
+          "anchor": "create or replace function public.worker_load_agent_context_v2(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128002,11 +127987,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128030,11 +128010,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128063,6 +128038,12 @@
           "line": 110,
           "anchor": "create or replace function private.worker_load_agent_context_v3(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 38,
+          "anchor": "create or replace function public.worker_load_agent_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128083,11 +128064,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128111,11 +128087,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128150,6 +128121,12 @@
           "line": 99,
           "anchor": "alter function private.worker_load_agent_context_v4(uuid,text) rename to worker_load_agent_context_before_institutional_v1;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 45,
+          "anchor": "create or replace function public.worker_load_agent_context_v4(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128672,11 +128649,6 @@
               "authenticated",
               "EXECUTE",
               false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -128698,11 +128670,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128731,6 +128698,12 @@
           "line": 359,
           "anchor": "create or replace function private.worker_load_capital_project_context(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 52,
+          "anchor": "create or replace function public.worker_load_capital_project_context(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128751,11 +128724,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128779,11 +128747,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128812,6 +128775,12 @@
           "line": 404,
           "anchor": "create or replace function public.worker_load_capital_project_context_v2(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 59,
+          "anchor": "create or replace function public.worker_load_capital_project_context_v2(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128832,11 +128801,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128860,11 +128824,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128893,6 +128852,12 @@
           "line": 58,
           "anchor": "create or replace function public.worker_load_capital_project_context_v3(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 66,
+          "anchor": "create or replace function public.worker_load_capital_project_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128913,11 +128878,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128941,11 +128901,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -128974,6 +128929,12 @@
           "line": 220,
           "anchor": "create or replace function private.worker_load_capital_project_context_v4(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 73,
+          "anchor": "create or replace function public.worker_load_capital_project_context_v4(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -128994,11 +128955,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -129022,11 +128978,6 @@
             ],
             [
               "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
               "EXECUTE",
               false
             ]
@@ -129054,6 +129005,12 @@
           "path": "supabase/migrations/20260904015543_capital_task_retry_feedback.sql",
           "line": 57,
           "anchor": "create or replace function public.worker_load_capital_project_context_v5(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 80,
+          "anchor": "create or replace function public.worker_load_capital_project_context_v5(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -195974,32 +195931,23 @@
     {
       "id": "policy:public.pack_access_events.pack_access_events_recipient_select",
       "kind": "policy",
-      "catalogues": {
-        "staging": {
-          "id": "policy:public.pack_access_events.pack_access_events_recipient_select",
-          "kind": "policy",
-          "name": "pack_access_events_recipient_select",
-          "qual": "( SELECT private.is_org_member(pack_access_events.recipient_organization_id) AS is_org_member)",
-          "roles": [
-            "authenticated"
-          ],
-          "table": "pack_access_events",
-          "schema": "public",
-          "command": "SELECT",
-          "permissive": "PERMISSIVE",
-          "with_check": null
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "decision": "apagar",
+      "stage": "23",
+      "reason": "Política de leitura ampla por membership removida; distribuição não publicada congelada sem grants de Data API.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
           "line": 230,
           "anchor": "create policy pack_access_events_recipient_select",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -196172,32 +196120,23 @@
     {
       "id": "policy:public.pack_recipient_responses.pack_recipient_responses_recipient_select",
       "kind": "policy",
-      "catalogues": {
-        "staging": {
-          "id": "policy:public.pack_recipient_responses.pack_recipient_responses_recipient_select",
-          "kind": "policy",
-          "name": "pack_recipient_responses_recipient_select",
-          "qual": "( SELECT private.is_org_member(pack_recipient_responses.recipient_organization_id) AS is_org_member)",
-          "roles": [
-            "authenticated"
-          ],
-          "table": "pack_recipient_responses",
-          "schema": "public",
-          "command": "SELECT",
-          "permissive": "PERMISSIVE",
-          "with_check": null
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "decision": "apagar",
+      "stage": "23",
+      "reason": "Política de leitura ampla por membership removida; distribuição não publicada congelada sem grants de Data API.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
           "line": 127,
           "anchor": "create policy pack_recipient_responses_recipient_select",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -196680,7 +196619,7 @@
           "id": "policy:public.presentation_templates.presentation_templates_select",
           "kind": "policy",
           "name": "presentation_templates_select",
-          "qual": "\nCASE\n    WHEN (capital_project_id IS NULL) THEN ( SELECT private.is_org_member(presentation_templates.organization_id) AS is_org_member)\n    ELSE ( SELECT private.can_access_capital_project(presentation_templates.organization_id, presentation_templates.capital_project_id) AS can_access_capital_project)\nEND",
+          "qual": "private.can_read_presentation_template_v1(organization_id, id)",
           "roles": [
             "authenticated"
           ],
@@ -196694,7 +196633,7 @@
           "id": "policy:public.presentation_templates.presentation_templates_select",
           "kind": "policy",
           "name": "presentation_templates_select",
-          "qual": "\nCASE\n    WHEN (capital_project_id IS NULL) THEN ( SELECT private.is_org_member(presentation_templates.organization_id) AS is_org_member)\n    ELSE ( SELECT private.can_access_capital_project(presentation_templates.organization_id, presentation_templates.capital_project_id) AS can_access_capital_project)\nEND",
+          "qual": "private.can_read_presentation_template_v1(organization_id, id)",
           "roles": [
             "authenticated"
           ],
@@ -196713,6 +196652,12 @@
         {
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 66,
+          "anchor": "create policy presentation_templates_select on public.presentation_templates for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 108,
           "anchor": "create policy presentation_templates_select on public.presentation_templates for select to authenticated",
           "mechanism": "direct_ddl"
         }
@@ -202739,7 +202684,7 @@
           "id": "policy:storage.objects.brand_templates_objects_delete",
           "kind": "policy",
           "name": "brand_templates_objects_delete",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
           "roles": [
             "authenticated"
           ],
@@ -202753,7 +202698,7 @@
           "id": "policy:storage.objects.brand_templates_objects_delete",
           "kind": "policy",
           "name": "brand_templates_objects_delete",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
           "roles": [
             "authenticated"
           ],
@@ -202772,6 +202717,12 @@
         {
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 38,
+          "anchor": "create policy brand_templates_objects_delete on storage.objects for delete to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 132,
           "anchor": "create policy brand_templates_objects_delete on storage.objects for delete to authenticated",
           "mechanism": "direct_ddl"
         }
@@ -202794,7 +202745,7 @@
           "schema": "storage",
           "command": "INSERT",
           "permissive": "PERMISSIVE",
-          "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+          "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
         },
         "staging": {
           "id": "policy:storage.objects.brand_templates_objects_insert",
@@ -202808,7 +202759,7 @@
           "schema": "storage",
           "command": "INSERT",
           "permissive": "PERMISSIVE",
-          "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+          "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
@@ -202819,6 +202770,12 @@
         {
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 33,
+          "anchor": "create policy brand_templates_objects_insert on storage.objects for insert to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 125,
           "anchor": "create policy brand_templates_objects_insert on storage.objects for insert to authenticated",
           "mechanism": "direct_ddl"
         }
@@ -202833,7 +202790,7 @@
           "id": "policy:storage.objects.brand_templates_objects_select",
           "kind": "policy",
           "name": "brand_templates_objects_select",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.is_org_member(private.storage_organization_id(objects.name)) AS is_org_member))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.brand_template_object_read_allowed_v1(name))",
           "roles": [
             "authenticated"
           ],
@@ -202847,7 +202804,7 @@
           "id": "policy:storage.objects.brand_templates_objects_select",
           "kind": "policy",
           "name": "brand_templates_objects_select",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.is_org_member(private.storage_organization_id(objects.name)) AS is_org_member))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.brand_template_object_read_allowed_v1(name))",
           "roles": [
             "authenticated"
           ],
@@ -202868,6 +202825,12 @@
           "line": 31,
           "anchor": "create policy brand_templates_objects_select on storage.objects for select to authenticated",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 121,
+          "anchor": "create policy brand_templates_objects_select on storage.objects for select to authenticated",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -202880,7 +202843,7 @@
           "id": "policy:storage.objects.brand_templates_objects_update",
           "kind": "policy",
           "name": "brand_templates_objects_update",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
           "roles": [
             "authenticated"
           ],
@@ -202888,13 +202851,13 @@
           "schema": "storage",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+          "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
         },
         "staging": {
           "id": "policy:storage.objects.brand_templates_objects_update",
           "kind": "policy",
           "name": "brand_templates_objects_update",
-          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))",
+          "qual": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))",
           "roles": [
             "authenticated"
           ],
@@ -202902,7 +202865,7 @@
           "schema": "storage",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.can_manage_organization(private.storage_organization_id(objects.name)) AS can_manage_organization))"
+          "with_check": "((bucket_id = 'brand-templates'::text) AND private.method_scope_allowed_v1(private.storage_organization_id(name), 'work'::text) AND private.can_manage_organization(private.storage_organization_id(name)))"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
@@ -202913,6 +202876,12 @@
         {
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 35,
+          "anchor": "create policy brand_templates_objects_update on storage.objects for update to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 128,
           "anchor": "create policy brand_templates_objects_update on storage.objects for update to authenticated",
           "mechanism": "direct_ddl"
         }
@@ -248745,51 +248714,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -248798,14 +248722,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911012528_versioned_information_packs.sql",
           "line": 52,
           "anchor": "create table public.information_pack_items (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -248859,51 +248789,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -248912,14 +248797,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911012528_versioned_information_packs.sql",
           "line": 7,
           "anchor": "create table public.information_pack_revisions (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -256082,51 +255973,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -256135,14 +255981,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
           "line": 125,
           "anchor": "create table public.pack_access_events (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -256196,51 +256048,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -256249,14 +256056,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
           "line": 8,
           "anchor": "create table public.pack_distribution_authorizations (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -256310,51 +256123,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -256363,14 +256131,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
           "line": 81,
           "anchor": "create table public.pack_distribution_next_steps (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -256424,51 +256198,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -256477,14 +256206,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
           "line": 55,
           "anchor": "create table public.pack_distribution_shares (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -256538,51 +256273,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -256591,14 +256281,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
           "line": 6,
           "anchor": "create table public.pack_recipient_responses (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -260406,51 +260102,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -260459,14 +260110,20 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "congelar",
-      "stage": "1B, 23 / posterior",
-      "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
+      "stage": "23",
+      "reason": "Distribuição histórica somente em staging, sem publicação: todos os grants de Data API revogados; estrutura preservada para rastreabilidade.",
       "sources": [
         {
           "path": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
           "line": 7,
           "anchor": "create table public.qualified_contact_preparations (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+          "line": 8,
+          "anchor": "  if target is not null then execute format('revoke all on function %s from public,anon,authenticated,service_role',target);end if;",
+          "mechanism": "reviewed_conditional_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -319584,6 +319241,134 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.brand_template_object_read_allowed_v1(p_path text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.brand_template_object_read_allowed_v1(p_path text)",
+          "kind": "function",
+          "name": "brand_template_object_read_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_path text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.brand_template_object_read_allowed_v1(p_path text)",
+          "kind": "function",
+          "name": "brand_template_object_read_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_path text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Etapa 23: adaptador com autoridade atual e leitura de marca sob direito explícito de recurso ou cofre.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 111,
+          "anchor": "create function private.brand_template_object_read_allowed_v1(p_path text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_load_compatibility_context_v1(p_job_id uuid, p_capability_token text, p_loader text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_compatibility_context_v1(p_job_id uuid, p_capability_token text, p_loader text)",
+          "kind": "function",
+          "name": "worker_load_compatibility_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_loader text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_compatibility_context_v1(p_job_id uuid, p_capability_token text, p_loader text)",
+          "kind": "function",
+          "name": "worker_load_compatibility_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_loader text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Etapa 23: adaptador com autoridade atual e leitura de marca sob direito explícito de recurso ou cofre.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+          "line": 4,
+          "anchor": "create function private.worker_load_compatibility_context_v1(p_job_id uuid,p_capability_token text,p_loader text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -327073,6 +326858,27 @@
       "decision": "preservar",
       "stage": "22",
       "reason": "Etapa 22: revogação, retenção, descarte físico e auditoria com carimbo real nos journals."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261006172644_retire_legacy_framework_paths.sql",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Retirar caminhos antigos de autoridade, fechar distribuição não publicada e alinhar modelos e objetos privados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261006172646_quarantine_unreleased_distribution_paths.sql",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Retirar caminhos antigos de autoridade, fechar distribuição não publicada e alinhar modelos e objetos privados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261006172649_template_context_authority_parity.sql",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Retirar caminhos antigos de autoridade, fechar distribuição não publicada e alinhar modelos e objetos privados."
     }
   ],
   "staging_archive": [

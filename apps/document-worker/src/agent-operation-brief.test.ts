@@ -9,6 +9,7 @@ import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
 import {governedActiveWorkContext, processAgentOperationBriefJob as processAgentOperationBriefJobNative} from "./agent-operation-brief";
+import {processTechnicalPreviewAgentJob} from "./testing/preview-agent-turn";
 import {liveRoutingOutputSchema} from "./live-preview";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 
@@ -1546,5 +1547,5 @@ const processAgentOperationBriefJob:typeof processAgentOperationBriefJobNative=a
   const p=c.project as {id?:string}|null|undefined;
   return {schemaVersion:"execution-brief-input-capture.v1",captureId:"10000000-0000-4000-8000-000000000999",producerJobId:job.job_id,workId:p?.id??"10000000-0000-4000-8000-000000000998",inputFingerprint:c.approval_input_fingerprint??"b".repeat(64),contextFingerprint:"c".repeat(64),sourceCount:((c.documents??[])as unknown[]).length,context:{...c,approval_input_fingerprint:c.approval_input_fingerprint??"b".repeat(64),source_pack_id:job.source_pack_id??null,project:c.project??{id:"10000000-0000-4000-8000-000000000998",name:"Synthetic captured work",entryJob:"origination_thesis",accessBasis:"public_information",phase:"understand",status:"active"}}};
  })};
- return processAgentOperationBriefJobNative(job,{...dependencies,queue:nativeQueue});
+ return (job.integration_preview ? processTechnicalPreviewAgentJob : processAgentOperationBriefJobNative)(job,{...dependencies,queue:nativeQueue});
 };

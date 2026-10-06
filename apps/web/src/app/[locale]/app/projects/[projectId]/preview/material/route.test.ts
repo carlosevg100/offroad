@@ -5,9 +5,12 @@ import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 const mocks = vi.hoisted(() => ({workspace: vi.fn(), readable: vi.fn()}));
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/artifacts/legacy-routes/integration-preview-status.test-support", () => ({
+  loadIntegrationPreviewStatus: async () => ({enabled: true, scope: "organization", projectIds: []}),
+  integrationPreviewCoversProject: () => true,
+}));
 vi.mock("@/lib/auth/resource-download", () => ({resourceStillReadable: mocks.readable}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
-vi.mock("@/lib/integration-preview", () => ({loadIntegrationPreviewStatus: async () => ({}), integrationPreviewCoversProject: () => true}));
 
 import {artifactReadFixture, artifactRpc, type ReadFixtureInput} from "@/lib/artifacts/artifact-read.test-support";
 import {legacyGET} from "@/lib/artifacts/legacy-routes/preview-material.test-support";

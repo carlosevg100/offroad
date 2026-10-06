@@ -6,9 +6,7 @@ import {capitalProjectJob, capitalProjectJobSchema} from "@offroad/work-plan";
 
 import type {WorkspaceNavigationGroup, WorkspaceNavigationProject} from "@/components/workspace-project-navigation";
 import {RAIL_COLLAPSE_COOKIE, WorkspaceRail, type WorkspaceRailCopy} from "@/components/workspace-rail";
-import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {workspaceCapabilities} from "@/lib/workspace/capabilities";
 
 import {signOut} from "./actions";
@@ -92,7 +90,6 @@ export default async function ApplicationLayout({children, params}: Props) {
   projects.sort((a, b) => (updatedById.get(b.id) ?? "").localeCompare(updatedById.get(a.id) ?? ""));
 
   const railCollapsed = (await cookies()).get(RAIL_COLLAPSE_COOKIE)?.value === "1";
-  const integrationPreview = await loadIntegrationPreviewStatus(supabase, organization.id);
   const {data: profile} = await supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle();
   const copy: WorkspaceRailCopy = {
     account: t("account"),
@@ -158,15 +155,6 @@ export default async function ApplicationLayout({children, params}: Props) {
       />
       <div className="app-main">
       <WorkspaceContextSwitcher locale={locale} organization={organization} canAdminister={accessAdministration.canAdminister} copy={{switch: contextCopy("switch"), access: accessCopy("title")}} />
-        {integrationPreview.enabled && integrationPreview.scope === "organization" ? <IntegrationPreviewBanner
-          copy={{
-            kicker: t("integrationPreview.kicker"),
-            title: t("integrationPreview.title"),
-            body: t("integrationPreview.body"),
-            note: t("integrationPreview.note"),
-          }}
-          note={[integrationPreview.mode === "live" ? (locale === "en-US" ? "Live mode: the semantic router decides, one model call per turn under budget." : "Modo vivo: o roteador semântico decide, uma chamada de modelo por turno sob orçamento.") : null, integrationPreview.note].filter((part): part is string => Boolean(part)).join(" ") || null}
-        /> : null}
         {children}
       </div>
     </div>

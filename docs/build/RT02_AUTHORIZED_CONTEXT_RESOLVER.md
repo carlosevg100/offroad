@@ -151,3 +151,7 @@ authorization, revocation, freshness and `validUntil`, persist the revalidation/
 then read only the typed allowlisted locators bound to their content hashes. This shadow slice has no
 payload loader and deliberately does not pretend an in-memory check is that durable proof. Only after
 that gate may a separately approved change inject resolved payload into a promoted executor.
+
+## Isolamento vigente na etapa 23
+
+O runtime universal de fixture reside em `apps/document-worker/src/testing/universal-dispatch-runtime.ts`. Não há import pelo dispatcher de produção. O adaptador R01 usa a publicação e o execution profile fixados; os contratos técnicos históricos não concedem execução de produção.
