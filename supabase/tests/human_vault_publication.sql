@@ -64,5 +64,9 @@ do $$ begin
  begin perform public.publish_vault_entry_v1('a5120000-0000-4000-9000-000000000003','a5120000-0000-4000-9000-000000000004','x');raise exception 'worker published';exception when insufficient_privilege then null;end;
 end $$;
 reset role;
+do $$begin
+ if not exists(select 1 from public.audit_events where action='publication.allowed'and resource_id='a5120000-0000-4000-9000-000000000001'and metadata->>'resourceVersionId'='a5120000-0000-4000-9000-000000000002'and metadata->>'policyFingerprint'~'^[a-f0-9]{64}$')then raise exception 'vault publication lacks exact version policy receipt';end if;
+ raise notice 'PASS sensitive_vault_publication_exact_command_receipt';
+end;$$;
 select 'human_vault_publication: PASS' result;
 rollback;

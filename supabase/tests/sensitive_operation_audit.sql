@@ -18,6 +18,15 @@ begin
  begin perform private.append_sensitive_operation_v1(org,work,version,'read',true);raise exception 'human forged audit allowed';exception when insufficient_privilege then null;end;reset role;
  if not exists(select 1 from public.audit_events where organization_id=org and actor_user_id='a11b0000-0000-4000-8000-000000000002'and action='search.denied'and metadata->>'result'='deny')then raise exception 'denial absent';end if;
  raise notice 'PASS sensitive_denial_does_not_grant_content_or_forge_success';
- -- Trigger failure happens in a rollback-only eval, proving the read cannot silently omit evidence.
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
+ perform public.set_capital_project_review_assignment_v1(work,'a11b0000-0000-4000-8000-000000000001','preparer',true);
+ perform public.set_capital_project_review_assignment_v1(work,'a11b0000-0000-4000-8000-000000000001','approver',true);
+ perform public.set_capital_project_review_policy_v1(work,'allowed');
+ perform public.review_artifact_revision_v1(version,pg_temp.val('rt_revision','manifest_fingerprint'),'approve',null,'Synthetic exact audit review',true,gen_random_uuid());reset role;
+ if not exists(select 1 from public.audit_events where organization_id=org and action='review.allowed' and metadata->>'resourceVersionId'=version::text and metadata->>'policyFingerprint'~'^[a-f0-9]{64}$')then raise exception 'human review lacks exact version policy receipt';end if;
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
+ perform public.set_retention_rule_v1(work,'retain',null,gen_random_uuid());reset role;
+ if not exists(select 1 from public.audit_events where organization_id=org and action='administration.allowed' and resource_id=work::text and metadata->>'resourceVersionId' is not null and metadata->>'result'='allow')then raise exception 'administration lacks typed receipt';end if;
+ raise notice 'PASS sensitive_review_and_administration_exact_command_receipts';
 end;$$;
 rollback;
