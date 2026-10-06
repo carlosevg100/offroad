@@ -260,7 +260,7 @@
     {
       "signature": "private.read_presentation_template_v1(uuid)",
       "file": "private.read_presentation_template_v1(uuid).sql",
-      "sha256": "f66ac454c9e119ad19c3bbb75ea27ef4d6aed335b4c0c2487fd9438d3abf0885"
+      "sha256": "b94375c7b4c97501ca1edb285195e6f062b8bdd9e5af297ce6b6fcfdf47a136d"
     },
     {
       "signature": "private.read_project_revision_history_v1(uuid)",
@@ -617,7 +617,7 @@
   "environmentReceipts": {
     "source": "Live catalogues after all three stage23 migrations; stage22 historical equivalents retained without overwrite",
     "receipt": "LIVE-VERIFICATION-STAGE23.json",
-    "receiptSha256": "d9fe13f9dde4877b8355b183155b57bbb63f111832eb9e556a6e7ba6510088f8",
+    "receiptSha256": "0bf88402b01b23095975227547783e93bb02962fb4986bc77a69ac0e4a467229",
     "production": {
       "byteExactMatches": 121,
       "knownEquivalentHistoricalDifferences": 1,

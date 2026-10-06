@@ -212,7 +212,7 @@
         },
         {
           "signature": "private.read_presentation_template_v1(uuid)",
-          "sha256": "f66ac454c9e119ad19c3bbb75ea27ef4d6aed335b4c0c2487fd9438d3abf0885"
+          "sha256": "b94375c7b4c97501ca1edb285195e6f062b8bdd9e5af297ce6b6fcfdf47a136d"
         },
         {
           "signature": "private.read_project_revision_history_v1(uuid)",
@@ -709,7 +709,7 @@
         },
         {
           "signature": "private.read_presentation_template_v1(uuid)",
-          "sha256": "f66ac454c9e119ad19c3bbb75ea27ef4d6aed335b4c0c2487fd9438d3abf0885"
+          "sha256": "b94375c7b4c97501ca1edb285195e6f062b8bdd9e5af297ce6b6fcfdf47a136d"
         },
         {
           "signature": "private.read_project_revision_history_v1(uuid)",

@@ -29,4 +29,3 @@ begin
     'pdf_fonts', to_jsonb(private.presentation_template_pdf_fonts()));
 end;
 $function$
-
