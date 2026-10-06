@@ -307,7 +307,22 @@ test("framework readiness keeps one work from a question without intake to pinne
   return sql(`select j.status||'|'||r.outcome from public.processing_jobs j join private.execution_result_receipts r on r.organization_id=j.organization_id and r.execution_id=j.execution_id where j.execution_id='${resumedId}' and j.kind='work_execution'`);
  },{timeout:180_000,intervals:[2000]}).toBe("succeeded|succeeded");
  expect(sql(`select canonical_result from private.execution_result_receipts where execution_id='${executionId}'`)).toBe(originalResult);
- expect(sql(`select count(*) from public.work_executions where work_id='${projectId}'`)).toBe("2");
+ // The full worker also consumes the premise-change event. Its automatic
+ // descendant is distinct from the second explicit human request. Require the
+ // recorded lineage/candidate, not an arbitrary extra execution or a loose count.
+ const resumedRows=()=>JSON.parse(sql(`select coalesce(json_agg(json_build_object('id',e.id,'root',l.root_execution_id,'candidate',l.candidate_id,'candidateExecution',c.execution_id,'candidateWork',c.work_id,'request',e.request_id,'outcome',r.outcome) order by e.id),'[]') from public.work_executions e left join private.execution_lineage l on l.organization_id=e.organization_id and l.execution_id=e.id left join public.work_recompute_candidates c on c.organization_id=l.organization_id and c.id=l.candidate_id left join private.execution_result_receipts r on r.organization_id=e.organization_id and r.execution_id=e.id where e.work_id='${projectId}'`)) as {id:string;root:string|null;candidate:string|null;candidateExecution:string|null;candidateWork:string|null;request:string;outcome:string|null}[];
+ await expect.poll(()=>resumedRows().filter(r=>r.root===executionId&&r.outcome==="succeeded").length,{timeout:180_000,intervals:[2000]}).toBe(1);
+ const resumedEvidence=resumedRows();
+ await test.info().attach("framework-readiness-resume-lineage",{body:JSON.stringify(resumedEvidence),contentType:"application/json"});
+ expect(resumedEvidence).toHaveLength(3);
+ expect(resumedEvidence.filter(r=>r.root===null).map(r=>r.id).sort()).toEqual([executionId,resumedId].sort());
+ const automatic=resumedEvidence.find(r=>r.root!==null)!;
+ expect(automatic.root).toBe(executionId);
+ expect(automatic.candidate).toMatch(/^[0-9a-f-]{36}$/);
+ expect(automatic.candidateExecution).toBe(automatic.id);
+ expect(automatic.candidateWork).toBe(projectId);
+ expect(automatic.request).toBe(automatic.candidate);
+ expect(automatic.outcome).toBe("succeeded");
  expect(sql(`select b.work_id from public.work_executions b where b.id='${resumedId}'`)).toBe(projectId);
  const proof = {schemaVersion:"framework-readiness-journey.v1", workId:projectId, executionId, manifestFingerprint, profileFingerprint:released.profileSha256, sameWork:true, startedWithoutIntake:true, workerAuthoredResult:true};
  // Current resource authority closes the already viewed result even for its historical creator.

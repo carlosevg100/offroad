@@ -18,6 +18,8 @@ As contagens e snapshots de continuidade ficam no trabalho/organização da fixt
 
 O percurso integrado, incluindo fontes/divergência/adoção, e sua execução remota devem possuir recibos próprios antes do aceite. Os testes de contrato de observação, adoção, direitos e continuidade não são apresentados como esse percurso completo. Transporte privado simulado não comprova integração homologada de provedor.
 
+No navegador, o worker completo também consome a alteração de premissa. A prova distingue as duas solicitações humanas do descendente automático: este exige raiz na execução original, candidato no mesmo trabalho, request vinculado ao candidato e recibo de sucesso. Uma execução extra sem essa linhagem reprova o gate.
+
 ## Ambientes e publicação
 
 Staging: `gjkkjtbfnssdsbmlhmwk`. Produção: `ifnogpksgdadruooqydi`. Jornals e catálogo são capturados ao vivo; o checker de migrações exige todas as versões de main no journal de produção. Diferenças históricas declaradas de staging não liberam diferenças de definições atuais.
