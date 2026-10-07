@@ -1,6 +1,6 @@
 ## 2026-10-07: C03 sobre dados adotados, candidato
 
-21 testes novos PASS para ponte de custo relativo e estimativas de ação; core v28 prospectivo. Adaptação conserva identidade/contexto/definição/escala, ambos os emissores e dependências, sem overrides ou autorização por digest. Não atribui causalidade/rating e não converte custo desconhecido em zero. Gate completo e publicação pendentes; ensaio de interface e composição ainda não realizados. Ver FICHA-RELATIVE-DEBT-COST.md.
+22 testes novos PASS para ponte de custo relativo e estimativas de ação; core v28 prospectivo. Adaptação conserva identidade/contexto/definição/escala, ambos os emissores e dependências, sem overrides ou autorização por digest. Não atribui causalidade/rating e não converte custo desconhecido em zero. Gate completo local 44/44 PASS (financial-core: 395; financial-model: 447; worker: 1801). CI e publicação pendentes; ensaio de interface e composição ainda não realizados. Ver FICHA-RELATIVE-DEBT-COST.md.
 
 ## 2026-10-07: custo de proposta sobre adoções, candidato
 

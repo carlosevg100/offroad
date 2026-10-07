@@ -18,7 +18,7 @@ function fixture() {
   const list = (name: string, unit: string, value: string[]) => contribute(name, unit, {type: "list", value});
   const snapshot: AdoptionBasisSnapshot = {schemaVersion: "contextual-adoption.v1", versionId: id(500), setId: id(6), workId: id(7), purpose: "explain relative debt cost", contextKey: "synthetic-comparison", revision: 1, previousVersionId: null, classification: "working_basis", entries};
   const input: AdoptedRelativeDebtCostInput = {envelope: {canonical: "", fingerprint: ""}, scope: {workId: id(7), purpose: snapshot.purpose, versionId: snapshot.versionId},
-    entityId: id(1), peerEntityId: id(2), perimeter: "standalone", peerPerimeter: "standalone", currency: "BRL", scenario: "synthetic-comparison", openingDate: "2024-01-01", endDate: "2027-06-01", comparisonId, numericInterpretations: [],
+    entityId: id(1), peerEntityId: id(2), perimeter: "standalone", peerPerimeter: "standalone", currency: "BRL", scenario: "synthetic-comparison", openingDate: "2024-01-01", endDate: "2027-06-01", asOfDate: "2026-05-01", comparisonId, numericInterpretations: [],
     own: {spreadBps: number("own.spreadBps", "basis_points", "260"), indexer: text("own.indexer", "convention", "CDI"), pricingDate: contribute("own.pricingDate", "date", {type: "date", value: "2024-09-01"})},
     peer: {spreadBps: number("peer.spreadBps", "basis_points", "135", true), indexer: text("peer.indexer", "convention", "CDI", true), pricingDate: contribute("peer.pricingDate", "date", {type: "date", value: "2026-05-01"}, true)},
     pricingBasis: text("pricingBasis", "convention", "same_indexer_quoted_spread"), curveVersion: text("curveVersion", "reference_id", "not_applicable"), coverage: text("coverage", "convention", "complete_scoped_bridge"),
@@ -78,6 +78,13 @@ describe("relative debt cost over an adopted immutable basis", () => {
     let f = fixture(); f.entries.find(e => e.fieldPath.endsWith("peer.indexer"))!.value = {type: "text", value: "IPCA"}; expect(() => calculateAdoptedRelativeDebtCost(f.seal())).toThrow();
     f = fixture(); f.entries.find(e => e.fieldPath.endsWith(`adjustment.${f.input.adjustments[1]!.id}.independentEffectGroup`))!.value = {type: "text", value: "pricing_date"}; expect(() => calculateAdoptedRelativeDebtCost(f.seal())).toThrow();
   });
+  it("requires an evidenced date effect for a complete bridge across different pricing dates", () => {
+    const f = fixture(); f.input.adjustments.shift();
+    const r = calculateAdoptedRelativeDebtCost(f.seal()); expect(r.bridge).toBeNull();
+    expect(r.gaps.some(g => g.operand.endsWith("adjustments.pricing_date"))).toBe(true);
+    f.entries.find(e => e.fieldPath.endsWith("coverage"))!.value = {type: "text", value: "limited_adjustments"};
+    expect(calculateAdoptedRelativeDebtCost(f.seal()).bridge).toMatchObject({status: "limited_bridge", residualBps: null});
+  });
   it("denies free values and reuse of an observation through another contribution", () => {
     let f = fixture(); expect(() => calculateAdoptedRelativeDebtCost({...f.seal(), ownSpreadBps: "150"})).toThrow();
     f = fixture(); f.entries[0]!.observationId = id(700); f.entries[3]!.observationId = id(700); expect(() => calculateAdoptedRelativeDebtCost(f.seal())).toThrow("relative_cost_missing_or_reused_contribution");
@@ -103,6 +110,7 @@ describe("relative debt cost over an adopted immutable basis", () => {
     const revised = fixture(); revised.snapshot.versionId = id(501); revised.snapshot.revision = 2; revised.snapshot.previousVersionId = id(500); revised.input.scope.versionId = id(501);
     revised.entries[0]!.value = {type: "number", value: "270"}; expect(calculateAdoptedRelativeDebtCost(revised.seal()).fingerprint).not.toBe(r.fingerprint);
     expect(calculateAdoptedRelativeDebtCost(old.seal())).toEqual(r);
-    revised.entries.find(e => e.fieldPath.endsWith("own.pricingDate"))!.value = {type: "date", value: "2028-01-01"}; expect(() => calculateAdoptedRelativeDebtCost(revised.seal())).toThrow("relative_cost_own_future_price");
+    // Inside the refinancing horizon, but still future information at the analysis date.
+    revised.entries.find(e => e.fieldPath.endsWith("own.pricingDate"))!.value = {type: "date", value: "2026-12-01"}; expect(() => calculateAdoptedRelativeDebtCost(revised.seal())).toThrow("relative_cost_own_future_price");
   });
 });

@@ -17,13 +17,13 @@ const actionTerms = z.strictObject({convention: selection, currentSpreadBps: sel
 export const adoptedRelativeDebtCostInputSchema = z.strictObject({
   envelope: shape.envelope, scope: shape.scope, entityId: shape.entityId, peerEntityId: z.uuid(),
   perimeter: shape.perimeter, peerPerimeter: shape.perimeter, currency: shape.currency, scenario: shape.scenario,
-  openingDate: shape.openingDate, endDate: shape.endDate, comparisonId: z.uuid(), numericInterpretations: shape.numericInterpretations,
+  openingDate: shape.openingDate, endDate: shape.endDate, asOfDate: z.iso.date(), comparisonId: z.uuid(), numericInterpretations: shape.numericInterpretations,
   own: z.strictObject({spreadBps: selection, indexer: selection, pricingDate: selection}),
   peer: z.strictObject({spreadBps: selection, indexer: selection, pricingDate: selection}),
   pricingBasis: selection, curveVersion: selection, coverage: selection,
   adjustments: z.array(z.strictObject({id: z.uuid(), terms: adjustmentTerms})).max(32),
   actions: z.array(z.strictObject({id: z.uuid(), terms: actionTerms})).max(16),
-}).refine(i => i.endDate > i.openingDate && i.entityId !== i.peerEntityId, "Distinct entities and valid horizon required")
+}).refine(i => i.endDate > i.openingDate && i.entityId !== i.peerEntityId && i.asOfDate >= i.openingDate && i.asOfDate <= i.endDate, "Distinct entities and valid horizon/as-of date required")
   .refine(i => new Set(i.adjustments.map(a => a.id)).size === i.adjustments.length && new Set(i.actions.map(a => a.id)).size === i.actions.length, "Duplicate adjustment or action");
 export type AdoptedRelativeDebtCostInput = z.infer<typeof adoptedRelativeDebtCostInputSchema>;
 const decimal = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/);
@@ -74,7 +74,7 @@ export function calculateAdoptedRelativeDebtCost(raw: unknown) {
     pricingDate: read(input[key].pricingDate, `${key}.pricingDate`, "date", "date", z.iso.date(), key === "peer"),
   });
   const own = party("own"), peer = party("peer");
-  for (const [name, p] of [["own", own], ["peer", peer]] as const) if (p.pricingDate && p.pricingDate > input.endDate)
+  for (const [name, p] of [["own", own], ["peer", peer]] as const) if (p.pricingDate && p.pricingDate > input.asOfDate)
     throw new Error(`relative_cost_${name}_future_price`);
   const pricingBasis = read(input.pricingBasis, "pricingBasis", "convention", "text", relativeDebtCostBridgeInputSchema.shape.pricingBasis);
   const curveVersion = read(input.curveVersion, "curveVersion", "reference_id", "text", text);
@@ -89,6 +89,9 @@ export function calculateAdoptedRelativeDebtCost(raw: unknown) {
     return gaps.length === start && bps !== null && family && evidenceAnchor && methodologyVersion && independentEffectGroup
       ? [{id: a.id, bps, family, evidenceAnchor, methodologyVersion, independentEffectGroup}] : [];
   });
+  if (own.pricingDate && peer.pricingDate && own.pricingDate !== peer.pricingDate
+    && coverage === "complete_scoped_bridge" && !adjustments.some(a => a.family === "pricing_date"))
+    gaps.push({operand: prefix + "adjustments.pricing_date", reason: "Different pricing dates need an evidenced date adjustment, including an explicitly evidenced zero when appropriate"});
   const bridgeGaps = gaps.length;
   const actionResults = input.actions.map(a => {
     const start = gaps.length; const path = `action.${a.id}.`;
@@ -124,7 +127,7 @@ export function calculateAdoptedRelativeDebtCost(raw: unknown) {
       pricingBasis, curveVersion: curveVersion === "not_applicable" ? null : curveVersion, coverage, adjustments});
   }
   const payload = {schemaVersion: "adopted-relative-debt-cost.v1" as const, financialCoreVersion, scope: input.scope,
-    comparisonId: input.comparisonId, entityId: input.entityId, peerEntityId: input.peerEntityId, currency: input.currency,
+    comparisonId: input.comparisonId, entityId: input.entityId, peerEntityId: input.peerEntityId, currency: input.currency, asOfDate: input.asOfDate,
     basisFingerprint: input.envelope.fingerprint, own, peer, bridge, actions: actionResults, gaps, bindings, normalization,
     contributions: [...used.values()], derivedDependencies: [{result: "bridge_and_action_estimates", decisionIds: [...used.keys()]}],
     status: gaps.length ? "missing_inputs" as const : "partial_composition" as const,
