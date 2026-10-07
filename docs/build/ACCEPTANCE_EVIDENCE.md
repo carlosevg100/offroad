@@ -1,4 +1,4 @@
-## 2026-10-07 — autoria financeira por ficha
+## 2026-10-07: autoria financeira por ficha
 
 `ficha-procedure-authoring.test.ts`: seis testes aprovados para compilação, dependência do investimento e negação de execução/aprovação herdada. Biblioteca completa: 505 testes aprovados; avaliação dos executores fixados: 15 aprovados; typecheck e checker de locks aprovados. Esses resultados verificam estrutura e fronteira de autoridade, não qualidade financeira executada pela interface. Fonte v5 candidata não substitui a v4 publicada.
 
