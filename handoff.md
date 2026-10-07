@@ -1,3 +1,7 @@
+## 2026-10-07: custo de proposta sobre adoções, candidato
+
+financial-model acrescenta calculateAdoptedFinancingProposal, sem número/convenção livre. Confere campo, proposta, entidade, tempo, definição, moeda, escala, cenário e interpretação monetária real; conserva dependências e nega contribuição duplicada. 14 testes novos PASS; pacote 435 PASS; gate completo local 44/44 PASS. Sem RPC ou release nova. Resultado partial_composition não substitui liquidez, garantias ou interpretação profissional; custos adicionais continuam lacuna dirigida. CI, merge e deploy pendentes. Ver FICHA-ADOPTED-PROPOSAL-COST.md.
+
 ## 2026-10-07: motor de custo equivalente das fichas
 
 Roteador publicado pela PR 889 em a0adf3ffc6a29d23b15e9fb24f5c0449ea221c67, com Quality/Security de main, web e boot ECS conferidos; relatório durável na raiz outputs/implementacao-fichas-2026-10-07/ROTEADOR-COMPLETION.md. Autoria draft mesclada pela PR 890 em ef1a25369cc99c07eb3012f6ad150137ec1063b4; sua implantação tem verificação própria.

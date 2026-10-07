@@ -2,6 +2,8 @@ import {createHash} from "node:crypto";
 import {describe, expect, it, vi} from "vitest";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import type {RoundtripManifest} from "@offroad/case-export/artifact-roundtrip";
+import {materialToDocx} from "@offroad/case-export";
+import {embedRoundtripManifest} from "@offroad/case-export/artifact-roundtrip";
 import {processArtifactRoundtrip, type ArtifactRoundtripClaim} from "./artifact-roundtrip-processing";
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -60,8 +62,8 @@ describe("leased artifact roundtrip processor boundaries", () => {
 });
 
 async function importPort(options:{clean?:boolean;withoutScanner?:boolean;wrongBinding?:boolean;changedReceipt?:boolean;revokeAfterScan?:boolean}={}) {
-  const {materialToDocx}=await import("@offroad/case-export");
-  const {embedRoundtripManifest}=await import("@offroad/case-export/artifact-roundtrip");
+  // Load fixture modules before the per-test clock. The unchanged five-second
+  // limit still covers DOCX creation, scan, fresh context, parsing and comparison.
   const office=await embedRoundtripManifest(materialToDocx({material:{kind:"credit_memo",title:{pt:"Sintético",en:"Synthetic"},dependsOn:[],blocks:[{type:"paragraph",text:{pt:"Texto governado",en:"Governed text"},supportIds:[]}]},lang:"en",meta:{issuedOn:"2026-10-05"}}),manifest);
   const digest=createHash("sha256").update(office).digest("hex");
   const source={versionId:id(10),bucket:"opportunity-documents"as const,path:"synthetic/received.docx",sha256:digest,byteLength:office.length,binding:{organizationId:options.wrongBinding?id(99):claim.organizationId,sourceDocumentId:id(10),documentVersion:1,expectedSha256:digest,expectedByteSize:office.length,originalName:"synthetic.docx",declaredMediaType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",operationId:claim.taskId}};
