@@ -69,6 +69,7 @@ jobs:
         run: |
           python3 -B scripts/ci/test_verify_worker_boot_flag.py
           python3 -B scripts/ci/test_verify_web_deployment.py
+          python3 -B scripts/ci/test-start-documentary-scanner.py
 
       - name: Verify reviewed framework consumers and technical isolation
         run: |
