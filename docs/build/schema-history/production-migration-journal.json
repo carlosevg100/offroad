@@ -1,2934 +1,2451 @@
 {
-  "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-06 17:47:53.461129+00",
   "rows": [
     {
-      "captured_at": "2026-10-06 17:47:53.461129+00",
-      "version": "20260815014649",
       "name": "platform_foundation",
+      "version": "20260815014649",
       "statements_md5": "4bd1753652f37be762b168ffe2befa78"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462188+00",
-      "version": "20260815014831",
       "name": "schema_hardening",
+      "version": "20260815014831",
       "statements_md5": "34ba9df222c236cab8f21c4cbe1add43"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462219+00",
-      "version": "20260815015458",
       "name": "application_commands",
+      "version": "20260815015458",
       "statements_md5": "59234869cbbb444c09b59f85c0bed15c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462245+00",
-      "version": "20260815022143",
       "name": "data_api_privilege_hardening",
+      "version": "20260815022143",
       "statements_md5": "99368ef351e9e54d196825b498d72fde"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462483+00",
-      "version": "20260816151535",
       "name": "professional_onboarding",
+      "version": "20260816151535",
       "statements_md5": "e1b5e9527a67217bb520551170037194"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462651+00",
-      "version": "20260817151210",
       "name": "allow_creator_owner_membership",
+      "version": "20260817151210",
       "statements_md5": "2b7da8441077a05704ba8be4fd9fabfd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462656+00",
-      "version": "20260817151303",
       "name": "consolidate_membership_insert_policy",
+      "version": "20260817151303",
       "statements_md5": "b52ff6a5697f27eda5fc9ff6ad4ac587"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462661+00",
-      "version": "20260817202038",
       "name": "document_first_intake",
+      "version": "20260817202038",
       "statements_md5": "24879ded52294239e493759a8daee3c4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462748+00",
-      "version": "20260817202807",
       "name": "document_first_intake_indexes",
+      "version": "20260817202807",
       "statements_md5": "eb5e3ac51a867b7ae35dfc5774d93769"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462752+00",
-      "version": "20260817203931",
       "name": "scope_document_hash_uniqueness",
+      "version": "20260817203931",
       "statements_md5": "4bf936dedfa46985f237f634ce1564b1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462762+00",
-      "version": "20260817232443",
       "name": "hardening_force_rls_and_org_type_guard",
+      "version": "20260817232443",
       "statements_md5": "ce0d9d07f29aaa914fd410538c5299ec"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462779+00",
-      "version": "20260818033220",
       "name": "atomic_intake_commands",
+      "version": "20260818033220",
       "statements_md5": "43f4874e000dc20d58bb802ad26d10f0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462897+00",
-      "version": "20260818034457",
       "name": "intake_document_removal_and_verification",
+      "version": "20260818034457",
       "statements_md5": "61319228e311e55424ed2d6d5a019c36"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462914+00",
-      "version": "20260818043539",
       "name": "intake_session_policies_membership",
+      "version": "20260818043539",
       "statements_md5": "26bd3edb223918bd37e6a9a09b873367"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.462922+00",
-      "version": "20260818171246",
       "name": "intelligence_runs_profiles_layers",
+      "version": "20260818171246",
       "statements_md5": "4fb81b0fdcef859042bc79efd7e3631b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463127+00",
-      "version": "20260818172243",
       "name": "privilege_hardening_no_anon_and_private_commands",
+      "version": "20260818172243",
       "statements_md5": "51c43294783247749fa837afb2772790"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463176+00",
-      "version": "20260818172357",
       "name": "pipeline_foreign_key_indexes",
+      "version": "20260818172357",
       "statements_md5": "feacb12cb287b0621a8eb7e0510ad764"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463182+00",
-      "version": "20260819115701",
       "name": "document_layers_insert_policy",
+      "version": "20260819115701",
       "statements_md5": "9b3c235729e2a085aa68726e86ac4e4a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463185+00",
-      "version": "20260820104922",
       "name": "worker_record_candidates",
+      "version": "20260820104922",
       "statements_md5": "0be67eeea8141f2dc12f000174fe1059"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463226+00",
-      "version": "20260820111237",
       "name": "organization_pipeline_flag",
+      "version": "20260820111237",
       "statements_md5": "f8ab1f225a549d2648f73627658571bc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463232+00",
-      "version": "20260820111258",
       "name": "organization_pipeline_flag_not_tenant_writable",
+      "version": "20260820111258",
       "statements_md5": "b01a1c1f2efac7437202014061f80ec3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463237+00",
-      "version": "20260820111528",
       "name": "organization_pipeline_default_on",
+      "version": "20260820111528",
       "statements_md5": "61ab42f79eceefc1b6066024e50a8e56"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463245+00",
-      "version": "20260820123143",
       "name": "intake_session_archetype",
+      "version": "20260820123143",
       "statements_md5": "87f452336476e78305aad3ea81ab0e81"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463252+00",
-      "version": "20260820133211",
       "name": "intake_information_answers",
+      "version": "20260820133211",
       "statements_md5": "e33cf80b3698a7db5ddba5d928c6cffe"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.463807+00",
-      "version": "20260820143434",
       "name": "extraction_feedback",
+      "version": "20260820143434",
       "statements_md5": "da289f9c3ec3c07bddfd8f66bf65065f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464076+00",
-      "version": "20260820143525",
       "name": "extraction_feedback_foreign_key_indexes",
+      "version": "20260820143525",
       "statements_md5": "88a05f32c72a2ed032f48050bf9ba7a5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464186+00",
-      "version": "20260820145017",
       "name": "intake_requirement_responses",
+      "version": "20260820145017",
       "statements_md5": "a875c672c9c6ee6a87ba43fb382b38a8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464219+00",
-      "version": "20260820174040",
       "name": "fund_directory",
+      "version": "20260820174040",
       "statements_md5": "cdf6f3151c8d58eca550f98db45ed612"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464265+00",
-      "version": "20260820175243",
       "name": "intake_deal_brief",
+      "version": "20260820175243",
       "statements_md5": "bc19392ab4bc218fe0321919050be5b2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464288+00",
-      "version": "20260820185152",
       "name": "intake_expected_rate",
+      "version": "20260820185152",
       "statements_md5": "fc589ecf65ba1aa631fa4e5a70742232"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464611+00",
-      "version": "20260820205229",
       "name": "case_brief_claim",
+      "version": "20260820205229",
       "statements_md5": "47cc601a472ad80d12ec7230c7daa17f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46465+00",
-      "version": "20260820213534",
       "name": "evidence_is_not_tenant_writable",
+      "version": "20260820213534",
       "statements_md5": "abeb77114396e9623b8c1ef6b0849ba8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464709+00",
-      "version": "20260820213802",
       "name": "worker_record_candidates_reachable",
+      "version": "20260820213802",
       "statements_md5": "7f61b1500182860a9e8026e93974dec4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464716+00",
-      "version": "20260820214048",
       "name": "grant_private_implementations",
+      "version": "20260820214048",
       "statements_md5": "a9686eef66cceb9160cf19bf9588b4a9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464722+00",
-      "version": "20260820215101",
       "name": "source_documents_insert_id",
+      "version": "20260820215101",
       "statements_md5": "9b96582b58af682eabd031b02f3b0a45"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464726+00",
-      "version": "20260820215904",
       "name": "pipeline_urls_bound_to_document",
+      "version": "20260820215904",
       "statements_md5": "74ba9b618dcd918333c8a72144909241"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464786+00",
-      "version": "20260820220813",
       "name": "drop_dead_source_document_kind",
+      "version": "20260820220813",
       "statements_md5": "35d6099d7d620dd03620d1702d51a44b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464791+00",
-      "version": "20260820221929",
       "name": "pipeline_spend_recorded_and_capped",
+      "version": "20260820221929",
       "statements_md5": "e44b703d1ec0a802c1473c0ef7ce45f2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464851+00",
-      "version": "20260820222749",
       "name": "complete_intake_processing_is_private",
+      "version": "20260820222749",
       "statements_md5": "8cc02613b75a96da19ae8b142ab7c06a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464896+00",
-      "version": "20260820224304",
       "name": "intake_session_state_not_tenant_writable",
+      "version": "20260820224304",
       "statements_md5": "531aed0daf9b0bf9981174d458374e60"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464919+00",
-      "version": "20260820225418",
       "name": "intake_session_commands_are_private",
+      "version": "20260820225418",
       "statements_md5": "fbee80682e84ea5a1eb788e5df076b51"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464958+00",
-      "version": "20260821114132",
       "name": "worker_complete_job_moves_the_session_again",
+      "version": "20260821114132",
       "statements_md5": "1c5ade492aa19ecc74e07f9c40c52739"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464987+00",
-      "version": "20260821165707",
       "name": "venture_debt_archetype_and_missing_document_kinds",
+      "version": "20260821165707",
       "statements_md5": "64946271554624411b70054df95f5806"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.464994+00",
-      "version": "20260822012109",
       "name": "sounding_tables",
+      "version": "20260822012109",
       "statements_md5": "5857db94ef8354c0a8184ba01050a86b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465022+00",
-      "version": "20260824170318",
       "name": "case_artifact_manifests",
+      "version": "20260824170318",
       "statements_md5": "5678ac317e65200cd968feffc16c714c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465074+00",
-      "version": "20260824170329",
       "name": "worker_case_analysis",
+      "version": "20260824170329",
       "statements_md5": "d28ca352586fe776a0a80d4cbeed4d76"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465153+00",
-      "version": "20260824180255",
       "name": "claim_decision_registry",
+      "version": "20260824180255",
       "statements_md5": "a5ad1208dd9d0e7ee7433a086a0cec4e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465203+00",
-      "version": "20260824180448",
       "name": "claim_decision_command_private",
+      "version": "20260824180448",
       "statements_md5": "a322c9004f665cb3e8d556ffc3ef9003"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465208+00",
-      "version": "20260824180822",
       "name": "claim_decision_foreign_key_indexes",
+      "version": "20260824180822",
       "statements_md5": "1efb02cb184fedc317569b38feca713c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465212+00",
-      "version": "20260824232722",
       "name": "governed_retrieval",
+      "version": "20260824232722",
       "statements_md5": "b8eece8328bd65e6b795994f24d701a1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465421+00",
-      "version": "20260824232920",
       "name": "retrieval_foreign_key_indexes",
+      "version": "20260824232920",
       "statements_md5": "aaf7d778b204bbf34ee667e460f18586"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465432+00",
-      "version": "20260824235937",
       "name": "controlled_production_rollout",
+      "version": "20260824235937",
       "statements_md5": "6428668c457c72ce0dbfbe41e3dec38e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465618+00",
-      "version": "20260825000110",
       "name": "controlled_production_foreign_key_indexes",
+      "version": "20260825000110",
       "statements_md5": "ed12e6bb42bb6b620bfc32487d5fa426"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465626+00",
-      "version": "20260825000811",
       "name": "controlled_release_commands",
+      "version": "20260825000811",
       "statements_md5": "c37c7be0d16a15e160e155ca2bcbffa1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465683+00",
-      "version": "20260825001020",
       "name": "fix_controlled_case_input_variable",
+      "version": "20260825001020",
       "statements_md5": "3197a1682abe24491adf021e221b5e23"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465709+00",
-      "version": "20260825001758",
       "name": "make_controlled_results_immutable",
+      "version": "20260825001758",
       "statements_md5": "14fdf7aea2d3c1586ac96b83e472a443"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465733+00",
-      "version": "20260825023240",
       "name": "add_intake_unavailable_response",
+      "version": "20260825023240",
       "statements_md5": "a002fff138f9f1f65d1602d785bde3c8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465739+00",
-      "version": "20260825160750",
       "name": "m0_intake_event_ledger",
+      "version": "20260825160750",
       "statements_md5": "ea1b0d6687873457cdf4568228bc262f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465824+00",
-      "version": "20260825160803",
       "name": "m0_intake_projection_terminal_guard",
+      "version": "20260825160803",
       "statements_md5": "d8682ee6e38607c217cb57992bc5c509"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.465839+00",
-      "version": "20260825171945",
       "name": "m0_capital_need_documents",
+      "version": "20260825171945",
       "statements_md5": "d42964c657aea902f4ff9b5f27f54282"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.466004+00",
-      "version": "20260825180214",
       "name": "m0_request_ladder_commands",
+      "version": "20260825180214",
       "statements_md5": "7dae6d6f5fee07084742fa75059a11f9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.466064+00",
-      "version": "20260825185143",
       "name": "m0_scope_authorization_triage",
+      "version": "20260825185143",
       "statements_md5": "2262bc38ed1eac06f3179fd0fc96aa1b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.466174+00",
-      "version": "20260825194419",
       "name": "m0_scope_authorization_lifecycle_contract",
+      "version": "20260825194419",
       "statements_md5": "a5a70e94d0ef6ac28ef6e55c027c6cc9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.466351+00",
-      "version": "20260825195659",
       "name": "m0_scope_authorization_lifecycle_contract",
+      "version": "20260825195659",
       "statements_md5": "07b3f7354f10563b66aa4115396ecbf5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.466626+00",
-      "version": "20260825200211",
       "name": "m0_scope_authorization_lifecycle_contract",
+      "version": "20260825200211",
       "statements_md5": "6bce02d9e39b87293b8362cd44c02349"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46683+00",
-      "version": "20260825200444",
       "name": "m0_scope_authorization_lifecycle_contract",
+      "version": "20260825200444",
       "statements_md5": "f615c41bb952a621cc48cd60594c0fc2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467028+00",
-      "version": "20260825201341",
       "name": "m0_scope_authorization_lifecycle_contract_final",
+      "version": "20260825201341",
       "statements_md5": "f12ff028ff9fd0a0de1ccead0d9f270e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46719+00",
-      "version": "20260825203300",
       "name": "m0_scope_authorization_lifecycle_contract",
+      "version": "20260825203300",
       "statements_md5": "354c71536ecce208e1fae95933a99b80"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467583+00",
-      "version": "20260826013647",
       "name": "m6_pricing_registry",
+      "version": "20260826013647",
       "statements_md5": "58a6297196fe5416194ea8d8bd15a094"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467644+00",
-      "version": "20260826013815",
       "name": "m6_pricing_registry_advisor_hardening",
+      "version": "20260826013815",
       "statements_md5": "dedf969105092246220fa8df90c4f380"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467649+00",
-      "version": "20260826032043",
       "name": "m8_qualified_introductions",
+      "version": "20260826032043",
       "statements_md5": "b950b6538114d5a0238a66d9b056e534"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467742+00",
-      "version": "20260826032703",
       "name": "m8_qualified_introduction_advisor_hardening",
+      "version": "20260826032703",
       "statements_md5": "e98df7295646a0f0c206ff5f518d8bb1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467748+00",
-      "version": "20260826035526",
       "name": "m9_red_flag_governance",
+      "version": "20260826035526",
       "statements_md5": "05cbfd2f3b8d4cc02fa09074f1cdfda5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467838+00",
-      "version": "20260826041244",
       "name": "m10_language_conduct_governance",
+      "version": "20260826041244",
       "statements_md5": "20477d0a37443fce2ec6c41e5ec93cb4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.467904+00",
-      "version": "20260826200143",
       "name": "agent_workspace_foundation",
+      "version": "20260826200143",
       "statements_md5": "63493792b4f5cd3da9150321b6bb50a0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468042+00",
-      "version": "20260826200443",
       "name": "agent_workspace_index_hardening",
+      "version": "20260826200443",
       "statements_md5": "7b8de4d77c837b33b2c2898f33b54109"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468048+00",
-      "version": "20260826203944",
       "name": "agent_operation_brief_vertical",
+      "version": "20260826203944",
       "statements_md5": "74373c552ccd7653560d4e399da355b1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468198+00",
-      "version": "20260826204254",
       "name": "agent_operation_brief_index_hardening",
+      "version": "20260826204254",
       "statements_md5": "a5e015e08b6a06be1932ba8a9ded8dd7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468203+00",
-      "version": "20260826204338",
       "name": "agent_accept_and_apply",
+      "version": "20260826204338",
       "statements_md5": "dac478fbeb6ca093bb4720ce70064184"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46822+00",
-      "version": "20260826205046",
       "name": "agent_job_failure_isolation",
+      "version": "20260826205046",
       "statements_md5": "1c642c21d55722af02533086111ae769"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468252+00",
-      "version": "20260826221128",
       "name": "restart_onboarding_intake",
+      "version": "20260826221128",
       "statements_md5": "017cb51a77b6a6b474e6a7fb98601828"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468273+00",
-      "version": "20260826232107",
       "name": "start_onboarding_intake_atomic",
+      "version": "20260826232107",
       "statements_md5": "7572b39fd685fb31b609d3e64bf36ef3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46834+00",
-      "version": "20260826232140",
       "name": "guided_company_profile_collecting_status",
+      "version": "20260826232140",
       "statements_md5": "6e5ab239e50b8d7ead633d4adeb5c287"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468383+00",
-      "version": "20260827005724",
       "name": "private_project_authorization_gate",
+      "version": "20260827005724",
       "statements_md5": "b93ca63d2eb51d7f58531ff211dae15a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468534+00",
-      "version": "20260827020950",
       "name": "refine_private_workspace_terms",
+      "version": "20260827020950",
       "statements_md5": "fa66c2223db76eaa722cde5419b228c1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468634+00",
-      "version": "20260827162103",
       "name": "legal_acceptance_v3_legacy_compatible",
+      "version": "20260827162103",
       "statements_md5": "f56af7993746e7789bfb546abd47b4d3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468815+00",
-      "version": "20260827221500",
       "name": "configure_existing_onboarding_intake",
+      "version": "20260827221500",
       "statements_md5": "03bd250de8834da67f50483d66ec2468"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46885+00",
-      "version": "20260827224000",
       "name": "start_workspace_intake_atomic",
+      "version": "20260827224000",
       "statements_md5": "7a98207707edfb9869d6c7c4fde256b3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468872+00",
-      "version": "20260828005129",
       "name": "onboarding_bootstrap_snapshot",
+      "version": "20260828005129",
       "statements_md5": "7e2d597efe7f2a818f81a0be1288b80d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.468902+00",
-      "version": "20260828005248",
       "name": "move_preparation_authority_to_legal_gate_reconcile",
+      "version": "20260828005248",
       "statements_md5": "3ebedc69b286a4f920552bdd0ca67c90"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469187+00",
-      "version": "20260828005251",
       "name": "receivables_provider_programs",
+      "version": "20260828005251",
       "statements_md5": "a8562d788a661ea32d32ca9c27f14dc8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469225+00",
-      "version": "20260828191314",
       "name": "receivables_production_evidence_rail",
+      "version": "20260828191314",
       "statements_md5": "cce86b5f992aa1ebefda212283f08c9c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469283+00",
-      "version": "20260828191325",
       "name": "receivables_evidence_fk_indexes",
+      "version": "20260828191325",
       "statements_md5": "988601b8ec1108121af8032cc86e43f5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469287+00",
-      "version": "20260828194341",
       "name": "allow_nfe_zip_uploads",
+      "version": "20260828194341",
       "statements_md5": "1cb4dc1f1d56a58a1bcceb50e108d13b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469291+00",
-      "version": "20260828195518",
       "name": "normalize_llm_extraction_method",
+      "version": "20260828195518",
       "statements_md5": "3f2b009dfd1f583179920d753a5983cf"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469327+00",
-      "version": "20260828210211",
       "name": "preserve_unparseable_worker_candidates",
+      "version": "20260828210211",
       "statements_md5": "d40b719ca4844da820d62f1e732a351b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469348+00",
-      "version": "20260828220516",
       "name": "batch_governed_retrieval_chunks",
+      "version": "20260828220516",
       "statements_md5": "16d6939c961e40eff7fc0b091c093868"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469442+00",
-      "version": "20260828225157",
       "name": "bound_large_retrieval_index",
+      "version": "20260828225157",
       "statements_md5": "2e54ece52eec08bf50f87722bb0b306c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469471+00",
-      "version": "20260828231205",
       "name": "allow_production_scale_retrieval_window",
+      "version": "20260828231205",
       "statements_md5": "19245f49c705baeb057aa2e7d903a54f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469476+00",
-      "version": "20260829003002",
       "name": "economic_pipeline_guardrails",
+      "version": "20260829003002",
       "statements_md5": "7c325394c9250352d86abeac77f3a9ba"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469567+00",
-      "version": "20260829141835",
       "name": "qualified_introduction_feedback",
+      "version": "20260829141835",
       "statements_md5": "2e3415015ba9f2749561158ec711a4b5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469623+00",
-      "version": "20260829141838",
       "name": "qualified_introduction_feedback_advisor_hardening",
+      "version": "20260829141838",
       "statements_md5": "bccdff77dcea24f4504ce140baf5c42d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469626+00",
-      "version": "20260829141841",
       "name": "qualified_introduction_feedback_supersession_ordering",
+      "version": "20260829141841",
       "statements_md5": "ed34c1325a6891bac912c430a04ad638"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46965+00",
-      "version": "20260829154103",
       "name": "deal_state_foundation",
+      "version": "20260829154103",
       "statements_md5": "49d77f4717d0efa2dee442384fa37429"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469728+00",
-      "version": "20260829154114",
       "name": "deal_state_advisor_hardening",
+      "version": "20260829154114",
       "statements_md5": "5bfc558ff78b7c142cd3aa7e44a6f19d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469734+00",
-      "version": "20260829154126",
       "name": "deal_state_idempotence",
+      "version": "20260829154126",
       "statements_md5": "c98c9673b257dc39ecff1e845776d4be"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469759+00",
-      "version": "20260829184738",
       "name": "task_dag_prior_report",
+      "version": "20260829184738",
       "statements_md5": "c658afa626c01150d4bbc3f40eeda70a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469772+00",
-      "version": "20260829203906",
       "name": "load_deal_state_context",
+      "version": "20260829203906",
       "statements_md5": "553ca38a1f7a4b10dfd9644422047b04"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469787+00",
-      "version": "20260829204142",
       "name": "prevent_stale_deal_state_resurrection",
+      "version": "20260829204142",
       "statements_md5": "d4ab0503a9d4d5a5837fb6749fcb5937"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469814+00",
-      "version": "20260829204945",
       "name": "bind_structure_decision_to_exact_proposal",
+      "version": "20260829204945",
       "statements_md5": "355336da6b408c6b0e12ce99e4a6d2c5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469879+00",
-      "version": "20260829205848",
       "name": "enqueue_incremental_deal_state_analysis",
+      "version": "20260829205848",
       "statements_md5": "e4504a708df72f5cb4f320c55e966f79"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.469933+00",
-      "version": "20260829211621",
       "name": "enqueue_material_production_from_approved_plan",
+      "version": "20260829211621",
       "statements_md5": "a40d47c07d05f9f5087a245399cc20fa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.46997+00",
-      "version": "20260829212338",
       "name": "bind_package_review_to_material_artifact",
+      "version": "20260829212338",
       "statements_md5": "34e1d161c459990f2567aff9223e1547"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470006+00",
-      "version": "20260829212414",
       "name": "lock_package_review_trigger_privileges",
+      "version": "20260829212414",
       "statements_md5": "e0db1dc0822347726d113041181829dc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47001+00",
-      "version": "20260829220610",
       "name": "load_match_provider_context",
+      "version": "20260829220610",
       "statements_md5": "475f872d8857d6a80dfd3954dd6868d4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470029+00",
-      "version": "20260829220739",
       "name": "govern_match_review_before_release",
+      "version": "20260829220739",
       "statements_md5": "32b45be7bc07b51e26f62fb0c05ffd7c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470081+00",
-      "version": "20260829221750",
       "name": "preserve_match_provider_identity",
+      "version": "20260829221750",
       "statements_md5": "7f3fe122921c82255f46139de2897b5a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470098+00",
-      "version": "20260829222406",
       "name": "build_exact_introduction_plan_from_shortlist",
+      "version": "20260829222406",
       "statements_md5": "8109a7f4a67930b244269820d7517f6f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470155+00",
-      "version": "20260829223055",
       "name": "separate_shortlist_from_distribution_policy",
+      "version": "20260829223055",
       "statements_md5": "0945ef0dd6dbdc5232963af1d95eac94"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470188+00",
-      "version": "20260829223811",
       "name": "resolve_exact_qualified_introduction_recipients",
+      "version": "20260829223811",
       "statements_md5": "efb267bb9bf3fa1753811306b384b6af"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470254+00",
-      "version": "20260829224111",
       "name": "authorize_exact_recipient_material_plan",
+      "version": "20260829224111",
       "statements_md5": "c53264aa986ad61b141fbf606d80fdb4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470405+00",
-      "version": "20260829225056",
       "name": "index_exact_introduction_relations",
+      "version": "20260829225056",
       "statements_md5": "a1c7f9071a6264ef37507cf0e771cc0f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470409+00",
-      "version": "20260829225306",
       "name": "record_exact_qualified_introduction_release",
+      "version": "20260829225306",
       "statements_md5": "8291be67dc381589618844f211d839c3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470554+00",
-      "version": "20260830155729",
       "name": "instant_workspace_entry",
+      "version": "20260830155729",
       "statements_md5": "a2d3a855c8826e0cfc1c69222d45bfdf"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470599+00",
-      "version": "20260830160719",
       "name": "terminal_processing_state",
+      "version": "20260830160719",
       "statements_md5": "e6371fa41a1f6d2475231a077f28f16b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470611+00",
-      "version": "20260830165102",
       "name": "canonical_workspace_project_setup",
+      "version": "20260830165102",
       "statements_md5": "8bd0bdb7716c524f01ce323607ec2f9d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470923+00",
-      "version": "20260830165116",
       "name": "session_company_gate",
+      "version": "20260830165116",
       "statements_md5": "26985fc06d5d073bb23578b42c2a42fc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.470963+00",
-      "version": "20260830214933",
       "name": "workspace_project_management",
+      "version": "20260830214933",
       "statements_md5": "28f0eb5fc239a7cba409411958bfb9e4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471037+00",
-      "version": "20260831092552",
       "name": "project_scoped_company_profile",
+      "version": "20260831092552",
       "statements_md5": "26087c76f9a31e1c7ce83d5a91150b3d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471099+00",
-      "version": "20260831133035",
       "name": "idempotent_intake_document_upload",
+      "version": "20260831133035",
       "statements_md5": "e34a90db4d18d9434ebbea8e5887c4e5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471132+00",
-      "version": "20260901035241",
       "name": "preliminary_understanding_gate",
+      "version": "20260901035241",
       "statements_md5": "bef404c9245bda344d034d8e8b222c5a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471324+00",
-      "version": "20260901035248",
       "name": "universal_capital_projects",
+      "version": "20260901035248",
       "statements_md5": "90b330cafb92716a85b9385b994750af"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471477+00",
-      "version": "20260901035256",
       "name": "complete_fallback_analysis_lineage",
+      "version": "20260901035256",
       "statements_md5": "767a42c90320101b207806032648be98"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471559+00",
-      "version": "20260901035305",
       "name": "capital_project_access_basis",
+      "version": "20260901035305",
       "statements_md5": "92cf2fc9f2c63bdc6955a8ac19bcb660"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471633+00",
-      "version": "20260901035308",
       "name": "capital_project_plan_runtime",
+      "version": "20260901035308",
       "statements_md5": "b0cf2be722291f36de7ba8e09f38e542"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471746+00",
-      "version": "20260901035312",
       "name": "capital_task_run_lifecycle",
+      "version": "20260901035312",
       "statements_md5": "397983da3ecd4a2ffb1d8f3cce62c379"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471805+00",
-      "version": "20260901035316",
       "name": "capital_project_artifacts",
+      "version": "20260901035316",
       "statements_md5": "12672f0de952b442d47e581504c3ba05"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.471901+00",
-      "version": "20260901035319",
       "name": "origination_thesis_vertical",
+      "version": "20260901035319",
       "statements_md5": "35d0e2583dd87473b8b6f6b28218ed26"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472064+00",
-      "version": "20260901035442",
       "name": "capital_project_fk_index_hardening",
+      "version": "20260901035442",
       "statements_md5": "4f8b1a8f44489cd86a339c0a254eef50"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472069+00",
-      "version": "20260901044903",
       "name": "company_debt_view_vertical",
+      "version": "20260901044903",
       "statements_md5": "84fed712b9fc34b931c238e3ba208e8b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472175+00",
-      "version": "20260901112115",
       "name": "conversational_advisor_workspace",
+      "version": "20260901112115",
       "statements_md5": "6b1f649a54d6a394af33b6005e40b226"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472264+00",
-      "version": "20260901112122",
       "name": "advisor_turn_queue",
+      "version": "20260901112122",
       "statements_md5": "97ac6684c028de672f5627f5967e1f3b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472351+00",
-      "version": "20260901112129",
       "name": "advisor_initial_turn_identity",
+      "version": "20260901112129",
       "statements_md5": "8c883f5ab95254ca4ddd3723adc9767b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472397+00",
-      "version": "20260901122420",
       "name": "advisor_semantic_dag_activation",
+      "version": "20260901122420",
       "statements_md5": "0e86fd17d4e8850a64b85441b4f484ce"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472472+00",
-      "version": "20260901125416",
       "name": "advisor_specialized_completion_message",
+      "version": "20260901125416",
       "statements_md5": "6a3e0f004783615fd0aa8daafa85d772"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472518+00",
-      "version": "20260902035113",
       "name": "advisor_related_project_memory",
+      "version": "20260902035113",
       "statements_md5": "cacd7f50877bc99d3640a9e4a671dac7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472564+00",
-      "version": "20260902035116",
       "name": "persist_operating_controls_and_invalidation",
+      "version": "20260902035116",
       "statements_md5": "e0054b0b4a6f85be422698f17b353581"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472779+00",
-      "version": "20260902035119",
       "name": "public_research_public_cache",
+      "version": "20260902035119",
       "statements_md5": "493a9c5e46c6c1250ce038499e6b9476"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.472832+00",
-      "version": "20260902035123",
       "name": "capital_planning_dag",
+      "version": "20260902035123",
       "statements_md5": "bf01747dc002e7a418b469d2a372ed63"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473168+00",
-      "version": "20260902035127",
       "name": "advisor_private_preliminary_context",
+      "version": "20260902035127",
       "statements_md5": "c52d137ac620cd8983f01bf6871b126f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473189+00",
-      "version": "20260902035130",
       "name": "confirm_advisor_preliminary",
+      "version": "20260902035130",
       "statements_md5": "e592ed0f44cdc4b7559bd16e6da36f60"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473251+00",
-      "version": "20260902050257",
       "name": "resume_capital_project_dag",
+      "version": "20260902050257",
       "statements_md5": "12870ff4bf3444989c560c12e192a9d4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473273+00",
-      "version": "20260902071953",
       "name": "public_research_cache_v2",
+      "version": "20260902071953",
       "statements_md5": "3492213c4a8dd63ce5c1b269f477a45d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473333+00",
-      "version": "20260902105618",
       "name": "advisor_project_name_collision",
+      "version": "20260902105618",
       "statements_md5": "2bbe26f0a595cc723b9c42baa4d85b33"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47334+00",
-      "version": "20260902113518",
       "name": "fallback_preliminary_initial_request",
+      "version": "20260902113518",
       "statements_md5": "b4bc5038ba9ff3cbbafbf9b4677df5b3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47341+00",
-      "version": "20260902175803",
       "name": "workspace_project_groups",
+      "version": "20260902175803",
       "statements_md5": "f6ba6e2b41f14368eb0f5e46952e661d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473485+00",
-      "version": "20260903034438",
       "name": "agentic_dcm_work_system",
+      "version": "20260903034438",
       "statements_md5": "a70e1b857b57b6fae3cca37819bac3be"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473659+00",
-      "version": "20260903034442",
       "name": "agentic_dcm_work_system_index_hardening",
+      "version": "20260903034442",
       "statements_md5": "b3dd92807a3192515a69e9b027ee711c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47367+00",
-      "version": "20260903034445",
       "name": "agentic_dcm_runtime_events",
+      "version": "20260903034445",
       "statements_md5": "82bf422f214ef429b7849745380f126c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473744+00",
-      "version": "20260903034449",
       "name": "agentic_dcm_assessment_projection",
+      "version": "20260903034449",
       "statements_md5": "03da3e0922aa8b3fd7e1c25ff834ff40"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473921+00",
-      "version": "20260903034452",
       "name": "agent_decision_actor_hardening",
+      "version": "20260903034452",
       "statements_md5": "4ce09cdf5a2d0482a3b27ec20fc8fd29"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47393+00",
-      "version": "20260903034454",
       "name": "agent_assessment_variable_resolution",
+      "version": "20260903034454",
       "statements_md5": "2c93837de6f4a6ae4f9dce4253ac5cde"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473947+00",
-      "version": "20260903034457",
       "name": "agent_stage_event_variable_resolution",
+      "version": "20260903034457",
       "statements_md5": "c7d0c1e6220b38ca4f17fed92270e1b6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473954+00",
-      "version": "20260903034529",
       "name": "workspace_project_group_actor_indexes",
+      "version": "20260903034529",
       "statements_md5": "b45e93995daa84bad236bd214e151a29"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.473959+00",
-      "version": "20260903125201",
       "name": "professional_capability_context",
+      "version": "20260903125201",
       "statements_md5": "d9634d137969afed32bdd22ba3d70fcd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474073+00",
-      "version": "20260903125204",
       "name": "professional_capability_context_index_hardening",
+      "version": "20260903125204",
       "statements_md5": "2860d910968c9d09602dee1a9ab024dd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474086+00",
-      "version": "20260903125207",
       "name": "personal_institution_context",
+      "version": "20260903125207",
       "statements_md5": "a3cbccb58a94ff67907fd9f695668aae"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474111+00",
-      "version": "20260903134811",
       "name": "advisor_specialized_professional_context",
+      "version": "20260903134811",
       "statements_md5": "95044a6fc14c69a843352d97c7d64517"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47413+00",
-      "version": "20260903134819",
       "name": "public_company_source_memory",
+      "version": "20260903134819",
       "statements_md5": "f3ae90d820b0371407a06df67eb53e03"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474191+00",
-      "version": "20260903182045",
       "name": "expand_professional_functions",
+      "version": "20260903182045",
       "statements_md5": "15102c71fe62aab3ca7aea08f6ee87c2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474233+00",
-      "version": "20260903213233",
       "name": "origination_runtime_budget",
+      "version": "20260903213233",
       "statements_md5": "2c2feb7f1edef99067706497875fc9be"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47424+00",
-      "version": "20260903215610",
       "name": "origination_completion_headroom",
+      "version": "20260903215610",
       "statements_md5": "00f4dc75e4230a503320099d5f6dcd83"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474251+00",
-      "version": "20260904005430",
       "name": "preserve_failed_user_message_memory",
+      "version": "20260904005430",
       "statements_md5": "eba6deba3d8535b7b6df21db7e4a592f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474271+00",
-      "version": "20260904011351",
       "name": "retry_failed_specialized_analysis",
+      "version": "20260904011351",
       "statements_md5": "040f9b9e99b1b2294ab261805e53faa9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474456+00",
-      "version": "20260904015543",
       "name": "capital_task_retry_feedback",
+      "version": "20260904015543",
       "statements_md5": "b1f8e3445008f7d8b1e526e43b5879fe"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474478+00",
-      "version": "20260904022353",
       "name": "advisor_chat_artifact_revision",
+      "version": "20260904022353",
       "statements_md5": "85ede3decd9761058336f9681ecc3b33"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47454+00",
-      "version": "20260904040355",
       "name": "preliminary_understanding_completion_budget",
+      "version": "20260904040355",
       "statements_md5": "1cbc272ac77fb5bb7e05687fe73b129c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474571+00",
-      "version": "20260904041325",
       "name": "preliminary_input_project_binding",
+      "version": "20260904041325",
       "statements_md5": "8d619b45682f335bc7c861097df26964"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474588+00",
-      "version": "20260904055915",
       "name": "fix_advisor_preliminary_confirmation",
+      "version": "20260904055915",
       "statements_md5": "78bb864ea902c55181c1dcae522727c6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474643+00",
-      "version": "20260904061619",
       "name": "full_case_project_binding",
+      "version": "20260904061619",
       "statements_md5": "3e26816459480b8cad817bb078309a08"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47466+00",
-      "version": "20260904121149",
       "name": "mark_auto_created_project_folders",
+      "version": "20260904121149",
       "statements_md5": "93845c1a8cff3354e6a854ef6ca1b276"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474676+00",
-      "version": "20260904121217",
       "name": "clear_auto_created_on_folder_rename",
+      "version": "20260904121217",
       "statements_md5": "4e20a0aa4b23fbc82353d8557466cdfc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474694+00",
-      "version": "20260904164935",
       "name": "professional_context_multi_select",
+      "version": "20260904164935",
       "statements_md5": "0df38bdb7a26334ab7d19d7df5b0d6f0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474778+00",
-      "version": "20260904201650",
       "name": "job_failure_causes_and_run_metrics",
+      "version": "20260904201650",
       "statements_md5": "7801dc294bf4e44ff4edfd87c154aaf0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474822+00",
-      "version": "20260904210147",
       "name": "organization_methodology",
+      "version": "20260904210147",
       "statements_md5": "162832274e87a73b4726b10e9dfbd09b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47488+00",
-      "version": "20260904210542",
       "name": "job_failure_contract",
+      "version": "20260904210542",
       "statements_md5": "1d75cb17b0a96ad797bf959903c620fc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474923+00",
-      "version": "20260904213420",
       "name": "intent_envelopes_shadow",
+      "version": "20260904213420",
       "statements_md5": "3dce4243fc7fd8c9ac6a39d8eddf1174"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474958+00",
-      "version": "20260904214625",
       "name": "intent_envelopes_project_lookup",
+      "version": "20260904214625",
       "statements_md5": "75da0a7c01959e0827e6b96f5d18bc64"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474973+00",
-      "version": "20260904215105",
       "name": "intent_envelopes_session_table",
+      "version": "20260904215105",
       "statements_md5": "e7f847efb3d32783faea333f139b0f2d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.474988+00",
-      "version": "20260904220851",
       "name": "intent_envelopes_variable_names",
+      "version": "20260904220851",
       "statements_md5": "5e30613f19dc52b9d3198a6c2bfdf0da"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475044+00",
-      "version": "20260904231340",
       "name": "gold_case_bindings",
+      "version": "20260904231340",
       "statements_md5": "10c3cb774b5a81aa6399b1ca893558aa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475074+00",
-      "version": "20260905115322",
       "name": "integration_preview_mode",
+      "version": "20260905115322",
       "statements_md5": "c86df2600c142ab588a933e0f5a10776"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475284+00",
-      "version": "20260905115407",
       "name": "integration_preview_runtime",
+      "version": "20260905115407",
       "statements_md5": "c73bc7adbd786c311a0dcc985c184d80"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475334+00",
-      "version": "20260905125447",
       "name": "integration_preview_prior_artifacts_across_plans",
+      "version": "20260905125447",
       "statements_md5": "0c9bddbf1d98b3ebca2abc41e1988259"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475457+00",
-      "version": "20260905125837",
       "name": "integration_preview_artifacts_across_plans",
+      "version": "20260905125837",
       "statements_md5": "13c857ef973acdf064b531e7e291aba3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475473+00",
-      "version": "20260905132604",
       "name": "integration_preview_replay_runs",
+      "version": "20260905132604",
       "statements_md5": "152a5da944413c47c90b130a57deecde"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475565+00",
-      "version": "20260905140755",
       "name": "integration_preview_project_scope",
+      "version": "20260905140755",
       "statements_md5": "5cf9dc8d007e745b896cb82dadc95fcc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475695+00",
-      "version": "20260905142549",
       "name": "integration_preview_live_mode",
+      "version": "20260905142549",
       "statements_md5": "289ed40b0eac550585678b98dbc5f41d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.475808+00",
-      "version": "20260905143704",
       "name": "integration_preview_run_budget",
+      "version": "20260905143704",
       "statements_md5": "c5a36bf967aa5ddd548d72302595a964"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.4759+00",
-      "version": "20260905175807",
       "name": "integration_preview_run_budget_v2",
+      "version": "20260905175807",
       "statements_md5": "a8f74a2d1287e15b1399f0659dd93e4c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476031+00",
-      "version": "20260907044208",
       "name": "execution_brief_foundation",
+      "version": "20260907044208",
       "statements_md5": "eca860b74a68751cca839eafea3ff768"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476303+00",
-      "version": "20260907044213",
       "name": "execution_brief_narrative",
+      "version": "20260907044213",
       "statements_md5": "0f3af176853d28fc054034e64744e429"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476436+00",
-      "version": "20260907044216",
       "name": "governed_execution_brief_edits",
+      "version": "20260907044216",
       "statements_md5": "a5db511dc410c48fe8b790274a26b96c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47653+00",
-      "version": "20260907044220",
       "name": "governed_information_request_responses",
+      "version": "20260907044220",
       "statements_md5": "d1f0e25a8c17fd9ef753d477916e38f9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476679+00",
-      "version": "20260907044225",
       "name": "project_information_request_projection",
+      "version": "20260907044225",
       "statements_md5": "11fb32dfdff2c50d9c9353e5024b04a9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476747+00",
-      "version": "20260907044240",
       "name": "objective_plan_preflight",
+      "version": "20260907044240",
       "statements_md5": "59fe5cefeb7df37596553c56c69deaea"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476811+00",
-      "version": "20260907044243",
       "name": "objective_specialization_shadow",
+      "version": "20260907044243",
       "statements_md5": "583fec125c3ad91b49b17160fe73fb07"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476887+00",
-      "version": "20260907044246",
       "name": "objective_method_binding_shadow",
+      "version": "20260907044246",
       "statements_md5": "428d1d0c51f865dc1be1108ce5266d2e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.476975+00",
-      "version": "20260907044249",
       "name": "receivables_method_input_assembly_store",
+      "version": "20260907044249",
       "statements_md5": "fe6c104892632b51c3041970136df35a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477058+00",
-      "version": "20260907044252",
       "name": "case_analysis_information_request_projection",
+      "version": "20260907044252",
       "statements_md5": "eda272f3ad7f9d3c6106d774072d4a35"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477064+00",
-      "version": "20260907044313",
       "name": "receivables_method_supplement_store",
+      "version": "20260907044313",
       "statements_md5": "7f165afcacd6d0d555cebe0e1ab08593"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477128+00",
-      "version": "20260907044316",
       "name": "objective_workflow_selection_shadow",
+      "version": "20260907044316",
       "statements_md5": "8d3ec85eaf73033b14d75a9ddf7c9363"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.4775+00",
-      "version": "20260907044319",
       "name": "integration_preview_workflow_selection_enforcement",
+      "version": "20260907044319",
       "statements_md5": "42f7b5550d5c28f85eedb3eeeb8cce38"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477547+00",
-      "version": "20260907044322",
       "name": "integration_preview_workflow_continuity_anchor",
+      "version": "20260907044322",
       "statements_md5": "1eddba1596f809dbec32e2147a82f4c9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477561+00",
-      "version": "20260907044325",
       "name": "integration_preview_workflow_continuity_grant_parity",
+      "version": "20260907044325",
       "statements_md5": "8756a3fcae829bfff5574aa8241c09e2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477565+00",
-      "version": "20260907051254",
       "name": "receivables_information_request_bindings",
+      "version": "20260907051254",
       "statements_md5": "84672e132170b2e99a3bb954415e3fed"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477676+00",
-      "version": "20260907051611",
       "name": "worker_runtime_schema_contract",
+      "version": "20260907051611",
       "statements_md5": "50ff68d275ae35293c94fd811b6ad05d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477681+00",
-      "version": "20260907054112",
       "name": "receivables_method_complete_refresh",
+      "version": "20260907054112",
       "statements_md5": "8573360f0f0f3cdf8d29c577297d8a8b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477731+00",
-      "version": "20260907054118",
       "name": "worker_runtime_schema_contract",
+      "version": "20260907054118",
       "statements_md5": "203561e6f4af85c78a6a8d8108cb46dd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477737+00",
-      "version": "20260907062224",
       "name": "intent_objective_routing_metrics",
+      "version": "20260907062224",
       "statements_md5": null
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477738+00",
-      "version": "20260907070000",
       "name": "governed_capital_material_storage",
+      "version": "20260907070000",
       "statements_md5": null
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477739+00",
-      "version": "20260907095418",
       "name": "preserve_decision_contract_and_method_artifacts",
+      "version": "20260907095418",
       "statements_md5": null
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477741+00",
-      "version": "20260907122628",
       "name": "universal_dispatch_candidate_shadow",
+      "version": "20260907122628",
       "statements_md5": "46aecef54a5a1672814ff4ecebef7d78"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477816+00",
-      "version": "20260907122635",
       "name": "worker_runtime_schema_contract",
+      "version": "20260907122635",
       "statements_md5": "eea2f30834057f77f064c779d132c37b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477822+00",
-      "version": "20260908035022",
       "name": "platform_ledgers_explicit_default_deny",
+      "version": "20260908035022",
       "statements_md5": "6b702258b8f7ad7a96eaa0a8a6447cf5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.477827+00",
-      "version": "20260908035026",
       "name": "explicit_execution_brief_approval",
+      "version": "20260908035026",
       "statements_md5": "54cbff5affc9615469b99af593363756"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47805+00",
-      "version": "20260908035029",
       "name": "execution_approval_trigger_record_scope",
+      "version": "20260908035029",
       "statements_md5": "c1160eeb55f310e4ce1c748670619e7b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478063+00",
-      "version": "20260908035032",
       "name": "execution_approval_unbound_revision_metadata",
+      "version": "20260908035032",
       "statements_md5": "ab632beefa627b0389d0ea36fa65c4db"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478076+00",
-      "version": "20260908035035",
       "name": "execution_brief_bounded_workstreams",
+      "version": "20260908035035",
       "statements_md5": "da660094dfcfe3f6373035e1790f5697"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478081+00",
-      "version": "20260908035038",
       "name": "reconcile_preexisting_main_schema_gaps",
+      "version": "20260908035038",
       "statements_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478203+00",
-      "version": "20260908035044",
       "name": "reconcile_rejected_file_failure_classification",
+      "version": "20260908035044",
       "statements_md5": "91a405bb973cdefe2cc7b8275f9d9450"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478209+00",
-      "version": "20260908035048",
       "name": "correct_infected_failure_precedence",
+      "version": "20260908035048",
       "statements_md5": "b1f929d3c47bcfd30d20cfe57ee0d54c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478215+00",
-      "version": "20260908035050",
       "name": "capital_material_upload_grant_fk_indexes",
+      "version": "20260908035050",
       "statements_md5": "11e21c4c132ae10509006d2c7c87129b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47822+00",
-      "version": "20260908035053",
       "name": "execution_proposal_company_label",
+      "version": "20260908035053",
       "statements_md5": "fc27bdaa0011dce64e7ccf226e6ccb68"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478243+00",
-      "version": "20260908035058",
       "name": "worker_runtime_schema_contract",
+      "version": "20260908035058",
       "statements_md5": "8c83911195c398b3034984f7185ae7c5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478255+00",
-      "version": "20260908145938",
       "name": "governed_sector_context_inputs",
+      "version": "20260908145938",
       "statements_md5": "19889b24344a40ada1d7158deba3000c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478327+00",
-      "version": "20260908145941",
       "name": "sector_planning_context_object_limit",
+      "version": "20260908145941",
       "statements_md5": "0859ec1f90e47be7a516f131adf0ab52"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478334+00",
-      "version": "20260908145944",
       "name": "sector_planning_job_knowledge_date",
+      "version": "20260908145944",
       "statements_md5": "4283aecb89f33663e9b46d285fb1b100"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478341+00",
-      "version": "20260908145947",
       "name": "sector_planning_review_timestamp_utc",
+      "version": "20260908145947",
       "statements_md5": "1f65589b2650cab9f231f445d15770d0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478383+00",
-      "version": "20260908155133",
       "name": "execution_proposal_revision_parent",
+      "version": "20260908155133",
       "statements_md5": "ca1a02dd059ef739f1f31e9bc2023b75"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478399+00",
-      "version": "20260908161137",
       "name": "worker_runtime_schema_contract",
+      "version": "20260908161137",
       "statements_md5": "6c746d243e2d6477f65cf132f957eff5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478404+00",
-      "version": "20260908181846",
       "name": "confirmed_receivables_evidence_scope",
+      "version": "20260908181846",
       "statements_md5": "a391595b5c6e0a516dbbb8675fe5b3d0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478498+00",
-      "version": "20260908181849",
       "name": "confirmed_receivables_scope_context_consistency",
+      "version": "20260908181849",
       "statements_md5": "78e493abaf20e916fab51096b96e387d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478505+00",
-      "version": "20260908181852",
       "name": "confirmed_receivables_scope_reader_fence",
+      "version": "20260908181852",
       "statements_md5": "71239afa881ad434224d939f10b1318e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478576+00",
-      "version": "20260908181855",
       "name": "confirmed_receivables_scope_brief_binding",
+      "version": "20260908181855",
       "statements_md5": "4d23ba66b867d08bf1ba42ccc6ce4dbf"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47859+00",
-      "version": "20260908181900",
       "name": "confirmed_receivables_scope_reader_lock",
+      "version": "20260908181900",
       "statements_md5": "26bf6a0716f71551c882b66ab7420570"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478596+00",
-      "version": "20260908182325",
       "name": "confirmed_receivables_scope_brief_session",
+      "version": "20260908182325",
       "statements_md5": "1e0da3126d8229b5c0be1c4b20c161f6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478612+00",
-      "version": "20260908182328",
       "name": "confirmed_receivables_scope_invoker_parity",
+      "version": "20260908182328",
       "statements_md5": "c2419f287a8ca303c88906c3e04e4d56"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478617+00",
-      "version": "20260908183823",
       "name": "worker_runtime_schema_contract",
+      "version": "20260908183823",
       "statements_md5": "334d3232af77307f8a9ece1fd9980150"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478621+00",
-      "version": "20260909005407",
       "name": "document_work_product_request_binding",
+      "version": "20260909005407",
       "statements_md5": "ca6b20a8c07881591d9ecae6ea1b993d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478639+00",
-      "version": "20260909005415",
       "name": "worker_runtime_schema_contract",
+      "version": "20260909005415",
       "statements_md5": "af6f27371e8db817c7693312027903b7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478643+00",
-      "version": "20260909005423",
       "name": "documentary_execution_scope_binding",
+      "version": "20260909005423",
       "statements_md5": "d3479334fbbfa0b8e3d3d7447d23b897"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.4787+00",
-      "version": "20260909005431",
       "name": "worker_runtime_schema_contract",
+      "version": "20260909005431",
       "statements_md5": "bc486d025686737973c3d4691c9f3030"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478713+00",
-      "version": "20260909005438",
       "name": "documentary_execution_progress",
+      "version": "20260909005438",
       "statements_md5": "e89d302c05217a5c395cd8ff02577138"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478731+00",
-      "version": "20260909005445",
       "name": "atomic_documentary_execution_commit",
+      "version": "20260909005445",
       "statements_md5": "4a1e88c6214c53980fa0674acd19c166"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478748+00",
-      "version": "20260909005451",
       "name": "document_work_request_loader_guards",
+      "version": "20260909005451",
       "statements_md5": "aca7fee7a3f3b444018140e09f6d65fc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478764+00",
-      "version": "20260909005500",
       "name": "worker_runtime_schema_contract",
+      "version": "20260909005500",
       "statements_md5": "3515833d44b357ecb627b2dfec79d9cd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478769+00",
-      "version": "20260909005540",
       "name": "documentary_plan_job_projection",
+      "version": "20260909005540",
       "statements_md5": "f0ed5e752a65093d8e5a0c3f324a1d15"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478783+00",
-      "version": "20260910013934",
       "name": "case_engine_v16_operating_scope",
+      "version": "20260910013934",
       "statements_md5": "5ed53d581feccd78ef9f8e3a8d609b5f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478788+00",
-      "version": "20260910033410",
       "name": "strict_documentary_plan_persistence",
+      "version": "20260910033410",
       "statements_md5": "fc0f898bc184e74c0c75afc022f0f110"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478834+00",
-      "version": "20260910033425",
       "name": "documentary_work_request_context",
+      "version": "20260910033425",
       "statements_md5": "94c578fdb7569c22687d8a0785a809ce"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47884+00",
-      "version": "20260910033433",
       "name": "compact_documentary_plan_contract",
+      "version": "20260910033433",
       "statements_md5": "6dfd3a60b1c92cd0253293c44cad711f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478882+00",
-      "version": "20260910033442",
       "name": "reviewed_documentary_plan_contract",
+      "version": "20260910033442",
       "statements_md5": "7fbbcdeb1f25b1dc96ccd76f1d27f9f1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478921+00",
-      "version": "20260910033449",
       "name": "documentary_entity_plan_contract",
+      "version": "20260910033449",
       "statements_md5": "e6bea5943ae1eed5a8ddeb46ee22238e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.478968+00",
-      "version": "20260910033507",
       "name": "documentary_diligence_plan_contract",
+      "version": "20260910033507",
       "statements_md5": "c27b195ab6dff403e1e37cb5d96225e4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479008+00",
-      "version": "20260910033516",
       "name": "documentary_comparison_review_contract",
+      "version": "20260910033516",
       "statements_md5": "7f359362e1cbb050c05857ea9220da4c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479032+00",
-      "version": "20260910033526",
       "name": "provider_research_persisted_bridge",
+      "version": "20260910033526",
       "statements_md5": "36a4f6458755ed8c35ead6f26bf994e8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479127+00",
-      "version": "20260910033542",
       "name": "institutional_model_assumption_answers",
+      "version": "20260910033542",
       "statements_md5": "a922c8b9f421d0e2753faacc40bcb5da"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47927+00",
-      "version": "20260910033550",
       "name": "institutional_private_explicit_rls",
+      "version": "20260910033550",
       "statements_md5": "be971ace3f071ca9dbf303a0f86f7af7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479281+00",
-      "version": "20260910072024",
       "name": "provider_case_fit_persisted_workflow",
+      "version": "20260910072024",
       "statements_md5": "3386ae664dbc930b0884bda5ffa1da16"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479454+00",
-      "version": "20260910072039",
       "name": "provider_case_fit_message_alias_fix",
+      "version": "20260910072039",
       "statements_md5": "1d914b396c61e42279eeabb494e678f8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479459+00",
-      "version": "20260910072054",
       "name": "institutional_model_setup_and_source_bindings",
+      "version": "20260910072054",
       "statements_md5": "a8e526bcfd2f0eea54832f0dd9c6bfcb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479579+00",
-      "version": "20260910072110",
       "name": "institutional_setup_binding_guards",
+      "version": "20260910072110",
       "statements_md5": "15903d2316ca6bbd562c24f52263ebbe"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479638+00",
-      "version": "20260910072126",
       "name": "institutional_setup_candidate_variable_fix",
+      "version": "20260910072126",
       "statements_md5": "0e04e024968b37d2561dd12b513b7978"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479674+00",
-      "version": "20260910072135",
       "name": "institutional_approved_model_results",
+      "version": "20260910072135",
       "statements_md5": "3b6d9fdc67935d8dd4bf6954383b0a0c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479789+00",
-      "version": "20260910072146",
       "name": "case_engine_v17_institutional_scope",
+      "version": "20260910072146",
       "statements_md5": "125d92da8a5d72af647e43aa1cdff674"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479796+00",
-      "version": "20260910072157",
       "name": "institutional_result_terminal_status",
+      "version": "20260910072157",
       "statements_md5": "bf66a27d36662b93319032c15599b985"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479813+00",
-      "version": "20260910100522",
       "name": "documentary_field_assessments_contract",
+      "version": "20260910100522",
       "statements_md5": "ff411379a8846996a6bba81f28b95d0a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479838+00",
-      "version": "20260910134302",
       "name": "governed_business_dimensions",
+      "version": "20260910134302",
       "statements_md5": "c5ed2372bb83a5e5aa7d1975202b85b4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.47986+00",
-      "version": "20260910134318",
       "name": "institutional_reviewed_result_comparison",
+      "version": "20260910134318",
       "statements_md5": "6eb744827e765ca4d550de708b52e559"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479887+00",
-      "version": "20260910134705",
       "name": "institutional_editable_workbook_contract",
+      "version": "20260910134705",
       "statements_md5": "71b54c47e80ad4adad391ebd28183efa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.479924+00",
-      "version": "20260910135224",
       "name": "explicit_documentary_work_revision",
+      "version": "20260910135224",
       "statements_md5": "5155e10a427da402a6bff489e6710455"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48006+00",
-      "version": "20260910135636",
       "name": "documentary_revision_private_admission",
+      "version": "20260910135636",
       "statements_md5": "a20a03c2453f49a4bc8d75be8f99bea5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480066+00",
-      "version": "20260910151957",
       "name": "provider_research_public_catalog_v2",
+      "version": "20260910151957",
       "statements_md5": "b9d9e16b7bfc249fdd1db9bf4d389741"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480157+00",
-      "version": "20260910153117",
       "name": "confirmed_receivables_support_sheets_v2",
+      "version": "20260910153117",
       "statements_md5": "aacad2b5edbe1e7e8eedb4154f91a442"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480237+00",
-      "version": "20260910153338",
       "name": "support_sheet_runtime_invoker_contract",
+      "version": "20260910153338",
       "statements_md5": "d2ce480530b952cd7b8cde6dc07c72b5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480241+00",
-      "version": "20260910160700",
       "name": "documentary_progress_persisted_scope_guard",
+      "version": "20260910160700",
       "statements_md5": "e1d0e15de47aa1626bf4836b066161dc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480247+00",
-      "version": "20260910164327",
       "name": "preserve_open_decision_history",
+      "version": "20260910164327",
       "statements_md5": "e410b802339ea15feda3c069d93bd5a3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480265+00",
-      "version": "20260910171808",
       "name": "preserve_specialist_information_requests",
+      "version": "20260910171808",
       "statements_md5": "0deeba8a0a5a9c5aa2552ec4731466da"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480278+00",
-      "version": "20260910174141",
       "name": "revise_receivables_request_bindings",
+      "version": "20260910174141",
       "statements_md5": "2350a282d0963618af90cb07a51f3d21"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480297+00",
-      "version": "20260910230211",
       "name": "project_review_roles",
+      "version": "20260910230211",
       "statements_md5": "fd853f5b17f1cff8add367b17879c3b4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480521+00",
-      "version": "20260910230401",
       "name": "receivables_analytical_release",
+      "version": "20260910230401",
       "statements_md5": "95fc74155bc30bb9bf4d252ada4f9c56"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480627+00",
-      "version": "20260910230430",
       "name": "receivables_released_results_fk_indexes",
+      "version": "20260910230430",
       "statements_md5": "28875c9e3e0d0b4e6282605d84244a2f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.480632+00",
-      "version": "20260910232821",
       "name": "financier_analytical_workspace",
+      "version": "20260910232821",
       "statements_md5": "e56a3330f3f0b67be95c534c8e045753"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481237+00",
-      "version": "20260911010715",
       "name": "receivables_universal_release",
+      "version": "20260911010715",
       "statements_md5": "4e4f3b26205874d9c96984162178f8d5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48129+00",
-      "version": "20260911011830",
       "name": "verified_provider_mandates",
+      "version": "20260911011830",
       "statements_md5": "66deadb7092a3becf058f12837288a66"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481517+00",
-      "version": "20260911011934",
       "name": "client_presentation_templates",
+      "version": "20260911011934",
       "statements_md5": "5aea266da3df1187e80cefcd285693cc"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481608+00",
-      "version": "20260911020707",
       "name": "project_canonical_revisions",
+      "version": "20260911020707",
       "statements_md5": "1b72234e8470b29fad93e7fa91df091d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481776+00",
-      "version": "20260911020808",
       "name": "project_revision_propagation",
+      "version": "20260911020808",
       "statements_md5": "ea99fbd35880c75af289f70cf697e5cb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481883+00",
-      "version": "20260911020925",
       "name": "institutional_revision_proposals",
+      "version": "20260911020925",
       "statements_md5": "39465267418edf267605bb7af9a8dd1e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.481988+00",
-      "version": "20260911021002",
       "name": "revision_proposal_variable_scope",
+      "version": "20260911021002",
       "statements_md5": "bdbe1516d049e45504a77a25a39e4526"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482024+00",
-      "version": "20260911021039",
       "name": "canonical_revision_variable_scope",
+      "version": "20260911021039",
       "statements_md5": "10f20bc4588fa0e320e0a4fb4b96518e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482075+00",
-      "version": "20260911115509",
       "name": "restore_institutional_review_role_gate",
+      "version": "20260911115509",
       "statements_md5": "bf5b684b6f0c29ddcefafc7501f92ec4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482109+00",
-      "version": "20260911115624",
       "name": "project_debt_structure_capability",
+      "version": "20260911115624",
       "statements_md5": "f75f72b30a6c1ffe33daac92e9fdc558"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482137+00",
-      "version": "20260911115726",
       "name": "provider_mandate_confirmation_clock_timestamp",
+      "version": "20260911115726",
       "statements_md5": "b7f58e8d5a556d68466aab5b9bc8a297"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482141+00",
-      "version": "20260914213242",
       "name": "provider_mandate_confirmation_sequence",
+      "version": "20260914213242",
       "statements_md5": "7acd7b23052399964a8ee935fe82f9d4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482224+00",
-      "version": "20260915123202",
       "name": "active_organization_authority",
+      "version": "20260915123202",
       "statements_md5": "3481ac4a2d3f00180dabd021b486d76d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482296+00",
-      "version": "20260915123205",
       "name": "organization_profile_authority",
+      "version": "20260915123205",
       "statements_md5": "6833010f1a907596ca6cbd3ca677cf74"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482302+00",
-      "version": "20260915204111",
       "name": "terminal_job_authorization_metadata",
+      "version": "20260915204111",
       "statements_md5": "9fdee75d24478e6bb4a459de32451abb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482318+00",
-      "version": "20260915204116",
       "name": "explicit_legacy_resource_access",
+      "version": "20260915204116",
       "statements_md5": "7bfeadacbf8280d1ced44994121ffe91"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482787+00",
-      "version": "20260915204120",
       "name": "resource_access_foreign_key_indexes",
+      "version": "20260915204120",
       "statements_md5": "9e90f3b118f24da830916b7c11a97944"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482801+00",
-      "version": "20260915204124",
       "name": "require_work_for_legacy_mutations",
+      "version": "20260915204124",
       "statements_md5": "fd1e385368f7d67647a351d46c9bee58"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482807+00",
-      "version": "20260916005712",
       "name": "role_free_reasoning_context",
+      "version": "20260916005712",
       "statements_md5": "6c0c5805f5813ffd1ead653ddaf41940"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.482877+00",
-      "version": "20260916035105",
       "name": "explicit_workspace_context",
+      "version": "20260916035105",
       "statements_md5": "d0449ef81c06cc9fc4268c38d8966870"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48345+00",
-      "version": "20260916035119",
       "name": "explicit_workspace_replay_authority",
+      "version": "20260916035119",
       "statements_md5": "0ea5f46340dbc8ed66a3be1ce434f52e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48353+00",
-      "version": "20260916041917",
       "name": "retire_implicit_workspace_capabilities",
+      "version": "20260916041917",
       "statements_md5": "06182e535b21e95eb01a950bb6bf71db"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.483536+00",
-      "version": "20260916102242",
       "name": "reconcile_domain_event_audit_outbox",
+      "version": "20260916102242",
       "statements_md5": "41f2ee83d2128736941f8e1ecc9c115c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.483656+00",
-      "version": "20260916163753",
       "name": "resource_policy_and_barriers",
+      "version": "20260916163753",
       "statements_md5": "4ce95d8dba1dda16c30a6a3c3ffaca5a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.483882+00",
-      "version": "20260916163756",
       "name": "bound_policy_grants_to_resource",
+      "version": "20260916163756",
       "statements_md5": "6bc439ea142e70afa6c0dc43a71a4cb6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.483887+00",
-      "version": "20260916163759",
       "name": "deduplicate_resource_policy_events",
+      "version": "20260916163759",
       "statements_md5": "b7f9628ae73012b33e26de959b3b2912"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48389+00",
-      "version": "20260916190600",
       "name": "entity_and_dossier_identity",
+      "version": "20260916190600",
       "statements_md5": "3c4aff1453f037d6d6d38984956bff0a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484068+00",
-      "version": "20260916212202",
       "name": "logical_sources_and_versions",
+      "version": "20260916212202",
       "statements_md5": "e60fd8157897f27a62dc34b135deab2c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484276+00",
-      "version": "20260916212209",
       "name": "source_identity_legacy_insert_default",
+      "version": "20260916212209",
       "statements_md5": "21277ebbddd939d43cecc08a3bfb5901"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484279+00",
-      "version": "20260916230240",
       "name": "workspace_access_allow_projection",
+      "version": "20260916230240",
       "statements_md5": "06781189b20c7ec496fbd6b78de58c1d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484285+00",
-      "version": "20260917025326",
       "name": "source_rights_and_authorized_retrieval",
+      "version": "20260917025326",
       "statements_md5": "26955f303ed38f67f5ed3708476b64e7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484657+00",
-      "version": "20260917134924",
       "name": "opportunity_observation_dossier_scope",
+      "version": "20260917134924",
       "statements_md5": "3010858b43656d6691cb2a0dddfa149e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.484665+00",
-      "version": "20260917134931",
       "name": "observations_metric_definitions",
+      "version": "20260917134931",
       "statements_md5": "f5edc25e302bc60df347aed8adb40ec8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485052+00",
-      "version": "20260917134939",
       "name": "observation_commands_work_authority",
+      "version": "20260917134939",
       "statements_md5": "fb71bb86b15d5f9d5a7c60410ec7fde9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485105+00",
-      "version": "20260917134946",
       "name": "observation_value_shape_validation",
+      "version": "20260917134946",
       "statements_md5": "fad9448e5f91b427b9322aba15234d96"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485126+00",
-      "version": "20260917134953",
       "name": "legacy_observation_field_revision",
+      "version": "20260917134953",
       "statements_md5": "068a7d27f17160bb62187d328471d84c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485143+00",
-      "version": "20260917135001",
       "name": "observation_dimension_shape_validation",
+      "version": "20260917135001",
       "statements_md5": "c63b221d14eb34abdd36181b35ea857a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485167+00",
-      "version": "20260917160856",
       "name": "contextual_adoptions_and_assumptions",
+      "version": "20260917160856",
       "statements_md5": "2cff7177f3818c8c44fa405a4f87807a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485302+00",
-      "version": "20260917160902",
       "name": "contextual_adoption_execution_bindings",
+      "version": "20260917160902",
       "statements_md5": "c4592d81c6ea08297540dd910ffb8742"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485348+00",
-      "version": "20260917160915",
       "name": "contextual_adoption_dependency_revalidation",
+      "version": "20260917160915",
       "statements_md5": "25e68a9513217cfa3e9f518d5c145ec3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485426+00",
-      "version": "20260917160926",
       "name": "contextual_adoption_identity_command",
+      "version": "20260917160926",
       "statements_md5": "c84e388219becc74c259fcc03b46a5e3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485445+00",
-      "version": "20260917161803",
       "name": "contextual_adoption_version_fk_index",
+      "version": "20260917161803",
       "statements_md5": "e3922dfbde774e5ffd61d77459be3d6a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48545+00",
-      "version": "20260917191714",
       "name": "persistent_work_without_intake",
+      "version": "20260917191714",
       "statements_md5": "d8095404ccf4688f098efcd1fb09bbc9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485674+00",
-      "version": "20260917195617",
       "name": "persistent_work_commands",
+      "version": "20260917195617",
       "statements_md5": "cf5699e2394de95e6323ed9394ee13df"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.485964+00",
-      "version": "20260917204933",
       "name": "persistent_work_legacy_adapters",
+      "version": "20260917204933",
       "statements_md5": "23b190103138680c1302f0db577b0c48"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486179+00",
-      "version": "20260917204936",
       "name": "persistent_work_specialized_adapters",
+      "version": "20260917204936",
       "statements_md5": "643e1f5a9bd2e0a401d0df6e5f20d356"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48629+00",
-      "version": "20260917204939",
       "name": "persistent_work_specialized_replay_scope",
+      "version": "20260917204939",
       "statements_md5": "5aa9a4fbc16bf4e23a0a73f19a900548"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.4863+00",
-      "version": "20260918002400",
       "name": "work_contributions_and_channels",
+      "version": "20260918002400",
       "statements_md5": "d014334169dcabed7517c9387895fa25"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486642+00",
-      "version": "20260918002404",
       "name": "work_contribution_command_integrity",
+      "version": "20260918002404",
       "statements_md5": "f0e6898d2dee15d87b2cb1672be466a0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486655+00",
-      "version": "20260918002407",
       "name": "work_contribution_history_indexes",
+      "version": "20260918002407",
       "statements_md5": "41785d3baa2633fd18aef1ee26b2c2dd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486658+00",
-      "version": "20260918010613",
       "name": "work_contribution_dependency_audit",
+      "version": "20260918010613",
       "statements_md5": "69dc994e816cbd32e60f0f40db7dabd9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48667+00",
-      "version": "20260918105943",
       "name": "human_vault_publication",
+      "version": "20260918105943",
       "statements_md5": "7ee1914f4a4334d29cec0a1645605937"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486907+00",
-      "version": "20260918105947",
       "name": "vault_export_authority",
+      "version": "20260918105947",
       "statements_md5": "57532f99897627a167edfeb6fbfbaf3d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486944+00",
-      "version": "20260918105952",
       "name": "vault_legacy_publication_evidence",
+      "version": "20260918105952",
       "statements_md5": "c98df494c0e2aef28147121dda856fdf"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48695+00",
-      "version": "20260918105956",
       "name": "vault_publication_receipts",
+      "version": "20260918105956",
       "statements_md5": "899df6589551c50c783acdec494fb036"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486962+00",
-      "version": "20260918111441",
       "name": "vault_legacy_worker_grants",
+      "version": "20260918111441",
       "statements_md5": "c9d42437f94a3e8ce48e76a1370949b5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.486965+00",
-      "version": "20260919143037",
       "name": "published_method_releases",
+      "version": "20260919143037",
       "statements_md5": "1c4be4ff4216904c072cc0cfb9c21fd0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487199+00",
-      "version": "20260919143040",
       "name": "method_release_scope_and_receipts",
+      "version": "20260919143040",
       "statements_md5": "ae5d0d05a07c49cc5ebc129e5dee500a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487219+00",
-      "version": "20260919143043",
       "name": "pinned_method_result_boundary",
+      "version": "20260919143043",
       "statements_md5": "d3e22fde92464be2484b11b6f77985fb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487234+00",
-      "version": "20260919143046",
       "name": "method_binding_scope_pagination",
+      "version": "20260919143046",
       "statements_md5": "a50880e97ef1112d3f614daf7a477dc4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487253+00",
-      "version": "20260919175916",
       "name": "platform_method_publication_commands",
+      "version": "20260919175916",
       "statements_md5": "480f5f62c6aae32b5a2d437e2b7578e4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487343+00",
-      "version": "20260919175924",
       "name": "platform_method_attestation_replay",
+      "version": "20260919175924",
       "statements_md5": "f8e6cd113aa6077106a4efc291f1b095"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487348+00",
-      "version": "20260919175930",
       "name": "preserve_published_platform_method_identity",
+      "version": "20260919175930",
       "statements_md5": "a9c1f5313d8fbdd73f7e295965aefb75"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487352+00",
-      "version": "20260921155420",
       "name": "provider_resource_retention_eligibility",
+      "version": "20260921155420",
       "statements_md5": "d20330e8a9f60d05656069a1e1061fe1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487471+00",
-      "version": "20260921155432",
       "name": "provider_retention_dependency_and_contract_guards",
+      "version": "20260921155432",
       "statements_md5": "7837d227197012622c7e08fefe0bea71"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487528+00",
-      "version": "20260921230622",
       "name": "execution_persistence_foundation",
+      "version": "20260921230622",
       "statements_md5": "ac970d8cda328342cf0f1536c243b474"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487588+00",
-      "version": "20260922153436",
       "name": "execution_authority_commands",
+      "version": "20260922153436",
       "statements_md5": "2032373ef6e04cf7b7041040ad0e4b1c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487803+00",
-      "version": "20260922153443",
       "name": "execution_verified_source_pins",
+      "version": "20260922153443",
       "statements_md5": "5b929d142d8378b436a6d5343d5ae83e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48781+00",
-      "version": "20260922153452",
       "name": "execution_policy_current_clock",
+      "version": "20260922153452",
       "statements_md5": "f44c42328efd8d7628d131f6ef4c46cb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487814+00",
-      "version": "20260922153457",
       "name": "execution_current_read_rights",
+      "version": "20260922153457",
       "statements_md5": "deba02616f22ac88488ed54bde38e150"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48782+00",
-      "version": "20260922155248",
       "name": "execution_legacy_enqueue_identity",
+      "version": "20260922155248",
       "statements_md5": "f2f79082b0e0fdb5d0d0698ece2da218"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.487825+00",
-      "version": "20260922194243",
       "name": "execution_consumer_authority",
+      "version": "20260922194243",
       "statements_md5": "f6d82cebc12d9d9138dedb183ed660fb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48794+00",
-      "version": "20260922194250",
       "name": "execution_capital_provenance",
+      "version": "20260922194250",
       "statements_md5": "4ecc60398139dc2f1039aeda5e34f7f1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48804+00",
-      "version": "20260923014322",
       "name": "execution_r01_profile_boundary",
+      "version": "20260923014322",
       "statements_md5": "45e39de7e228d895a7efb16fe81048a0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488098+00",
-      "version": "20260923140356",
       "name": "r01_preparation_authority_loader",
+      "version": "20260923140356",
       "statements_md5": "bd1d5c84e3fd0d5077c7b5c390b424f2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488234+00",
-      "version": "20260923145742",
       "name": "r01_preparation_receipts",
+      "version": "20260923145742",
       "statements_md5": "5467f1af1c357c3f6377163724eaf0a7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.4883+00",
-      "version": "20260923154150",
       "name": "execution_explicit_human_subject",
+      "version": "20260923154150",
       "statements_md5": "e2d3a84d569ea8dc6b8f50415c5a3ab9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488327+00",
-      "version": "20260923163027",
       "name": "r01_release_pause_serialization",
+      "version": "20260923163027",
       "statements_md5": "4780109bf9c27f27cd91fe806696b3c7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488345+00",
-      "version": "20260923171852",
       "name": "r01_persisted_source_integrity",
+      "version": "20260923171852",
       "statements_md5": "b6a1281a5c6088fd5cbde9388e3a6e92"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488387+00",
-      "version": "20260923193243",
       "name": "execution_settled_result_bytes",
+      "version": "20260923193243",
       "statements_md5": "6c08d32426db31467cea6fd870cbca4d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488446+00",
-      "version": "20260923195408",
       "name": "execution_settled_outcome",
+      "version": "20260923195408",
       "statements_md5": "309efc9b9982a4090688f7e312f96523"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488502+00",
-      "version": "20260923200029",
       "name": "platform_operator_identity",
+      "version": "20260923200029",
       "statements_md5": "e63e61c41a78b53a6ae56357bbbf562f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488596+00",
-      "version": "20260923200643",
       "name": "r01_current_preparation_metadata",
+      "version": "20260923200643",
       "statements_md5": "b88f724fb56d06a11691f3bae8873524"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488717+00",
-      "version": "20260923203112",
       "name": "platform_operator_identity_hardening",
+      "version": "20260923203112",
       "statements_md5": "39c1aadbf7abf395e97f58c068605585"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488789+00",
-      "version": "20260923223307",
       "name": "platform_operator_identity_ledger_guard",
+      "version": "20260923223307",
       "statements_md5": "7716456ef19993a8d8eef4e2770a5bc7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.488812+00",
-      "version": "20260923224304",
       "name": "residual_information_request_batch",
+      "version": "20260923224304",
       "statements_md5": "37c342a4196e2ec4a6bc192b0b997d58"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489076+00",
-      "version": "20260923233258",
       "name": "execution_producer_authority",
+      "version": "20260923233258",
       "statements_md5": "e609bdc86b30b5ca0a85b22e232510be"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489159+00",
-      "version": "20260923233409",
       "name": "execution_producer_commands",
+      "version": "20260923233409",
       "statements_md5": "a9b1038515dbcd92eed3eb3c664a328d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489248+00",
-      "version": "20260924002148",
       "name": "retire_hash_only_settlement",
+      "version": "20260924002148",
       "statements_md5": "bdb56d21b6734cbe96ed213e1bbc78ba"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489254+00",
-      "version": "20260924005237",
       "name": "execution_gate_receipts",
+      "version": "20260924005237",
       "statements_md5": "dd360c12c87e1d03ada93151b72576b0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489386+00",
-      "version": "20260924011837",
       "name": "governed_evaluation_transport",
+      "version": "20260924011837",
       "statements_md5": "4240284d6769944b9ebc892aa62a6d30"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.48973+00",
-      "version": "20260924013350",
       "name": "execution_time_to_value",
+      "version": "20260924013350",
       "statements_md5": "3b337fb0ee22d73f5aa127f570586a98"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489855+00",
-      "version": "20260924022447",
       "name": "governed_evaluation_session_access",
+      "version": "20260924022447",
       "statements_md5": "6ce4b9d333f1f41c47fc95ff690c09f9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489873+00",
-      "version": "20260924111709",
       "name": "provider_assurance_without_expiry",
+      "version": "20260924111709",
       "statements_md5": "05a3055767d5b84b7dd4a1584ef8080e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489935+00",
-      "version": "20260925153504",
       "name": "evaluation_job_authority_in_outbox_sweep",
+      "version": "20260925153504",
       "statements_md5": "333cf2a0811035cde5a60d044692abb0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.489971+00",
-      "version": "20260925153755",
       "name": "production_budget_ceilings",
+      "version": "20260925153755",
       "statements_md5": "48aad0e650d44f1b17a0dd6a09c828eb"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.490007+00",
-      "version": "20260925155334",
       "name": "work_dependencies_and_continuity",
+      "version": "20260925155334",
       "statements_md5": "f54f668bff39ddabef36bd1baabd352b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.490148+00",
-      "version": "20260925180927",
       "name": "work_dependency_events",
+      "version": "20260925180927",
       "statements_md5": "6cc2bc79a874340111cc86a86800d91b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.490414+00",
-      "version": "20260925204502",
       "name": "work_dependency_recompute",
+      "version": "20260925204502",
       "statements_md5": "994946a10e94c7113b0c586c318e91f2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.490828+00",
-      "version": "20260925232939",
       "name": "rfc_uuid_domain_event_identifiers",
+      "version": "20260925232939",
       "statements_md5": "b6bc7bd13b10a491e6e2223dd5c339c5"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.490858+00",
-      "version": "20260926011438",
       "name": "work_continuation_commands",
+      "version": "20260926011438",
       "statements_md5": "2fad75e5f903f3e0771f4d59e16d15c0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.491131+00",
-      "version": "20260926013425",
       "name": "institutional_result_dependencies",
+      "version": "20260926013425",
       "statements_md5": "8e57ad8a9c03209febd523c377128fa1"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.49158+00",
-      "version": "20260926024249",
       "name": "dependency_recompute_health",
+      "version": "20260926024249",
       "statements_md5": "d4cb7dffec4ed4738158017567b9ea90"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.491632+00",
-      "version": "20260926051417",
       "name": "work_update_integration",
+      "version": "20260926051417",
       "statements_md5": "6c00fc0b4b63644b1e12203d4a71f743"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.49204+00",
-      "version": "20260926053701",
       "name": "material_package_approved_trigger",
+      "version": "20260926053701",
       "statements_md5": "ce40aa02f997ba04229eacf1b183a735"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.492066+00",
-      "version": "20260926062533",
       "name": "deal_state_route",
+      "version": "20260926062533",
       "statements_md5": "401eeb0e303a9af74e6c298305483a68"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.492186+00",
-      "version": "20260926183957",
       "name": "artifact_revision_protocol",
+      "version": "20260926183957",
       "statements_md5": "65a68be9ec4938833839444d5c63f28d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.492656+00",
-      "version": "20260926190857",
       "name": "presentation_template_versions",
+      "version": "20260926190857",
       "statements_md5": "143a20744ca4102c09033e73372c7694"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.492987+00",
-      "version": "20260926203623",
       "name": "artifact_producers",
+      "version": "20260926203623",
       "statements_md5": "9c9537d81d1fbe44c36f22e7857c0b4d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493119+00",
-      "version": "20260927131506",
       "name": "artifact_content_access_hardening",
+      "version": "20260927131506",
       "statements_md5": "120773407bca1b782c2f3ec1d0baeff6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.49315+00",
-      "version": "20260927133717",
       "name": "execution_human_revocation_serialization",
+      "version": "20260927133717",
       "statements_md5": "fb76ec7900db24bb1e899d1a5ed2a437"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493164+00",
-      "version": "20260927133737",
       "name": "platform_publication_authority_hardening",
+      "version": "20260927133737",
       "statements_md5": "096c85e367c852dd34aa4c8b46d5609b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493201+00",
-      "version": "20260928115102",
       "name": "revision_bound_reviews_and_decisions",
+      "version": "20260928115102",
       "statements_md5": "6cc30578f0f0394c0539e19148a11784"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493712+00",
-      "version": "20260928140508",
       "name": "execution_artifact_recovery",
+      "version": "20260928140508",
       "statements_md5": "a25129aeddb742339c73d40a641255fa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493827+00",
-      "version": "20260928163641",
       "name": "institutional_input_snapshots",
+      "version": "20260928163641",
       "statements_md5": "f7cc4b6fe42437327b83d037452c5be8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.493959+00",
-      "version": "20260928180833",
       "name": "institutional_setup_input_snapshots",
+      "version": "20260928180833",
       "statements_md5": "e83eb49132c2c2392e5c00adfd80a49c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494089+00",
-      "version": "20260928203811",
       "name": "institutional_contribution_receipts",
+      "version": "20260928203811",
       "statements_md5": "1e64b8d805b384cde42d0873db589a90"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494178+00",
-      "version": "20260928214516",
       "name": "institutional_configuration_ancestry",
+      "version": "20260928214516",
       "statements_md5": "e59ee8e1efd3da448335f111760db797"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494225+00",
-      "version": "20260929003415",
       "name": "institutional_source_closure",
+      "version": "20260929003415",
       "statements_md5": "1737a9f447a15f0d3da51c668966ea2e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494346+00",
-      "version": "20260929003427",
       "name": "institutional_closure_execution_scope",
+      "version": "20260929003427",
       "statements_md5": "252a061db15c18640e6502b0cbd385a6"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494452+00",
-      "version": "20260929021418",
       "name": "institutional_native_projection",
+      "version": "20260929021418",
       "statements_md5": "cb8ca3c55f44f68065d2d9812ddd2c86"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494722+00",
-      "version": "20260929024501",
       "name": "institutional_native_read_lock_order",
+      "version": "20260929024501",
       "statements_md5": "9f247116f6682851c987f76be7db7a00"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.494789+00",
-      "version": "20260929135457",
       "name": "institutional_setup_parent_lineage",
+      "version": "20260929135457",
       "statements_md5": "c7665037bbee94957b5fd6c4e5ce3281"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495075+00",
-      "version": "20260929135520",
       "name": "institutional_setup_parent_identity",
+      "version": "20260929135520",
       "statements_md5": "5845586101b154ce36111581c4df19f0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495148+00",
-      "version": "20260929163715",
       "name": "execution_result_source_closure",
+      "version": "20260929163715",
       "statements_md5": "cc1e0202ce64689e8737273cf47dbcdd"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495518+00",
-      "version": "20260929163721",
       "name": "execution_result_read_freshness",
+      "version": "20260929163721",
       "statements_md5": "5430388fc3feeeb57f6e2c26a4924eb0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495588+00",
-      "version": "20260929182306",
       "name": "execution_result_human_review",
+      "version": "20260929182306",
       "statements_md5": "3276a2f0260533d74f984eb257401da2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.49561+00",
-      "version": "20260930172846",
       "name": "project_review_regime_v2",
+      "version": "20260930172846",
       "statements_md5": "90385a7faadbc49ae5b494b44dbe9916"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495686+00",
-      "version": "20260930195919",
       "name": "capital_public_input_capture",
+      "version": "20260930195919",
       "statements_md5": "393220bf452fd3ba4cc51825e6c49d4e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495855+00",
-      "version": "20260930195925",
       "name": "capital_public_capture_context_guard",
+      "version": "20260930195925",
       "statements_md5": "859dc3b097b181eb1d87986eb3c81283"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.495977+00",
-      "version": "20260930220853",
       "name": "capital_public_payload_retention",
+      "version": "20260930220853",
       "statements_md5": "acaf623182915859423be4f18c9e63e9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496211+00",
-      "version": "20260930220912",
       "name": "capital_public_retention_prepare_conflict_guard",
+      "version": "20260930220912",
       "statements_md5": "a4943ee1c70c2d1d0bdd5ee031c0fec9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496258+00",
-      "version": "20260930220929",
       "name": "capital_public_retention_prepare_scope_guard",
+      "version": "20260930220929",
       "statements_md5": "7156b503d3b80709f9960b5dfca5a187"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496304+00",
-      "version": "20260930221005",
       "name": "capital_public_payload_retention_activation",
+      "version": "20260930221005",
       "statements_md5": "962ae135a3ae8df2f879702f1b8d3282"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496312+00",
-      "version": "20261001205206",
       "name": "capital_body_retention",
+      "version": "20261001205206",
       "statements_md5": "6883442050840db5498296440e0ea431"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496752+00",
-      "version": "20261001205251",
       "name": "typedbody_storage_job_authority",
+      "version": "20261001205251",
       "statements_md5": "44961e65e4079b2dfbf22cea58461d47"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496775+00",
-      "version": "20261001205326",
       "name": "capital_body_server_read_boundary",
+      "version": "20261001205326",
       "statements_md5": "b0e124f9f732fc9eab87d9a37a32ad01"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.496872+00",
-      "version": "20261002014202",
       "name": "capital_body_attempt_ledger",
+      "version": "20261002014202",
       "statements_md5": "6261962a77afb13250421e5db7d0d20c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.497199+00",
-      "version": "20261002014214",
       "name": "capital_body_attempt_retention_drain",
+      "version": "20261002014214",
       "statements_md5": "78e62b0e5f3c6dca64f04e6758a96f78"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.497303+00",
-      "version": "20261002014224",
       "name": "capital_body_attempt_fk_index",
+      "version": "20261002014224",
       "statements_md5": "b5902c544c662ee4eb0086cd98de44c0"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.497306+00",
-      "version": "20261002101548",
       "name": "capital_body_attempt_outcomes",
+      "version": "20261002101548",
       "statements_md5": "57a772d492a94f0f28188d17993de2b8"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.49772+00",
-      "version": "20261002101604",
       "name": "capital_body_accepted_input_identity_fk_index",
+      "version": "20261002101604",
       "statements_md5": "0d965855ea23b5503457b4b2a37b9600"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.497726+00",
-      "version": "20261002113623",
       "name": "institutional_configuration_review_projection",
+      "version": "20261002113623",
       "statements_md5": "07da4cb47ec64baff8498002091e6ee9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.497893+00",
-      "version": "20261002125617",
       "name": "capital_m07_native_consumption",
+      "version": "20261002125617",
       "statements_md5": "62a9b5b99ccdc3269b2daf5a85c93467"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499178+00",
-      "version": "20261002135718",
       "name": "capital_m07_legacy_contract_compatibility",
+      "version": "20261002135718",
       "statements_md5": "37b519fe884f30bd81a3b2732cdf32c2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499187+00",
-      "version": "20261002163401",
       "name": "capital_m07_capture_context_stability",
+      "version": "20261002163401",
       "statements_md5": "961520527e5f2269bcb3e3894b41acc3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499227+00",
-      "version": "20261002185228",
       "name": "execution_brief_native_capture",
+      "version": "20261002185228",
       "statements_md5": "3e8c58088c723f983ba69ba9c78a15fa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499555+00",
-      "version": "20261002210206",
       "name": "material_production_native_capture",
+      "version": "20261002210206",
       "statements_md5": "e96db72e271ebc8d70f620e22822b99c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499778+00",
-      "version": "20261002210212",
       "name": "material_production_plan_native",
+      "version": "20261002210212",
       "statements_md5": "ba69924c12a3d6d82d3ef86f478fde37"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.499866+00",
-      "version": "20261002210220",
       "name": "material_production_consumer_native",
+      "version": "20261002210220",
       "statements_md5": "df6947e0fc33427603c857e30889e97d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500116+00",
-      "version": "20261002210226",
       "name": "material_production_public_sources",
+      "version": "20261002210226",
       "statements_md5": "786e76584d588ef2e8d354e299b5c5d9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500263+00",
-      "version": "20261002210237",
       "name": "material_production_cutover",
+      "version": "20261002210237",
       "statements_md5": "c1540f889b204fd163df51044ee10d6d"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500322+00",
-      "version": "20261002210243",
       "name": "material_production_terminal",
+      "version": "20261002210243",
       "statements_md5": "56767eeabd01c84eb20362d12e8ac0d4"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.5004+00",
-      "version": "20261002210249",
       "name": "material_package_native_review",
+      "version": "20261002210249",
       "statements_md5": "95c4b8b069b1dd359779ff0b10e91239"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500531+00",
-      "version": "20261002210256",
       "name": "material_retire_experimental_approvals",
+      "version": "20261002210256",
       "statements_md5": "12f3b2ffcb58e7814956bdbcbbc3dbff"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500536+00",
-      "version": "20261002214213",
       "name": "material_public_delivery_context_guard",
+      "version": "20261002214213",
       "statements_md5": "f63fecf76d41e4f8bf70773621727738"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.50059+00",
-      "version": "20261002221910",
       "name": "material_internal_helper_execute_grants",
+      "version": "20261002221910",
       "statements_md5": "ca06c4cdacf516b6418c261f440fba3a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.500594+00",
-      "version": "20261004175012",
       "name": "capital_native_consumers",
+      "version": "20261004175012",
       "statements_md5": "052dc87bfef17ce48573f75d21af2930"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.505604+00",
-      "version": "20261004175334",
       "name": "artifact_native_inherited_restriction",
+      "version": "20261004175334",
       "statements_md5": "050a5036a1e2f854cbf7ab5b32f0a3d9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.505636+00",
-      "version": "20261004175415",
       "name": "assessment_native_sources",
+      "version": "20261004175415",
       "statements_md5": "e3e0db1ba4366c1477e6aac115419612"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.506672+00",
-      "version": "20261004175459",
       "name": "capital_native_provider_consumption",
+      "version": "20261004175459",
       "statements_md5": "8c36caae1d3c40506eb780c88499dd2a"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.507109+00",
-      "version": "20261004175545",
       "name": "capital_preview_native_execution",
+      "version": "20261004175545",
       "statements_md5": "98a921da5a4478c9989f2202f4353afa"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508295+00",
-      "version": "20261004175639",
       "name": "work_review_dashboard",
+      "version": "20261004175639",
       "statements_md5": "6cad6e3a03dbd0fc96c1f6a969a19e2b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508397+00",
-      "version": "20261004175707",
       "name": "capital_native_case_fit_result_contract",
+      "version": "20261004175707",
       "statements_md5": "f1202554d829635d055b0ef5c12b20e3"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508422+00",
-      "version": "20261004175756",
       "name": "capital_preview_storage_job_authority",
+      "version": "20261004175756",
       "statements_md5": "d9c8ee4e5d920250ec7174eedc815277"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508438+00",
-      "version": "20261004175832",
       "name": "capital_preview_native_artifact_publication",
+      "version": "20261004175832",
       "statements_md5": "d3bc440711dc79484d7e3316fa984030"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508491+00",
-      "version": "20261004175934",
       "name": "capital_preview_physical_input_grammar",
+      "version": "20261004175934",
       "statements_md5": "3d17baa2479e9ae8893fded846eec01b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508504+00",
-      "version": "20261004180037",
       "name": "capital_preview_boundary_validation",
+      "version": "20261004180037",
       "statements_md5": "12ee5b1273283e41c3eae5e0e1ae7907"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.50856+00",
-      "version": "20261004180111",
       "name": "capital_preview_review_projection",
+      "version": "20261004180111",
       "statements_md5": "9809de20cb1bd0dfee58ae7ffa3bc8ee"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508583+00",
-      "version": "20261004180158",
       "name": "capital_preview_finalize_bounded_closure",
+      "version": "20261004180158",
       "statements_md5": "d9456d14b3ead549cb4a25bf9ba46fef"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508617+00",
-      "version": "20261004180250",
       "name": "work_optional_capital_purpose",
+      "version": "20261004180250",
       "statements_md5": "0ed5e36ed7e3993a76b914685409dbea"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.50863+00",
-      "version": "20261004180343",
       "name": "work_archive_metadata",
+      "version": "20261004180343",
       "statements_md5": "fd41c7bf5a24e847ab524cdb4bdab6c7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508637+00",
-      "version": "20261004180439",
       "name": "work_review_dashboard_metadata",
+      "version": "20261004180439",
       "statements_md5": "b1db05283b96be85a4ce9eff39b02ec7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508658+00",
-      "version": "20261004184529",
       "name": "assessment_house_corpus_alias",
+      "version": "20261004184529",
       "statements_md5": "7203dcaef71ac1a7dc0e6d8ed56c9b18"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508664+00",
-      "version": "20261004203627",
       "name": "institutional_setup_capture_nowait_order",
+      "version": "20261004203627",
       "statements_md5": "a0b6a1e87ab1bd5b5a87fedbe9cf3eae"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508676+00",
-      "version": "20261005171558",
       "name": "artifact_export_receipts",
+      "version": "20261005171558",
       "statements_md5": "66eace2fba91f7e09401981f50ee858f"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.508849+00",
-      "version": "20261005172709",
       "name": "artifact_import_candidates",
+      "version": "20261005172709",
       "statements_md5": "c169e44d6dabe3cce099a132a564a1d9"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509426+00",
-      "version": "20261005184946",
       "name": "artifact_import_review_reason_parity",
+      "version": "20261005184946",
       "statements_md5": "f6a48510ec9cb788ae55b1284863a017"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509435+00",
-      "version": "20261006145144",
       "name": "end_to_end_revocation_and_retention",
+      "version": "20261006145144",
       "statements_md5": "7f356d48f792fd13a72716aa131f15e2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509615+00",
-      "version": "20261006145152",
       "name": "lifecycle_retention_consumers",
+      "version": "20261006145152",
       "statements_md5": "5b38475292d70cc85d5c99740a84403b"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509713+00",
-      "version": "20261006145200",
       "name": "immutable_audit_batch_archive",
+      "version": "20261006145200",
       "statements_md5": "b79d0caa58a29c662a9f4b858e6a0690"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509767+00",
-      "version": "20261006145228",
       "name": "sensitive_lifecycle_operation_audit",
+      "version": "20261006145228",
       "statements_md5": "953c3de81041a52e373e34a35c86549c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509828+00",
-      "version": "20261006145235",
       "name": "lifecycle_consumer_scope_and_audit_guards",
+      "version": "20261006145235",
       "statements_md5": "99bbb077fa6239a62c086afd4e0c7131"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509886+00",
-      "version": "20261006145241",
       "name": "revocation_receipt_variable_scope",
+      "version": "20261006145241",
       "statements_md5": "d261daefc0d3263909ef924ff2d4d4d7"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509904+00",
-      "version": "20261006145249",
       "name": "held_capture_cleanup_and_restore_evidence",
+      "version": "20261006145249",
       "statements_md5": "a5ee4a5dea48702feff2b873d94088d2"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.509937+00",
-      "version": "20261006145314",
       "name": "lifecycle_typed_payload_disposal",
+      "version": "20261006145314",
       "statements_md5": "658a6cb064e3096e4d95ba23b7aa6645"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.51002+00",
-      "version": "20261006145327",
       "name": "lifecycle_command_audit_completion",
+      "version": "20261006145327",
       "statements_md5": "cff99258393319f6a14e77e7af0f638e"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510044+00",
-      "version": "20261006145336",
       "name": "audit_archive_null_authority_state",
+      "version": "20261006145336",
       "statements_md5": "96fd54b0fa67c6b5433907432de389df"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510086+00",
-      "version": "20261006145348",
       "name": "lifecycle_denied_access_receipts",
+      "version": "20261006145348",
       "statements_md5": "18a313f95fdd5214ae9d6dc2c2321d95"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510099+00",
-      "version": "20261006145358",
       "name": "lifecycle_denial_work_scope",
+      "version": "20261006145358",
       "statements_md5": "d3587155606144721a49a5bfc3a5c441"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510106+00",
-      "version": "20261006172644",
       "name": "retire_legacy_framework_paths",
+      "version": "20261006172644",
       "statements_md5": "96b88bc2069452dd3c93f9e4a997a23c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510168+00",
-      "version": "20261006172646",
       "name": "quarantine_unreleased_distribution_paths",
+      "version": "20261006172646",
       "statements_md5": "02a73f430eae690c4af54963c5fcef8c"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510183+00",
-      "version": "20261006172649",
       "name": "template_context_authority_parity",
+      "version": "20261006172649",
       "statements_md5": "d9957b378276dff1da730b2396a0db91"
     },
     {
-      "captured_at": "2026-10-06 17:47:53.510196+00",
-      "version": "20261006174747",
       "name": "template_authoring_scope_projection",
+      "version": "20261006174747",
       "statements_md5": "35115afd401b612b5ccafbd236ad2208"
+    },
+    {
+      "name": "ficha_financial_objectives",
+      "version": "20261007153704",
+      "statements_md5": "fdeb34526adcbeef1962fa91f458f7f9"
     }
-  ]
+  ],
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-10-07T15:37:46.710739+00:00"
 }

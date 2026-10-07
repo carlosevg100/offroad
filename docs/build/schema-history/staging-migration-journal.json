@@ -1,1998 +1,2521 @@
 {
-  "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-06 14:55:20.486786+00",
   "rows": [
     {
+      "name": "platform_foundation",
       "version": "20260815014649",
-      "name": "platform_foundation"
+      "statements_md5": "a7abbfa4b56d1818a75c02886fb89bc3"
     },
     {
+      "name": "schema_hardening",
       "version": "20260815014831",
-      "name": "schema_hardening"
+      "statements_md5": "26440964587a1445773233c089ccb0e0"
     },
     {
+      "name": "application_commands",
       "version": "20260815015458",
-      "name": "application_commands"
+      "statements_md5": "828788c8326eaf9a7a13ef9a6d7a0b9c"
     },
     {
+      "name": "data_api_privilege_hardening",
       "version": "20260815022143",
-      "name": "data_api_privilege_hardening"
+      "statements_md5": "1670a77eb0c54bf2caa2266d4321cfd5"
     },
     {
+      "name": "professional_onboarding",
       "version": "20260816151535",
-      "name": "professional_onboarding"
+      "statements_md5": "89826559306834332826fd9b23591823"
     },
     {
+      "name": "allow_creator_owner_membership",
       "version": "20260817151210",
-      "name": "allow_creator_owner_membership"
+      "statements_md5": "1b09fc9ee359e16f11134db59d583b5b"
     },
     {
+      "name": "consolidate_membership_insert_policy",
       "version": "20260817151303",
-      "name": "consolidate_membership_insert_policy"
+      "statements_md5": "eee26853dcf3f9ab6cfed43b859341d8"
     },
     {
+      "name": "document_first_intake",
       "version": "20260817202038",
-      "name": "document_first_intake"
+      "statements_md5": "ef5de352543dbd34d5543cf9f573a967"
     },
     {
+      "name": "document_first_intake_indexes",
       "version": "20260817202807",
-      "name": "document_first_intake_indexes"
+      "statements_md5": "8919479ee5f68702af376778479fe713"
     },
     {
+      "name": "scope_document_hash_uniqueness",
       "version": "20260817203931",
-      "name": "scope_document_hash_uniqueness"
+      "statements_md5": "998bedf72a62ce4252b14e36fb5848e0"
     },
     {
+      "name": "hardening_force_rls_and_org_type_guard",
       "version": "20260817232443",
-      "name": "hardening_force_rls_and_org_type_guard"
+      "statements_md5": "429c3e3977ede36872674ca9ad509d1b"
     },
     {
+      "name": "atomic_intake_commands",
       "version": "20260818033220",
-      "name": "atomic_intake_commands"
+      "statements_md5": "a5db266ef88e576db151a0d090fc18f7"
     },
     {
+      "name": "intake_document_removal_and_verification",
       "version": "20260818034457",
-      "name": "intake_document_removal_and_verification"
+      "statements_md5": "64afa0d1e364baf36f5dbdc31d89515c"
     },
     {
+      "name": "intake_session_policies_membership",
       "version": "20260818043539",
-      "name": "intake_session_policies_membership"
+      "statements_md5": "6552bae0ef5f080b5808a6abf76f92c8"
     },
     {
+      "name": "intelligence_runs_profiles_layers",
       "version": "20260818171246",
-      "name": "intelligence_runs_profiles_layers"
+      "statements_md5": "2c7c28ac224c786fd9059cdc5afde809"
     },
     {
+      "name": "privilege_hardening_no_anon_and_private_commands",
       "version": "20260818172243",
-      "name": "privilege_hardening_no_anon_and_private_commands"
+      "statements_md5": "758908c91458823b961e43ee59c83e6a"
     },
     {
+      "name": "pipeline_foreign_key_indexes",
       "version": "20260818172357",
-      "name": "pipeline_foreign_key_indexes"
+      "statements_md5": "4efc1f7628cd4ea86e300c8ec5582b35"
     },
     {
+      "name": "document_layers_insert_policy",
       "version": "20260819115701",
-      "name": "document_layers_insert_policy"
+      "statements_md5": "708cb1adf7529013b358961d5a0b63cb"
     },
     {
+      "name": "worker_record_candidates",
       "version": "20260820104922",
-      "name": "worker_record_candidates"
+      "statements_md5": "efdfc9a35688d58fe848a683b752cd84"
     },
     {
+      "name": "organization_pipeline_flag",
       "version": "20260820111237",
-      "name": "organization_pipeline_flag"
+      "statements_md5": "81e8741a98d99195435624e1218ec59a"
     },
     {
+      "name": "organization_pipeline_flag_not_tenant_writable",
       "version": "20260820111258",
-      "name": "organization_pipeline_flag_not_tenant_writable"
+      "statements_md5": "6d1fb81bdf4e854728c268980278fbcb"
     },
     {
+      "name": "organization_pipeline_default_on",
       "version": "20260820111528",
-      "name": "organization_pipeline_default_on"
+      "statements_md5": "8a49b92793b696951d0e2a182c89368f"
     },
     {
+      "name": "intake_session_archetype",
       "version": "20260820123143",
-      "name": "intake_session_archetype"
+      "statements_md5": "fd3f4dafccabfdd56bb2d25ea59daa90"
     },
     {
+      "name": "intake_information_answers",
       "version": "20260820133211",
-      "name": "intake_information_answers"
+      "statements_md5": "76cba0ac1bce69faef9c3cdea8386a56"
     },
     {
+      "name": "extraction_feedback",
       "version": "20260820143434",
-      "name": "extraction_feedback"
+      "statements_md5": "2eb26087818a58ad15ea474cfc2271d8"
     },
     {
+      "name": "extraction_feedback_foreign_key_indexes",
       "version": "20260820143525",
-      "name": "extraction_feedback_foreign_key_indexes"
+      "statements_md5": "997bfb7b3dc87e7658805366a2292630"
     },
     {
+      "name": "intake_requirement_responses",
       "version": "20260820145017",
-      "name": "intake_requirement_responses"
+      "statements_md5": "47c935168db2f95bc3b982768ac423db"
     },
     {
+      "name": "fund_directory",
       "version": "20260820174040",
-      "name": "fund_directory"
+      "statements_md5": "2983f45cb6963b7a8062139ac0202576"
     },
     {
+      "name": "intake_deal_brief",
       "version": "20260820175243",
-      "name": "intake_deal_brief"
+      "statements_md5": "da89ddc5ce6ea72ea850124eb12a4e93"
     },
     {
+      "name": "intake_expected_rate",
       "version": "20260820185152",
-      "name": "intake_expected_rate"
+      "statements_md5": "ff9a49c502623487bedef08d71b06029"
     },
     {
+      "name": "case_brief_claim",
       "version": "20260820205229",
-      "name": "case_brief_claim"
+      "statements_md5": "e4d4d3062d84ba5596cb4d8c55773655"
     },
     {
+      "name": "evidence_is_not_tenant_writable",
       "version": "20260820213534",
-      "name": "evidence_is_not_tenant_writable"
+      "statements_md5": "0974a26acd046d2a346685366a0297db"
     },
     {
+      "name": "worker_record_candidates_reachable",
       "version": "20260820213802",
-      "name": "worker_record_candidates_reachable"
+      "statements_md5": "70ab71e4648b847122895c85c4c8eab5"
     },
     {
+      "name": "grant_private_implementations",
       "version": "20260820214048",
-      "name": "grant_private_implementations"
+      "statements_md5": "d00e0bdb7eab46681361ed4e5839e274"
     },
     {
+      "name": "source_documents_insert_id",
       "version": "20260820215101",
-      "name": "source_documents_insert_id"
+      "statements_md5": "bc06ea3f76a8dbfc2fbb38618989019b"
     },
     {
+      "name": "pipeline_urls_bound_to_document",
       "version": "20260820215904",
-      "name": "pipeline_urls_bound_to_document"
+      "statements_md5": "4b73cdc47df2ed26cee502dea7fdea66"
     },
     {
+      "name": "drop_dead_source_document_kind",
       "version": "20260820220813",
-      "name": "drop_dead_source_document_kind"
+      "statements_md5": "21c351bbc0202dbc7dd19ebf7297b915"
     },
     {
+      "name": "pipeline_spend_recorded_and_capped",
       "version": "20260820221929",
-      "name": "pipeline_spend_recorded_and_capped"
+      "statements_md5": "332605829e16c1b9da8fc40414099695"
     },
     {
+      "name": "complete_intake_processing_is_private",
       "version": "20260820222749",
-      "name": "complete_intake_processing_is_private"
+      "statements_md5": "20b7270a84f34b80583c7a5a18b624d0"
     },
     {
+      "name": "intake_session_state_not_tenant_writable",
       "version": "20260820224304",
-      "name": "intake_session_state_not_tenant_writable"
+      "statements_md5": "4b80c530f181dbc580b3f9622935b61f"
     },
     {
+      "name": "intake_session_commands_are_private",
       "version": "20260820225418",
-      "name": "intake_session_commands_are_private"
+      "statements_md5": "ef648b7a1ddb7c301f5fbffbafc1f0b2"
     },
     {
+      "name": "worker_complete_job_moves_the_session_again",
       "version": "20260821114132",
-      "name": "worker_complete_job_moves_the_session_again"
+      "statements_md5": "f68d428f0f5037645a1bda6c839c9e6d"
     },
     {
+      "name": "venture_debt_archetype_and_missing_document_kinds",
       "version": "20260821165707",
-      "name": "venture_debt_archetype_and_missing_document_kinds"
+      "statements_md5": "816fab81a73f8095ed0e0efeaaed4edd"
     },
     {
+      "name": "sounding_tables",
       "version": "20260822012109",
-      "name": "sounding_tables"
+      "statements_md5": "01008b8fe2e06181defe47c524664a59"
     },
     {
+      "name": "case_artifact_manifests",
       "version": "20260824170318",
-      "name": "case_artifact_manifests"
+      "statements_md5": "aa11233cf5ffe2cf3109373135b8dab7"
     },
     {
+      "name": "worker_case_analysis",
       "version": "20260824170329",
-      "name": "worker_case_analysis"
+      "statements_md5": "797f8a705990b24282098d5c4993a446"
     },
     {
+      "name": "claim_decision_registry",
       "version": "20260824180255",
-      "name": "claim_decision_registry"
+      "statements_md5": "e34a6067e56acbd8f64a9a4417b8403c"
     },
     {
+      "name": "claim_decision_command_private",
       "version": "20260824180448",
-      "name": "claim_decision_command_private"
+      "statements_md5": "6077fa2e9b6e6324f97d1ce96ec7645f"
     },
     {
+      "name": "claim_decision_foreign_key_indexes",
       "version": "20260824180822",
-      "name": "claim_decision_foreign_key_indexes"
+      "statements_md5": "308ec2074a820efa1e57d3bb0756597e"
     },
     {
+      "name": "governed_retrieval",
       "version": "20260824232722",
-      "name": "governed_retrieval"
+      "statements_md5": "ba7bd36eba99405b749b4755d71c3ad4"
     },
     {
+      "name": "retrieval_foreign_key_indexes",
       "version": "20260824232920",
-      "name": "retrieval_foreign_key_indexes"
+      "statements_md5": "7da8a3c0950721565f5e0fa4e956ad0e"
     },
     {
+      "name": "controlled_production_rollout",
       "version": "20260824235937",
-      "name": "controlled_production_rollout"
+      "statements_md5": "6428668c457c72ce0dbfbe41e3dec38e"
     },
     {
+      "name": "controlled_production_foreign_key_indexes",
       "version": "20260825000110",
-      "name": "controlled_production_foreign_key_indexes"
+      "statements_md5": "ed12e6bb42bb6b620bfc32487d5fa426"
     },
     {
+      "name": "controlled_release_commands",
       "version": "20260825000811",
-      "name": "controlled_release_commands"
+      "statements_md5": "c37c7be0d16a15e160e155ca2bcbffa1"
     },
     {
+      "name": "fix_controlled_case_input_variable",
       "version": "20260825001020",
-      "name": "fix_controlled_case_input_variable"
+      "statements_md5": "3197a1682abe24491adf021e221b5e23"
     },
     {
+      "name": "make_controlled_results_immutable",
       "version": "20260825001758",
-      "name": "make_controlled_results_immutable"
+      "statements_md5": "14fdf7aea2d3c1586ac96b83e472a443"
     },
     {
+      "name": "add_intake_unavailable_response",
       "version": "20260825023240",
-      "name": "add_intake_unavailable_response"
+      "statements_md5": "23294480d09a96ed2bb5b3f348919672"
     },
     {
+      "name": "m0_intake_event_ledger",
       "version": "20260825160750",
-      "name": "m0_intake_event_ledger"
+      "statements_md5": "1f044ab2e3e42129f5b5d63bcb7f1254"
     },
     {
+      "name": "m0_intake_projection_terminal_guard",
       "version": "20260825160803",
-      "name": "m0_intake_projection_terminal_guard"
+      "statements_md5": "bd6efbff2a64727d2fb2cfdfbfaf015a"
     },
     {
+      "name": "m0_capital_need_documents",
       "version": "20260825171945",
-      "name": "m0_capital_need_documents"
+      "statements_md5": "d42964c657aea902f4ff9b5f27f54282"
     },
     {
+      "name": "m0_request_ladder_commands",
       "version": "20260825180214",
-      "name": "m0_request_ladder_commands"
+      "statements_md5": "7dae6d6f5fee07084742fa75059a11f9"
     },
     {
+      "name": "m0_scope_authorization_triage",
       "version": "20260825185143",
-      "name": "m0_scope_authorization_triage"
+      "statements_md5": "2262bc38ed1eac06f3179fd0fc96aa1b"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract",
       "version": "20260825194419",
-      "name": "m0_scope_authorization_lifecycle_contract"
+      "statements_md5": "a5a70e94d0ef6ac28ef6e55c027c6cc9"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract",
       "version": "20260825195659",
-      "name": "m0_scope_authorization_lifecycle_contract"
+      "statements_md5": "07b3f7354f10563b66aa4115396ecbf5"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract",
       "version": "20260825200211",
-      "name": "m0_scope_authorization_lifecycle_contract"
+      "statements_md5": "6bce02d9e39b87293b8362cd44c02349"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract",
       "version": "20260825200444",
-      "name": "m0_scope_authorization_lifecycle_contract"
+      "statements_md5": "f615c41bb952a621cc48cd60594c0fc2"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract_final",
       "version": "20260825201341",
-      "name": "m0_scope_authorization_lifecycle_contract_final"
+      "statements_md5": "f12ff028ff9fd0a0de1ccead0d9f270e"
     },
     {
+      "name": "m0_scope_authorization_lifecycle_contract",
       "version": "20260825203300",
-      "name": "m0_scope_authorization_lifecycle_contract"
+      "statements_md5": "f12ff028ff9fd0a0de1ccead0d9f270e"
     },
     {
+      "name": "m6_pricing_registry",
       "version": "20260826013647",
-      "name": "m6_pricing_registry"
+      "statements_md5": "1829fe1882eba9a78863a6b9c6400e49"
     },
     {
+      "name": "m6_pricing_registry_advisor_hardening",
       "version": "20260826013815",
-      "name": "m6_pricing_registry_advisor_hardening"
+      "statements_md5": "9631f3efc00e9cf4147db61d365d84dc"
     },
     {
+      "name": "m8_qualified_introductions",
       "version": "20260826032043",
-      "name": "m8_qualified_introductions"
+      "statements_md5": "3c6855535c2b1f796a46a16d10f8436d"
     },
     {
+      "name": "m8_qualified_introduction_advisor_hardening",
       "version": "20260826032703",
-      "name": "m8_qualified_introduction_advisor_hardening"
+      "statements_md5": "efae3be09d4b5eed93ee62807cf4eef0"
     },
     {
+      "name": "m9_red_flag_governance",
       "version": "20260826035526",
-      "name": "m9_red_flag_governance"
+      "statements_md5": "625186d70389f78dcb1e8173bea55763"
     },
     {
+      "name": "m10_language_conduct_governance",
       "version": "20260826041244",
-      "name": "m10_language_conduct_governance"
+      "statements_md5": "7da4a08aa646ef49be2f1bb19048ac25"
     },
     {
+      "name": "agent_workspace_foundation",
       "version": "20260826200143",
-      "name": "agent_workspace_foundation"
+      "statements_md5": "63493792b4f5cd3da9150321b6bb50a0"
     },
     {
+      "name": "agent_workspace_index_hardening",
       "version": "20260826200443",
-      "name": "agent_workspace_index_hardening"
+      "statements_md5": "7b8de4d77c837b33b2c2898f33b54109"
     },
     {
+      "name": "agent_operation_brief_vertical",
       "version": "20260826203944",
-      "name": "agent_operation_brief_vertical"
+      "statements_md5": "74373c552ccd7653560d4e399da355b1"
     },
     {
+      "name": "agent_operation_brief_index_hardening",
       "version": "20260826204254",
-      "name": "agent_operation_brief_index_hardening"
+      "statements_md5": "a5e015e08b6a06be1932ba8a9ded8dd7"
     },
     {
+      "name": "agent_accept_and_apply",
       "version": "20260826204338",
-      "name": "agent_accept_and_apply"
+      "statements_md5": "dac478fbeb6ca093bb4720ce70064184"
     },
     {
+      "name": "agent_job_failure_isolation",
       "version": "20260826205046",
-      "name": "agent_job_failure_isolation"
+      "statements_md5": "1c642c21d55722af02533086111ae769"
     },
     {
+      "name": "restart_onboarding_intake",
       "version": "20260826221128",
-      "name": "restart_onboarding_intake"
+      "statements_md5": "017cb51a77b6a6b474e6a7fb98601828"
     },
     {
+      "name": "start_onboarding_intake_atomic",
       "version": "20260826232107",
-      "name": "start_onboarding_intake_atomic"
+      "statements_md5": "edeba46611c572f09b1e80ceadbc6091"
     },
     {
+      "name": "guided_company_profile_collecting_status",
       "version": "20260826232140",
-      "name": "guided_company_profile_collecting_status"
+      "statements_md5": "d6e31c2300584e4ebe0ffc67a165c802"
     },
     {
+      "name": "private_project_authorization_gate",
       "version": "20260827005724",
-      "name": "private_project_authorization_gate"
+      "statements_md5": "7f8d71fe9e8d80cbc40ba657e820fd73"
     },
     {
+      "name": "refine_private_workspace_terms",
       "version": "20260827020950",
-      "name": "refine_private_workspace_terms"
+      "statements_md5": "9e28eadc621330d4dd6bfac28d3b3c42"
     },
     {
+      "name": "legal_acceptance_v3_legacy_compatible",
       "version": "20260827162103",
-      "name": "legal_acceptance_v3_legacy_compatible"
+      "statements_md5": "314badeacf49941605f2bbdb1c819f9e"
     },
     {
+      "name": "configure_existing_onboarding_intake",
       "version": "20260827221500",
-      "name": "configure_existing_onboarding_intake"
+      "statements_md5": "e6e9d0b0745f058041f51c1a65fafde3"
     },
     {
+      "name": "start_workspace_intake_atomic",
       "version": "20260827224000",
-      "name": "start_workspace_intake_atomic"
+      "statements_md5": "bcddd2e2aa5adfea4e3dfb5d1ca51d3e"
     },
     {
+      "name": "onboarding_bootstrap_snapshot",
       "version": "20260828005129",
-      "name": "onboarding_bootstrap_snapshot"
+      "statements_md5": "c79de4512e71d2e2df9052b701123836"
     },
     {
+      "name": "move_preparation_authority_to_legal_gate_reconcile",
       "version": "20260828005248",
-      "name": "move_preparation_authority_to_legal_gate_reconcile"
+      "statements_md5": "511c52e4994e9cd5b9df5b4aa2ae6a86"
     },
     {
+      "name": "receivables_provider_programs",
       "version": "20260828005251",
-      "name": "receivables_provider_programs"
+      "statements_md5": "775171961dcb1c6d6df6992a8f535697"
     },
     {
+      "name": "receivables_production_evidence_rail",
       "version": "20260828191314",
-      "name": "receivables_production_evidence_rail"
+      "statements_md5": "b1e104ccf9ddc66eccd0c876952b31bc"
     },
     {
+      "name": "receivables_evidence_fk_indexes",
       "version": "20260828191325",
-      "name": "receivables_evidence_fk_indexes"
+      "statements_md5": "644c04087a48f83f0d4ff6601b240329"
     },
     {
+      "name": "allow_nfe_zip_uploads",
       "version": "20260828194341",
-      "name": "allow_nfe_zip_uploads"
+      "statements_md5": "8e78e7ddf8e641a407c6beb245810cb5"
     },
     {
+      "name": "normalize_llm_extraction_method",
       "version": "20260828195518",
-      "name": "normalize_llm_extraction_method"
+      "statements_md5": "3748186af8b60cda3ca415642152f7cc"
     },
     {
+      "name": "preserve_unparseable_worker_candidates",
       "version": "20260828210211",
-      "name": "preserve_unparseable_worker_candidates"
+      "statements_md5": "9cd9113a98cbf94e0e4cb0cda12fe4af"
     },
     {
+      "name": "batch_governed_retrieval_chunks",
       "version": "20260828220516",
-      "name": "batch_governed_retrieval_chunks"
+      "statements_md5": "546a7063cb063f2aa0da1ec89e3b43f9"
     },
     {
+      "name": "bound_large_retrieval_index",
       "version": "20260828225157",
-      "name": "bound_large_retrieval_index"
+      "statements_md5": "9c6e3b6e8caa03a7109d6267dd0a0d02"
     },
     {
+      "name": "allow_production_scale_retrieval_window",
       "version": "20260828231205",
-      "name": "allow_production_scale_retrieval_window"
+      "statements_md5": "8b055b954e288ced14a9be40aeb965c9"
     },
     {
+      "name": "economic_pipeline_guardrails",
       "version": "20260829003002",
-      "name": "economic_pipeline_guardrails"
+      "statements_md5": "2f1a5d31b12c6a0a64c607825d8ba561"
     },
     {
+      "name": "qualified_introduction_feedback",
       "version": "20260829141835",
-      "name": "qualified_introduction_feedback"
+      "statements_md5": "5432aa004d70bc1c9b2fb7e0fbb0d6f3"
     },
     {
+      "name": "qualified_introduction_feedback_advisor_hardening",
       "version": "20260829141838",
-      "name": "qualified_introduction_feedback_advisor_hardening"
+      "statements_md5": "e1b28e468cd678327aefe699189d0f7c"
     },
     {
+      "name": "qualified_introduction_feedback_supersession_ordering",
       "version": "20260829141841",
-      "name": "qualified_introduction_feedback_supersession_ordering"
+      "statements_md5": "c5f38b288df3eacc8472488cffe0a571"
     },
     {
+      "name": "deal_state_foundation",
       "version": "20260829154103",
-      "name": "deal_state_foundation"
+      "statements_md5": "cd48d022ad93d6e0d7b9a4a8883d54b8"
     },
     {
+      "name": "deal_state_advisor_hardening",
       "version": "20260829154114",
-      "name": "deal_state_advisor_hardening"
+      "statements_md5": "15a7d3c3134507ba4af25ce9e97ad99f"
     },
     {
+      "name": "deal_state_idempotence",
       "version": "20260829154126",
-      "name": "deal_state_idempotence"
+      "statements_md5": "67dca2196d8b6f54bc468ae7b893f7ac"
     },
     {
+      "name": "task_dag_prior_report",
       "version": "20260829184738",
-      "name": "task_dag_prior_report"
+      "statements_md5": "cf3274bccc88e5bb89e65fbedadd8f70"
     },
     {
+      "name": "load_deal_state_context",
       "version": "20260829203906",
-      "name": "load_deal_state_context"
+      "statements_md5": "1817eb7105f3bdd69db3933afa366d3d"
     },
     {
+      "name": "prevent_stale_deal_state_resurrection",
       "version": "20260829204142",
-      "name": "prevent_stale_deal_state_resurrection"
+      "statements_md5": "8bd73021b4bd40b922c5c9ceed3159fb"
     },
     {
+      "name": "bind_structure_decision_to_exact_proposal",
       "version": "20260829204945",
-      "name": "bind_structure_decision_to_exact_proposal"
+      "statements_md5": "5a04ea9dc53ad4eb3a80212bad263e14"
     },
     {
+      "name": "enqueue_incremental_deal_state_analysis",
       "version": "20260829205848",
-      "name": "enqueue_incremental_deal_state_analysis"
+      "statements_md5": "69fd09af48f62c293fed5f15f6ebef75"
     },
     {
+      "name": "enqueue_material_production_from_approved_plan",
       "version": "20260829211621",
-      "name": "enqueue_material_production_from_approved_plan"
+      "statements_md5": "e0551df38a426b238136173dd0a721a3"
     },
     {
+      "name": "bind_package_review_to_material_artifact",
       "version": "20260829212338",
-      "name": "bind_package_review_to_material_artifact"
+      "statements_md5": "fca7a0e019658745bc661eb97723e9a1"
     },
     {
+      "name": "lock_package_review_trigger_privileges",
       "version": "20260829212414",
-      "name": "lock_package_review_trigger_privileges"
+      "statements_md5": "540c940ee805b82f772e237b14979e29"
     },
     {
+      "name": "load_match_provider_context",
       "version": "20260829220610",
-      "name": "load_match_provider_context"
+      "statements_md5": "e616ac17ac2d36e647406d85a0b9b281"
     },
     {
+      "name": "govern_match_review_before_release",
       "version": "20260829220739",
-      "name": "govern_match_review_before_release"
+      "statements_md5": "178785b604ac4ffaca4135d9a3504a92"
     },
     {
+      "name": "preserve_match_provider_identity",
       "version": "20260829221750",
-      "name": "preserve_match_provider_identity"
+      "statements_md5": "8cfaf606cac5025a23063e935cbde29c"
     },
     {
+      "name": "build_exact_introduction_plan_from_shortlist",
       "version": "20260829222406",
-      "name": "build_exact_introduction_plan_from_shortlist"
+      "statements_md5": "dadcd7af8635812071b07a016c0a19d9"
     },
     {
+      "name": "separate_shortlist_from_distribution_policy",
       "version": "20260829223055",
-      "name": "separate_shortlist_from_distribution_policy"
+      "statements_md5": "923e269f79cea8534b3edc5e253f32de"
     },
     {
+      "name": "resolve_exact_qualified_introduction_recipients",
       "version": "20260829223811",
-      "name": "resolve_exact_qualified_introduction_recipients"
+      "statements_md5": "cf3329a391a30c3be397ce51fbd1e5cf"
     },
     {
+      "name": "authorize_exact_recipient_material_plan",
       "version": "20260829224111",
-      "name": "authorize_exact_recipient_material_plan"
+      "statements_md5": "ee00e681e4c4db859bc74d57bba45ab5"
     },
     {
+      "name": "index_exact_introduction_relations",
       "version": "20260829225056",
-      "name": "index_exact_introduction_relations"
+      "statements_md5": "b62af2318de8080dc926152ac3b431bb"
     },
     {
+      "name": "record_exact_qualified_introduction_release",
       "version": "20260829225306",
-      "name": "record_exact_qualified_introduction_release"
+      "statements_md5": "fb618e5b12fa9d22a2798f9443ce20ce"
     },
     {
+      "name": "instant_workspace_entry",
       "version": "20260830155729",
-      "name": "instant_workspace_entry"
+      "statements_md5": "ab0d2e1a3614798dcf89ab7376d55bbd"
     },
     {
+      "name": "terminal_processing_state",
       "version": "20260830160719",
-      "name": "terminal_processing_state"
+      "statements_md5": "7fdc61db92462efda7f34034c8ac9812"
     },
     {
+      "name": "canonical_workspace_project_setup",
       "version": "20260830165102",
-      "name": "canonical_workspace_project_setup"
+      "statements_md5": "1c0fdd2c2edafeb723f360c4cbf01751"
     },
     {
+      "name": "session_company_gate",
       "version": "20260830165116",
-      "name": "session_company_gate"
+      "statements_md5": "f604279b0ab856f9b714a8350169c116"
     },
     {
+      "name": "workspace_project_management",
       "version": "20260830214933",
-      "name": "workspace_project_management"
+      "statements_md5": "c3269440868fd0220414dd6e5c9463da"
     },
     {
+      "name": "project_scoped_company_profile",
       "version": "20260831092552",
-      "name": "project_scoped_company_profile"
+      "statements_md5": "6efd544c67c542f18dfd6e3fee3b4329"
     },
     {
+      "name": "idempotent_intake_document_upload",
       "version": "20260831133035",
-      "name": "idempotent_intake_document_upload"
+      "statements_md5": "57f18719997052328a37fc99c57347f4"
     },
     {
+      "name": "preliminary_understanding_gate",
       "version": "20260901035241",
-      "name": "preliminary_understanding_gate"
+      "statements_md5": "d34fb7879b29146b2ab970e41e2d2a8c"
     },
     {
+      "name": "universal_capital_projects",
       "version": "20260901035248",
-      "name": "universal_capital_projects"
+      "statements_md5": "36c68cca17d943bbf262be33d4a1773f"
     },
     {
+      "name": "complete_fallback_analysis_lineage",
       "version": "20260901035256",
-      "name": "complete_fallback_analysis_lineage"
+      "statements_md5": "ae8c60b364918b74ecf7ebec4762fa76"
     },
     {
+      "name": "capital_project_access_basis",
       "version": "20260901035305",
-      "name": "capital_project_access_basis"
+      "statements_md5": "451b12cec207591701fc4b54241c183c"
     },
     {
+      "name": "capital_project_plan_runtime",
       "version": "20260901035308",
-      "name": "capital_project_plan_runtime"
+      "statements_md5": "d08e8f9beb5f35a4a6705e4f685da868"
     },
     {
+      "name": "capital_task_run_lifecycle",
       "version": "20260901035312",
-      "name": "capital_task_run_lifecycle"
+      "statements_md5": "00a04bd8ac7294004b04a6e21f46a9d5"
     },
     {
+      "name": "capital_project_artifacts",
       "version": "20260901035316",
-      "name": "capital_project_artifacts"
+      "statements_md5": "47464ffc63176370479a17b2dda133ad"
     },
     {
+      "name": "origination_thesis_vertical",
       "version": "20260901035319",
-      "name": "origination_thesis_vertical"
+      "statements_md5": "c59ac95233ec6578ece6128688739081"
     },
     {
+      "name": "capital_project_fk_index_hardening",
       "version": "20260901035442",
-      "name": "capital_project_fk_index_hardening"
+      "statements_md5": "31bf4bed4b10a41cf2bf1582b6f15243"
     },
     {
+      "name": "company_debt_view_vertical",
       "version": "20260901044903",
-      "name": "company_debt_view_vertical"
+      "statements_md5": "40ebb14e3f02dec0bd6de12cc59e1af2"
     },
     {
+      "name": "conversational_advisor_workspace",
       "version": "20260901112115",
-      "name": "conversational_advisor_workspace"
+      "statements_md5": "e1646fcf2198e3561f500086d97a72cf"
     },
     {
+      "name": "advisor_turn_queue",
       "version": "20260901112122",
-      "name": "advisor_turn_queue"
+      "statements_md5": "4a4f758628d99839a5668f0900eaa0a7"
     },
     {
+      "name": "advisor_initial_turn_identity",
       "version": "20260901112129",
-      "name": "advisor_initial_turn_identity"
+      "statements_md5": "a9e0785e8b6cef553e2967be09442514"
     },
     {
+      "name": "advisor_semantic_dag_activation",
       "version": "20260901122420",
-      "name": "advisor_semantic_dag_activation"
+      "statements_md5": "67cdb65ca2e0acd709ca54c739a427eb"
     },
     {
+      "name": "advisor_specialized_completion_message",
       "version": "20260901125416",
-      "name": "advisor_specialized_completion_message"
+      "statements_md5": "8b52ca1ef22091749d809b0903b6c90d"
     },
     {
+      "name": "advisor_related_project_memory",
       "version": "20260902035113",
-      "name": "advisor_related_project_memory"
+      "statements_md5": "d074aeea3c0298baff61e902e6c19af6"
     },
     {
+      "name": "persist_operating_controls_and_invalidation",
       "version": "20260902035116",
-      "name": "persist_operating_controls_and_invalidation"
+      "statements_md5": "6d0cdd25012db8714c3c804f9c9089e9"
     },
     {
+      "name": "public_research_public_cache",
       "version": "20260902035119",
-      "name": "public_research_public_cache"
+      "statements_md5": "ddedbfa285b3702e20304d208e935833"
     },
     {
+      "name": "capital_planning_dag",
       "version": "20260902035123",
-      "name": "capital_planning_dag"
+      "statements_md5": "630340985cd8452ac6e5fda61e5899fe"
     },
     {
+      "name": "advisor_private_preliminary_context",
       "version": "20260902035127",
-      "name": "advisor_private_preliminary_context"
+      "statements_md5": "428e0e0973d4649f08bd6ae06130baf9"
     },
     {
+      "name": "confirm_advisor_preliminary",
       "version": "20260902035130",
-      "name": "confirm_advisor_preliminary"
+      "statements_md5": "893c384d35910b45a62f6af68ae8341e"
     },
     {
+      "name": "resume_capital_project_dag",
       "version": "20260902050257",
-      "name": "resume_capital_project_dag"
+      "statements_md5": "e9eb8a52cad8995a4723bd2ccb5c085b"
     },
     {
+      "name": "public_research_cache_v2",
       "version": "20260902071953",
-      "name": "public_research_cache_v2"
+      "statements_md5": "bb8d16e9864b0e1e041693a8567a083d"
     },
     {
+      "name": "advisor_project_name_collision",
       "version": "20260902105618",
-      "name": "advisor_project_name_collision"
+      "statements_md5": "eb5e3b626d7258a1d58e68707f426c97"
     },
     {
+      "name": "fallback_preliminary_initial_request",
       "version": "20260902113518",
-      "name": "fallback_preliminary_initial_request"
+      "statements_md5": "6f9c92a62e37ab97fecaae35733e5240"
     },
     {
+      "name": "workspace_project_groups",
       "version": "20260902175803",
-      "name": "workspace_project_groups"
+      "statements_md5": "58ea27bbf732ffbe595c5746561ba4e2"
     },
     {
+      "name": "agentic_dcm_work_system",
       "version": "20260903034438",
-      "name": "agentic_dcm_work_system"
+      "statements_md5": "f18b9cca84731a558181e5eb5105cf77"
     },
     {
+      "name": "agentic_dcm_work_system_index_hardening",
       "version": "20260903034442",
-      "name": "agentic_dcm_work_system_index_hardening"
+      "statements_md5": "ad45f999b9454c80d066480650fcfa12"
     },
     {
+      "name": "agentic_dcm_runtime_events",
       "version": "20260903034445",
-      "name": "agentic_dcm_runtime_events"
+      "statements_md5": "bc9759fe9d0128e05a00ee53bac851de"
     },
     {
+      "name": "agentic_dcm_assessment_projection",
       "version": "20260903034449",
-      "name": "agentic_dcm_assessment_projection"
+      "statements_md5": "a3c4119b2cf496e71ad4f5f484a485e7"
     },
     {
+      "name": "agent_decision_actor_hardening",
       "version": "20260903034452",
-      "name": "agent_decision_actor_hardening"
+      "statements_md5": "33eccb2254bafbf011d81df0cf264824"
     },
     {
+      "name": "agent_assessment_variable_resolution",
       "version": "20260903034454",
-      "name": "agent_assessment_variable_resolution"
+      "statements_md5": "8eee620544448df61fec729b5316d506"
     },
     {
+      "name": "agent_stage_event_variable_resolution",
       "version": "20260903034457",
-      "name": "agent_stage_event_variable_resolution"
+      "statements_md5": "4b800c10b07b78baea1b3bed5b138756"
     },
     {
+      "name": "workspace_project_group_actor_indexes",
       "version": "20260903034529",
-      "name": "workspace_project_group_actor_indexes"
+      "statements_md5": "1bc57457d5e8102b6844df649917fc1f"
     },
     {
+      "name": "professional_capability_context",
       "version": "20260903125201",
-      "name": "professional_capability_context"
+      "statements_md5": "3006eaecee6119dcdf2fa0ad7796f959"
     },
     {
+      "name": "professional_capability_context_index_hardening",
       "version": "20260903125204",
-      "name": "professional_capability_context_index_hardening"
+      "statements_md5": "7af295e5b3b00df068cb941d1c08e38f"
     },
     {
+      "name": "personal_institution_context",
       "version": "20260903125207",
-      "name": "personal_institution_context"
+      "statements_md5": "9585f1f17b4262cfe83629d601ab948e"
     },
     {
+      "name": "advisor_specialized_professional_context",
       "version": "20260903134811",
-      "name": "advisor_specialized_professional_context"
+      "statements_md5": "08a3a8233e2ae135768cb5adc202693f"
     },
     {
+      "name": "public_company_source_memory",
       "version": "20260903134819",
-      "name": "public_company_source_memory"
+      "statements_md5": "b666bbab7638a6a7a4d6fffd715f096b"
     },
     {
+      "name": "expand_professional_functions",
       "version": "20260903182045",
-      "name": "expand_professional_functions"
+      "statements_md5": "103b43b272fdd927c8a66895da0b0175"
     },
     {
+      "name": "origination_runtime_budget",
       "version": "20260903213233",
-      "name": "origination_runtime_budget"
+      "statements_md5": "aeef109df4f25d94ee43e8c1e1d4e0ba"
     },
     {
+      "name": "origination_completion_headroom",
       "version": "20260903215610",
-      "name": "origination_completion_headroom"
+      "statements_md5": "7d98d4092503cf239fce122bbf394a1f"
     },
     {
+      "name": "preserve_failed_user_message_memory",
       "version": "20260904005430",
-      "name": "preserve_failed_user_message_memory"
+      "statements_md5": "f44f7160b8846cf471a19222d224950b"
     },
     {
+      "name": "retry_failed_specialized_analysis",
       "version": "20260904011351",
-      "name": "retry_failed_specialized_analysis"
+      "statements_md5": "9074588550e1d0260aa57db096cfb0ce"
     },
     {
+      "name": "capital_task_retry_feedback",
       "version": "20260904015543",
-      "name": "capital_task_retry_feedback"
+      "statements_md5": "70b0a11da7cb59b5c8055dea27b73315"
     },
     {
+      "name": "advisor_chat_artifact_revision",
       "version": "20260904022353",
-      "name": "advisor_chat_artifact_revision"
+      "statements_md5": "bb09d67415652c6496b6589f81c9963c"
     },
     {
+      "name": "preliminary_understanding_completion_budget",
       "version": "20260904040355",
-      "name": "preliminary_understanding_completion_budget"
+      "statements_md5": "6126dc8e9012507cf2db88edc10ee5c4"
     },
     {
+      "name": "preliminary_input_project_binding",
       "version": "20260904041325",
-      "name": "preliminary_input_project_binding"
+      "statements_md5": "7adf162d733fecac7a33739fc1b0e446"
     },
     {
+      "name": "fix_advisor_preliminary_confirmation",
       "version": "20260904055915",
-      "name": "fix_advisor_preliminary_confirmation"
+      "statements_md5": "6ceac594d78087324dc0646865999517"
     },
     {
+      "name": "full_case_project_binding",
       "version": "20260904061619",
-      "name": "full_case_project_binding"
+      "statements_md5": "48def8cbec6a7092c7ba79a37fc42c4d"
     },
     {
+      "name": "mark_auto_created_project_folders",
       "version": "20260904121149",
-      "name": "mark_auto_created_project_folders"
+      "statements_md5": "f73bf0f1398ea829fb9d5dbf4b4a46b4"
     },
     {
+      "name": "clear_auto_created_on_folder_rename",
       "version": "20260904121217",
-      "name": "clear_auto_created_on_folder_rename"
+      "statements_md5": "c6c8256d9bddebffd94353ebbf314972"
     },
     {
+      "name": "professional_context_multi_select",
       "version": "20260904164935",
-      "name": "professional_context_multi_select"
+      "statements_md5": "380f97ae4f8ebf1eacc88819fa627c1c"
     },
     {
+      "name": "job_failure_causes_and_run_metrics",
       "version": "20260904201650",
-      "name": "job_failure_causes_and_run_metrics"
+      "statements_md5": "69b844fff10e578bac167f618cfe47aa"
     },
     {
+      "name": "organization_methodology",
       "version": "20260905111348",
-      "name": "organization_methodology"
+      "statements_md5": "557417116411ae5fb20175ac504924de"
     },
     {
+      "name": "intent_envelopes_shadow",
       "version": "20260905111405",
-      "name": "intent_envelopes_shadow"
+      "statements_md5": "da5400c9d612b8aaebfc06f25eeba301"
     },
     {
+      "name": "intent_envelopes_project_lookup",
       "version": "20260905111435",
-      "name": "intent_envelopes_project_lookup"
+      "statements_md5": "78304e2778fe29612345f57110c00ddb"
     },
     {
+      "name": "gold_case_bindings",
       "version": "20260905111448",
-      "name": "gold_case_bindings"
+      "statements_md5": "4742a6c7e7e0f64a7c5c23b3d4375177"
     },
     {
+      "name": "intent_envelopes_session_table",
       "version": "20260905111529",
-      "name": "intent_envelopes_session_table"
+      "statements_md5": "a4fc3df3603f062f62bb789444b469b7"
     },
     {
+      "name": "intent_envelopes_variable_names",
       "version": "20260905111607",
-      "name": "intent_envelopes_variable_names"
+      "statements_md5": "af3c7747c5fbadef8cde295f72df25ec"
     },
     {
+      "name": "integration_preview_mode",
       "version": "20260905111813",
-      "name": "integration_preview_mode"
+      "statements_md5": "e267c51680f1fe16c9f84026402396b6"
     },
     {
+      "name": "integration_preview_status_invoker",
       "version": "20260905112103",
-      "name": "integration_preview_status_invoker"
+      "statements_md5": "12c10ab9aeb89f200fee385ce9ebff45"
     },
     {
+      "name": "integration_preview_activation_fingerprint_variable",
       "version": "20260905112330",
-      "name": "integration_preview_activation_fingerprint_variable"
+      "statements_md5": "ccd448e85bf6a6ca71d5fae1e9ac0fea"
     },
     {
+      "name": "integration_preview_context_loader",
       "version": "20260905112635",
-      "name": "integration_preview_context_loader"
+      "statements_md5": "6961c6a4efa9ccf851425bcb69d9384e"
     },
     {
+      "name": "integration_preview_runtime",
       "version": "20260905114236",
-      "name": "integration_preview_runtime"
+      "statements_md5": "2c738a61f7042e890da88db2c9f6435c"
     },
     {
+      "name": "integration_preview_prior_artifacts_across_plans",
       "version": "20260905125402",
-      "name": "integration_preview_prior_artifacts_across_plans"
+      "statements_md5": "5318671babc2554c995dc91be68b78f1"
     },
     {
+      "name": "integration_preview_artifacts_across_plans",
       "version": "20260905125828",
-      "name": "integration_preview_artifacts_across_plans"
+      "statements_md5": "11628a3b1c092d4d9320cac922911490"
     },
     {
+      "name": "integration_preview_replay_runs",
       "version": "20260905132507",
-      "name": "integration_preview_replay_runs"
+      "statements_md5": "af6185b1567c46957f85a1d58e8a0040"
     },
     {
+      "name": "integration_preview_project_scope",
       "version": "20260905140617",
-      "name": "integration_preview_project_scope"
+      "statements_md5": "3a09ee84251ae90aaa0be1abe00035bf"
     },
     {
+      "name": "integration_preview_live_mode",
       "version": "20260905142351",
-      "name": "integration_preview_live_mode"
+      "statements_md5": "3e9a00c6f833898a41da36fc1f76fc6a"
     },
     {
+      "name": "integration_preview_run_budget",
       "version": "20260905143605",
-      "name": "integration_preview_run_budget"
+      "statements_md5": "a0c703882bb3a1c95ced1bf8f44bea39"
     },
     {
+      "name": "integration_preview_run_budget_v2",
       "version": "20260905175708",
-      "name": "integration_preview_run_budget_v2"
+      "statements_md5": "2d88650c41abeb22bd4e192c678baf5d"
     },
     {
+      "name": "execution_brief_foundation",
       "version": "20260907032412",
-      "name": "execution_brief_foundation"
+      "statements_md5": "eca860b74a68751cca839eafea3ff768"
     },
     {
+      "name": "execution_brief_narrative",
       "version": "20260907032416",
-      "name": "execution_brief_narrative"
+      "statements_md5": "0f3af176853d28fc054034e64744e429"
     },
     {
+      "name": "governed_execution_brief_edits",
       "version": "20260907032419",
-      "name": "governed_execution_brief_edits"
+      "statements_md5": "a5db511dc410c48fe8b790274a26b96c"
     },
     {
+      "name": "governed_information_request_responses",
       "version": "20260907032422",
-      "name": "governed_information_request_responses"
+      "statements_md5": "d1f0e25a8c17fd9ef753d477916e38f9"
     },
     {
+      "name": "project_information_request_projection",
       "version": "20260907032425",
-      "name": "project_information_request_projection"
+      "statements_md5": "11fb32dfdff2c50d9c9353e5024b04a9"
     },
     {
+      "name": "objective_plan_preflight",
       "version": "20260907032428",
-      "name": "objective_plan_preflight"
+      "statements_md5": "59fe5cefeb7df37596553c56c69deaea"
     },
     {
+      "name": "objective_specialization_shadow",
       "version": "20260907032431",
-      "name": "objective_specialization_shadow"
+      "statements_md5": "583fec125c3ad91b49b17160fe73fb07"
     },
     {
+      "name": "objective_method_binding_shadow",
       "version": "20260907032435",
-      "name": "objective_method_binding_shadow"
+      "statements_md5": "428d1d0c51f865dc1be1108ce5266d2e"
     },
     {
+      "name": "receivables_method_input_assembly_store",
       "version": "20260907032438",
-      "name": "receivables_method_input_assembly_store"
+      "statements_md5": "fe6c104892632b51c3041970136df35a"
     },
     {
+      "name": "case_analysis_information_request_projection",
       "version": "20260907032441",
-      "name": "case_analysis_information_request_projection"
+      "statements_md5": "eda272f3ad7f9d3c6106d774072d4a35"
     },
     {
+      "name": "objective_workflow_selection_shadow",
       "version": "20260907032446",
-      "name": "objective_workflow_selection_shadow"
+      "statements_md5": "8d3ec85eaf73033b14d75a9ddf7c9363"
     },
     {
+      "name": "integration_preview_workflow_selection_enforcement",
       "version": "20260907032452",
-      "name": "integration_preview_workflow_selection_enforcement"
+      "statements_md5": "42f7b5550d5c28f85eedb3eeeb8cce38"
     },
     {
+      "name": "integration_preview_workflow_continuity_anchor",
       "version": "20260907041815",
-      "name": "integration_preview_workflow_continuity_anchor"
+      "statements_md5": "ca97820d3373d3c2b6df74f62ff888bd"
     },
     {
+      "name": "integration_preview_workflow_continuity_grant_parity",
       "version": "20260907042403",
-      "name": "integration_preview_workflow_continuity_grant_parity"
+      "statements_md5": "6028782d82256e61755c3a5985be50b2"
     },
     {
+      "name": "receivables_information_request_bindings",
       "version": "20260907050148",
-      "name": "receivables_information_request_bindings"
+      "statements_md5": "84672e132170b2e99a3bb954415e3fed"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260907051558",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "50ff68d275ae35293c94fd811b6ad05d"
     },
     {
+      "name": "receivables_method_supplement_store",
       "version": "20260907053234",
-      "name": "receivables_method_supplement_store"
+      "statements_md5": "7f165afcacd6d0d555cebe0e1ab08593"
     },
     {
+      "name": "receivables_method_complete_refresh",
       "version": "20260907053241",
-      "name": "receivables_method_complete_refresh"
+      "statements_md5": "513d1a48397e8584939815380e8164bb"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260907053247",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "a7235f05e7e45540d5604ffbd42bf469"
     },
     {
+      "name": "fix_receivables_refresh_worker_authority_and_compatible_contract",
       "version": "20260907053610",
-      "name": "fix_receivables_refresh_worker_authority_and_compatible_contract"
+      "statements_md5": "10c237950b3562e943ff86625231f77e"
     },
     {
+      "name": "intent_objective_routing_metrics",
       "version": "20260907062224",
-      "name": "intent_objective_routing_metrics"
+      "statements_md5": null
     },
     {
+      "name": "governed_capital_material_storage",
       "version": "20260907070000",
-      "name": "governed_capital_material_storage"
+      "statements_md5": null
     },
     {
+      "name": "preserve_decision_contract_and_method_artifacts",
       "version": "20260907095418",
-      "name": "preserve_decision_contract_and_method_artifacts"
+      "statements_md5": null
     },
     {
+      "name": "universal_dispatch_candidate_shadow",
       "version": "20260907122411",
-      "name": "universal_dispatch_candidate_shadow"
+      "statements_md5": "46aecef54a5a1672814ff4ecebef7d78"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260907122418",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "eea2f30834057f77f064c779d132c37b"
     },
     {
+      "name": "platform_ledgers_explicit_default_deny",
       "version": "20260908022824",
-      "name": "platform_ledgers_explicit_default_deny"
+      "statements_md5": "6b702258b8f7ad7a96eaa0a8a6447cf5"
     },
     {
+      "name": "explicit_execution_brief_approval",
       "version": "20260908022901",
-      "name": "explicit_execution_brief_approval"
+      "statements_md5": "54cbff5affc9615469b99af593363756"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260908022909",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "8c83911195c398b3034984f7185ae7c5"
     },
     {
+      "name": "execution_brief_bounded_workstreams",
       "version": "20260908023042",
-      "name": "execution_brief_bounded_workstreams"
+      "statements_md5": "da660094dfcfe3f6373035e1790f5697"
     },
     {
+      "name": "execution_approval_trigger_record_scope",
       "version": "20260908023207",
-      "name": "execution_approval_trigger_record_scope"
+      "statements_md5": "c1160eeb55f310e4ce1c748670619e7b"
     },
     {
+      "name": "execution_approval_unbound_revision_metadata",
       "version": "20260908023555",
-      "name": "execution_approval_unbound_revision_metadata"
+      "statements_md5": "ab632beefa627b0389d0ea36fa65c4db"
     },
     {
+      "name": "reconcile_preexisting_main_schema_gaps",
       "version": "20260908024019",
-      "name": "reconcile_preexisting_main_schema_gaps"
+      "statements_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6"
     },
     {
+      "name": "reconcile_rejected_file_failure_classification",
       "version": "20260908024120",
-      "name": "reconcile_rejected_file_failure_classification"
+      "statements_md5": "91a405bb973cdefe2cc7b8275f9d9450"
     },
     {
+      "name": "correct_infected_failure_precedence",
       "version": "20260908024310",
-      "name": "correct_infected_failure_precedence"
+      "statements_md5": "b1f929d3c47bcfd30d20cfe57ee0d54c"
     },
     {
+      "name": "capital_material_upload_grant_fk_indexes",
       "version": "20260908024520",
-      "name": "capital_material_upload_grant_fk_indexes"
+      "statements_md5": "11e21c4c132ae10509006d2c7c87129b"
     },
     {
+      "name": "execution_proposal_company_label",
       "version": "20260908030408",
-      "name": "execution_proposal_company_label"
+      "statements_md5": "fc27bdaa0011dce64e7ccf226e6ccb68"
     },
     {
+      "name": "governed_sector_context_inputs",
       "version": "20260908143947",
-      "name": "governed_sector_context_inputs"
+      "statements_md5": "19889b24344a40ada1d7158deba3000c"
     },
     {
+      "name": "sector_planning_context_object_limit",
       "version": "20260908144043",
-      "name": "sector_planning_context_object_limit"
+      "statements_md5": "baa2041f1cf531dc97f8fb762c8f67d0"
     },
     {
+      "name": "sector_planning_job_knowledge_date",
       "version": "20260908144217",
-      "name": "sector_planning_job_knowledge_date"
+      "statements_md5": "0bc2282411168daea57142b77fa0ec11"
     },
     {
+      "name": "sector_planning_review_timestamp_utc",
       "version": "20260908144304",
-      "name": "sector_planning_review_timestamp_utc"
+      "statements_md5": "87e83cecee292682829afaf5a8c68d1e"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260908144518",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "16d8e85bbb0a3a334a91f3da1dd5a5d3"
     },
     {
+      "name": "execution_proposal_revision_parent",
       "version": "20260908154435",
-      "name": "execution_proposal_revision_parent"
+      "statements_md5": "ca1a02dd059ef739f1f31e9bc2023b75"
     },
     {
+      "name": "confirmed_receivables_evidence_scope",
       "version": "20260908174421",
-      "name": "confirmed_receivables_evidence_scope"
+      "statements_md5": "41c5ce6619fe37d2323f536b863c02b6"
     },
     {
+      "name": "confirmed_receivables_scope_context_consistency",
       "version": "20260908174557",
-      "name": "confirmed_receivables_scope_context_consistency"
+      "statements_md5": "78e493abaf20e916fab51096b96e387d"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260908174617",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "91cc03692a46653bc3f67c7207e00662"
     },
     {
+      "name": "confirmed_receivables_scope_reader_fence",
       "version": "20260908175855",
-      "name": "confirmed_receivables_scope_reader_fence"
+      "statements_md5": "4f4c1dafa4b8ae3c8d0e1c9c27152593"
     },
     {
+      "name": "confirmed_receivables_scope_brief_binding",
       "version": "20260908175944",
-      "name": "confirmed_receivables_scope_brief_binding"
+      "statements_md5": "4d23ba66b867d08bf1ba42ccc6ce4dbf"
     },
     {
+      "name": "confirmed_receivables_scope_reader_lock",
       "version": "20260908180100",
-      "name": "confirmed_receivables_scope_reader_lock"
+      "statements_md5": "26bf6a0716f71551c882b66ab7420570"
     },
     {
+      "name": "confirmed_receivables_scope_brief_session",
       "version": "20260908180146",
-      "name": "confirmed_receivables_scope_brief_session"
+      "statements_md5": "0600adf762da0214fd0220b24b1daeb3"
     },
     {
+      "name": "confirmed_receivables_scope_invoker_parity",
       "version": "20260908180314",
-      "name": "confirmed_receivables_scope_invoker_parity"
+      "statements_md5": "c2419f287a8ca303c88906c3e04e4d56"
     },
     {
+      "name": "document_work_product_request_binding",
       "version": "20260908234117",
-      "name": "document_work_product_request_binding"
+      "statements_md5": "ca6b20a8c07881591d9ecae6ea1b993d"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260908234135",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "af6f27371e8db817c7693312027903b7"
     },
     {
+      "name": "documentary_execution_scope_binding",
       "version": "20260909001238",
-      "name": "documentary_execution_scope_binding"
+      "statements_md5": "d3479334fbbfa0b8e3d3d7447d23b897"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260909001714",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "bc486d025686737973c3d4691c9f3030"
     },
     {
+      "name": "documentary_execution_progress",
       "version": "20260909002226",
-      "name": "documentary_execution_progress"
+      "statements_md5": "e89d302c05217a5c395cd8ff02577138"
     },
     {
+      "name": "atomic_documentary_execution_commit",
       "version": "20260909003511",
-      "name": "atomic_documentary_execution_commit"
+      "statements_md5": "4a1e88c6214c53980fa0674acd19c166"
     },
     {
+      "name": "document_work_request_loader_guards",
       "version": "20260909003630",
-      "name": "document_work_request_loader_guards"
+      "statements_md5": "aca7fee7a3f3b444018140e09f6d65fc"
     },
     {
+      "name": "worker_runtime_schema_contract",
       "version": "20260909003638",
-      "name": "worker_runtime_schema_contract"
+      "statements_md5": "3515833d44b357ecb627b2dfec79d9cd"
     },
     {
+      "name": "documentary_plan_job_projection",
       "version": "20260909003909",
-      "name": "documentary_plan_job_projection"
+      "statements_md5": "f0ed5e752a65093d8e5a0c3f324a1d15"
     },
     {
+      "name": "strict_documentary_plan_persistence",
       "version": "20260909144427",
-      "name": "strict_documentary_plan_persistence"
+      "statements_md5": "fc0f898bc184e74c0c75afc022f0f110"
     },
     {
+      "name": "documentary_work_request_context",
       "version": "20260909153028",
-      "name": "documentary_work_request_context"
+      "statements_md5": "94c578fdb7569c22687d8a0785a809ce"
     },
     {
+      "name": "compact_documentary_plan_contract",
       "version": "20260909160815",
-      "name": "compact_documentary_plan_contract"
+      "statements_md5": "6dfd3a60b1c92cd0253293c44cad711f"
     },
     {
+      "name": "reviewed_documentary_plan_contract",
       "version": "20260909163653",
-      "name": "reviewed_documentary_plan_contract"
+      "statements_md5": "7fbbcdeb1f25b1dc96ccd76f1d27f9f1"
     },
     {
+      "name": "documentary_entity_plan_contract",
       "version": "20260909190702",
-      "name": "documentary_entity_plan_contract"
+      "statements_md5": "e6bea5943ae1eed5a8ddeb46ee22238e"
     },
     {
+      "name": "documentary_diligence_plan_contract",
       "version": "20260909194038",
-      "name": "documentary_diligence_plan_contract"
+      "statements_md5": "c27b195ab6dff403e1e37cb5d96225e4"
     },
     {
+      "name": "case_engine_v16_operating_scope",
       "version": "20260910013207",
-      "name": "case_engine_v16_operating_scope"
+      "statements_md5": "5ed53d581feccd78ef9f8e3a8d609b5f"
     },
     {
+      "name": "documentary_comparison_review_contract",
       "version": "20260910021710",
-      "name": "documentary_comparison_review_contract"
+      "statements_md5": "7f359362e1cbb050c05857ea9220da4c"
     },
     {
+      "name": "provider_research_persisted_bridge",
       "version": "20260910025417",
-      "name": "provider_research_persisted_bridge"
+      "statements_md5": "36a4f6458755ed8c35ead6f26bf994e8"
     },
     {
+      "name": "institutional_model_assumption_answers",
       "version": "20260910025833",
-      "name": "institutional_model_assumption_answers"
+      "statements_md5": "a922c8b9f421d0e2753faacc40bcb5da"
     },
     {
+      "name": "institutional_private_explicit_rls",
       "version": "20260910030116",
-      "name": "institutional_private_explicit_rls"
+      "statements_md5": "be971ace3f071ca9dbf303a0f86f7af7"
     },
     {
+      "name": "provider_case_fit_persisted_workflow",
       "version": "20260910042503",
-      "name": "provider_case_fit_persisted_workflow"
+      "statements_md5": "3386ae664dbc930b0884bda5ffa1da16"
     },
     {
+      "name": "provider_case_fit_message_alias_fix",
       "version": "20260910042720",
-      "name": "provider_case_fit_message_alias_fix"
+      "statements_md5": "1d914b396c61e42279eeabb494e678f8"
     },
     {
+      "name": "institutional_model_setup_and_source_bindings",
       "version": "20260910043242",
-      "name": "institutional_model_setup_and_source_bindings"
+      "statements_md5": "a8e526bcfd2f0eea54832f0dd9c6bfcb"
     },
     {
+      "name": "documentary_field_assessments_contract",
       "version": "20260910043250",
-      "name": "documentary_field_assessments_contract"
+      "statements_md5": "ff411379a8846996a6bba81f28b95d0a"
     },
     {
+      "name": "institutional_setup_binding_guards",
       "version": "20260910044923",
-      "name": "institutional_setup_binding_guards"
+      "statements_md5": "15903d2316ca6bbd562c24f52263ebbe"
     },
     {
+      "name": "institutional_setup_candidate_variable_fix",
       "version": "20260910045029",
-      "name": "institutional_setup_candidate_variable_fix"
+      "statements_md5": "0e04e024968b37d2561dd12b513b7978"
     },
     {
+      "name": "institutional_approved_model_results",
       "version": "20260910050112",
-      "name": "institutional_approved_model_results"
+      "statements_md5": "3b6d9fdc67935d8dd4bf6954383b0a0c"
     },
     {
+      "name": "case_engine_v17_institutional_scope",
       "version": "20260910051011",
-      "name": "case_engine_v17_institutional_scope"
+      "statements_md5": "125d92da8a5d72af647e43aa1cdff674"
     },
     {
+      "name": "institutional_result_terminal_status",
       "version": "20260910051519",
-      "name": "institutional_result_terminal_status"
+      "statements_md5": "bf66a27d36662b93319032c15599b985"
     },
     {
+      "name": "governed_business_dimensions",
       "version": "20260910134302",
-      "name": "governed_business_dimensions"
+      "statements_md5": "c5ed2372bb83a5e5aa7d1975202b85b4"
     },
     {
+      "name": "institutional_reviewed_result_comparison",
       "version": "20260910134318",
-      "name": "institutional_reviewed_result_comparison"
+      "statements_md5": "6eb744827e765ca4d550de708b52e559"
     },
     {
+      "name": "institutional_editable_workbook_contract",
       "version": "20260910134705",
-      "name": "institutional_editable_workbook_contract"
+      "statements_md5": "71b54c47e80ad4adad391ebd28183efa"
     },
     {
+      "name": "explicit_documentary_work_revision",
       "version": "20260910135224",
-      "name": "explicit_documentary_work_revision"
+      "statements_md5": "5155e10a427da402a6bff489e6710455"
     },
     {
+      "name": "documentary_revision_private_admission",
       "version": "20260910135636",
-      "name": "documentary_revision_private_admission"
+      "statements_md5": "a20a03c2453f49a4bc8d75be8f99bea5"
     },
     {
+      "name": "provider_research_public_catalog_v2",
       "version": "20260910151957",
-      "name": "provider_research_public_catalog_v2"
+      "statements_md5": "b9d9e16b7bfc249fdd1db9bf4d389741"
     },
     {
+      "name": "confirmed_receivables_support_sheets_v2",
       "version": "20260910153117",
-      "name": "confirmed_receivables_support_sheets_v2"
+      "statements_md5": "aacad2b5edbe1e7e8eedb4154f91a442"
     },
     {
+      "name": "support_sheet_runtime_invoker_contract",
       "version": "20260910153338",
-      "name": "support_sheet_runtime_invoker_contract"
+      "statements_md5": "d2ce480530b952cd7b8cde6dc07c72b5"
     },
     {
+      "name": "documentary_progress_persisted_scope_guard",
       "version": "20260910160700",
-      "name": "documentary_progress_persisted_scope_guard"
+      "statements_md5": "e1d0e15de47aa1626bf4836b066161dc"
     },
     {
+      "name": "preserve_open_decision_history",
       "version": "20260910164327",
-      "name": "preserve_open_decision_history"
+      "statements_md5": "e410b802339ea15feda3c069d93bd5a3"
     },
     {
+      "name": "preserve_specialist_information_requests",
       "version": "20260910171808",
-      "name": "preserve_specialist_information_requests"
+      "statements_md5": "0deeba8a0a5a9c5aa2552ec4731466da"
     },
     {
+      "name": "revise_receivables_request_bindings",
       "version": "20260910173817",
-      "name": "revise_receivables_request_bindings"
+      "statements_md5": "2350a282d0963618af90cb07a51f3d21"
     },
     {
+      "name": "project_review_roles",
       "version": "20260910193505",
-      "name": "project_review_roles"
+      "statements_md5": "fd1cc2b93a75942114805df234fa7eb8"
     },
     {
+      "name": "financier_analytical_workspace",
       "version": "20260910194219",
-      "name": "financier_analytical_workspace"
+      "statements_md5": "a515fb89436d730747c3b4efb2c97d25"
     },
     {
+      "name": "receivables_analytical_release",
       "version": "20260910201055",
-      "name": "receivables_analytical_release"
+      "statements_md5": "95fc74155bc30bb9bf4d252ada4f9c56"
     },
     {
+      "name": "receivables_released_results_fk_indexes",
       "version": "20260910213100",
-      "name": "receivables_released_results_fk_indexes"
+      "statements_md5": "28875c9e3e0d0b4e6282605d84244a2f"
     },
     {
+      "name": "financier_intake_journey_coherence",
       "version": "20260910230719",
-      "name": "financier_intake_journey_coherence"
+      "statements_md5": "74b1fd648db854791ddab4711dfd4939"
     },
     {
+      "name": "project_canonical_revisions",
       "version": "20260911003226",
-      "name": "project_canonical_revisions"
+      "statements_md5": "1b72234e8470b29fad93e7fa91df091d"
     },
     {
+      "name": "verified_provider_mandates",
       "version": "20260911003522",
-      "name": "verified_provider_mandates"
+      "statements_md5": "e5ab8aa5f7104f5477787c6afce121dd"
     },
     {
+      "name": "receivables_universal_release",
       "version": "20260911003644",
-      "name": "receivables_universal_release"
+      "statements_md5": "4e4f3b26205874d9c96984162178f8d5"
     },
     {
+      "name": "client_presentation_templates",
       "version": "20260911003716",
-      "name": "client_presentation_templates"
+      "statements_md5": "5aea266da3df1187e80cefcd285693cc"
     },
     {
+      "name": "project_revision_propagation",
       "version": "20260911003805",
-      "name": "project_revision_propagation"
+      "statements_md5": "ea99fbd35880c75af289f70cf697e5cb"
     },
     {
+      "name": "institutional_revision_proposals",
       "version": "20260911005319",
-      "name": "institutional_revision_proposals"
+      "statements_md5": "85cc388f70ed23b98599ca350149f303"
     },
     {
+      "name": "revision_proposal_variable_scope",
       "version": "20260911005643",
-      "name": "revision_proposal_variable_scope"
+      "statements_md5": "bab2b1b9ff1b7154f69e326c69d93f7f"
     },
     {
+      "name": "canonical_revision_variable_scope",
       "version": "20260911010011",
-      "name": "canonical_revision_variable_scope"
+      "statements_md5": "74f65b431e7bf4a05aa74b9f24e4800e"
     },
     {
+      "name": "versioned_information_packs",
       "version": "20260911012528",
-      "name": "versioned_information_packs"
+      "statements_md5": "7289d386965c948108d333bdfa94d192"
     },
     {
+      "name": "restore_institutional_review_role_gate",
       "version": "20260911013028",
-      "name": "restore_institutional_review_role_gate"
+      "statements_md5": "4d82ba65b4899336443b9195c11affba"
     },
     {
+      "name": "authorized_pack_distribution",
       "version": "20260911013106",
-      "name": "authorized_pack_distribution"
+      "statements_md5": "7645bb2a022275eff877224b64ec6a2b"
     },
     {
+      "name": "project_debt_structure_capability",
       "version": "20260911013239",
-      "name": "project_debt_structure_capability"
+      "statements_md5": "f75f72b30a6c1ffe33daac92e9fdc558"
     },
     {
+      "name": "information_pack_fingerprint_variable_scope",
       "version": "20260911013814",
-      "name": "information_pack_fingerprint_variable_scope"
+      "statements_md5": "64fb833696f9cc0c21a6071a42b4b083"
     },
     {
+      "name": "information_pack_supersession_order",
       "version": "20260911014109",
-      "name": "information_pack_supersession_order"
+      "statements_md5": "71853de3dff631a6db43f6b7d7a461df"
     },
     {
+      "name": "in_product_qualified_contact",
       "version": "20260911014540",
-      "name": "in_product_qualified_contact"
+      "statements_md5": "db55ac0deff3f8c5c8a3cc3bebb6b195"
     },
     {
+      "name": "pack_responses_and_next_steps",
       "version": "20260911014632",
-      "name": "pack_responses_and_next_steps"
+      "statements_md5": "3166b81d1c364c9793b04ffd04b39398"
     },
     {
+      "name": "bind_qualified_contact_to_its_recipient",
       "version": "20260911014733",
-      "name": "bind_qualified_contact_to_its_recipient"
+      "statements_md5": "21fbae01911753e1105c3abf55d49ca8"
     },
     {
+      "name": "read_shared_pack_item_material",
       "version": "20260911020048",
-      "name": "read_shared_pack_item_material"
+      "statements_md5": "438f26dfc282567a6e32b238cd1501ab"
     },
     {
+      "name": "resolve_pack_distribution_candidates",
       "version": "20260911020229",
-      "name": "resolve_pack_distribution_candidates"
+      "statements_md5": "54254ce96e98771db19eef2a8506fa5e"
     },
     {
+      "name": "provider_mandate_confirmation_clock_timestamp",
       "version": "20260911115723",
-      "name": "provider_mandate_confirmation_clock_timestamp"
+      "statements_md5": "b7f58e8d5a556d68466aab5b9bc8a297"
     },
     {
+      "name": "provider_mandate_confirmation_sequence",
       "version": "20260914213140",
-      "name": "provider_mandate_confirmation_sequence"
+      "statements_md5": "7acd7b23052399964a8ee935fe82f9d4"
     },
     {
+      "name": "active_organization_authority",
       "version": "20260915120825",
-      "name": "active_organization_authority"
+      "statements_md5": "3481ac4a2d3f00180dabd021b486d76d"
     },
     {
+      "name": "organization_profile_authority",
       "version": "20260915121913",
-      "name": "organization_profile_authority"
+      "statements_md5": "6833010f1a907596ca6cbd3ca677cf74"
     },
     {
+      "name": "explicit_legacy_resource_access",
       "version": "20260915195255",
-      "name": "explicit_legacy_resource_access"
+      "statements_md5": "7bfeadacbf8280d1ced44994121ffe91"
     },
     {
+      "name": "resource_access_foreign_key_indexes",
       "version": "20260915195930",
-      "name": "resource_access_foreign_key_indexes"
+      "statements_md5": "9e90f3b118f24da830916b7c11a97944"
     },
     {
+      "name": "require_work_for_legacy_mutations",
       "version": "20260915201024",
-      "name": "require_work_for_legacy_mutations"
+      "statements_md5": "fd1e385368f7d67647a351d46c9bee58"
     },
     {
+      "name": "terminal_job_authorization_metadata",
       "version": "20260915204029",
-      "name": "terminal_job_authorization_metadata"
+      "statements_md5": "9fdee75d24478e6bb4a459de32451abb"
     },
     {
+      "name": "role_free_reasoning_context",
       "version": "20260916005559",
-      "name": "role_free_reasoning_context"
+      "statements_md5": "6c0c5805f5813ffd1ead653ddaf41940"
     },
     {
+      "name": "explicit_workspace_context",
       "version": "20260916032913",
-      "name": "explicit_workspace_context"
+      "statements_md5": "d0449ef81c06cc9fc4268c38d8966870"
     },
     {
+      "name": "explicit_workspace_replay_authority",
       "version": "20260916034952",
-      "name": "explicit_workspace_replay_authority"
+      "statements_md5": "0ea5f46340dbc8ed66a3be1ce434f52e"
     },
     {
+      "name": "retire_implicit_workspace_capabilities",
       "version": "20260916041505",
-      "name": "retire_implicit_workspace_capabilities"
+      "statements_md5": "06182e535b21e95eb01a950bb6bf71db"
     },
     {
+      "name": "domain_event_audit_outbox",
       "version": "20260916101915",
-      "name": "domain_event_audit_outbox"
+      "statements_md5": "7f6c15d8cb84ed6b163128c0293a048e"
     },
     {
+      "name": "reconcile_domain_event_audit_outbox",
       "version": "20260916102218",
-      "name": "reconcile_domain_event_audit_outbox"
+      "statements_md5": "41f2ee83d2128736941f8e1ecc9c115c"
     },
     {
+      "name": "resource_policy_and_barriers",
       "version": "20260916124024",
-      "name": "resource_policy_and_barriers"
+      "statements_md5": "4ce95d8dba1dda16c30a6a3c3ffaca5a"
     },
     {
+      "name": "bound_policy_grants_to_resource",
       "version": "20260916124447",
-      "name": "bound_policy_grants_to_resource"
+      "statements_md5": "6bc439ea142e70afa6c0dc43a71a4cb6"
     },
     {
+      "name": "deduplicate_resource_policy_events",
       "version": "20260916163357",
-      "name": "deduplicate_resource_policy_events"
+      "statements_md5": "b7f9628ae73012b33e26de959b3b2912"
     },
     {
+      "name": "entity_and_dossier_identity",
       "version": "20260916190433",
-      "name": "entity_and_dossier_identity"
+      "statements_md5": "3c4aff1453f037d6d6d38984956bff0a"
     },
     {
+      "name": "logical_sources_and_versions",
       "version": "20260916211117",
-      "name": "logical_sources_and_versions"
+      "statements_md5": "e60fd8157897f27a62dc34b135deab2c"
     },
     {
+      "name": "source_identity_legacy_insert_default",
       "version": "20260916211402",
-      "name": "source_identity_legacy_insert_default"
+      "statements_md5": "21277ebbddd939d43cecc08a3bfb5901"
     },
     {
+      "name": "workspace_access_allow_projection",
       "version": "20260916230213",
-      "name": "workspace_access_allow_projection"
+      "statements_md5": "06781189b20c7ec496fbd6b78de58c1d"
     },
     {
+      "name": "source_rights_and_authorized_retrieval",
       "version": "20260917024611",
-      "name": "source_rights_and_authorized_retrieval"
+      "statements_md5": "26955f303ed38f67f5ed3708476b64e7"
     },
     {
+      "name": "observations_metric_definitions",
       "version": "20260917123634",
-      "name": "observations_metric_definitions"
+      "statements_md5": "f5edc25e302bc60df347aed8adb40ec8"
     },
     {
+      "name": "observation_commands_work_authority",
       "version": "20260917123810",
-      "name": "observation_commands_work_authority"
+      "statements_md5": "fb71bb86b15d5f9d5a7c60410ec7fde9"
     },
     {
+      "name": "observation_value_shape_validation",
       "version": "20260917123901",
-      "name": "observation_value_shape_validation"
+      "statements_md5": "fad9448e5f91b427b9322aba15234d96"
     },
     {
+      "name": "opportunity_observation_dossier_scope",
       "version": "20260917124418",
-      "name": "opportunity_observation_dossier_scope"
+      "statements_md5": "3010858b43656d6691cb2a0dddfa149e"
     },
     {
+      "name": "legacy_observation_field_revision",
       "version": "20260917125017",
-      "name": "legacy_observation_field_revision"
+      "statements_md5": "068a7d27f17160bb62187d328471d84c"
     },
     {
+      "name": "observation_dimension_shape_validation",
       "version": "20260917125759",
-      "name": "observation_dimension_shape_validation"
+      "statements_md5": "c63b221d14eb34abdd36181b35ea857a"
     },
     {
+      "name": "contextual_adoptions_and_assumptions",
       "version": "20260917154644",
-      "name": "contextual_adoptions_and_assumptions"
+      "statements_md5": "2cff7177f3818c8c44fa405a4f87807a"
     },
     {
+      "name": "contextual_adoption_execution_bindings",
       "version": "20260917154738",
-      "name": "contextual_adoption_execution_bindings"
+      "statements_md5": "c4592d81c6ea08297540dd910ffb8742"
     },
     {
+      "name": "contextual_adoption_dependency_revalidation",
       "version": "20260917155000",
-      "name": "contextual_adoption_dependency_revalidation"
+      "statements_md5": "25e68a9513217cfa3e9f518d5c145ec3"
     },
     {
+      "name": "contextual_adoption_identity_command",
       "version": "20260917155251",
-      "name": "contextual_adoption_identity_command"
+      "statements_md5": "c84e388219becc74c259fcc03b46a5e3"
     },
     {
+      "name": "contextual_adoption_version_fk_index",
       "version": "20260917161756",
-      "name": "contextual_adoption_version_fk_index"
+      "statements_md5": "e3922dfbde774e5ffd61d77459be3d6a"
     },
     {
+      "name": "persistent_work_without_intake",
       "version": "20260917190805",
-      "name": "persistent_work_without_intake"
+      "statements_md5": "d8095404ccf4688f098efcd1fb09bbc9"
     },
     {
+      "name": "persistent_work_commands",
       "version": "20260917194611",
-      "name": "persistent_work_commands"
+      "statements_md5": "cf5699e2394de95e6323ed9394ee13df"
     },
     {
+      "name": "persistent_work_legacy_adapters",
       "version": "20260917203501",
-      "name": "persistent_work_legacy_adapters"
+      "statements_md5": "23b190103138680c1302f0db577b0c48"
     },
     {
+      "name": "persistent_work_specialized_adapters",
       "version": "20260917204438",
-      "name": "persistent_work_specialized_adapters"
+      "statements_md5": "643e1f5a9bd2e0a401d0df6e5f20d356"
     },
     {
+      "name": "persistent_work_specialized_replay_scope",
       "version": "20260917204826",
-      "name": "persistent_work_specialized_replay_scope"
+      "statements_md5": "5aa9a4fbc16bf4e23a0a73f19a900548"
     },
     {
+      "name": "work_contributions_and_channels",
       "version": "20260917235306",
-      "name": "work_contributions_and_channels"
+      "statements_md5": "d014334169dcabed7517c9387895fa25"
     },
     {
+      "name": "work_contribution_command_integrity",
       "version": "20260918000139",
-      "name": "work_contribution_command_integrity"
+      "statements_md5": "f0e6898d2dee15d87b2cb1672be466a0"
     },
     {
+      "name": "work_contribution_history_indexes",
       "version": "20260918001427",
-      "name": "work_contribution_history_indexes"
+      "statements_md5": "41785d3baa2633fd18aef1ee26b2c2dd"
     },
     {
+      "name": "work_contribution_dependency_audit",
       "version": "20260918010531",
-      "name": "work_contribution_dependency_audit"
+      "statements_md5": "69dc994e816cbd32e60f0f40db7dabd9"
     },
     {
+      "name": "human_vault_publication",
       "version": "20260918102152",
-      "name": "human_vault_publication"
+      "statements_md5": "7ee1914f4a4334d29cec0a1645605937"
     },
     {
+      "name": "vault_export_authority",
       "version": "20260918102750",
-      "name": "vault_export_authority"
+      "statements_md5": "57532f99897627a167edfeb6fbfbaf3d"
     },
     {
+      "name": "vault_legacy_publication_evidence",
       "version": "20260918104550",
-      "name": "vault_legacy_publication_evidence"
+      "statements_md5": "c98df494c0e2aef28147121dda856fdf"
     },
     {
+      "name": "vault_publication_receipts",
       "version": "20260918105110",
-      "name": "vault_publication_receipts"
+      "statements_md5": "899df6589551c50c783acdec494fb036"
     },
     {
+      "name": "vault_legacy_worker_grants",
       "version": "20260918111340",
-      "name": "vault_legacy_worker_grants"
+      "statements_md5": "c9d42437f94a3e8ce48e76a1370949b5"
     },
     {
+      "name": "published_method_releases",
       "version": "20260919135827",
-      "name": "published_method_releases"
+      "statements_md5": "1c4be4ff4216904c072cc0cfb9c21fd0"
     },
     {
+      "name": "method_release_scope_and_receipts",
       "version": "20260919140956",
-      "name": "method_release_scope_and_receipts"
+      "statements_md5": "ae5d0d05a07c49cc5ebc129e5dee500a"
     },
     {
+      "name": "pinned_method_result_boundary",
       "version": "20260919141545",
-      "name": "pinned_method_result_boundary"
+      "statements_md5": "d3e22fde92464be2484b11b6f77985fb"
     },
     {
+      "name": "method_binding_scope_pagination",
       "version": "20260919142246",
-      "name": "method_binding_scope_pagination"
+      "statements_md5": "a50880e97ef1112d3f614daf7a477dc4"
     },
     {
+      "name": "platform_method_publication_commands",
       "version": "20260919171641",
-      "name": "platform_method_publication_commands"
+      "statements_md5": "480f5f62c6aae32b5a2d437e2b7578e4"
     },
     {
+      "name": "platform_method_attestation_replay",
       "version": "20260919172752",
-      "name": "platform_method_attestation_replay"
+      "statements_md5": "f8e6cd113aa6077106a4efc291f1b095"
     },
     {
+      "name": "preserve_published_platform_method_identity",
       "version": "20260919173017",
-      "name": "preserve_published_platform_method_identity"
+      "statements_md5": "a9c1f5313d8fbdd73f7e295965aefb75"
     },
     {
+      "name": "provider_resource_retention_eligibility",
       "version": "20260921152548",
-      "name": "provider_resource_retention_eligibility"
+      "statements_md5": "d20330e8a9f60d05656069a1e1061fe1"
     },
     {
+      "name": "provider_retention_dependency_and_contract_guards",
       "version": "20260921154159",
-      "name": "provider_retention_dependency_and_contract_guards"
+      "statements_md5": "7837d227197012622c7e08fefe0bea71"
     },
     {
+      "name": "execution_persistence_foundation",
       "version": "20260921230303",
-      "name": "execution_persistence_foundation"
+      "statements_md5": "ac970d8cda328342cf0f1536c243b474"
     },
     {
+      "name": "execution_authority_commands",
       "version": "20260922131651",
-      "name": "execution_authority_commands"
+      "statements_md5": "2032373ef6e04cf7b7041040ad0e4b1c"
     },
     {
+      "name": "execution_verified_source_pins",
       "version": "20260922132215",
-      "name": "execution_verified_source_pins"
+      "statements_md5": "5b929d142d8378b436a6d5343d5ae83e"
     },
     {
+      "name": "execution_policy_current_clock",
       "version": "20260922132931",
-      "name": "execution_policy_current_clock"
+      "statements_md5": "f44c42328efd8d7628d131f6ef4c46cb"
     },
     {
+      "name": "execution_current_read_rights",
       "version": "20260922150256",
-      "name": "execution_current_read_rights"
+      "statements_md5": "deba02616f22ac88488ed54bde38e150"
     },
     {
+      "name": "execution_legacy_enqueue_identity",
       "version": "20260922154905",
-      "name": "execution_legacy_enqueue_identity"
+      "statements_md5": "f2f79082b0e0fdb5d0d0698ece2da218"
     },
     {
+      "name": "execution_consumer_authority",
       "version": "20260922181059",
-      "name": "execution_consumer_authority"
+      "statements_md5": "f6d82cebc12d9d9138dedb183ed660fb"
     },
     {
+      "name": "execution_capital_provenance",
       "version": "20260922193702",
-      "name": "execution_capital_provenance"
+      "statements_md5": "4ecc60398139dc2f1039aeda5e34f7f1"
     },
     {
+      "name": "execution_r01_profile_boundary",
       "version": "20260923013806",
-      "name": "execution_r01_profile_boundary"
+      "statements_md5": "45e39de7e228d895a7efb16fe81048a0"
     },
     {
+      "name": "r01_preparation_authority_loader",
       "version": "20260923140154",
-      "name": "r01_preparation_authority_loader"
+      "statements_md5": "bd1d5c84e3fd0d5077c7b5c390b424f2"
     },
     {
+      "name": "r01_preparation_receipts",
       "version": "20260923145522",
-      "name": "r01_preparation_receipts"
+      "statements_md5": "5467f1af1c357c3f6377163724eaf0a7"
     },
     {
+      "name": "execution_explicit_human_subject",
       "version": "20260923153636",
-      "name": "execution_explicit_human_subject"
+      "statements_md5": "e2d3a84d569ea8dc6b8f50415c5a3ab9"
     },
     {
+      "name": "r01_release_pause_serialization",
       "version": "20260923162842",
-      "name": "r01_release_pause_serialization"
+      "statements_md5": "4780109bf9c27f27cd91fe806696b3c7"
     },
     {
+      "name": "r01_persisted_source_integrity",
       "version": "20260923171506",
-      "name": "r01_persisted_source_integrity"
+      "statements_md5": "b6a1281a5c6088fd5cbde9388e3a6e92"
     },
     {
+      "name": "execution_settled_result_bytes",
       "version": "20260923193010",
-      "name": "execution_settled_result_bytes"
+      "statements_md5": "6c08d32426db31467cea6fd870cbca4d"
     },
     {
+      "name": "platform_operator_identity",
       "version": "20260923194444",
-      "name": "platform_operator_identity"
+      "statements_md5": "e63e61c41a78b53a6ae56357bbbf562f"
     },
     {
+      "name": "execution_settled_outcome",
       "version": "20260923195039",
-      "name": "execution_settled_outcome"
+      "statements_md5": "309efc9b9982a4090688f7e312f96523"
     },
     {
+      "name": "r01_current_preparation_metadata",
       "version": "20260923200518",
-      "name": "r01_current_preparation_metadata"
+      "statements_md5": "b88f724fb56d06a11691f3bae8873524"
     },
     {
+      "name": "platform_operator_identity_hardening",
       "version": "20260923202101",
-      "name": "platform_operator_identity_hardening"
+      "statements_md5": "c493978457a2b26e9bfa00bd35df1f86"
     },
     {
+      "name": "platform_operator_identity_ledger_guard",
       "version": "20260923205449",
-      "name": "platform_operator_identity_ledger_guard"
+      "statements_md5": "7716456ef19993a8d8eef4e2770a5bc7"
     },
     {
+      "name": "execution_producer_authority",
       "version": "20260923211108",
-      "name": "execution_producer_authority"
+      "statements_md5": "ce01f76af09a50f8bebda704fe2cf9a0"
     },
     {
+      "name": "execution_producer_commands",
       "version": "20260923212248",
-      "name": "execution_producer_commands"
+      "statements_md5": "c0265fbc0cdddbdbbbd4d01c28972b3f"
     },
     {
+      "name": "residual_information_request_batch",
       "version": "20260923213852",
-      "name": "residual_information_request_batch"
+      "statements_md5": "37c342a4196e2ec4a6bc192b0b997d58"
     },
     {
+      "name": "retire_hash_only_settlement",
       "version": "20260924001737",
-      "name": "retire_hash_only_settlement"
+      "statements_md5": "bdb56d21b6734cbe96ed213e1bbc78ba"
     },
     {
+      "name": "execution_gate_receipts",
       "version": "20260924003703",
-      "name": "execution_gate_receipts"
+      "statements_md5": "c19ee19f954f0b45fbf5d2b348e5544b"
     },
     {
+      "name": "governed_evaluation_transport",
       "version": "20260924005113",
-      "name": "governed_evaluation_transport"
+      "statements_md5": "91d587670f7573bf27369c13ad528c4a"
     },
     {
+      "name": "execution_time_to_value",
       "version": "20260924011941",
-      "name": "execution_time_to_value"
+      "statements_md5": "c5421a1f2c63fcb827f34eb692aa9c7b"
     },
     {
+      "name": "governed_evaluation_session_access",
       "version": "20260924015406",
-      "name": "governed_evaluation_session_access"
+      "statements_md5": "83116c7c03314d804b5edf3ea51c07c5"
     },
     {
+      "name": "provider_assurance_without_expiry",
       "version": "20260924111433",
-      "name": "provider_assurance_without_expiry"
+      "statements_md5": "05a3055767d5b84b7dd4a1584ef8080e"
     },
     {
+      "name": "evaluation_job_authority_in_outbox_sweep",
       "version": "20260925153436",
-      "name": "evaluation_job_authority_in_outbox_sweep"
+      "statements_md5": "333cf2a0811035cde5a60d044692abb0"
     },
     {
+      "name": "production_budget_ceilings",
       "version": "20260925153721",
-      "name": "production_budget_ceilings"
+      "statements_md5": "48aad0e650d44f1b17a0dd6a09c828eb"
     },
     {
+      "name": "work_dependencies_and_continuity",
       "version": "20260925154828",
-      "name": "work_dependencies_and_continuity"
+      "statements_md5": "f54f668bff39ddabef36bd1baabd352b"
     },
     {
+      "name": "work_dependency_events",
       "version": "20260925174235",
-      "name": "work_dependency_events"
+      "statements_md5": "6cc2bc79a874340111cc86a86800d91b"
     },
     {
+      "name": "work_dependency_recompute",
       "version": "20260925204055",
-      "name": "work_dependency_recompute"
+      "statements_md5": "994946a10e94c7113b0c586c318e91f2"
     },
     {
+      "name": "rfc_uuid_domain_event_identifiers",
       "version": "20260925232902",
-      "name": "rfc_uuid_domain_event_identifiers"
+      "statements_md5": "b6bc7bd13b10a491e6e2223dd5c339c5"
     },
     {
+      "name": "work_continuation_commands",
       "version": "20260926011152",
-      "name": "work_continuation_commands"
+      "statements_md5": "2fad75e5f903f3e0771f4d59e16d15c0"
     },
     {
+      "name": "institutional_result_dependencies",
       "version": "20260926013009",
-      "name": "institutional_result_dependencies"
+      "statements_md5": "8e57ad8a9c03209febd523c377128fa1"
     },
     {
+      "name": "dependency_recompute_health",
       "version": "20260926024214",
-      "name": "dependency_recompute_health"
+      "statements_md5": "d4cb7dffec4ed4738158017567b9ea90"
     },
     {
+      "name": "work_update_integration",
       "version": "20260926051108",
-      "name": "work_update_integration"
+      "statements_md5": "6c00fc0b4b63644b1e12203d4a71f743"
     },
     {
+      "name": "material_package_approved_trigger",
       "version": "20260926053634",
-      "name": "material_package_approved_trigger"
+      "statements_md5": "ce40aa02f997ba04229eacf1b183a735"
     },
     {
+      "name": "deal_state_route",
       "version": "20260926062438",
-      "name": "deal_state_route"
+      "statements_md5": "401eeb0e303a9af74e6c298305483a68"
     },
     {
+      "name": "artifact_revision_protocol",
       "version": "20260926183532",
-      "name": "artifact_revision_protocol"
+      "statements_md5": "65a68be9ec4938833839444d5c63f28d"
     },
     {
+      "name": "presentation_template_versions",
       "version": "20260926190646",
-      "name": "presentation_template_versions"
+      "statements_md5": "143a20744ca4102c09033e73372c7694"
     },
     {
+      "name": "artifact_producers",
       "version": "20260926203509",
-      "name": "artifact_producers"
+      "statements_md5": "9c9537d81d1fbe44c36f22e7857c0b4d"
     },
     {
+      "name": "artifact_content_access_hardening",
       "version": "20260927131021",
-      "name": "artifact_content_access_hardening"
+      "statements_md5": "120773407bca1b782c2f3ec1d0baeff6"
     },
     {
+      "name": "platform_publication_authority_hardening",
       "version": "20260927133313",
-      "name": "platform_publication_authority_hardening"
+      "statements_md5": "096c85e367c852dd34aa4c8b46d5609b"
     },
     {
+      "name": "execution_human_revocation_serialization",
       "version": "20260927133553",
-      "name": "execution_human_revocation_serialization"
+      "statements_md5": "fb76ec7900db24bb1e899d1a5ed2a437"
     },
     {
+      "name": "revision_bound_reviews_and_decisions",
       "version": "20260928114813",
-      "name": "revision_bound_reviews_and_decisions"
+      "statements_md5": "6cc30578f0f0394c0539e19148a11784"
     },
     {
+      "name": "execution_artifact_recovery",
       "version": "20260928140015",
-      "name": "execution_artifact_recovery"
+      "statements_md5": "a25129aeddb742339c73d40a641255fa"
     },
     {
+      "name": "institutional_input_snapshots",
       "version": "20260928162315",
-      "name": "institutional_input_snapshots"
+      "statements_md5": "f7cc4b6fe42437327b83d037452c5be8"
     },
     {
+      "name": "institutional_setup_input_snapshots",
       "version": "20260928174845",
-      "name": "institutional_setup_input_snapshots"
+      "statements_md5": "e83eb49132c2c2392e5c00adfd80a49c"
     },
     {
+      "name": "institutional_contribution_receipts",
       "version": "20260928202018",
-      "name": "institutional_contribution_receipts"
+      "statements_md5": "1e64b8d805b384cde42d0873db589a90"
     },
     {
+      "name": "institutional_configuration_ancestry",
       "version": "20260928214244",
-      "name": "institutional_configuration_ancestry"
+      "statements_md5": "e59ee8e1efd3da448335f111760db797"
     },
     {
+      "name": "institutional_source_closure",
       "version": "20260929001830",
-      "name": "institutional_source_closure"
+      "statements_md5": "1737a9f447a15f0d3da51c668966ea2e"
     },
     {
+      "name": "institutional_closure_execution_scope",
       "version": "20260929002747",
-      "name": "institutional_closure_execution_scope"
+      "statements_md5": "252a061db15c18640e6502b0cbd385a6"
     },
     {
+      "name": "institutional_native_projection",
       "version": "20260929015835",
-      "name": "institutional_native_projection"
+      "statements_md5": "cb8ca3c55f44f68065d2d9812ddd2c86"
     },
     {
+      "name": "institutional_native_read_lock_order",
       "version": "20260929022817",
-      "name": "institutional_native_read_lock_order"
+      "statements_md5": "9f247116f6682851c987f76be7db7a00"
     },
     {
+      "name": "institutional_setup_parent_lineage",
       "version": "20260929124911",
-      "name": "institutional_setup_parent_lineage"
+      "statements_md5": "c7665037bbee94957b5fd6c4e5ce3281"
     },
     {
+      "name": "institutional_setup_parent_identity",
       "version": "20260929131006",
-      "name": "institutional_setup_parent_identity"
+      "statements_md5": "5845586101b154ce36111581c4df19f0"
     },
     {
+      "name": "execution_result_source_closure",
       "version": "20260929160225",
-      "name": "execution_result_source_closure"
+      "statements_md5": "cc1e0202ce64689e8737273cf47dbcdd"
     },
     {
+      "name": "execution_result_read_freshness",
       "version": "20260929163005",
-      "name": "execution_result_read_freshness"
+      "statements_md5": "5430388fc3feeeb57f6e2c26a4924eb0"
     },
     {
+      "name": "execution_result_human_review",
       "version": "20260929182221",
-      "name": "execution_result_human_review"
+      "statements_md5": "3276a2f0260533d74f984eb257401da2"
     },
     {
+      "name": "project_review_regime_v2",
       "version": "20260930143756",
-      "name": "project_review_regime_v2"
+      "statements_md5": "90385a7faadbc49ae5b494b44dbe9916"
     },
     {
+      "name": "capital_public_input_capture",
       "version": "20260930193642",
-      "name": "capital_public_input_capture"
+      "statements_md5": "393220bf452fd3ba4cc51825e6c49d4e"
     },
     {
+      "name": "capital_public_capture_context_guard",
       "version": "20260930194821",
-      "name": "capital_public_capture_context_guard"
+      "statements_md5": "859dc3b097b181eb1d87986eb3c81283"
     },
     {
+      "name": "capital_public_payload_retention",
       "version": "20260930211315",
-      "name": "capital_public_payload_retention"
+      "statements_md5": "acaf623182915859423be4f18c9e63e9"
     },
     {
+      "name": "capital_public_retention_prepare_conflict_guard",
       "version": "20260930211935",
-      "name": "capital_public_retention_prepare_conflict_guard"
+      "statements_md5": "a4943ee1c70c2d1d0bdd5ee031c0fec9"
     },
     {
+      "name": "capital_public_retention_prepare_scope_guard",
       "version": "20260930212126",
-      "name": "capital_public_retention_prepare_scope_guard"
+      "statements_md5": "7156b503d3b80709f9960b5dfca5a187"
     },
     {
+      "name": "capital_public_payload_retention_activation",
       "version": "20260930220314",
-      "name": "capital_public_payload_retention_activation"
+      "statements_md5": "962ae135a3ae8df2f879702f1b8d3282"
     },
     {
+      "name": "capital_body_retention",
       "version": "20261001171939",
-      "name": "capital_body_retention"
+      "statements_md5": "6883442050840db5498296440e0ea431"
     },
     {
+      "name": "typedbody_storage_job_authority",
       "version": "20261001180909",
-      "name": "typedbody_storage_job_authority"
+      "statements_md5": "44961e65e4079b2dfbf22cea58461d47"
     },
     {
+      "name": "capital_body_server_read_boundary",
       "version": "20261001185956",
-      "name": "capital_body_server_read_boundary"
+      "statements_md5": "b0e124f9f732fc9eab87d9a37a32ad01"
     },
     {
+      "name": "capital_body_attempt_ledger",
       "version": "20261002010601",
-      "name": "capital_body_attempt_ledger"
+      "statements_md5": "6261962a77afb13250421e5db7d0d20c"
     },
     {
+      "name": "capital_body_attempt_retention_drain",
       "version": "20261002011300",
-      "name": "capital_body_attempt_retention_drain"
+      "statements_md5": "78e62b0e5f3c6dca64f04e6758a96f78"
     },
     {
+      "name": "capital_body_attempt_fk_index",
       "version": "20261002012122",
-      "name": "capital_body_attempt_fk_index"
+      "statements_md5": "9ca292d2f3a58380ed8f1f7a9fec2671"
     },
     {
+      "name": "capital_body_attempt_outcomes",
       "version": "20261002031554",
-      "name": "capital_body_attempt_outcomes"
+      "statements_md5": "57a772d492a94f0f28188d17993de2b8"
     },
     {
+      "name": "capital_body_accepted_input_identity_fk_index",
       "version": "20261002032119",
-      "name": "capital_body_accepted_input_identity_fk_index"
+      "statements_md5": "0d965855ea23b5503457b4b2a37b9600"
     },
     {
+      "name": "institutional_configuration_review_projection",
       "version": "20261002110724",
-      "name": "institutional_configuration_review_projection"
+      "statements_md5": "07da4cb47ec64baff8498002091e6ee9"
     },
     {
+      "name": "capital_m07_native_consumption",
       "version": "20261002124130",
-      "name": "capital_m07_native_consumption"
+      "statements_md5": "62a9b5b99ccdc3269b2daf5a85c93467"
     },
     {
+      "name": "capital_m07_legacy_contract_compatibility",
       "version": "20261002135521",
-      "name": "capital_m07_legacy_contract_compatibility"
+      "statements_md5": "37b519fe884f30bd81a3b2732cdf32c2"
     },
     {
+      "name": "capital_m07_capture_context_stability",
       "version": "20261002163315",
-      "name": "capital_m07_capture_context_stability"
+      "statements_md5": "961520527e5f2269bcb3e3894b41acc3"
     },
     {
+      "name": "execution_brief_native_capture",
       "version": "20261002183342",
-      "name": "execution_brief_native_capture"
+      "statements_md5": "3e8c58088c723f983ba69ba9c78a15fa"
     },
     {
+      "name": "material_production_native_capture",
       "version": "20261002203533",
-      "name": "material_production_native_capture"
+      "statements_md5": "e96db72e271ebc8d70f620e22822b99c"
     },
     {
+      "name": "material_production_plan_native",
       "version": "20261002203546",
-      "name": "material_production_plan_native"
+      "statements_md5": "ba69924c12a3d6d82d3ef86f478fde37"
     },
     {
+      "name": "material_production_consumer_native",
       "version": "20261002203553",
-      "name": "material_production_consumer_native"
+      "statements_md5": "df6947e0fc33427603c857e30889e97d"
     },
     {
+      "name": "material_production_public_sources",
       "version": "20261002203600",
-      "name": "material_production_public_sources"
+      "statements_md5": "786e76584d588ef2e8d354e299b5c5d9"
     },
     {
+      "name": "material_production_cutover",
       "version": "20261002203607",
-      "name": "material_production_cutover"
+      "statements_md5": "c1540f889b204fd163df51044ee10d6d"
     },
     {
+      "name": "material_production_terminal",
       "version": "20261002203612",
-      "name": "material_production_terminal"
+      "statements_md5": "56767eeabd01c84eb20362d12e8ac0d4"
     },
     {
+      "name": "material_package_native_review",
       "version": "20261002203620",
-      "name": "material_package_native_review"
+      "statements_md5": "95c4b8b069b1dd359779ff0b10e91239"
     },
     {
+      "name": "material_retire_experimental_approvals",
       "version": "20261002204606",
-      "name": "material_retire_experimental_approvals"
+      "statements_md5": "12f3b2ffcb58e7814956bdbcbbc3dbff"
     },
     {
+      "name": "material_public_delivery_context_guard",
       "version": "20261002214124",
-      "name": "material_public_delivery_context_guard"
+      "statements_md5": "f63fecf76d41e4f8bf70773621727738"
     },
     {
+      "name": "material_internal_helper_execute_grants",
       "version": "20261002221824",
-      "name": "material_internal_helper_execute_grants"
+      "statements_md5": "ca06c4cdacf516b6418c261f440fba3a"
     },
     {
+      "name": "capital_native_consumers",
       "version": "20261003052712",
-      "name": "capital_native_consumers"
+      "statements_md5": "052dc87bfef17ce48573f75d21af2930"
     },
     {
+      "name": "artifact_native_inherited_restriction",
       "version": "20261003054849",
-      "name": "artifact_native_inherited_restriction"
+      "statements_md5": "050a5036a1e2f854cbf7ab5b32f0a3d9"
     },
     {
+      "name": "assessment_native_sources",
       "version": "20261003055633",
-      "name": "assessment_native_sources"
+      "statements_md5": "e3e0db1ba4366c1477e6aac115419612"
     },
     {
+      "name": "capital_native_provider_consumption",
       "version": "20261003064715",
-      "name": "capital_native_provider_consumption"
+      "statements_md5": "8c36caae1d3c40506eb780c88499dd2a"
     },
     {
+      "name": "capital_preview_native_execution",
       "version": "20261003064728",
-      "name": "capital_preview_native_execution"
+      "statements_md5": "98a921da5a4478c9989f2202f4353afa"
     },
     {
+      "name": "work_review_dashboard",
       "version": "20261003064740",
-      "name": "work_review_dashboard"
+      "statements_md5": "6cad6e3a03dbd0fc96c1f6a969a19e2b"
     },
     {
+      "name": "capital_native_case_fit_result_contract",
       "version": "20261003075814",
-      "name": "capital_native_case_fit_result_contract"
+      "statements_md5": "f1202554d829635d055b0ef5c12b20e3"
     },
     {
+      "name": "capital_preview_storage_job_authority",
       "version": "20261003133745",
-      "name": "capital_preview_storage_job_authority"
+      "statements_md5": "d9c8ee4e5d920250ec7174eedc815277"
     },
     {
+      "name": "capital_preview_native_artifact_publication",
       "version": "20261003140953",
-      "name": "capital_preview_native_artifact_publication"
+      "statements_md5": "d3bc440711dc79484d7e3316fa984030"
     },
     {
+      "name": "capital_preview_physical_input_grammar",
       "version": "20261003151144",
-      "name": "capital_preview_physical_input_grammar"
+      "statements_md5": "3d17baa2479e9ae8893fded846eec01b"
     },
     {
+      "name": "capital_preview_boundary_validation",
       "version": "20261003151208",
-      "name": "capital_preview_boundary_validation"
+      "statements_md5": "12ee5b1273283e41c3eae5e0e1ae7907"
     },
     {
+      "name": "capital_preview_review_projection",
       "version": "20261004021547",
-      "name": "capital_preview_review_projection"
+      "statements_md5": "9809de20cb1bd0dfee58ae7ffa3bc8ee"
     },
     {
+      "name": "capital_preview_finalize_bounded_closure",
       "version": "20261004021559",
-      "name": "capital_preview_finalize_bounded_closure"
+      "statements_md5": "d9456d14b3ead549cb4a25bf9ba46fef"
     },
     {
+      "name": "work_optional_capital_purpose",
       "version": "20261004025205",
-      "name": "work_optional_capital_purpose"
+      "statements_md5": "0ed5e36ed7e3993a76b914685409dbea"
     },
     {
+      "name": "work_archive_metadata",
       "version": "20261004052828",
-      "name": "work_archive_metadata"
+      "statements_md5": "fd41c7bf5a24e847ab524cdb4bdab6c7"
     },
     {
+      "name": "work_review_dashboard_metadata",
       "version": "20261004150808",
-      "name": "work_review_dashboard_metadata"
+      "statements_md5": "b1db05283b96be85a4ce9eff39b02ec7"
     },
     {
+      "name": "assessment_house_corpus_alias",
       "version": "20261004184035",
-      "name": "assessment_house_corpus_alias"
+      "statements_md5": "7203dcaef71ac1a7dc0e6d8ed56c9b18"
     },
     {
+      "name": "institutional_setup_capture_nowait_order",
       "version": "20261004203355",
-      "name": "institutional_setup_capture_nowait_order"
+      "statements_md5": "a0b6a1e87ab1bd5b5a87fedbe9cf3eae"
     },
     {
+      "name": "artifact_export_receipts",
       "version": "20261005171223",
-      "name": "artifact_export_receipts"
+      "statements_md5": "66eace2fba91f7e09401981f50ee858f"
     },
     {
+      "name": "artifact_import_candidates",
       "version": "20261005172344",
-      "name": "artifact_import_candidates"
+      "statements_md5": "c169e44d6dabe3cce099a132a564a1d9"
     },
     {
+      "name": "artifact_import_review_reason_parity",
       "version": "20261005184625",
-      "name": "artifact_import_review_reason_parity"
+      "statements_md5": "f6a48510ec9cb788ae55b1284863a017"
     },
     {
+      "name": "end_to_end_revocation_and_retention",
       "version": "20261006104651",
-      "name": "end_to_end_revocation_and_retention"
+      "statements_md5": "7f356d48f792fd13a72716aa131f15e2"
     },
     {
+      "name": "lifecycle_retention_consumers",
       "version": "20261006112355",
-      "name": "lifecycle_retention_consumers"
+      "statements_md5": "5b38475292d70cc85d5c99740a84403b"
     },
     {
+      "name": "immutable_audit_batch_archive",
       "version": "20261006114752",
-      "name": "immutable_audit_batch_archive"
+      "statements_md5": "b79d0caa58a29c662a9f4b858e6a0690"
     },
     {
+      "name": "sensitive_lifecycle_operation_audit",
       "version": "20261006120422",
-      "name": "sensitive_lifecycle_operation_audit"
+      "statements_md5": "953c3de81041a52e373e34a35c86549c"
     },
     {
+      "name": "lifecycle_consumer_scope_and_audit_guards",
       "version": "20261006121117",
-      "name": "lifecycle_consumer_scope_and_audit_guards"
+      "statements_md5": "99bbb077fa6239a62c086afd4e0c7131"
     },
     {
+      "name": "revocation_receipt_variable_scope",
       "version": "20261006121745",
-      "name": "revocation_receipt_variable_scope"
+      "statements_md5": "d261daefc0d3263909ef924ff2d4d4d7"
     },
     {
+      "name": "held_capture_cleanup_and_restore_evidence",
       "version": "20261006122753",
-      "name": "held_capture_cleanup_and_restore_evidence"
+      "statements_md5": "a5ee4a5dea48702feff2b873d94088d2"
     },
     {
+      "name": "lifecycle_typed_payload_disposal",
       "version": "20261006123542",
-      "name": "lifecycle_typed_payload_disposal"
+      "statements_md5": "658a6cb064e3096e4d95ba23b7aa6645"
     },
     {
+      "name": "lifecycle_command_audit_completion",
       "version": "20261006131106",
-      "name": "lifecycle_command_audit_completion"
+      "statements_md5": "cff99258393319f6a14e77e7af0f638e"
     },
     {
+      "name": "audit_archive_null_authority_state",
       "version": "20261006134021",
-      "name": "audit_archive_null_authority_state"
+      "statements_md5": "96fd54b0fa67c6b5433907432de389df"
     },
     {
+      "name": "lifecycle_denied_access_receipts",
       "version": "20261006143508",
-      "name": "lifecycle_denied_access_receipts"
+      "statements_md5": "18a313f95fdd5214ae9d6dc2c2321d95"
     },
     {
+      "name": "lifecycle_denial_work_scope",
       "version": "20261006143910",
-      "name": "lifecycle_denial_work_scope"
+      "statements_md5": "d3587155606144721a49a5bfc3a5c441"
+    },
+    {
+      "name": "retire_legacy_framework_paths",
+      "version": "20261006170756",
+      "statements_md5": "96b88bc2069452dd3c93f9e4a997a23c"
+    },
+    {
+      "name": "quarantine_unreleased_distribution_paths",
+      "version": "20261006170950",
+      "statements_md5": "02a73f430eae690c4af54963c5fcef8c"
+    },
+    {
+      "name": "template_context_authority_parity",
+      "version": "20261006171136",
+      "statements_md5": "d9957b378276dff1da730b2396a0db91"
+    },
+    {
+      "name": "template_authoring_scope_projection",
+      "version": "20261006174637",
+      "statements_md5": "35115afd401b612b5ccafbd236ad2208"
+    },
+    {
+      "name": "ficha_financial_objectives",
+      "version": "20261007152734",
+      "statements_md5": "fdeb34526adcbeef1962fa91f458f7f9"
     }
-  ]
+  ],
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "captured_at": "2026-10-07T15:39:12.083714+00:00"
 }

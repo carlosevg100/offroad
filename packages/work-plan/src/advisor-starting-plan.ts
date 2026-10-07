@@ -1,6 +1,7 @@
 import {capitalProjectPlanSnapshot} from "./capital-jobs";
 import {documentWorkPlanSnapshot} from "./document-work-plan";
 import {canCompileStandaloneDocumentWorkRequest, documentWorkJob} from "./document-work-request";
+import {compileObjectiveToPlan} from "./objective-plan";
 import {inferCapitalProjectJob, type CapitalProjectJobHint} from "./job-inference";
 
 /** A question opens a conversation, not a financial execution plan. Documentary
@@ -19,7 +20,10 @@ export function compileAdvisorStartingPlan(input: {
 }) {
   const inferred = inferCapitalProjectJob(input).job;
   const privateHint = !input.explicitHint || ["structure_from_documents","review_existing_operation"].includes(input.explicitHint);
-  const documentary = input.documentaryEnabled && input.hasAttachments && privateHint
+  const objective = compileObjectiveToPlan(input);
+  const financialAnalysis = ["proposal_comparison", "relative_debt_cost", "debt_capacity"].includes(objective.objectiveKind);
+  const explicitDocumentaryScope = /\b(?:documental|documentary|document[- ]only)\b/i.test(input.message);
+  const documentary = (!financialAnalysis || explicitDocumentaryScope) && input.documentaryEnabled && input.hasAttachments && privateHint
     // The compiler proposes its scope; people need not know its internal terminology.
     // Approval still binds the original objective and the visible documentary limits.
     && canCompileStandaloneDocumentWorkRequest({objective:input.message,proposedDeliverable:"Preliminary documentary reading"});

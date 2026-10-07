@@ -8,8 +8,6 @@ const requests = [
   "Prepare a reunião com esta companhia usando os documentos enviados. Quero uma leitura documental preliminar e perguntas para a conversa, sem cálculos financeiros nem recomendação de crédito.",
   "Revise esta oportunidade a partir dos documentos enviados. Quero uma leitura documental preliminar das condições e lacunas, sem cálculos financeiros nem recomendação de crédito.",
   "Prepare a meeting using these documents for a preliminary documentary reading without financial calculations.",
-  "Compare these financing proposals",
-  "Compare estas propostas de financiamento",
   "Prepare a reunião com esta companhia usando os documentos enviados",
   "Revise esta oportunidade a partir dos documentos enviados",
 ];
@@ -35,7 +33,7 @@ describe("initial advisor documentary plan selection",()=>{
       expect(compileAdvisorStartingPlan(input).plan).toEqual(capitalProjectPlanSnapshot(inferCapitalProjectJob(input).job));
     }
   });
-  it.each(["Compare these proposals and calculate their effective cost", "Compare propostas em leitura documental preliminar e calcule o CET", "Do not compare proposals in a preliminary documentary reading"])("does not narrow a financial or negated request: %s",message=>{
+  it.each(["Compare estas propostas de financiamento", "Compare these proposals and calculate their effective cost", "Compare propostas em leitura documental preliminar e calcule o CET", "Do not compare proposals in a preliminary documentary reading"])("does not narrow a financial or negated request: %s",message=>{
     const input={message,hasAttachments:true,documentaryEnabled:true};
     expect(compileAdvisorStartingPlan(input).plan).toEqual(capitalProjectPlanSnapshot(inferCapitalProjectJob(input).job));
   });

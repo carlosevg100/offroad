@@ -174,3 +174,12 @@ describe("governed sector planning producer", () => {
     expect(build({...packet(),candidates:[]})).toBeUndefined();
   });
 });
+
+
+it.each([
+  ["Compare essas três propostas", "contract_review"],
+  ["Por que pagamos mais caro que nossos concorrentes?", "financial_analysis"],
+  ["Até quanto a gente pode se alavancar?", "financial_analysis"],
+] as const)("preserves the sector analysis contract for the ficha objective: %s", (message, intent) => {
+  expect(sectorIntentForObjective(message)).toBe(intent);
+});
