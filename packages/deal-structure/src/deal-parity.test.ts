@@ -433,7 +433,7 @@ function* maskedPackages() {
 
 describe("the deal structure across the move to financial-core", () => {
   it("persists prospective calculation identity and pins the full versioned operation outputs", () => {
-    expect(financialCoreVersion).toBe("2026.10.07-v27");
+    expect(financialCoreVersion).toBe("2026.10.07-v28");
     expect(operationTruthVersion).toBe("2026.10.02-v3");
     const outputs = [...operations()];
     expect(outputs.every(({truth}) => truth.version === operationTruthVersion)).toBe(true);

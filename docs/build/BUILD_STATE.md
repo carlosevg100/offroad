@@ -1,3 +1,7 @@
+## 2026-10-07: C03 sobre dados adotados, candidato
+
+21 testes novos PASS para ponte de custo relativo e estimativas de ação; core v28 prospectivo. Adaptação conserva identidade/contexto/definição/escala, ambos os emissores e dependências, sem overrides ou autorização por digest. Não atribui causalidade/rating e não converte custo desconhecido em zero. Gate completo e publicação pendentes; ensaio de interface e composição ainda não realizados. Ver FICHA-RELATIVE-DEBT-COST.md.
+
 ## 2026-10-07: custo de proposta sobre adoções, candidato
 
 financial-model acrescenta calculateAdoptedFinancingProposal, sem número/convenção livre. Confere campo, proposta, entidade, tempo, definição, moeda, escala, cenário e interpretação monetária real; conserva dependências e nega contribuição duplicada. 14 testes novos PASS; pacote 435 PASS; gate completo local 44/44 PASS. Sem RPC ou release nova. Resultado partial_composition não substitui liquidez, garantias ou interpretação profissional; custos adicionais continuam lacuna dirigida. CI, merge e deploy pendentes. Ver FICHA-ADOPTED-PROPOSAL-COST.md.
