@@ -60,3 +60,5 @@ export * from "./capital-md-test";
 export {renderInstitutionalRoundtripWorkbook} from "./institutional-workbook";
 
 export * from "./adopted-financing-proposal";
+
+export * from "./adopted-relative-debt-cost";
