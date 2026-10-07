@@ -46,6 +46,10 @@ test("framework readiness keeps one work from a question without intake to pinne
  await expect(page).toHaveURL(/\/app\/projects\/[0-9a-f-]{36}/);
  const projectId = new URL(page.url()).pathname.split("/").at(-1)!;
  expect(projectId).toMatch(/^[0-9a-f-]{36}$/);
+ // The work and its later intake each have a dossier. Query order is not identity.
+ // Keep entity links and metric definitions in the exact work dossier across refreshes.
+ const workDossierId = sql(`select d.id from public.dossiers d join public.capital_projects p on p.organization_id=d.organization_id and p.id=d.resource_id where p.id='${projectId}';`);
+ expect(workDossierId).toMatch(/^[0-9a-f-]{36}$/);
  const original = JSON.parse(sql(`select json_build_object('company',p.company_id,'intakes',(select count(*) from public.document_intake_sessions where capital_project_id=p.id),'plans',(select count(*) from public.capital_project_plans where capital_project_id=p.id),'messages',(select count(*) from public.agent_messages where work_id=p.id and role='user')) from public.capital_projects p where p.id='${projectId}';`));
  expect(original).toEqual({company:null,intakes:0,plans:0,messages:1});
  await expect(page.locator(".advisor-thread")).toContainText(question);
@@ -78,7 +82,7 @@ test("framework readiness keeps one work from a question without intake to pinne
  }
  async function registerEntity(name: string, value: string, role: "parent" | "subject") {
   const form = await open(basisCopy.defineEntity);
-  await form.locator('[name="dossierId"]').selectOption({index: 1});
+  await form.locator('[name="dossierId"]').selectOption(workDossierId);
   await form.locator('[name="name"]').fill(name);
   await form.locator('[name="namespace"]').fill("BR:CNPJ");
   await form.locator('[name="value"]').fill(value);
@@ -90,7 +94,7 @@ test("framework readiness keeps one work from a question without intake to pinne
  }
  async function defineMetric(metric: string) {
   const form = await open(basisCopy.defineMetric);
-  await form.locator('[name="dossierId"]').selectOption({index: 1});
+  await form.locator('[name="dossierId"]').selectOption(workDossierId);
   await form.locator('[name="fieldPath"]').fill(metric);
   await form.locator('[name="definition"]').fill(`Synthetic explicit ${metric} definition`);
   await form.getByRole("button", {name: basisCopy.saveDefinition, exact: true}).click();
@@ -146,6 +150,8 @@ test("framework readiness keeps one work from a question without intake to pinne
  const cashDefinition=(await page.locator('select[name="definitionVersionId"] option').filter({hasText:"liquidity.available_cash"}).getAttribute("value"))!;
  const companyId=(await page.locator('select[name="entityId"] option').filter({hasText:company}).getAttribute("value"))!;
  const dossierId=sql(`select d.dossier_id from public.metric_definitions d join public.definition_versions v on v.metric_definition_id=d.id where v.id='${cashDefinition}'`);
+ expect(dossierId).toBe(workDossierId);
+ expect(sql(`select origin_dossier_id from public.entities where id='${companyId}';`)).toBe(workDossierId);
  const dims={entityId:companyId,perimeter:"consolidated",periodStart:null,periodEnd:"2025-12-31",currency:"BRL",unit:"currency",scale:"1",scenario:"actual",definitionVersionId:cashDefinition};
  const actorSql=(command:string)=>`begin;select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${projectId}'),true);select set_config('request.headers',json_build_object('x-offroad-workspace',(select organization_id from public.capital_projects where id='${projectId}'))::text,true);set local role authenticated;${command};commit;`;
  for(const source of ownSources){
