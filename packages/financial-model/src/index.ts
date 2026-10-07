@@ -62,3 +62,6 @@ export {renderInstitutionalRoundtripWorkbook} from "./institutional-workbook";
 export * from "./adopted-financing-proposal";
 
 export * from "./adopted-relative-debt-cost";
+
+export * from "./adopted-debt-capacity";
+export * from "./adopted-investment-analysis";

@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 
 const Exact = Decimal.clone({precision: 80, rounding: Decimal.ROUND_HALF_UP});
-export const investmentProjectVersion = "2026.10.07-v1";
+export const investmentProjectVersion = "2026.10.07-v2";
 const amount = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/);
 const positive = amount.refine(v => new Exact(v).gte(0));
 const fraction = positive.refine(v => new Exact(v).lte(1));
@@ -127,7 +127,8 @@ export const projectValuationInputSchema = z.object({
   discountRate: amount.refine(v => new Exact(v).gt(-1)),
   irrLower: amount.refine(v => new Exact(v).gt(-1)), irrUpper: amount.refine(v => new Exact(v).gt(-1)),
   flowPrecision: z.discriminatedUnion("mode", [z.object({mode: z.literal("unrounded")}).strict(),
-    z.object({mode: z.literal("calibration_rounding"), decimals: z.number().int().min(0).max(8), reason: id}).strict()]),
+    z.object({mode: z.literal("calibration_rounding"), decimals: z.number().int().min(0).max(8), reason: id}).strict(),
+    z.object({mode: z.literal("calibration_monetary_quantum"), quantum: positive.refine(v => new Exact(v).gt(0)), reason: id}).strict()]),
 }).strict();
 export type ProjectValuationInput = z.infer<typeof projectValuationInputSchema>;
 /** IRR is reported only for negative investment prefix then nonnegative future flows.
@@ -152,6 +153,7 @@ export function valueInvestmentProject(raw: ProjectValuationInput) {
     previousTime = time;
     let cash = new Exact(f.amount);
     if (input.flowPrecision.mode === "calibration_rounding") cash = cash.toDecimalPlaces(input.flowPrecision.decimals);
+    if (input.flowPrecision.mode === "calibration_monetary_quantum") cash = cash.div(input.flowPrecision.quantum).toDecimalPlaces(0).times(input.flowPrecision.quantum);
     return {id: f.id, date: f.date, time, cash, sourceAnchor: f.sourceAnchor};
   });
   const npv = (r: Decimal) => flows.reduce((s, f) => s.plus(f.cash.div(r.plus(1).pow(f.time))), new Exact(0));
