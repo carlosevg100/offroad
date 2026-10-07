@@ -96186,8 +96186,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "fichas-router",
+      "reason": "Persistir três novos objetivos financeiros e os quatro tipos já compilados, conservando lease, autoridade, partição e prontidão fail-closed.",
       "sources": [
         {
           "path": "supabase/migrations/20260907044240_objective_plan_preflight.sql",
@@ -96200,6 +96200,11 @@
           "line": 249,
           "anchor": "create or replace function public.worker_record_objective_plan_preflight_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261007153704_ficha_financial_objectives.sql",
+          "line": 15,
+          "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1("
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -326886,6 +326891,12 @@
       "decision": "preservar",
       "stage": "23",
       "reason": "Projetar autoridade real de cada escopo de autoria na interface, sem poder por cargo."
+    },
+    {
+      "path": "supabase/migrations/20261007153704_ficha_financial_objectives.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Ampliar os objetivos admitidos pelo preflight para paridade com o compiler; nenhuma mudança de RLS, grants ou liberação de método."
     }
   ],
   "staging_archive": [

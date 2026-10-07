@@ -19,6 +19,9 @@ export const workspaceObjectiveKindSchema = z.enum([
   "documents_to_case",
   "capital_matching",
   "operation_review",
+  "proposal_comparison",
+  "relative_debt_cost",
+  "debt_capacity",
   "company_analysis",
   "capital_strategy",
   "material_preparation",
@@ -219,6 +222,24 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
     analysisPlan: ["Resolver termos e documentos vigentes", "Recalcular economics, amortização, indexação e covenants", "Comparar ajustes de preço, prazo, garantias e proteções"],
     proposedDeliverable: "Revisão citada da operação, issue list e estrutura indicativa comparável",
   },
+  proposal_comparison: {
+    objectiveKind: "proposal_comparison", entryJob: "review_existing_operation", outputTerminal: "operation_review", targetTaskIds: ["S10"],
+    sourcePlan: ["project_context", "provided_documents", "public_market", "house_method"],
+    analysisPlan: ["Conciliar propostas, versões, firmeza, validade e condições precedentes", "Calcular custo efetivo equivalente na mesma curva datada sobre fluxos líquidos", "Integrar cada cronograma ao caixa e testar covenants, garantias e pré-pagamento", "Comparar alternativas e pontos de negociação sem aceitar ou enviar propostas"],
+    proposedDeliverable: "Comparação de propostas com custo equivalente, restrições, executabilidade e escolha condicionada",
+  },
+  relative_debt_cost: {
+    objectiveKind: "relative_debt_cost", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C05", "K04"],
+    sourcePlan: ["project_context", "provided_documents", "public_company", "public_market", "house_method"],
+    analysisPlan: ["Conciliar nosso custo e operações dos pares com fonte, data e definição", "Normalizar data, prazo, garantia, instrumento e porte sem fabricar ajustes", "Decompor diferença observada, ajustes fundamentados e residual de crédito", "Testar economia de renegociação e acesso antes de preparar a resposta à audiência"],
+    proposedDeliverable: "Diagnóstico de custo relativo com ponte verificável, limites da comparação e ações economicamente justificadas",
+  },
+  debt_capacity: {
+    objectiveKind: "debt_capacity", entryJob: "capital_planning", outputTerminal: "capital_alternative_map", targetTaskIds: ["C10"],
+    sourcePlan: ["project_context", "provided_documents", "public_company", "public_market", "house_method"],
+    analysisPlan: ["Analisar investimento incremental antes de escolher financiamento", "Projetar companhia com e sem projeto até o fim da amortização", "Buscar tamanho e perfil que respeitam cada limite em cada período e cenário", "Separar limite contratual, política, liquidez, mercado e condições da recomendação"],
+    proposedDeliverable: "Capacidade de dívida por período e cenário, com limite vinculante, perfil viável e condições",
+  },
   company_analysis: {
     objectiveKind: "company_analysis", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C11"],
     sourcePlan: ["project_context", "provided_documents", "public_company", "public_market", "house_method"],
@@ -228,7 +249,7 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
   capital_strategy: {
     objectiveKind: "capital_strategy", entryJob: "capital_planning", outputTerminal: "capital_alternative_map", targetTaskIds: ["S11"],
     sourcePlan: ["project_context", "provided_documents", "public_company", "public_market", "house_method"],
-    analysisPlan: ["Fixar necessidade econômica e restrições", "Dimensionar capacidade e fonte de pagamento", "Comparar instrumentos, custo, flexibilidade e execução"],
+    analysisPlan: ["Fixar necessidade econômica e restrições", "Analisar investimento incremental, giro de partida e alternativas com e sem projeto quando aplicável", "Dimensionar capacidade e fonte de pagamento até o fim da amortização", "Comparar instrumentos, custo, flexibilidade e execução"],
     proposedDeliverable: "Mapa de alternativas de capital e recomendação condicionada",
   },
   material_preparation: {
@@ -441,9 +462,12 @@ export function compileObjectivePlan(input: ObjectivePlanContextInput): Objectiv
  */
 export function compileObjectiveToPlan(input: ObjectiveToPlanInput): ObjectiveToPlanDecision {
   const message = input.message.normalize("NFKC").replace(/\s+/g, " ").trim();
-  const objectiveKind = input.explicitHint
+  const inferred = inferObjectiveKind(message, input.hasAttachments);
+  // A generic entry shortcut cannot erase a more specific financial question in the message.
+  const explicitDocumentaryScope = /\b(?:documental|documentary|document[- ]only)\b/i.test(message);
+  const objectiveKind = input.explicitHint && (!isSpecificFinancialObjective(inferred) || explicitDocumentaryScope)
     ? kindFromHint(input.explicitHint)
-    : inferObjectiveKind(message, input.hasAttachments);
+    : inferred;
   return compileObjectivePlan({
     objectiveKind,
     hasAttachments: input.hasAttachments,
@@ -513,19 +537,47 @@ function inferObjectiveKind(message: string, hasAttachments: boolean): Workspace
   if (objectivePatterns.monitoring.test(message)) return "monitoring";
   if (objectivePatterns.workspaceManagement.test(message)) return "workspace_management";
   if (objectivePatterns.capitalMatching.test(message)) return "capital_matching";
+  if (objectivePatterns.informationOrganization.test(message)) return "information_organization";
+  const financialObjective = inferSpecificFinancialObjective(message);
+  if (financialObjective) return financialObjective;
+  if (/^(?:o que (?:e|significa)|explique (?:o conceito|a definicao)|qual (?:e )?a diferenca entre)\b/i.test(financialRoutingText(message))) return "factual_question";
   if (objectivePatterns.material.test(message)) return "material_preparation";
   if (objectivePatterns.operationReview.test(message)) return "operation_review";
   if (objectivePatterns.riskMatrix.test(message)) return "risk_matrix";
   if (objectivePatterns.boardDecision.test(message)) return "board_decision";
   if (objectivePatterns.meeting.test(message)) return "meeting_preparation";
-  if (objectivePatterns.informationOrganization.test(message)) return "information_organization";
   if (objectivePatterns.marketMapping.test(message)) return "market_mapping";
-  if (hasAttachments && objectivePatterns.documents.test(message)) return "documents_to_case";
   if (objectivePatterns.companyAnalysis.test(message)) return "company_analysis";
   if (objectivePatterns.capitalStrategy.test(message)) return "capital_strategy";
+  if (/\b(?:financio|financiamos|financie)\b|\bvence(?:m)?\b.{0,100}\b(?:investimento|capex|divida)\b/i.test(financialRoutingText(message))) return "capital_strategy";
   if (hasAttachments) return "documents_to_case";
   if (objectivePatterns.factualQuestion.test(message)) return "factual_question";
   return "ambiguous";
+}
+
+function financialRoutingText(message: string): string {
+  return message.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function isSpecificFinancialObjective(kind: WorkspaceObjectiveKind): boolean {
+  return kind === "proposal_comparison" || kind === "relative_debt_cost" || kind === "debt_capacity";
+}
+
+/** Interpret action/object pairs before broad audience and attachment heuristics. No case names,
+ * amounts, model output or document contents participate in this classification boundary. */
+function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKind | null {
+  const text = financialRoutingText(message);
+  if (/\b(?:por que|explique|entender|resposta)\b.{0,180}\b(?:pagamos|pago|pagando)\b.{0,60}\bmais\b/.test(text)
+    || /\b(?:nosso|nossa)\b.{0,70}\b(?:custo|spread|taxa)\b.{0,100}\b(?:pares|concorrentes|maior|superior)\b/.test(text)
+    || /\b(?:emitiu|emissao)\b.{0,70}\b(?:cdi|ipca|spread)\b.{0,120}\b(?:a gente|nos|nossa empresa)\b.{0,30}\bpaga/.test(text)) return "relative_debt_cost";
+  if (/\b(?:quanto|limite|capacidade|teto)\b.{0,100}\b(?:divida|alavancar|alavancagem)\b/.test(text)
+    && !/\b(?:o que (?:e|significa)|conceito|definicao)\b/.test(text)
+    || /\b(?:divida|credito)\b.{0,70}\b(?:cabe|cabem|aguenta|suporta)\b/.test(text)
+    || /\bbanco\b.{0,50}\b(?:disse|afirma|indicou)\b.{0,50}\b(?:cabe|cabem)\b/.test(text)) return "debt_capacity";
+  if (/\b(?:comparar|compare|comparacao|recebemos|chegaram|recebi)\b.{0,120}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
+    || /\b(?:qual|escolher|melhor|mais barata)\b.{0,100}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
+    || /\bmais barato\b.{0,60}\bposso fechar\b/.test(text)) return "proposal_comparison";
+  return null;
 }
 
 function kindFromHint(hint: ObjectiveEntryHint): WorkspaceObjectiveKind {

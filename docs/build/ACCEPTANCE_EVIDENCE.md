@@ -1,3 +1,7 @@
+## 2026-10-07: roteamento pelas fichas em implementação
+
+Gabarito vigente: fichas C02/C03/C04/C32 em outputs/fichas-ensaio-2026-10 na raiz do workspace. A cobertura anterior permanece referência histórica. Classificador, entrada do Advisor e preflight recebem objetivos específicos, sem liberação implícita de métodos. Reprodução inicial: 34/44 controles falharam. Teste SQL novo passou em staging, em transação revertida, sem usuários/token residuais. Gate local pnpm check passou. Produção 20261007153704 e staging 20261007152734: SQL MD5 fdeb34526adcbeef1962fa91f458f7f9 e corpo instalado MD5 ddaa330b54a884a22e41be5372c11705 conferidos, RLS/grants preservados. CI, merge e deploy desta correção ainda pendentes. Ver FICHA-OBJECTIVE-ROUTING.md em docs/build/arcabouco.
+
 ## 2026-10-06: etapa 24 em execução; etapas 22 e 23 encerradas
 
 A etapa 22 está concluída em `9732563b3a8c8172139bfa8b43de9eafdf5a9508`; a etapa 23, em `932239519a2869d0a38cbfe1b4b60d282e1dc0ba`. Os respectivos completions externos na raiz do workspace registram CI, journals, catálogo e produção. Os registros anteriores abaixo são históricos, não o estado atual.
