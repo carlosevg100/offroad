@@ -1,0 +1,9 @@
+# Preparação do scanner: diagnóstico e limites
+
+O gate Database de main 799818 (run 37662393714) e o da PR 892 (run 37665120556) terminaram cancelados no limite de 45 minutos. Ambos estavam em Start the existing governed documentary scanner for own-source assessment: 18:16:15-18:39:18Z e 18:42:58-18:58:29Z. Não houve saída entre o início do script e o cancelamento. O primeiro comando é apt-get update -qq: preparação silenciosa sem prazo próprio é o diagnóstico operacional; a falha de um mirror específico ainda não foi provada.
+
+A atualização do índice passa a ser visível e tem prazo global 180s; conexão HTTP/HTTPS 30s, uma repetição. A instalação tem prazo global 240s e espera de lock 60s. Stop de serviços e início do daemon têm prazo 60s. Atualização freshclam continua obrigatória em 180s. TERM tem limite adicional de 15s antes de KILL. Falha do índice é fatal, sem passar por uso silencioso de índices antigos. Os comandos não mudam permissões, AppArmor, confiança de pacote, definições ou limites de conteúdo. Nenhum teste de segurança é retirado e nenhum scan falso satisfaz o gate.
+
+Testes test_failed_package_index_never_installs_or_refreshes, test_failed_install_never_refreshes_or_starts e test_failed_definitions_never_enables_scanning passaram localmente. Simulam só falhas, em diretório temporário, sem instalação ou escrita no host. Estão ligados ao job Quality. bash -n e gate completo local 44/44 passaram. A prova real do scanner continua no Database e E2E completos; sucesso não é inferido da simulação. Sem migração nem alteração de runtime de web/worker. Reverter o commit reverte apenas a preparação de CI, preservando o bloqueio por scan.
+
+Documentação primária dos controles APT: https://manpages.ubuntu.com/manpages/noble/man5/apt.conf.5.html e https://manpages.ubuntu.com/manpages/noble/man8/apt-get.8.html.
