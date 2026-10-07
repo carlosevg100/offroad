@@ -1,6 +1,10 @@
+import {matchesMethodValue} from "@offroad/credit-playbook";
+import {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";
+import {adoptedInvestmentAnalysisOutputSchema} from "./ficha-calculation-results";
+import {calculateInvestmentAnalysisEvidence as calculateAdoptedInvestmentAnalysis} from "./ficha-executor-contracts";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {calculateAdoptedInvestmentAnalysis, type AdoptedInvestmentAnalysisInput} from "./adopted-investment-analysis";
+import {type AdoptedInvestmentAnalysisInput} from "./adopted-investment-analysis";
 import {analysisTestBasis, analysisTestId as id} from "./adopted-analysis.test-support";
 // Source money has the platform's adopted eight-decimal precision. Derived flows retain
 // engine precision and are never rounded back into observations.
@@ -39,6 +43,13 @@ function fixture() {
 describe("investment before financing over adopted company and project", () => {
   it("derives C32 startup capital, eleven annual flows and value from adopted drivers", () => {
     const f = fixture(), r = calculateAdoptedInvestmentAnalysis(f.seal());
+    const contract = fichaCalculationExecutorContracts().find(c => c.name === "investment-analysis-evidence")!;
+    expect(matchesMethodValue(contract.inputs.value, f.seal())).toBe(true);
+    expect(matchesMethodValue(contract.outputs.value, r)).toBe(true);
+    expect(() => adoptedInvestmentAnalysisOutputSchema.parse({...r, grantsExecution: true})).toThrow();
+    expect(() => adoptedInvestmentAnalysisOutputSchema.parse({...r, grantsPublication: true})).toThrow();
+    expect(() => adoptedInvestmentAnalysisOutputSchema.parse({...r, status: "complete"})).toThrow();
+    expect(() => adoptedInvestmentAnalysisOutputSchema.parse({...r, opaqueResult: "fake"})).toThrow();
     expect(r.startupCapital?.netRequirement).toBe("5812500"); expect(r.startupCapital?.lostSupplierCredit).toBe("5000000");
     expect(r.project!.rows.map(q => new D(q.unleveredCashFlow).div(1000000).toDecimalPlaces(2).toNumber())).toEqual([-10, -11.66, 4.13, 4.3, 4.47, 4.64, 4.83, 5.02, 5.22, 5.43, 11.46]);
     expect(new D(r.valuation!.netPresentValue).div(1000000).toDecimalPlaces(1).toNumber()).toBe(0.7);

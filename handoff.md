@@ -1,3 +1,7 @@
+## 2026-10-07: contratos compiláveis dos quatro cálculos das fichas
+
+Quatro schemas completos e entry points preservam operandos/trace/dependências e recusam promoção/autoridade no resultado. Contratos gerados e componentes registrados nos drafts, sem TaskSpec/release/execução. 45 testes existentes dos adaptadores PASS com os wrappers; 9 controles novos PASS. Gate completo local44/44PASS (core396, model471, playbook509, worker1801); CI e publicação pendentes. Ver FICHA-CALCULATION-CONTRACTS.md; composição profissional e quatro ensaios reais continuam pendentes.
+
 ## 2026-10-07: C04/C32 sobre adoções, candidato
 
 20 testes novos PASS: capacidade inteira por cenários/anos, revisão fixa, investimento/giro/rampa, companhia com/sem projeto e valuation em dois perímetros fiscais. Valores financeiros e convenções vêm da base adotada; sem futuro inventado ou override por caller. C04 conserva a precisão original de 0,1 milhão com quantum monetário explicitamente adotado; motores/linhas originais preservados. Core prospectivo v29 e investment-project v2; pinos v24 intactos. Gate completo local 44/44 PASS: core 396, model 466, worker 1801; CI e publicação pendentes; sem release/RPC/ensaio de interface. Ver FICHA-ADOPTED-INVESTMENT-CAPACITY.md.

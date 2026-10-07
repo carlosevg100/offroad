@@ -1,7 +1,11 @@
+import {matchesMethodValue} from "@offroad/credit-playbook";
+import {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";
+import {adoptedFinancingProposalOutputSchema} from "./ficha-calculation-results";
+import {calculateFinancingProposalEvidence as calculateAdoptedFinancingProposal} from "./ficha-executor-contracts";
 import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {calculateAdoptedFinancingProposal, type AdoptedFinancingProposalInput} from "./adopted-financing-proposal";
+import {type AdoptedFinancingProposalInput} from "./adopted-financing-proposal";
 const id = (n: number) => `ad700000-0000-4000-9000-${String(n).padStart(12, "0")}`;
 function fixture() {
   const entries: AdoptionBasisEntry[] = []; let n = 10;
@@ -33,6 +37,13 @@ function fixture() {
 describe("adopted financing proposal cost component", () => {
   it("calculates only from selected immutable contributions and retains all dependencies", () => {
     const f = fixture(); const r = calculateAdoptedFinancingProposal(f.seal());
+    const contract = fichaCalculationExecutorContracts().find(c => c.name === "financing-proposal-evidence")!;
+    expect(matchesMethodValue(contract.inputs.value, f.seal())).toBe(true);
+    expect(matchesMethodValue(contract.outputs.value, r)).toBe(true);
+    expect(() => adoptedFinancingProposalOutputSchema.parse({...r, grantsExecution: true})).toThrow();
+    expect(() => adoptedFinancingProposalOutputSchema.parse({...r, grantsPublication: true})).toThrow();
+    expect(() => adoptedFinancingProposalOutputSchema.parse({...r, status: "complete"})).toThrow();
+    expect(() => adoptedFinancingProposalOutputSchema.parse({...r, opaqueResult: "fake"})).toThrow();
     expect(r.status).toBe("partial_composition"); expect(r.cost?.annualSpread).toBe("0.11111111111111111111");
     expect(r.schedule?.netFlows[0]!.amount).toBe("99"); expect(r.contributions).toHaveLength(f.entries.length);
     expect(r.derivedDependencies[0]!.decisionIds).toHaveLength(f.entries.length); expect(r.classification).toBe("working_hypothesis");
