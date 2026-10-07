@@ -94,7 +94,7 @@ describe("procedure component compiler", () => {
   });
   it("adapts all eleven legacy methods and preserves the published R01 source and approval", () => {
     const library = loadMethodLibrary(root);
-    const legacy = library.methods.filter((method) => method.procedure.id !== document.procedure.id);
+    const legacy = library.methods.filter((method) => method.composition === null);
     expect(legacy).toHaveLength(11);
     for (const method of legacy) {
       const adapted = adaptLegacyMethodDocument(method);

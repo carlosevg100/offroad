@@ -75,6 +75,514 @@ export const procedureBuildProvenance = [
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
+      "id": "analyze-investment-project",
+      "version": "2026.10.07-v1",
+      "maturity": "draft"
+    },
+    "source": {
+      "path": "capital/analyze-investment-project.md",
+      "hash": "a98874d219ba7255025f662b7d0ed74dc2e0b33a64f38316d33aea329a27a383"
+    },
+    "compiler": {
+      "version": "2026.09.21-v9",
+      "sources": [
+        {
+          "path": "packages/credit-playbook/src/build-method-manifest.ts",
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
+        },
+        {
+          "path": "packages/credit-playbook/src/method-component.ts",
+          "hash": "31890cb0765548fc91a5949a3281d8eb96ee4cf56dbdf1d72a0ca15b67d90d22"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-compiler.ts",
+          "hash": "8cd1de153e610513407158349a7e9213cc44b761df03a9290efc0e00c798883f"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-contract.ts",
+          "hash": "31e1b838b857ce5529ebe7befffcc1d123456e894095785d35205b7589d9e1bf"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-markdown.ts",
+          "hash": "709b6c8e9230a2449c7d76261f83afef1a4b6a2353bda8e04109c47e2384d254"
+        },
+        {
+          "path": "packages/credit-playbook/src/released-method-lock.ts",
+          "hash": "df4d078ef50c1a80324cb80e573833638b4c09e8f85de6da73f163b47a8adc2d"
+        },
+        {
+          "path": "packages/credit-playbook/src/review-record.ts",
+          "hash": "e3fd9b7372e966bda63f0c3b978d9c61d9a0376cb421256086491e030c394723"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "hash": "7cb3fe7d8e7030ca08403953032b180a89f809869dba4f49e6e77793c165b366"
+        },
+        {
+          "path": "tsconfig.base.json",
+          "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+        }
+      ],
+      "hash": "50899d6a020a3b3af8e2d04799f89307f038eebb5905718d0698b2f55d22499d"
+    },
+    "authoringStatus": "incomplete",
+    "pendingContent": [
+      "Vincular motores registrados, schemas reais, avaliações independentes e manifesto de execução; não executável por narrativa."
+    ],
+    "grantsExecution": false,
+    "budget": {
+      "maxModelCalls": 0,
+      "maxDurationMs": 1000,
+      "maxCostMinorUnits": 0,
+      "currency": "USD"
+    },
+    "allowedTools": [],
+    "maximumEffect": "none",
+    "components": [
+      {
+        "component": {
+          "id": "analyze-investment-project-editorial",
+          "version": "2026.10.07-v1",
+          "title": "Analisar investimento antes do financiamento",
+          "inputs": {
+            "id": "analyze-investment-project-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "id": "analyze-investment-project-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "dependencies": [],
+          "tools": [],
+          "effect": "none",
+          "budget": {
+            "maxModelCalls": 0,
+            "maxDurationMs": 1000,
+            "maxCostMinorUnits": 0,
+            "currency": "USD"
+          },
+          "rights": {
+            "inheritSourceRestrictions": true,
+            "purposes": [
+              "analysis"
+            ],
+            "sourceClasses": [
+              "house_method"
+            ]
+          },
+          "competencies": [
+            "financial_analysis"
+          ],
+          "invariants": [
+            "law",
+            "contractual_definition",
+            "traceability",
+            "verification",
+            "access_barriers",
+            "deterministic_financial_math"
+          ],
+          "overridePoints": [],
+          "evidence": [],
+          "kind": "narrative",
+          "text": "Avaliar o investimento pelo fluxo incremental e pelo risco de execução antes de escolher como financiá-lo. Separar criação de valor, necessidade de caixa, segurança operacional e capacidade de dívida. Projeto comparado a não fazer, adiar, fasear e alternativas comerciais; VPL/TIR/payback sob premissas explícitas, sensibilidades e equilíbrio; companhia com/sem projeto e giro de partida."
+        },
+        "componentHash": "8c7de84f3ff1c84765b2791ba4045ceb018e9654d2888a9a7bb1a68ac2ae8135",
+        "executor": null,
+        "evidence": []
+      }
+    ],
+    "manifestHash": "05da84bd53d25be2249f3c13bd6bd4b1cb8a0b2e933a114d8c417ace39601ffe"
+  },
+  {
+    "schemaVersion": "compiled-procedure-manifest.v1",
+    "procedure": {
+      "id": "analyze-relative-debt-cost",
+      "version": "2026.10.07-v1",
+      "maturity": "draft"
+    },
+    "source": {
+      "path": "capital/analyze-relative-debt-cost.md",
+      "hash": "f64fe169cb62f5de5ea3b91dc1650ca0e583444f1b2bfc645cf24dd2e0909fda"
+    },
+    "compiler": {
+      "version": "2026.09.21-v9",
+      "sources": [
+        {
+          "path": "packages/credit-playbook/src/build-method-manifest.ts",
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
+        },
+        {
+          "path": "packages/credit-playbook/src/method-component.ts",
+          "hash": "31890cb0765548fc91a5949a3281d8eb96ee4cf56dbdf1d72a0ca15b67d90d22"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-compiler.ts",
+          "hash": "8cd1de153e610513407158349a7e9213cc44b761df03a9290efc0e00c798883f"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-contract.ts",
+          "hash": "31e1b838b857ce5529ebe7befffcc1d123456e894095785d35205b7589d9e1bf"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-markdown.ts",
+          "hash": "709b6c8e9230a2449c7d76261f83afef1a4b6a2353bda8e04109c47e2384d254"
+        },
+        {
+          "path": "packages/credit-playbook/src/released-method-lock.ts",
+          "hash": "df4d078ef50c1a80324cb80e573833638b4c09e8f85de6da73f163b47a8adc2d"
+        },
+        {
+          "path": "packages/credit-playbook/src/review-record.ts",
+          "hash": "e3fd9b7372e966bda63f0c3b978d9c61d9a0376cb421256086491e030c394723"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "hash": "7cb3fe7d8e7030ca08403953032b180a89f809869dba4f49e6e77793c165b366"
+        },
+        {
+          "path": "tsconfig.base.json",
+          "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+        }
+      ],
+      "hash": "50899d6a020a3b3af8e2d04799f89307f038eebb5905718d0698b2f55d22499d"
+    },
+    "authoringStatus": "incomplete",
+    "pendingContent": [
+      "Vincular motores registrados, schemas reais, avaliações independentes e manifesto de execução; não executável por narrativa."
+    ],
+    "grantsExecution": false,
+    "budget": {
+      "maxModelCalls": 0,
+      "maxDurationMs": 1000,
+      "maxCostMinorUnits": 0,
+      "currency": "USD"
+    },
+    "allowedTools": [],
+    "maximumEffect": "none",
+    "components": [
+      {
+        "component": {
+          "id": "analyze-relative-debt-cost-editorial",
+          "version": "2026.10.07-v1",
+          "title": "Explicar o custo de dívida frente a pares",
+          "inputs": {
+            "id": "analyze-relative-debt-cost-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "id": "analyze-relative-debt-cost-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "dependencies": [],
+          "tools": [],
+          "effect": "none",
+          "budget": {
+            "maxModelCalls": 0,
+            "maxDurationMs": 1000,
+            "maxCostMinorUnits": 0,
+            "currency": "USD"
+          },
+          "rights": {
+            "inheritSourceRestrictions": true,
+            "purposes": [
+              "analysis"
+            ],
+            "sourceClasses": [
+              "house_method"
+            ]
+          },
+          "competencies": [
+            "financial_analysis"
+          ],
+          "invariants": [
+            "law",
+            "contractual_definition",
+            "traceability",
+            "verification",
+            "access_barriers",
+            "deterministic_financial_math"
+          ],
+          "overridePoints": [],
+          "evidence": [],
+          "kind": "narrative",
+          "text": "Explicar a diferença entre o custo da companhia e o de pares após tornar as operações comparáveis; distinguir mercado, estrutura e percepção de crédito e testar o retorno das ações sugeridas. Ponte da diferença bruta até os ajustes fundamentados e o residual, leitura lado a lado do crédito e alavancas com economia, custo e prazo. Raciocínio precede material de conselho."
+        },
+        "componentHash": "95162be055a8fe096706cdf28304f50ae26ced76671059211ba9a43ef5a755fc",
+        "executor": null,
+        "evidence": []
+      }
+    ],
+    "manifestHash": "cbe7ae6b85e0f2c639ddbdac8541e010d56e9931cd3f708b036a33df05abf210"
+  },
+  {
+    "schemaVersion": "compiled-procedure-manifest.v1",
+    "procedure": {
+      "id": "assess-debt-capacity",
+      "version": "2026.10.07-v1",
+      "maturity": "draft"
+    },
+    "source": {
+      "path": "capital/assess-debt-capacity.md",
+      "hash": "fe1b07554643f601334ebfa7d4d35d8ee5cc47a163dd62f75a920b12d2a14045"
+    },
+    "compiler": {
+      "version": "2026.09.21-v9",
+      "sources": [
+        {
+          "path": "packages/credit-playbook/src/build-method-manifest.ts",
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
+        },
+        {
+          "path": "packages/credit-playbook/src/method-component.ts",
+          "hash": "31890cb0765548fc91a5949a3281d8eb96ee4cf56dbdf1d72a0ca15b67d90d22"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-compiler.ts",
+          "hash": "8cd1de153e610513407158349a7e9213cc44b761df03a9290efc0e00c798883f"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-contract.ts",
+          "hash": "31e1b838b857ce5529ebe7befffcc1d123456e894095785d35205b7589d9e1bf"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-markdown.ts",
+          "hash": "709b6c8e9230a2449c7d76261f83afef1a4b6a2353bda8e04109c47e2384d254"
+        },
+        {
+          "path": "packages/credit-playbook/src/released-method-lock.ts",
+          "hash": "df4d078ef50c1a80324cb80e573833638b4c09e8f85de6da73f163b47a8adc2d"
+        },
+        {
+          "path": "packages/credit-playbook/src/review-record.ts",
+          "hash": "e3fd9b7372e966bda63f0c3b978d9c61d9a0376cb421256086491e030c394723"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "hash": "7cb3fe7d8e7030ca08403953032b180a89f809869dba4f49e6e77793c165b366"
+        },
+        {
+          "path": "tsconfig.base.json",
+          "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+        }
+      ],
+      "hash": "50899d6a020a3b3af8e2d04799f89307f038eebb5905718d0698b2f55d22499d"
+    },
+    "authoringStatus": "incomplete",
+    "pendingContent": [
+      "Vincular motores registrados, schemas reais, avaliações independentes e manifesto de execução; não executável por narrativa."
+    ],
+    "grantsExecution": false,
+    "budget": {
+      "maxModelCalls": 0,
+      "maxDurationMs": 1000,
+      "maxCostMinorUnits": 0,
+      "currency": "USD"
+    },
+    "allowedTools": [],
+    "maximumEffect": "none",
+    "components": [
+      {
+        "component": {
+          "id": "assess-debt-capacity-editorial",
+          "version": "2026.10.07-v1",
+          "title": "Medir capacidade de dívida e perfil de pagamento",
+          "inputs": {
+            "id": "assess-debt-capacity-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "id": "assess-debt-capacity-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "dependencies": [],
+          "tools": [],
+          "effect": "none",
+          "budget": {
+            "maxModelCalls": 0,
+            "maxDurationMs": 1000,
+            "maxCostMinorUnits": 0,
+            "currency": "USD"
+          },
+          "rights": {
+            "inheritSourceRestrictions": true,
+            "purposes": [
+              "analysis"
+            ],
+            "sourceClasses": [
+              "house_method"
+            ]
+          },
+          "competencies": [
+            "financial_analysis"
+          ],
+          "invariants": [
+            "law",
+            "contractual_definition",
+            "traceability",
+            "verification",
+            "access_barriers",
+            "deterministic_financial_math"
+          ],
+          "overridePoints": [],
+          "evidence": [],
+          "kind": "narrative",
+          "text": "Encontrar o maior valor financiável que respeita todos os limites em todas as datas e cenários aplicáveis, e separar limite de tamanho de viabilidade do perfil de pagamento. Havendo investimento, analisar sua economia antes do financiamento. Teto por período/limite, intervalo viável para cada perfil, pico e data, caixa mínimo e perfil necessário; recomendação condicionada com alternativas de faseamento e sem presumir refinanciamento."
+        },
+        "componentHash": "662507a6f2942e0d0e8bf5c50e1d7488d3f4be659fb49ced40194cda7e1dea08",
+        "executor": null,
+        "evidence": []
+      }
+    ],
+    "manifestHash": "51ba3b4ba57c52f4b4a1451d35d1982fe394cfe2b3e43462297b3627e2614c98"
+  },
+  {
+    "schemaVersion": "compiled-procedure-manifest.v1",
+    "procedure": {
+      "id": "compare-financing-proposals",
+      "version": "2026.10.07-v1",
+      "maturity": "draft"
+    },
+    "source": {
+      "path": "capital/compare-financing-proposals.md",
+      "hash": "f311091a03c9b5dee839c40449eb19b1354137c1147cd29282024489e9733dc3"
+    },
+    "compiler": {
+      "version": "2026.09.21-v9",
+      "sources": [
+        {
+          "path": "packages/credit-playbook/src/build-method-manifest.ts",
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
+        },
+        {
+          "path": "packages/credit-playbook/src/method-component.ts",
+          "hash": "31890cb0765548fc91a5949a3281d8eb96ee4cf56dbdf1d72a0ca15b67d90d22"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-compiler.ts",
+          "hash": "8cd1de153e610513407158349a7e9213cc44b761df03a9290efc0e00c798883f"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-contract.ts",
+          "hash": "31e1b838b857ce5529ebe7befffcc1d123456e894095785d35205b7589d9e1bf"
+        },
+        {
+          "path": "packages/credit-playbook/src/procedure-markdown.ts",
+          "hash": "709b6c8e9230a2449c7d76261f83afef1a4b6a2353bda8e04109c47e2384d254"
+        },
+        {
+          "path": "packages/credit-playbook/src/released-method-lock.ts",
+          "hash": "df4d078ef50c1a80324cb80e573833638b4c09e8f85de6da73f163b47a8adc2d"
+        },
+        {
+          "path": "packages/credit-playbook/src/review-record.ts",
+          "hash": "e3fd9b7372e966bda63f0c3b978d9c61d9a0376cb421256086491e030c394723"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "hash": "7cb3fe7d8e7030ca08403953032b180a89f809869dba4f49e6e77793c165b366"
+        },
+        {
+          "path": "tsconfig.base.json",
+          "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+        }
+      ],
+      "hash": "50899d6a020a3b3af8e2d04799f89307f038eebb5905718d0698b2f55d22499d"
+    },
+    "authoringStatus": "incomplete",
+    "pendingContent": [
+      "Vincular motores registrados, schemas reais, avaliações independentes e manifesto de execução; não executável por narrativa."
+    ],
+    "grantsExecution": false,
+    "budget": {
+      "maxModelCalls": 0,
+      "maxDurationMs": 1000,
+      "maxCostMinorUnits": 0,
+      "currency": "USD"
+    },
+    "allowedTools": [],
+    "maximumEffect": "none",
+    "components": [
+      {
+        "component": {
+          "id": "compare-financing-proposals-editorial",
+          "version": "2026.10.07-v1",
+          "title": "Comparar propostas de financiamento recebidas",
+          "inputs": {
+            "id": "compare-financing-proposals-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "outputs": {
+            "id": "compare-financing-proposals-editorial-contract",
+            "version": "2026.10.07-v1",
+            "value": {
+              "type": "string"
+            }
+          },
+          "dependencies": [],
+          "tools": [],
+          "effect": "none",
+          "budget": {
+            "maxModelCalls": 0,
+            "maxDurationMs": 1000,
+            "maxCostMinorUnits": 0,
+            "currency": "USD"
+          },
+          "rights": {
+            "inheritSourceRestrictions": true,
+            "purposes": [
+              "analysis"
+            ],
+            "sourceClasses": [
+              "house_method"
+            ]
+          },
+          "competencies": [
+            "financial_analysis"
+          ],
+          "invariants": [
+            "law",
+            "contractual_definition",
+            "traceability",
+            "verification",
+            "access_barriers",
+            "deterministic_financial_math"
+          ],
+          "overridePoints": [],
+          "evidence": [],
+          "kind": "narrative",
+          "text": "Escolher ou comparar propostas para uma mesma necessidade pelo custo efetivo, caixa, restrições e executabilidade; preparar pontos de negociação quando solicitados. Uma preferência ou relação bancária é contexto da escolha, não critério que substitui a conta. Leitura das propostas comparáveis, eliminatórias antes da preferência, diferenças em número e pedidos de negociação por contraparte. Se o usuário pediu só comparação, preservar a análise sem recomendar escolha."
+        },
+        "componentHash": "eb8dbe7b33c1dfe9427e5ae0e8b9031865baebd6ee0607a511ab313969de2397",
+        "executor": null,
+        "evidence": []
+      }
+    ],
+    "manifestHash": "9b9b6cae9f46b99c4e3b421e339131384b0b94f27244c9e539370db2fde5007f"
+  },
+  {
+    "schemaVersion": "compiled-procedure-manifest.v1",
+    "procedure": {
       "id": "prepare-capital-structure-decision",
       "version": "2026.09.21-v4",
       "maturity": "tested"
