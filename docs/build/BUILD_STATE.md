@@ -1,3 +1,7 @@
+## 2026-10-07 — autoria das fichas financeiras
+
+Quatro novos procedimentos em draft a partir de C02/C03/C04/C32 e candidato v5 de estrutura de capital com investimento antes do funding. Fonte profissional compilada; novos métodos sem executor, TaskSpec ou aprovação. V4 publicada inalterada. Biblioteca: 505 testes e 15 controles de executores fixados passaram; typecheck e lock imutável passaram. CI e publicação deste incremento pendentes; motores e interface têm provas próprias. Ver `docs/build/arcabouco/FICHA-PROCEDURE-AUTHORSHIP.md`.
+
 ## 2026-10-07: roteamento pelas fichas em implementação
 
 Gabarito vigente: fichas C02/C03/C04/C32 em outputs/fichas-ensaio-2026-10 na raiz do workspace. A cobertura anterior permanece referência histórica. Classificador, entrada do Advisor e preflight recebem objetivos específicos, sem liberação implícita de métodos. Reprodução inicial: 34/44 controles falharam. Teste SQL novo passou em staging, em transação revertida, sem usuários/token residuais. Gate local pnpm check passou. Produção 20261007153704 e staging 20261007152734: SQL MD5 fdeb34526adcbeef1962fa91f458f7f9 e corpo instalado MD5 ddaa330b54a884a22e41be5372c11705 conferidos, RLS/grants preservados. CI, merge e deploy desta correção ainda pendentes. Ver FICHA-OBJECTIVE-ROUTING.md em docs/build/arcabouco.
