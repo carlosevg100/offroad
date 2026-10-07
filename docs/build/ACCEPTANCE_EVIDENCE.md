@@ -1,3 +1,7 @@
+## 2026-10-07: dossiê explícito na prova integrada
+
+A CI de main 37679034244 recusou a observação do framework-readiness com observation_entity_scope_denied: a ficha de teste escolhia a posição 1 de dossiers sem ordenação, embora trabalho e intake tenham identidades distintas. O ensaio agora seleciona pelo ID do dossiê do trabalho e confere definição e entidade nesse mesmo dossiê antes da observação. Guard SQL, papéis, critérios e tempo-limite inalterados. Este reparo de fixture não comprova o ensaio das fichas C02/C03/C04/C32. CI remota e publicação pendentes.
+
 ## 2026-10-07: investimento e capacidade conjunta, candidato
 
 financial-core v27: giro de partida, rampa que atravessa dezembro, fluxo não alavancado, VPL/TIR, companhia com/sem investimento com imposto conjunto e busca da faixa viável por cenários/períodos. 43 testes novos PASS, incluindo C04/C32, todos os limites e conferência por enumeração da grade. Sem inferência de drivers futuros, quitação ou direito de uso. A calibração parcial não declara vida inteira. Divergências dentro dos gabaritos estão documentadas sem alterar as fichas; ver FICHA-INVESTMENT-CAPACITY.md. Gate completo local 44/44 PASS (financial-core: 385 testes); CI, merge, deploy, composição dos novos métodos e ensaios pela interface ainda pendentes. Pinos v24 inalterados.
