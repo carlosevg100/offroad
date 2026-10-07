@@ -1,3 +1,9 @@
+## 2026-10-07: motor de custo equivalente das fichas
+
+Roteador publicado pela PR 889 em a0adf3ffc6a29d23b15e9fb24f5c0449ea221c67, com Quality/Security de main, web e boot ECS conferidos; relatório durável na raiz outputs/implementacao-fichas-2026-10-07/ROTEADOR-COMPLETION.md. Autoria draft mesclada pela PR 890 em ef1a25369cc99c07eb3012f6ad150137ec1063b4; sua implantação tem verificação própria.
+
+financial-core v26 acrescenta fluxo datado com juros não pagos sob convenção explícita e spread que zera o VP dos fluxos líquidos na curva. C02 é calibrada contra o Python independente, com a aproximação trimestral identificada. Testes novos: 20 PASS; pacote: 342 PASS; gate completo local: 44/44 PASS. Publicações históricas v24 e seus pinos permanecem intactos; somente expectativas de consumidores prospectivos mudam para v26. Sem migração ou mudança de autoridade. CI, merge e implantação deste motor ainda precisam fechar. Não habilita procedimento nem comprova ensaio pela interface. Contrato: docs/build/arcabouco/FICHA-FINANCING-COST.md.
+
 ## 2026-10-07: autoria das fichas financeiras
 
 Quatro novos procedimentos em draft a partir de C02/C03/C04/C32 e candidato v5 de estrutura de capital com investimento antes do funding. Fonte profissional compilada; novos métodos sem executor, TaskSpec ou aprovação. V4 publicada inalterada. Biblioteca: 505 testes e 15 controles de executores fixados passaram; typecheck e lock imutável passaram. CI e publicação deste incremento pendentes; motores e interface têm provas próprias. Ver `docs/build/arcabouco/FICHA-PROCEDURE-AUTHORSHIP.md`.

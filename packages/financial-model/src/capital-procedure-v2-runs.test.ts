@@ -22,7 +22,7 @@ describe("recorded capital procedure v2 evaluations", () => {
     }
   }, 30_000); // Whole-suite replay under concurrent CI load; latency is measured separately.
   it("evaluates current prospective calculations without relabeling historical evidence", () => {
-    expect(financialCoreVersion).toBe("2026.10.02-v25");
+    expect(financialCoreVersion).toBe("2026.10.07-v26");
     for (const evidence of buildCapitalProcedureV2Runs()) {
       const record = records.get(evidence.runId)!;
       expect(evidence.result).toBe("pass");

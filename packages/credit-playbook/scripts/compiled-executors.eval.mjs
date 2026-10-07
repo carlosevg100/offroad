@@ -85,14 +85,14 @@ test('current main bound-packet composer remains compatible with the frozen publ
    export function input(){const f=adoptedCapitalPeriodFixture(),canonical=JSON.stringify(f.snapshot),scope={workId:f.snapshot.workId,purpose:f.snapshot.purpose,versionId:f.snapshot.versionId},envelope={canonical,fingerprint:createHash("sha256").update(canonical).digest("hex")},asOf="2026-12-31";
     return composeBoundCapitalPacketV2({envelope,scope,question:"Does the current structure hold?",objectives:["Measure liquidity"],asOf,...deriveBoundCapitalScope(readContextualBasis(envelope,scope),asOf)});}`;
   await build({stdin:{contents,resolveDir:root,loader:'ts'},outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent'});
-  const current=await import(pathToFileURL(outfile));assert.equal(current.financialCoreVersion,'2026.10.02-v25');
+  const current=await import(pathToFileURL(outfile));assert.equal(current.financialCoreVersion,'2026.10.07-v26');
   const packet=current.input();assert.deepEqual(packet.contracts,[]);assert.deepEqual(packet.adoptionLinks,[]);
   const frozen=require(artifactPath);const result=frozen.prepareCapitalProcedurePacketV2(packet);
   assert.equal(result.decision.provenance.financialCoreVersion,'2026.09.20-v24');
  }finally{rmSync(temporary,{recursive:true,force:true});}
 });
 
-test('current v25 input derivations cannot enter the frozen v24 capital executor',async()=>{
+test('current input derivations cannot enter the frozen v24 capital executor',async()=>{
  const temporary=mkdtempSync(join(tmpdir(),'offroad-capital-cross-version-'));
  try{
   const {artifact}=await rebuildReleasedExecutor(release),artifactPath=join(temporary,'capital.cjs');writeFileSync(artifactPath,artifact);

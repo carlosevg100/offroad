@@ -1,4 +1,4 @@
-export const financialCoreVersion = "2026.10.02-v25";
+export const financialCoreVersion = "2026.10.07-v26";
 
 export * from "./credit-math";
 export * from "./financial-truth";
@@ -25,6 +25,7 @@ export * from "./structure";
 export * from "./liquidity-calendar";
 export * from "./dated-debt";
 export * from "./financing-costs";
+export * from "./equivalent-financing-cost";
 export * from "./numeric-representation";
 export * from "./operating-cash-projection";
 export * from "./capital-period-cash";
