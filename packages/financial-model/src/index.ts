@@ -58,3 +58,5 @@ export * from "./capital-chart-series";
 export * from "./capital-md-test";
 
 export {renderInstitutionalRoundtripWorkbook} from "./institutional-workbook";
+
+export * from "./adopted-financing-proposal";

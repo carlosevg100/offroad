@@ -23813,6 +23813,10 @@ export const procedureBuildProvenance = [
               "hash": "631b5d588cfbcd2867441bd398a9f703e1501add586dfa6992aff16cdb2b7cd3"
             },
             {
+              "path": "packages/financial-model/src/adopted-financing-proposal.ts",
+              "hash": "a8db277d133fdb7939de5a600157c6a05adc34bef2be21b9d9c1158adb9dc7ae"
+            },
+            {
               "path": "packages/financial-model/src/adopted-input-scale.ts",
               "hash": "eb38962ccca8fa043150a391f8eacb01b2aef676116e04cb94c589542dab5d11"
             },
@@ -23954,7 +23958,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "cbec9889f79d678b705dd9384bc67651c91285091168b8e487ce37eb1e2ed518"
+              "hash": "55982d1f45334d825f6b0f9c6669ab90e1ca73bd4b54dcbe33d396d7855bb0d1"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -24209,7 +24213,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "24788f95e4dc1e1ce182fc29dbe6f8cf73ec40f86735876cc0caf1fb8d161af1"
+          "hash": "a4f6ae38d5c148dd229c81d1f283a66be7eb327c5471677f46252be76955b40e"
         },
         "evidence": [
           {
@@ -24235,7 +24239,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "74289b8be9e1a340a30aa8c01e95d670271cdf49e7b34a75077804bff18cec42"
+    "manifestHash": "5dfb00f3232735b56039bd611c3d31eb3aeced3bc50c6aaaf6eff72ac164ac8e"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

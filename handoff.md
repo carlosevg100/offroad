@@ -1,6 +1,12 @@
+## 2026-10-07: custo de proposta sobre adoções, candidato
+
+financial-model acrescenta calculateAdoptedFinancingProposal, sem número/convenção livre. Confere campo, proposta, entidade, tempo, definição, moeda, escala, cenário e interpretação monetária real; conserva dependências e nega contribuição duplicada. 14 testes novos PASS; pacote 435 PASS; gate completo local 44/44 PASS. Sem RPC ou release nova. Resultado partial_composition não substitui liquidez, garantias ou interpretação profissional; custos adicionais continuam lacuna dirigida. CI, merge e deploy pendentes. Ver FICHA-ADOPTED-PROPOSAL-COST.md.
 ## 2026-10-07: preparação limitada do scanner na CI
 
 Os runs 37662393714 e 37665120556 atingiram 45 minutos no job de banco, na fase de preparação do scanner sem saída intermediária. Cada preparação de pacotes, serviços, definições e daemon agora tem prazo finito e indicação de fase; falhas de rede/índice continuam fatais. AppArmor, confiança dos pacotes, freshclam e preflight obrigatório mantidos. Três testes de falha PASS e ligados ao job Quality. Nenhuma mudança em produção/RLS/métodos. Gate completo local 44/44 PASS; CI e merge pendentes. Ver SCANNER-CI-BOUNDED-SETUP.md.
+## 2026-10-07: dossiê explícito na prova integrada
+
+A CI de main 37679034244 recusou a observação do framework-readiness com observation_entity_scope_denied: a ficha de teste escolhia a posição 1 de dossiers sem ordenação, embora trabalho e intake tenham identidades distintas. O ensaio agora seleciona pelo ID do dossiê do trabalho e confere definição e entidade nesse mesmo dossiê antes da observação. Guard SQL, papéis, critérios e tempo-limite inalterados. Este reparo de fixture não comprova o ensaio das fichas C02/C03/C04/C32. CI remota e publicação pendentes.
 
 ## 2026-10-07: investimento e capacidade conjunta, candidato
 
