@@ -25,7 +25,7 @@ describe("published capital executor over a bound packet", () => {
     expect(result.decision.alternatives[0]!.projection.summary).toBeNull();
     expect(result.grantsExecution).toBe(false); expect(result.grantsPublication).toBe(false);
   });
-  it("preserves published v24 bytes and compares prospective v26 economic results", () => {
+  it("preserves published v24 bytes and compares prospective v27 economic results", () => {
     const {executor} = loadReleasedCapital(identity);
     const packet = compose(adoptedCapitalPeriodFixture().snapshot, "2026-12-31");
     const released = executor.prepareCapitalProcedurePacketV2(packet);
@@ -35,7 +35,7 @@ describe("published capital executor over a bound packet", () => {
     expect(fingerprint(released)).toBe("fd0aef48b2f4ade57967f9511df3acb674cdcea6dadec6bc475196daab53514c");
     const prospective = prepareCapitalProcedurePacketV2(packet);
     expect(released.decision.provenance.financialCoreVersion).toBe("2026.09.20-v24");
-    expect(prospective.decision.provenance.financialCoreVersion).toBe("2026.10.07-v26");
+    expect(prospective.decision.provenance.financialCoreVersion).toBe("2026.10.07-v27");
     expect(fingerprint(prospective)).not.toBe(fingerprint(released));
     // These are economic outputs, compared directly; neither inputs nor released
     // results are relabeled or normalized to make different versions identical.
@@ -45,8 +45,8 @@ describe("published capital executor over a bound packet", () => {
       .toEqual(released.decision.alternatives.map(a => ({id:a.id,rows:a.projection.rows,summary:a.projection.summary})));
     expect(prospective.grantsExecution).toBe(released.grantsExecution);
     expect(prospective.grantsPublication).toBe(released.grantsPublication);
-    // v26 is a new prospective identity; all economic rows above still equal the
+    // v27 is a new prospective identity; all economic rows above still equal the
     // independently pinned v24 result. The historical fingerprint stays untouched.
-    expect(fingerprint(prospective)).toBe("3fc34fdb62cb43e606d8f7d97dac7fd8bbbc2ce4e59957d39eebc1b086d2bfdc");
+    expect(fingerprint(prospective)).toBe("09dc645d857c66947f72e118750c81b70503f32c49c24d0fbafac3a5a6ff1606");
   });
 });

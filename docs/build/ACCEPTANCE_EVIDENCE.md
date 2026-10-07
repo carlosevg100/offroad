@@ -1,6 +1,9 @@
 ## 2026-10-07: preparação limitada do scanner na CI
 
 Os runs 37662393714 e 37665120556 atingiram 45 minutos no job de banco, na fase de preparação do scanner sem saída intermediária. Cada preparação de pacotes, serviços, definições e daemon agora tem prazo finito e indicação de fase; falhas de rede/índice continuam fatais. AppArmor, confiança dos pacotes, freshclam e preflight obrigatório mantidos. Três testes de falha PASS e ligados ao job Quality. Nenhuma mudança em produção/RLS/métodos. Gate completo local 44/44 PASS; CI e merge pendentes. Ver SCANNER-CI-BOUNDED-SETUP.md.
+## 2026-10-07: investimento e capacidade conjunta, candidato
+
+financial-core v27: giro de partida, rampa que atravessa dezembro, fluxo não alavancado, VPL/TIR, companhia com/sem investimento com imposto conjunto e busca da faixa viável por cenários/períodos. 43 testes novos PASS, incluindo C04/C32, todos os limites e conferência por enumeração da grade. Sem inferência de drivers futuros, quitação ou direito de uso. A calibração parcial não declara vida inteira. Divergências dentro dos gabaritos estão documentadas sem alterar as fichas; ver FICHA-INVESTMENT-CAPACITY.md. Gate completo local 44/44 PASS (financial-core: 385 testes); CI, merge, deploy, composição dos novos métodos e ensaios pela interface ainda pendentes. Pinos v24 inalterados.
 
 ## 2026-10-07: motor de custo equivalente das fichas
 
