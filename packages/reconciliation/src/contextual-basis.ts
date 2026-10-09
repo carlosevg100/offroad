@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import {adoptionBasisEnvelopeSchema, adoptionBasisSnapshotSchema, type AdoptionBasisEnvelope, type AdoptionBasisSnapshot} from "@offroad/domain-contracts";
 
+export {adoptionBasisEntrySchema} from "@offroad/domain-contracts";
 export type {AdoptionBasisEnvelope, AdoptionBasisSnapshot, AdoptionBasisEntry} from "@offroad/domain-contracts";
 export type AdoptionBasisScope = {workId: string; purpose: string; versionId: string};
 

@@ -51,3 +51,5 @@ function buildV2Contracts(id: string, exportName: string, input: z.ZodType, outp
   return {schemaVersion:"method-executor-contracts.v1",executor:{module:"@offroad/financial-model",exportName,version},
     inputs:methodDataContractFromJsonSchema(`${id}-input`,version,inputSchema),outputs:methodDataContractFromJsonSchema(`${id}-output`,version,outputSchema),validationSchemas:{input:inputSchema,output:outputSchema}};
 }
+
+export {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";

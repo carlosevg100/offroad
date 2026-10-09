@@ -2,6 +2,7 @@ import {readFileSync} from "node:fs";
 import {join} from "node:path";
 import {describe, expect, it} from "vitest";
 import {compileMethodDocument, loadMethodLibrary, methodMayRunInStaging} from "./procedure-markdown";
+import {procedureBuildProvenance} from "./method-runtime-manifest.generated";
 
 const knowledge = join(import.meta.dirname, "../knowledge");
 const library = loadMethodLibrary(join(knowledge, "procedures"));
@@ -25,6 +26,23 @@ describe("ficha procedure authorship, without invented execution approval", () =
     const method = library.methods.find(m => m.procedure.id === "assess-debt-capacity")!;
     expect(method.frontmatter.dependencies).toEqual(["analyze-investment-project"]);
     for (const id of method.frontmatter.dependencies) expect(library.methods.some(m => m.procedure.id === id)).toBe(true);
+  });
+
+  it.each(ids)("binds %s calculation contracts and source bytes without promoting its professional procedure", id => {
+    const built = procedureBuildProvenance.find(p => p.procedure.id === id)!;
+    expect(built.schemaVersion).toBe("compiled-procedure-manifest.v1");
+    if (built.schemaVersion !== "compiled-procedure-manifest.v1") throw new Error("compiled manifest expected");
+    const calculations = built.components.filter(c => c.executor !== null);
+    expect(calculations).toHaveLength(1);
+    const entry = calculations[0]!;
+    expect(entry.component.kind).toBe("quality_gate");
+    expect(entry.executor?.module).toBe("@offroad/financial-model");
+    expect(entry.component.inputs.value.type).toBe("object");
+    expect(entry.component.outputs.value.type).toBe("object");
+    expect(entry.executor?.sources.some(s => s.path === "packages/financial-model/src/ficha-calculation-results.ts")).toBe(true);
+    expect(built.authoringStatus).toBe("incomplete");
+    expect(built.pendingContent.length).toBeGreaterThan(0);
+    expect(built.grantsExecution).toBe(false);
   });
 
   it("compiles the investment-first v5 candidate without replacing or approving the published v4", () => {

@@ -1,3 +1,6 @@
+## 2026-10-07: contratos compiláveis dos quatro cálculos das fichas
+
+Quatro schemas completos e entry points preservam operandos/trace/dependências e recusam promoção/autoridade no resultado. Contratos gerados e componentes registrados nos drafts, sem TaskSpec/release/execução. 45 testes existentes dos adaptadores PASS com os wrappers; 9 controles novos PASS. Gate completo local44/44PASS (core396, model471, playbook509, worker1801); CI e publicação pendentes. Ver FICHA-CALCULATION-CONTRACTS.md; composição profissional e quatro ensaios reais continuam pendentes.
 ## 2026-10-09: patch de segurança necessário ao fechamento da PR 898
 
 O scanner de fonte recusou next 16.3.6 por CVE-2026-94483 (HIGH). Next e eslint-config-next passam a 16.3.8, com lockfile resolvido e instalação frozen; release oficial: https://github.com/vercel/next.js/releases/tag/v16.3.8. Sem exceção de scanner, downgrade de severidade ou mudança de permissões. Gate completo local 44/44 PASS (core396/model466/playbook505/web1564/worker1801); scans e CI final obrigatórios antes do merge.

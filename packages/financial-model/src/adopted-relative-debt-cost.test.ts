@@ -1,7 +1,11 @@
+import {matchesMethodValue} from "@offroad/credit-playbook";
+import {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";
+import {adoptedRelativeDebtCostOutputSchema} from "./ficha-calculation-results";
+import {calculateRelativeDebtCostEvidence as calculateAdoptedRelativeDebtCost} from "./ficha-executor-contracts";
 import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {calculateAdoptedRelativeDebtCost, type AdoptedRelativeDebtCostInput} from "./adopted-relative-debt-cost";
+import {type AdoptedRelativeDebtCostInput} from "./adopted-relative-debt-cost";
 const id = (n: number) => `ac300000-0000-4000-9000-${String(n).padStart(12, "0")}`;
 function fixture() {
   const entries: AdoptionBasisEntry[] = []; let n = 20;
@@ -47,6 +51,13 @@ function fixture() {
 describe("relative debt cost over an adopted immutable basis", () => {
   it("reproduces the C03 bridge from both entities and retains all source dependencies", () => {
     const f = fixture(); const r = calculateAdoptedRelativeDebtCost(f.seal());
+    const contract = fichaCalculationExecutorContracts().find(c => c.name === "relative-debt-cost-evidence")!;
+    expect(matchesMethodValue(contract.inputs.value, f.seal())).toBe(true);
+    expect(matchesMethodValue(contract.outputs.value, r)).toBe(true);
+    expect(() => adoptedRelativeDebtCostOutputSchema.parse({...r, grantsExecution: true})).toThrow();
+    expect(() => adoptedRelativeDebtCostOutputSchema.parse({...r, grantsPublication: true})).toThrow();
+    expect(() => adoptedRelativeDebtCostOutputSchema.parse({...r, status: "complete"})).toThrow();
+    expect(() => adoptedRelativeDebtCostOutputSchema.parse({...r, opaqueResult: "fake"})).toThrow();
     expect(r.bridge).toMatchObject({grossBps: "125", knownAdjustmentsBps: "70", residualBps: "55", afterPricingDateBps: "65", causalAttribution: false});
     expect(r.contributions).toHaveLength(f.entries.length); expect(r.status).toBe("partial_composition");
     expect(r.grantsExecution).toBe(false); expect(r.grantsPublication).toBe(false);

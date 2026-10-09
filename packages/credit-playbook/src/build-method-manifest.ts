@@ -9,7 +9,19 @@ import {adaptLegacyMethodDocument, compileProcedureComposition, methodContentHas
 export function buildMethodManifest(repositoryRoot: string) {
   const root = resolve(repositoryRoot);
   const packageRoot = join(root, "packages/credit-playbook");
-  const source = (path: string): CompilerSource => ({path, content: readFileSync(join(root, path), "utf8")});
+  // One build reads each source once. Several registered calculations share the same
+  // package closure; rescanning it per executor adds IO but no independent evidence.
+  // Caches belong to this invocation only, so the next build sees changed files.
+  const sources = new Map<string, CompilerSource>();
+  const source = (path: string): CompilerSource => {
+    const cached = sources.get(path); if (cached) return cached;
+    const result = {path, content: readFileSync(join(root, path), "utf8")}; sources.set(path, result); return result;
+  };
+  const closures = new Map<string, string[]>();
+  const closure = (module: string) => {
+    const cached = closures.get(module); if (cached) return cached;
+    const result = packageClosure(module, root); closures.set(module, result); return result;
+  };
   const compilerSources = ["method-component.ts", "procedure-compiler.ts", "procedure-contract.ts", "procedure-markdown.ts", "build-method-manifest.ts", "review-record.ts", "released-method-lock.ts"].map((name) => source(`packages/credit-playbook/src/${name}`));
   compilerSources.push(source("pnpm-lock.yaml"), source("tsconfig.base.json"));
   const compiler = {version: componentCompilerVersion, sources: pinMethodSources(compilerSources), hash: methodContentHash(pinMethodSources(compilerSources))};
@@ -30,6 +42,10 @@ export function buildMethodManifest(repositoryRoot: string) {
     if (!library.methods.some((method) => method.procedure.id === release.provenance.procedure.id && method.procedure.version === release.provenance.procedure.version)) throw new Error("published_method_document_missing");
   }
   const registeredCapitalExecutors = [
+    {path: "packages/financial-model/contracts/financing-proposal-evidence.json", exportName: "calculateFinancingProposalEvidence"},
+    {path: "packages/financial-model/contracts/relative-debt-cost-evidence.json", exportName: "calculateRelativeDebtCostEvidence"},
+    {path: "packages/financial-model/contracts/debt-capacity-evidence.json", exportName: "calculateDebtCapacityEvidence"},
+    {path: "packages/financial-model/contracts/investment-analysis-evidence.json", exportName: "calculateInvestmentAnalysisEvidence"},
     {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
     {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},
@@ -42,7 +58,7 @@ export function buildMethodManifest(repositoryRoot: string) {
     return {...contracts.executor, version: componentVersionSchema.parse(contracts.executor.version),
       inputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.inputs)),
       outputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.outputs)),
-      sources: [...packageClosure("@offroad/financial-model", root), registration.path,
+      sources: [...closure("@offroad/financial-model"), registration.path,
         "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   });
   // Actual deterministic run receipts; their hashes are not independent review or approval.
@@ -83,7 +99,7 @@ export function buildMethodManifest(repositoryRoot: string) {
     for (const runs of Object.values(method.procedure.testRuns)) for (const run of runs) evidencePaths.add(`packages/credit-playbook/knowledge/reviews/runs/${run}/run.json`);
     if (implementation) for (const file of implementation.evaluation.unitTestFiles) evidencePaths.add(file);
     const evidence = evidencePaths.size ? pinMethodSources([...evidencePaths].sort().map(source)) : [];
-    const executorSources = implementation ? packageClosure(implementation.executor.module.split("/").slice(0, 2).join("/"), root).map(source) : [];
+    const executorSources = implementation ? closure(implementation.executor.module.split("/").slice(0, 2).join("/")).map(source) : [];
     const executorPins = executorSources.length ? pinMethodSources(executorSources) : [];
     const closureHash = methodContentHash(executorPins);
     if (executorPins.length) executorSourceClosures[closureHash] = executorPins;

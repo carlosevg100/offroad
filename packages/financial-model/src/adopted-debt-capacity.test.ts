@@ -1,6 +1,10 @@
+import {matchesMethodValue} from "@offroad/credit-playbook";
+import {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";
+import {adoptedDebtCapacityOutputSchema} from "./ficha-calculation-results";
+import {calculateDebtCapacityEvidence as calculateAdoptedDebtCapacity} from "./ficha-executor-contracts";
 import {describe, expect, it} from "vitest";
 import type {DebtCapacityInput} from "@offroad/financial-core";
-import {calculateAdoptedDebtCapacity, type AdoptedDebtCapacityInput} from "./adopted-debt-capacity";
+import {type AdoptedDebtCapacityInput} from "./adopted-debt-capacity";
 import {analysisTestBasis, analysisTestId as id} from "./adopted-analysis.test-support";
 import {adoptedDebtCapacityInputSchema} from "./adopted-debt-capacity";
 
@@ -34,6 +38,13 @@ function fixture(adverse = false) {
 describe("capacity from immutable adopted drivers", () => {
   it("finds the largest full-life amount, replays the next tick and tests the fixed amount", () => {
     const f = fixture(), r = calculateAdoptedDebtCapacity(f.seal());
+    const contract = fichaCalculationExecutorContracts().find(c => c.name === "debt-capacity-evidence")!;
+    expect(matchesMethodValue(contract.inputs.value, f.seal())).toBe(true);
+    expect(matchesMethodValue(contract.outputs.value, r)).toBe(true);
+    expect(() => adoptedDebtCapacityOutputSchema.parse({...r, grantsExecution: true})).toThrow();
+    expect(() => adoptedDebtCapacityOutputSchema.parse({...r, grantsPublication: true})).toThrow();
+    expect(() => adoptedDebtCapacityOutputSchema.parse({...r, status: "complete"})).toThrow();
+    expect(() => adoptedDebtCapacityOutputSchema.parse({...r, opaqueResult: "fake"})).toThrow();
     expect(r.capacity?.maximumFeasibleAmount).toBe("150"); expect(r.capacity?.finalChecks!.every(c => c.passed)).toBe(true);
     expect(r.capacity?.followingChecks!.some(c => !c.passed && c.date === "2028-12-31")).toBe(true);
     expect(r.fixedReview?.constraintsPassed).toBe(false); expect(r.contributions).toHaveLength(f.entries.length);

@@ -65,3 +65,6 @@ export * from "./adopted-relative-debt-cost";
 
 export * from "./adopted-debt-capacity";
 export * from "./adopted-investment-analysis";
+
+export * from "./ficha-calculation-results";
+export * from "./ficha-executor-contracts";
