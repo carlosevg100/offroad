@@ -12,8 +12,16 @@ const patterns = {
   existingTransaction: /\b(term\s*sheet|proposta|proposal|minuta|draft|opera[cç][aã]o\s+(?:existente|pronta)|estrutura\s+(?:existente|pronta)|revisar|review|melhorar\s+(?:a\s+)?(?:proposta|estrutura|opera[cç][aã]o))\b/i,
   meeting: /\b(reuni[aã]o|meeting|pitch|origina[cç][aã]o|origination|apresenta[cç][aã]o\s+(?:para|à|ao)\s+(?:a\s+)?companhia|visita\s+(?:à|a)\s+companhia)\b/i,
   companyAnalysis: /\b(analis(?:ar|e)|entender|estudar|diagn[oó]stico|diagnostic|debt\s+lens|[oó]tica\s+(?:de|da)\s+d[ií]vida)\b.*\b(companhia|empresa|company|balan[cç]o|d[ií]vida|endividamento)\b/i,
-  capitalNeed: /\b(refinanc|refi\b|along|liability|capital\s+de\s+giro|working\s+capital|liquidez|expans[aã]o|crescimento|capex|aquisi[cç][aã]o|m\s*&\s*a|equipamento|frota|im[oó]vel|project\s+finance|infraestrutura|receb[ií]ve|estoque|contrato|bridge|take[- ]?out|dividend|com[eé]rcio\s+exterior|acc\b|ace\b|agro|venture\s+debt|mezzanine|h[ií]brid|reestrutura|special\s+situation|financiar|capta[cç][aã]o)\b/i,
+  capitalNeed: /\b(refinanc\w*|refi\b|along\w*|liability|capital\s+de\s+giro|working\s+capital|liquidez|expans[aã]o|crescimento|capex|aquisi[cç][aã]o|m\s*&\s*a|equipamentos?|frota|im[oó]ve(?:l|is)|project\s+finance|infraestrutura|receb[ií]ve(?:l|is)|estoques?|contratos?|bridge|take[- ]?out|dividend\w*|com[eé]rcio\s+exterior|acc\b|ace\b|agro\w*|venture\s+debt|mezzanine|h[ií]brid\w*|reestrutura\w*|special\s+situation|financiar|capta[cç][aã]o)\b/i,
 } as const;
+
+function foldDiacritics(text: string): string {
+  return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+}
+
+const foldedPatterns = Object.fromEntries(
+  Object.entries(patterns).map(([name, pattern]) => [name, new RegExp(foldDiacritics(pattern.source), pattern.flags)]),
+) as {readonly [K in keyof typeof patterns]: RegExp};
 
 /**
  * Selects only the initial TaskSpec subgraph. A clicked starter is an explicit initial assignment;
@@ -57,16 +65,17 @@ export function inferCapitalProjectJob(input: {
     return {job: "structure_from_documents", reason: "documents_only"};
   }
 
-  if (patterns.existingTransaction.test(message)) {
+  const folded = foldDiacritics(message);
+  if (foldedPatterns.existingTransaction.test(folded)) {
     return {job: "review_existing_operation", reason: "existing_transaction"};
   }
-  if (patterns.meeting.test(message)) {
+  if (foldedPatterns.meeting.test(folded)) {
     return {job: "origination_thesis", reason: "meeting_or_origination"};
   }
-  if (patterns.capitalNeed.test(message)) {
+  if (foldedPatterns.capitalNeed.test(folded)) {
     return {job: "capital_planning", reason: "capital_need"};
   }
-  if (patterns.companyAnalysis.test(message)) {
+  if (foldedPatterns.companyAnalysis.test(folded)) {
     return {job: "company_debt_view", reason: "company_analysis"};
   }
   if (input.hasAttachments && message.length < 40) {

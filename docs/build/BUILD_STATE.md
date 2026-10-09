@@ -1,3 +1,7 @@
+## 2026-10-09: roteador lê acentos e formas faladas
+
+`objective-plan.ts` e `job-inference.ts` passam a remover acentos da mensagem e das regras antes de testar. O `\b` do JavaScript não reconhece letra acentuada: "comitê" nunca encerrava uma correspondência e "análise" nunca começava uma. As regras de verbo aceitam as formas faladas ("prepara", "monta", "revisa", "compara", "organiza", "analisa", "monitora", "faz") e os objetos de revisão aceitam plural. Pedido de reunião com abordagem, roteiro ou perguntas fica em preparação de reunião mesmo citando material. Na reserva de `job-inference`, radicais como "refinanc", "along", "recebíve" e "reestrutura" passam a casar com as palavras completas. Sem migração, sem novo tipo de objetivo, sem mudança de autoridade ou execução; manifesto de métodos regenerado (só hashes dos dois arquivos). Catálogo de 180 demandas: 14 frases mudam de classificação (11 saem de ambíguo ou pergunta factual para o tipo certo), ambíguo cai de 68 para 57.
+
 ## 2026-10-07: contratos compiláveis dos quatro cálculos das fichas
 
 Quatro schemas completos e entry points preservam operandos/trace/dependências e recusam promoção/autoridade no resultado. Contratos gerados e componentes registrados nos drafts, sem TaskSpec/release/execução. 45 testes existentes dos adaptadores PASS com os wrappers; 9 controles novos PASS. Gate completo local44/44PASS (core396, model471, playbook509, worker1801); CI e publicação pendentes. Ver FICHA-CALCULATION-CONTRACTS.md; composição profissional e quatro ensaios reais continuam pendentes.
