@@ -1,3 +1,7 @@
+## 2026-10-09: régua da pré-checagem sem modelo
+
+`apps/document-worker/src/preflight-trial.test.ts` roda a pré-checagem de produção (`compileObjectivePreflight`) sobre um arquivo externo de frases e grava, para cada uma, tipo de objetivo, job de entrada, terminal, alvos, prontidão, receita de workflow e candidato a despacho. Sem modelo, sem banco, sem dado no repositório: o teste é pulado sem `PREFLIGHT_TRIAL_INPUT` e `PREFLIGHT_TRIAL_OUTPUT`. Serve de régua de progresso do roteador e da ponte entre conversa e métodos liberados. Sem mudança de produção.
+
 ## 2026-10-09: roteador lê acentos e formas faladas
 
 `objective-plan.ts` e `job-inference.ts` passam a remover acentos da mensagem e das regras antes de testar. O `\b` do JavaScript não reconhece letra acentuada: "comitê" nunca encerrava uma correspondência e "análise" nunca começava uma. As regras de verbo aceitam as formas faladas ("prepara", "monta", "revisa", "compara", "organiza", "analisa", "monitora", "faz") e os objetos de revisão aceitam plural. Pedido de reunião com abordagem, roteiro ou perguntas fica em preparação de reunião mesmo citando material. Na reserva de `job-inference`, radicais como "refinanc", "along", "recebíve" e "reestrutura" passam a casar com as palavras completas. Sem migração, sem novo tipo de objetivo, sem mudança de autoridade ou execução; manifesto de métodos regenerado (só hashes dos dois arquivos). Catálogo de 180 demandas: 14 frases mudam de classificação (11 saem de ambíguo ou pergunta factual para o tipo certo), ambíguo cai de 68 para 57.

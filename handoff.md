@@ -1,3 +1,7 @@
+## 2026-10-09: régua da pré-checagem sem modelo
+
+Régua sem modelo: `preflight-trial.test.ts` mede o que a pré-checagem decide para frases externas. Medição de 9 out 2026: 28 de 138 frases no tipo esperado, 6 em tipo aceitável, zero tarefas executáveis em todas. Próximos trabalhos: tipos de objetivo por papel de quem pergunta (banco, originador, fundo) e a ponte da conversa para métodos liberados.
+
 ## 2026-10-09: roteador lê acentos e formas faladas
 
 Correção barata e transversal do roteador por texto: acentos removidos antes das regras, formas faladas de verbo, plural nos objetos de revisão. Não cria tipos novos: bancos, originadores e fundos continuam sem tipo próprio (57 das 180 frases do catálogo seguem ambíguas e 80 em pergunta factual); esse é o próximo trabalho do roteador.
