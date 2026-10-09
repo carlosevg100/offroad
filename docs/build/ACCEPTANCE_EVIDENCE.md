@@ -1,3 +1,7 @@
+## 2026-10-09: patch de segurança necessário ao fechamento da PR 898
+
+O scanner de fonte recusou next 16.3.6 por CVE-2026-94483 (HIGH). Next e eslint-config-next passam a 16.3.8, com lockfile resolvido e instalação frozen; release oficial: https://github.com/vercel/next.js/releases/tag/v16.3.8. Sem exceção de scanner, downgrade de severidade ou mudança de permissões. Gate completo local 44/44 PASS (core396/model466/playbook505/web1564/worker1801); scans e CI final obrigatórios antes do merge.
+
 ## 2026-10-08: alinhamento da PR 898 com main
 
 Conflitos resolvidos preservando v29, resultados econômicos e pinos históricos v24; manifesto regenerado. O primeiro gate local encontrou timeout de ACT/365 sob concorrência irrestrita. O teste do financial-model passa a usar dois workers, sem alterar assertions ou timeout; correção compartilhada com a PR 899. Novo gate completo local 44/44 PASS, core 396/model 466/worker 1801; CI obrigatória antes do merge. Sem migração ou liberação de método.
