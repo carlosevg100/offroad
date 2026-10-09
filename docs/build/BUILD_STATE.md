@@ -1,3 +1,15 @@
+## 2026-10-09: patch de segurança necessário ao fechamento da PR 898
+
+O scanner de fonte recusou next 16.3.6 por CVE-2026-94483 (HIGH). Next e eslint-config-next passam a 16.3.8, com lockfile resolvido e instalação frozen; release oficial: https://github.com/vercel/next.js/releases/tag/v16.3.8. Sem exceção de scanner, downgrade de severidade ou mudança de permissões. Gate completo local 44/44 PASS (core396/model466/playbook505/web1564/worker1801); scans e CI final obrigatórios antes do merge.
+
+## 2026-10-08: alinhamento da PR 898 com main
+
+Conflitos resolvidos preservando v29, resultados econômicos e pinos históricos v24; manifesto regenerado. O primeiro gate local encontrou timeout de ACT/365 sob concorrência irrestrita. O teste do financial-model passa a usar dois workers, sem alterar assertions ou timeout; correção compartilhada com a PR 899. Novo gate completo local 44/44 PASS, core 396/model 466/worker 1801; CI obrigatória antes do merge. Sem migração ou liberação de método.
+
+## 2026-10-07: C04/C32 sobre adoções, candidato
+
+20 testes novos PASS: capacidade inteira por cenários/anos, revisão fixa, investimento/giro/rampa, companhia com/sem projeto e valuation em dois perímetros fiscais. Valores financeiros e convenções vêm da base adotada; sem futuro inventado ou override por caller. C04 conserva a precisão original de 0,1 milhão com quantum monetário explicitamente adotado; motores/linhas originais preservados. Core prospectivo v29 e investment-project v2; pinos v24 intactos. Gate completo local 44/44 PASS: core 396, model 466, worker 1801; CI e publicação pendentes; sem release/RPC/ensaio de interface. Ver FICHA-ADOPTED-INVESTMENT-CAPACITY.md.
+
 ## 2026-10-07: C03 sobre dados adotados, candidato
 
 22 testes novos PASS para ponte de custo relativo e estimativas de ação; core v28 prospectivo. Adaptação conserva identidade/contexto/definição/escala, ambos os emissores e dependências, sem overrides ou autorização por digest. Não atribui causalidade/rating e não converte custo desconhecido em zero. Gate completo local 44/44 PASS (financial-core: 395; financial-model: 447; worker: 1801). CI e publicação pendentes; ensaio de interface e composição ainda não realizados. Ver FICHA-RELATIVE-DEBT-COST.md.

@@ -98,6 +98,17 @@ describe("investment project: C04/C32 independent calibration and counterfactual
     expect(new Exact(v.annualIrr!).times(100).toDecimalPlaces(1).toNumber()).toBe(6.8);
     expect(new Exact(v.payback!.interpolatedTimeYears).toDecimalPlaces(1).toNumber()).toBe(10.7);
   });
+  it("reproduces the C04 oracle's coarse money rounding in BRL without changing raw flows", () => {
+    const base = valuation(c04(), 1);
+    const raw = {...base, moneyUnit: "BRL", flows: base.flows.map(f => ({...f, amount: new Exact(f.amount).times(1000000).toFixed()})),
+      flowPrecision: {mode: "calibration_monetary_quantum" as const, quantum: "100000", reason: "Original C04 Python rounds every BRL million cash flow to one decimal"}};
+    const before = JSON.stringify(raw), r = valueInvestmentProject(raw);
+    expect(new Exact(r.annualIrr!).times(100).toNumber()).toBeCloseTo(6.754497888348132, 11);
+    expect(new Exact(r.netPresentValue).toNumber()).toBeCloseTo(-26650690.07470191, 6);
+    expect(JSON.stringify(raw)).toBe(before);
+    expect(() => valueInvestmentProject({...raw, flowPrecision: {...raw.flowPrecision, quantum: "0"}})).toThrow();
+    expect(() => valueInvestmentProject({...raw, flowPrecision: {...raw.flowPrecision, quantum: "-100000"}})).toThrow();
+  });
   it("does not automatically release terminal working capital", () => {
     const p = c32(); p.periods.at(-1)!.closingIncrementalWorkingCapital = structuredClone(p.periods.at(-2)!.closingIncrementalWorkingCapital);
     expect(buildInvestmentProject(p).rows.at(-1)!.changeInWorkingCapital).toBe("0");
