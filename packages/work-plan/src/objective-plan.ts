@@ -164,20 +164,30 @@ type ObjectiveRecipe = Omit<ObjectiveToPlanDecision,
 
 const objectivePatterns = {
   capitalMatching: /\b(quem\s+(?:poderia|deveria|devemos)\s+(?:financiar|investir|acessar)|quais?\s+(?:fundos?|financiadores?|investidores?|lenders?)|map(?:ear|eamento)\s+(?:de\s+)?(?:fundos?|financiadores?|investidores?)|shortlist|matching|ader[eê]ncia\s+(?:ao|do)\s+mandato|capital\s+providers?|lenders?)\b/i,
-  material: /\b(prepar(?:ar|e)|mont(?:ar|e)|produz(?:ir|a)|ger(?:ar|e)|compil(?:ar|e))\b.{0,100}\b(apresenta[cç][aã]o|deck|pitch|teaser|memo|memorando|term\s*sheet|modelo|planilha|excel|powerpoint|pptx|word|material)\b/i,
-  operationReview: /\b(revis(?:ar|e|[aã]o)|test(?:ar|e)|redline|melhor(?:ar|e)|compar(?:ar|e))\b.{0,120}\b(term\s*sheet|proposta|minuta|contrato|opera[cç][aã]o|estrutura|covenant|waterfall)\b/i,
+  material: /\b(prepar(?:ar|e|a)|mont(?:ar|e|a)|produz(?:ir|a|e)|ger(?:ar|e|a)|compil(?:ar|e|a)|elabor(?:ar|e|a)|fa(?:z|ca|zer))\b.{0,100}\b(apresenta[cç][aã]o|deck|pitch|teaser|memo|memorando|term\s*sheet|modelo|planilha|excel|powerpoint|pptx|word|material)\b/i,
+  operationReview: /\b(revis(?:ar|e|a|[aã]o)|test(?:ar|e|a)|redline|melhor(?:ar|e|a)|compar(?:ar|e|a))\b.{0,120}\b(term\s*sheets?|propostas?|minutas?|contratos?|opera[cç](?:[aã]o|[oõ]es)|estruturas?|covenants?|waterfall)\b/i,
   riskMatrix: /\b(matriz\s+de\s+risco|risk\s+matrix|mapa\s+de\s+riscos?|risk\s+register|riscos?\s+e\s+mitigantes?|covenants?|waterfall)\b/i,
   boardDecision: /\b(conselho|board|comit[eê]|committee|delibera[cç][aã]o|decis[aã]o\s+(?:interna|do\s+conselho)|aprova[cç][aã]o\s+interna)\b/i,
   meeting: /\b(reuni[aã]o|meeting|encontro|pitch|origina[cç][aã]o|origination|visita\s+(?:à|a)\s+companhia|conversa\s+(?:com|junto\s+(?:à|a|ao)))\b/i,
   documents: /\b(documentos?|arquivos?|pasta|data\s*room|balan[cç]os?|balancete|apresenta[cç][aã]o\s+institucional|material\s+fragmentado)\b/i,
-  companyAnalysis: /\b(analis(?:ar|e)|entender|estudar|diagn[oó]stico|diagnostic|leitura)\b.{0,140}\b(companhia|empresa|company|balan[cç]o|d[ií]vida|endividamento|estrutura\s+de\s+capital)\b/i,
+  companyAnalysis: /\b(analis(?:ar|e|a)|entend(?:er|e|a)|estud(?:ar|e|a)|diagn[oó]stico|diagnostic|leitura)\b.{0,140}\b(companhia|empresa|company|balan[cç]o|d[ií]vida|endividamento|estrutura\s+de\s+capital)\b/i,
   capitalStrategy: /\b(refinanc(?:e|iar|iamento|ing)?|refi\b|liability|along(?:ar|amento)|repricing|capital\s+de\s+giro|working\s+capital|liquidez|expans[aã]o|capex|aquisi[cç][aã]o|m\s*&\s*a|estrutura\s+de\s+capital|capital\s+structure|capta[cç][aã]o|levantar\s+capital|financiar|d[ií]vida|endividamento)\b/i,
   factualQuestion: /(?:\?|\b(como|qual|quais|quanto|quando|onde|por\s+que|explique|mostre|what|which|how|why|where)\b)/i,
-  informationOrganization: /\b(levant(?:ar|e)|colet(?:ar|e)|organiz(?:ar|e)|inventari(?:ar|e)|index(?:ar|e)|catalog(?:ar|ue)|find\s+and\s+organize)\b.{0,160}\b(informa[cç][oõ]es|documentos?|arquivos?|fontes?|fatos\s+relevantes|apresenta[cç][oõ]es|not[ií]cias|data\s*room|pasta)\b|\b(s[oó]\s+organiz(?:ar|e)|sem\s+an[aá]lise)\b/i,
+  informationOrganization: /\b(levant(?:ar|e|a)|colet(?:ar|e|a)|organiz(?:ar|e|a)|inventari(?:ar|e|a)|index(?:ar|e|a)|catalog(?:ar|ue|a)|find\s+and\s+organize)\b.{0,160}\b(informa[cç][oõ]es|documentos?|arquivos?|fontes?|fatos\s+relevantes|apresenta[cç][oõ]es|not[ií]cias|data\s*room|pasta)\b|\b(s[oó]\s+organiz(?:ar|e)|sem\s+an[aá]lise)\b/i,
   marketMapping: /\b(mercado|transa[cç][oõ]es|emiss[oõ]es|deb[eê]ntures|precedentes?|compar[aá]veis|comps|benchmark)\b.{0,160}\b(prazo|indexador|spread|termos?|pricing|pre[cç]o|volume|últimos?\s+meses|recentes?)\b|\b(mapa|levantamento|pesquisa)\s+de\s+(mercado|transa[cç][oõ]es|precedentes?|compar[aá]veis)\b/i,
-  monitoring: /\b(monitore|monitorar|acompanhe|acompanhar|vigie|watch|alert(?:ar|e)|avise|notifique)\b|\b(todo\s+dia|toda\s+semana|mensalmente|recorrente)\b.{0,100}\b(atualiza[cç][aã]o|mudan[cç]a|not[ií]cia|covenant|vencimento|mercado)\b/i,
+  monitoring: /\b(monitore|monitorar|monitora|acompanhe|acompanhar|acompanha|vigie|watch|alert(?:ar|e)|avise|notifique)\b|\b(todo\s+dia|toda\s+semana|mensalmente|recorrente)\b.{0,100}\b(atualiza[cç][aã]o|mudan[cç]a|not[ií]cia|covenant|vencimento|mercado)\b/i,
   workspaceManagement: /\b(renome(?:ar|ie)|mov(?:a|e|er)|arquivar|desarquivar|compartilhar|permiss[aã]o|acesso)\b.{0,120}\b(projeto|pasta|arquivo|workspace|ambiente|usu[aá]rio|membro)\b|\b(organizar|criar)\b.{0,80}\b(projeto|workspace|ambiente)\b/i,
 } as const;
+
+/** Accents are folded in both the message and the patterns before testing. JavaScript `\b` only
+ * knows ASCII word characters, so "comitê" never ended a match and "análise" never began one. */
+function foldDiacritics(text: string): string {
+  return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+}
+
+const foldedObjectivePatterns = Object.fromEntries(
+  Object.entries(objectivePatterns).map(([name, pattern]) => [name, new RegExp(foldDiacritics(pattern.source), pattern.flags)]),
+) as {readonly [K in keyof typeof objectivePatterns]: RegExp};
 
 const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRecipe> = {
   factual_question: {
@@ -534,24 +544,28 @@ export function canonicalObjectiveRecipeTargetTaskIds(plan: ObjectiveToPlanDecis
 
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
   if (!message) return "ambiguous";
-  if (objectivePatterns.monitoring.test(message)) return "monitoring";
-  if (objectivePatterns.workspaceManagement.test(message)) return "workspace_management";
-  if (objectivePatterns.capitalMatching.test(message)) return "capital_matching";
-  if (objectivePatterns.informationOrganization.test(message)) return "information_organization";
+  const text = financialRoutingText(message);
+  if (foldedObjectivePatterns.monitoring.test(text)) return "monitoring";
+  if (foldedObjectivePatterns.workspaceManagement.test(text)) return "workspace_management";
+  if (foldedObjectivePatterns.capitalMatching.test(text)) return "capital_matching";
+  if (foldedObjectivePatterns.informationOrganization.test(text)) return "information_organization";
   const financialObjective = inferSpecificFinancialObjective(message);
   if (financialObjective) return financialObjective;
   if (/^(?:o que (?:e|significa)|explique (?:o conceito|a definicao)|qual (?:e )?a diferenca entre)\b/i.test(financialRoutingText(message))) return "factual_question";
-  if (objectivePatterns.material.test(message)) return "material_preparation";
-  if (objectivePatterns.operationReview.test(message)) return "operation_review";
-  if (objectivePatterns.riskMatrix.test(message)) return "risk_matrix";
-  if (objectivePatterns.boardDecision.test(message)) return "board_decision";
-  if (objectivePatterns.meeting.test(message)) return "meeting_preparation";
-  if (objectivePatterns.marketMapping.test(message)) return "market_mapping";
-  if (objectivePatterns.companyAnalysis.test(message)) return "company_analysis";
-  if (objectivePatterns.capitalStrategy.test(message)) return "capital_strategy";
+  // A meeting request that asks for an approach, a script or questions is meeting preparation even
+  // when it also mentions material: the brief comes first and material only after it is confirmed.
+  if (foldedObjectivePatterns.meeting.test(text) && /\b(abordagem|roteiro|perguntas)\b/.test(text)) return "meeting_preparation";
+  if (foldedObjectivePatterns.material.test(text)) return "material_preparation";
+  if (foldedObjectivePatterns.operationReview.test(text)) return "operation_review";
+  if (foldedObjectivePatterns.riskMatrix.test(text)) return "risk_matrix";
+  if (foldedObjectivePatterns.boardDecision.test(text)) return "board_decision";
+  if (foldedObjectivePatterns.meeting.test(text)) return "meeting_preparation";
+  if (foldedObjectivePatterns.marketMapping.test(text)) return "market_mapping";
+  if (foldedObjectivePatterns.companyAnalysis.test(text)) return "company_analysis";
+  if (foldedObjectivePatterns.capitalStrategy.test(text)) return "capital_strategy";
   if (/\b(?:financio|financiamos|financie)\b|\bvence(?:m)?\b.{0,100}\b(?:investimento|capex|divida)\b/i.test(financialRoutingText(message))) return "capital_strategy";
   if (hasAttachments) return "documents_to_case";
-  if (objectivePatterns.factualQuestion.test(message)) return "factual_question";
+  if (foldedObjectivePatterns.factualQuestion.test(text)) return "factual_question";
   return "ambiguous";
 }
 

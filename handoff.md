@@ -1,3 +1,7 @@
+## 2026-10-09: roteador lê acentos e formas faladas
+
+Correção barata e transversal do roteador por texto: acentos removidos antes das regras, formas faladas de verbo, plural nos objetos de revisão. Não cria tipos novos: bancos, originadores e fundos continuam sem tipo próprio (57 das 180 frases do catálogo seguem ambíguas e 80 em pergunta factual); esse é o próximo trabalho do roteador.
+
 ## 2026-10-09: patch de segurança necessário ao fechamento da PR 898
 
 O scanner de fonte recusou next 16.3.6 por CVE-2026-94483 (HIGH). Next e eslint-config-next passam a 16.3.8, com lockfile resolvido e instalação frozen; release oficial: https://github.com/vercel/next.js/releases/tag/v16.3.8. Sem exceção de scanner, downgrade de severidade ou mudança de permissões. Gate completo local 44/44 PASS (core396/model466/playbook505/web1564/worker1801); scans e CI final obrigatórios antes do merge.
