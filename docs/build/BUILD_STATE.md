@@ -1,3 +1,7 @@
+## 2026-10-08: alinhamento da PR 898 com main
+
+Conflitos resolvidos preservando v29, resultados econômicos e pinos históricos v24; manifesto regenerado. O primeiro gate local encontrou timeout de ACT/365 sob concorrência irrestrita. O teste do financial-model passa a usar dois workers, sem alterar assertions ou timeout; correção compartilhada com a PR 899. Novo gate completo local 44/44 PASS, core 396/model 466/worker 1801; CI obrigatória antes do merge. Sem migração ou liberação de método.
+
 ## 2026-10-07: C04/C32 sobre adoções, candidato
 
 20 testes novos PASS: capacidade inteira por cenários/anos, revisão fixa, investimento/giro/rampa, companhia com/sem projeto e valuation em dois perímetros fiscais. Valores financeiros e convenções vêm da base adotada; sem futuro inventado ou override por caller. C04 conserva a precisão original de 0,1 milhão com quantum monetário explicitamente adotado; motores/linhas originais preservados. Core prospectivo v29 e investment-project v2; pinos v24 intactos. Gate completo local 44/44 PASS: core 396, model 466, worker 1801; CI e publicação pendentes; sem release/RPC/ensaio de interface. Ver FICHA-ADOPTED-INVESTMENT-CAPACITY.md.
