@@ -319374,6 +319374,864 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "kind": "function",
+          "name": "confirm_work_premise_proposal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "kind": "function",
+          "name": "confirm_work_premise_proposal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 110,
+          "anchor": "create function private.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_premise_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_premise_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 51,
+          "anchor": "create function private.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "kind": "function",
+          "name": "worker_record_agent_response_with_premises_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "kind": "function",
+          "name": "worker_record_agent_response_with_premises_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 73,
+          "anchor": "create function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "kind": "function",
+          "name": "confirm_work_premise_proposal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "kind": "function",
+          "name": "confirm_work_premise_proposal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 138,
+          "anchor": "create function public.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_premise_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_premise_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 68,
+          "anchor": "create function public.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "kind": "function",
+          "name": "worker_record_agent_response_with_premises_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "kind": "function",
+          "name": "worker_record_agent_response_with_premises_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Ponte da conversa: o worker propõe premissas com a capacidade do job; só a confirmação da pessoa grava a base, como ela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 104,
+          "anchor": "create function public.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_delete",
+          "kind": "policy",
+          "name": "work_premise_proposals_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_delete",
+          "kind": "policy",
+          "name": "work_premise_proposals_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Leitura pelo acesso ao trabalho; inserção, alteração e exclusão diretas negadas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 39,
+          "anchor": "create policy work_premise_proposals_delete on public.work_premise_proposals for delete to authenticated using (false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_insert",
+          "kind": "policy",
+          "name": "work_premise_proposals_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_insert",
+          "kind": "policy",
+          "name": "work_premise_proposals_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Leitura pelo acesso ao trabalho; inserção, alteração e exclusão diretas negadas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 37,
+          "anchor": "create policy work_premise_proposals_insert on public.work_premise_proposals for insert to authenticated with check (false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_select",
+          "kind": "policy",
+          "name": "work_premise_proposals_select",
+          "qual": "( SELECT private.can_access_capital_project(work_premise_proposals.organization_id, work_premise_proposals.capital_project_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_select",
+          "kind": "policy",
+          "name": "work_premise_proposals_select",
+          "qual": "( SELECT private.can_access_capital_project(work_premise_proposals.organization_id, work_premise_proposals.capital_project_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Leitura pelo acesso ao trabalho; inserção, alteração e exclusão diretas negadas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 35,
+          "anchor": "create policy work_premise_proposals_select on public.work_premise_proposals for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_update",
+          "kind": "policy",
+          "name": "work_premise_proposals_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_premise_proposals.work_premise_proposals_update",
+          "kind": "policy",
+          "name": "work_premise_proposals_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Leitura pelo acesso ao trabalho; inserção, alteração e exclusão diretas negadas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 38,
+          "anchor": "create policy work_premise_proposals_update on public.work_premise_proposals for update to authenticated using (false) with check (false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:public.work_premise_proposals",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_premise_proposals",
+          "rls": true,
+          "kind": "table",
+          "name": "work_premise_proposals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ],
+            [
+              "service_role",
+              "DELETE",
+              false
+            ],
+            [
+              "service_role",
+              "INSERT",
+              false
+            ],
+            [
+              "service_role",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "service_role",
+              "REFERENCES",
+              false
+            ],
+            [
+              "service_role",
+              "SELECT",
+              false
+            ],
+            [
+              "service_role",
+              "TRIGGER",
+              false
+            ],
+            [
+              "service_role",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "service_role",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_premise_proposals",
+          "rls": true,
+          "kind": "table",
+          "name": "work_premise_proposals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ],
+            [
+              "service_role",
+              "DELETE",
+              false
+            ],
+            [
+              "service_role",
+              "INSERT",
+              false
+            ],
+            [
+              "service_role",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "service_role",
+              "REFERENCES",
+              false
+            ],
+            [
+              "service_role",
+              "SELECT",
+              false
+            ],
+            [
+              "service_role",
+              "TRIGGER",
+              false
+            ],
+            [
+              "service_role",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "service_role",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Proposta de premissas por trabalho e mensagem; só leitura via acesso ao trabalho, escrita apenas pelas RPCs do worker e da confirmação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 5,
+          "anchor": "create table public.work_premise_proposals (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_premise_proposals.work_premise_proposals_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_premise_proposals.work_premise_proposals_audit",
+          "kind": "trigger",
+          "name": "work_premise_proposals_audit",
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER work_premise_proposals_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:public.work_premise_proposals.work_premise_proposals_audit",
+          "kind": "trigger",
+          "name": "work_premise_proposals_audit",
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER work_premise_proposals_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Auditoria e carimbo de atualização padrão da tabela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 44,
+          "anchor": "create trigger work_premise_proposals_audit after insert or update or delete on public.work_premise_proposals",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_premise_proposals.work_premise_proposals_set_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_premise_proposals.work_premise_proposals_set_updated_at",
+          "kind": "trigger",
+          "name": "work_premise_proposals_set_updated_at",
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_premise_proposals_set_updated_at BEFORE UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_premise_proposals.work_premise_proposals_set_updated_at",
+          "kind": "trigger",
+          "name": "work_premise_proposals_set_updated_at",
+          "table": "work_premise_proposals",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_premise_proposals_set_updated_at BEFORE UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (incremento 4, ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, incremento 4",
+      "reason": "Auditoria e carimbo de atualização padrão da tabela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+          "line": 42,
+          "anchor": "create trigger work_premise_proposals_set_updated_at before update on public.work_premise_proposals",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -326897,6 +327755,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Ampliar os objetivos admitidos pelo preflight para paridade com o compiler; nenhuma mudança de RLS, grants ou liberação de método."
+    },
+    {
+      "path": "supabase/migrations/20261010113935_work_premise_proposals.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Propostas de premissas da conversa e confirmação que grava a base como a pessoa; nenhuma liberação de método, execução ou mudança de RLS existente."
     }
   ],
   "staging_archive": [

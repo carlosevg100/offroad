@@ -2444,8 +2444,13 @@
       "name": "ficha_financial_objectives",
       "version": "20261007153704",
       "statements_md5": "fdeb34526adcbeef1962fa91f458f7f9"
+    },
+    {
+      "name": "work_premise_proposals",
+      "version": "20261010113935",
+      "statements_md5": "3982c1b9a92f7499985b22ec7c619b0d"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-07T15:37:46.710739+00:00"
+  "captured_at": "2026-10-10T11:40:50.735739+00:00"
 }

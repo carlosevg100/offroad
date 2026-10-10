@@ -11468,6 +11468,90 @@ export type Database = {
           },
         ]
       }
+      work_premise_proposals: {
+        Row: {
+          assistant_message_id: string
+          capital_project_id: string
+          confirmed_at: string | null
+          confirmed_by: string | null
+          confirmed_version_id: string | null
+          context_key: string
+          created_at: string
+          facts: Json
+          fingerprint: string
+          hypotheses: Json
+          id: string
+          intake_session_id: string
+          method_id: string
+          method_version: string
+          organization_id: string
+          purpose: string
+          source_message_id: string
+          status: string
+          summary: Json
+          updated_at: string
+        }
+        Insert: {
+          assistant_message_id: string
+          capital_project_id: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_version_id?: string | null
+          context_key: string
+          created_at?: string
+          facts: Json
+          fingerprint: string
+          hypotheses: Json
+          id?: string
+          intake_session_id: string
+          method_id: string
+          method_version: string
+          organization_id: string
+          purpose: string
+          source_message_id: string
+          status?: string
+          summary: Json
+          updated_at?: string
+        }
+        Update: {
+          assistant_message_id?: string
+          capital_project_id?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_version_id?: string | null
+          context_key?: string
+          created_at?: string
+          facts?: Json
+          fingerprint?: string
+          hypotheses?: Json
+          id?: string
+          intake_session_id?: string
+          method_id?: string
+          method_version?: string
+          organization_id?: string
+          purpose?: string
+          source_message_id?: string
+          status?: string
+          summary?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_premise_proposals_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_premise_proposals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_recompute_candidates: {
         Row: {
           action: string
@@ -11942,6 +12026,15 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      confirm_work_premise_proposal_v1: {
+        Args: {
+          p_definition_version_id: string
+          p_entity_id: string
+          p_expected_fingerprint: string
+          p_proposal_id: string
+        }
+        Returns: string
       }
       confirm_provider_mandate_v1: {
         Args: {
@@ -14812,6 +14905,13 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_premise_evidence_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
       worker_load_prior_case_report: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -15601,6 +15701,16 @@ export type Database = {
           p_expected_input_fingerprint?: string
           p_job_id: string
           p_proposal?: Json
+          p_response: Json
+        }
+        Returns: Json
+      }
+      worker_record_agent_response_with_premises_v1: {
+        Args: {
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_premises: Json
           p_response: Json
         }
         Returns: Json
