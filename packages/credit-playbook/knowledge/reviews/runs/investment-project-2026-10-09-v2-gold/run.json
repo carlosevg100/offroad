@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "investment-project-2026-10-09-v2-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "analyze-investment-project",
+    "version": "2026.10.09-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareInvestmentDecisionPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/investment-decision-runs.test-support.ts",
+    "exportName": "buildInvestmentDecisionRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-10T03:22:41.032Z",
+    "finishedAt": "2026-10-10T03:22:44.863Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "c32-five-cases-independent-oracle",
+      "expectation": "[[\"base\",0.7,15.8,5.9],[\"economy-4\",-6.3,7.7,8.2],[\"capex-120\",-2.1,13,6.4],[\"slower-start\",-1,14,6.3],[\"defer-12\",1.4,16.7,6.7]]",
+      "observed": "[[\"base\",0.7,15.8,5.9],[\"economy-4\",-6.3,7.7,8.2],[\"capex-120\",-2.1,13,6.4],[\"slower-start\",-1,14,6.3],[\"defer-12\",1.4,16.7,6.7]]",
+      "inputFingerprint": "0c650f8028f93b72f03f57b4d6f78f138fc8dcb89398527683e6f58f5cdd1290",
+      "outputFingerprint": "df165dc35c56610ec1b5e71b976c9e87d18d6b690a534282b28756bea142e977",
+      "passed": true
+    },
+    {
+      "id": "startup-working-capital-of-verticalization",
+      "expectation": "{\"startup\":\"5812500\",\"lostSupplierCredit\":\"5000000\"}",
+      "observed": "{\"startup\":\"5812500\",\"lostSupplierCredit\":\"5000000\"}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "eleven-annual-flows-after-tax-maintenance-and-working-capital",
+      "expectation": "[-10,-11.66,4.13,4.3,4.47,4.64,4.83,5.02,5.22,5.43,11.46]",
+      "observed": "[-10,-11.66,4.13,4.3,4.47,4.64,4.83,5.02,5.22,5.43,11.46]",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "premises-that-change-the-conclusion",
+      "expectation": "{\"changing\":[\"economy-4\",\"capex-120\",\"slower-start\"],\"timing\":[\"defer-12\"]}",
+      "observed": "{\"changing\":[\"economy-4\",\"capex-120\",\"slower-start\"],\"timing\":[\"defer-12\"]}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "cash-consumed-before-payback",
+      "expectation": "{\"amount\":-21.66,\"periodEndDate\":\"2027-12-31\"}",
+      "observed": "{\"amount\":-21.66,\"periodEndDate\":\"2027-12-31\"}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "return-near-cost-of-capital-is-marginal",
+      "expectation": "{\"irrMinusDiscountPoints\":0.8,\"discountRate\":\"0.15\"}",
+      "observed": "{\"irrMinusDiscountPoints\":0.8,\"discountRate\":\"0.15\"}",
+      "inputFingerprint": "0c650f8028f93b72f03f57b4d6f78f138fc8dcb89398527683e6f58f5cdd1290",
+      "outputFingerprint": "df165dc35c56610ec1b5e71b976c9e87d18d6b690a534282b28756bea142e977",
+      "passed": true
+    },
+    {
+      "id": "company-minimum-includes-opening-balance",
+      "expectation": "{\"without\":[20,\"2025-12-31\"],\"with\":[10.74,\"2027-12-31\"]}",
+      "observed": "{\"without\":[20,\"2025-12-31\"],\"with\":[10.74,\"2027-12-31\"]}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "opening-balance-is-the-minimum-when-every-close-is-higher",
+      "expectation": "{\"without\":[20,\"2025-12-31\"],\"with\":[20,\"2025-12-31\"]}",
+      "observed": "{\"without\":[20,\"2025-12-31\"],\"with\":[20,\"2025-12-31\"]}",
+      "inputFingerprint": "d8a23d164739f07432eff98a180fcc0674c7569d94ae973750c78df79898a906",
+      "outputFingerprint": "7c11dc63a42defbf22413efd0d15e154b47ba254df8c3af6eceb27512a887bc7",
+      "passed": true
+    },
+    {
+      "id": "company-cash-with-and-without-the-project",
+      "expectation": "{\"projectLowersMinimum\":true}",
+      "observed": "{\"projectLowersMinimum\":true}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    },
+    {
+      "id": "absent-cost-of-capital-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"partial\",\"npv\":null,\"startup\":\"5812500\",\"gap\":true,\"changing\":[]}",
+      "observed": "{\"status\":\"partial\",\"npv\":null,\"startup\":\"5812500\",\"gap\":true,\"changing\":[]}",
+      "inputFingerprint": "09b567fd3c76d88345af3b19fd62f54a3f8d681077fad710520a2e4b7669a82b",
+      "outputFingerprint": "2125c505f787555dd3f13e5d99e2f215588cc0d15029a670a1085bed27e19a6d",
+      "passed": true
+    },
+    {
+      "id": "unrounded-precision-is-the-default",
+      "expectation": "{\"base\":0.73,\"economy\":-6.35}",
+      "observed": "{\"base\":0.73,\"economy\":-6.35}",
+      "inputFingerprint": "bb3ba13133faf86a13244da4d6b29e48e1683dc31c7669c79c14125e24c659d1",
+      "outputFingerprint": "d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "e0f2c74b5464fdfc5192803724504aafba80417575da620b950c3906aeaaf9bf",
+  "notes": "Synthetic deterministic execution calibrated on ficha C32. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

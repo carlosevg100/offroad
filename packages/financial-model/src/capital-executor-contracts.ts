@@ -53,3 +53,4 @@ function buildV2Contracts(id: string, exportName: string, input: z.ZodType, outp
 }
 
 export {fichaCalculationExecutorContracts} from "./ficha-executor-contracts";
+export {investmentDecisionPacketExecutorContracts} from "./investment-decision-contracts";

@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "analyze-investment-project-2026-10-09-v2-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "unknown",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "analyze-investment-project",
+    "version": "2026.10.09-v2",
+    "fingerprint": "2321d7d200dc882191ac078c63c0e3ba60fcad73584f23e85e004c0f6cf137b5"
+  },
+  "run": {
+    "id": "codex-c32-r2-20261010-033642",
+    "startedAt": "2026-10-10T03:36:42Z",
+    "finishedAt": "2026-10-10T03:56:25Z",
+    "commit": "92f400586d5ed5128f8502d5ba960aa56d8d0659"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "HEAD corresponde ao commit solicitado. Os 15 arquivos internos e os dois arquivos externos conferem com todos os SHA-256 declarados. A verificação final confirmou os mesmos hashes, inclusive nas cópias temporárias dos arquivos internos.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/analyze-investment-project-2026-10-09-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Revisitei o conteúdo profissional, os cálculos e as condições de parada. Segui o executor pelo pacote, adapter, binding, leitura do envelope, normalização monetária e motor financeiro. Os contratos publicados coincidem com os contratos gerados e com a composição tipada do procedimento.",
+      "source": "packages/financial-model/src/{investment-decision-packet,investment-decision-contracts,adopted-investment-analysis,adopted-analysis-binding,adopted-numeric-representation,ficha-calculation-results}.ts; packages/financial-core/src/investment-project.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Executei o oráculo somente em cópia temporária. O JSON regenerado é byte a byte idêntico ao arquivo externo pinado, com SHA-256 86841a6b6b6c01ce7855ecce1af28cc0725c6302b49aaadff362c01b273e44ee.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/oracle/projeto_embalagem.py; /private/tmp/offroad-review2-rlxn7o1b/oracle/projeto_resultados.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os dois arquivos de teste solicitados passaram, totalizando oito testes. Também passaram os dez testes do adapter, os 22 testes do motor e o harness próprio da revisão. As execuções ocorreram em cópia isolada fora do repositório, usando Node 24.19.0.",
+      "source": "packages/financial-model/src/{investment-decision-packet,investment-decision-runs,adopted-investment-analysis}.test.ts; packages/financial-core/src/investment-project.test.ts",
+      "result": "confirmed",
+      "note": "A primeira execução na cópia temporária não iniciou os testes porque faltava tsconfig.base.json. Copiei essa configuração e executei novamente. Corrigi duas expectativas excessivamente exatas ou incorretas no harness próprio, sem alterar o código revisado."
+    },
+    {
+      "claim": "Reconstruí os cinco casos diretamente dos drivers, com Python Decimal a 70 dígitos e enumeração dos meses de operação, sem importar funções do TypeScript ou do oráculo. Com quantum de R$ 10 mil, reproduzi os fluxos e indicadores publicados: base (0,7; 15,8; 5,9), economia 4 (-6,3; 7,7; 8,2), capex +20% (-2,1; 13,0; 6,4), partida tardia (-1,0; 14,0; 6,3), adiamento (1,4; 16,7; 6,7). Ordem: VPL em R$ mi, TIR em %, payback em anos.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/independent.py; /private/tmp/offroad-review2-rlxn7o1b/independent-results.json",
+      "result": "confirmed",
+      "note": "Contra o pacote, tolerâncias adotadas nesta revisão: R$ 0,000001 para valores monetários, 1e-12 para TIR em razão e 1e-10 ano para payback. Contra o oráculo publicado, igualdade após seu arredondamento declarado."
+    },
+    {
+      "claim": "Sem arredondamento, recalculei (VPL R$ mi; TIR %; payback anos): base (0,732202684; 15,803214919; 5,853604387), economia 4 (-6,350985377; 7,654710613; 8,166879711), capex +20% (-2,080282645; 12,972505869; 6,427461634), partida tardia (-0,981029830; 13,977384238; 6,255943329), adiamento (1,375813262; 16,726516378; 6,664491518). Todos conferem com o pacote.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/comparison.json",
+      "result": "confirmed",
+      "note": "Maiores diferenças absolutas: VPL R$ 5,28e-10; TIR 7,97e-18 em razão; payback 1,34e-16 ano; fluxos e caixa da companhia R$ 2,91e-9. Nenhuma excedeu a tolerância."
+    },
+    {
+      "claim": "A precisão padrão preserva os fluxos sem arredondamento. A economia de R$ 4 mi gera VPL de -R$ 6,350985377 mi nesse modo e -R$ 6,345147905 mi com quantum de R$ 10 mil, explicando -6,35 sem arredondamento versus -6,3 no oráculo publicado.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/independent-results.json; packages/financial-core/src/investment-project.ts",
+      "anchor": "valueInvestmentProject; flowPrecision",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Giro inicial = 30×60/360 + 19,5×45/360 - 19,5×30/360 = R$ 5,8125 mi, incluindo R$ 5 mi de crédito perdido do fornecedor. O pico acumulado do projeto base é -R$ 21,6595 mi em 2027-12-31, apresentado como -R$ 21,66 mi.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/independent-results.json; packages/financial-core/src/investment-project.ts",
+      "anchor": "calculateStartupWorkingCapital; buildInvestmentProject",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A falha numérica da primeira revisão foi resolvida. Nos cinco casos, o mínimo sem projeto é R$ 20 mi em 2025-12-31. No base, o mínimo com projeto é R$ 10,7405 mi em 2027-12-31. Com EBITDA anual da companhia de R$ 100 mi e todos os fechamentos superiores ao saldo inicial, ambos os mínimos são R$ 20 mi na abertura.",
+      "source": "packages/financial-model/src/investment-decision-packet.ts; /private/tmp/offroad-review2-rlxn7o1b/mutations.json",
+      "anchor": "companyMinimumCash; opening-is-minimum-in-both-strong-company-paths",
+      "result": "confirmed",
+      "note": "Os dois novos gold cases passaram e suas evidências registradas foram reproduzidas. Recalculei também todos os fechamentos e mínimos dos cinco casos."
+    },
+    {
+      "claim": "Payback usa fluxos não descontados e interpola na mesma grade do VPL. Para -100, 60, 60, a grade explícita 0, 2, 5 resulta em quatro anos. Com datas 2026-12-31, 2027-06-30 e 2028-12-31 em base 365, resulta em 1,50045662100456621005 ano.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/mutations.json; packages/financial-core/src/investment-project.ts",
+      "anchor": "payback-follows-explicit-and-actual-grids",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Desembolso terminal adicional de R$ 100 mi produz fluxo não convencional: VPL permanece disponível, TIR fica nula e a recuperação não permanece no final. Limitar o teto da busca de TIR a 1% produz root_not_bracketed. Manter o multiplicador terminal do giro em 1 impede sua liberação automática.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/mutations.json",
+      "anchor": "additional-terminal-capex-nonconventional; irr-root-outside-bracket; terminal-capital-retained",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O contrafactual recalcula imposto conjuntamente e mantém financiamento constante. Com base tributável da companhia de -R$ 5 mi, o lucro do projeto não gera imposto caixa em 2027. Com custo fixo anual do projeto de R$ 34,5 mi, seu prejuízo reduz o imposto conjunto de R$ 6,8 mi para R$ 1,972 mi, enquanto o imposto isolado do projeto é zero.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/mutations.json; packages/financial-core/src/investment-project.ts",
+      "anchor": "company-loss-offsets-project-profit; project-loss-offsets-company-profit",
+      "result": "confirmed",
+      "note": "Na perspectiva incremental_company, a valoração usa o fluxo incremental após imposto conjunto."
+    },
+    {
+      "claim": "Custo de capital ausente gera lacuna explícita e status partial, preservando fluxo do projeto, giro inicial e caixa da companhia. VPL, TIR e payback ficam nulos. A limitação sobre TIR e payback está agora expressamente declarada. A herança funciona somente quando declarada; sua remoção é recusada por analysis_basis_context_mismatch.",
+      "source": "packages/financial-model/src/adopted-investment-analysis.ts; packages/credit-playbook/knowledge/procedures/capital/analyze-investment-project.md; /private/tmp/offroad-review2-rlxn7o1b/mutations.json",
+      "anchor": "Inputs mínimos e substitutos; Stop conditions",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os nove adversariais registrados exercitam fronteiras reais e reproduziram suas evidências: envelope adulterado, herança ausente ou encadeada, base herdando, duas bases, moeda distinta, sensibilidade silenciosa, resultado livre no pedido e concessão fabricada no resultado.",
+      "source": "packages/financial-model/src/investment-decision-runs.test-support.ts; packages/financial-model/src/investment-decision-runs.test.ts",
+      "result": "confirmed",
+      "note": "O caso de concessão fabricada valida o contrato de saída. Essas fronteiras de integridade não comprovam autorização de acesso em produção."
+    },
+    {
+      "claim": "Oito mutações próprias foram recusadas: horizonte alterado em cenário que herda, ID duplicado, contribuição monetária reutilizada, observação reutilizada entre operandos, vencimento além do horizonte, escala não unitária em operando não monetário, quantum zero e grade temporal não crescente.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/packages/financial-model/src/reviewer-independent.test.ts; /private/tmp/offroad-review2-rlxn7o1b/mutations.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As seis repetições registradas reproduziram seus fingerprints. Cinco repetições próprias de cada convenção mantiveram todos os bytes e não alteraram os inputs.",
+      "source": "/private/tmp/offroad-review2-rlxn7o1b/consistency.json; packages/financial-model/src/investment-decision-runs.test.ts",
+      "result": "confirmed",
+      "note": "SHA-256 do JSON completo: sem arredondamento d546228b250a1e88c0de1f101abb241ca4ba2c05201c8d4233d110f90388fb46; quantum df165dc35c56610ec1b5e71b976c9e87d18d6b690a534282b28756bea142e977."
+    },
+    {
+      "claim": "As correções profissionais pedidas anteriormente constam dos bytes pinados: N2 fundamenta prazo na geração de caixa, vida econômica, vencimentos e contratos; investimentos obrigatórios estão em Quando ativar; horizonte, residual, encerramento, risco da taxa e consistência monetária estão explícitos; payback é simples e interpolado; a supressão de TIR e payback sem taxa está declarada.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/analyze-investment-project.md",
+      "anchor": "Quando ativar; Inputs mínimos e substitutos; Cálculos determinísticos; Stop conditions; N2",
+      "result": "confirmed",
+      "note": "O conteúdo tem fundamentos adequados de incrementalidade, giro, rampa, impostos, sensibilidades e liquidez. Não encontrei travessões, slogans ou a construção contrastiva proibida. A adequação da taxa ao risco específico é coerente com [Damodaran](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/cfemailspr20.html)."
+    },
+    {
+      "claim": "Ressalva de escopo: o texto exige tratamento de valor residual ou continuidade, mas o contrato não contém operandos próprios para esses valores ou para crescimento terminal, e o executor não possui cálculo dedicado correspondente. O tratamento de giro terminal está implementado. A delimitação entre exigência profissional e capacidade atual precisa ficar explícita.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/analyze-investment-project.md; packages/financial-model/src/adopted-investment-analysis.ts; packages/financial-model/contracts/investment-decision-packet.json",
+      "anchor": "Inputs mínimos e substitutos; Cálculos determinísticos; project; valuation",
+      "result": "limitation",
+      "note": "Não constatei divergência numérica no C32 por esse motivo. Não considero legítimo presumir que receita operacional substitui alienação ou continuidade com tratamento fiscal próprio. A distinção profissional é sustentada por [Damodaran, valor terminal](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalapproaches.htm)."
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "Explicitar no procedimento como valor residual ou continuidade, seus efeitos tributários e custos de encerramento são representados por operandos adotados no executor atual, com evidência verificável, ou declarar a limitação desta versão e impedir conclusões que dependam desses componentes sem um caminho determinístico suportado. Não apresentar a nova exigência profissional como capacidade já implementada."
+  ],
+  "notes": "A falha de mínimo de caixa e as condições de conteúdo da primeira revisão foram resolvidas nos bytes pinados. Todos os indicadores, fluxos, mínimos de caixa e demais números recalculados ficaram dentro das tolerâncias declaradas nesta revisão. O resultado conditional decorre exclusivamente da delimitação incompleta entre o tratamento terminal exigido pelo texto e a capacidade demonstrada pelo contrato e executor; não decorre de divergência numérica na calibração C32. Scripts próprios, dependências copiadas, caches, oráculo executado e resultados foram escritos exclusivamente em /private/tmp/offroad-review2-rlxn7o1b. Não modifiquei arquivo rastreado nem escrevi dentro do repositório. Durante a execução apareceram mudanças fora do conjunto pinado em BUILD_STATE.md, ACCEPTANCE_EVIDENCE.md, handoff.md e um documento novo; os hashes de todos os arquivos revisados e o HEAD permaneceram iguais na verificação final. A revisão é técnica e independente, não constitui aprovação humana, publicação ou prova de acesso em produção. O contexto identifica a família do modelo como GPT-6; o identificador exato de implantação e o parâmetro de esforço não foram expostos."
+}

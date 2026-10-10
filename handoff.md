@@ -1,3 +1,7 @@
+## 2026-10-10: investimento antes do financiamento, método implementado
+
+Método de investimento implementado e revisado, ainda não publicado. Próximos passos: generalizar captura, trava e worker para mais de um executor compilado; preparar a publicação (manifesto, revisão técnica, aprovação de conteúdo delegada pelo fundador em 9 out 2026); capturar o artefato; validador de payload e perfil no banco; liberar a capacidade.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 Régua sem modelo: `preflight-trial.test.ts` mede o que a pré-checagem decide para frases externas. Medição de 9 out 2026: 28 de 138 frases no tipo esperado, 6 em tipo aceitável, zero tarefas executáveis em todas. Próximos trabalhos: tipos de objetivo por papel de quem pergunta (banco, originador, fundo) e a ponte da conversa para métodos liberados.
