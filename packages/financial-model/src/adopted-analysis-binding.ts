@@ -16,7 +16,9 @@ export const analysisReference = z.string().trim().min(1).max(160);
 /** Internal binding for the two new analysis adapters. Unit/path/scenario are supplied by
  * build-owned code, never a user's mapping. This verifies integrity, not access: obtain the
  * immutable envelope from the SQL reader after checking current source and work rights. */
-export function createAnalysisBinding(input: AnalysisContext, monetarySelections: AnalysisSelection[]) {
+/** `inheritedScenario` lets a sensitivity adopt only what it changes: an operand may carry the
+ * case's own scenario or, explicitly, the inherited one. Nothing is inherited by default. */
+export function createAnalysisBinding(input: AnalysisContext, monetarySelections: AnalysisSelection[], options: {inheritedScenario?: string | undefined} = {}) {
   const basis = readContextualBasis(input.envelope, input.scope);
   const entries = new Map(basis.entries.map(e => [e.decisionId, e]));
   const ids = monetarySelections.flatMap(s => s.decisionId ? [s.decisionId] : []);
@@ -36,7 +38,7 @@ export function createAnalysisBinding(input: AnalysisContext, monetarySelections
     if (!e || selected.has(e.decisionId) || (e.observationId && observations.has(e.observationId))) throw new Error("analysis_missing_or_reused_contribution");
     if (e.fieldPath !== path || e.value.type !== type || e.definitionKind !== s.definitionKind
       || d!.definitionVersionId !== s.definitionVersionId || d!.entityId !== input.entityId || d!.perimeter !== input.perimeter
-      || d!.currency !== input.currency || d!.unit !== unit || d!.scenario !== scenario
+      || d!.currency !== input.currency || d!.unit !== unit || (d!.scenario !== scenario && d!.scenario !== options.inheritedScenario)
       || d!.periodStart !== input.openingDate || d!.periodEnd !== input.endDate
       || (unit !== "currency" && !hasUnitScale(d!.scale))) throw new Error("analysis_basis_context_mismatch");
     selected.add(e.decisionId); used.set(e.decisionId, e); if (e.observationId) observations.add(e.observationId);

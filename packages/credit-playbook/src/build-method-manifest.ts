@@ -46,6 +46,7 @@ export function buildMethodManifest(repositoryRoot: string) {
     {path: "packages/financial-model/contracts/relative-debt-cost-evidence.json", exportName: "calculateRelativeDebtCostEvidence"},
     {path: "packages/financial-model/contracts/debt-capacity-evidence.json", exportName: "calculateDebtCapacityEvidence"},
     {path: "packages/financial-model/contracts/investment-analysis-evidence.json", exportName: "calculateInvestmentAnalysisEvidence"},
+    {path: "packages/financial-model/contracts/investment-decision-packet.json", exportName: "prepareInvestmentDecisionPacket"},
     {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
     {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},
@@ -61,14 +62,10 @@ export function buildMethodManifest(repositoryRoot: string) {
       sources: [...closure("@offroad/financial-model"), registration.path,
         "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   });
-  // Actual deterministic run receipts; their hashes are not independent review or approval.
-  const capitalEvidencePaths = [
-    "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
-    "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-gold/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-adversarial/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-consistency/run.json"
-];
+  // Each component declares the receipts it relies on (deterministic runs, independent reviews);
+  // their bytes are pinned here. Hashes prove identity, never review or approval.
+  const compositionEvidence = (composition: {components: {evidence: string[]}[]}) =>
+    [...new Set(composition.components.flatMap(component => component.evidence))].sort().map(source);
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);
     if (release) {
@@ -91,7 +88,7 @@ export function buildMethodManifest(repositoryRoot: string) {
           ? [...executor.sources, ...testSources.filter(test => !executor.sources.some((s: CompilerSource) => s.path === test.path))]
           : executor.sources,
       }));
-      return compileProcedureComposition(method, method.composition, {compilerSources, executors, evidence: method.procedure.id === "prepare-capital-structure-decision" ? capitalEvidencePaths.map(source) : []});
+      return compileProcedureComposition(method, method.composition, {compilerSources, executors, evidence: compositionEvidence(method.composition)});
     }
     const adapted = adaptLegacyMethodDocument(method);
     const implementation = method.procedure.implementation;

@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "review-subject-basis.v1",
+  "subject": {
+    "kind": "method",
+    "id": "analyze-investment-project",
+    "version": "2026.10.09-v2"
+  },
+  "commit": "92f400586d5ed5128f8502d5ba960aa56d8d0659",
+  "pins": [
+    {
+      "path": "packages/credit-playbook/knowledge/procedures/capital/analyze-investment-project.md",
+      "sha256": "aeeaf0036fcac74b17e7888608decd318619a1428d1581bc2fee4b92b08336c7"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-packet.ts",
+      "sha256": "01e6814ada088d94559a2e40dc6393825f4b761ac1f073e635aacf388ab928ba"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-contracts.ts",
+      "sha256": "399c0af5924a723b19a8ad60802b8c2cd2aff260c71b0f74b220861ac30a5e15"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-investment-analysis.ts",
+      "sha256": "a68c066b70f2f09811900afd625cd4817186a513808d5bf44a1065c512990c41"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+      "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+    },
+    {
+      "path": "packages/financial-model/src/ficha-calculation-results.ts",
+      "sha256": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+    },
+    {
+      "path": "packages/financial-core/src/investment-project.ts",
+      "sha256": "4010419b5b722b62d4116dd0e03d7f3299e1b455c023e3a3a4d9d1697535d96f"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-packet.test-support.ts",
+      "sha256": "31e3ac98dc00283c1635c9ee76f63b0302831db2a6a9ec942ff81ac0d12fb663"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-packet.test.ts",
+      "sha256": "20f75d0fa0d0eecd6a517c6796c7219211fde3e49a60cfd9d7b8da1cead63b76"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-runs.test-support.ts",
+      "sha256": "12aead4f04961a5734aa837e01db16b1cadcaeb46165179528ef7ff46748e58d"
+    },
+    {
+      "path": "packages/financial-model/src/investment-decision-runs.test.ts",
+      "sha256": "585c4d71612e5ef50a3a2f4faf71a1c807130f5cf1805fa24e684e53b4347265"
+    },
+    {
+      "path": "packages/financial-model/contracts/investment-decision-packet.json",
+      "sha256": "836d919deb58e403356c4b23c51ede91395010ea0d4cdfd3424fdb54e92e3d3f"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/investment-project-2026-10-09-v2-gold/run.json",
+      "sha256": "44973e1abdf77ab060e79263399aeb9aff9a9d0606d61f4927a3825ccb2f254e"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/investment-project-2026-10-09-v2-adversarial/run.json",
+      "sha256": "4e2501ec95c4f669d6059fac7f193332d52d68ccb4484e1987d02ecebdc7ee38"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/investment-project-2026-10-09-v2-consistency/run.json",
+      "sha256": "fd51761cd6916dca401570bc9e83f0bc05ccd5e1d906ca8d185a2b1577ea596f"
+    }
+  ],
+  "externalOracle": [
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C32/projeto_embalagem.py",
+      "sha256": "668bef33bb8a249a53cdfdbc57fe4e6180c8066dadc6db290f5fd3e80ebb899b"
+    },
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C32/projeto_resultados.json",
+      "sha256": "86841a6b6b6c01ce7855ecce1af28cc0725c6302b49aaadff362c01b273e44ee"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "investment-project-2026-10-09-v2-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "analyze-investment-project",
+    "version": "2026.10.09-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareInvestmentDecisionPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/investment-decision-runs.test-support.ts",
+    "exportName": "buildInvestmentDecisionRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-10T03:22:41.032Z",
+    "finishedAt": "2026-10-10T03:22:44.864Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d341727094d8fcfb485b7a0c4413b1b164bd051c2d9c25e206646bdbd16afb82",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "undeclared-inheritance",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9a2704d8c91af6884d74e944d369bad879fb87a0dbe4474ffb514a90e5032d73",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "inherits-another-sensitivity",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e4bae965ebf107690b427798b6997be598ff3a5507d2916ae0f639cd734f06f5",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "base-inherits",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8f4a48560cb78451bd51d006950613cc10f74b1563bbd72b312be019dbf0f6f2",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-bases",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9aa81eed3d5a096045d41ac681b509b3cd458eb2a890e5413b82b847a0c2dfcd",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "mixed-currency",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "85163d1184f961b0f1707373832ea625aaed475955a47707f8763e576a1caac7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "silent-sensitivity",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "81769f340e11cb40205d6ad0bc0738c044dda05f2091f251fb4003283289f5af",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-result-in-request",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "02181f82e60d3c1733e88ccb50505d94455088ba319f36cbdfe9f3b3598276d9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-grant-in-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e11884202ecba61e1477952ceca602925215f3ba8fd5344b0b12cf62cdc33a34",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "c14103a6f32126311238423259e4f4201461bfa3a7ec064a7207d51a954f695e",
+  "notes": "Synthetic deterministic execution calibrated on ficha C32. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
