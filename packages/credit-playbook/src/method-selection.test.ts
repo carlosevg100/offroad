@@ -68,7 +68,8 @@ describe("R3 situation catalogue", () => {
     const bound = specialistMethodRuntimeManifest.find((method) => method.procedure.id === receivablesPoolMethodId);
     expect(bound?.taskIds).toContain("R01");
     for (const situation of structuringSituations) {
-      if (situation.situationId !== "receivables") expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId]);
+      if (situation.situationId === "capex-infrastructure") expect(situation.servedBy).toEqual([capitalStructureMethodId, "analyze-investment-project"]);
+      else if (situation.situationId !== "receivables") expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId]);
     }
   });
 });
@@ -110,6 +111,11 @@ describe("selectMethod", () => {
       expect((error as MethodSelectionRefusal).code).toBe("method_not_applicable_for_situation");
       expect((error as MethodSelectionRefusal).situationIds).toEqual(["receivables"]);
     }
+  });
+
+  it("lets the investment method serve only the capex situation", () => {
+    expect(selectMethod({situationIds: ["capex-infrastructure"], methodId: "analyze-investment-project", methodVersion: "2026.10.09-v2"}).reasonCodes).toEqual(["all_situations_served"]);
+    expect(() => selectMethod({situationIds: ["refinancing"], methodId: "analyze-investment-project", methodVersion: "2026.10.09-v2"})).toThrow("method_not_applicable_for_situation");
   });
 
   it("refuses an empty selection", () => {
