@@ -1,3 +1,7 @@
+## 2026-10-09: régua da pré-checagem sem modelo
+
+Sem as variáveis, o teste aparece como pulado (1 skipped). Com elas, sobre 138 frases mantidas fora do repositório, a saída em main `af040c18` é byte a byte igual à rodada feita no branch da PR #902 antes do merge. Resultado medido: nenhuma frase gera tarefa executável e o candidato a despacho fica bloqueado em todas.
+
 ## 2026-10-09: roteador lê acentos e formas faladas
 
 Testes novos em `packages/work-plan/src/router-accents-verb-forms.test.ts` (19 testes, frases das fichas A01, A09, A11, A17, I37 e outras): acentos, formas faladas, plural, reunião com abordagem antes de material, radicais da reserva. `work-plan` 275/275 PASS; lint, typecheck e testes dos dependentes de `@offroad/work-plan` 131/132 PASS, sendo a única falha um timeout de 5 s em `financial-model/adopted-investment-analysis.test.ts` sob carga, que passa isolado (10/10). Comparação antes e depois com as 180 frases do catálogo registrada na descrição da PR.
