@@ -6,7 +6,8 @@ import {procedureBuildProvenance} from "./method-runtime-manifest.generated";
 
 const knowledge = join(import.meta.dirname, "../knowledge");
 const library = loadMethodLibrary(join(knowledge, "procedures"));
-const ids = ["compare-financing-proposals", "analyze-relative-debt-cost", "assess-debt-capacity", "analyze-investment-project"];
+// Still drafts. analyze-investment-project left this list when it was implemented (2026.10.09-v2).
+const ids = ["compare-financing-proposals", "analyze-relative-debt-cost", "assess-debt-capacity"];
 
 describe("ficha procedure authorship, without invented execution approval", () => {
   it.each(ids)("compiles %s while denying staging and production execution", id => {
@@ -42,6 +43,25 @@ describe("ficha procedure authorship, without invented execution approval", () =
     expect(entry.executor?.sources.some(s => s.path === "packages/financial-model/src/ficha-calculation-results.ts")).toBe(true);
     expect(built.authoringStatus).toBe("incomplete");
     expect(built.pendingContent.length).toBeGreaterThan(0);
+    expect(built.grantsExecution).toBe(false);
+  });
+
+  it("implements analyze-investment-project on recorded runs without granting execution or approval", () => {
+    const method = library.methods.find(m => m.procedure.id === "analyze-investment-project")!;
+    expect(method.procedure.version).toBe("2026.10.09-v2");
+    expect(["implemented", "ai_reviewed", "tested"]).toContain(method.procedure.maturity);
+    expect(method.procedure.owner.approvedBy).toBeUndefined();
+    expect(method.procedure.implementation?.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareInvestmentDecisionPacket"});
+    expect(method.composition?.authoringStatus).toBe("ready_for_review");
+    expect(method.composition?.pendingContent).toEqual([]);
+    expect(method.composition?.budget).toEqual({maxModelCalls: 0, maxDurationMs: 31000, maxCostMinorUnits: 0, currency: "BRL"});
+    const built = procedureBuildProvenance.find(p => p.procedure.id === "analyze-investment-project")!;
+    if (built.schemaVersion !== "compiled-procedure-manifest.v1") throw new Error("compiled manifest expected");
+    const calculations = built.components.filter(c => c.executor !== null);
+    expect(calculations).toHaveLength(1);
+    expect(calculations[0]!.executor).toMatchObject({module: "@offroad/financial-model", exportName: "prepareInvestmentDecisionPacket", version: "2026.10.09-v1"});
+    expect(calculations[0]!.evidence.map(e => e.path)).toEqual(expect.arrayContaining(["gold", "adversarial", "consistency"].map(k =>
+      `packages/credit-playbook/knowledge/reviews/runs/investment-project-2026-10-09-v2-${k}/run.json`)));
     expect(built.grantsExecution).toBe(false);
   });
 

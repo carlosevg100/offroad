@@ -1,3 +1,7 @@
+## 2026-10-10: investimento antes do financiamento, método implementado
+
+Procedimento `analyze-investment-project` 2026.10.09-v2 implementado sobre o novo executor `prepareInvestmentDecisionPacket` (financial-model): caso base e variantes adotadas na mesma base, valor, retorno, payback, giro de partida, caixa consumido e caixa mínimo da companhia com e sem o projeto. Adaptador de investimento aceita herança declarada do cenário base (limite de 256 contribuições por base). Composição tipada pronta para revisão, evidências por componente (a lista fixa de evidências do capital virou leitura das evidências declaradas). Sem publicação, perfil, migração ou mudança de execução. Detalhe em `docs/build/arcabouco/FICHA-INVESTMENT-DECISION-METHOD.md`.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 `apps/document-worker/src/preflight-trial.test.ts` roda a pré-checagem de produção (`compileObjectivePreflight`) sobre um arquivo externo de frases e grava, para cada uma, tipo de objetivo, job de entrada, terminal, alvos, prontidão, receita de workflow e candidato a despacho. Sem modelo, sem banco, sem dado no repositório: o teste é pulado sem `PREFLIGHT_TRIAL_INPUT` e `PREFLIGHT_TRIAL_OUTPUT`. Serve de régua de progresso do roteador e da ponte entre conversa e métodos liberados. Sem mudança de produção.

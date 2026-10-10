@@ -1,3 +1,7 @@
+## 2026-10-10: investimento antes do financiamento, método implementado
+
+`investment-decision-packet.test.ts` reproduz os cinco casos do oráculo independente da calibração (VPL, TIR, payback), giro de partida 5,8125, pico −21,66 e caixa mínimo com saldo de abertura; corridas gold 11, adversarial 9 e consistência 6 reexecutadas por `investment-decision-runs.test.ts`. financial-model 479/479, credit-playbook 508/508. Revisão técnica independente em `knowledge/reviews/analyze-investment-project-2026-10-09-v2-independent-review.json`; a primeira rodada reprovou pelo caixa mínimo sem saldo de abertura, corrigido; a segunda (commit 92f40058) aprovou com uma condição, atendida depois dela: o procedimento declara que valor residual, continuidade e custo de encerramento ainda não têm operando no executor e bloqueia conclusões que dependam deles.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 Sem as variáveis, o teste aparece como pulado (1 skipped). Com elas, sobre 138 frases mantidas fora do repositório, a saída em main `af040c18` é byte a byte igual à rodada feita no branch da PR #902 antes do merge. Resultado medido: nenhuma frase gera tarefa executável e o candidato a despacho fica bloqueado em todas.

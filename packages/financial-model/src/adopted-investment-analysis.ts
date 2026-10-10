@@ -19,7 +19,9 @@ const selectors = <K extends string>(keys: readonly K[]) => z.strictObject(Objec
 const stocks = selectors(stockNames);
 const startup = z.strictObject({money: selectors(startupMoney), days: selectors(startupDays), adoptedYearDays: selection});
 export const adoptedInvestmentAnalysisInputSchema = adoptedAnalysisContextSchema.safeExtend({
-  analysisId: z.uuid(), scenario: z.string().trim().min(1).max(160), periodEnds: selection,
+  analysisId: z.uuid(), scenario: z.string().trim().min(1).max(160),
+  /** A sensitivity may reuse the operands it does not change from this adopted scenario. */
+  inheritedScenario: z.string().trim().min(1).max(160).optional(), periodEnds: selection,
   project: z.strictObject({money: selectors(projectMoney), cashTaxRate: selection, lossTaxTreatment: selection, fixedCostScaling: selection,
     exposure: z.discriminatedUnion("mode", [
       z.strictObject({mode: z.literal("provided_period_exposures"), loadYearFractions: selection, activeYearFractions: selection}),
@@ -35,7 +37,8 @@ export const adoptedInvestmentAnalysisInputSchema = adoptedAnalysisContextSchema
     cashTaxRate: selection, lossTaxTreatment: selection, debtInventoryStatus: selection, debtIds: selection, finalPaymentDates: selection}).nullable(),
   valuation: z.strictObject({perspective: selection, baseDate: selection, timing: selection, adoptedTimes: selection,
     discountRate: selection, irrLower: selection, irrUpper: selection, precisionMode: selection, precisionDecimals: selection, precisionQuantum: selection}),
-}).refine(i => i.endDate > i.openingDate, "Valid investment horizon required");
+}).refine(i => i.endDate > i.openingDate, "Valid investment horizon required")
+  .refine(i => i.inheritedScenario !== i.scenario, "A scenario cannot inherit from itself");
 export type AdoptedInvestmentAnalysisInput = z.infer<typeof adoptedInvestmentAnalysisInputSchema>;
 const next = (d: string) => new Date(Date.parse(`${d}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
 
@@ -47,7 +50,7 @@ export function calculateAdoptedInvestmentAnalysis(raw: unknown) {
   const monetary = [...Object.values(p.money), ...Object.values(p.openingWorkingCapital), input.valuation.precisionQuantum,
     ...p.closingWorkingCapital.mode === "provided_stocks" ? Object.values(p.closingWorkingCapital.stocks) : Object.values(p.closingWorkingCapital.startup.money),
     ...input.company ? [input.company.openingAvailableCash, input.company.openingRestrictedCash, ...Object.values(input.company.money)] : []];
-  const b = createAnalysisBinding(input, monetary);
+  const b = createAnalysisBinding(input, monetary, {inheritedScenario: input.inheritedScenario});
   const scalar = <T>(s: z.infer<typeof selection>, path: string, unit: string, type: "number" | "text" | "date", schema: z.ZodType<T>) => b.read(s, prefix + path, input.scenario, unit, type, schema);
   const column = <T>(s: z.infer<typeof selection>, path: string, unit: string, schema: z.ZodType<T>, empty = false) => b.read(s, prefix + path, input.scenario, unit, "list", z.array(schema).min(empty ? 0 : 1).max(480));
   const ends = column(input.periodEnds, "periodEnds", "date", z.iso.date());
@@ -146,6 +149,7 @@ export function calculateAdoptedInvestmentAnalysis(raw: unknown) {
   }
   const payload = {schemaVersion: "adopted-investment-analysis.v1" as const, financialCoreVersion, scope: input.scope,
     analysisId: input.analysisId, entityId: input.entityId, perimeter: input.perimeter, currency: input.currency, scenario: input.scenario,
+    inheritedScenario: input.inheritedScenario ?? null,
     basisFingerprint: input.envelope.fingerprint, project, startupCapital, ramp, company, valuation, valuationPerspective: perspective,
     gaps: b.gaps, bindings: b.bindings, normalization: b.normalization, contributions: [...b.used.values()],
     status: b.gaps.length ? "missing_inputs" as const : "partial_composition" as const,

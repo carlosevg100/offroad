@@ -122,6 +122,6 @@ const valuation = z.strictObject({schemaVersion: z.literal("project-valuation.v1
   irrResidualPresentValue: decimal.nullable(), payback: z.strictObject({measuredDate: date, measuredTimeYears: decimal, interpolatedTimeYears: decimal}).nullable(),
   paybackRemainsRecoveredAtEnd: z.boolean(), cashFlowTrace: z.array(z.strictObject({id: text, date, timeYears: decimal, amount: decimal, sourceAnchor: text})).min(2).max(480)});
 export const adoptedInvestmentAnalysisOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-investment-analysis.v1"),
-  analysisId: z.uuid(), perimeter: text, scenario: text, project: project.nullable(), startupCapital: startup.nullable(), ramp: ramp.nullable(),
+  analysisId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), project: project.nullable(), startupCapital: startup.nullable(), ramp: ramp.nullable(),
   company: company.nullable(), valuation: valuation.nullable(), valuationPerspective: z.enum(["standalone_project", "incremental_company"]).nullable(),
   exclusions: z.array(z.enum(["automatic_terminal_release", "intraperiod_cash_certification", "tax_law_inference", "financing_recommendation", "method_release"])).length(5).refine(v => v.join("|") === "automatic_terminal_release|intraperiod_cash_certification|tax_law_inference|financing_recommendation|method_release", "Exact exclusion ledger required")});
