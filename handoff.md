@@ -1,3 +1,7 @@
+## 2026-10-10: ponte da conversa para premissas de investimento
+
+Ponte da conversa: proposta de premissas no turno, cartão de confirmação e pedido de execução. Falta publicar o método de investimento (manifesto e revisão técnica serão refeitos a partir do commit desta ponte; a aprovação de conteúdo exige ato explícito do fundador) e compor a resposta do turno a partir do resultado do cálculo.
+
 ## 2026-10-10: investimento antes do financiamento, método implementado
 
 Método de investimento implementado e revisado, ainda não publicado. Próximos passos: generalizar captura, trava e worker para mais de um executor compilado; preparar a publicação (manifesto, revisão técnica, aprovação de conteúdo delegada pelo fundador em 9 out 2026); capturar o artefato; validador de payload e perfil no banco; liberar a capacidade.

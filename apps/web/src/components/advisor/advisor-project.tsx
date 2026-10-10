@@ -50,6 +50,7 @@ import {NewWorkRequest, type NewWorkRequestOutcome} from "./new-work-request";
 import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
 import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
+import {InvestmentPremisesCard, type InvestmentPremiseProposalView} from "./investment-premises-card";
 import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, ProjectCapabilityId, ProjectWorkContext, ProjectWorkDispatch, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
@@ -66,6 +67,8 @@ export type AdvisorProjectMessage = {
   continuation?: {label: string; revision: number} | null;
   /** The execution results an answer cites, each linking to the exact revision it read. */
   citedResults?: ReadonlyArray<{href: string}>;
+  /** The premises this reply proposed for a governed calculation; only the person's confirmation adopts them. */
+  premiseProposal?: InvestmentPremiseProposalView | null;
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string; version?: number};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
@@ -444,6 +447,7 @@ export function AdvisorProject(props: Props) {
                 {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
                 <CitedResultLinks citedResults={message.citedResults} />
+                {message.role === "assistant" && message.premiseProposal ? <InvestmentPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={message.premiseProposal} /> : null}
                 {proposal && props.sessionId ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
             </article>;

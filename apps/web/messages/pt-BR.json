@@ -7190,5 +7190,51 @@
       "diligence_qa": "Perguntas de diligência",
       "data_room_index": "Índice de documentos"
     }
+  },
+  "InvestmentPremisesCard": {
+    "title": "Premissas para analisar o investimento",
+    "lead": "O cálculo usa somente estas premissas, cada uma com a origem. Confirme para calcular, ou corrija na conversa e eu refaço a proposta.",
+    "origin": {
+      "document": "Dos documentos",
+      "informed": "Informadas por você",
+      "house": "Premissas da casa"
+    },
+    "premise": {
+      "capex": "Investimento por ano",
+      "operationStart": "Início da operação",
+      "ramp": "Rampa de partida",
+      "annualIncrementalRevenue": "Receita nova por ano",
+      "annualDisplacedPurchases": "Compras que deixam de existir por ano",
+      "annualNewVariableCost": "Custo variável novo por ano",
+      "annualNewFixedCost": "Custo fixo novo por ano",
+      "annualMaintenance": "Manutenção por ano",
+      "usefulLifeYears": "Vida útil",
+      "annualGrowth": "Crescimento anual de volume",
+      "cashTaxRate": "Alíquota de imposto sobre o resultado",
+      "receivableDays": "Prazo de recebimento da receita nova",
+      "inventoryDays": "Estoque de insumos",
+      "newSupplierDays": "Prazo dos novos fornecedores",
+      "lostSupplierDays": "Prazo do fornecedor atual que deixa de existir",
+      "discountRate": "Custo de capital",
+      "workingCapitalReturnsAtEnd": "Giro volta no fim da vida útil"
+    },
+    "money": "R$ {value} mi",
+    "capexYear": "{year}: {amount}",
+    "rampStage": "{months, plural, one {# mês} other {# meses}} a {load}",
+    "years": "{count, plural, one {# ano} other {# anos}}",
+    "days": "{count, plural, one {# dia} other {# dias}}",
+    "yes": "sim",
+    "no": "não",
+    "cases": "Calculo cinco casos na mesma base: o investimento como planejado, benefício um terço menor, capex 20% maior, partida seis meses mais tarde e adiar doze meses.",
+    "confirm": "Confirmar premissas e calcular",
+    "confirming": "Gravando as premissas",
+    "pendingRelease": "Premissas confirmadas. O cálculo roda assim que o método de investimento estiver liberado.",
+    "requested": "Premissas confirmadas. Cálculo em andamento.",
+    "openCalculation": "Abrir o cálculo",
+    "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
+    "errors": {
+      "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
+      "unavailable": "Não consegui confirmar agora. Tente de novo."
+    }
   }
 }

@@ -1142,10 +1142,12 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
-      "sha256": "988eb2adb39b9cee2411657e2c52a31367a737906c580e22a580cc3fa1f00aed",
+      "sha256": "3bebfff11d0a6f639096406fbfee0d0a44982af5524d9c85f211ece33cce16db",
       "entrypoint": true,
       "rpcs": [
+        "confirm_work_premise_proposal_v1",
         "execution_contract_basis_v2",
+        "record_definition_version_v1",
         "request_work_execution_v2"
       ],
       "decision": "preserve governed consumer",
@@ -1193,7 +1195,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
-      "sha256": "7b14523777e0bcaffb88f4d54ce4cbbc44f398b8d9866cb7c51dc13b0c5bde7a",
+      "sha256": "fdf8958ee6fc20d327f083c5c32a5f48d85620097dcb26a21fd94bafdcaa2331",
       "entrypoint": false,
       "rpcs": [
         "read_advisor_execution_brief_approval_v1",
