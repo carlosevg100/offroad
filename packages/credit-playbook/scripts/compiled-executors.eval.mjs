@@ -127,3 +127,7 @@ test('capital loader refuses missing artifacts and checks manifest and artifact 
   assert.throws(()=>loadReleasedCapital(identity),/published_method_artifact_mismatch/);
  }finally{rmSync(temporary,{recursive:true,force:true});}
 });
+
+test('compiled release refuses an entry that is not its reviewed adapter entry',async()=>{
+ await mutated(s=>{s.files.entry.content+='\nexport const extra = 1;';},(r,d)=>assert.rejects(()=>validateCompiledExecutorRelease(r,d),/compiled_release_entry_mismatch/));
+});

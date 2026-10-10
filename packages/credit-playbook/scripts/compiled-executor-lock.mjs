@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {resolve, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {compiledExecutorAdapter} from './compiled-executor-adapters.mjs';
 const root = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const sha = x => createHash('sha256').update(x).digest('hex');
 let helper;
@@ -25,7 +26,7 @@ export async function validateCompiledExecutorRelease(release, directory) {
   const manifestBytes = snapshot.pinned?.[release.manifestPath];
   if (typeof manifestBytes !== 'string' || sha(manifestBytes) !== release.manifestFileHash || snapshot.sourceCommit !== release.sourceCommit) throw Error('compiled_release_manifest_mismatch');
   const allowedParseOnly = ['packages/credit-playbook/src/capital-planning-policy.generated.ts','packages/credit-playbook/src/method-runtime-manifest.generated.ts'];
-  if (!Array.isArray(release.parseOnlySources) || release.parseOnlySources.length !== allowedParseOnly.length || new Set(release.parseOnlySources.map(p => p.path)).size !== allowedParseOnly.length) throw Error('compiled_release_parse_dependency_mismatch');
+  if (!Array.isArray(release.parseOnlySources) || new Set(release.parseOnlySources.map(p => p.path)).size !== release.parseOnlySources.length) throw Error('compiled_release_parse_dependency_mismatch');
   for (const p of release.parseOnlySources) if (!allowedParseOnly.includes(p.path) || typeof snapshot.pinned[p.path] !== 'string' || sha(snapshot.pinned[p.path]) !== p.hash) throw Error('compiled_release_parse_dependency_mismatch');
   const manifest = JSON.parse(manifestBytes), {deriveExecutionProfile} = await derivation();
   const profile = deriveExecutionProfile(manifest, {id:release.platformReleaseId, manifestHash:release.provenance.manifestHash});
@@ -33,8 +34,9 @@ export async function validateCompiledExecutorRelease(release, directory) {
   const evidence = [...new Map(manifest.components.flatMap(c => c.evidence).map(p => [p.path,p])).values()];
   if (profile.fingerprint !== release.profileFingerprint || JSON.stringify(selected.executor.sources) !== JSON.stringify(release.executorSources)
     || JSON.stringify(release.provenance) !== JSON.stringify({procedure:manifest.procedure, manifestHash:manifest.manifestHash, compiler:manifest.compiler, evidence})) throw Error('compiled_release_profile_mismatch');
-  if (profile.method.executor.key !== '@offroad/financial-model#prepareCapitalProcedurePacketV2' || profile.method.executor.version !== '2026.09.21-v2') throw Error('compiled_executor_adapter_unavailable');
-  return {manifestBytes, profile};
+  const adapter = compiledExecutorAdapter(profile);
+  if (snapshot.files?.entry?.content !== adapter.entry) throw Error('compiled_release_entry_mismatch');
+  return {manifestBytes, profile, adapter};
 }
 export async function readCompiledExecutorLock(directory) {
   const lock = JSON.parse(readFileSync(join(directory,'compiled-executor-lock.json'), 'utf8'));

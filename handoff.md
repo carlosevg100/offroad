@@ -1,3 +1,7 @@
+## 2026-10-10: adaptadores revisados para executores compilados
+
+Worker e ferramentas de release aceitam mais de um método compilado por uma tabela revisada de adaptadores. Próximo: publicar o método de investimento (PR 904) e capturar seu artefato.
+
 ## 2026-10-10: investimento antes do financiamento, método implementado
 
 Método de investimento implementado e revisado, ainda não publicado. Próximos passos: generalizar captura, trava e worker para mais de um executor compilado; preparar a publicação (manifesto, revisão técnica, aprovação de conteúdo delegada pelo fundador em 9 out 2026); capturar o artefato; validador de payload e perfil no banco; liberar a capacidade.

@@ -6,6 +6,7 @@ import {releasedMethodArtifacts} from "./released-methods.generated";
 import {deriveExecutionProfile, deriveReceivablesExecutionProfile, type ExecutionProfile} from "@offroad/agent-contracts";
 import type * as Capital from "@offroad/financial-model";
 import type * as Receivables from "@offroad/receivables-analysis";
+import {compiledMethodAdapter, compiledMethodIds} from "./compiled-method-adapters";
 
 /** Exact release lookup; unavailable versions never fall back to the current workspace. */
 export function releasedMethodArtifact(identity: {methodId: string; methodVersion: string; manifestHash: string}) {
@@ -26,24 +27,31 @@ export function loadReleasedReceivables(): ReceivablesRelease {
 
 
 type CapitalRelease = Pick<typeof Capital, "prepareCapitalProcedurePacketV2" | "capitalProcedurePacketV2InputSchema" | "capitalProcedurePacketV2OutputSchema">;
-/** Only a packaged version can supply an available method. This loader grants no access. */
-export function loadReleasedCapital(identity: {methodId: string; methodVersion: string; manifestHash: string}) {
-  if (identity.methodId !== "prepare-capital-structure-decision") throw new Error("published_method_executor_unavailable");
+/** Only a packaged version of a reviewed compiled adapter can supply a method. This loader grants no access. */
+export function loadReleasedCompiled(identity: {methodId: string; methodVersion: string; manifestHash: string}) {
+  const adapter = compiledMethodAdapter(identity.methodId);
   const release = releasedMethodArtifact(identity);
   const file = new URL(`../released-methods/${release.artifactHash}.cjs`, import.meta.url);
   if (createHash("sha256").update(readFileSync(file)).digest("hex") !== release.artifactHash) throw new Error("published_method_artifact_mismatch");
   const manifest = JSON.parse(readFileSync(new URL(`../released-methods/${release.artifactHash}.manifest.json`, import.meta.url), "utf8"));
   const profile = deriveExecutionProfile(manifest, {id: release.platformReleaseId, manifestHash: release.manifestHash});
-  const executor = require(fileURLToPath(file)) as CapitalRelease;
-  if (typeof executor.prepareCapitalProcedurePacketV2 !== "function" || typeof executor.capitalProcedurePacketV2InputSchema?.parse !== "function"
-    || typeof executor.capitalProcedurePacketV2OutputSchema?.parse !== "function") throw new Error("published_method_exports_unavailable");
-  return Object.freeze({profile, executor: Object.freeze(executor)});
+  if (profile.method.executor.key !== adapter.executorKey || profile.method.executor.version !== adapter.executorVersion) throw new Error("published_method_executor_unavailable");
+  const executor = require(fileURLToPath(file)) as Record<string, unknown>;
+  const schema = (name: string) => typeof (executor[name] as {parse?: unknown} | undefined)?.parse === "function";
+  if (typeof executor[adapter.exports.calculate] !== "function" || !schema(adapter.exports.input) || !schema(adapter.exports.output)) throw new Error("published_method_exports_unavailable");
+  return Object.freeze({profile, adapter, executor: Object.freeze(executor)});
+}
+/** The published capital method, kept as a named loader for its existing callers. */
+export function loadReleasedCapital(identity: {methodId: string; methodVersion: string; manifestHash: string}) {
+  if (identity.methodId !== "prepare-capital-structure-decision") throw new Error("published_method_executor_unavailable");
+  const {profile, executor} = loadReleasedCompiled(identity);
+  return Object.freeze({profile, executor: executor as unknown as CapitalRelease});
 }
 
 /** Dispatch metadata is fixed by the installed release, never supplied by the caller. */
 export function loadReleasedExecutionProfile(identity: {methodId: string; methodVersion: string; manifestHash: string}): ExecutionProfile {
   const release = releasedMethodArtifact(identity);
-  if (identity.methodId === "prepare-capital-structure-decision") return loadReleasedCapital(identity).profile;
+  if (compiledMethodIds.includes(identity.methodId)) return loadReleasedCompiled(identity).profile;
   if (identity.methodId !== "underwrite-receivables-pool") throw new Error("published_method_executor_unavailable");
   const executor = loadReleasedReceivables();
   for (const schema of [executor.receivablesPoolUnderwritingInputSchema, executor.receivablesPoolUnderwritingSchema]) {

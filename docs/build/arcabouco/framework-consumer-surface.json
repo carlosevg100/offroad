@@ -483,7 +483,7 @@
     },
     {
       "path": "apps/document-worker/src/execution-queue.ts",
-      "sha256": "fc14934d19c309145510082e990ad6752cbfed8f99cab7adf4b5f0b415d853a3",
+      "sha256": "fafd34cbd30d8579500483293a24517f5f87653619b32fdd5029b7ede82a68ae",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_execution_v1",
