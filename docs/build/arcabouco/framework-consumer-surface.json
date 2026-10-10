@@ -584,7 +584,7 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "4fcdd17946fb37bd6a1101713f4709fa21a317af36c27cb10a9ec0d65efc0726",
+      "sha256": "32270ae519d44b9dc7cd585975eca6f4b5b1733c14b0f796f4774a1370a633f0",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
@@ -619,6 +619,7 @@
         "worker_load_integration_preview_artifacts_v1",
         "worker_load_latest_objective_workflow_selection_v1",
         "worker_load_preliminary_input_v2",
+        "worker_load_premise_evidence_v1",
         "worker_load_prior_case_report",
         "worker_load_provider_case_fit_context",
         "worker_load_provider_research_context",
@@ -633,6 +634,7 @@
         "worker_record_agent_failure",
         "worker_record_agent_plan_v1",
         "worker_record_agent_response_and_activate_v7",
+        "worker_record_agent_response_with_premises_v1",
         "worker_record_agent_stage_event_v1",
         "worker_record_analysis_scope_suggestions",
         "worker_record_candidates",

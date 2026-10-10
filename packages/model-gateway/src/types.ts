@@ -28,6 +28,7 @@ export type TaskKind =
   | "localize"
   | "route_intent"
   | "extract_semantic_objects"
+  | "investment_fact_extraction"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";
