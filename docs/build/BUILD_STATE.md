@@ -1,3 +1,7 @@
+## 2026-10-10: adaptadores revisados para executores compilados
+
+Executores compilados deixam de ser fixos no capital v4. Uma tabela revisada (`packages/credit-playbook/scripts/compiled-executor-adapters.mjs`, espelhada em `apps/document-worker/src/compiled-method-adapters.ts`) fixa, por método, a identidade do executor, os nomes exportados e a entrada empacotada. Captura, validação da trava, carregador do worker, cálculo isolado e reivindicação da fila passam a usar essa tabela. A validação confere que a entrada gravada no snapshot é a do adaptador. Nenhuma release nova, nenhuma migração; o artefato v4 é reconstruído byte a byte.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 `apps/document-worker/src/preflight-trial.test.ts` roda a pré-checagem de produção (`compileObjectivePreflight`) sobre um arquivo externo de frases e grava, para cada uma, tipo de objetivo, job de entrada, terminal, alvos, prontidão, receita de workflow e candidato a despacho. Sem modelo, sem banco, sem dado no repositório: o teste é pulado sem `PREFLIGHT_TRIAL_INPUT` e `PREFLIGHT_TRIAL_OUTPUT`. Serve de régua de progresso do roteador e da ponte entre conversa e métodos liberados. Sem mudança de produção.

@@ -8,6 +8,7 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {rebuildReleasedExecutor} from './build-released-executors.mjs';
+import {compiledExecutorAdapter} from './compiled-executor-adapters.mjs';
 const root = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const [commit, manifestPath] = process.argv.slice(2);
 if (!/^[a-f0-9]{40}$/.test(commit ?? '') || !/^packages\/credit-playbook\/knowledge\/reviews\/[\w/.-]+\.json$/.test(manifestPath ?? '') || manifestPath.split('/').includes('..')) throw Error('usage: capture-compiled-executor.mjs COMMIT MANIFEST_PATH');
@@ -28,7 +29,7 @@ const manifestBytes = readCommitted(manifestPath), manifest = JSON.parse(manifes
 const platformReleaseId = `${manifest.procedure.id}-${manifest.procedure.version}`;
 const profile = deriveExecutionProfile(manifest, {id:platformReleaseId, manifestHash:manifest.manifestHash});
 // The adapter and its schemas are explicit. Additional formats require their own reviewed adapter.
-if (profile.method.executor.key !== '@offroad/financial-model#prepareCapitalProcedurePacketV2' || profile.method.executor.version !== '2026.09.21-v2') throw Error('compiled_executor_adapter_unavailable');
+const adapter = compiledExecutorAdapter(profile);
 const selected = manifest.components.find(c => c.component.id === profile.selectedComponentId);
 const evidence = [...new Map(manifest.components.flatMap(c => c.evidence).map(p => [p.path, p])).values()];
 const pins = [...selected.executor.sources, ...manifest.compiler.sources, ...evidence,
@@ -44,7 +45,7 @@ if (readFileSync(join(root, 'pnpm-lock.yaml'), 'utf8') !== pinned['pnpm-lock.yam
 const files = {}, edges = {}, parseOnlySources = [];
 const unusedRegistry = 'packages/credit-playbook/src/method-runtime-manifest.ts';
 const canonical = path => relative(root, path).split('\\').join('/');
-const entry = 'export {prepareCapitalProcedurePacketV2, capitalProcedurePacketV2InputSchema, capitalProcedurePacketV2OutputSchema} from "../../packages/financial-model/src/capital-procedure-packet-v2.ts";';
+const entry = adapter.entry;
 const captured = await build({metafile:true, stdin:{contents:entry, resolveDir:join(root,'apps/document-worker'), sourcefile:'release-entry.ts', loader:'ts'}, bundle:true, write:false, format:'cjs', platform:'node', target:'node24', plugins:[{name:'capture-published-composition', setup(b) {
   b.onResolve({filter:/.*/}, async a => {
     if (a.pluginData?.skip) return;

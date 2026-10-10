@@ -1,6 +1,7 @@
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {releasedMethodArtifacts} from "./released-methods.generated";
+import {compiledMethodIds} from "./compiled-method-adapters";
 
 const hash=z.string().regex(/^[a-f0-9]{64}$/);
 export const executionQueueClaimSchema=z.object({claimed:z.literal(true),jobId:z.uuid(),leaseId:z.uuid(),capability:z.string().min(32).max(128),attempt:z.number().int().positive(),
@@ -31,7 +32,7 @@ export function createExecutionQueue(client:SupabaseClient,workerToken:string):E
  const rpc=async(name:string,args:Record<string,unknown>,bytes=0)=>{const {data,error}=await client.rpc(name,args).abortSignal(AbortSignal.timeout(executionTransportTimeoutMs(bytes)));if(error)throw new Error("execution_transport_failed");return data;};
  const lease=(c:ExecutionQueueClaim)=>({p_job:c.jobId,p_capability:c.capability,p_lease:c.leaseId});
  return {
-  async claim(){const data=await rpc("worker_claim_execution_v1",{p_worker_token:workerToken,p_manifest_hashes:releasedMethodArtifacts.filter(r=>r.methodId==="prepare-capital-structure-decision").map(r=>r.manifestHash)});
+  async claim(){const data=await rpc("worker_claim_execution_v1",{p_worker_token:workerToken,p_manifest_hashes:releasedMethodArtifacts.filter(r=>compiledMethodIds.includes(r.methodId)).map(r=>r.manifestHash)});
    if(z.object({claimed:z.literal(false)}).strict().safeParse(data).success)return null;return executionQueueClaimSchema.parse(data);},
   async renew(c){return executionRenewalSchema.parse(await rpc("worker_renew_execution_v1",lease(c)));},
   async reserve(c){return reservationSchema.parse(await rpc("worker_reserve_execution_v1",lease(c)));},

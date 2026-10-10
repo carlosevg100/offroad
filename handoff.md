@@ -1,3 +1,7 @@
+## 2026-10-10: adaptadores revisados para executores compilados
+
+Worker e ferramentas de release aceitam mais de um método compilado por uma tabela revisada de adaptadores. Próximo: publicar o método de investimento (PR 904) e capturar seu artefato.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 Régua sem modelo: `preflight-trial.test.ts` mede o que a pré-checagem decide para frases externas. Medição de 9 out 2026: 28 de 138 frases no tipo esperado, 6 em tipo aceitável, zero tarefas executáveis em todas. Próximos trabalhos: tipos de objetivo por papel de quem pergunta (banco, originador, fundo) e a ponte da conversa para métodos liberados.

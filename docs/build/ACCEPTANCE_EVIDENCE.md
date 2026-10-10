@@ -1,3 +1,7 @@
+## 2026-10-10: adaptadores revisados para executores compilados
+
+`compiled-executors.eval.mjs` 11/11 (inclui a reprodução do artefato v4 e a recusa de entrada substituída); worker 1802 testes, 1 condicional pulado; `compiled-method-adapters.test.ts` mantém a tabela do worker idêntica à da construção.
+
 ## 2026-10-09: régua da pré-checagem sem modelo
 
 Sem as variáveis, o teste aparece como pulado (1 skipped). Com elas, sobre 138 frases mantidas fora do repositório, a saída em main `af040c18` é byte a byte igual à rodada feita no branch da PR #902 antes do merge. Resultado medido: nenhuma frase gera tarefa executável e o candidato a despacho fica bloqueado em todas.
