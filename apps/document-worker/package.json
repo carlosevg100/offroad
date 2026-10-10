@@ -11,7 +11,7 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1146.0",
+    "@aws-sdk/client-s3": "3.1147.0",
     "@offroad/agent-contracts": "workspace:*",
     "@offroad/case-engine": "workspace:*",
     "@offroad/case-export": "workspace:*",
@@ -36,7 +36,7 @@
     "@offroad/reconciliation": "workspace:*",
     "@offroad/release-governance": "workspace:*",
     "@offroad/work-plan": "workspace:*",
-    "@supabase/supabase-js": "2.116.0",
+    "@supabase/supabase-js": "2.117.3",
     "decimal.js": "10.6.0",
     "zod": "4.4.3"
   },
