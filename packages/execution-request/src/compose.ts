@@ -1,5 +1,5 @@
 import {executionCanonicalText, type ExecutionContract, type ExecutionGates} from "@offroad/agent-contracts";
-import {composeBoundCapitalPacketV2, deriveBoundCapitalScope} from "@offroad/financial-model";
+import {composeBoundCapitalPacketV2, composeBoundInvestmentPacket, deriveBoundCapitalScope} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {composeExecutionContract, contractBasisVersions, executionContractText, type ExecutionContractBasis, type ExecutionRequestIds} from "./contract";
 import {closeExecutionGates, openExecutionGates} from "./gates";
@@ -25,7 +25,25 @@ export type CapitalExecutionComposition =
  * reads a database, calls a model or sends anything.
  */
 export function composeCapitalExecutionRequest(input: {basis: ExecutionContractBasis; ask: CapitalExecutionAsk; ids: ExecutionRequestIds; now?: Date}): CapitalExecutionComposition {
+  return composeMethodExecutionRequest(input);
+}
+
+/** The packet composer of each released method, chosen by the method the server's basis names. */
+const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: CapitalExecutionAsk) => unknown> = {
+  "prepare-capital-structure-decision": (basis, ask) => {
+    const scope = {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId};
+    const snapshot = readContextualBasis(basis.envelope, scope);
+    return composeBoundCapitalPacketV2({envelope: basis.envelope, scope, question: ask.question, objectives: [...ask.objectives], asOf: ask.asOf, ...deriveBoundCapitalScope(snapshot, ask.asOf)});
+  },
+  "analyze-investment-project": (basis, ask) =>
+    composeBoundInvestmentPacket({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+};
+
+/** Same order and refusals as the capital request, for any method with a packet composer. */
+export function composeMethodExecutionRequest(input: {basis: ExecutionContractBasis; ask: CapitalExecutionAsk; ids: ExecutionRequestIds; now?: Date}): CapitalExecutionComposition {
   const {basis, ask} = input;
+  const composePacket = packetComposers[basis.profile.method.methodId];
+  if (!composePacket) return {ok: false, error: "method_unavailable"};
   const opened = openExecutionGates({company: basis.company, method: basis.profile.method, situationIds: ask.situationIds, referenceDate: ask.asOf});
   if (!opened.ok) return {ok: false, error: opened.error};
   // Every adopted source must be pinned with verified bytes and current rights, or the database
@@ -33,9 +51,7 @@ export function composeCapitalExecutionRequest(input: {basis: ExecutionContractB
   if (basis.unverifiedSources.length) return {ok: false, error: "provenance_denied", unverifiedSources: basis.unverifiedSources};
   let packet: unknown; let snapshotText: string; let contract: ExecutionContract; let contractText: string;
   try {
-    const scope = {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId};
-    const snapshot = readContextualBasis(basis.envelope, scope);
-    packet = composeBoundCapitalPacketV2({envelope: basis.envelope, scope, question: ask.question, objectives: [...ask.objectives], asOf: ask.asOf, ...deriveBoundCapitalScope(snapshot, ask.asOf)});
+    packet = composePacket(basis, ask);
     snapshotText = executionCanonicalText(packet);
     contract = composeExecutionContract(basis, snapshotText, input.ids, input.now);
     contractText = executionContractText(contract);

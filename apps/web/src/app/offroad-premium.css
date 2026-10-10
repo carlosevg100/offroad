@@ -13509,3 +13509,18 @@ button[disabled].workspace-search,
   .application-shell:has(.advisor-project) {grid-template-columns: 58px minmax(0, 1fr);}
   .application-shell:has(.advisor-project) > .app-rail {width: 58px; transition: none;}
 }
+
+/* Investment premises proposed by the conversation: grouped by origin, adopted only on confirmation. */
+.investment-premises-card {background: #fff; border: 1px solid #dde2d9; border-radius: 14px; color: #22292e; display: grid; gap: 14px; margin-top: 12px; padding: 18px 20px; width: 100%;}
+.investment-premises-card > header strong {font-size: 13px; font-weight: 640;}
+.investment-premises-card > header p {color: #616b71; font-size: 11px; line-height: 1.5; margin: 6px 0 0;}
+.investment-premises-card__group > small {color: #6c7d4e; display: block; font-size: 9px; font-weight: 680; letter-spacing: .08em; margin-bottom: 6px; text-transform: uppercase;}
+.investment-premises-card__group dl {display: grid; gap: 6px; margin: 0;}
+.investment-premises-card__group dl > div {border-top: 1px solid #eef0ec; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); padding-top: 6px;}
+.investment-premises-card__group dt {color: #4a545a; font-size: 11px;}
+.investment-premises-card__group dd {font-size: 11px; font-variant-numeric: tabular-nums; margin: 0;}
+.investment-premises-card__group dd span {color: #858f95; display: block; font-size: 10px; margin-top: 2px;}
+.investment-premises-card__cases {color: #616b71; font-size: 11px; line-height: 1.5; margin: 0;}
+.investment-premises-card__done {align-items: center; color: #4f6b2f; display: flex; font-size: 11px; gap: 6px; margin: 0;}
+.investment-premises-card__error {color: #8a4b1f; font-size: 11px; margin: 0;}
+@media (max-width: 640px) {.investment-premises-card__group dl > div {grid-template-columns: minmax(0, 1fr);}}

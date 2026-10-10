@@ -25,6 +25,7 @@ export const gatewayCallLogSchema = z.object({
     "localize",
     "route_intent",
     "extract_semantic_objects",
+    "investment_fact_extraction",
     "preview_questions",
     "preview_synthesis",
     "baseline_generalist",

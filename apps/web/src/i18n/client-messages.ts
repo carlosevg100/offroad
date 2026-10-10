@@ -10,6 +10,7 @@ export function selectClientMessages(messages: Messages) {
     IntegrationPreviewWork: messages.IntegrationPreviewWork,
     decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,
+    InvestmentPremisesCard: messages.InvestmentPremisesCard,
     AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
     AdvisorWorkSurface: messages.AdvisorWorkSurface,
     Intake: {executionApproval: messages.Intake.executionApproval},

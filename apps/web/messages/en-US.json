@@ -7190,5 +7190,51 @@
       "diligence_qa": "Diligence questions",
       "data_room_index": "Document index"
     }
+  },
+  "InvestmentPremisesCard": {
+    "title": "Premises for analyzing the investment",
+    "lead": "The calculation uses only these premises, each with its origin. Confirm to calculate, or correct them in the conversation and I will redo the proposal.",
+    "origin": {
+      "document": "From the documents",
+      "informed": "Stated by you",
+      "house": "House premises"
+    },
+    "premise": {
+      "capex": "Investment by year",
+      "operationStart": "Start of operation",
+      "ramp": "Start-up ramp",
+      "annualIncrementalRevenue": "New revenue per year",
+      "annualDisplacedPurchases": "Purchases that stop per year",
+      "annualNewVariableCost": "New variable cost per year",
+      "annualNewFixedCost": "New fixed cost per year",
+      "annualMaintenance": "Maintenance per year",
+      "usefulLifeYears": "Useful life",
+      "annualGrowth": "Annual volume growth",
+      "cashTaxRate": "Tax rate on profit",
+      "receivableDays": "Collection period of new revenue",
+      "inventoryDays": "Input inventory",
+      "newSupplierDays": "New suppliers' payment terms",
+      "lostSupplierDays": "Current supplier terms that end",
+      "discountRate": "Cost of capital",
+      "workingCapitalReturnsAtEnd": "Working capital returns at end of life"
+    },
+    "money": "BRL {value} mn",
+    "capexYear": "{year}: {amount}",
+    "rampStage": "{months, plural, one {# month} other {# months}} at {load}",
+    "years": "{count, plural, one {# year} other {# years}}",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "yes": "yes",
+    "no": "no",
+    "cases": "I calculate five cases on the same basis: the investment as planned, benefit one third lower, capex 20% higher, start six months later and deferral of twelve months.",
+    "confirm": "Confirm premises and calculate",
+    "confirming": "Saving the premises",
+    "pendingRelease": "Premises confirmed. The calculation runs as soon as the investment method is released.",
+    "requested": "Premises confirmed. Calculation in progress.",
+    "openCalculation": "Open the calculation",
+    "superseded": "Replaced by a more recent proposal in this conversation.",
+    "errors": {
+      "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
+      "unavailable": "I could not confirm now. Please try again."
+    }
   }
 }
