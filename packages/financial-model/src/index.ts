@@ -71,3 +71,4 @@ export * from "./ficha-executor-contracts";
 export * from "./investment-decision-packet";
 export * from "./investment-decision-contracts";
 export * from "./investment-decision-composer";
+export * from "./investment-premises";
