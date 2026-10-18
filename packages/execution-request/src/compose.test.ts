@@ -39,7 +39,9 @@ describe("capital execution request composition", () => {
     expect({contract: sha(composed.contractText), snapshot: sha(composed.snapshotText), gates: sha(composed.gatesText)}).toEqual({
       contract: "7c0da956fa2c9f77f3c197d7f52003773f6e2b6ce68bacf5b92bdd3942a6513d",
       snapshot: "a4199ad51044e7b74739d5ebce7cbbb42760a4097cf13d47605687427066d4cc",
-      gates: "4572e4b3ff8bcda43f2dd85f0a7f99f6873e1a5aa417c45a483a19713a0cf4b5",
+      // The gates receipt changed only by methodSelectionVersion 2026.10.10-v2 (capex now also served by
+      // the investment method); contract and snapshot bytes are the ones recorded at 7eb90d00.
+      gates: "af12cfe43144dd35ad1270c4b95663d6f344b72eeb61da9d11dbcfacc4764b92",
     });
     expect([composed.contractText.length, composed.snapshotText.length, composed.gatesText.length]).toEqual([13804, 119624, 700]);
     expect(composed.contract.inputs.fingerprint).toBe(sha(composed.snapshotText));

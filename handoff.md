@@ -1,3 +1,7 @@
+## 2026-10-10: ponte da conversa para premissas de investimento
+
+Ponte da conversa: proposta de premissas no turno, cartão de confirmação e pedido de execução. Falta publicar o método de investimento (manifesto e revisão técnica serão refeitos a partir do commit desta ponte; a aprovação de conteúdo exige ato explícito do fundador) e compor a resposta do turno a partir do resultado do cálculo.
+
 ## 2026-10-10: adaptadores revisados para executores compilados
 
 Worker e ferramentas de release aceitam mais de um método compilado por uma tabela revisada de adaptadores. Próximo: publicar o método de investimento (PR 904) e capturar seu artefato.
