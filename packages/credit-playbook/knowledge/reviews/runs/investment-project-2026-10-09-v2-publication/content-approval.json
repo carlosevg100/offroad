@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-18T20:35:33.793160+00:00",
+  "manifestHash": "aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 18/10/2026 para o procedimento Analisar o investimento antes do financiamento, versão 2026.10.09-v2. Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/investment-project-2026-10-09-v2-publication/founder-instruction.json; SHA-256 955a811bc9d8c4510baec7f604561a34a579417509f576d665ce9d3ad82f1b33. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}

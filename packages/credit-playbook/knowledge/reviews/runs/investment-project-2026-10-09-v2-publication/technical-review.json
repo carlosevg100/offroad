@@ -1,0 +1,9 @@
+{
+  "kind": "technical_review",
+  "actor": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "result": "approved",
+  "humanApproval": false,
+  "occurredAt": "2026-10-18T21:58:25Z",
+  "manifestHash": "aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2",
+  "rationale": "No commit a2369d0285fbe417007516201c74c7cebe307cec, regenerei o manifesto em clone temporário e confirmei igualdade integral com procedureBuildProvenance e recomputação do manifestHash. Conferi 325 pins SHA-256, cobrindo 316 caminhos distintos: 9 do compilador, 310 do executor, 5 de evidências e 1 do procedimento, incluindo os dois arquivos da ponte de premissas. Confirmei ready_for_review, pendingContent vazio, maturidade tested, grantsExecution false, orçamento de zero chamadas e custo, maximumEffect none e exatamente um executor @offroad/financial-model#prepareInvestmentDecisionPacket@2026.10.09-v1. Os contratos e seus hashes coincidem com investment-decision-packet.json e com os schemas regenerados. A única condição da revisão independente está atendida: valor residual, continuidade, crescimento terminal, tributação correspondente e encerramento estão declarados como limitações, com bloqueio de conclusões dependentes. Verifiquei 112 fluxos em 10 execuções de casos, sem parcelas terminais não suportadas. Os dois arquivos Vitest solicitados passaram, totalizando 8 testes, sob Node 24.19.0. Nenhum arquivo do repositório original foi alterado."
+}
