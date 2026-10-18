@@ -2,6 +2,10 @@
 
 O resultado do método de investimento passa a virar revisão `execution_result`, como o de capital: o projetor escolhe o mapeamento pelo tipo do pacote (`private.execution_result_investment_blocks_v1`, espelho de `investmentDecisionPacketBlocks`, provado pelo fixture sintético C32 em `supabase/tests/investment_result_artifacts.sql`). Migração aplicada em staging (20261018205305) e produção (20261018205500), advisors limpos. A tela da execução mostra a comparação dos cenários (VPL, TIR, payback, capital de giro de partida, maior necessidade de caixa e caixa mínimo da companhia com e sem o projeto), arredondada só na exibição. Falta publicar o método e compor a resposta do turno a partir do resultado.
 
+## 2026-10-10: ponte da conversa para premissas de investimento
+
+Ponte da conversa: proposta de premissas no turno, cartão de confirmação e pedido de execução. Falta publicar o método de investimento (manifesto e revisão técnica serão refeitos a partir do commit desta ponte; a aprovação de conteúdo exige ato explícito do fundador) e compor a resposta do turno a partir do resultado do cálculo.
+
 ## 2026-10-10: adaptadores revisados para executores compilados
 
 Worker e ferramentas de release aceitam mais de um método compilado por uma tabela revisada de adaptadores. Próximo: publicar o método de investimento (PR 904) e capturar seu artefato.

@@ -1,3 +1,7 @@
+## 2026-10-10: ponte da conversa para premissas de investimento
+
+Teste SQL `supabase/tests/work_premise_proposals.sql` passou no staging (transação desfeita, nenhum dado remanescente): proposta só com capacidade do job, chaves e caminhos estranhos recusados, membro sem acesso não vê nem confirma, confirmação grava três hipóteses como o dono com entidade e definição escolhidas, retentativa idempotente, impressão digital alterada recusada, escrita direta negada. Worker: `investment-premises-proposal.test.ts` (C32 completa com premissas da casa marcadas, custo de capital nunca padrão, falha nunca derruba o turno, UUID v5 com vetor independente). Web: `investment-premises-card.test.tsx` nas duas línguas. financial-model: composer e construtor de premissas reproduzem a C32 pela base adotada.
+
 ## 2026-10-10: adaptadores revisados para executores compilados
 
 `compiled-executors.eval.mjs` 11/11 (inclui a reprodução do artefato v4 e a recusa de entrada substituída); worker 1802 testes, 1 condicional pulado; `compiled-method-adapters.test.ts` mantém a tabela do worker idêntica à da construção.

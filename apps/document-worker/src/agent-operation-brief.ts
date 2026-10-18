@@ -62,6 +62,7 @@ import type {PreviewActivation} from "./integration-preview";
 import {rejectRetiredFrameworkJob} from "./framework-dispatch-policy";
 import {specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
 import {safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
+import {investmentFactExtractionContract, proposeInvestmentPremisesForTurn} from "./investment-premises-proposal";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -255,6 +256,13 @@ Rules:
   universe and a separate "broader" universe.
 - Keep the response in the locale supplied in the input.
 - A proposal is only a preview. The product applies it only after explicit user acceptance.
+- investmentPremises is the premise proposal for an investment in this turn. When its status is
+  proposed, the premises appear in a card below your reply, each with its origin (document, stated by
+  the user, or house premise). Give the reading the user needs before the calculation: what the
+  investment is, why it is analyzed before the financing, which house premises you are using and why,
+  and that the calculation runs only after the user confirms or corrects them. Never state a result
+  (value, return, payback) before the calculation exists. When its status is missing, ask for the
+  missing items in one batch, each with the reason it changes the analysis.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -262,7 +270,7 @@ export const advisorResponseContract = {
   task: "agent_operation_brief", system: SYSTEM,
   schema: agentOperationBriefResponseSchema, schemaName: "agent_operation_brief_response_v2",
   outputMode: "prompted_json", maxOutputTokens: 6_000,
-  cacheKey: "advisor-conversation-2026.09.09-v3",
+  cacheKey: "advisor-conversation-2026.10.10-v4",
 } as const;
 
 /**
@@ -528,6 +536,23 @@ export async function processAgentOperationBriefJob(
     });
     const deterministicClarification = buildDeterministicCapabilityClarification(context, executionRoute);
     const deterministicActivation = deterministicClarification ? null : buildDeterministicActivation(context, executionRoute);
+    // A capital question about an identifiable investment in private work proposes its premises;
+    // nothing is adopted or calculated until the person confirms them.
+    const premises = deterministicClarification || deterministicActivation || executionRoute.action !== "continue_private_case"
+      || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises ? null
+      : await proposeInvestmentPremisesForTurn({
+          message: context.message,
+          recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
+          projectId: context.project?.id ?? null,
+          loadEvidence: () => queue.loadPremiseEvidence!(job),
+          extract: async (text) => (await gateway.complete({
+            ...investmentFactExtractionContract,
+            input: [{type: "text", text}],
+            dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+            metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+          })).output,
+          log: (event, detail) => log(event, {job: job.job_id, ...detail}),
+        });
     const completion = deterministicClarification
       ? {
           output: deterministicClarification,
@@ -565,6 +590,7 @@ export async function processAgentOperationBriefJob(
               collaborativeAdvisoryPolicy,
               recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
               latestUserMessage: context.message,
+              investmentPremises: premises?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -680,8 +706,13 @@ export async function processAgentOperationBriefJob(
         });
       }
     }
-    await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation, executionBrief);
+    if (premises?.proposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
+      await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premises.proposal);
+    } else {
+      await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation, executionBrief);
+    }
     await queue.writeStage(job, "agent_operation_brief", "succeeded", {
+      investmentPremises: premises?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

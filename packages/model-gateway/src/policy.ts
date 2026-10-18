@@ -99,6 +99,9 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   // A separate attributable-span pass owns semantic objects. It runs beside intent routing,
   // returns no prose and cannot route or execute, so its output and exposure stay tightly bounded.
   extract_semantic_objects: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 3_000, timeoutMs: 60_000},
+  // Facts of an investment stated in the turn or in reviewed document fields, for a premise proposal the
+  // person confirms. Extraction only, no prose and no estimates; bounded like the semantic-object pass.
+  investment_fact_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_500, timeoutMs: 60_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.

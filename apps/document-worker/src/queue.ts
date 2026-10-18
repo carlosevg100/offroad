@@ -406,6 +406,10 @@ export type QueueClient = {
     supersededCount: number;
     boundCount: number;
   }>;
+  /** Reviewed document fields of the turn's session that can carry the facts of an investment. */
+  loadPremiseEvidence?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The turn's reply and its premise proposal, in one transaction; only a person's confirmation adopts them. */
+  recordAgentResponseWithPremises?(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, premises: unknown): Promise<void>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -1246,6 +1250,20 @@ export function createQueueClient(
         supersededCount: parsed.superseded_count,
         boundCount: parsed.bound_count,
       };
+    },
+
+    async loadPremiseEvidence(job) {
+      return call("worker_load_premise_evidence_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async recordAgentResponseWithPremises(job, assistantMessageId, response, premises) {
+      await call("worker_record_agent_response_with_premises_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_assistant_message_id: assistantMessageId,
+        p_response: response,
+        p_premises: premises,
+      });
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation, executionBrief) {

@@ -77,7 +77,7 @@ export function c32PacketBasis() {
     for (const input of inputs) input.envelope = envelope;
     return envelope;
   }
-  return {entries, addCase, overlay, seal};
+  return {entries, addCase, overlay, seal, contributor};
 }
 
 /** The five C32 cases of projeto_embalagem.py, as a packet input. Sensitivities adopt only
@@ -109,4 +109,18 @@ export function c32PacketInput(o: {quantum?: string} = {}) {
     {id: "defer-12", role: "deferral" as const, label: "Adiar doze meses", changes: ["Desembolsos e partida um ano depois"], analysis: b.addCase({scenario: "defer-12", deferYears: 1, ...o})},
   ];
   return {basis: b, input: {schemaVersion: "investment-decision-packet-input.v1" as const, question: "A linha de embalagem se paga e deve seguir agora?", cases}, seal: b.seal};
+}
+
+/** The same five cases with their roles, labels, changes and inheritance adopted in the basis,
+ * as the bound composer reads them. */
+export function c32PacketWithCaseMetadata(o: {quantum?: string} = {}) {
+  const f = c32PacketInput(o);
+  for (const c of f.input.cases) {
+    const a = c.analysis, add = f.basis.contributor(a.scenario, a.openingDate, a.endDate);
+    add("case.role", "convention", {type: "text", value: c.role});
+    add("case.label", "explanation", {type: "text", value: c.label});
+    if (c.changes.length) add("case.changes", "explanation", {type: "list", value: c.changes});
+    if (a.inheritedScenario) add("case.inherits", "convention", {type: "text", value: a.inheritedScenario});
+  }
+  return f;
 }

@@ -60,8 +60,11 @@ export const productionModelCeilingsUsd = {
    * (0.3710) and answered by Sol: 1.6767; x1.10 = 1.8443. The historical maximum, 0.2245 per job,
    * plus the largest request fits with room. Only a turn in which the shadow requests fail too at
    * that size (every request through its whole chain, about 2.1) would reach the ceiling.
+   * A capital turn about an identifiable investment adds one bounded fact extraction (Sonnet 5
+   * low, 2.5k output, the turn and at most 400 reviewed document fields): about 0.08 per request and
+   * 0.16 through the Terra fallback, x1.10 = 0.18 on top of the 1.8443 above: 2.03.
    */
-  agentOperationBrief: 1.85,
+  agentOperationBrief: 2.05,
   /**
    * Database: 0.25 and 1 call (`private.enqueue_work_turn_v1`, and a literal of the worker's job
    * schema). Largest request 0.1867 (Sonnet 5, 0.0886 old); x1.10 = 0.2054. The value stays.

@@ -100723,6 +100723,333 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "function:private.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+      "kind": "function",
+      "name": "confirm_work_premise_proposal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_premise_evidence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+      "kind": "function",
+      "name": "worker_record_agent_response_with_premises_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.confirm_work_premise_proposal_v1(p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid)",
+      "kind": "function",
+      "name": "confirm_work_premise_proposal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_proposal_id uuid, p_expected_fingerprint text, p_entity_id uuid, p_definition_version_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_load_premise_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_premise_evidence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+      "kind": "function",
+      "name": "worker_record_agent_response_with_premises_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_delete",
+      "kind": "policy",
+      "name": "work_premise_proposals_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_insert",
+      "kind": "policy",
+      "name": "work_premise_proposals_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_select",
+      "kind": "policy",
+      "name": "work_premise_proposals_select",
+      "qual": "( SELECT private.can_access_capital_project(work_premise_proposals.organization_id, work_premise_proposals.capital_project_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_premise_proposals.work_premise_proposals_update",
+      "kind": "policy",
+      "name": "work_premise_proposals_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:public.work_premise_proposals",
+      "rls": true,
+      "kind": "table",
+      "name": "work_premise_proposals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ],
+        [
+          "service_role",
+          "DELETE",
+          false
+        ],
+        [
+          "service_role",
+          "INSERT",
+          false
+        ],
+        [
+          "service_role",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "service_role",
+          "REFERENCES",
+          false
+        ],
+        [
+          "service_role",
+          "SELECT",
+          false
+        ],
+        [
+          "service_role",
+          "TRIGGER",
+          false
+        ],
+        [
+          "service_role",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "service_role",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:public.work_premise_proposals.work_premise_proposals_audit",
+      "kind": "trigger",
+      "name": "work_premise_proposals_audit",
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER work_premise_proposals_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.work_premise_proposals.work_premise_proposals_set_updated_at",
+      "kind": "trigger",
+      "name": "work_premise_proposals_set_updated_at",
+      "table": "work_premise_proposals",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_premise_proposals_set_updated_at BEFORE UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.execution_result_investment_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_investment_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"
