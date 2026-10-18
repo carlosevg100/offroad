@@ -3,13 +3,14 @@ import {describe, expect, it} from "vitest";
 import {executionCanonicalText, type ExecutionGates} from "@offroad/agent-contracts";
 import {evaluateConventionsGate, MD_TEST_RUBRIC, selectMethod} from "@offroad/credit-playbook";
 import {
-  capitalMdTestGatesSchema, composeBoundCapitalPacketV2, deriveBoundCapitalScope, deriveCapitalChartSeries, evaluateMdTest, prepareCapitalProcedurePacketV2,
+  capitalMdTestGatesSchema, composeBoundCapitalPacketV2, deriveBoundCapitalScope, deriveCapitalChartSeries, evaluateMdTest, prepareCapitalProcedurePacketV2, prepareInvestmentDecisionPacket,
 } from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {adoptedCapitalPeriodFixture, capitalStructureDecisionFixture} from "@offroad/testing-fixtures/capital-structure-decision";
 import {formatDecimal} from "./format";
 import {buildExecutionGates} from "@offroad/execution-request";
-import {capitalProcedurePacketBlocks, readCapitalProcedurePacketBlocks, type CapitalProcedurePacketLike} from "@offroad/domain-contracts";
+import {capitalProcedurePacketBlocks, investmentDecisionPacketBlocks, readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type CapitalProcedurePacketLike, type InvestmentDecisionPacketLike} from "@offroad/domain-contracts";
+import {c32PacketInput} from "../../../../../packages/financial-model/src/investment-decision-packet.test-support";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
 import type {ExecutionRevisionState} from "./revision";
 
@@ -250,5 +251,30 @@ describe("a result read from its registered revision", () => {
     const text = packetText();
     const view = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, registered(text, {freshness: "stale"}));
     expect(view.result && !view.result.withheld && view.result.revision?.freshness).toBe("stale");
+  });
+});
+
+describe("an investment analysis result", () => {
+  const full = () => {const f = c32PacketInput({quantum: "10000"}); f.seal(); return prepareInvestmentDecisionPacket(f.input);};
+  it("reads the case comparison from committed bytes of an execution without a revision, and runs no capital test over it", () => {
+    const packet = full();
+    const view = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))});
+    expect(view.result && !view.result.withheld && view.result.packet).toBeNull();
+    expect(view.result && !view.result.withheld && view.result.mdTest).toBeNull();
+    const investment = view.result && !view.result.withheld ? view.result.investment : null;
+    expect(investment?.conclusionChangingCaseIds).toEqual(["economy-4", "capex-120", "slower-start"]);
+    expect(investment?.metrics.find(m => m.caseId === "base")?.netPresentValue).toBe(packet.comparison.metrics[0]!.netPresentValue);
+  });
+  it("takes the comparison from the registered revision when there is one", () => {
+    const packet = full();
+    const investment = readInvestmentDecisionPacketBlocks(investmentDecisionPacketBlocks(packet as unknown as InvestmentDecisionPacketLike))!;
+    const view = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))}, {state: "ready", revision: {revisionId: "30000000-0000-4000-8000-000000000001",
+      revisionNo: 2, recordedAt: "2026-10-18T12:00:00+00:00", freshness: "current", kind: "investment", investment,
+      pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: null}}});
+    expect(view.result).toMatchObject({withheld: false, source: "revision", packet: null, investment, revision: {revisionNo: 2}});
+  });
+  it("does not read a capital packet or unknown bytes as an investment result", () => {
+    const view = projectWorkExecution({...base, result: committedResult(JSON.stringify({schemaVersion: "investment-decision-packet.v1"}))});
+    expect(view.result && !view.result.withheld && view.result.investment).toBeNull();
   });
 });

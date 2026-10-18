@@ -1309,3 +1309,112 @@ export function legacyProjection(input: LegacyRow): ArtifactRevisionDraft {
     }
   }
 }
+
+// Investment decision results -------------------------------------------------------------------
+//
+// The blocks of an `investment-decision-packet.v1` execution result, key for key the SQL mapping
+// `private.execution_result_investment_blocks_v1`: framing, cases, per-case metrics (value, return
+// and payback carried as calculation claims), what changes the conclusion, gaps and exclusions.
+// Values are copied from the packet; nothing is recomputed here.
+
+type Decimal = string | null;
+type DatedAmount = {readonly amount: string; readonly periodEndDate: string} | null;
+export type InvestmentDecisionPacketLike = {
+  readonly schemaVersion: "investment-decision-packet.v1";
+  readonly status: "framed" | "partial" | "prepared_for_human_review";
+  readonly question: string; readonly currency: string; readonly fingerprint: string; readonly financialCoreVersion: string;
+  readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]; readonly result: {readonly fingerprint: string}}>;
+  readonly comparison: {
+    readonly baseCaseId: string; readonly conclusionChangingCaseIds: readonly string[]; readonly timingCaseIds: readonly string[];
+    readonly metrics: ReadonlyArray<{readonly caseId: string; readonly netPresentValue: Decimal; readonly deltaNetPresentValue: Decimal; readonly annualIrr: Decimal;
+      readonly irrStatus: string | null; readonly discountRate: Decimal; readonly paybackYears: Decimal; readonly startupWorkingCapital: Decimal;
+      readonly peakCumulativeCashNeed: DatedAmount; readonly companyMinimumCash: {readonly withoutProject: DatedAmount; readonly withProject: DatedAmount} | null;
+      readonly resultStatus: string}>;
+  };
+  readonly gaps: ReadonlyArray<{readonly caseId: string; readonly operand: string; readonly reason: string}>;
+  readonly exclusions: readonly string[];
+};
+
+export function investmentDecisionPacketBlocks(packet: InvestmentDecisionPacketLike): readonly ArtifactBlockDraft[] {
+  if (packet.schemaVersion !== "investment-decision-packet.v1") throw new Error("execution_result_unmappable");
+  const fingerprintOf = new Map(packet.cases.map((c) => [c.id, c.result.fingerprint]));
+  const drafts: unknown[] = [
+    {blockKey: "framing", kind: "section", claims: [],
+      content: {status: packet.status, question: packet.question, currency: packet.currency, baseCaseId: packet.comparison.baseCaseId, caseCount: packet.cases.length}},
+    {blockKey: "cases", kind: "table",
+      content: {rows: packet.cases.map((c) => ({id: c.id, role: c.role, label: c.label, changes: [...c.changes]}))},
+      claims: packet.cases.map((c) => ({claimId: c.id, kind: "judgment", value: c.label, unit: null, period: null, supportIds: [c.result.fingerprint]}))},
+    {blockKey: "metrics", kind: "table",
+      content: {rows: packet.comparison.metrics.map((m) => ({caseId: m.caseId, netPresentValue: m.netPresentValue, deltaNetPresentValue: m.deltaNetPresentValue,
+        annualIrr: m.annualIrr, irrStatus: m.irrStatus, discountRate: m.discountRate, paybackYears: m.paybackYears, startupWorkingCapital: m.startupWorkingCapital,
+        peakCashNeed: m.peakCumulativeCashNeed?.amount ?? null, peakCashNeedDate: m.peakCumulativeCashNeed?.periodEndDate ?? null,
+        companyMinimumCashWithout: m.companyMinimumCash?.withoutProject?.amount ?? null, companyMinimumCashWithoutDate: m.companyMinimumCash?.withoutProject?.periodEndDate ?? null,
+        companyMinimumCashWith: m.companyMinimumCash?.withProject?.amount ?? null, companyMinimumCashWithDate: m.companyMinimumCash?.withProject?.periodEndDate ?? null,
+        resultStatus: m.resultStatus}))},
+      claims: packet.comparison.metrics.flatMap((m) => [
+        ...(m.netPresentValue !== null ? [{claimId: `npv:${m.caseId}`, kind: "calculation", value: m.netPresentValue, unit: packet.currency, period: null, supportIds: [fingerprintOf.get(m.caseId) ?? packet.fingerprint]}] : []),
+        ...(m.annualIrr !== null ? [{claimId: `irr:${m.caseId}`, kind: "calculation", value: m.annualIrr, unit: "ratio", period: null, supportIds: [fingerprintOf.get(m.caseId) ?? packet.fingerprint]}] : []),
+        ...(m.paybackYears !== null ? [{claimId: `payback:${m.caseId}`, kind: "calculation", value: m.paybackYears, unit: "years", period: null, supportIds: [fingerprintOf.get(m.caseId) ?? packet.fingerprint]}] : []),
+      ])},
+    {blockKey: "conclusion", kind: "section", claims: [],
+      content: {conclusionChangingCaseIds: [...packet.comparison.conclusionChangingCaseIds], timingCaseIds: [...packet.comparison.timingCaseIds]}},
+    {blockKey: "information-gaps", kind: "table", claims: [],
+      content: {rows: packet.gaps.map((g) => ({caseId: g.caseId, operand: g.operand, reason: g.reason}))}},
+    {blockKey: "exclusions", kind: "section", claims: [], content: {items: [...packet.exclusions]}},
+  ];
+  const blocks = drafts.map((draft) => artifactBlockDraftSchema.parse(draft));
+  if (duplicates(blocks.map((block) => block.blockKey))) throw new Error("duplicate_block_key");
+  if (duplicates(blocks.flatMap((block) => block.claims.map((claim) => claim.claimId)))) throw new Error("duplicate_claim_id");
+  return freezeArtifactValue(blocks);
+}
+
+export type InvestmentResultBlocksView = {
+  readonly framing: {readonly status: "framed" | "partial" | "prepared_for_human_review"; readonly question: string; readonly currency: string; readonly baseCaseId: string; readonly caseCount: number};
+  readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]}>;
+  readonly metrics: ReadonlyArray<{readonly caseId: string; readonly netPresentValue: Decimal; readonly deltaNetPresentValue: Decimal; readonly annualIrr: Decimal;
+    readonly irrStatus: string | null; readonly discountRate: Decimal; readonly paybackYears: Decimal; readonly startupWorkingCapital: Decimal;
+    readonly peakCashNeed: Decimal; readonly peakCashNeedDate: string | null; readonly companyMinimumCashWithout: Decimal; readonly companyMinimumCashWithoutDate: string | null;
+    readonly companyMinimumCashWith: Decimal; readonly companyMinimumCashWithDate: string | null; readonly resultStatus: string}>;
+  readonly conclusionChangingCaseIds: readonly string[];
+  readonly timingCaseIds: readonly string[];
+  readonly informationGaps: ReadonlyArray<{readonly caseId: string; readonly operand: string; readonly reason: string}>;
+  readonly exclusions: readonly string[];
+};
+const dec = z.string().regex(decimalText).nullable();
+const investmentFramingBlock = z.strictObject({blockKey: z.literal("framing"), kind: z.literal("section"), claims: noClaims,
+  content: z.strictObject({status: z.enum(["framed", "partial", "prepared_for_human_review"]), question: z.string(), currency: z.string(), baseCaseId: z.string(), caseCount: z.number().int().positive()})});
+const investmentCasesBlock = z.strictObject({blockKey: z.literal("cases"), kind: z.literal("table"), claims: z.array(artifactClaimSchema),
+  content: z.strictObject({rows: z.array(z.strictObject({id: z.string(), role: z.string(), label: z.string(), changes: z.array(z.string())}))})});
+const investmentMetricsBlock = z.strictObject({blockKey: z.literal("metrics"), kind: z.literal("table"), claims: z.array(artifactClaimSchema),
+  content: z.strictObject({rows: z.array(z.strictObject({caseId: z.string(), netPresentValue: dec, deltaNetPresentValue: dec, annualIrr: dec, irrStatus: z.string().nullable(),
+    discountRate: dec, paybackYears: dec, startupWorkingCapital: dec, peakCashNeed: dec, peakCashNeedDate: z.string().nullable(),
+    companyMinimumCashWithout: dec, companyMinimumCashWithoutDate: z.string().nullable(), companyMinimumCashWith: dec, companyMinimumCashWithDate: z.string().nullable(), resultStatus: z.string()}))})});
+const investmentConclusionBlock = z.strictObject({blockKey: z.literal("conclusion"), kind: z.literal("section"), claims: noClaims,
+  content: z.strictObject({conclusionChangingCaseIds: z.array(z.string()), timingCaseIds: z.array(z.string())})});
+const investmentGapsBlock = z.strictObject({blockKey: z.literal("information-gaps"), kind: z.literal("table"), claims: noClaims,
+  content: z.strictObject({rows: z.array(z.strictObject({caseId: z.string(), operand: z.string(), reason: z.string()}))})});
+const investmentExclusionsBlock = z.strictObject({blockKey: z.literal("exclusions"), kind: z.literal("section"), claims: noClaims,
+  content: z.strictObject({items: z.array(z.string())})});
+
+/** The reader of `investmentDecisionPacketBlocks`; any unknown, missing or inconsistent block gives null. */
+export function readInvestmentDecisionPacketBlocks(blocks: ReadonlyArray<{readonly blockKey: string; readonly kind: string; readonly content: unknown; readonly claims: unknown}>): InvestmentResultBlocksView | null {
+  const byKey = new Map<string, unknown>();
+  for (const block of blocks) {
+    if (byKey.has(block.blockKey)) return null;
+    byKey.set(block.blockKey, {blockKey: block.blockKey, kind: block.kind, content: block.content, claims: block.claims});
+  }
+  const parse = <T>(key: string, schema: z.ZodType<T>): T | null => {const r = schema.safeParse(byKey.get(key)); byKey.delete(key); return r.success ? r.data : null;};
+  const framing = parse("framing", investmentFramingBlock), cases = parse("cases", investmentCasesBlock), metrics = parse("metrics", investmentMetricsBlock);
+  const conclusion = parse("conclusion", investmentConclusionBlock), gaps = parse("information-gaps", investmentGapsBlock), exclusions = parse("exclusions", investmentExclusionsBlock);
+  if (!framing || !cases || !metrics || !conclusion || !gaps || !exclusions || byKey.size > 0) return null;
+  if (cases.content.rows.length !== cases.claims.length || cases.content.rows.some((row, i) => cases.claims[i]?.claimId !== row.id)) return null;
+  for (const claim of metrics.claims) {
+    const [kind, caseId] = claim.claimId.split(":");
+    const row = metrics.content.rows.find((r) => r.caseId === caseId);
+    const value = kind === "npv" ? row?.netPresentValue : kind === "irr" ? row?.annualIrr : kind === "payback" ? row?.paybackYears : undefined;
+    if (value === undefined || value === null || claim.value !== value) return null;
+  }
+  return freezeArtifactValue({framing: framing.content, cases: cases.content.rows, metrics: metrics.content.rows,
+    conclusionChangingCaseIds: conclusion.content.conclusionChangingCaseIds, timingCaseIds: conclusion.content.timingCaseIds,
+    informationGaps: gaps.content.rows, exclusions: exclusions.content.items});
+}

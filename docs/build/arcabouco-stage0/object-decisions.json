@@ -319374,6 +319374,61 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.execution_result_investment_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_investment_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_investment_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_investment_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_investment_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação da ficha C32 (resultado do investimento)",
+      "decision": "preservar",
+      "stage": "fichas C32, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado de investimento; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261018205500_investment_result_artifacts.sql",
+          "line": 7,
+          "anchor": "create function private.execution_result_investment_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     }
   ],
   "repository_items": [
@@ -326897,6 +326952,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Ampliar os objetivos admitidos pelo preflight para paridade com o compiler; nenhuma mudança de RLS, grants ou liberação de método."
+    },
+    {
+      "path": "supabase/migrations/20261018205500_investment_result_artifacts.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Resultado da análise de investimento vira revisão execution_result como o de capital; o projetor escolhe o mapeamento pelo tipo do pacote. Nenhuma mudança de RLS, grants ou liberação de método."
     }
   ],
   "staging_archive": [
