@@ -63,8 +63,19 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
   return {ok: true, executionId: result.data.executionId, replayed: result.data.replayed};
 }
 
-const premiseDefinitionKey = "investment.premises";
-const premiseDefinitionText = "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.";
+/** What each method's confirmed premises are and what the confirmation asks the method to answer. */
+const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"];
+const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
+  "analyze-investment-project": {key: "investment.premises",
+    text: "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.",
+    ask: () => ({question: "O investimento se paga e deve seguir agora?", objectives: ["Medir valor, retorno, payback e caixa consumido pelo investimento e o que muda a conclusão"], situationIds: ["capex-infrastructure"]})},
+  "compare-financing-proposals": {key: "comparison.premises",
+    text: "Termos de propostas para a mesma necessidade e premissas da companhia confirmados pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && comparisonSituations.includes(summary.situationId)
+      ? {question: "Qual das propostas cabe na companhia e quanto custa de fato?",
+        objectives: ["Comparar custo efetivo pela vida, caixa com a dívida existente, covenant na definição de cada credor, garantia e firmeza, e o que elimina antes da preferência"],
+        situationIds: [summary.situationId]} : null},
+};
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};
 type PremiseFailure = {ok: false; error: ExecutionRequestError | "company_unregistered" | "superseded"};
 
@@ -74,14 +85,25 @@ type PremiseFailure = {ok: false; error: ExecutionRequestError | "company_unregi
  * to calculate over exactly that basis version. Until the method is released and granted, the
  * premises stay confirmed and the calculation waits; nothing is invented to fill the gap. */
 export async function confirmInvestmentPremises(input: unknown): Promise<PremiseSuccess | PremiseFailure> {
+  return confirmPremiseProposal(input);
+}
+
+/** The same act for any method with premise proposals: the proposal names its method, which decides
+ * the premise definition and what the released method is asked to answer over the confirmed basis. */
+export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuccess | PremiseFailure> {
   const parsed = route.extend({proposalId: z.uuid(), fingerprint: z.string().regex(/^[a-f0-9]{64}$/), requestId: z.uuid(), definitionRequestId: z.uuid()}).strict().safeParse(input);
   if (!parsed.success) return failure({code: "22023"});
   const {locale, projectId, proposalId, fingerprint, requestId, definitionRequestId} = parsed.data;
   const {supabase, organization} = await requireWorkspace(locale);
-  const proposal = await supabase.from("work_premise_proposals").select("id, capital_project_id, intake_session_id, status, fingerprint, method_id")
+  const proposal = await supabase.from("work_premise_proposals").select("id, capital_project_id, intake_session_id, status, fingerprint, method_id, summary")
     .eq("organization_id", organization.id).eq("id", proposalId).eq("capital_project_id", projectId).maybeSingle();
   if (!proposal.data) return failure({code: "42501"});
   if (proposal.data.status === "superseded" || proposal.data.fingerprint !== fingerprint) return {ok: false, error: "superseded"};
+  const method = premiseMethods[proposal.data.method_id];
+  const summary = proposal.data.summary && typeof proposal.data.summary === "object" && !Array.isArray(proposal.data.summary) ? proposal.data.summary as Record<string, unknown> : {};
+  const ask = method?.ask(summary) ?? null;
+  if (!method || !ask) return failure({code: "22023"});
+  const premiseDefinitionKey = method.key, premiseDefinitionText = method.text;
   const dossiers = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).in("resource_id", [projectId, proposal.data.intake_session_id]);
   if (dossiers.error || !dossiers.data?.length) return {ok: false, error: "company_unregistered"};
   const now = new Date().toISOString();
@@ -112,7 +134,7 @@ export async function confirmInvestmentPremises(input: unknown): Promise<Premise
   const basis = executionContractBasisSchema.safeParse(assembled.data);
   if (!basis.success || basis.data.workId !== projectId || basis.data.versionId !== versionId || basis.data.purpose !== capitalDecisionPurpose) return failure({code: "22023"});
   const composed = composeMethodExecutionRequest({basis: basis.data,
-    ask: {question: "O investimento se paga e deve seguir agora?", objectives: ["Medir valor, retorno, payback e caixa consumido pelo investimento e o que muda a conclusão"], asOf: now.slice(0, 10), situationIds: ["capex-infrastructure"]},
+    ask: {...ask, asOf: now.slice(0, 10)},
     ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}});
   if (!composed.ok) return composed.error === "method_unavailable" ? {ok: true, versionId, executionId: null, calculation: "pending_release"}
     : composed.error === "provenance_denied" || composed.error === "composition_invalid" ? failure({code: "22023"}) : refused(composed.error);

@@ -289,11 +289,12 @@ async function ConversationalCapitalProject({
           .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("occurred_at"),
       ])
     : [{data: []}, {data: []}];
-  const premiseRows = await supabase.from("work_premise_proposals").select("id, assistant_message_id, status, fingerprint, facts")
+  const premiseRows = await supabase.from("work_premise_proposals").select("id, assistant_message_id, status, fingerprint, facts, method_id, summary")
     .eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at");
   const premiseByMessage = new Map((premiseRows.data ?? []).map((row) => [row.assistant_message_id, {id: row.id,
     status: (row.status === "confirmed" || row.status === "superseded" ? row.status : "proposed") as "proposed" | "confirmed" | "superseded", fingerprint: row.fingerprint,
-    facts: row.facts && typeof row.facts === "object" && !Array.isArray(row.facts) ? row.facts as Record<string, unknown> : {}}]));
+    facts: row.facts && typeof row.facts === "object" && !Array.isArray(row.facts) ? row.facts as Record<string, unknown> : {},
+    methodId: row.method_id, summary: row.summary && typeof row.summary === "object" && !Array.isArray(row.summary) ? row.summary as Record<string, unknown> : {}}]));
   const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
       ? supabase.from("agent_messages").select("id, role, content, status, error_code, proposal_id, metadata, created_at, human_author_id").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
