@@ -24,8 +24,8 @@ describe("installed published capital executor", () => {
     expect(executor.capitalProcedurePacketV2OutputSchema.safeParse({}).success).toBe(false);
     expect(() => executor.prepareCapitalProcedurePacketV2({})).toThrow();
   });
-  it("verifies both published artifacts at startup without executing a customer job", () => {
-    expect(verifyInstalledMethodArtifacts()).toBe(2);
+  it("verifies every published artifact at startup without executing a customer job", () => {
+    expect(verifyInstalledMethodArtifacts()).toBe(3);
     const entry = releasedMethodArtifacts.find(r => r.methodId === identity.methodId)!;
     expect(createHash("sha256").update(readFileSync(new URL(`../released-methods/${entry.artifactHash}.cjs`, import.meta.url))).digest("hex")).toBe(entry.artifactHash);
   });
