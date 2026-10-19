@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T15:14:50.327Z",
-    "finishedAt": "2026-10-19T15:15:51.520Z",
-    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
+    "startedAt": "2026-10-19T15:33:57.047Z",
+    "finishedAt": "2026-10-19T15:35:01.871Z",
+    "commit": "2f2b271840ad6162afd246ad731afe06e2b48372"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "[[\"itau\",[4,3.5,13.2636,1.9475,51.892,81.3197]],[\"santander\",[4.0047,4,19.4592,1.9071,52.4246,81.6387]],[\"fundo\",[3.5475,4.75,20.7828,1.8788,51.2504,80.5113]]]",
       "observed": "[[\"itau\",[4,3.5,13.2636,1.9475,51.892,81.3197]],[\"santander\",[4.0047,4,19.4592,1.9071,52.4246,81.6387]],[\"fundo\",[3.5475,4.75,20.7828,1.8788,51.2504,80.5113]]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "[[\"itau\",[-0.261,\"2028-12-31\",2.4513,0.5487,94.8443]],[\"santander\",[8.17,\"2028-12-31\",2.4368,0.5632,95.1633]],[\"fundo\",[9.7266,\"2028-12-31\",2.3936,0.3564,93.6068]]]",
       "observed": "[[\"itau\",[-0.261,\"2028-12-31\",2.4513,0.5487,94.8443]],[\"santander\",[8.17,\"2028-12-31\",2.4368,0.5632,95.1633]],[\"fundo\",[9.7266,\"2028-12-31\",2.3936,0.3564,93.6068]]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "{\"misleads\":true,\"lowestCost\":\"fundo\"}",
       "observed": "{\"misleads\":true,\"lowestCost\":\"fundo\"}",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "{\"facts\":[[\"itau\",[\"cash_below_zero\"]],[\"santander\",[]],[\"fundo\",[]]],\"everyCase\":[\"santander\",\"fundo\"],\"changing\":[\"bank-stress\"]}",
       "observed": "{\"facts\":[[\"itau\",[\"cash_below_zero\"]],[\"santander\",[]],[\"fundo\",[]]],\"everyCase\":[\"santander\",\"fundo\"],\"changing\":[\"bank-stress\"]}",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "{\"facts\":[[\"itau\",[[],[\"cash_below_policy_minimum\"]]],[\"santander\",[[],[]]],[\"fundo\",[[],[]]]],\"viable\":[\"itau\",\"santander\",\"fundo\"]}",
       "observed": "{\"facts\":[[\"itau\",[[],[\"cash_below_policy_minimum\"]]],[\"santander\",[[],[]]],[\"fundo\",[[],[]]]],\"viable\":[\"itau\",\"santander\",\"fundo\"]}",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -67,7 +67,7 @@
       "expectation": "[[\"itau\",2],[\"santander\",1],[\"fundo\",2]]",
       "observed": "[[\"itau\",2],[\"santander\",1],[\"fundo\",2]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -75,7 +75,7 @@
       "expectation": "[[\"itau\",[3,1.0525]],[\"santander\",[3,1.0929]],[\"fundo\",[2.75,0.8712]]]",
       "observed": "[[\"itau\",[3,1.0525]],[\"santander\",[3,1.0929]],[\"fundo\",[2.75,0.8712]]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -83,7 +83,7 @@
       "expectation": "[[\"itau\",[28,30]],[\"santander\",[21,37]],[\"fundo\",[0,58]]]",
       "observed": "[[\"itau\",[28,30]],[\"santander\",[21,37]],[\"fundo\",[0,58]]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -91,7 +91,7 @@
       "expectation": "[[\"itau\",64.3725],[\"santander\",56.1175],[\"fundo\",56.7119]]",
       "observed": "[[\"itau\",64.3725],[\"santander\",56.1175],[\"fundo\",56.7119]]",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -99,7 +99,7 @@
       "expectation": "{\"cost\":\"fundo\",\"cash\":\"fundo\",\"stressCash\":\"fundo\"}",
       "observed": "{\"cost\":\"fundo\",\"cash\":\"fundo\",\"stressCash\":\"fundo\"}",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -107,7 +107,7 @@
       "expectation": "[[\"itau-negotiated\",3.82],[\"santander-230\",3.74]]",
       "observed": "[[\"itau-negotiated\",3.82],[\"santander-230\",3.74]]",
       "inputFingerprint": "1c84b32f6cf66a64e4accc56ff799086e29a87be3cb01fdd3acb20f753ba109f",
-      "outputFingerprint": "b8ae48d45a85115153a48e1623e13b3536abe58e7f5ffab8911983d4a80eabcf",
+      "outputFingerprint": "de3930fe436bc3eb065e15a482a6084f5f2543170abd86ed54f313de6faafe48",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "expectation": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[\"collateral_above_policy\"]],[\"fundo\",[]]]}",
       "observed": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[\"collateral_above_policy\"]],[\"fundo\",[]]]}",
       "inputFingerprint": "b3855f2b53258001269da8a9341ecbdca77202a2c92ac3a1f4a2dbcc1ff34389",
-      "outputFingerprint": "ab82d74bcc77b228f680646361dc9b745fbb04c0700dc076e1778397cb702ea6",
+      "outputFingerprint": "3f7db480a3bf7c39800841f8b0d5e0da20d4462c6b41f0f34999a39d2a3f588a",
       "passed": true
     },
     {
@@ -123,7 +123,7 @@
       "expectation": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
       "observed": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
       "inputFingerprint": "fe57a486b491d4285e1f469b4d374e879aef6e6a75cb1f7da1cb7c88c40944e5",
-      "outputFingerprint": "cf6205e180bad5d331994e06cd57dccf7f58445f7903a6d82fc7f6b4bdd912c2",
+      "outputFingerprint": "1c6f8fcc4f81fcf97fb102d2a67868fa1467751be426162102df3877cb5e8114",
       "passed": true
     },
     {
@@ -131,7 +131,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":true,\"compared\":[\"itau\",\"santander\"],\"incomplete\":[\"fundo\"]}",
       "observed": "{\"status\":\"partial\",\"gap\":true,\"compared\":[\"itau\",\"santander\"],\"incomplete\":[\"fundo\"]}",
       "inputFingerprint": "02b19b616bff85b003c6d49dac7fa276be46cb4afe78e910aa42e5be3bcffc09",
-      "outputFingerprint": "e10f8f6fe55b2b9f6a0e59cff3056e785dc594cacd26993180f5e145b58cbbea",
+      "outputFingerprint": "75e76f89af9b32790b9956de9027519e361775ea5cdd61b2e48ce8bd6dce23b0",
       "passed": true
     },
     {
@@ -139,27 +139,35 @@
       "expectation": "{\"fundo\":3.9148}",
       "observed": "{\"fundo\":3.9148}",
       "inputFingerprint": "69894066232d6abb4546cae8071042d04e219fa992c3194d043c345306c5f333",
-      "outputFingerprint": "7999e95a5c23b6d71df45484991a909a3858cb59973bd726a15d2b3e143aaeeb",
+      "outputFingerprint": "446c4ee42b2d360562f4bb411e278a08a44ade4f72bee64e8e7348333288d4ba",
       "passed": true
     },
     {
       "id": "contract-dates-and-business-days",
       "expectation": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
       "observed": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
-      "inputFingerprint": "5d15a36f56b15bbb70cae3d0e1b1397056c747fdf2036781516ce045378c8a27",
-      "outputFingerprint": "37c41086498653ad029dba8d6539d6d8e27f680fdbcc9cd2133625b861f34368",
+      "inputFingerprint": "8740c1f5905a3d5bc7fd29cdedcdb49b60e856babf2795cd7bf571c8ad7f1bfb",
+      "outputFingerprint": "99b1134293e434418baf2b0de37177268d69ac6a99685b543bd3fcec749c598d",
+      "passed": true
+    },
+    {
+      "id": "a-fee-paid-after-the-draw-is-paid-on-its-date",
+      "expectation": "{\"itau\":4.1044}",
+      "observed": "{\"itau\":4.1044}",
+      "inputFingerprint": "9c63945057ef41eb01a2af0a01c827bbf56d74d9d17ca3ae58db9a44de1b703c",
+      "outputFingerprint": "b587d2ba948e62f2652d5ff65662d4534e7737ed2f1320aaddef3e75804435a1",
       "passed": true
     },
     {
       "id": "contract-dates-in-the-company-view",
       "expectation": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
       "observed": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
-      "inputFingerprint": "5d15a36f56b15bbb70cae3d0e1b1397056c747fdf2036781516ce045378c8a27",
-      "outputFingerprint": "37c41086498653ad029dba8d6539d6d8e27f680fdbcc9cd2133625b861f34368",
+      "inputFingerprint": "8740c1f5905a3d5bc7fd29cdedcdb49b60e856babf2795cd7bf571c8ad7f1bfb",
+      "outputFingerprint": "99b1134293e434418baf2b0de37177268d69ac6a99685b543bd3fcec749c598d",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "c7b169cd051b693393a1611f72a7527f916e30f0225da70edd43ed1b74943e00",
+  "evidenceFingerprint": "9143beb43ba055ebd98d64bdbc42e0747a5c355f643927932d391898d995d54b",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T15:14:50.327Z",
-    "finishedAt": "2026-10-19T15:15:51.521Z",
-    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
+    "startedAt": "2026-10-19T15:33:57.047Z",
+    "finishedAt": "2026-10-19T15:35:01.872Z",
+    "commit": "2f2b271840ad6162afd246ad731afe06e2b48372"
   },
   "modelCalls": 0,
   "cases": [
@@ -130,7 +130,7 @@
       "id": "business-days-off-the-national-calendar",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "9fd73f1c58664036710dd9e313fe3b4c17eb3270718d6f30eeb7d217fe6f97ca",
+      "inputFingerprint": "2b2956257854a21a1f8c4c8819836897b0115594a62f76db4ce83b31cd997f06",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -159,6 +159,14 @@
       "passed": true
     },
     {
+      "id": "fee-after-the-draw-declared-as-withheld",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "0a3f11dbcb9b4929b6d1064b7137b3ebeabe60efe7989afc30e444fd19847730",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "free-result-in-request",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -176,6 +184,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "c3aabca44a49537293965c16476a39adc522f2b53c2f9dbccd3ff5f50b60667c",
+  "evidenceFingerprint": "9b644d0afc503597a307878931e8e537e8a6f8e375d7e5183f034dae3767b2c2",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
