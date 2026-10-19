@@ -89,7 +89,7 @@ describe("financing comparison premises proposed from a turn", () => {
   it("keeps each clause's own origin and refuses a coupon period off whole quarters", () => {
     const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
-    const p = buildFinancingComparisonPremiseProposal(c.facts);
+    const p = buildFinancingComparisonPremiseProposal(c.facts, c.situationId);
     const charges = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.charges.chargeIds`))!;
     expect(charges.reason).toContain("waiver, informado (assembleia da debênture de 2021)");
     expect(charges.reason).toContain("comissão, documento (ts-itau.pdf)");
