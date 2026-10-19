@@ -129,7 +129,8 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", true, earlier)).toBe(false);
     for (const m of ["A alíquota é 34%, certo?", "Três parcelas anuais a partir de 2030, certo?", "O CDI é 12%, certo?"])
       expect(shouldProposeDebtCapacityPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Pode considerar a alíquota de 34%", "Pode usar CDI de 12%", "O EBITDA é 60 milhões conforme explicado na projeção", "Caixa mínimo de R$ 15 milhões"])
+    for (const m of ["Pode considerar a alíquota de 34%", "Pode usar CDI de 12%", "O EBITDA é 60 milhões conforme explicado na projeção", "Caixa mínimo de R$ 15 milhões", "O EBITDA é sessenta milhões",
+      "O EBITDA é quarenta milhões", "O spread é de 250 bps", "O caixa mínimo é R$ 15 milhões, conforme detalha a projeção"])
       for (const docs of [false, true]) expect(shouldProposeDebtCapacityPremises(m, docs, earlier), m).toBe(true);
     for (const m of ["E qual o EBITDA de 2029?", "E, qual o EBITDA de 2029", "Pode explicar a alíquota de 34%?", "Pode explicar o CDI em uma frase?", "Me explica o covenant de 3x",
       "O CDI de 12% faz sentido?", "Resuma o CDI em 1 frase", "Vou enviar a projeção em 2 dias"])
