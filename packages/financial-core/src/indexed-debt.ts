@@ -1,7 +1,10 @@
 import Decimal from "decimal.js";
 
 export type IndexedDebtTreatment = "not_applicable" | "cash_paid" | "capitalized_principal";
-export type CouponTreatment = "cash_paid" | "capitalized_principal";
+/** `accrued_until_paid`: the coupon accrues outside principal, earns the period rate until it is
+ * paid (the CDI capitalization convention between payment dates) and is settled on the periods
+ * marked `paysAccruedCoupon`; unpaid accrued coupon is not debt principal. */
+export type CouponTreatment = "cash_paid" | "capitalized_principal" | "accrued_until_paid";
 /** Average principal deducts half of the principal amortized before this period's
  * coupon capitalization. It is a declared period convention, not a dated accrual. */
 export type CouponBase = "opening_principal" | "indexed_principal" | "average_principal";
@@ -20,6 +23,8 @@ export type IndexedDebtPeriodInput = {
    * the contractual nominal is updated by the index and the updated amount, not the opening
    * nominal alone, is settled at maturity. */
   repayAll?: boolean;
+  /** Only with `accrued_until_paid`: settle the coupon accrued since the last payment in this period. */
+  paysAccruedCoupon?: boolean;
 };
 
 export type IndexedDebtInstrumentInput = {
@@ -95,7 +100,12 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     throw new RangeError("non-zero indexation requires an explicit treatment");
   }
 
+  const deferred = input.couponTreatment === "accrued_until_paid";
+  if (!deferred && input.periods.some((period) => period.paysAccruedCoupon !== undefined)) {
+    throw new RangeError("paysAccruedCoupon requires the accrued_until_paid coupon treatment");
+  }
   let principal = nonNegative(input.openingPrincipal, "opening principal");
+  let accruedUnpaid = new Decimal(0);
   let totalCashDebtService = new Decimal(0);
   let totalFinanceExpense = new Decimal(0);
   let totalIndexationCapitalized = new Decimal(0);
@@ -130,8 +140,14 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
       : input.couponBase === "average_principal"
         ? indexedPrincipal.minus(requestedPrincipal.div(2))
         : indexedPrincipal;
-    const couponAccrued = Decimal.max(couponBase, 0).mul(couponRate);
-    const couponPaid = input.couponTreatment === "cash_paid" ? couponAccrued : new Decimal(0);
+    // A deferred coupon earns the period rate on the unpaid accrual as well (interest on interest
+    // until the payment date); the accrual stays out of principal.
+    const couponAccrued = Decimal.max(couponBase.plus(accruedUnpaid), 0).mul(couponRate);
+    let couponPaid = input.couponTreatment === "cash_paid" ? couponAccrued : new Decimal(0);
+    if (deferred) {
+      accruedUnpaid = accruedUnpaid.plus(couponAccrued);
+      if (period.paysAccruedCoupon || period.repayAll) { couponPaid = accruedUnpaid; accruedUnpaid = new Decimal(0); }
+    }
     const couponCapitalized = input.couponTreatment === "capitalized_principal" ? couponAccrued : new Decimal(0);
     // Compute the coupon on its declared base before settling it. Including PIK in
     // that base through the final payment would create a circular average-principal formula.
@@ -166,6 +182,7 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     });
   }
 
+  if (deferred && !accruedUnpaid.isZero() && input.periods.at(-1)?.repayAll) throw new RangeError("accrued coupon left unpaid after repayAll");
   return {
     instrumentId: input.instrumentId,
     rows,

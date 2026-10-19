@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 
 import {aggregateIndexedDebtSchedules, buildIndexedDebtSchedule} from "./indexed-debt";
@@ -202,4 +203,32 @@ it("aggregates an explicitly confirmed empty debt ledger across its stated perio
  expect(aggregateIndexedDebtSchedules([], ["2027","2028"])).toEqual([expect.objectContaining({period:"2027",closingPrincipal:"0",cashDebtService:"0"}),expect.objectContaining({period:"2028",closingPrincipal:"0",cashDebtService:"0"})]);
  expect(aggregateIndexedDebtSchedules([])).toEqual([]);
  expect(()=>aggregateIndexedDebtSchedules([], ["2027","2027"])).toThrow();
+});
+
+describe("coupon accrued until paid", () => {
+  // Ficha C02, proposal "Fundo" (fictitious): R$ 70 mi, CDI 14% / 12.75% / 12% plus 3.1% a year,
+  // interest accrued with interest on interest and paid every six months, 50% principal at
+  // months 48 and 60. Expected service per quarter from the independent oracle modelo_c02.py.
+  const cdi = [...Array(4).fill("0.14"), ...Array(4).fill("0.1275"), ...Array(13).fill("0.12")];
+  const rate = (c: string) => new Decimal(c).plus(1).mul("1.031").pow("0.25").minus(1).toFixed(30);
+  const expected = ["0", "5.889169187704249105", "0", "5.889169187704249105", "0", "5.471963337387745474", "0", "5.471963337387745474",
+    "0", "5.220529112736238450", "0", "5.220529112736238450", "0", "5.220529112736238450", "0", "5.220529112736238450",
+    "35", "3.938863502225960047", "0", "2.610264556368119225", "36.281665610510278403"];
+  it("settles the compounded accrual on payment periods and keeps it out of principal", () => {
+    const schedule = buildIndexedDebtSchedule({
+      instrumentId: "fundo", openingPrincipal: "70", indexer: "none", indexationTreatment: "not_applicable",
+      couponTreatment: "accrued_until_paid", couponBase: "opening_principal",
+      periods: cdi.map((c, q) => ({period: `q${String(q).padStart(2, "0")}`, indexationRate: "0", couponRate: rate(c),
+        scheduledPrincipal: q === 16 || q === 20 ? "35" : "0", paysAccruedCoupon: q % 2 === 1 || q === 20})),
+    });
+    schedule.rows.forEach((row, q) => expect(new Decimal(row.cashDebtService).minus(expected[q]!).abs().lt("1e-8")).toBe(true));
+    expect(schedule.rows[0]!.couponPaid).toBe("0");
+    expect(schedule.rows[0]!.closingPrincipal).toBe("70");
+    expect(schedule.rows.at(-1)!.closingPrincipal).toBe("0");
+  });
+  it("refuses a payment flag on another treatment", () => {
+    expect(() => buildIndexedDebtSchedule({instrumentId: "x", openingPrincipal: "1", indexer: "none", indexationTreatment: "not_applicable",
+      couponTreatment: "cash_paid", couponBase: "opening_principal", periods: [{period: "q", indexationRate: "0", couponRate: "0.01", paysAccruedCoupon: true}]}))
+      .toThrow("paysAccruedCoupon requires the accrued_until_paid coupon treatment");
+  });
 });
