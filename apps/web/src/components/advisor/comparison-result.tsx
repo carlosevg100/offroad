@@ -13,7 +13,8 @@ export async function ComparisonResult({locale, view}: {locale: string; view: Fi
   const x = (v: string) => `${formatRounded(v, 2, locale)}x`;
   const caseLabel = (id: string) => view.cases.find((c) => c.id === id)?.label ?? id;
   const fact = (key: string) => t.has(`facts.${key}`) ? t(`facts.${key}`) : key;
-  // Offers without a complete reading in some case are named apart: a gap is not a refusal.
+  // Offers without a complete reading in some case are counted apart (the packet names them by identity
+  // only, and their gaps are listed below): a gap is not a refusal.
   const incomplete = [...new Set(view.conclusion.cases.flatMap((c) => c.incompleteProposalIds))];
   const proposalLabel = (id: string | null) => id === null ? "·" : view.proposals.find((p) => p.proposalId === id)?.label ?? id;
   return <section className="investment-result"><h2>{t("title")}</h2>
@@ -53,7 +54,7 @@ export async function ComparisonResult({locale, view}: {locale: string; view: Fi
     <p>{view.conclusion.viableInEveryCaseProposalIds.length
       ? t("viableEverywhere", {list: view.conclusion.viableInEveryCaseProposalIds.map(proposalLabel).join("; ")})
       : incomplete.length ? t("noneCompleteViableEverywhere") : t("noneViableEverywhere")}</p>
-    {incomplete.length ? <p>{t("incomplete", {list: incomplete.map(proposalLabel).join("; ")})}</p> : null}
+    {incomplete.length ? <p>{t("incomplete", {count: String(incomplete.length)})}</p> : null}
     <ul>{view.conclusion.cases.map((c) => <li key={c.caseId}>{t("perCase", {case: caseLabel(c.caseId), cheapest: proposalLabel(c.lowestEquivalentCostProposalId),
       safest: proposalLabel(c.highestMinimumCashProposalId)})}</li>)}</ul>
     {view.conclusion.conclusionChangingCaseIds.length ? <p>{t("changing", {list: view.conclusion.conclusionChangingCaseIds.map(caseLabel).join("; ")})}</p> : null}

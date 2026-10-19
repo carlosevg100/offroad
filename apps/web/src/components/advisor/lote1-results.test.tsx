@@ -52,7 +52,8 @@ describe("comparison result with gaps", () => {
       cases: comparison.conclusion.cases.map((c, n) => n ? c : {...c, incompleteProposalIds: [id]})}};
     const html = renderToStaticMarkup(await ComparisonResult({locale: "pt-BR", view}));
     expect(html).toContain(pt.App.workExecutions.comparison.noneCompleteViableEverywhere);
-    expect(html).toContain("Sem leitura completa por lacuna: " + comparison.proposals[0]!.label);
+    expect(html).toContain("Propostas sem leitura completa por lacuna: 1.");
+    expect(html).not.toContain(id);
     expect(html).not.toContain(pt.App.workExecutions.comparison.noneViableEverywhere);
   });
 });

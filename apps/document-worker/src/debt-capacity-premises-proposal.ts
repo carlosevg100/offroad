@@ -10,13 +10,18 @@ export const debtCapacityPremiseMethod = {methodId: "assess-debt-capacity", meth
 const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
 
-/** How much new debt fits: the turn may propose the capacity analysis's premises. A message that
- * answers with figures right after a capacity question continues it, so the data asked for in one
- * batch reaches the extraction without the person repeating the question. */
+const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
+const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil|milhao|milhoes|bilhao|bilhoes)\b/;
+
+/** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
+ * is open in the person's recent messages, an answer that states capacity data with a quantity
+ * continues it, so the data asked for reaches the extraction without the question being repeated; a
+ * new question or a remark without such data does not. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
   const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
-  if (kind !== "factual_question" && capacityCue.test(fold(message))) return true;
-  return /\d/.test(message) && earlierUserMessages.slice(-2).some((m) => capacityCue.test(fold(m)));
+  const text = fold(message);
+  if (kind !== "factual_question" && capacityCue.test(text)) return true;
+  return !text.includes("?") && capacityData.test(text) && quantity.test(text) && earlierUserMessages.slice(-4).some((m) => capacityCue.test(fold(m)));
 }
 
 const origin = z.enum(["informed", "document"]);
@@ -62,7 +67,7 @@ export const debtCapacityExtractionContract = {
     "Valores monetários em reais, sem separador de milhar (R$ 60 milhões vira 60000000). Taxas em fração (CDI + 2,5% vira annualSpread 0.025; alíquota de 34% vira 0.34).",
     "A projeção é anual, um item por ano com data de dezembro (AAAA-12-31): EBITDA, arrendamentos pagos, depreciação, capex de manutenção e investimento em capital de giro (positivo consome caixa).",
     "A dívida vigente também é anual: saldo de fechamento como o covenant conta (inclua linhas rotativas em aberto), principal pago e juros pagos no ano; e a data do último pagamento.",
-    "Para o uso que a dívida nova financia, um item por cronograma: o informado e, quando discutida, cada alternativa (por exemplo faseado), com o que muda. Por ano: investimento, EBITDA do projeto, depreciação do projeto, manutenção do projeto e capital de giro do projeto. Os números do projeto são só do projeto.",
+    "Para o uso que a dívida nova financia, um item por cronograma: o informado e, quando discutida, cada alternativa (por exemplo faseado), com o que muda. Um item para cada ano da projeção, inclusive os anos em que o valor é zero porque foi dito: investimento, EBITDA do projeto, depreciação do projeto, manutenção do projeto e capital de giro do projeto. Se um ano não foi dito, não o inclua. Os números do projeto são só do projeto.",
     "covenantLimit é o limite de dívida líquida sobre EBITDA da escritura; covenantEbitdaExcludesLeases é true quando o EBITDA do covenant exclui arrendamentos (sem IFRS 16). minimumCash é o caixa mínimo que a companhia quer manter, quando dito.",
     "A estrutura da dívida nova só quando dita: indexador (CDI ou prefixado), spread ou taxa, ano da primeira amortização e número de amortizações anuais iguais. indexCurve é o CDI anual por ano, quando houver em documento ou na conversa.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
@@ -115,23 +120,24 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
   for (const [n, {u, years}] of uses.entries()) {
     const rows = byYear(years!.value);
     if ([...rows.keys()].some((d) => !ends.includes(d))) return {status: "missing", missing: [`uses.${n + 1}.years`]};
-    // Before its first year the use has not started; from then to the end of the projection every year is stated.
-    const start = ends.findIndex((d) => rows.has(d));
-    if (start < 0 || ends.slice(start).some((d) => !rows.has(d))) return {status: "missing", missing: [`uses.${n + 1}.years`]};
+    // Every year of the projection is stated, zero included; an absent year is a question, never a zero.
+    if (ends.some((d) => !rows.has(d))) return {status: "missing", missing: [`uses.${n + 1}.years`]};
     if (u.role === "alternative" && !u.change) return {status: "missing", missing: [`uses.${n + 1}.change`]};
-    const col = (k: "capex" | "ebitda" | "depreciation" | "maintenanceCapex" | "workingCapitalInvestment") => ends.map((d) => rows.get(d)?.[k] ?? "0");
+    const col = (k: "capex" | "ebitda" | "depreciation" | "maintenanceCapex" | "workingCapitalInvestment") => ends.map((d) => rows.get(d)![k]);
     cases.push({value: {id: u.role === "informed" ? "informed" : key(u.label, n), role: u.role, label: u.label, changes: u.role === "informed" ? [] : [u.change!],
       capex: col("capex"), ebitda: col("ebitda"), depreciation: col("depreciation"), maintenanceCapex: col("maintenanceCapex"), workingCapitalInvestment: col("workingCapitalInvestment")},
       origin: years!.origin, source: years!.source});
   }
   if (!cases.some((c) => c.value.role === "informed")) cases[0]!.value = {...cases[0]!.value, role: "informed", id: "informed", changes: []};
   // Rate by year and equal annual repayments from the first repayment year.
-  // The index of a year is the stated one, or the last stated before it carried forward (a house premise);
-  // a year before the first stated index is a question, never filled with a later rate.
-  const sortedCurve = curve ? [...curve.value].sort((a, b) => a.year - b.year) : [];
-  if (curve && ends.some((d) => Number(d.slice(0, 4)) < sortedCurve[0]!.year)) return {status: "missing", missing: ["indexCurve"]};
-  if (curve && ends.some((d) => Number(d.slice(0, 4)) > sortedCurve.at(-1)!.year)) used.push("indexCarriedForward");
-  const indexOf = (y: number) => new Exact(sortedCurve.filter((x) => x.year <= y).at(-1)!.annualRate);
+  // The index of a year is the stated one; every projection year up to the last stated one must be
+  // stated, and only the years after it carry the last stated index forward, as a house premise.
+  const curveByYear = new Map(curve ? curve.value.map((x) => [x.year, x.annualRate]) : []);
+  const lastCurveYear = curve ? Math.max(...curveByYear.keys()) : 0;
+  if (curve && ends.some((d) => Number(d.slice(0, 4)) <= lastCurveYear && !curveByYear.has(Number(d.slice(0, 4))))) return {status: "missing", missing: ["indexCurve"]};
+  const carried = !!curve && ends.some((d) => Number(d.slice(0, 4)) > lastCurveYear);
+  if (carried) used.push("indexCarriedForward");
+  const indexOf = (y: number) => new Exact(curveByYear.get(Math.min(y, lastCurveYear))!);
   const rate = ends.map((d) => s20(indexer.value === "fixed" ? new Exact(rateFact.value as number) : indexOf(Number(d.slice(0, 4))).plus(rateFact.value as number)));
   // Equal annual repayments; the last one closes the principal exactly, so the shares add up to one.
   const firstYear = first.value, lastYear = firstYear + count.value - 1, each = new Exact(s20(new Exact(1).div(count.value)));
@@ -160,7 +166,9 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
       cashInterest: ends.map((d) => debtRows.get(d)!.cashInterest), finalPaymentDates: [finalDebt.value]}},
     cases,
     structure: {value: {label: e.structure.label ?? (indexer.value === "fixed" ? "Prefixada" : "CDI mais spread"), annualRate: rate, amortizationShares: shares, finalPaymentDate: `${lastYear}-12-31`},
-      origin: structureSources.every((x) => x.origin === "document") ? "document" : "informed", source: structureSources.map((x) => x.source).join("; ").slice(0, 2000)},
+      // An index carried past the last stated year makes the rate an estimate, and the source says so.
+      origin: carried ? "estimate" : structureSources.every((x) => x.origin === "document") ? "document" : "informed",
+      source: [...structureSources.map((x) => x.source), ...(carried ? [`CDI depois de ${lastCurveYear} mantido no último valor informado, premissa da casa`] : [])].join("; ").slice(0, 2000)},
     limits,
     stress: {ebitdaShock: {value: "0.15", origin: "house", source: "EBITDA 15% menor, o caso que um banco tende a usar"}},
     requestedAmount: e.requestedAmount.value !== null && e.requestedAmount.origin !== null ? {value: e.requestedAmount.value, origin: e.requestedAmount.origin, source: e.requestedAmount.source ?? "Informado na conversa"} : null,

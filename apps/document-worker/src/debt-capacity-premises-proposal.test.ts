@@ -15,8 +15,8 @@ const debenture: Record<number, number> = {2026: 80, 2027: 80, 2028: 80, 2029: 6
 const finame: Record<number, number> = {2026: 23.33, 2027: 16.66, 2028: 9.99, 2029: 3.32, 2030: 0, 2031: 0, 2032: 0, 2033: 0};
 const interest = (y: number) => new Decimal(debenture[y - 1]!).plus(debenture[y]!).div(2).times(CDI[y]! + 0.029)
   .plus(new Decimal(finame[y - 1]!).plus(finame[y]!).div(2).times(0.079 + 0.018)).plus(new Decimal(20).times(0.5).times(CDI[y]! + 0.02));
-const project = (ebitda: Record<number, number>, capex: Record<number, number>) => years.flatMap((y) => capex[y] || ebitda[y] || y === 2028 ? [{yearEnd: `${y}-12-31`, capex: M(capex[y] ?? 0), ebitda: M(ebitda[y] ?? 0),
-  depreciation: M(y >= 2029 ? 6 : y === 2028 ? 3 : 0), maintenanceCapex: M(ebitda[y] ? 1.5 : 0), workingCapitalInvestment: M((ebitda[y] ?? 0) - (ebitda[y - 1] ?? 0))}] : []);
+const project = (ebitda: Record<number, number>, capex: Record<number, number>) => years.flatMap((y) => [{yearEnd: `${y}-12-31`, capex: M(capex[y] ?? 0), ebitda: M(ebitda[y] ?? 0),
+  depreciation: M(y >= 2029 ? 6 : y === 2028 ? 3 : 0), maintenanceCapex: M(ebitda[y] ? 1.5 : 0), workingCapitalInvestment: M((ebitda[y] ?? 0) - (ebitda[y - 1] ?? 0))}]);
 
 /** Turn of ficha C04: the projection, the debt table, the indenture and the second line of R$ 60 mi, in reais. */
 function c04Extraction(): DebtCapacityExtraction {
@@ -87,12 +87,18 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     expect(completeDebtCapacityFacts({extraction: gap, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.1.years"]});
     const tail = c04Extraction(); tail.uses[0]!.years.value!.pop();
     expect(completeDebtCapacityFacts({extraction: tail, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.1.years"]});
+    const head = c04Extraction(); head.uses[0]!.years.value!.shift();
+    expect(completeDebtCapacityFacts({extraction: head, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.1.years"]});
+    const hole = c04Extraction(); hole.indexCurve.value = hole.indexCurve.value!.filter((x) => x.year !== 2028);
+    expect(completeDebtCapacityFacts({extraction: hole, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
     const late = c04Extraction(); late.indexCurve.value = [{year: 2028, annualRate: 0.1275}];
     expect(completeDebtCapacityFacts({extraction: late, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
     const carried = c04Extraction(); carried.indexCurve.value = [{year: 2027, annualRate: 0.14}, {year: 2028, annualRate: 0.1275}];
     const c = completeDebtCapacityFacts({extraction: carried, ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
     expect(c.housePremiseKeys).toContain("indexCarriedForward");
+    expect(c.facts.structure.origin).toBe("estimate");
+    expect(c.facts.structure.source).toContain("CDI depois de 2028 mantido no último valor informado");
   });
   it("closes equal repayments exactly, so six annual parcels add up to one", () => {
     const e = c04Extraction(); e.structure.firstRepaymentYear = informed(2027, "amortiza desde 2027"); e.structure.repayments = informed(6, "seis parcelas");
@@ -111,5 +117,10 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     expect(shouldProposeDebtCapacityPremises("A alíquota é 34%, covenant 3x e três parcelas a partir de 2030", false, earlier)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Obrigado, vou pensar", false, earlier)).toBe(false);
     expect(shouldProposeDebtCapacityPremises("A alíquota é 34%", false, ["Qual o prazo da debênture?"])).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", false, earlier)).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("Obrigado, falamos em 2 dias", false, earlier)).toBe(false);
+    const thread = [...earlier, "A alíquota é 34%", "O covenant é 3x"];
+    expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, thread)).toBe(true);
+    expect(shouldProposeDebtCapacityPremises("Covenant de três vezes o EBITDA", false, earlier)).toBe(true);
   });
 });

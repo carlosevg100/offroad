@@ -328347,6 +328347,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Correções da revisão independente da ponte do lote 1: contexto próprio por confirmação para comparação e capacidade, cenário do limite que trava só quando a revisão o lista, e resposta citada que separa lacuna de recusa."
+    },
+    {
+      "path": "supabase/migrations/20261019224827_lote1_bridge_review_fixes_2.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Segunda rodada da revisão independente da ponte do lote 1: contexto próprio por cartão, sem cartão repetido para as mesmas premissas, e resposta citada da comparação que conta à parte as propostas sem leitura completa."
     }
   ],
   "staging_archive": [
