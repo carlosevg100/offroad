@@ -162,4 +162,5 @@ const comparison = z.strictObject({schemaVersion: z.literal("financing-proposal-
 const adapterExclusions = [...comparisonExclusions, "tax_law_inference"] as const;
 export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-financing-comparison.v1"), adapterVersion: version,
   comparisonId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), openingDate: date, endDate: date, comparison: comparison.nullable(),
+  policies: z.strictObject({minimumCash: decimal.nullable(), maximumCollateralShare: decimal.nullable()}),
   exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});

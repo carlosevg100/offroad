@@ -18,8 +18,9 @@ describe("recorded financing comparison evaluations", () => {
   it("covers cost, cash, covenants, collateral, gaps and the boundaries a stress must respect", () => {
     expect(records.get(financingComparisonRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "c02-three-proposals-independent-oracle", "bank-stress-independent-oracle", "lowest-nominal-spread-is-not-the-lowest-cost",
-      "cash-shortfall-eliminates-before-preference", "each-covenant-on-its-own-definition-and-limit", "collateral-consumed-reduces-free-receivables",
-      "debt-service-in-2028", "cheapest-and-safest-shown-side-by-side", "absent-fee-is-a-gap-not-zero"]);
+      "cash-below-zero-eliminates-before-preference", "below-policy-minimum-conditions-without-eliminating", "covenant-test-frequency-per-year",
+      "each-covenant-on-its-own-definition-and-limit", "collateral-consumed-reduces-free-receivables", "debt-service-in-2028",
+      "cheapest-and-safest-shown-side-by-side", "negotiated-variants-move-the-cost", "collateral-above-company-rule-eliminates", "absent-fee-is-a-gap-not-zero"]);
     expect(records.get(financingComparisonRunIds.adversarial)!.cases).toHaveLength(10);
     expect(records.get(financingComparisonRunIds.consistency)!.cases).toHaveLength(6);
     expect(records.get(financingComparisonRunIds.gold)!.notes).toContain("do not constitute independent review");

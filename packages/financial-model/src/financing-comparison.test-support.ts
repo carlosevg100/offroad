@@ -14,11 +14,11 @@ const fixed = (annual: string) => cdi.map(() => rate16(new P(annual).plus(1).pow
 const ebitdaBase = ["13.5", "14", "14", "14", "14.3", "14.3", "14.7", "14.7", "14.7", "14.7"];
 const iof = (v: string) => new P(v).mul(new P("0.000082").mul(182).plus("0.0038")).toFixed();
 const IOF70 = new P(70).mul("0.03373").toFixed();
-export const c02Ids = {debenture: id(901), bradesco: id(902), finame: id(903), giro26: id(904), giro27: id(905), giro28: id(906), itau: id(911), santander: id(912), fundo: id(913)};
+export const c02Ids = {debenture: id(901), bradesco: id(902), finame: id(903), giro26: id(904), giro27: id(905), giro28: id(906), itau: id(911), santander: id(912), fundo: id(913), itauNegotiated: id(914), santander230: id(915)};
 
 /** Synthetic adopted basis of ficha C02 (fictitious company "Aurora"); calibration only, never
  * production parameters. `shock` cuts EBITDA from 4T26 on, as the bank's stress case does. */
-export function c02ComparisonFixture(shock = "0") {
+export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}) {
   const f = analysisTestBasis(`comparison.${id(4)}.`, "2026-06-30", "2028-12-31");
   const number = (p: string, unit: string, value: string) => f.contribute(p, unit, {type: "number", value});
   const text = (p: string, unit: string, value: string) => f.contribute(p, unit, {type: "text", value});
@@ -80,11 +80,15 @@ export function c02ComparisonFixture(shock = "0") {
         yearFractionConventions: list(`${path}.lifetime.yearFractionConventions`, "convention", lifeEnds.map(() => "adopted_year_fraction")),
         scheduledPrincipal: list(`${path}.lifetime.scheduledPrincipal`, "currency", amort), paysAccruedInterest: list(`${path}.lifetime.paysAccruedInterest`, "boolean", pays)}};
   };
-  const proposals = [
+  const proposals = o.negotiated ? [] : [
     proposal(c02Ids.itau, "itau", "0.023", "0.010", true, [6, 8, 10, 12, 14, 16, 18, 20], false, {8: "8.75"}, "28", {lease: true, dates: [3, 5, 7, 9], limit: "3"}),
     proposal(c02Ids.santander, "santander", "0.0255", "0.008", true, [10, 12, 14, 16, 18, 20], false, {}, "21", {lease: false, dates: [5, 9], limit: "3"}),
     proposal(c02Ids.fundo, "fundo", "0.031", "0.015", false, [16, 20], true, {}, "0", {lease: false, dates: [3, 5, 7, 9], limit: "2.75"}),
   ];
+  // Negotiation round of the ficha, compared on its own: Itaú with Santander's grace and a 30% assignment; Santander at CDI + 2.30.
+  if (o.negotiated) proposals.push(
+      proposal(c02Ids.itauNegotiated, "itau-negotiated", "0.023", "0.010", true, [10, 12, 14, 16, 18, 20], false, {}, "21", {lease: true, dates: [3, 5, 7, 9], limit: "3"}),
+      proposal(c02Ids.santander230, "santander-230", "0.023", "0.008", true, [10, 12, 14, 16, 18, 20], false, {}, "21", {lease: false, dates: [5, 9], limit: "3"}));
   const company = {openingAvailableCash: number("company.openingAvailableCash", "currency", "35"),
     money: {ebitda: list("company.ebitda", "currency", q10((q) => new P(ebitdaBase[q]!).mul(q >= 1 ? new P(1).minus(shock) : 1).toFixed())),
       cashLeasePayments: list("company.cashLeasePayments", "currency", q10(() => "0.75")),
@@ -92,7 +96,7 @@ export function c02ComparisonFixture(shock = "0") {
       workingCapitalCashFlow: list("company.workingCapitalCashFlow", "currency", q10((q) => new P("-0.625").plus([1, 5, 9].includes(q) ? -25 : 0).plus([2, 6].includes(q) ? 25 : 0).toFixed())),
       maintenanceCapexPaid: list("company.maintenanceCapexPaid", "currency", q10(() => "2")), growthCapexPaid: list("company.growthCapexPaid", "currency", q10(() => "0"))},
     cashTaxRate: number("company.cashTaxRate", "ratio", "0.34"), lossTaxTreatment: text("company.lossTaxTreatment", "convention", "no_cash_benefit"),
-    freeReceivablesPool: number("company.freeReceivablesPool", "currency", "58"), minimumCashFrom: date("company.minimumCashFrom", c02PeriodEnds[2]!),
+    freeReceivablesPool: number("company.freeReceivablesPool", "currency", "58"), minimumCashPolicy: number("company.minimumCashPolicy", "currency", "15"), minimumCashFrom: date("company.minimumCashFrom", c02PeriodEnds[2]!),
     covenantHistoryPeriods: list("company.covenantHistory.periods", "identity", ["1T26", "2T26"]),
     covenantHistoryEbitda: list("company.covenantHistory.ebitda", "currency", ["13.5", "13.5"]),
     covenantHistoryLeasePayments: list("company.covenantHistory.leasePayments", "currency", ["0.75", "0.75"])};
@@ -113,8 +117,8 @@ export function c02StressCase(f: ReturnType<typeof c02ComparisonFixture>, scenar
 }
 
 /** C02 packet: the base and the bank's stress (EBITDA -15% from 4T26), one adopted basis. */
-export function c02PacketInput() {
-  const f = c02ComparisonFixture(), stress = c02StressCase(f, "bank-stress", "0.15");
+export function c02PacketInput(o: {negotiated?: boolean} = {}) {
+  const f = c02ComparisonFixture("0", o), stress = c02StressCase(f, "bank-stress", "0.15");
   const input = {schemaVersion: "financing-comparison-packet-input.v1" as const,
     question: "Qual das três propostas de R$ 70 mi para a mesma necessidade cabe na companhia e quanto custa de fato?",
     cases: [{id: "base", role: "base" as const, label: "Plano da companhia", changes: [] as string[], analysis: f.input},

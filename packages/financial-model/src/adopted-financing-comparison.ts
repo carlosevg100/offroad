@@ -19,7 +19,9 @@ export const adoptedFinancingComparisonInputSchema = adoptedAnalysisContextSchem
   periodEnds: selection,
   company: z.strictObject({openingAvailableCash: selection, money: z.strictObject(Object.fromEntries(companyMoneyNames.map((k) => [k, selection])) as Record<typeof companyMoneyNames[number], typeof selection>),
     cashTaxRate: selection, lossTaxTreatment: selection, freeReceivablesPool: selection, minimumCashFrom: selection,
-    covenantHistoryPeriods: selection, covenantHistoryEbitda: selection, covenantHistoryLeasePayments: selection}),
+    covenantHistoryPeriods: selection, covenantHistoryEbitda: selection, covenantHistoryLeasePayments: selection,
+    /** Company policy, when adopted: minimum cash at period ends and maximum share of the receivables pool given as collateral. */
+    minimumCashPolicy: selection.optional(), maximumCollateralShare: selection.optional()}),
   instruments: z.array(z.strictObject({id: z.uuid(), terms: debtTerms, charges: chargeSeries.nullable()})).max(15),
   proposals: z.array(z.strictObject({id: z.uuid(), label: z.string().trim().min(1).max(160), terms: debtTerms, charges: chargeSeries.nullable(),
     collateralConsumed: selection,
@@ -41,7 +43,7 @@ const nextDate = (value: string) => {const d = new Date(`${value}T00:00:00Z`); d
 export function calculateAdoptedFinancingComparison(raw: unknown) {
   const input = adoptedFinancingComparisonInputSchema.parse(raw);
   const termMoney = (t: z.infer<typeof debtTerms>) => [t.openingPrincipal, t.drawdowns, t.scheduledPrincipal, t.prepayments];
-  const money: AnalysisSelection[] = [input.company.openingAvailableCash, ...Object.values(input.company.money), input.company.freeReceivablesPool,
+  const money: AnalysisSelection[] = [input.company.openingAvailableCash, ...Object.values(input.company.money), input.company.freeReceivablesPool, ...(input.company.minimumCashPolicy ? [input.company.minimumCashPolicy] : []),
     input.company.covenantHistoryEbitda, input.company.covenantHistoryLeasePayments,
     ...input.instruments.flatMap((i) => [...termMoney(i.terms), ...(i.charges ? [i.charges.amounts] : [])]),
     ...input.proposals.flatMap((p) => [...termMoney(p.terms), ...(p.charges ? [p.charges.amounts] : []), p.collateralConsumed, p.covenant.leaseLiability,
@@ -61,6 +63,8 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
   const histPeriods = column(c.covenantHistoryPeriods, "company.covenantHistory.periods", "identity", analysisReference);
   const histEbitda = column(c.covenantHistoryEbitda, "company.covenantHistory.ebitda", "currency", analysisAmount);
   const histLease = column(c.covenantHistoryLeasePayments, "company.covenantHistory.leasePayments", "currency", analysisAmount);
+  const minimumCashPolicy = c.minimumCashPolicy ? scalar(c.minimumCashPolicy, "company.minimumCashPolicy", "currency", "number", analysisAmount) : null;
+  const maximumCollateralShare = c.maximumCollateralShare ? scalar(c.maximumCollateralShare, "company.maximumCollateralShare", "ratio", "number", ratio) : null;
 
   const instrument = (id: string, t: z.infer<typeof debtTerms>, path: string): DatedDebtInstrument | null => {
     const tx = <T>(k: string, unit: string, schema: z.ZodType<T>) => scalar((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, "text", schema);
@@ -165,7 +169,8 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
     scope: input.scope, comparisonId: input.comparisonId, entityId: input.entityId, perimeter: input.perimeter, currency: input.currency,
     scenario: input.scenario, inheritedScenario: input.inheritedScenario ?? null,
     openingDate: input.openingDate, endDate: input.endDate, basisFingerprint: input.envelope.fingerprint,
-    status: comparison ? "partial_composition" as const : "missing_inputs" as const, comparison, gaps: b.gaps, bindings: b.bindings, normalization: b.normalization,
+    status: comparison ? "partial_composition" as const : "missing_inputs" as const, comparison,
+    policies: {minimumCash: minimumCashPolicy, maximumCollateralShare}, gaps: b.gaps, bindings: b.bindings, normalization: b.normalization,
     contributions: [...b.used.values()], derivedDependencies: [{result: "financing_proposal_comparison", decisionIds: [...b.used.keys()]}],
     classification: [...b.used.values()].some((e) => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
     exclusions: ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity", "tax_law_inference"] as const,

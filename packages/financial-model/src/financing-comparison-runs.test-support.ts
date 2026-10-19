@@ -19,9 +19,15 @@ export const financingComparisonRunIds = {
   consistency: "compare-financing-proposals-2026-10-19-v2-consistency",
 } as const;
 
-const names = {[c02Ids.itau]: "itau", [c02Ids.santander]: "santander", [c02Ids.fundo]: "fundo"} as Record<string, string>;
+const names = {[c02Ids.itau]: "itau", [c02Ids.santander]: "santander", [c02Ids.fundo]: "fundo", [c02Ids.itauNegotiated]: "itau-negotiated", [c02Ids.santander230]: "santander-230"} as Record<string, string>;
 const sealed = () => c02PacketInput().seal() as FinancingComparisonPacketInput;
 const baseOnly = () => {const i = sealed(); i.cases = [i.cases[0]!]; return i;};
+/** The company's own rule caps receivables given as collateral at a share of the free pool. */
+const withCollateralRule = (share: string) => {
+  const p = c02PacketInput(), rule = p.basis.contribute("company.maximumCollateralShare", "ratio", {type: "number", value: share});
+  for (const c of p.input.cases) c.analysis.company.maximumCollateralShare = rule;
+  return p.seal() as FinancingComparisonPacketInput;
+};
 type Packet = ReturnType<typeof prepareFinancingComparisonPacket>;
 function observe(id: string, input: FinancingComparisonPacketInput, expected: unknown, select: (p: Packet) => unknown): Case {
   const result = prepareFinancingComparisonPacket(input);
@@ -48,8 +54,11 @@ function goldCases(): Case[] {
       (p) => rows(p, "bank-stress", (m) => [r(m.minimumCash.amount), m.minimumCash.periodId, r(m.covenant.worstRatio), r(m.covenant.headroom), r(m.netDebtAtHorizon)])),
     reuse("lowest-nominal-spread-is-not-the-lowest-cost", {misleads: true, lowestCost: "fundo"},
       (p) => ({misleads: p.comparison.nominalSpreadMisleads, lowestCost: names[at(p, "base").lowestEquivalentCostProposalId!]})),
-    reuse("cash-shortfall-eliminates-before-preference", {facts: [["itau", ["cash_shortfall"]], ["santander", []], ["fundo", []]], everyCase: ["santander", "fundo"], changing: ["bank-stress"]},
+    reuse("cash-below-zero-eliminates-before-preference", {facts: [["itau", ["cash_below_zero"]], ["santander", []], ["fundo", []]], everyCase: ["santander", "fundo"], changing: ["bank-stress"]},
       (p) => ({facts: rows(p, "bank-stress", (m) => m.eliminatoryFacts), everyCase: p.comparison.viableInEveryCaseProposalIds.map((id) => names[id]), changing: p.comparison.conclusionChangingCaseIds})),
+    reuse("below-policy-minimum-conditions-without-eliminating", {facts: [["itau", [[], ["cash_below_policy_minimum"]]], ["santander", [[], []]], ["fundo", [[], []]]], viable: ["itau", "santander", "fundo"]},
+      (p) => ({facts: rows(p, "base", (m) => [m.eliminatoryFacts, m.conditioningFacts]), viable: at(p, "base").viableProposalIds.map((id) => names[id])})),
+    reuse("covenant-test-frequency-per-year", [["itau", 2], ["santander", 1], ["fundo", 2]], (p) => rows(p, "base", (m) => m.covenantTestsPerYear)),
     reuse("each-covenant-on-its-own-definition-and-limit", [["itau", [3, 1.0525]], ["santander", [3, 1.0929]], ["fundo", [2.75, 0.8712]]],
       (p) => rows(p, "base", (m) => [r(new D(m.covenant.worstRatio).plus(m.covenant.headroom).toFixed()), r(m.covenant.headroom)])),
     reuse("collateral-consumed-reduces-free-receivables", [["itau", [28, 30]], ["santander", [21, 37]], ["fundo", [0, 58]]],
@@ -58,6 +67,13 @@ function goldCases(): Case[] {
       (p) => rows(p, "base", (m) => r(m.debtServiceByYear["2028"]!))),
     reuse("cheapest-and-safest-shown-side-by-side", {cost: "fundo", cash: "fundo", stressCash: "fundo"},
       (p) => ({cost: names[at(p, "base").lowestEquivalentCostProposalId!], cash: names[at(p, "base").highestMinimumCashProposalId!], stressCash: names[at(p, "bank-stress").highestMinimumCashProposalId!]})),
+    (() => {
+      const input = c02PacketInput({negotiated: true}).seal() as FinancingComparisonPacketInput; input.cases = [input.cases[0]!];
+      return observe("negotiated-variants-move-the-cost", input, [["itau-negotiated", 3.82], ["santander-230", 3.74]],
+        (p) => rows(p, "base", (m) => new D(m.equivalentSpread!).times(100).toDecimalPlaces(2).toNumber()));
+    })(),
+    observe("collateral-above-company-rule-eliminates", withCollateralRule("0.4"), {facts: [["itau", ["collateral_above_policy"]], ["santander", []], ["fundo", []]], viable: ["santander", "fundo"]},
+      (p) => ({facts: rows(p, "base", (m) => m.eliminatoryFacts), viable: at(p, "base").viableProposalIds.map((id) => names[id])})),
     (() => {
       const input = baseOnly(); const fundo = input.cases[0]!.analysis.proposals.find((x) => x.id === c02Ids.fundo)!;
       fundo.lifetime.upfrontWithheldCosts = {...fundo.lifetime.upfrontWithheldCosts, decisionId: null, missingReason: "Comissão do fundo não adotada"};

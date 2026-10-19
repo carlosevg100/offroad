@@ -10,7 +10,8 @@ const Exact = Decimal.clone({precision: 80, rounding: Decimal.ROUND_HALF_UP});
 const text = z.string().trim().min(1).max(2000), key = z.string().trim().min(1).max(160);
 const engine = z.string().regex(/^-?\d{1,30}(?:\.\d{1,80})?$/), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const roles = ["base", "stress", "sensitivity"] as const;
-const eliminatory = ["cash_shortfall", "covenant_breach", "cost_not_determined"] as const;
+const eliminatory = ["cash_below_zero", "covenant_breach", "cost_not_determined", "collateral_above_policy"] as const;
+const conditioning = ["cash_below_policy_minimum"] as const;
 
 /** One need, the same proposals, several adopted scenarios of the company. Every case is a
  * complete adopted scenario of the same basis; the packet never edits an operand to fabricate
@@ -52,13 +53,17 @@ const proposalMetrics = z.strictObject({
   covenant: z.strictObject({name: text, worstPeriod: key, worstRatio: engine, headroom: engine, allComply: z.boolean()}),
   debtServiceByYear: z.record(z.string().regex(/^\d{4}$/), engine),
   collateralConsumed: engine, freeReceivablesAfter: engine, horizonFinancingCost: engine, netDebtAtHorizon: engine,
-  /** Facts that eliminate or condition the proposal before any preference. */
-  eliminatoryFacts: z.array(z.enum(eliminatory)).max(3),
+  /** Contractual test dates in the busiest year of the horizon. */
+  covenantTestsPerYear: z.number().int().min(0).max(480),
+  /** Facts that eliminate the proposal in this case before any preference. */
+  eliminatoryFacts: z.array(z.enum(eliminatory)).max(4),
+  /** Facts that keep the proposal viable only under a condition to negotiate or approve. */
+  conditioningFacts: z.array(z.enum(conditioning)).max(1),
 });
 const caseComparison = z.strictObject({
   caseId: key, role: z.enum(roles), label: text, scenario: key, resultStatus: z.enum(["missing_inputs", "partial_composition"]),
   proposals: z.array(proposalMetrics).max(8),
-  /** Proposals with no eliminatory fact in this case. */
+  /** Proposals with no eliminatory fact in this case; conditioned proposals stay viable. */
   viableProposalIds: z.array(z.uuid()).max(8),
   /** Lowest equivalent cost and highest minimum cash among viable proposals; reported side by side, never merged. */
   lowestEquivalentCostProposalId: z.uuid().nullable(), highestMinimumCashProposalId: z.uuid().nullable(),
@@ -96,13 +101,21 @@ export function prepareFinancingComparisonPacket(raw: unknown): FinancingCompari
   const results = input.cases.map((c) => ({c, r: adoptedFinancingComparisonOutputSchema.parse(calculateAdoptedFinancingComparison(c.analysis))}));
   const base = results.find((x) => x.c.role === "base")!;
   const cases = results.map(({c, r}) => {
+    const pool = r.comparison ? new Exact(r.comparison.operands.freeReceivablesPool) : null;
     const proposals = (r.comparison?.proposals ?? []).map((p) => {
-      const facts = [...(new Exact(p.minimumCash.amount).lt(0) ? ["cash_shortfall" as const] : []), ...(p.covenant.allComply ? [] : ["covenant_breach" as const]),
-        ...(p.equivalentSpread === null ? ["cost_not_determined" as const] : [])];
+      const share = r.policies.maximumCollateralShare;
+      const facts = [...(new Exact(p.minimumCash.amount).lt(0) ? ["cash_below_zero" as const] : []), ...(p.covenant.allComply ? [] : ["covenant_breach" as const]),
+        ...(p.equivalentSpread === null ? ["cost_not_determined" as const] : []),
+        ...(share !== null && pool!.gt(0) && new Exact(p.collateralConsumed).div(pool!).gt(share) ? ["collateral_above_policy" as const] : [])];
+      const policy = r.policies.minimumCash;
+      const conditions = policy !== null && new Exact(p.minimumCash.amount).gte(0) && new Exact(p.minimumCash.amount).lt(policy) ? ["cash_below_policy_minimum" as const] : [];
+      const dates = r.comparison!.operands.proposals.find((o) => o.id === p.id)!.covenant.measurementPeriods;
+      const perYear = dates.reduce<Record<string, number>>((m, d) => ({...m, [d.slice(0, 4)]: (m[d.slice(0, 4)] ?? 0) + 1}), {});
       return {proposalId: p.id, label: p.label, equivalentSpread: p.equivalentSpread, weightedAverageLifeYears: p.weightedAverageLifeYears,
         minimumCash: p.minimumCash, covenant: {name: p.covenant.name, worstPeriod: p.covenant.worst.period, worstRatio: p.covenant.worst.ratio, headroom: p.covenant.worst.headroom, allComply: p.covenant.allComply},
         debtServiceByYear: p.debtServiceByYear, collateralConsumed: p.collateralConsumed, freeReceivablesAfter: p.freeReceivablesAfter,
-        horizonFinancingCost: p.horizonFinancingCost, netDebtAtHorizon: p.netDebtAtHorizon, eliminatoryFacts: facts};
+        horizonFinancingCost: p.horizonFinancingCost, netDebtAtHorizon: p.netDebtAtHorizon,
+        covenantTestsPerYear: Math.max(0, ...Object.values(perYear)), eliminatoryFacts: facts, conditioningFacts: conditions};
     });
     const viable = proposals.filter((p) => !p.eliminatoryFacts.length);
     const pick = (better: (a: typeof viable[number], b: typeof viable[number]) => boolean) => viable.length ? viable.reduce((m, p) => (better(p, m) ? p : m)).proposalId : null;

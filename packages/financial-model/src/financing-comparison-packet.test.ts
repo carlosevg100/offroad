@@ -22,7 +22,7 @@ describe("C02 decision packet: proposals compared on the company in every adopte
   it("eliminates the proposal that runs out of cash in the bank's case before any preference", () => {
     const [base, stress] = packet.comparison.cases;
     expect(base!.viableProposalIds).toEqual([c02Ids.itau, c02Ids.santander, c02Ids.fundo]);
-    expect(stress!.proposals.find((p) => p.proposalId === c02Ids.itau)!.eliminatoryFacts).toEqual(["cash_shortfall"]);
+    expect(stress!.proposals.find((p) => p.proposalId === c02Ids.itau)!.eliminatoryFacts).toEqual(["cash_below_zero"]);
     expect(r4(stress!.proposals.find((p) => p.proposalId === c02Ids.itau)!.minimumCash.amount)).toBe(-0.261);
     expect(packet.comparison.viableInEveryCaseProposalIds).toEqual([c02Ids.santander, c02Ids.fundo]);
     expect(packet.comparison.conclusionChangingCaseIds).toEqual(["bank-stress"]);
