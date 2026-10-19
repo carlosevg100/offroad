@@ -5,15 +5,15 @@
     "id": "assess-debt-capacity",
     "version": "2026.10.19-v2"
   },
-  "commit": "dd256ca66d7c1a8424865b7abb772f902e4af566",
+  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/assess-debt-capacity.md",
-      "sha256": "46bc831e6a86b7409fc87a5e31028706612d3f2cf3f4b67c5a2a437d69761d31"
+      "sha256": "9d539188eb783e50d526385195ee8c45d2959096f041cb971dd1a7f174de9a1b"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-packet.ts",
-      "sha256": "1c1302b771bf06b12fedfa9d9d74b9167862176e5956194b8d8a830317ca1736"
+      "sha256": "9986cab58f44e6d43c81410662e74c10ad9110db4f86b93f2d0491c0f249d75d"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-contracts.ts",
@@ -24,32 +24,32 @@
       "sha256": "239817b31022c0cf3863924ea21939b9425aeeaa29a23c3f28c149abf3d1bcef"
     },
     {
-      "path": "packages/financial-core/src/debt-capacity.ts",
-      "sha256": "2cecc1fc233336453d117c71cb81cd963154af21e3e548480e57568c3a69e3b7"
-    },
-    {
       "path": "packages/financial-model/src/debt-capacity.test-support.ts",
-      "sha256": "b31b3b68a3fda9f39ed9152234cdc8f38fb89391b05baaf815f503d1e82a921a"
+      "sha256": "cf52bc5baed2352d611eb52ae6ec73dc7a30ae93e79cc003b78b91e16f46b09a"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-packet.test.ts",
-      "sha256": "478980c69ddabafab6c4faf16e31a1cbdb1a9b047c3cc920678ac3788c9326e0"
+      "sha256": "98dcba2fc4d0b2fe1ed7a350890153798778498a08f8ca8b294e7ec7412f2850"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
-      "sha256": "889e1fd90c47859476f0d1d7b6ac41ae95699501026cd8743a5f4b10a87a49fd"
+      "sha256": "f28e06d5dc60134c87895185102a1b5bffede7ff232682d71b1ce1ddc0956633"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-runs.test.ts",
-      "sha256": "64015613f9140ea5b4897851bd59febdb060c9b7a329caed5f8f5a85b30db479"
+      "sha256": "967cc85c05e2eb2e89fff62ad700186e40a27c66fb55e93beee0c01378d822c6"
     },
     {
       "path": "packages/financial-model/src/adopted-debt-capacity.test.ts",
       "sha256": "62078294021a797768ff4eee178a645228cad50e1790f87a2d8a9ad8bfa33220"
     },
     {
+      "path": "packages/financial-core/src/debt-capacity.ts",
+      "sha256": "2cecc1fc233336453d117c71cb81cd963154af21e3e548480e57568c3a69e3b7"
+    },
+    {
       "path": "packages/financial-model/contracts/debt-capacity-packet.json",
-      "sha256": "5e4cdda423fd1a2d1c21e493083df1f0194ad7ec6ddb4c5c47a7da8a83aed21b"
+      "sha256": "f5396942a45eb936fe4476dd8e458a56ea3825be5cba46fe70aed8bd88e17068"
     },
     {
       "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -61,15 +61,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
-      "sha256": "cf808a4555454650f582ca3b88be6caf2148190d8218db96f88606f38c73299b"
+      "sha256": "ca0f4a431bbfb4ebf0a65499c97f3df9a3006076989744e8619789b56eeae460"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-adversarial/run.json",
-      "sha256": "b5f5181f63445c07d85e8fbd701b9040ac5bbb45825464af46a60d7972692406"
+      "sha256": "73259cc171d16bf2b755d99776c8cf3e8d74bff1416252c4920277a3d1ef173d"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json",
-      "sha256": "e5d532ee0e1ed810e21c4a3334af757c744d036225ee5dd9305e5eac7dc643dd"
+      "sha256": "911fa003e387cdb7b3672bc1d8b749505ca458463cde3c9564a9c03007d04676"
     }
   ],
   "externalOracle": [
