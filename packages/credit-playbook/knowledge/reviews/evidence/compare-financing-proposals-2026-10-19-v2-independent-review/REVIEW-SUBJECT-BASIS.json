@@ -5,7 +5,7 @@
     "id": "compare-financing-proposals",
     "version": "2026.10.19-v2"
   },
-  "commit": "bc05d82fd35f02d1e04ae375a2f7c38bfa3f66d0",
+  "commit": "cd35fef1a40ae8454fa8bc1299dc92d550deb6fa",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
@@ -105,11 +105,11 @@
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
-      "sha256": "0704faa80c38743462921ce088d251eee7b71d5ae1ebec48b35aec759cd7f177"
+      "sha256": "1236882bb7267112b5618355e33ec18376487ca02a3deb32e06ed7afa284dcee"
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
-      "sha256": "1997c24a77e3a3a09ed8304dfac1a8753f5050a54916af7608b3ce083dbfa1d0"
+      "sha256": "28a97cde3d067fd3cb547758bfb87ad05a1fb9a0b18ea77b99df8b9802d58eaa"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-packet.json",
