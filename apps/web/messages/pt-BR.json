@@ -7268,5 +7268,31 @@
       "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
       "unavailable": "Não consegui confirmar agora. Tente de novo."
     }
+  },
+  "ComparisonPremisesCard": {
+    "title": "Premissas para comparar as propostas",
+    "lead": "Coloco as propostas na mesma base com estes termos e com a dívida e a projeção da companhia, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+    "proposal": "{label}: R$ {amount} mi a CDI + {spread}, comissão de {fee}{tax, select, true {, com IOF} other {, sem IOF}}; garantia de {collateral} da operação; covenant até {limit}x",
+    "proposals": "Propostas",
+    "company": "Companhia",
+    "quarters": "{count, plural, one {# trimestre} other {# trimestres}} de projeção",
+    "existingDebt": "Dívida existente: {list}",
+    "minimumCash": "Caixa mínimo da política: R$ {value} mi",
+    "house": "Premissas da casa",
+    "premise": {
+      "creditTax": "IOF de crédito",
+      "stress": "Caso do banco"
+    },
+    "cases": "Comparo cada proposta no plano da companhia e no caso que um banco tende a usar, com EBITDA 15% menor: custo efetivo pela vida, caixa por trimestre, covenant na definição de cada credor, garantia e firmeza.",
+    "confirm": "Confirmar premissas e comparar",
+    "confirming": "Gravando as premissas",
+    "pendingRelease": "Premissas confirmadas. A comparação roda assim que o método estiver liberado.",
+    "requested": "Premissas confirmadas. Comparação em andamento.",
+    "openCalculation": "Abrir a comparação",
+    "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
+    "errors": {
+      "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
+      "unavailable": "Não consegui confirmar agora. Tente de novo."
+    }
   }
 }

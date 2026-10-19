@@ -7268,5 +7268,31 @@
       "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
       "unavailable": "I could not confirm now. Please try again."
     }
+  },
+  "ComparisonPremisesCard": {
+    "title": "Premises to compare the proposals",
+    "lead": "I put the proposals on the same basis with these terms and the company's debt and projection, each with its origin. Confirm to calculate, or correct them in the conversation and I will redo the proposal.",
+    "proposal": "{label}: R$ {amount} mi at CDI + {spread}, {fee} fee{tax, select, true {, with IOF} other {, without IOF}}; collateral of {collateral} of the loan; covenant up to {limit}x",
+    "proposals": "Proposals",
+    "company": "Company",
+    "quarters": "{count, plural, one {# quarter} other {# quarters}} of projection",
+    "existingDebt": "Existing debt: {list}",
+    "minimumCash": "Policy minimum cash: R$ {value} mi",
+    "house": "House premises",
+    "premise": {
+      "creditTax": "Credit IOF",
+      "stress": "Bank's case"
+    },
+    "cases": "I compare each proposal in the company's plan and in the case a bank tends to use, with EBITDA 15% lower: lifetime effective cost, cash by quarter, covenant on each lender's definition, collateral and firmness.",
+    "confirm": "Confirm premises and compare",
+    "confirming": "Recording the premises",
+    "pendingRelease": "Premises confirmed. The comparison runs once the method is released.",
+    "requested": "Premises confirmed. Comparison running.",
+    "openCalculation": "Open the comparison",
+    "superseded": "Replaced by a more recent proposal in this conversation.",
+    "errors": {
+      "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
+      "unavailable": "I could not confirm now. Try again."
+    }
   }
 }
