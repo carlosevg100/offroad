@@ -110,6 +110,38 @@ export function proposalCompanyLedger(schedule: DeferredFinancingScheduleInput, 
   });
 }
 
+/** The lifetime curve split at each charge date inside an interval, on the interval's own day count.
+ * A date with no business day between it and a boundary discounts exactly as that boundary, so the
+ * flow is placed there instead of cutting an empty interval. */
+type CostInterval = Parameters<typeof solveEquivalentFinancingSpread>[0]["intervals"][number];
+function costIntervals(lifetime: DeferredFinancingScheduleInput, dates: string[]) {
+  const last = lifetime.periods.at(-1)!.endDate;
+  if (dates.some((d) => d > last)) throw new Error("proposal_comparison_charge_off_lifetime_grid");
+  const moved = new Map<string, string>(), intervals: CostInterval[] = [];
+  lifetime.periods.forEach((p, i) => {
+    const start = i ? lifetime.periods[i - 1]!.endDate : lifetime.baseDate;
+    const {scheduledPrincipal: _p, paysAccruedInterest: _c, ...whole} = p;
+    const cuts = [...new Set(dates.filter((d) => d > start && d < p.endDate))].sort();
+    if (!cuts.length) {intervals.push(whole); return;}
+    // An adopted year fraction cannot be cut: on that grid a later charge must fall on a boundary.
+    if (p.yearFractionConvention === "adopted_year_fraction") throw new Error("proposal_comparison_charge_off_lifetime_grid");
+    const count = (a: string, b: string) => p.yearFractionConvention === "business_days_252" ? brazilianBusinessDays(a, b) : days(a, b);
+    const piece = (a: string, b: string, k: number): CostInterval => {
+      const n = count(a, b);
+      return {...whole, id: `${p.id}:${k}`, startDate: a, endDate: b, yearFraction: new D(n).div(p.yearFractionConvention === "business_days_252" ? 252 : 365).toDecimalPlaces(20).toFixed(),
+        ...(p.yearFractionConvention === "business_days_252" ? {businessDays: n} : {})};
+    };
+    let from = start, k = 0;
+    for (const cut of cuts) {
+      if (count(from, cut) === 0) {moved.set(cut, from); continue;}
+      if (count(cut, p.endDate) === 0) {moved.set(cut, p.endDate); continue;}
+      intervals.push(piece(from, cut, ++k)); from = cut;
+    }
+    intervals.push(k ? piece(from, p.endDate, ++k) : whole);
+  });
+  return {intervals, dateOf: (d: string) => moved.get(d) ?? d};
+}
+
 /**
  * Compares financing proposals for the same need on the company itself: each proposal's
  * lifetime equivalent cost and average life, then the company projected with that proposal
@@ -131,6 +163,8 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
   for (const p of input.proposals) for (const c of [...p.charges, ...(p.cost.chargesAfterHorizon ?? [])]) if (!new D(c.amount).gt(0)) throw new Error("proposal_comparison_positive_charge_required");
   for (const p of input.proposals) for (const c of p.cost.chargesAfterHorizon ?? []) if (c.date <= input.endDate) throw new Error("proposal_comparison_charge_inside_horizon");
   const pool = new D(input.freeReceivablesPool);
+  // A proposal is added to the company only in the company's currency; no conversion is modelled.
+  if (input.proposals.some((p) => p.cost.schedule.currency !== input.currency)) throw new Error("proposal_comparison_currency_mismatch");
   // Receivables and the collateral a proposal takes from them are amounts, never negative.
   if (pool.lt(0) || input.proposals.some((p) => new D(p.collateralConsumed).lt(0))) throw new Error("proposal_comparison_negative_collateral");
   const proposals = input.proposals.map((proposal) => {
@@ -144,15 +178,20 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
     const ledger = proposalCompanyLedger(lifetime, input.periods);
     const draw = ledger.findIndex((l) => l.draw !== "0");
     const drawPeriod = input.periods[draw]!;
-    const upfront = own.filter((c) => c.date >= drawPeriod.startDate && c.date <= drawPeriod.endDate && (c.category === "origination_fee" || c.category === "tax"));
+    // On contract dates only a fee or tax dated on the draw itself is withheld from the advance; a
+    // later one is a payment on its own date. On the period grid the draw period carries no detail
+    // inside it, so its fees and taxes are the ones withheld.
+    const contract = lifetime.periods.some((p) => p.yearFractionConvention !== "adopted_year_fraction");
+    const upfront = own.filter((c) => (c.category === "origination_fee" || c.category === "tax")
+      && (contract ? c.date === lifetime.baseDate : c.date >= drawPeriod.startDate && c.date <= drawPeriod.endDate));
     if (!upfront.reduce((t, c) => t.plus(c.amount), new D(0)).eq(lifetime.upfrontWithheldCosts)) throw new Error("proposal_comparison_upfront_charges_mismatch");
-    const boundaries = new Set(lifetime.periods.map((p) => p.endDate));
     const later = [...own.filter((c) => !upfront.includes(c)), ...(proposal.cost.chargesAfterHorizon ?? [])];
-    for (const c of later) if (!boundaries.has(c.date)) throw new Error("proposal_comparison_charge_off_lifetime_grid");
+    if (later.some((c) => c.date < lifetime.baseDate)) throw new Error("proposal_comparison_charge_before_draw");
+    const intervals = costIntervals(lifetime, later.map((c) => c.date));
     const costCharges = [...upfront, ...later];
     const cost = solveEquivalentFinancingSpread({baseDate: lifetime.baseDate, currency: lifetime.currency, moneyUnit: lifetime.moneyUnit,
-      intervals: lifetime.periods.map(({scheduledPrincipal: _p, paysAccruedInterest: _c, ...p}) => p),
-      netFlows: [...schedule.netFlows, ...later.map((c) => ({id: `charge:${c.id}`, date: c.date, amount: new D(c.amount).neg().toFixed(), sourceAnchor: c.id}))],
+      intervals: intervals.intervals,
+      netFlows: [...schedule.netFlows, ...later.map((c) => ({id: `charge:${c.id}`, date: intervals.dateOf(c.date), amount: new D(c.amount).neg().toFixed(), sourceAnchor: c.id}))],
       costInventory: financingCostCategories.map((category) => costCharges.some((c) => c.category === category)
         ? {category, status: "specified" as const, reason: "Adopted charge of this proposal"}
         : {category, status: "zero" as const, reason: "No charge of this category in the adopted terms"}),

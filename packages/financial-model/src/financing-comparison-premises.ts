@@ -145,11 +145,11 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
     list(`${root}.repayAll`, "boolean", f.quarterEnds.map(() => "false"), house("Sem quitação antecipada além do adotado"));
     if (o.pays) list(`${root}.paysAccruedCoupon`, "boolean", flags(o.pays), reason);
   };
-  const charges = (root: string, rows: {id: string; category: string; quarter: number; amount: string; deductible: boolean; payee?: string}[], reason: string) => {
+  const charges = (root: string, rows: {id: string; category: string; quarter: number; date?: string; amount: string; deductible: boolean; payee?: string}[], reason: string) => {
     if (!rows.length) return;
     if (rows.some((r) => r.payee)) list(`${root}.instrumentIds`, "identity", rows.map((r) => r.payee ?? "self"), reason);
     list(`${root}.chargeIds`, "identity", rows.map((r) => r.id), reason); list(`${root}.categories`, "convention", rows.map((r) => r.category), reason);
-    list(`${root}.dates`, "date", rows.map((r) => start(r.quarter)), reason); list(`${root}.amounts`, "currency", rows.map((r) => r.amount), reason);
+    list(`${root}.dates`, "date", rows.map((r) => r.date ?? start(r.quarter)), reason); list(`${root}.amounts`, "currency", rows.map((r) => r.amount), reason);
     list(`${root}.deductible`, "boolean", rows.map((r) => String(r.deductible)), reason);
   };
   const debtReason = why(f.existingDebt);
@@ -201,11 +201,13 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
     }
     const days = Math.min(tax.maxDays, 365 * 100), creditTax = v.creditTax ? new Exact(v.amount).mul(new Exact(tax.dailyRate).mul(days).plus(tax.fixedRate)) : new Exact(0);
     const fee = new Exact(v.amount).mul(v.feeRate);
-    // A charge of zero is not a charge: an explicitly zero fee adds nothing.
-    charges(`${root}.charges`, [...(fee.gt(0) ? [{id: `${v.label}-fee`, category: "origination_fee", quarter: v.drawQuarter, amount: fee.toFixed(), deductible: true}] : []),
-      ...(v.creditTax && creditTax.gt(0) ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, amount: creditTax.toFixed(), deductible: true}] : []),
+    // A charge of zero is not a charge: an explicitly zero fee adds nothing. On contract dates the fee
+    // and the tax withheld from the advance are dated on the draw itself.
+    const withheldOn = v.contractDates ? {date: v.contractDates.drawDate} : {};
+    charges(`${root}.charges`, [...(fee.gt(0) ? [{id: `${v.label}-fee`, category: "origination_fee", quarter: v.drawQuarter, ...withheldOn, amount: fee.toFixed(), deductible: true}] : []),
+      ...(v.creditTax && creditTax.gt(0) ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, ...withheldOn, amount: creditTax.toFixed(), deductible: true}] : []),
       ...(v.waiver ? [{id: `${v.label}-waiver`, category: "other", quarter: v.waiver.quarter, amount: v.waiver.cost, deductible: v.waiver.deductible, payee: v.waiver.instrumentId}] : [])],
-      `${cite([["feeRate", "comissão"], ...(v.creditTax ? [["creditTax", "IOF"] as [Clause, string]] : []), ["drawMonth", "mês do desembolso"],
+      `${cite([["feeRate", "comissão"], ...(v.creditTax ? [["creditTax", "IOF"] as [Clause, string]] : []), ["drawMonth", "mês do desembolso"], ...(v.contractDates ? [["drawDate", "data do desembolso"]] as [Clause, string][] : []),
         ...(v.waiver ? [["waiverCost", "custo do waiver"], ["waiverCreditor", "credor do waiver"], ["waiverMonth", "mês do waiver"]] as [Clause, string][] : [])])}${v.creditTax ? ` Regra do IOF: ${f.creditTax.source}.` : ""}`);
     const collateral = new Exact(v.amount).mul(v.collateralShareOfLoan).toFixed();
     num(`${root}.collateralConsumed`, "currency", collateral, `${clause("collateral")} Cessão de ${new Exact(v.collateralShareOfLoan).times(100).toFixed()}% do saldo.`);

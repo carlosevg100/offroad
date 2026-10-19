@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
+import type {AdoptionBasisEntry} from "@offroad/reconciliation";
 import {composeBoundFinancingComparison} from "./financing-comparison-composer";
 import {financingComparisonPacketOutputSchema, prepareFinancingComparisonPacket, type FinancingComparisonPacketInput} from "./financing-comparison-packet";
 import {adoptAuroraFacts, auroraFacts, auroraIds, c02Ids, c02PacketInput} from "./financing-comparison.test-support";
@@ -28,6 +29,20 @@ const datedInput = () => {
   const a = adoptAuroraFacts(auroraFacts({dated: true}));
   return composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
 };
+/** The dated case with the adopted premises edited before sealing (the review's own mutations). */
+const datedMutated = (edit: (entries: AdoptionBasisEntry[]) => void) => {
+  const a = adoptAuroraFacts(auroraFacts({dated: true})), snapshot = JSON.parse(a.envelope.canonical) as {entries: AdoptionBasisEntry[]};
+  edit(snapshot.entries);
+  const canonical = JSON.stringify(snapshot), envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
+  return composeBoundFinancingComparison({envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
+};
+/** Itaú's fee paid on 31/03/2027, after the 15/01/2027 draw; `withheld` says what the advance still withholds. */
+const itauFeeLater = (withheld: "iof" | "fee_and_iof") => datedMutated((entries) => {
+  const path = `proposal.${auroraIds.itau}.`, get = (k: string) => entries.find((e) => e.fieldPath.endsWith(path + k))!;
+  const ids = get("charges.chargeIds").value.value as string[], fee = ids.findIndex((x) => x.endsWith("-fee")), iof = ids.findIndex((x) => x.endsWith("-iof"));
+  const dates = get("charges.dates"); dates.value = {type: "list", value: (dates.value.value as string[]).map((d, n) => (n === fee ? "2027-03-31" : d))} as typeof dates.value;
+  if (withheld === "iof") {const u = get("lifetime.upfrontWithheldCosts"); u.value = {type: "number", value: (get("charges.amounts").value.value as string[])[iof]!} as typeof u.value;}
+});
 /** The fund with a deductible R$ 1 mi recurring fee on 31/12/2027, adopted next to its other charges. */
 const withRecurringFee = () => {
   const p = c02PacketInput(), path = `proposal.${c02Ids.fundo}.charges`;
@@ -112,6 +127,9 @@ function goldCases(): Case[] {
     // Contract dates with national business days: the independent review's dated recomputation (the oracle's dated variant misplaces Easter 2027).
     observe("contract-dates-and-business-days", datedInput(), [["itau", 4.1189], ["santander", 4.0889], ["fundo", 3.5671]],
       (p) => at(p, "base").proposals.map((m) => [auroraNames[m.proposalId], new D(m.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()])),
+    // A fee paid after the draw is a payment on its own date, not withheld (review recomputation: CDI + 4.104439952%).
+    observe("a-fee-paid-after-the-draw-is-paid-on-its-date", itauFeeLater("iof"), {itau: 4.1044},
+      (p) => ({itau: new D(at(p, "base").proposals.find((m) => m.proposalId === auroraIds.itau)!.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()})),
     // The company view on contract dates (review recomputation: Itaú minimum in the bank's case of R$ 2.327742679 mi): the
     // quarterly approximation's negative cash with Itaú does not survive the contract calendar.
     observe("contract-dates-in-the-company-view", datedInput(), {itauStressMinimum: 2.3277, eliminated: [], itauBaseMinimum: 15.8523},
@@ -163,6 +181,7 @@ function adversarialCases(): Case[] {
       pays.value = {type: "list", value: Array.from({length: n}, (_, k) => String(k > 0))} as typeof pays.value;
       const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
     }, "financing_full_repayment_requires_settling_accrued_interest"],
+    ["fee-after-the-draw-declared-as-withheld", () => itauFeeLater("fee_and_iof"), "proposal_comparison_upfront_charges_mismatch"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];
