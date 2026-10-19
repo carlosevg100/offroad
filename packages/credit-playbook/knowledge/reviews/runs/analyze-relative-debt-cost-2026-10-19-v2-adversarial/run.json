@@ -16,9 +16,9 @@
     "exportName": "buildRelativeDebtCostRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:38:12.548Z",
-    "finishedAt": "2026-10-19T14:38:12.704Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T14:56:26.269Z",
+    "finishedAt": "2026-10-19T14:56:26.442Z",
+    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
   },
   "modelCalls": 0,
   "cases": [

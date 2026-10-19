@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:37:18.947Z",
-    "finishedAt": "2026-10-19T14:38:12.317Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T14:55:26.681Z",
+    "finishedAt": "2026-10-19T14:56:26.049Z",
+    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
   },
   "modelCalls": 0,
   "cases": [
@@ -111,6 +111,14 @@
       "passed": true
     },
     {
+      "id": "an-empty-pool-under-a-cap-eliminates-any-collateral",
+      "expectation": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[\"collateral_above_policy\"]],[\"fundo\",[]]]}",
+      "observed": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[\"collateral_above_policy\"]],[\"fundo\",[]]]}",
+      "inputFingerprint": "b3855f2b53258001269da8a9341ecbdca77202a2c92ac3a1f4a2dbcc1ff34389",
+      "outputFingerprint": "ab82d74bcc77b228f680646361dc9b745fbb04c0700dc076e1778397cb702ea6",
+      "passed": true
+    },
+    {
       "id": "collateral-above-company-rule-eliminates",
       "expectation": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
       "observed": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
@@ -138,20 +146,20 @@
       "id": "contract-dates-and-business-days",
       "expectation": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
       "observed": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
-      "inputFingerprint": "f26d15a544661789f38c3029b76da228cb23bf704b1bbe932d45b91e6e8543ed",
-      "outputFingerprint": "aa5ee5b286e2fa454811de51e5a827435d7da0daa453eb5e6f77eedf48333edc",
+      "inputFingerprint": "217eeadc4e9bb870bc92813489a52154cecbac5ddd8ecb3a9e3424f8eaa60c63",
+      "outputFingerprint": "d931ecbc22fc22cfc1cd4f77e1e51f634ebfad706874039f72d3406441a73ab7",
       "passed": true
     },
     {
       "id": "contract-dates-in-the-company-view",
       "expectation": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
       "observed": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
-      "inputFingerprint": "f26d15a544661789f38c3029b76da228cb23bf704b1bbe932d45b91e6e8543ed",
-      "outputFingerprint": "aa5ee5b286e2fa454811de51e5a827435d7da0daa453eb5e6f77eedf48333edc",
+      "inputFingerprint": "217eeadc4e9bb870bc92813489a52154cecbac5ddd8ecb3a9e3424f8eaa60c63",
+      "outputFingerprint": "d931ecbc22fc22cfc1cd4f77e1e51f634ebfad706874039f72d3406441a73ab7",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "41ba34c1e94e30110cabaa8f083e1cb35a8971152cbd9b97182309eeadb31b60",
+  "evidenceFingerprint": "da4ce2fc9b0c235db743bca51093edd523bb0f01ab0344ee8d81ad919ccd795b",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

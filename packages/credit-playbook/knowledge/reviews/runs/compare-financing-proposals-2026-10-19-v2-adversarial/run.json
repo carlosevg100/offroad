@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:37:18.947Z",
-    "finishedAt": "2026-10-19T14:38:12.318Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T14:55:26.681Z",
+    "finishedAt": "2026-10-19T14:56:26.049Z",
+    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
   },
   "modelCalls": 0,
   "cases": [
@@ -130,7 +130,23 @@
       "id": "business-days-off-the-national-calendar",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c13b34c3832b3bbf8e3f4dd47a4c1479f036033a7d843fb99a2b24b40969e2f6",
+      "inputFingerprint": "799d4ba6633d5899b133ff67295bade510c84737c477039712180e673834a496",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "negative-collateral",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9f8e0e89c86e2da3f4d53b57e000529652a5c8b12437b5a71dc185b252f03591",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "full-repayment-leaving-the-accrued-coupon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2a4eab9f09d33cfd6abe54081bbaa3ac359d635d7795375e9049e5d8062a36dc",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -152,6 +168,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "512dd81d127141ee043ff626f3a6b9147e8d36b22af4f2fbccdfb83a651ded5a",
+  "evidenceFingerprint": "e370dce3130b8dd3d3741577168ebff57ed563d8faf62c5264c25e86d50443b1",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
