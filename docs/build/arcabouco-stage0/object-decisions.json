@@ -320232,6 +320232,282 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.put_platform_method_upload_part_v1(p_upload uuid, p_part integer, p_content text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.put_platform_method_upload_part_v1(p_upload uuid, p_part integer, p_content text)",
+          "kind": "function",
+          "name": "put_platform_method_upload_part_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_upload uuid, p_part integer, p_content text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.put_platform_method_upload_part_v1(p_upload uuid, p_part integer, p_content text)",
+          "kind": "function",
+          "name": "put_platform_method_upload_part_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_upload uuid, p_part integer, p_content text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, publicação da ficha C32",
+      "decision": "preservar",
+      "stage": "fichas C32, publicação",
+      "reason": "Recebe uma parte do texto do manifesto pelo operador; devolve o md5 da parte para conferência.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019013848_platform_method_upload_parts.sql",
+          "line": 20,
+          "anchor": "create function private.put_platform_method_upload_part_v1(p_upload uuid,p_part integer,p_content text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "function:private.submit_platform_method_candidate_from_parts_v1(p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.submit_platform_method_candidate_from_parts_v1(p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text)",
+          "kind": "function",
+          "name": "submit_platform_method_candidate_from_parts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.submit_platform_method_candidate_from_parts_v1(p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text)",
+          "kind": "function",
+          "name": "submit_platform_method_candidate_from_parts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, publicação da ficha C32",
+      "decision": "preservar",
+      "stage": "fichas C32, publicação",
+      "reason": "Remonta o pacote de publicação a partir das partes, exige o manifestHash revisado e entrega ao submit existente; apaga as partes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019013848_platform_method_upload_parts.sql",
+          "line": 31,
+          "anchor": "create function private.submit_platform_method_candidate_from_parts_v1(p_id uuid,p_release_id text,p_upload uuid,p_part_count integer,p_manifest_hash text,p_evidence jsonb,p_source_commit text,p_author text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "r:private.platform_method_upload_parts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_method_upload_parts",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_upload_parts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_method_upload_parts",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_upload_parts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, publicação da ficha C32",
+      "decision": "preservar",
+      "stage": "fichas C32, publicação",
+      "reason": "Partes temporárias do texto do manifesto enviadas pelo operador para publicação; apagadas na submissão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019013848_platform_method_upload_parts.sql",
+          "line": 9,
+          "anchor": "create table private.platform_method_upload_parts(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "policy:private.platform_method_upload_parts.platform_method_upload_parts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_method_upload_parts.platform_method_upload_parts_deny",
+          "kind": "policy",
+          "name": "platform_method_upload_parts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_upload_parts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_method_upload_parts.platform_method_upload_parts_deny",
+          "kind": "policy",
+          "name": "platform_method_upload_parts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_upload_parts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, publicação da ficha C32",
+      "decision": "preservar",
+      "stage": "fichas C32, publicação",
+      "reason": "Negação explícita, como nas demais tabelas de publicação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019014634_platform_method_upload_parts_deny.sql",
+          "line": 2,
+          "anchor": "create policy platform_method_upload_parts_deny on private.platform_method_upload_parts as restrictive for all to public using (false) with check (false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     }
   ],
   "repository_items": [
@@ -327761,6 +328037,18 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Propostas de premissas da conversa e confirmação que grava a base como a pessoa; nenhuma liberação de método, execução ou mudança de RLS existente."
+    },
+    {
+      "path": "supabase/migrations/20261019013848_platform_method_upload_parts.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Via do operador para enviar em partes um manifesto maior que um comando administrativo; o submit existente mantém todas as verificações e o manifestHash revisado é obrigatório."
+    },
+    {
+      "path": "supabase/migrations/20261019014634_platform_method_upload_parts_deny.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Política de negação explícita na tabela de partes do operador."
     }
   ],
   "staging_archive": [
