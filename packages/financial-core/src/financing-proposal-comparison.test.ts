@@ -160,4 +160,21 @@ describe("C02: financing proposals compared on the company itself", () => {
     const stray = {...itau, charges: itau.charges.map((c) => c.id.endsWith("waiver") ? {...c, instrumentId: "unknown"} : c)};
     expect(() => compareFinancingProposals({...i, proposals: [stray]})).toThrow("proposal_comparison_charge_payee_unknown");
   });
+  it("refuses a charge counted twice, a non-positive charge and a post-horizon charge inside the horizon", () => {
+    const i = input("0"), fundo = i.proposals[2]!;
+    const twice = {...fundo, charges: [...fundo.charges, {...fundo.charges[0]!}]};
+    expect(() => compareFinancingProposals({...i, proposals: [twice]})).toThrow("proposal_comparison_duplicate_charge");
+    const zero = {...fundo, charges: fundo.charges.map((c) => ({...c, amount: "0"}))};
+    expect(() => compareFinancingProposals({...i, proposals: [zero]})).toThrow("proposal_comparison_positive_charge_required");
+    const early = {...fundo, cost: {...fundo.cost, chargesAfterHorizon: [{id: "late", category: "recurring_fee" as const, date: "2028-06-30", amount: "1"}]}};
+    expect(() => compareFinancingProposals({...i, proposals: [early]})).toThrow("proposal_comparison_charge_inside_horizon");
+  });
+  it("puts a contract draw on a period end in that period", () => {
+    const schedule = {baseDate: "2027-03-31", currency: "BRL", moneyUnit: "BRL million", grossAdvance: "70", upfrontWithheldCosts: "0", annualSpread: "0.03",
+      unpaidInterestBase: "principal_plus_accrued" as const,
+      periods: [{id: "p1", startDate: "2027-03-31", endDate: "2027-06-30", yearFraction: new P(91).div(365).toDecimalPlaces(20).toFixed(), annualIndex: "0.14",
+        yearFractionConvention: "actual_365_fixed" as const, sourceAnchor: "x", scheduledPrincipal: "70", paysAccruedInterest: true}]};
+    const l = proposalCompanyLedger(schedule, [{startDate: "2027-01-01", endDate: "2027-03-31"}, {startDate: "2027-04-01", endDate: "2027-06-30"}]);
+    expect([l[0]!.draw, l[1]!.draw, l[0]!.closingPrincipal.toNumber()]).toEqual(["70", "0", 70]);
+  });
 });

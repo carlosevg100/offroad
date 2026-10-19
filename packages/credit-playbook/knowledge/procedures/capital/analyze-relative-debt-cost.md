@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: relative-debt-cost-packet.v1
 unit_test_files: [packages/financial-model/src/relative-debt-cost-packet.test.ts, packages/financial-model/src/relative-debt-cost-runs.test.ts, packages/financial-model/src/adopted-relative-debt-cost.test.ts, packages/financial-core/src/relative-debt-cost.test.ts]
-gold_case_ids: [c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-is-a-gap, absent-indicator-is-a-gap-not-neutral]
-adversarial_case_ids: [tampered-envelope, lens-from-another-comparison, lever-without-action, duplicate-lever, peer-indicator-read-as-own, overlapping-market-effect, unlike-indexers, inverted-notch-range, free-result-in-request, fabricated-grant-in-result]
+gold_case_ids: [c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, a-lever-without-complete-costs-is-not-said-to-pay]
+adversarial_case_ids: [tampered-envelope, lens-from-another-comparison, lever-without-action, duplicate-lever, peer-indicator-read-as-own, overlapping-market-effect, unlike-indexers, numbers-of-different-definitions, materiality-threshold-out-of-domain, inverted-notch-range, free-result-in-request, fabricated-grant-in-result]
 e2e_scenario_ids: [domain:c03-decomposition-independent-oracle]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -34,7 +34,7 @@ gold_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-gold]
 ---
 
 # Objetivo
-Explicar por que a companhia paga mais (ou menos) que um par, com números que se sustentem diante de um conselho, e dizer o que reduz a diferença e quanto isso vale contra o que custa. A diferença bruta de spread é separada em data de precificação, estrutura da operação, mercado e o resíduo que é a forma como um credor enxerga as duas companhias.
+Explicar por que a companhia paga mais (ou menos) que um par, com números que se sustentem diante de um conselho, e dizer o que reduz a diferença e quanto isso vale contra o que custa. A diferença bruta de spread é separada em data de precificação, estrutura da operação, mercado e um resíduo que, sob os ajustes adotados, se lê como diferença de crédito entre as duas companhias, sem provar causa nem a percepção efetiva de um credor.
 
 # Produto
 Pacote da diferença: decomposição da diferença bruta em ajustes fundamentados por objeto de mercado com amostra, o resíduo de crédito e a parcela que não diz respeito ao risco da companhia; lente do comitê de crédito com os indicadores das duas companhias na mesma definição, inclusive o que não explica a diferença; leitura do resíduo em degraus de nota contra o valor de mercado de um degrau, sem atribuir rating; e alavancas (refinanciar, contratar rating, alongar, reduzir concentração) com valor, custo e prazo. Material para conselho só quando pedido.
@@ -68,11 +68,11 @@ Pacote da diferença: decomposição da diferença bruta em ajustes fundamentado
 # Cálculos determinísticos
 - Diferença bruta = spread da companhia menos spread do par, no mesmo indexador; indexadores diferentes exigem spreads equivalentes na mesma curva datada.
 - Cada ajuste vem de um objeto de mercado com amostra e pertence a um grupo de efeito independente; ajuste repetido ou sobreposto é recusado. Com datas de precificação diferentes, o ajuste de data é obrigatório, ainda que seja zero fundamentado.
-- Resíduo de crédito = diferença bruta menos a soma dos ajustes, somente com cobertura completa declarada; parcela que não diz respeito ao risco da companhia = ajustes sobre a diferença bruta.
-- Lente: diferença relativa do indicador contra o par, com sinal pela direção adotada (maior é melhor ou maior é pior); acima do limiar adotado pesa contra, abaixo pesa pouco, igual é neutro, melhor favorece. Linha qualitativa guarda a classificação adotada por uma pessoa, com origem.
+- Resíduo de crédito = diferença bruta menos a soma dos ajustes, somente com cobertura completa declarada, lido sob os ajustes adotados; parcela que não diz respeito ao risco da companhia = ajustes sobre a diferença bruta. Sem um ajuste, a diferença bruta continua apresentada e o resíduo fica como lacuna.
+- Lente: número só se compara com número da mesma definição, adotada para cada lado; definições diferentes viram linha qualitativa. Diferença relativa contra o par, com sinal pela direção adotada; acima do limiar adotado (entre zero e um) pesa contra, abaixo pesa pouco, igual é neutro, melhor favorece. Linha qualitativa guarda a classificação adotada por uma pessoa, com origem, e só vale com os dois lados informados; faltando valor ou definição, a linha fica sem classificação.
 - Degraus implícitos = resíduo dividido pelo maior e pelo menor valor de mercado de um degrau; é leitura, não rating.
-- Alavanca = economia nominal (principal afetado × diferença de spread × fração de ano adotada) menos custos conhecidos; não é valor presente da dívida.
-- Precisão: aritmética decimal de alta precisão, resultados sem arredondamento adicional.
+- Alavanca = economia nominal (principal afetado × diferença de spread × fração de ano adotada) menos custos conhecidos; não é valor presente da dívida. Dizer que compensa exige custos cobertos para o prazo da economia.
+- Precisão: aritmética decimal de alta precisão; resultados apresentados com até vinte casas decimais.
 
 # Julgamentos permitidos
 - Dizer o que pesa mais na percepção do credor e o que é estrutural, com o número de cada indicador; a classificação de linhas qualitativas é juízo adotado e atribuído.
@@ -113,7 +113,7 @@ Pacote da diferença: decomposição da diferença bruta em ajustes fundamentado
 
 # Exemplos
 ## Bom
-- CCB de setembro de 2024 a CDI + 2,60 contra debênture do par de maio de 2026 a CDI + 1,35: 125 pontos. Data explica 60; prazo, garantia, instrumento e escala, somados, mais 10; sobram 55 de crédito. Alavancagem é a mesma nas duas e não explica; pesam escala, concentração, perfil curto da dívida, conversão de caixa e falta de rating. 55 pontos ficam perto de dois degraus. Pré-pagar só pela taxa economiza R$ 0,2 a 0,3 milhão e custa R$ 1,75 milhão; rating numa captação de R$ 90 milhões empata no spread e vale pela base de investidores de uma debênture.
+- CCB de setembro de 2024 a CDI + 2,60 contra debênture do par de maio de 2026 a CDI + 1,35: 125 pontos. Data explica 60; prazo, garantia, instrumento e escala, somados, mais 10; sobram 55 de crédito. Alavancagem é a mesma nas duas e não explica; pesam escala, concentração, perfil curto da dívida, conversão de caixa e falta de rating. 55 pontos ficam perto de dois degraus. Pré-pagar só pela taxa economiza R$ 0,2 a 0,3 milhão e custa R$ 1,75 milhão; rating numa captação de R$ 90 milhões dá líquido entre R$ 0,165 milhão negativo e R$ 0,025 milhão positivo por ano, quase sempre negativo pelo spread, e vale pela base de investidores de uma debênture.
 ## Ruim
 - "Pagamos mais porque somos mais alavancados e menores; contratar rating reduziria o custo."
 - Diferença de 125 pontos atribuída inteira ao crédito, sem ajuste de data.
@@ -124,9 +124,9 @@ Pacote da diferença: decomposição da diferença bruta em ajustes fundamentado
 - packages/financial-model/src/adopted-relative-debt-cost.test.ts: ponte e ações sobre a base adotada, recusas de contexto e de indexador.
 - packages/financial-core/src/relative-debt-cost.test.ts: motores.
 ## Gold
-- c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-is-a-gap, absent-indicator-is-a-gap-not-neutral.
+- c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, a-lever-without-complete-costs-is-not-said-to-pay.
 ## Adversarial
-- Base adulterada, lente de outra comparação, alavanca sem ação, alavanca repetida, indicador do par lido como da companhia, efeito de mercado sobreposto, indexadores diferentes como spread cotado, faixa de degrau invertida, número livre no pedido e concessão fabricada no resultado são recusados.
+- Base adulterada, lente de outra comparação, alavanca sem ação, alavanca repetida, indicador do par lido como da companhia, efeito de mercado sobreposto, indexadores diferentes como spread cotado, números de definições diferentes, limiar de materialidade fora do domínio, faixa de degrau invertida, número livre no pedido e concessão fabricada no resultado são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C03 turno a turno pela interface real com fontes públicas do par e direitos do ambiente de teste; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -2249,6 +2249,17 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                                   }
                                 }
                               },
+                              "unit": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "ratio",
+                                    "multiple",
+                                    "currency"
+                                  ]
+                                }
+                              },
                               "definition": {
                                 "required": true,
                                 "value": {
@@ -2302,15 +2313,57 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                                   }
                                 }
                               },
-                              "unit": {
+                              "peerDefinition": {
                                 "required": true,
                                 "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "ratio",
-                                    "multiple",
-                                    "currency"
-                                  ]
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
                                 }
                               },
                               "own": {
@@ -5535,7 +5588,15 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                       "structureAndMarketBps": {
                         "required": true,
                         "value": {
-                          "type": "string"
+                          "type": "union",
+                          "variants": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       },
                       "creditResidualBps": {
@@ -5555,7 +5616,24 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                       "shareNotAboutCompanyRisk": {
                         "required": true,
                         "value": {
-                          "type": "string"
+                          "type": "union",
+                          "variants": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "residualReading": {
+                        "required": true,
+                        "value": {
+                          "type": "enum",
+                          "values": [
+                            "under_adopted_adjustments"
+                          ]
                         }
                       }
                     }

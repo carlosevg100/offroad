@@ -56,14 +56,20 @@ function goldCases(): Case[] {
     (() => {
       const g = c03PacketInput(); const a = g.input.analysis.adjustments[2]!;
       a.terms.bps = {...a.terms.bps, decisionId: null, missingReason: "Missing comparable market sample"};
-      return observe("absent-market-adjustment-is-a-gap", g.seal(), {status: "framed", decomposition: null, gap: true},
-        (p) => ({status: p.status, decomposition: p.decomposition, gap: p.gaps.some((x) => x.reason === "Missing comparable market sample")}));
+      return observe("absent-market-adjustment-keeps-the-gross-difference", g.seal(), {status: "framed", gross: "125", residual: null, gap: true},
+        (p) => ({status: p.status, gross: p.decomposition!.grossBps, residual: p.decomposition!.creditResidualBps, gap: p.gaps.some((x) => x.reason === "Missing comparable market sample")}));
     })(),
     (() => {
       const g = c03PacketInput(); const row = g.input.lens.rows[3]!;
       row.own = {...row.own, decisionId: null, missingReason: "Cobertura da companhia não adotada"};
       return observe("absent-indicator-is-a-gap-not-neutral", g.seal(), {status: "partial", classification: null},
         (p) => ({status: p.status, classification: p.lens.rows.find((r) => r.id === c03Id(403))!.classification}));
+    })(),
+    (() => {
+      const g = c03PacketInput(); const e = g.entries.find((x) => x.fieldPath.endsWith(`action.${g.ids.refinance220}.costCoverage`))!;
+      e.value = {type: "text", value: "incomplete"};
+      return observe("a-lever-without-complete-costs-is-not-said-to-pay", g.seal(), {paysForItself: null},
+        (p) => ({paysForItself: p.levers.find((l) => l.actionId === g.ids.refinance220)!.paysForItself}));
     })(),
   ];
 }
@@ -77,6 +83,8 @@ function adversarialCases(): Case[] {
     ["peer-indicator-read-as-own", () => {const f = c03PacketInput(); const e = f.entries.find((x) => x.fieldPath.endsWith(`lens.${c03Id(402)}.peer`))!; e.dimensions = {...e.dimensions, entityId: c03Id(1)}; return f.seal();}, "relative_cost_lens_context_mismatch"],
     ["overlapping-market-effect", () => mutate(`adjustment.${c03Id(301)}.independentEffectGroup`, {type: "text", value: "pricing_date"}).seal(), "Duplicate or overlapping adjustment"],
     ["unlike-indexers", () => mutate("peer.indexer", {type: "text", value: "IPCA"}).seal(), "Different indexers require equivalent spreads"],
+    ["numbers-of-different-definitions", () => mutate(`lens.${c03Id(403)}.peerDefinition`, {type: "text", value: "EBITDA ajustado sobre despesa financeira líquida"}).seal(), "relative_cost_lens_definition_mismatch"],
+    ["materiality-threshold-out-of-domain", () => mutate("lens.materialityThreshold", {type: "number", value: "1.5"}).seal(), "relative_cost_lens_threshold_domain"],
     ["inverted-notch-range", () => mutate("lens.notch.bpsHigh", {type: "number", value: "20"}).seal(), "relative_cost_lens_notch_range"],
     ["free-result-in-request", () => ({...sealed(), residualBps: "10"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],

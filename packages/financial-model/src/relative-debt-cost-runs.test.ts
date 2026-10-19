@@ -19,8 +19,8 @@ describe("recorded relative debt cost evaluations", () => {
     expect(records.get(relativeDebtCostRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "c03-decomposition-independent-oracle", "more-than-half-is-not-company-risk", "leverage-is-not-the-driver", "committee-lens-weighs-scale-conversion-and-debt-profile",
       "qualitative-rows-keep-the-adopted-judgment", "residual-read-as-about-two-notches", "prepaying-only-for-the-rate-does-not-pay", "rating-breaks-even-on-spread",
-      "absent-market-adjustment-is-a-gap", "absent-indicator-is-a-gap-not-neutral"]);
-    expect(records.get(relativeDebtCostRunIds.adversarial)!.cases).toHaveLength(10);
+      "absent-market-adjustment-keeps-the-gross-difference", "absent-indicator-is-a-gap-not-neutral", "a-lever-without-complete-costs-is-not-said-to-pay"]);
+    expect(records.get(relativeDebtCostRunIds.adversarial)!.cases).toHaveLength(12);
     expect(records.get(relativeDebtCostRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

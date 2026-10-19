@@ -37,8 +37,9 @@ export const relativeDebtCostPacketOutputSchema = z.strictObject({
   schemaVersion: z.literal("relative-debt-cost-packet.v1"), executorVersion: z.literal(relativeDebtCostPacketVersion), financialCoreVersion: key,
   question: text, basisFingerprint: hash, scope: adoptedRelativeDebtCostInputSchema.shape.scope, entityId: z.uuid(), peerEntityId: z.uuid(), currency: z.string().regex(/^[A-Z]{3}$/),
   result: adoptedRelativeDebtCostOutputSchema,
-  decomposition: z.strictObject({grossBps: decimal, afterPricingDateBps: decimal.nullable(), structureAndMarketBps: decimal, creditResidualBps: decimal.nullable(),
-    shareNotAboutCompanyRisk: decimal}).nullable(),
+  /** The gross difference stands on the two spreads alone; the rest needs every adopted adjustment. */
+  decomposition: z.strictObject({grossBps: decimal, afterPricingDateBps: decimal.nullable(), structureAndMarketBps: decimal.nullable(), creditResidualBps: decimal.nullable(),
+    shareNotAboutCompanyRisk: decimal.nullable(), residualReading: z.literal("under_adopted_adjustments")}).nullable(),
   lens: z.strictObject({rows: z.array(lensRow).max(24), materialityThreshold: decimal.nullable(), notDrivers: z.array(z.uuid()).max(24),
     weighsAgainst: z.array(z.uuid()).max(24),
     impliedNotches: z.strictObject({fewest: decimal, most: decimal, bpsPerNotch: z.strictObject({low: decimal, high: decimal}), peerRating: text.nullable(), readingOnly: z.literal(true)}).nullable()}),
@@ -62,15 +63,20 @@ export function prepareRelativeDebtCostPacket(raw: unknown): RelativeDebtCostPac
   const result = adoptedRelativeDebtCostOutputSchema.parse(calculateAdoptedRelativeDebtCost(input.analysis));
   const b = result.bridge as {grossBps: string; knownAdjustmentsBps: string; residualBps: string | null; afterPricingDateBps: string | null; steps: {family: string; bps: string}[]} | null;
   const lens = readAdoptedRelativeCostLens(input.lens, b?.residualBps ?? null);
+  const own = (result.own as {spreadBps: string | null}).spreadBps, peer = (result.peer as {spreadBps: string | null}).spreadBps;
   const decomposition = b ? {grossBps: b.grossBps, afterPricingDateBps: b.afterPricingDateBps, structureAndMarketBps: b.knownAdjustmentsBps, creditResidualBps: b.residualBps,
-    shareNotAboutCompanyRisk: new Exact(b.grossBps).isZero() ? "0" : fmt(new Exact(b.knownAdjustmentsBps).div(b.grossBps))} : null;
+    shareNotAboutCompanyRisk: new Exact(b.grossBps).isZero() ? "0" : fmt(new Exact(b.knownAdjustmentsBps).div(b.grossBps)), residualReading: "under_adopted_adjustments" as const}
+    : own !== null && peer !== null ? {grossBps: fmt(new Exact(own).minus(peer)), afterPricingDateBps: null, structureAndMarketBps: null, creditResidualBps: null,
+      shareNotAboutCompanyRisk: null, residualReading: "under_adopted_adjustments" as const} : null;
   const levers = input.levers.map((lever) => {
-    const action = (result.actions as {actionId: string; result: {nominalSavings: string; knownCosts: string} | null}[]).find((a) => a.actionId === lever.actionId)?.result ?? null;
+    const action = (result.actions as {actionId: string; result: {nominalSavings: string; knownCosts: string; status: string} | null}[]).find((a) => a.actionId === lever.actionId)?.result ?? null;
     const net = action ? new Exact(action.nominalSavings).minus(action.knownCosts) : null;
-    return {...lever, savings: action?.nominalSavings ?? null, knownCosts: action?.knownCosts ?? null, netOfKnownCosts: net ? fmt(net) : null, paysForItself: net ? net.gt(0) : null};
+    // Whether a lever pays is said only when its costs cover the stated horizon.
+    const covered = action?.status === "stated_horizon_estimate";
+    return {...lever, savings: action?.nominalSavings ?? null, knownCosts: action?.knownCosts ?? null, netOfKnownCosts: net ? fmt(net) : null, paysForItself: net && covered ? net.gt(0) : null};
   });
   const gaps = [...result.gaps, ...lens.gaps];
-  const status = !b ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
+  const status = !b || !decomposition ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "relative-debt-cost-packet.v1" as const, executorVersion: relativeDebtCostPacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, peerEntityId: result.peerEntityId, currency: result.currency,
     result, decomposition,

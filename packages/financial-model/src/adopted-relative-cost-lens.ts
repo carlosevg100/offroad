@@ -16,8 +16,9 @@ const shape = adoptedRelativeDebtCostInputSchema.shape;
  * definition and direction; a qualitative row (a rating, a concentration measured on different
  * client counts, a credit history) carries the classification a person adopted, with origin. */
 const lensRow = z.discriminatedUnion("kind", [
-  z.strictObject({id: z.uuid(), kind: z.literal("numeric"), label: selection, definition: selection, unit: z.enum(["ratio", "multiple", "currency"]),
-    own: selection, peer: selection, direction: selection}),
+  z.strictObject({id: z.uuid(), kind: z.literal("numeric"), label: selection, unit: z.enum(["ratio", "multiple", "currency"]),
+    /** Each side's definition, adopted separately: numbers are compared only when the definitions match. */
+    definition: selection, peerDefinition: selection, own: selection, peer: selection, direction: selection}),
   z.strictObject({id: z.uuid(), kind: z.literal("qualitative"), label: selection, own: selection, peer: selection, classification: selection}),
 ]);
 export const adoptedRelativeCostLensInputSchema = z.strictObject({
@@ -55,18 +56,23 @@ export function readAdoptedRelativeCostLens(raw: unknown, residualBps: string | 
     return schema.parse(e.value.value);
   }
   const threshold = read(input.materialityThreshold, "materialityThreshold", "ratio", "number", decimal);
+  if (threshold !== null && (!new Exact(threshold).gt(0) || !new Exact(threshold).lt(1))) throw new Error("relative_cost_lens_threshold_domain");
   const rows = input.rows.map((r) => {
     const p = `${r.id}.`;
     const label = read(r.label, p + "label", "explanation", "text", text);
     if (r.kind === "qualitative") {
       const own = read(r.own, p + "own", "explanation", "text", text), peer = read(r.peer, p + "peer", "explanation", "text", text, true);
-      const classification = read(r.classification, p + "classification", "convention", "text", z.enum(classes));
+      const adopted = read(r.classification, p + "classification", "convention", "text", z.enum(classes));
+      // A judgment about two companies needs both sides stated; otherwise it is not classified.
+      const classification = own !== null && peer !== null && label !== null ? adopted : null;
       return {id: r.id, kind: r.kind, label, own, peer, definition: null, relativeDifference: null, classification, classificationBasis: "adopted_judgment" as const};
     }
     const definition = read(r.definition, p + "definition", "explanation", "text", text);
+    const peerDefinition = read(r.peerDefinition, p + "peerDefinition", "explanation", "text", text, true);
+    if (definition !== null && peerDefinition !== null && definition !== peerDefinition) throw new Error("relative_cost_lens_definition_mismatch");
     const own = read(r.own, p + "own", r.unit, "number", decimal), peer = read(r.peer, p + "peer", r.unit, "number", decimal, true);
     const direction = read(r.direction, p + "direction", "convention", "text", z.enum(["higher_is_better", "higher_is_worse"]));
-    if (own === null || peer === null || direction === null || threshold === null)
+    if (own === null || peer === null || direction === null || threshold === null || definition === null || peerDefinition === null || label === null)
       return {id: r.id, kind: r.kind, label, own, peer, definition, relativeDifference: null, classification: null, classificationBasis: "calculated" as const};
     const base = new Exact(peer).abs();
     if (base.isZero()) throw new Error("relative_cost_lens_zero_reference");

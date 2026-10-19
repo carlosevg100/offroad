@@ -72,15 +72,20 @@ function assessments(instruments: readonly DatedDebtInstrument[], charges: reado
  * fraction cannot be cut and must end on company period ends. */
 export function proposalCompanyLedger(schedule: DeferredFinancingScheduleInput, periods: readonly {startDate: string; endDate: string}[]) {
   const built = buildDeferredFinancingSchedule(schedule);
-  const draw = periods.findIndex((p) => p.endDate > schedule.baseDate);
+  // Every business-day period must be the national calendar's count, cut or not.
+  schedule.periods.forEach((p, i) => {
+    const start = i ? schedule.periods[i - 1]!.endDate : schedule.baseDate;
+    if (p.yearFractionConvention === "business_days_252" && brazilianBusinessDays(start, p.endDate) !== p.businessDays) throw new Error("proposal_comparison_calendar_mismatch");
+  });
+  // On contract dates the draw date belongs to the period that contains it (a draw on a period end
+  // is in that period); on the period grid the draw opens the period after the recorded date.
+  const contract = schedule.periods.some((p) => p.yearFractionConvention !== "adopted_year_fraction");
+  const draw = periods.findIndex((p) => contract ? p.endDate >= schedule.baseDate : p.endDate > schedule.baseDate);
   if (draw < 0 || schedule.baseDate < dayBefore(periods[0]!.startDate)) throw new Error("proposal_comparison_draw_outside_horizon");
   const fractionTo = (p: DeferredFinancingScheduleInput["periods"][number], start: string, cut: string) => {
     if (cut === start) return new D(0);
     if (cut === p.endDate) return new D(p.yearFraction);
-    if (p.yearFractionConvention === "business_days_252") {
-      if (brazilianBusinessDays(start, p.endDate) !== p.businessDays) throw new Error("proposal_comparison_calendar_mismatch");
-      return new D(brazilianBusinessDays(start, cut)).div(252);
-    }
+    if (p.yearFractionConvention === "business_days_252") return new D(brazilianBusinessDays(start, cut)).div(252);
     if (p.yearFractionConvention === "actual_365_fixed") return new D(days(start, cut)).div(365);
     throw new Error("proposal_comparison_lifetime_split_unavailable");
   };
@@ -117,6 +122,14 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
   if (!input.proposals.length || input.proposals.length > 8) throw new Error("proposal_comparison_count");
   if (new Set(input.proposals.map((p) => p.id)).size !== input.proposals.length) throw new Error("proposal_comparison_duplicate");
   const commonIds = new Set(input.commonInstruments.map((i) => i.instrumentId));
+  // Every charge is a positive amount with its own id: nothing is counted twice across the company,
+  // the horizon and the life of a proposal.
+  const chargeIds = [...input.commonCharges.map((c) => c.id), ...input.proposals.flatMap((p) => [...p.charges.map((c) => c.id), ...(p.cost.chargesAfterHorizon ?? []).map((c) => c.id)])];
+  if (new Set(chargeIds).size !== chargeIds.length) throw new Error("proposal_comparison_duplicate_charge");
+  const economic = [...input.commonCharges, ...input.proposals.flatMap((p) => p.charges)].map((c) => c.economicId);
+  if (new Set(economic).size !== economic.length) throw new Error("proposal_comparison_duplicate_charge");
+  for (const p of input.proposals) for (const c of [...p.charges, ...(p.cost.chargesAfterHorizon ?? [])]) if (!new D(c.amount).gt(0)) throw new Error("proposal_comparison_positive_charge_required");
+  for (const p of input.proposals) for (const c of p.cost.chargesAfterHorizon ?? []) if (c.date <= input.endDate) throw new Error("proposal_comparison_charge_inside_horizon");
   const pool = new D(input.freeReceivablesPool);
   const proposals = input.proposals.map((proposal) => {
     if (commonIds.has(proposal.id)) throw new Error("proposal_comparison_duplicate");

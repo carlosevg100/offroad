@@ -121,3 +121,42 @@ export function c04PacketInput(o: {structure?: keyof typeof c04Structures; revie
   };
   return {basis: b.basis, seal};
 }
+
+/** The independent review's counterexample: minimum cash needs at least 100 of new debt and
+ * interest coverage allows at most 20. No amount satisfies both. */
+export function c04DisconnectedPacketInput() {
+  const f = analysisTestBasis("", "2026-12-31", "2028-12-31"), aid = id(4490), pfx = `debt_capacity.${aid}.`, sc = "disconnected:base";
+  const num = (p: string, unit: string, value: string) => f.contribute(pfx + p, unit, {type: "number", value}, sc);
+  const text = (p: string, value: string) => f.contribute(pfx + p, "convention", {type: "text", value}, sc);
+  const list = (p: string, unit: string, value: string[]) => f.contribute(pfx + p, unit, {type: "list", value}, sc);
+  const sid = id(44905), p = `scenario.${sid}.`, two = (a: string, b: string) => [a, b];
+  const affineValues: Record<string, string[]> = {ebitda: two("20", "200"), growthCapex: two("100", "0")};
+  const affine = Object.fromEntries(["ebitda", "covenantEbitdaAdjustment", "nonCashEbitdaBridge", "cashLeasePayments", "changeInWorkingCapital", "maintenanceCapex", "growthCapex",
+    "taxableBaseBeforeNewDebtInterest", "otherExistingFinancingCashAvailable", "capitalCashAvailable"].map((k) => [k, {fixed: list(p + k + ".fixed", "currency", affineValues[k] ?? two("0", "0")),
+    perUnitNewDebt: list(p + k + ".perUnitNewDebt", "ratio", two("0", "0"))}]));
+  const ratios: Record<string, string[]> = {drawAtStart: two("1", "0"), drawAtEnd: two("0", "0"), principalPaidAtEnd: two("0", "1"), interestFactorOnOpeningAndStartDraw: two("0.1", "0.1"),
+    interestFactorOnEndDraw: two("0", "0"), interestFactorCreditOnEndAmortization: two("0", "0"), withheldCostPerUnitDraw: two("0", "0")};
+  const cashRule = id(44901), coverageRule = id(44902);
+  const scenario = {id: sid, scenario: sc, terms: {openingAvailableCash: num(p + "openingAvailableCash", "currency", "0"), cashNetting: text(p + "cashNetting", "signed_available"),
+    includeNewAccruedInterestInDebt: f.contribute(pfx + p + "includeNewAccruedInterestInDebt", "convention", {type: "boolean", value: false}, sc),
+    periodEnds: list(p + "periodEnds", "date", ["2027-12-31", "2028-12-31"]), affine,
+    money: Object.fromEntries(["existingCashInterest", "existingCashPrincipalPaid", "existingDebtForRatio"].map((k) => [k, list(p + k, "currency", two("0", "0"))])),
+    ratios: {cashTaxRate: list(p + "cashTaxRate", "ratio", two("0", "0"))},
+    conventions: {lossTaxTreatment: list(p + "lossTaxTreatment", "convention", two("no_cash_benefit", "no_cash_benefit")), newDebtTaxDeduction: list(p + "newDebtTaxDeduction", "convention", two("paid_interest", "paid_interest")),
+      cfadsGrowthCapexTreatment: list(p + "cfadsGrowthCapexTreatment", "convention", two("exclude_growth_capex", "exclude_growth_capex"))},
+    cfadsDefinitionAnchors: list(p + "cfadsDefinitionAnchors", "reference_id", two("counterexample", "counterexample")),
+    newFinancing: {ratios: Object.fromEntries(Object.entries(ratios).map(([k, v]) => [k, list(p + "newFinancing." + k, "ratio", v)])),
+      conventions: {factorConvention: list(p + "newFinancing.factorConvention", "convention", two("dated_contract_split_at_cash_flows", "dated_contract_split_at_cash_flows")),
+        paysAccruedInterest: list(p + "newFinancing.paysAccruedInterest", "convention", two("true", "true")),
+        unpaidInterestBase: list(p + "newFinancing.unpaidInterestBase", "convention", two("principal_plus_accrued", "principal_plus_accrued"))}}},
+    rules: [{id: cashRule, kind: text(p + `rule.${cashRule}.kind`, "minimum_available_cash"), threshold: num(p + `rule.${cashRule}.threshold`, "currency", "10")},
+      {id: coverageRule, kind: text(p + `rule.${coverageRule}.kind`, "minimum_interest_coverage"), threshold: num(p + `rule.${coverageRule}.threshold`, "ratio", "10")}]};
+  const analysis = {...f.context, analysisId: aid, scenario: sc, maximumAmount: num("maximumAmount", "currency", "200"), monetaryQuantum: num("monetaryQuantum", "currency", "1"),
+    fixedReviewAmount: null, horizonMode: text("horizonMode", "full_settlement"),
+    newDebtFinalPaymentDate: f.contribute(pfx + "newDebtFinalPaymentDate", "date", {type: "date", value: "2028-12-31"}, sc),
+    existingDebtFinalPaymentDates: list("existingDebtFinalPaymentDates", "date", []), scenarios: [scenario]} as unknown as AdoptedDebtCapacityInput;
+  const envelope = f.seal(); analysis.envelope = envelope;
+  return {schemaVersion: "debt-capacity-packet-input.v1" as const, question: "Quanto cabe?",
+    cases: [{id: "informed", role: "informed" as const, label: "Contraexemplo", changes: [] as string[], analysis,
+      limits: [{id: "cash", label: "Caixa mínimo", ruleIds: [cashRule]}, {id: "interest", label: "Cobertura de juros", ruleIds: [coverageRule]}]}]};
+}

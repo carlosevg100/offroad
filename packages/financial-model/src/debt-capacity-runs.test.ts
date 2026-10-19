@@ -17,7 +17,7 @@ describe("recorded debt capacity evaluations", () => {
   }, 900_000);
   it("covers size by limit, profile, plan and the boundaries of the question", () => {
     expect(records.get(debtCapacityRunIds.gold)!.cases.map((c) => c.id)).toEqual([
-      "c04-capacity-by-limit-independent-oracle", "phased-capacity-independent-oracle", "covenant-with-headroom-binds",
+      "c04-capacity-by-limit-independent-oracle", "phased-capacity-independent-oracle", "covenant-with-headroom-binds", "joint-capacity-is-the-intersection-of-the-limits",
       "sixty-breaks-the-covenant-in-the-adverse-case-as-informed", "phasing-makes-sixty-fit-in-size",
       "size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case", "bndes-eight-years-keeps-cash-positive",
       "plan-pays-scheduled-principal-without-refinancing", "window-ends-with-the-seasonal-line-open", "absent-threshold-is-a-gap-not-a-default"]);
