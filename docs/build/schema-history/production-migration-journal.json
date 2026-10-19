@@ -2449,6 +2449,11 @@
       "name": "work_premise_proposals",
       "version": "20261010113935",
       "statements_md5": "3982c1b9a92f7499985b22ec7c619b0d"
+    },
+    {
+      "name": "investment_payload_provenance",
+      "version": "20261019020056",
+      "statements_md5": "e952afcd119eaf0b88902988653a6058"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
