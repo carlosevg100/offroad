@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "analyze-relative-debt-cost-2026.10.19-v2",
+    "artifactHash": "d553fd226108ae95f752dec109df98b299dba000f5b2545863dd0fb625ba4cc9",
+    "profileFingerprint": "dcfe5d22c1e011ae26c4c59e806e9c094541e9f166e31cf15657066d14fc42ec"
+  },
+  "subjectCommit": "87475b4ac4830a086302228a8840ea024aab1a96",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-19T21:12:04.979Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "8ec65ef01d6640001ff7e5049f82d9d0add523cf4013085c05081e0550f57796",
+    "manifestFileHash": "2b0853c1f320ccb3d2893d6c7e28577809ce731bdc44fde2621ab4bfb1dd7f22",
+    "canonicalProfileTextSha256": "fdea04366a9f3b45aa606fed84a255ac5dadc031bc977820134f8cec5ee68cd6",
+    "canonicalProfileTextBytes": 1446,
+    "reviewedWorktreeHead": "87475b4ac4830a086302228a8840ea024aab1a96",
+    "originMainHead": "0ca1f890318520c875b7c3b6fa20cd986a4b27c7",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou que sourceCommit 0ca1f890318520c875b7c3b6fa20cd986a4b27c7 é ancestral de HEAD 87475b4ac4830a086302228a8840ea024aab1a96.",
+      "SHA-256 dos bytes do snapshot conferido: f6ce07b414a332448c72beb93ec43314f979b6ff3e2eb1c0dfa383b9c1114828. O sourceCommit interno coincide com o lock.",
+      "Todos os 330 executorSources foram confrontados com git show no sourceCommit e com o snapshot. Também conferidos 9 pins do compilador, 5 de evidências e 2 parseOnlySources.",
+      "Manifesto recuperado com git show no sourceCommit: SHA-256 2b0853c1f320ccb3d2893d6c7e28577809ce731bdc44fde2621ab4bfb1dd7f22, bytes idênticos ao snapshot e ao arquivo atual; manifestHash recalculado e confirmado.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs executado duas vezes com sucesso. Artefatos idênticos de 1546868 bytes, SHA-256 d553fd226108ae95f752dec109df98b299dba000f5b2545863dd0fb625ba4cc9.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada para a release, com methodId analyze-relative-debt-cost, methodVersion 2026.10.19-v2 e os manifestHash e artifactHash esperados.",
+      "deriveExecutionProfile e executionCanonicalText produziram texto idêntico, byte a byte, a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote1-2026-10-19/perfil/profile-analyze-relative-debt-cost.txt: 1446 bytes, SHA-256 fdea04366a9f3b45aa606fed84a255ac5dadc031bc977820134f8cec5ee68cd6.",
+      "Fingerprint interno recalculado sobre o perfil sem o campo fingerprint: dcfe5d22c1e011ae26c4c59e806e9c094541e9f166e31cf15657066d14fc42ec, igual ao lock.",
+      "Política confirmada: grantsExecution false, custo zero, zero chamadas de modelo, nenhuma ferramenta, allowedEffects [read_only], exatamente um executor @offroad/financial-model#prepareRelativeDebtCostPacket versão 2026.10.19-v1, componente relative.decision-packet.",
+      "Em apps/document-worker, npx vitest run src/released-lote1-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts: 4 arquivos e 22 testes aprovados, duração 11.19 s.",
+      "Leitura estática de supabase/migrations/20261019210807_lote1_payload_provenance.sql confirmou analyze-relative-debt-cost, versão 2026.10.19-v2, manifestHash 8ec65ef01d6640001ff7e5049f82d9d0add523cf4013085c05081e0550f57796 e schema relative-debt-cost-packet-input.v1, comparados com IS DISTINCT FROM; método nulo retorna false.",
+      "Comparação com 20261019020056_investment_payload_provenance.sql confirmou predicados de capital e investimento idênticos e corpo compartilhado de validação e revogação inalterado. Para esses métodos, as novas alternativas não mudam o comportamento. Nenhum banco foi acessado.",
+      "Blobs e SHA-256 do adaptador, último commit e blob do serializador, HEAD e origin/main obtidos diretamente com Git. Arquivos rastreados permaneceram intactos. JSON validado com adapterReviewSchema em packages/credit-playbook."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo desta revisão técnica independente: lock, proveniência, reconstrução determinística, perfil canônico, política e identidade do executor conferem; os 22 testes passaram. A migração foi revisada estaticamente e preserva o comportamento de capital e investimento. Nenhum banco foi acessado e nenhum arquivo rastreado foi alterado. Este parecer não comprova registro ou ativação em banco, implantação ou autorização de execução."
+}

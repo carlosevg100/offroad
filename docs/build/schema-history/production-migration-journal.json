@@ -2494,6 +2494,11 @@
       "name": "comparison_blocks_ebitda_headroom",
       "version": "20261019212359",
       "statements_md5": "623d5ea19af0c2ab2bc1d59778503c20"
+    },
+    {
+      "name": "lote1_payload_provenance",
+      "version": "20261019210807",
+      "statements_md5": "b0ef611fc570f50a96cf566819860357"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",

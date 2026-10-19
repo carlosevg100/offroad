@@ -328262,6 +328262,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "O espelho em SQL dos blocos da comparação passa a copiar a folga do covenant em EBITDA, que o pacote publica."
+    },
+    {
+      "path": "supabase/migrations/20261019210807_lote1_payload_provenance.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "As cargas das fichas do lote 1 (comparar propostas, custo relativo da dívida e capacidade de endividamento) passam pela mesma prova de proveniência do capital: base adotada guardada, decisões fixadas no contrato, entidades, definições e fontes legíveis pelo solicitante."
     }
   ],
   "staging_archive": [

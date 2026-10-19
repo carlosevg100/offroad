@@ -14,6 +14,24 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareInvestmentDecisionPacket', input: 'investmentDecisionPacketInputSchema', output: 'investmentDecisionPacketOutputSchema'}),
     entry: 'export {prepareInvestmentDecisionPacket, investmentDecisionPacketInputSchema, investmentDecisionPacketOutputSchema} from "../../packages/financial-model/src/investment-decision-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'compare-financing-proposals',
+    executorKey: '@offroad/financial-model#prepareFinancingComparisonPacket', executorVersion: '2026.10.19-v1',
+    exports: Object.freeze({calculate: 'prepareFinancingComparisonPacket', input: 'financingComparisonPacketInputSchema', output: 'financingComparisonPacketOutputSchema'}),
+    entry: 'export {prepareFinancingComparisonPacket, financingComparisonPacketInputSchema, financingComparisonPacketOutputSchema} from "../../packages/financial-model/src/financing-comparison-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'analyze-relative-debt-cost',
+    executorKey: '@offroad/financial-model#prepareRelativeDebtCostPacket', executorVersion: '2026.10.19-v1',
+    exports: Object.freeze({calculate: 'prepareRelativeDebtCostPacket', input: 'relativeDebtCostPacketInputSchema', output: 'relativeDebtCostPacketOutputSchema'}),
+    entry: 'export {prepareRelativeDebtCostPacket, relativeDebtCostPacketInputSchema, relativeDebtCostPacketOutputSchema} from "../../packages/financial-model/src/relative-debt-cost-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'assess-debt-capacity',
+    executorKey: '@offroad/financial-model#prepareDebtCapacityPacket', executorVersion: '2026.10.19-v1',
+    exports: Object.freeze({calculate: 'prepareDebtCapacityPacket', input: 'debtCapacityPacketInputSchema', output: 'debtCapacityPacketOutputSchema'}),
+    entry: 'export {prepareDebtCapacityPacket, debtCapacityPacketInputSchema, debtCapacityPacketOutputSchema} from "../../packages/financial-model/src/debt-capacity-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */

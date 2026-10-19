@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "assess-debt-capacity-2026.10.19-v2",
+    "artifactHash": "50753a36864a3a04f31e93225b01eaa8babc0f5c7378e3a77319591d4da19600",
+    "profileFingerprint": "1621707dcfe7d83c198749e6d429957729cf0c12f47ab51725bb1045288d2b10"
+  },
+  "subjectCommit": "87475b4ac4830a086302228a8840ea024aab1a96",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-19T21:12:20.293Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "13574b282016b8122f07ab4164fa4c68e5af4b3eb26078189e9e72fe668484c5",
+    "manifestFileHash": "d8c88a1074e8ef8bc14accafd874ace776108453d339fd4061c6cafa38c47133",
+    "canonicalProfileTextSha256": "cf90227e8a71f7915717da67e8b51f91c719b8e46d220db3e3e0fc87020f1e1c",
+    "canonicalProfileTextBytes": 1430,
+    "reviewedWorktreeHead": "87475b4ac4830a086302228a8840ea024aab1a96",
+    "originMainHead": "0ca1f890318520c875b7c3b6fa20cd986a4b27c7",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit 0ca1f890318520c875b7c3b6fa20cd986a4b27c7 como ancestral de HEAD.",
+      "SHA-256 dos bytes do snapshot 9c0515d2be0d6baa4bb8aa6987aa36251379788ca81047972eb9ed4bbc31546a.sources.json igual ao snapshotHash do lock; sourceCommit interno também confere.",
+      "Manifesto obtido por git show no sourceCommit: SHA-256 d8c88a1074e8ef8bc14accafd874ace776108453d339fd4061c6cafa38c47133. Bytes idênticos ao manifesto de HEAD, ao snapshot e ao manifesto empacotado. deriveExecutionProfile validou manifestHash e vínculos internos.",
+      "Conferidos os 330 executorSources por SHA-256 dos bytes de git show no sourceCommit e por igualdade com o snapshot. Também conferidos 9 pins do compilador, 5 de evidências e 2 de dependências de parsing.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com código 0. Duas reconstruções adicionais produziram bytes idênticos entre si e ao artefato instalado de 1536397 bytes, com SHA-256 50753a36864a3a04f31e93225b01eaa8babc0f5c7378e3a77319591d4da19600.",
+      "apps/document-worker/src/released-methods.generated.ts contém uma única entrada para o release, com platformReleaseId, methodId assess-debt-capacity, methodVersion 2026.10.19-v2, manifestHash e artifactHash exatos.",
+      "Perfil derivado com deriveExecutionProfile e canonicalizado com executionCanonicalText de HEAD. Comparação byte a byte com /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote1-2026-10-19/perfil/profile-assess-debt-capacity.txt passou: 1430 bytes; SHA-256 cf90227e8a71f7915717da67e8b51f91c719b8e46d220db3e3e0fc87020f1e1c.",
+      "Fingerprint recalculado sobre o perfil sem a propriedade fingerprint: 1621707dcfe7d83c198749e6d429957729cf0c12f47ab51725bb1045288d2b10, igual ao valor derivado e ao lock.",
+      "Política confirmada no manifesto e no perfil: grantsExecution=false, zero chamadas de modelo, custo zero, tools=[], allowedTools=[], allowedEffects=[read_only], maximumEffect=none; duração máxima de 31000 ms.",
+      "Exatamente um executor: @offroad/financial-model#prepareDebtCapacityPacket, versão 2026.10.19-v1. Componente selecionado capacity.decision-packet; executor.sources idêntico a executorSources do lock.",
+      "Em apps/document-worker, npx vitest run src/released-lote1-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts terminou com código 0: 4 arquivos e 22 testes passaram em 10,95 s; transporte da fila simulado.",
+      "Leitura estática de supabase/migrations/20261019210807_lote1_payload_provenance.sql confirmou assess-debt-capacity vinculado a 2026.10.19-v2, manifestHash 13574b282016b8122f07ab4164fa4c68e5af4b3eb26078189e9e72fe668484c5 e debt-capacity-packet-input.v1, com recusa explícita de methodId nulo.",
+      "Comparação estática com 20261019020056_investment_payload_provenance.sql: removendo somente os três novos métodos do roteamento e suas três condições, o corpo anterior é restaurado integralmente, salvo newline final. Condições de capital e investimento e percurso compartilhado de proveniência permanecem iguais.",
+      "Blobs e SHA-256 do adaptador obtidos de HEAD; último commit do helper obtido com git log -1. git status --short vazio e git diff --exit-code HEAD passou ao final. Nenhum arquivo rastreado alterado e nenhum banco acessado.",
+      "JSON final validado em packages/credit-playbook com adapterReviewSchema.parse em Node.js 24."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico solicitado. Ancestralidade, pins, reconstrução determinística, identidade do executor, perfil canônico e política foram confirmados independentemente. Os 22 testes passaram. A revisão estática da migração confirmou o vínculo exato de assess-debt-capacity, a recusa de método nulo e a preservação do comportamento dos ramos de capital e investimento. Nenhum banco de dados foi acessado e nenhum arquivo rastreado foi alterado."
+}
