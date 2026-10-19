@@ -86,6 +86,17 @@ describe("financing comparison premises proposed from a turn", () => {
     if (zc.status !== "complete") throw new Error(zc.missing.join(","));
     expect(buildFinancingComparisonPremiseProposal(zc.facts, zc.situationId).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
   });
+  it("keeps each clause's own origin and refuses a coupon period off whole quarters", () => {
+    const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
+    if (c.status !== "complete") throw new Error("expected complete");
+    const p = buildFinancingComparisonPremiseProposal(c.facts);
+    const charges = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.charges.chargeIds`))!;
+    expect(charges.reason).toContain("waiver, informado (assembleia da debênture de 2021)");
+    expect(charges.reason).toContain("comissão, documento (ts-itau.pdf)");
+    expect(charges.reason.startsWith("Origem: ")).toBe(true);
+    const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
+    expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
+  });
   it("never fails the turn", async () => {
     const events: string[] = [];
     const base = {message: "Chegaram três term sheets. Qual é a melhor?", hasAttachments: true, recentUserMessages: [], projectId: "30000000-0000-4000-8000-000000000711",

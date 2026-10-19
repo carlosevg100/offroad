@@ -5,7 +5,7 @@
     "id": "compare-financing-proposals",
     "version": "2026.10.19-v2"
   },
-  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
+  "commit": "f1a8160a9795eb5f8a69423b9f29e3f4d197905a",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
@@ -25,7 +25,7 @@
     },
     {
       "path": "packages/financial-model/src/financing-comparison-premises.ts",
-      "sha256": "1313d1851dabf11c5f9a2997e57ab6edda054165d9481f9fcd035ba108845050"
+      "sha256": "bba47a1cef89ff3d78e2ce8db611c8e9c7f23c267a188ec7a671df07bc9494d5"
     },
     {
       "path": "packages/financial-model/src/adopted-financing-comparison.ts",
@@ -105,11 +105,11 @@
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
-      "sha256": "bec4d7950d5c2d975893301c7d42c2242c87565fb3f6cc89e7834163b6102ed9"
+      "sha256": "5fa8034652a3af2b2d378424a5d96c8faa23d8dfd5ed40456b0e24fa230aa1b0"
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
-      "sha256": "fb23b168191e5ff7a3b4afebae78ef6d96cb5e7bafa3d5b161f8ae40f21c9ab6"
+      "sha256": "be5f9095cbc1190cdbdca86cbdb9a779d5d618cbf3d6d52f6411814e9508a86f"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-packet.json",
@@ -129,15 +129,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
-      "sha256": "9f68a3135681bd04aff425a5b83ce0c633478db4039dddb420b158b133a597bb"
+      "sha256": "d62d5443a86891028af21c363316fb9f8d7ae17647c51802703fd3d75f34cbd1"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-      "sha256": "123dba50687ff5fb43895098df3a972950ff02b0df66ce9d35676724bf58b95e"
+      "sha256": "b77556c0630ded2f01c5574c8ac4ed11f7adfb2c6edaf25f1b8f5cd8061b13dd"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
-      "sha256": "95bd4e74cd2632336fc7c762181848713016ac89cad129adceee65cea849a5f8"
+      "sha256": "b5e1a88eaaab9c111e47cad65f050dd67b83b05df028b99dc5d189a95984b5d5"
     }
   ],
   "externalOracle": [

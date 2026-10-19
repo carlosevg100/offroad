@@ -5,15 +5,15 @@
     "id": "analyze-relative-debt-cost",
     "version": "2026.10.19-v2"
   },
-  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
+  "commit": "f1a8160a9795eb5f8a69423b9f29e3f4d197905a",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/analyze-relative-debt-cost.md",
-      "sha256": "f7673a7b8366246c473dc6c415a1a2225c859f1b3aaf8327e8337d228a2cbc2e"
+      "sha256": "91ccec667cdb01940ba9f9324f96c05c8682928814ddaba38052c2e83407ac25"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-packet.ts",
-      "sha256": "4987ec2cee8db5c5237c7e393aa5aa73ab8714acd3b5ccdd21836349ba65db7c"
+      "sha256": "c8d3f81fd65c23c911740db324861eb116e0eb0e2828989e73700590494f8635"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-contracts.ts",
@@ -37,11 +37,11 @@
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-runs.test-support.ts",
-      "sha256": "3af840a6c3d3f379aeb5606c55a9613b096cae44d78921c2f5f6142a274db7f4"
+      "sha256": "e409e99441f07876e5a31b8da5361222bd3452b72efbe286c329a1d73468d57d"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-runs.test.ts",
-      "sha256": "2d33c478b43051cccb09539547374aba830852d9c6885dcc7c746a423c599b45"
+      "sha256": "5df308aae6abd07283c9ca69d112b78f1285d9a0bdbceade1046a4971b09be49"
     },
     {
       "path": "packages/financial-model/src/adopted-relative-debt-cost.test.ts",
@@ -65,15 +65,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
-      "sha256": "954813719e89507fe9c1cbf2d54711e69d329cb2ad28e48c28f852ca885f3f71"
+      "sha256": "a1f641de932b6c2a074ed8a5a4260d90f19259881463544a646fd3ce3300ada3"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
-      "sha256": "3be34b99bb36169e33303805a0c16b6aa1c858163342c8fa077418f2c9ecd97d"
+      "sha256": "d77940ba5a44f3850912c6d479b80acada05ad8ffed80ff96114bd9f52f50481"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
-      "sha256": "19e2f461b65898db36238ee51c16b9a1019a3258e6e2282b1f2cd64ac4905aec"
+      "sha256": "c759deee9f88210c210534d8051dce4bf091d51720efafb9a6b93d3890ae1a3b"
     }
   ],
   "externalOracle": [

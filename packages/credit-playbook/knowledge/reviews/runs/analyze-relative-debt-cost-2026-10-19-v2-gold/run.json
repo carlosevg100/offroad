@@ -16,9 +16,9 @@
     "exportName": "buildRelativeDebtCostRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:24:13.336Z",
-    "finishedAt": "2026-10-19T14:24:13.489Z",
-    "commit": "dd35fa0439e9181ac4aca00b9b4aae13d61dcb56"
+    "startedAt": "2026-10-19T14:38:12.548Z",
+    "finishedAt": "2026-10-19T14:38:12.703Z",
+    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
   },
   "modelCalls": 0,
   "cases": [
@@ -103,6 +103,22 @@
       "passed": true
     },
     {
+      "id": "unknown-indexer-shows-no-gross-difference",
+      "expectation": "{\"decomposition\":null,\"gap\":true}",
+      "observed": "{\"decomposition\":null,\"gap\":true}",
+      "inputFingerprint": "7eead6b33918d01cf18240f6f1277dd8d809dafba862b4823c48c9e511822e1c",
+      "outputFingerprint": "5006d712448e1bcff98a9130cd23b635497d8b34a819947550c58a4576326fa9",
+      "passed": true
+    },
+    {
+      "id": "unlike-indexers-with-a-missing-adjustment-show-no-gross-difference",
+      "expectation": "{\"decomposition\":null,\"gap\":true}",
+      "observed": "{\"decomposition\":null,\"gap\":true}",
+      "inputFingerprint": "58e2fba063cc72f12d907a0aec1dd94fa5b69b19b4c3895d90196bfb7ff6c125",
+      "outputFingerprint": "65f54dd6b9e9c3d99bd95987628995bef9ed3900f0599a47743413a44aaa8b47",
+      "passed": true
+    },
+    {
       "id": "a-lever-without-complete-costs-is-not-said-to-pay",
       "expectation": "{\"paysForItself\":null}",
       "observed": "{\"paysForItself\":null}",
@@ -112,6 +128,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "3098faf06e71700050636105e2946cfa47a9bf9d46ef9594db3738ea797ef49e",
+  "evidenceFingerprint": "04ebedbb016d51b285c45a74e71f42394a52c7edcf7f3ab24197617d2bb4937d",
   "notes": "Synthetic deterministic execution calibrated on ficha C03. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

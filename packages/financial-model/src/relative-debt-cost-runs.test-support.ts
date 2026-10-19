@@ -66,6 +66,20 @@ function goldCases(): Case[] {
         (p) => ({status: p.status, classification: p.lens.rows.find((r) => r.id === c03Id(403))!.classification}));
     })(),
     (() => {
+      const g = c03PacketInput(); const a = g.input.analysis.adjustments[2]!;
+      a.terms.bps = {...a.terms.bps, decisionId: null, missingReason: "Missing comparable market sample"};
+      g.input.analysis.peer.indexer = {...g.input.analysis.peer.indexer, decisionId: null, missingReason: "Indexador do par não adotado"};
+      return observe("unknown-indexer-shows-no-gross-difference", g.seal(), {decomposition: null, gap: true},
+        (p) => ({decomposition: p.decomposition, gap: p.gaps.some((x) => x.operand.endsWith(".comparability"))}));
+    })(),
+    (() => {
+      const g = c03PacketInput(); const a = g.input.analysis.adjustments[2]!;
+      a.terms.bps = {...a.terms.bps, decisionId: null, missingReason: "Missing comparable market sample"};
+      g.entries.find((x) => x.fieldPath.endsWith("peer.indexer"))!.value = {type: "text", value: "IPCA"};
+      return observe("unlike-indexers-with-a-missing-adjustment-show-no-gross-difference", g.seal(), {decomposition: null, gap: true},
+        (p) => ({decomposition: p.decomposition, gap: p.gaps.some((x) => x.operand.endsWith(".comparability"))}));
+    })(),
+    (() => {
       const g = c03PacketInput(); const e = g.entries.find((x) => x.fieldPath.endsWith(`action.${g.ids.refinance220}.costCoverage`))!;
       e.value = {type: "text", value: "incomplete"};
       return observe("a-lever-without-complete-costs-is-not-said-to-pay", g.seal(), {paysForItself: null},

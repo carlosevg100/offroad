@@ -82,6 +82,7 @@ export type ComparisonCompletion =
 
 const months = (m: string) => Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;
 type Sourced<T> = {value: T | null; origin: "informed" | "document" | null; source: string | null};
+const src = (f: {origin: "informed" | "document"; source: string}) => ({origin: f.origin, source: f.source});
 
 /** Turns the extraction into the facts the method needs. Required facts that nobody stated make
  * the proposal wait; the reply asks for them in one batch instead of inventing them. House premises
@@ -115,7 +116,8 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       ...(() => {
         const draw = p.drawDate.value !== null && p.drawDate.origin !== null, day = p.paymentDay.value !== null && p.paymentDay.origin !== null;
         if (draw !== day) missing.push(k(draw ? "paymentDay" : "drawDate"));
-        return {drawDate: draw && day ? p.drawDate as {value: string} : null, paymentDay: draw && day ? p.paymentDay as {value: number} : null};
+        return {drawDate: draw && day ? {value: p.drawDate.value!, origin: p.drawDate.origin!, source: p.drawDate.source ?? "Documento"} : null,
+          paymentDay: draw && day ? {value: p.paymentDay.value!} : null};
       })()};
   });
   if (missing.length || !situation || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
@@ -127,6 +129,8 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
   const events = (rows: {month: string; amount: string}[], key: string) => rows.flatMap((r) => {const q = inHorizon(r.month, key); return q === null ? [] : [{quarter: q, amount: r.amount}];});
   const existing = debt.value.map((d, n) => {
     const id = uuidV5(`${input.ids.comparisonId}:debt:${n}:${d.label}`), every = d.couponEveryMonths / 3;
+    // A coupon period that does not fit whole quarters is a gap; payments are never dropped to fit the grid.
+    if (!Number.isInteger(every)) missing.push(`existingDebt.${n + 1}.couponEveryMonths`);
     const settles = every > 1 ? ends.map((_, q) => q).filter((q) => (q + 1) % every === 0) : null;
     return {id, label: d.label, openingPrincipal: d.openingPrincipal, rate: d.rateKind === "floating" ? {kind: "floating" as const, annualSpread: String(d.annualRate)} : {kind: "fixed" as const, annualRate: String(d.annualRate)},
       couponBase: d.averagePrincipalCoupon ? "average_principal" as const : "opening_principal" as const,
@@ -159,7 +163,10 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       covenant: {name: p.description ?? `Dívida líquida ${p.leases!.value ? "com" : "sem"} arrendamentos sobre EBITDA ${p.excludes!.value ? "sem" : "com"} IFRS 16`, limit: String(p.limit!.value),
         leaseLiabilityInDebt: p.leases!.value, ebitdaExcludesLeases: p.excludes!.value, testFrequency: p.frequency!.value},
       waiver: waiverOn ? {instrumentId: creditor!, quarter: waiverQuarter!, cost: p.waiverCost!.value, deductible: false} : null,
-      contractDates: p.drawDate && p.paymentDay ? {drawDate: p.drawDate.value, paymentDay: p.paymentDay.value} : null},
+      contractDates: p.drawDate && p.paymentDay ? {drawDate: p.drawDate.value, paymentDay: p.paymentDay.value} : null,
+      // Each clause keeps the origin and source it was stated with.
+      provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), schedule: src(p.first!), collateral: src(p.collateral!),
+        covenant: src(p.limit!), ...(waiverOn ? {waiver: src(p.waiverCost!)} : {}), ...(p.drawDate ? {contractDates: {origin: p.drawDate.origin, source: p.drawDate.source}} : {})}},
       origin: [p.amount!, p.spread!].every((f) => f.origin === "document") ? "document" as const : "informed" as const,
       source: [...new Set(sources)].join("; ").slice(0, 2000)};
   });
