@@ -1,3 +1,7 @@
+## 2026-10-19: método de investimento publicado em produção
+
+`analyze-investment-project` 2026.10.09-v2 publicado em produção (release `analyze-investment-project-2026.10.09-v2`, manifestHash aff46390…, fonte a2a9138b), com revisão técnica independente e aprovação de conteúdo do fundador pela identidade de fundador. Capacidade `method.analyze-investment-project.2026.10.09-v2` fica `released=false`: execução desligada até a ativação do executor. O manifesto não cabe num comando administrativo; a via `private.put_platform_method_upload_part_v1` + `private.submit_platform_method_candidate_from_parts_v1` envia o texto em partes conferidas por md5 e exige o manifestHash revisado. Em staging a candidata foi submetida, mas não há fundador ativo para publicar. Próximo: captura do executor, perfil, trava de proveniência do payload, liberação, resposta da conversa.
+
 ## 2026-10-10: ponte da conversa para premissas de investimento
 
 Ponte da conversa: proposta de premissas no turno, cartão de confirmação e pedido de execução. Falta publicar o método de investimento (manifesto e revisão técnica serão refeitos a partir do commit desta ponte; a aprovação de conteúdo exige ato explícito do fundador) e compor a resposta do turno a partir do resultado do cálculo.

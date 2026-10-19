@@ -2451,6 +2451,16 @@
       "statements_md5": "3982c1b9a92f7499985b22ec7c619b0d"
     },
     {
+      "name": "platform_method_upload_parts",
+      "version": "20261019013848",
+      "statements_md5": "50efc48268ac701f1799ca6d68d33731"
+    },
+    {
+      "name": "platform_method_upload_parts_deny",
+      "version": "20261019014634",
+      "statements_md5": "91a4bbadd4f06d88dbfb52cd9058d3a1"
+    },
+    {
       "name": "investment_payload_provenance",
       "version": "20261019020056",
       "statements_md5": "e952afcd119eaf0b88902988653a6058"
