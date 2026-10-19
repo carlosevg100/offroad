@@ -167,6 +167,8 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       origin: [p.amount!, p.spread!].every((f) => f.origin === "document") ? "document" as const : "informed" as const,
       source: [...new Set(sources)].join("; ").slice(0, 2000)};
   });
+  // Two rates for the same year are an ambiguity to clarify, never a silent choice.
+  if (curve && new Set(curve.value.map((c) => c.year)).size !== curve.value.length) missing.push("indexCurve");
   if (missing.length || built.some((b) => b === null)) return {status: "missing", missing: [...new Set(missing)]};
   used.push("creditTax", "stress");
   const col = (k: "ebitda" | "leasePayments" | "depreciation" | "workingCapitalCashFlow" | "maintenanceCapex" | "growthCapex") => ({...quarters, value: quarters.value.map((q) => q[k])});

@@ -163,6 +163,9 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
   for (const p of input.proposals) for (const c of [...p.charges, ...(p.cost.chargesAfterHorizon ?? [])]) if (!new D(c.amount).gt(0)) throw new Error("proposal_comparison_positive_charge_required");
   for (const p of input.proposals) for (const c of p.cost.chargesAfterHorizon ?? []) if (c.date <= input.endDate) throw new Error("proposal_comparison_charge_inside_horizon");
   const pool = new D(input.freeReceivablesPool);
+  // A proposal's charges are cash paid from available cash; what the advance withholds is stated once,
+  // by upfrontWithheldCosts and the draw date. Any other treatment or account would be ignored, so it is refused.
+  for (const p of input.proposals) for (const c of p.charges) if (c.treatment !== "cash_paid" || c.account !== "available") throw new Error("proposal_comparison_charge_treatment_unsupported");
   // A proposal is added to the company only in the company's currency; no conversion is modelled.
   if (input.proposals.some((p) => p.cost.schedule.currency !== input.currency)) throw new Error("proposal_comparison_currency_mismatch");
   // Receivables and the collateral a proposal takes from them are amounts, never negative.

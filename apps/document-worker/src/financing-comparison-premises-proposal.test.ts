@@ -105,6 +105,8 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(principal.reason).toContain("número de parcelas, informado (CFO, número de parcelas)");
     expect(principal.reason).toContain("intervalo entre parcelas, informado (CFO, intervalo)");
     expect(principal.reason).toContain("primeira amortização, documento (ts-itau.pdf)");
+    const twice = c02Extraction(); twice.indexCurve.value!.push({...twice.indexCurve.value![0]!, annualRate: 0.15});
+    expect(completeFinancingComparisonFacts({extraction: twice, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
     expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
   });

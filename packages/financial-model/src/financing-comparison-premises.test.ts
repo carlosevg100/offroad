@@ -38,4 +38,14 @@ describe("C02 premises proposed from facts with origin, adopted, composed and co
     expect([near(spread(ids.itau), "4.118857762", "0.0000001"), near(spread(ids.santander), "4.088867142", "0.0000001"), near(spread(ids.fundo), "3.567112894", "0.0000001")])
       .toEqual([true, true, true]);
   });
+  it("refuses ambiguous facts before proposing premises (independent review's eighth round)", () => {
+    const repeated = auroraFacts({dated: true}); const q = repeated.proposals[0]!.value.amortizationQuarters; q[1] = q[0]!;
+    expect(() => proposeFinancingComparisonHypotheses(repeated)).toThrow("Amortization quarters must be distinct and increasing");
+    const curve = auroraFacts(); curve.indexCurve.value.push({...curve.indexCurve.value[0]!, annualRate: "0.15"});
+    expect(() => proposeFinancingComparisonHypotheses(curve)).toThrow("Index curve has two rates for the same year");
+    const stress = auroraFacts(); stress.stress.fromQuarter.value = 80;
+    expect(() => proposeFinancingComparisonHypotheses(stress)).toThrow("Stress starts outside the horizon");
+    const draw = auroraFacts({dated: true}); draw.proposals[0]!.value.drawQuarter += 1;
+    expect(() => proposeFinancingComparisonHypotheses(draw)).toThrow("Contract draw date outside the draw quarter");
+  });
 });

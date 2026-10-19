@@ -72,7 +72,19 @@ export const financingComparisonFactsSchema = z.strictObject({
   for (const k of ["ebitda", "leasePayments", "depreciationAndAmortization", "workingCapitalCashFlow", "maintenanceCapexPaid", "growthCapexPaid"] as const)
     if (f.company[k].value.length !== n) fail(`Company ${k} must have one value per quarter`);
   for (const d of f.existingDebt.value) for (const q of [...d.draws, ...d.amortization, ...d.prepayments].map((x) => x.quarter)) if (q >= n) fail("Debt event outside the horizon");
-  for (const p of f.proposals) if (p.value.drawQuarter >= n) fail("Proposal drawn outside the horizon");
+  for (const p of f.proposals) {
+    const v = p.value;
+    if (v.drawQuarter >= n) fail("Proposal drawn outside the horizon");
+    // Each installment date once and in order: a repeated quarter would silently move principal to maturity.
+    if (v.amortizationQuarters.some((q, i) => i > 0 && q <= v.amortizationQuarters[i - 1]!)) fail("Amortization quarters must be distinct and increasing");
+    // The contract draw date falls inside the quarter the draw is recorded in.
+    const from = v.drawQuarter ? f.quarterEnds[v.drawQuarter - 1]! : f.openingDate, to = f.quarterEnds[v.drawQuarter];
+    if (v.contractDates && to && !(v.contractDates.drawDate > from && v.contractDates.drawDate <= to)) fail("Contract draw date outside the draw quarter");
+  }
+  // One rate per year: two rates for the same year are an ambiguity, never a silent choice.
+  if (new Set(f.indexCurve.value.map((c) => c.year)).size !== f.indexCurve.value.length) fail("Index curve has two rates for the same year");
+  // The bank's stress must start inside the horizon, or it changes nothing and would read as a stress.
+  if (f.stress.fromQuarter.value >= n) fail("Stress starts outside the horizon");
   if (new Set([...f.existingDebt.value.map((d) => d.id), ...f.proposals.map((p) => p.value.id)]).size !== f.existingDebt.value.length + f.proposals.length) fail("Duplicate instrument");
 });
 export type FinancingComparisonFacts = z.infer<typeof financingComparisonFactsSchema>;

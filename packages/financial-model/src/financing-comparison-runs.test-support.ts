@@ -36,6 +36,12 @@ const datedMutated = (edit: (entries: AdoptionBasisEntry[]) => void) => {
   const canonical = JSON.stringify(snapshot), envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
   return composeBoundFinancingComparison({envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
 };
+/** Dated facts edited before any premise is proposed: ambiguity must stop at the facts. */
+const fromFacts = (edit: (f: ReturnType<typeof auroraFacts>) => void) => {
+  const f = auroraFacts({dated: true}); edit(f);
+  const a = adoptAuroraFacts(f);
+  return composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
+};
 /** Itaú's fee paid on 31/03/2027, after the 15/01/2027 draw; `withheld` says what the advance still withholds. */
 const itauFeeLater = (withheld: "iof" | "fee_and_iof") => datedMutated((entries) => {
   const path = `proposal.${auroraIds.itau}.`, get = (k: string) => entries.find((e) => e.fieldPath.endsWith(path + k))!;
@@ -182,6 +188,10 @@ function adversarialCases(): Case[] {
       const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
     }, "financing_full_repayment_requires_settling_accrued_interest"],
     ["fee-after-the-draw-declared-as-withheld", () => itauFeeLater("fee_and_iof"), "proposal_comparison_upfront_charges_mismatch"],
+    ["repeated-installment-date", () => fromFacts((f) => {const q = f.proposals[0]!.value.amortizationQuarters; q[1] = q[0]!;}), "Amortization quarters must be distinct and increasing"],
+    ["two-rates-for-one-year", () => fromFacts((f) => {f.indexCurve.value.push({...f.indexCurve.value[0]!, annualRate: "0.15"});}), "Index curve has two rates for the same year"],
+    ["stress-starting-outside-the-horizon", () => fromFacts((f) => {f.stress.fromQuarter.value = 80;}), "Stress starts outside the horizon"],
+    ["draw-date-outside-the-draw-quarter", () => fromFacts((f) => {f.proposals[0]!.value.drawQuarter += 1;}), "Contract draw date outside the draw quarter"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];
