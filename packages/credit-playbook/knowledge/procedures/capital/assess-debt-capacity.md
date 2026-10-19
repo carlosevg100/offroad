@@ -1,7 +1,7 @@
 ---
 id: assess-debt-capacity
 version: 2026.10.19-v2
-maturity: implemented
+maturity: tested
 title_pt: Medir capacidade de dívida e perfil de pagamento
 title_en: Assess Debt Capacity
 role: credit_structuring
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [assess-debt-capacity-2026-10-19-v2-consistency]
 adversarial_run_ids: [assess-debt-capacity-2026-10-19-v2-adversarial]
+review_ids: [assess-debt-capacity-2026-10-19-v2-independent-review]
 gold_run_ids: [assess-debt-capacity-2026-10-19-v2-gold]
 ---
 
@@ -4016,7 +4017,9 @@ O covenant mede dívida líquida; usar caixa em vez de dívida reduz a dívida e
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/assess-debt-capacity-2026-10-19-v2-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/assess-debt-capacity-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

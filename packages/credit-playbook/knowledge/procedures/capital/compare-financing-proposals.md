@@ -1,7 +1,7 @@
 ---
 id: compare-financing-proposals
 version: 2026.10.19-v2
-maturity: implemented
+maturity: tested
 title_pt: Comparar propostas de financiamento recebidas
 title_en: Compare Financing Proposals
 role: credit_structuring
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [compare-financing-proposals-2026-10-19-v2-consistency]
 adversarial_run_ids: [compare-financing-proposals-2026-10-19-v2-adversarial]
+review_ids: [compare-financing-proposals-2026-10-19-v2-independent-review]
 gold_run_ids: [compare-financing-proposals-2026-10-19-v2-gold]
 ---
 
@@ -7812,7 +7813,9 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/compare-financing-proposals-2026-10-19-v2-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/compare-financing-proposals-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

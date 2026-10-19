@@ -9859,11 +9859,11 @@ export const procedureBuildProvenance = [
     "procedure": {
       "id": "analyze-relative-debt-cost",
       "version": "2026.10.19-v2",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/analyze-relative-debt-cost.md",
-      "hash": "13d03da81e710eb2ab84fd0dd79dff07e93eb6b29659c2cca66aa07b2ec54e60"
+      "hash": "5d17e0607c577d01f30c8106240cd48e63a3cd0408d1ba698d885d147f9135e8"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -15823,7 +15823,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/analyze-relative-debt-cost-2026-10-19-v2-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/analyze-relative-debt-cost-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -15834,7 +15836,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.19-v1"
           }
         },
-        "componentHash": "1bf545cbcd35e92918402c4148fa84fc7162ea2675de4652ec613b0b872bf1f3",
+        "componentHash": "c649c650207f065371e1537e0694245960ad555f5fe5136ed113a22e0b484968",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareRelativeDebtCostPacket",
@@ -17175,22 +17177,30 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
             "hash": "99be9f9e60512fc4ffa807a491528062c8df2f02baefb489dc9158bbf3ca2225"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/analyze-relative-debt-cost-2026-10-19-v2-independent-review.json",
+            "hash": "0e314499ef0e99ab692a1bc1d9fc6dce6f691a0683182d190c43caa4707692a7"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/analyze-relative-debt-cost-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "7676c4d110e0d8f45b1f819a535e078bbe1bba479715f1fe175ace0cb0dd9d95"
           }
         ]
       }
     ],
-    "manifestHash": "a240b80966c40efc7da3dc9a6cb7722157595ac4973860ec4cffd1cde4e2f54b"
+    "manifestHash": "9d5f61a41b15a4eab4f1fe4fe1b0549b2e67b24b16426fa7b552fe9f7b3a9e9b"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
       "id": "assess-debt-capacity",
       "version": "2026.10.19-v2",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/assess-debt-capacity.md",
-      "hash": "5052c3f708a2ccbcfdad1e792219e31ba1d6cd7252cb54244534f7dd7a9d7faa"
+      "hash": "77404c9caa55cc455acb6bb0cd72fd02ddf9893a82fb9d37847dac1d60ac181a"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -21053,7 +21063,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/assess-debt-capacity-2026-10-19-v2-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/assess-debt-capacity-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -21064,7 +21076,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.19-v1"
           }
         },
-        "componentHash": "4e6acc9c52d51962301f70dbc4b92aaf836d87c0df680895fe37ed1ce08cb4a0",
+        "componentHash": "cdca821f490dda65892e6cfe86922f839d273ea7832dfad26d9c0a42b0de160b",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareDebtCapacityPacket",
@@ -22405,22 +22417,30 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json",
             "hash": "cb04994bb9db39e058ab6e863bb68c6530d6cf68f23fe7a1e67e6d470eabaeac"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/assess-debt-capacity-2026-10-19-v2-independent-review.json",
+            "hash": "809cc6ff9c61fcc1346d8a62ed71ac1f55a9503e45e6abf442285df3dd17ca7d"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/assess-debt-capacity-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "a5e215c709b6f5fd05831759146b08c4cbdbc8ae955da4115007fe5f3d716ce4"
           }
         ]
       }
     ],
-    "manifestHash": "8e53cd8f3be127e8bae92f98a334461d215d77894be7d89737223df3a25789db"
+    "manifestHash": "3e0ec468786766f93a8806deb9c4e8fe1a2be427298a3a0e3e7cf36e3bbbfccf"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
       "id": "compare-financing-proposals",
       "version": "2026.10.19-v2",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/compare-financing-proposals.md",
-      "hash": "895241337bd79831c759f040a1e6ad7485e67b47ba23c34637383037c51a88ab"
+      "hash": "c23af97dbe0d81d30832df7133d8ddddb5880edd741166c24378d476c5e6d6d2"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -30045,7 +30065,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/compare-financing-proposals-2026-10-19-v2-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/compare-financing-proposals-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -30056,7 +30078,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.19-v1"
           }
         },
-        "componentHash": "512af6465a95ff518e46e9ba6f628aabee49d0d08b24f8475cd30c0cb81acc43",
+        "componentHash": "97b1e74ba2f86260799491c863e43806c980fb5e2e12c800010f3bf25e6ffc8a",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareFinancingComparisonPacket",
@@ -31409,11 +31431,19 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
             "hash": "0d10450432a0e422b52310c8a5ed58b104ab30eb7745419cf43daf037bf9029f"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/compare-financing-proposals-2026-10-19-v2-independent-review.json",
+            "hash": "a52aaa1bc6a8d0f86d25c1d04477c4ba9523e9bf6eb086f26abafd508f345293"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/compare-financing-proposals-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "830ccf3bada795b99c2c2983db2e668ec36603b27bf182b9f74a58296bf49628"
           }
         ]
       }
     ],
-    "manifestHash": "c412b0cb43915cdc7c5ac2aaa923d66f20733a6d9da8595b6ced8f64f9b1d199"
+    "manifestHash": "fdb054455593852ea9f82428fc30aeda6de9275d643b8baa608609ddff8b4b1a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",

@@ -1,7 +1,7 @@
 ---
 id: analyze-relative-debt-cost
 version: 2026.10.19-v2
-maturity: implemented
+maturity: tested
 title_pt: Explicar o custo de dívida frente a pares
 title_en: Analyze Relative Debt Cost
 role: financial_analysis
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-consistency]
 adversarial_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-adversarial]
+review_ids: [analyze-relative-debt-cost-2026-10-19-v2-independent-review]
 gold_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-gold]
 ---
 
@@ -6123,7 +6124,9 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/analyze-relative-debt-cost-2026-10-19-v2-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/analyze-relative-debt-cost-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]
