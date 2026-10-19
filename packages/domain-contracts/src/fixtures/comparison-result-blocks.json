@@ -1,0 +1,493 @@
+[
+ {
+  "blockKey": "framing",
+  "kind": "section",
+  "content": {
+   "status": "prepared_for_human_review",
+   "question": "Qual das três propostas de R$ 70 mi para a mesma necessidade cabe na companhia e quanto custa de fato?",
+   "currency": "BRL",
+   "baseCaseId": "base",
+   "caseCount": 2,
+   "nominalSpreadMisleads": true
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "cases",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "base",
+     "role": "base",
+     "label": "Plano da companhia",
+     "changes": []
+    },
+    {
+     "id": "bank-stress",
+     "role": "stress",
+     "label": "Caso do banco",
+     "changes": [
+      "EBITDA 15% menor a partir do 4T26"
+     ]
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "base",
+    "kind": "judgment",
+    "value": "Plano da companhia",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "bank-stress",
+    "kind": "judgment",
+    "value": "Caso do banco",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "proposals",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "label": "itau",
+     "equivalentSpread": "0.03999992347996395201",
+     "weightedAverageLifeYears": "3.5",
+     "minimumCash": "13.26363408165654075269",
+     "minimumCashPeriod": "2028-12-31",
+     "worstRatio": "1.9475283015302315310763250883392226148409893992933",
+     "worstPeriod": "2027-12-31",
+     "headroom": "1.0524716984697684689236749116607773851590106007067",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 2,
+     "collateralConsumed": "28",
+     "freeReceivablesAfter": "30",
+     "horizonFinancingCost": "51.89203682834345924731",
+     "netDebtAtHorizon": "81.31969921834345924731",
+     "eliminatoryFacts": [],
+     "conditioningFacts": [
+      "cash_below_policy_minimum"
+     ]
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "label": "santander",
+     "equivalentSpread": "0.04004673950908506242",
+     "weightedAverageLifeYears": "3.99999999964285714286",
+     "minimumCash": "19.45916583490389020044",
+     "minimumCashPeriod": "2028-06-30",
+     "worstRatio": "1.9071346834554896971776119402985074626865671641791",
+     "worstPeriod": "2027-12-31",
+     "headroom": "1.0928653165445103028223880597014925373134328358209",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 1,
+     "collateralConsumed": "21",
+     "freeReceivablesAfter": "37",
+     "horizonFinancingCost": "52.4246488169779718304",
+     "netDebtAtHorizon": "81.6387197269779718304",
+     "eliminatoryFacts": [],
+     "conditioningFacts": []
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "label": "fundo",
+     "equivalentSpread": "0.03547521671120420477",
+     "weightedAverageLifeYears": "4.75",
+     "minimumCash": "20.78278415720375631481",
+     "minimumCashPeriod": "2028-06-30",
+     "worstRatio": "1.8787806062576212352791044776119402985074626865672",
+     "worstPeriod": "2027-12-31",
+     "headroom": "0.8712193937423787647208955223880597014925373134328",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 2,
+     "collateralConsumed": "0",
+     "freeReceivablesAfter": "58",
+     "horizonFinancingCost": "51.25039638018398915942",
+     "netDebtAtHorizon": "80.51126161018398915942",
+     "eliminatoryFacts": [],
+     "conditioningFacts": []
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "label": "itau",
+     "equivalentSpread": "0.03999992347996395201",
+     "weightedAverageLifeYears": "3.5",
+     "minimumCash": "-0.26096591834345924731",
+     "minimumCashPeriod": "2028-12-31",
+     "worstRatio": "2.4513303235628997019106214924132197048430679692372",
+     "worstPeriod": "2027-12-31",
+     "headroom": "0.5486696764371002980893785075867802951569320307628",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 2,
+     "collateralConsumed": "28",
+     "freeReceivablesAfter": "30",
+     "horizonFinancingCost": "51.89203682834345924731",
+     "netDebtAtHorizon": "94.84429921834345924731",
+     "eliminatoryFacts": [
+      "cash_below_zero"
+     ],
+     "conditioningFacts": []
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "label": "santander",
+     "equivalentSpread": "0.04004673950908506242",
+     "weightedAverageLifeYears": "3.99999999964285714286",
+     "minimumCash": "8.1700135730220281696",
+     "minimumCashPeriod": "2028-12-31",
+     "worstRatio": "2.4368392603239691369700731545111948570161826645977",
+     "worstPeriod": "2027-12-31",
+     "headroom": "0.5631607396760308630299268454888051429838173354023",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 1,
+     "collateralConsumed": "21",
+     "freeReceivablesAfter": "37",
+     "horizonFinancingCost": "52.4246488169779718304",
+     "netDebtAtHorizon": "95.1633197269779718304",
+     "eliminatoryFacts": [],
+     "conditioningFacts": [
+      "cash_below_policy_minimum"
+     ]
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "label": "fundo",
+     "equivalentSpread": "0.03547521671120420477",
+     "weightedAverageLifeYears": "4.75",
+     "minimumCash": "9.72657859981601084058",
+     "minimumCashPeriod": "2028-12-31",
+     "worstRatio": "2.3936363020485147020829084460208379516736865440035",
+     "worstPeriod": "2027-12-31",
+     "headroom": "0.3563636979514852979170915539791620483263134559965",
+     "covenantComplies": true,
+     "covenantTestsPerYear": 2,
+     "collateralConsumed": "0",
+     "freeReceivablesAfter": "58",
+     "horizonFinancingCost": "51.25039638018398915942",
+     "netDebtAtHorizon": "93.60675470018398915942",
+     "eliminatoryFacts": [],
+     "conditioningFacts": [
+      "cash_below_policy_minimum"
+     ]
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "spread:base:ac400000-0000-4000-9000-000000000911",
+    "kind": "calculation",
+    "value": "0.03999992347996395201",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:base:ac400000-0000-4000-9000-000000000911",
+    "kind": "calculation",
+    "value": "13.26363408165654075269",
+    "unit": "BRL",
+    "period": "2028-12-31",
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "spread:base:ac400000-0000-4000-9000-000000000912",
+    "kind": "calculation",
+    "value": "0.04004673950908506242",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:base:ac400000-0000-4000-9000-000000000912",
+    "kind": "calculation",
+    "value": "19.45916583490389020044",
+    "unit": "BRL",
+    "period": "2028-06-30",
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "spread:base:ac400000-0000-4000-9000-000000000913",
+    "kind": "calculation",
+    "value": "0.03547521671120420477",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:base:ac400000-0000-4000-9000-000000000913",
+    "kind": "calculation",
+    "value": "20.78278415720375631481",
+    "unit": "BRL",
+    "period": "2028-06-30",
+    "supportIds": [
+     "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+    ]
+   },
+   {
+    "claimId": "spread:bank-stress:ac400000-0000-4000-9000-000000000911",
+    "kind": "calculation",
+    "value": "0.03999992347996395201",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:bank-stress:ac400000-0000-4000-9000-000000000911",
+    "kind": "calculation",
+    "value": "-0.26096591834345924731",
+    "unit": "BRL",
+    "period": "2028-12-31",
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   },
+   {
+    "claimId": "spread:bank-stress:ac400000-0000-4000-9000-000000000912",
+    "kind": "calculation",
+    "value": "0.04004673950908506242",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:bank-stress:ac400000-0000-4000-9000-000000000912",
+    "kind": "calculation",
+    "value": "8.1700135730220281696",
+    "unit": "BRL",
+    "period": "2028-12-31",
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   },
+   {
+    "claimId": "spread:bank-stress:ac400000-0000-4000-9000-000000000913",
+    "kind": "calculation",
+    "value": "0.03547521671120420477",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   },
+   {
+    "claimId": "minimum-cash:bank-stress:ac400000-0000-4000-9000-000000000913",
+    "kind": "calculation",
+    "value": "9.72657859981601084058",
+    "unit": "BRL",
+    "period": "2028-12-31",
+    "supportIds": [
+     "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "debt-service",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2027",
+     "amount": "115.90015053661110465892"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2028",
+     "amount": "64.37248570173235458839"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2027",
+     "amount": "116.07775747321424776872"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2028",
+     "amount": "56.11749075376372406168"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2027",
+     "amount": "116.70518014540849821096"
+    },
+    {
+     "caseId": "base",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2028",
+     "amount": "56.71191564477549094846"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2027",
+     "amount": "115.90015053661110465892"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000911",
+     "year": "2028",
+     "amount": "64.37248570173235458839"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2027",
+     "amount": "116.07775747321424776872"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000912",
+     "year": "2028",
+     "amount": "56.11749075376372406168"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2026",
+     "amount": "28.81169929"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2027",
+     "amount": "116.70518014540849821096"
+    },
+    {
+     "caseId": "bank-stress",
+     "proposalId": "ac400000-0000-4000-9000-000000000913",
+     "year": "2028",
+     "amount": "56.71191564477549094846"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "conclusion",
+  "kind": "section",
+  "content": {
+   "viableInEveryCaseProposalIds": [
+    "ac400000-0000-4000-9000-000000000912",
+    "ac400000-0000-4000-9000-000000000913"
+   ],
+   "conclusionChangingCaseIds": [
+    "bank-stress"
+   ],
+   "cases": [
+    {
+     "caseId": "base",
+     "viableProposalIds": [
+      "ac400000-0000-4000-9000-000000000911",
+      "ac400000-0000-4000-9000-000000000912",
+      "ac400000-0000-4000-9000-000000000913"
+     ],
+     "incompleteProposalIds": [],
+     "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
+     "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913"
+    },
+    {
+     "caseId": "bank-stress",
+     "viableProposalIds": [
+      "ac400000-0000-4000-9000-000000000912",
+      "ac400000-0000-4000-9000-000000000913"
+     ],
+     "incompleteProposalIds": [],
+     "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
+     "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "information-gaps",
+  "kind": "table",
+  "content": {
+   "rows": []
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "exclusions",
+  "kind": "section",
+  "content": {
+   "items": [
+    "choice_of_counterparty",
+    "firmness_and_validity",
+    "reciprocity",
+    "tax_law_inference",
+    "method_release"
+   ]
+  },
+  "claims": []
+ }
+]

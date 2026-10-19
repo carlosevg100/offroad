@@ -7272,12 +7272,12 @@
   "ComparisonPremisesCard": {
     "title": "Premises to compare the proposals",
     "lead": "I put the proposals on the same basis with these terms and the company's debt and projection, each with its origin. Confirm to calculate, or correct them in the conversation and I will redo the proposal.",
-    "proposal": "{label}: R$ {amount} mi at CDI + {spread}, {fee} fee{tax, select, true {, with IOF} other {, without IOF}}; collateral of {collateral} of the loan; covenant up to {limit}x",
+    "proposal": "{label}: BRL {amount} mn at CDI + {spread}, {fee} fee{tax, select, true {, with IOF} other {, without IOF}}; collateral of {collateral} of the loan; covenant up to {limit}x",
     "proposals": "Proposals",
     "company": "Company",
     "quarters": "{count, plural, one {# quarter} other {# quarters}} of projection",
     "existingDebt": "Existing debt: {list}",
-    "minimumCash": "Policy minimum cash: R$ {value} mi",
+    "minimumCash": "Policy minimum cash: BRL {value} mn",
     "house": "House premises",
     "premise": {
       "creditTax": "Credit IOF",

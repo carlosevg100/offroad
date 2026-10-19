@@ -1,0 +1,252 @@
+{
+ "schemaVersion": "financing-comparison-packet.v1",
+ "status": "prepared_for_human_review",
+ "question": "Qual das três propostas de R$ 70 mi para a mesma necessidade cabe na companhia e quanto custa de fato?",
+ "currency": "BRL",
+ "fingerprint": "609e549bf8299399f5cfb31095398cc9a8939bd968c42da02b6fa2604e071e1b",
+ "financialCoreVersion": "2026.10.07-v29",
+ "cases": [
+  {
+   "id": "base",
+   "role": "base",
+   "label": "Plano da companhia",
+   "changes": [],
+   "result": {
+    "fingerprint": "ace138a2cb5662a54036708c06966ca14f6cee5eedd97e7c7742d163205a92b8"
+   }
+  },
+  {
+   "id": "bank-stress",
+   "role": "stress",
+   "label": "Caso do banco",
+   "changes": [
+    "EBITDA 15% menor a partir do 4T26"
+   ],
+   "result": {
+    "fingerprint": "aee7124e198b7bdc9d8e051075e189d40bcc98e253f54f5bd9f033df2fede0c1"
+   }
+  }
+ ],
+ "comparison": {
+  "baseCaseId": "base",
+  "viableInEveryCaseProposalIds": [
+   "ac400000-0000-4000-9000-000000000912",
+   "ac400000-0000-4000-9000-000000000913"
+  ],
+  "conclusionChangingCaseIds": [
+   "bank-stress"
+  ],
+  "nominalSpreadMisleads": true,
+  "cases": [
+   {
+    "caseId": "base",
+    "viableProposalIds": [
+     "ac400000-0000-4000-9000-000000000911",
+     "ac400000-0000-4000-9000-000000000912",
+     "ac400000-0000-4000-9000-000000000913"
+    ],
+    "incompleteProposalIds": [],
+    "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
+    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913",
+    "proposals": [
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000911",
+      "label": "itau",
+      "equivalentSpread": "0.03999992347996395201",
+      "weightedAverageLifeYears": "3.5",
+      "minimumCash": {
+       "amount": "13.26363408165654075269",
+       "periodId": "2028-12-31"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "1.9475283015302315310763250883392226148409893992933",
+       "headroom": "1.0524716984697684689236749116607773851590106007067",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "115.90015053661110465892",
+       "2028": "64.37248570173235458839"
+      },
+      "collateralConsumed": "28",
+      "freeReceivablesAfter": "30",
+      "horizonFinancingCost": "51.89203682834345924731",
+      "netDebtAtHorizon": "81.31969921834345924731",
+      "covenantTestsPerYear": 2,
+      "eliminatoryFacts": [],
+      "conditioningFacts": [
+       "cash_below_policy_minimum"
+      ]
+     },
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000912",
+      "label": "santander",
+      "equivalentSpread": "0.04004673950908506242",
+      "weightedAverageLifeYears": "3.99999999964285714286",
+      "minimumCash": {
+       "amount": "19.45916583490389020044",
+       "periodId": "2028-06-30"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "1.9071346834554896971776119402985074626865671641791",
+       "headroom": "1.0928653165445103028223880597014925373134328358209",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "116.07775747321424776872",
+       "2028": "56.11749075376372406168"
+      },
+      "collateralConsumed": "21",
+      "freeReceivablesAfter": "37",
+      "horizonFinancingCost": "52.4246488169779718304",
+      "netDebtAtHorizon": "81.6387197269779718304",
+      "covenantTestsPerYear": 1,
+      "eliminatoryFacts": [],
+      "conditioningFacts": []
+     },
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000913",
+      "label": "fundo",
+      "equivalentSpread": "0.03547521671120420477",
+      "weightedAverageLifeYears": "4.75",
+      "minimumCash": {
+       "amount": "20.78278415720375631481",
+       "periodId": "2028-06-30"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "1.8787806062576212352791044776119402985074626865672",
+       "headroom": "0.8712193937423787647208955223880597014925373134328",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "116.70518014540849821096",
+       "2028": "56.71191564477549094846"
+      },
+      "collateralConsumed": "0",
+      "freeReceivablesAfter": "58",
+      "horizonFinancingCost": "51.25039638018398915942",
+      "netDebtAtHorizon": "80.51126161018398915942",
+      "covenantTestsPerYear": 2,
+      "eliminatoryFacts": [],
+      "conditioningFacts": []
+     }
+    ]
+   },
+   {
+    "caseId": "bank-stress",
+    "viableProposalIds": [
+     "ac400000-0000-4000-9000-000000000912",
+     "ac400000-0000-4000-9000-000000000913"
+    ],
+    "incompleteProposalIds": [],
+    "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
+    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913",
+    "proposals": [
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000911",
+      "label": "itau",
+      "equivalentSpread": "0.03999992347996395201",
+      "weightedAverageLifeYears": "3.5",
+      "minimumCash": {
+       "amount": "-0.26096591834345924731",
+       "periodId": "2028-12-31"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "2.4513303235628997019106214924132197048430679692372",
+       "headroom": "0.5486696764371002980893785075867802951569320307628",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "115.90015053661110465892",
+       "2028": "64.37248570173235458839"
+      },
+      "collateralConsumed": "28",
+      "freeReceivablesAfter": "30",
+      "horizonFinancingCost": "51.89203682834345924731",
+      "netDebtAtHorizon": "94.84429921834345924731",
+      "covenantTestsPerYear": 2,
+      "eliminatoryFacts": [
+       "cash_below_zero"
+      ],
+      "conditioningFacts": []
+     },
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000912",
+      "label": "santander",
+      "equivalentSpread": "0.04004673950908506242",
+      "weightedAverageLifeYears": "3.99999999964285714286",
+      "minimumCash": {
+       "amount": "8.1700135730220281696",
+       "periodId": "2028-12-31"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "2.4368392603239691369700731545111948570161826645977",
+       "headroom": "0.5631607396760308630299268454888051429838173354023",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "116.07775747321424776872",
+       "2028": "56.11749075376372406168"
+      },
+      "collateralConsumed": "21",
+      "freeReceivablesAfter": "37",
+      "horizonFinancingCost": "52.4246488169779718304",
+      "netDebtAtHorizon": "95.1633197269779718304",
+      "covenantTestsPerYear": 1,
+      "eliminatoryFacts": [],
+      "conditioningFacts": [
+       "cash_below_policy_minimum"
+      ]
+     },
+     {
+      "proposalId": "ac400000-0000-4000-9000-000000000913",
+      "label": "fundo",
+      "equivalentSpread": "0.03547521671120420477",
+      "weightedAverageLifeYears": "4.75",
+      "minimumCash": {
+       "amount": "9.72657859981601084058",
+       "periodId": "2028-12-31"
+      },
+      "covenant": {
+       "worstPeriod": "2027-12-31",
+       "worstRatio": "2.3936363020485147020829084460208379516736865440035",
+       "headroom": "0.3563636979514852979170915539791620483263134559965",
+       "allComply": true
+      },
+      "debtServiceByYear": {
+       "2026": "28.81169929",
+       "2027": "116.70518014540849821096",
+       "2028": "56.71191564477549094846"
+      },
+      "collateralConsumed": "0",
+      "freeReceivablesAfter": "58",
+      "horizonFinancingCost": "51.25039638018398915942",
+      "netDebtAtHorizon": "93.60675470018398915942",
+      "covenantTestsPerYear": 2,
+      "eliminatoryFacts": [],
+      "conditioningFacts": [
+       "cash_below_policy_minimum"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "gaps": [],
+ "exclusions": [
+  "choice_of_counterparty",
+  "firmness_and_validity",
+  "reciprocity",
+  "tax_law_inference",
+  "method_release"
+ ]
+}
