@@ -1,6 +1,6 @@
 import "server-only";
 
-import {readCapitalProcedurePacketBlocks, type ExecutionResultBlocksView, type ExecutionResultCitation, type Freshness} from "@offroad/domain-contracts";
+import {readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type ExecutionResultBlocksView, type ExecutionResultCitation, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 import {artifactServing, readArtifactHead, readArtifactRevision, revisionBelongsTo, type ArtifactRead} from "@/lib/artifacts/authorized-artifact-reader";
@@ -16,14 +16,17 @@ export const executionResultSubject = (executionId: string) => `execution:${exec
 
 /** What the result pins, so the screen can evaluate the MD test over exactly the packet and gate receipt of the revision. */
 export type ExecutionRevisionPins = {readonly resultFingerprint: string; readonly packetFingerprint: string | null; readonly gatesFingerprint: string | null};
-export type ExecutionRevision = {
+type ExecutionRevisionBase = {
   readonly revisionId: string;
   readonly revisionNo: number;
   readonly recordedAt: string;
   readonly freshness: Freshness;
   readonly pins: ExecutionRevisionPins;
-  readonly blocks: ExecutionResultBlocksView;
 };
+/** A capital result carries its decision blocks; an investment result carries the case comparison. */
+export type ExecutionRevision = ExecutionRevisionBase & (
+  | {readonly kind?: "capital"; readonly blocks: ExecutionResultBlocksView}
+  | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView});
 
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
@@ -48,16 +51,21 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   if (!serving.serve) return {state: "withheld"};
   const manifest = serving.revision.manifest;
   if (manifest.kind !== "execution_result" || manifest.execution?.executionId !== executionId) return {state: "unavailable"};
-  const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
-  if (!blocks) return {state: "unavailable"};
-  return {state: "ready", revision: {
+  const base = (prefix: string): ExecutionRevisionBase => ({
     revisionId: serving.revision.id,
     revisionNo: serving.revision.revisionNo,
     recordedAt: serving.revision.createdAt,
     freshness: read.freshness,
-    pins: {resultFingerprint: manifest.execution.resultFingerprint, packetFingerprint: pinned(manifest.traces, "capital-procedure-packet:"), gatesFingerprint: pinned(manifest.traces, "execution-gates:")},
-    blocks,
-  }};
+    pins: {resultFingerprint: manifest.execution!.resultFingerprint, packetFingerprint: pinned(manifest.traces, prefix), gatesFingerprint: pinned(manifest.traces, "execution-gates:")},
+  });
+  // The packet trace names the result's kind; each kind has exactly one reader of its blocks.
+  if (pinned(manifest.traces, "investment-decision-packet:")) {
+    const investment = readInvestmentDecisionPacketBlocks(serving.blocks);
+    return investment ? {state: "ready", revision: {...base("investment-decision-packet:"), kind: "investment", investment}} : {state: "unavailable"};
+  }
+  const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
+  if (!blocks) return {state: "unavailable"};
+  return {state: "ready", revision: {...base("capital-procedure-packet:"), blocks}};
 }
 
 /**

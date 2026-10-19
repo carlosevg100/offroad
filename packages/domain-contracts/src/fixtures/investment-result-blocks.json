@@ -1,0 +1,393 @@
+[
+ {
+  "blockKey": "framing",
+  "kind": "section",
+  "content": {
+   "status": "prepared_for_human_review",
+   "question": "A linha de embalagem se paga e deve seguir agora?",
+   "currency": "BRL",
+   "baseCaseId": "base",
+   "caseCount": 5
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "cases",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "base",
+     "role": "base",
+     "label": "Linha de embalagem, cronograma original",
+     "changes": []
+    },
+    {
+     "id": "economy-4",
+     "role": "sensitivity",
+     "label": "Economia de R$ 4 milhões por ano",
+     "changes": [
+      "Economia anual em regime de R$ 4 milhões em vez de R$ 6 milhões"
+     ]
+    },
+    {
+     "id": "capex-120",
+     "role": "sensitivity",
+     "label": "Capex 20% maior",
+     "changes": [
+      "Capex e depreciação 20% maiores"
+     ]
+    },
+    {
+     "id": "slower-start",
+     "role": "sensitivity",
+     "label": "Partida seis meses mais lenta",
+     "changes": [
+      "Operação começa em novembro de 2027"
+     ]
+    },
+    {
+     "id": "defer-12",
+     "role": "deferral",
+     "label": "Adiar doze meses",
+     "changes": [
+      "Desembolsos e partida um ano depois"
+     ]
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "base",
+    "kind": "judgment",
+    "value": "Linha de embalagem, cronograma original",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "f3b9af3b1233ab4ba57ac33c2355e45324551fa80567bd0d663b7828082ddaa6"
+    ]
+   },
+   {
+    "claimId": "economy-4",
+    "kind": "judgment",
+    "value": "Economia de R$ 4 milhões por ano",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "32043a42d1b6532cff7d489ee65fca3805e53a37acce76f1fb4e48141c8923ca"
+    ]
+   },
+   {
+    "claimId": "capex-120",
+    "kind": "judgment",
+    "value": "Capex 20% maior",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "9416970d1a45b9871dba20fd86ad16f9dbca5b4f3da093ec20ebe8b5436a3b0e"
+    ]
+   },
+   {
+    "claimId": "slower-start",
+    "kind": "judgment",
+    "value": "Partida seis meses mais lenta",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "ed8137bcd42d76ec18e9b17d9dc77fdfbbba54a87a0e4f1b0763474de1b94e52"
+    ]
+   },
+   {
+    "claimId": "defer-12",
+    "kind": "judgment",
+    "value": "Adiar doze meses",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "863d58601d7cb66fea8a2a470a54368e30b6245c07bff2a18e96526d5e1a4d67"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "metrics",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "base",
+     "netPresentValue": "731754.8878738955342058638",
+     "deltaNetPresentValue": "0",
+     "annualIrr": "0.15802828421429292137",
+     "irrStatus": "calculated",
+     "discountRate": "0.15",
+     "paybackYears": "5.8530020703933747412",
+     "startupWorkingCapital": "5812500",
+     "peakCashNeed": "-21659499.99999999999998676",
+     "peakCashNeedDate": "2027-12-31",
+     "companyMinimumCashWithout": "20000000",
+     "companyMinimumCashWithoutDate": "2025-12-31",
+     "companyMinimumCashWith": "10740500.00000000000001324",
+     "companyMinimumCashWithDate": "2027-12-31",
+     "resultStatus": "partial_composition"
+    },
+    {
+     "caseId": "economy-4",
+     "netPresentValue": "-6345147.90536566536261117816",
+     "deltaNetPresentValue": "-7076902.79323956089681704196",
+     "annualIrr": "0.07660398428149065493",
+     "irrStatus": "calculated",
+     "discountRate": "0.15",
+     "paybackYears": "8.16528925619834710744",
+     "startupWorkingCapital": "5812500",
+     "peakCashNeed": "-22374499.99999999999999116",
+     "peakCashNeedDate": "2027-12-31",
+     "companyMinimumCashWithout": "20000000",
+     "companyMinimumCashWithoutDate": "2025-12-31",
+     "companyMinimumCashWith": "10025500.00000000000000884",
+     "companyMinimumCashWithDate": "2027-12-31",
+     "resultStatus": "partial_composition"
+    },
+    {
+     "caseId": "capex-120",
+     "netPresentValue": "-2080079.67805466062211466017",
+     "deltaNetPresentValue": "-2811834.56592855615632052397",
+     "annualIrr": "0.12972845319484164188",
+     "irrStatus": "calculated",
+     "discountRate": "0.15",
+     "paybackYears": "6.42718446601941747573",
+     "startupWorkingCapital": "5812500",
+     "peakCashNeed": "-25177899.999999999999986352",
+     "peakCashNeedDate": "2027-12-31",
+     "companyMinimumCashWithout": "20000000",
+     "companyMinimumCashWithoutDate": "2025-12-31",
+     "companyMinimumCashWith": "7222100.000000000000013648",
+     "companyMinimumCashWithDate": "2027-12-31",
+     "resultStatus": "partial_composition"
+    },
+    {
+     "caseId": "slower-start",
+     "netPresentValue": "-979398.23121873206503799253",
+     "deltaNetPresentValue": "-1711153.11909262759924385633",
+     "annualIrr": "0.13978902724248366871",
+     "irrStatus": "calculated",
+     "discountRate": "0.15",
+     "paybackYears": "6.2549800796812749004",
+     "startupWorkingCapital": "5812500",
+     "peakCashNeed": "-23480500.00000000000001316",
+     "peakCashNeedDate": "2027-12-31",
+     "companyMinimumCashWithout": "20000000",
+     "companyMinimumCashWithoutDate": "2025-12-31",
+     "companyMinimumCashWith": "8919499.99999999999998684",
+     "companyMinimumCashWithDate": "2027-12-31",
+     "resultStatus": "partial_composition"
+    },
+    {
+     "caseId": "defer-12",
+     "netPresentValue": "1380320.70315031801330718248",
+     "deltaNetPresentValue": "648565.81527642247910131868",
+     "annualIrr": "0.16732516644683874075",
+     "irrStatus": "calculated",
+     "discountRate": "0.15",
+     "paybackYears": "6.66334661354581673307",
+     "startupWorkingCapital": "5812500",
+     "peakCashNeed": "-21573699.999999999999986232",
+     "peakCashNeedDate": "2028-12-31",
+     "companyMinimumCashWithout": "20000000",
+     "companyMinimumCashWithoutDate": "2025-12-31",
+     "companyMinimumCashWith": "17026300.000000000000013768",
+     "companyMinimumCashWithDate": "2028-12-31",
+     "resultStatus": "partial_composition"
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "npv:base",
+    "kind": "calculation",
+    "value": "731754.8878738955342058638",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "f3b9af3b1233ab4ba57ac33c2355e45324551fa80567bd0d663b7828082ddaa6"
+    ]
+   },
+   {
+    "claimId": "irr:base",
+    "kind": "calculation",
+    "value": "0.15802828421429292137",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "f3b9af3b1233ab4ba57ac33c2355e45324551fa80567bd0d663b7828082ddaa6"
+    ]
+   },
+   {
+    "claimId": "payback:base",
+    "kind": "calculation",
+    "value": "5.8530020703933747412",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "f3b9af3b1233ab4ba57ac33c2355e45324551fa80567bd0d663b7828082ddaa6"
+    ]
+   },
+   {
+    "claimId": "npv:economy-4",
+    "kind": "calculation",
+    "value": "-6345147.90536566536261117816",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "32043a42d1b6532cff7d489ee65fca3805e53a37acce76f1fb4e48141c8923ca"
+    ]
+   },
+   {
+    "claimId": "irr:economy-4",
+    "kind": "calculation",
+    "value": "0.07660398428149065493",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "32043a42d1b6532cff7d489ee65fca3805e53a37acce76f1fb4e48141c8923ca"
+    ]
+   },
+   {
+    "claimId": "payback:economy-4",
+    "kind": "calculation",
+    "value": "8.16528925619834710744",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "32043a42d1b6532cff7d489ee65fca3805e53a37acce76f1fb4e48141c8923ca"
+    ]
+   },
+   {
+    "claimId": "npv:capex-120",
+    "kind": "calculation",
+    "value": "-2080079.67805466062211466017",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "9416970d1a45b9871dba20fd86ad16f9dbca5b4f3da093ec20ebe8b5436a3b0e"
+    ]
+   },
+   {
+    "claimId": "irr:capex-120",
+    "kind": "calculation",
+    "value": "0.12972845319484164188",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "9416970d1a45b9871dba20fd86ad16f9dbca5b4f3da093ec20ebe8b5436a3b0e"
+    ]
+   },
+   {
+    "claimId": "payback:capex-120",
+    "kind": "calculation",
+    "value": "6.42718446601941747573",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "9416970d1a45b9871dba20fd86ad16f9dbca5b4f3da093ec20ebe8b5436a3b0e"
+    ]
+   },
+   {
+    "claimId": "npv:slower-start",
+    "kind": "calculation",
+    "value": "-979398.23121873206503799253",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "ed8137bcd42d76ec18e9b17d9dc77fdfbbba54a87a0e4f1b0763474de1b94e52"
+    ]
+   },
+   {
+    "claimId": "irr:slower-start",
+    "kind": "calculation",
+    "value": "0.13978902724248366871",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "ed8137bcd42d76ec18e9b17d9dc77fdfbbba54a87a0e4f1b0763474de1b94e52"
+    ]
+   },
+   {
+    "claimId": "payback:slower-start",
+    "kind": "calculation",
+    "value": "6.2549800796812749004",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "ed8137bcd42d76ec18e9b17d9dc77fdfbbba54a87a0e4f1b0763474de1b94e52"
+    ]
+   },
+   {
+    "claimId": "npv:defer-12",
+    "kind": "calculation",
+    "value": "1380320.70315031801330718248",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "863d58601d7cb66fea8a2a470a54368e30b6245c07bff2a18e96526d5e1a4d67"
+    ]
+   },
+   {
+    "claimId": "irr:defer-12",
+    "kind": "calculation",
+    "value": "0.16732516644683874075",
+    "unit": "ratio",
+    "period": null,
+    "supportIds": [
+     "863d58601d7cb66fea8a2a470a54368e30b6245c07bff2a18e96526d5e1a4d67"
+    ]
+   },
+   {
+    "claimId": "payback:defer-12",
+    "kind": "calculation",
+    "value": "6.66334661354581673307",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "863d58601d7cb66fea8a2a470a54368e30b6245c07bff2a18e96526d5e1a4d67"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "conclusion",
+  "kind": "section",
+  "content": {
+   "conclusionChangingCaseIds": [
+    "economy-4",
+    "capex-120",
+    "slower-start"
+   ],
+   "timingCaseIds": [
+    "defer-12"
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "information-gaps",
+  "kind": "table",
+  "content": {
+   "rows": []
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "exclusions",
+  "kind": "section",
+  "content": {
+   "items": [
+    "financing_recommendation",
+    "tax_law_inference",
+    "intraperiod_cash_certification",
+    "method_release"
+   ]
+  },
+  "claims": []
+ }
+]
