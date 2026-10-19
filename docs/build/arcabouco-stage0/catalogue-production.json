@@ -101152,6 +101152,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.execution_result_comparison_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_comparison_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
       "kind": "function",
       "name": "record_execution_result_reply_v1",

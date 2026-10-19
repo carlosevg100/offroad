@@ -1430,7 +1430,7 @@ export type FinancingComparisonPacketLike = {
     readonly cases: ReadonlyArray<{readonly caseId: string; readonly viableProposalIds: readonly string[]; readonly incompleteProposalIds: readonly string[];
       readonly lowestEquivalentCostProposalId: string | null; readonly highestMinimumCashProposalId: string | null;
       readonly proposals: ReadonlyArray<{readonly proposalId: string; readonly label: string; readonly equivalentSpread: string | null; readonly weightedAverageLifeYears: string;
-        readonly minimumCash: {readonly amount: string; readonly periodId: string}; readonly covenant: {readonly worstPeriod: string; readonly worstRatio: string; readonly headroom: string; readonly allComply: boolean};
+        readonly minimumCash: {readonly amount: string; readonly periodId: string}; readonly covenant: {readonly worstPeriod: string; readonly worstRatio: string; readonly headroom: string; readonly ebitdaHeadroom: string; readonly allComply: boolean};
         readonly debtServiceByYear: Readonly<Record<string, string>>; readonly collateralConsumed: string; readonly freeReceivablesAfter: string; readonly horizonFinancingCost: string;
         readonly netDebtAtHorizon: string; readonly covenantTestsPerYear: number; readonly eliminatoryFacts: readonly string[]; readonly conditioningFacts: readonly string[]}>}>;
   };
@@ -1454,7 +1454,7 @@ export function financingComparisonPacketBlocks(packet: FinancingComparisonPacke
     {blockKey: "proposals", kind: "table",
       content: {rows: rows.map(({c, p}) => ({caseId: c.caseId, proposalId: p.proposalId, label: p.label, equivalentSpread: p.equivalentSpread, weightedAverageLifeYears: p.weightedAverageLifeYears,
         minimumCash: p.minimumCash.amount, minimumCashPeriod: p.minimumCash.periodId, worstRatio: p.covenant.worstRatio, worstPeriod: p.covenant.worstPeriod,
-        headroom: p.covenant.headroom, covenantComplies: p.covenant.allComply, covenantTestsPerYear: p.covenantTestsPerYear, collateralConsumed: p.collateralConsumed,
+        headroom: p.covenant.headroom, ebitdaHeadroom: p.covenant.ebitdaHeadroom, covenantComplies: p.covenant.allComply, covenantTestsPerYear: p.covenantTestsPerYear, collateralConsumed: p.collateralConsumed,
         freeReceivablesAfter: p.freeReceivablesAfter, horizonFinancingCost: p.horizonFinancingCost, netDebtAtHorizon: p.netDebtAtHorizon,
         eliminatoryFacts: [...p.eliminatoryFacts], conditioningFacts: [...p.conditioningFacts]}))},
       claims: rows.flatMap(({c, p}) => [
@@ -1483,7 +1483,7 @@ export type FinancingComparisonResultBlocksView = {
     readonly caseCount: number; readonly nominalSpreadMisleads: boolean | null};
   readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]}>;
   readonly proposals: ReadonlyArray<{readonly caseId: string; readonly proposalId: string; readonly label: string; readonly equivalentSpread: string | null; readonly weightedAverageLifeYears: string;
-    readonly minimumCash: string; readonly minimumCashPeriod: string; readonly worstRatio: string; readonly worstPeriod: string; readonly headroom: string; readonly covenantComplies: boolean;
+    readonly minimumCash: string; readonly minimumCashPeriod: string; readonly worstRatio: string; readonly worstPeriod: string; readonly headroom: string; readonly ebitdaHeadroom: string; readonly covenantComplies: boolean;
     readonly covenantTestsPerYear: number; readonly collateralConsumed: string; readonly freeReceivablesAfter: string; readonly horizonFinancingCost: string; readonly netDebtAtHorizon: string;
     readonly eliminatoryFacts: readonly string[]; readonly conditioningFacts: readonly string[]}>;
   readonly debtService: ReadonlyArray<{readonly caseId: string; readonly proposalId: string; readonly year: string; readonly amount: string}>;
@@ -1500,7 +1500,7 @@ const comparisonBlocks = {
   cases: investmentCasesBlock,
   proposals: z.strictObject({blockKey: z.literal("proposals"), kind: z.literal("table"), claims: z.array(artifactClaimSchema), content: z.strictObject({rows: z.array(z.strictObject({
     caseId: z.string(), proposalId: z.string(), label: z.string(), equivalentSpread: num.nullable(), weightedAverageLifeYears: num, minimumCash: num, minimumCashPeriod: z.string(),
-    worstRatio: num, worstPeriod: z.string(), headroom: num, covenantComplies: z.boolean(), covenantTestsPerYear: z.number().int().nonnegative(), collateralConsumed: num,
+    worstRatio: num, worstPeriod: z.string(), headroom: num, ebitdaHeadroom: num, covenantComplies: z.boolean(), covenantTestsPerYear: z.number().int().nonnegative(), collateralConsumed: num,
     freeReceivablesAfter: num, horizonFinancingCost: num, netDebtAtHorizon: num, eliminatoryFacts: z.array(z.string()), conditioningFacts: z.array(z.string())}))})}),
   debtService: z.strictObject({blockKey: z.literal("debt-service"), kind: z.literal("table"), claims: noClaims,
     content: z.strictObject({rows: z.array(z.strictObject({caseId: z.string(), proposalId: z.string(), year: z.string(), amount: num}))})}),

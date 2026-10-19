@@ -1,10 +1,17 @@
 {
  "schemaVersion": "financing-comparison-packet.v1",
- "status": "prepared_for_human_review",
- "question": "Qual das três propostas de R$ 70 mi para a mesma necessidade cabe na companhia e quanto custa de fato?",
- "currency": "BRL",
- "fingerprint": "609e549bf8299399f5cfb31095398cc9a8939bd968c42da02b6fa2604e071e1b",
+ "executorVersion": "2026.10.19-v1",
  "financialCoreVersion": "2026.10.07-v29",
+ "question": "Qual das três propostas de R$ 70 mi para a mesma necessidade cabe na companhia e quanto custa de fato?",
+ "basisFingerprint": "86a003b67b1941d3eed7942f4804e672185a2acdbe17015e93db0a9c4d136093",
+ "scope": {
+  "workId": "ac400000-0000-4000-9000-000000000007",
+  "purpose": "synthetic adopted financial analysis",
+  "versionId": "ac400000-0000-4000-9000-000000000500"
+ },
+ "entityId": "ac400000-0000-4000-9000-000000000001",
+ "perimeter": "standalone",
+ "currency": "BRL",
  "cases": [
   {
    "id": "base",
@@ -29,25 +36,13 @@
  ],
  "comparison": {
   "baseCaseId": "base",
-  "viableInEveryCaseProposalIds": [
-   "ac400000-0000-4000-9000-000000000912",
-   "ac400000-0000-4000-9000-000000000913"
-  ],
-  "conclusionChangingCaseIds": [
-   "bank-stress"
-  ],
-  "nominalSpreadMisleads": true,
   "cases": [
    {
     "caseId": "base",
-    "viableProposalIds": [
-     "ac400000-0000-4000-9000-000000000911",
-     "ac400000-0000-4000-9000-000000000912",
-     "ac400000-0000-4000-9000-000000000913"
-    ],
-    "incompleteProposalIds": [],
-    "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
-    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913",
+    "role": "base",
+    "label": "Plano da companhia",
+    "scenario": "base",
+    "resultStatus": "partial_composition",
     "proposals": [
      {
       "proposalId": "ac400000-0000-4000-9000-000000000911",
@@ -59,9 +54,11 @@
        "periodId": "2028-12-31"
       },
       "covenant": {
+       "name": "lease liability in debt, IFRS 16 EBITDA",
        "worstPeriod": "2027-12-31",
        "worstRatio": "1.9475283015302315310763250883392226148409893992933",
        "headroom": "1.0524716984697684689236749116607773851590106007067",
+       "ebitdaHeadroom": "19.85663271112963178036",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -89,9 +86,11 @@
        "periodId": "2028-06-30"
       },
       "covenant": {
+       "name": "excluding leases",
        "worstPeriod": "2027-12-31",
        "worstRatio": "1.9071346834554896971776119402985074626865671641791",
        "headroom": "1.0928653165445103028223880597014925373134328358209",
+       "ebitdaHeadroom": "19.52586032226191741043",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -117,9 +116,11 @@
        "periodId": "2028-06-30"
       },
       "covenant": {
+       "name": "excluding leases",
        "worstPeriod": "2027-12-31",
        "worstRatio": "1.8787806062576212352791044776119402985074626865672",
        "headroom": "0.8712193937423787647208955223880597014925373134328",
+       "ebitdaHeadroom": "16.9808580016696370142",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -135,17 +136,22 @@
       "eliminatoryFacts": [],
       "conditioningFacts": []
      }
-    ]
-   },
-   {
-    "caseId": "bank-stress",
+    ],
+    "incompleteProposalIds": [],
     "viableProposalIds": [
+     "ac400000-0000-4000-9000-000000000911",
      "ac400000-0000-4000-9000-000000000912",
      "ac400000-0000-4000-9000-000000000913"
     ],
-    "incompleteProposalIds": [],
     "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
-    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913",
+    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913"
+   },
+   {
+    "caseId": "bank-stress",
+    "role": "stress",
+    "label": "Caso do banco",
+    "scenario": "bank-stress",
+    "resultStatus": "partial_composition",
     "proposals": [
      {
       "proposalId": "ac400000-0000-4000-9000-000000000911",
@@ -157,9 +163,11 @@
        "periodId": "2028-12-31"
       },
       "covenant": {
+       "name": "lease liability in debt, IFRS 16 EBITDA",
        "worstPeriod": "2027-12-31",
        "worstRatio": "2.4513303235628997019106214924132197048430679692372",
        "headroom": "0.5486696764371002980893785075867802951569320307628",
+       "ebitdaHeadroom": "8.79883271112963178036",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -187,9 +195,11 @@
        "periodId": "2028-12-31"
       },
       "covenant": {
+       "name": "excluding leases",
        "worstPeriod": "2027-12-31",
        "worstRatio": "2.4368392603239691369700731545111948570161826645977",
        "headroom": "0.5631607396760308630299268454888051429838173354023",
+       "ebitdaHeadroom": "8.46806032226191741043",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -217,9 +227,11 @@
        "periodId": "2028-12-31"
       },
       "covenant": {
+       "name": "excluding leases",
        "worstPeriod": "2027-12-31",
        "worstRatio": "2.3936363020485147020829084460208379516736865440035",
        "headroom": "0.3563636979514852979170915539791620483263134559965",
+       "ebitdaHeadroom": "5.84566051439690974147",
        "allComply": true
       },
       "debtServiceByYear": {
@@ -237,16 +249,36 @@
        "cash_below_policy_minimum"
       ]
      }
-    ]
+    ],
+    "incompleteProposalIds": [],
+    "viableProposalIds": [
+     "ac400000-0000-4000-9000-000000000912",
+     "ac400000-0000-4000-9000-000000000913"
+    ],
+    "lowestEquivalentCostProposalId": "ac400000-0000-4000-9000-000000000913",
+    "highestMinimumCashProposalId": "ac400000-0000-4000-9000-000000000913"
    }
-  ]
+  ],
+  "viableInEveryCaseProposalIds": [
+   "ac400000-0000-4000-9000-000000000912",
+   "ac400000-0000-4000-9000-000000000913"
+  ],
+  "conclusionChangingCaseIds": [
+   "bank-stress"
+  ],
+  "nominalSpreadMisleads": true
  },
  "gaps": [],
+ "status": "prepared_for_human_review",
+ "classification": "working_hypothesis",
  "exclusions": [
   "choice_of_counterparty",
   "firmness_and_validity",
   "reciprocity",
   "tax_law_inference",
   "method_release"
- ]
+ ],
+ "grantsExecution": false,
+ "grantsPublication": false,
+ "fingerprint": "9e21b53aa97aa38926df6d199321a612da2d3573be3b2f7db5f6d9f04ff4b934"
 }
