@@ -75,6 +75,8 @@ export * from "./financing-comparison-packet";
 export * from "./financing-comparison-contracts";
 export * from "./financing-comparison-composer";
 export * from "./financing-comparison-premises";
+export * from "./debt-capacity-premises";
+export * from "./debt-capacity-composer";
 export * from "./adopted-relative-cost-lens";
 export * from "./relative-debt-cost-packet";
 export * from "./relative-debt-cost-contracts";
