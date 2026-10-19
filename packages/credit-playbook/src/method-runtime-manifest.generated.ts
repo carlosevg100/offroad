@@ -88,7 +88,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -123,7 +123,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -8627,7 +8627,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+              "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
             },
             {
               "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -9123,7 +9123,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/dated-debt.ts",
-              "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+              "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
             },
             {
               "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -9162,8 +9162,12 @@ export const procedureBuildProvenance = [
               "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
             },
             {
+              "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+            },
+            {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -9171,7 +9175,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/indexed-debt.ts",
-              "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+              "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
             },
             {
               "path": "packages/financial-core/src/investment-project.test.ts",
@@ -9202,8 +9206,16 @@ export const procedureBuildProvenance = [
               "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
             },
             {
+              "path": "packages/financial-core/src/period-financing-taxes.ts",
+              "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+            },
+            {
               "path": "packages/financial-core/src/price-arithmetic.ts",
               "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+            },
+            {
+              "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+              "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
             },
             {
               "path": "packages/financial-core/src/rate-composition.ts",
@@ -9283,7 +9295,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
-              "hash": "7cbef24d9080c60dd2a87884fbb28e2b965447158c69c378cc9d55a7bb751ed1"
+              "hash": "8e47dfe9dbce4875642441cab983eea90cc7f9ace3aa2904a899feb8f9989768"
             },
             {
               "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -9316,6 +9328,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/financial-model/src/adopted-defined-ratio.ts",
               "hash": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -9399,7 +9415,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-executor-contracts.ts",
-              "hash": "79f54569a6502bf6e1d81d4d56f634734570394aac938e605bc1986e82cba4df"
+              "hash": "03a6396cbad66fd90e0352d48bba8df8e9724e3c268883a16285fc4df1462293"
             },
             {
               "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
@@ -9447,11 +9463,27 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
-              "hash": "d71854c11779ea37e0bdc42a69f25093afda6b59f7f9103bb1fdbcf19dfc01a2"
+              "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+              "hash": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.ts",
+              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -9459,7 +9491,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "8f89ea9aedd6d5c91d8873e2179f2e44193d8fd6733da9ca9eaaaed96aca9e64"
+              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -9746,7 +9778,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "0c1698e78a35f25d62cd48c61e912b295b63053ebe25309f2e8e8112a950c799"
+          "hash": "3e7464ccb11ec429c300b5763a8fd94ff00c0341484b5beca77ae06633870f04"
         },
         "evidence": [
           {
@@ -9772,7 +9804,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "df618cac66def1434d68a0e3e7eec909b1b753df65f7c05f84c97eb993f76350"
+    "manifestHash": "308767445bf10920fc9163c16a1d5c12517709fd223798b3c85ed91a934fcee7"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -9790,7 +9822,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -9825,7 +9857,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "authoringStatus": "incomplete",
     "pendingContent": [
@@ -14255,7 +14287,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+              "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
             },
             {
               "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -14751,7 +14783,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/dated-debt.ts",
-              "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+              "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
             },
             {
               "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -14790,8 +14822,12 @@ export const procedureBuildProvenance = [
               "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
             },
             {
+              "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+            },
+            {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -14799,7 +14835,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/indexed-debt.ts",
-              "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+              "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
             },
             {
               "path": "packages/financial-core/src/investment-project.ts",
@@ -14826,8 +14862,16 @@ export const procedureBuildProvenance = [
               "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
             },
             {
+              "path": "packages/financial-core/src/period-financing-taxes.ts",
+              "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+            },
+            {
               "path": "packages/financial-core/src/price-arithmetic.ts",
               "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+            },
+            {
+              "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+              "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
             },
             {
               "path": "packages/financial-core/src/rate-composition.ts",
@@ -14907,7 +14951,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
-              "hash": "7cbef24d9080c60dd2a87884fbb28e2b965447158c69c378cc9d55a7bb751ed1"
+              "hash": "8e47dfe9dbce4875642441cab983eea90cc7f9ace3aa2904a899feb8f9989768"
             },
             {
               "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -14940,6 +14984,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/financial-model/src/adopted-defined-ratio.ts",
               "hash": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -15019,7 +15067,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-executor-contracts.ts",
-              "hash": "79f54569a6502bf6e1d81d4d56f634734570394aac938e605bc1986e82cba4df"
+              "hash": "03a6396cbad66fd90e0352d48bba8df8e9724e3c268883a16285fc4df1462293"
             },
             {
               "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
@@ -15067,11 +15115,27 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
-              "hash": "d71854c11779ea37e0bdc42a69f25093afda6b59f7f9103bb1fdbcf19dfc01a2"
+              "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+              "hash": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.ts",
+              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -15079,7 +15143,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "8f89ea9aedd6d5c91d8873e2179f2e44193d8fd6733da9ca9eaaaed96aca9e64"
+              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -15358,12 +15422,12 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "af6db987bb21c8ec5075fdddac4c273def3a6f78e42d638a5913bda8986fb545"
+          "hash": "b74bd4be168f1ad4097d742f24a18edc5087010e1f4cbbdce555c0e434f48c52"
         },
         "evidence": []
       }
     ],
-    "manifestHash": "20d273da76c6a99ef990fc5ecd089ba688ada04625ee51623047a8075c34584c"
+    "manifestHash": "da8b3006d3ac7c309dd6f769f825119642d131ca7a351df7bd34a82da99620d2"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -15381,7 +15445,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -15416,7 +15480,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "authoringStatus": "incomplete",
     "pendingContent": [
@@ -22830,7 +22894,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+              "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
             },
             {
               "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -23326,7 +23390,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/dated-debt.ts",
-              "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+              "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
             },
             {
               "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -23365,8 +23429,12 @@ export const procedureBuildProvenance = [
               "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
             },
             {
+              "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+            },
+            {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -23374,7 +23442,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/indexed-debt.ts",
-              "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+              "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
             },
             {
               "path": "packages/financial-core/src/investment-project.ts",
@@ -23401,8 +23469,16 @@ export const procedureBuildProvenance = [
               "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
             },
             {
+              "path": "packages/financial-core/src/period-financing-taxes.ts",
+              "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+            },
+            {
               "path": "packages/financial-core/src/price-arithmetic.ts",
               "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+            },
+            {
+              "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+              "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
             },
             {
               "path": "packages/financial-core/src/rate-composition.ts",
@@ -23482,7 +23558,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
-              "hash": "7cbef24d9080c60dd2a87884fbb28e2b965447158c69c378cc9d55a7bb751ed1"
+              "hash": "8e47dfe9dbce4875642441cab983eea90cc7f9ace3aa2904a899feb8f9989768"
             },
             {
               "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -23515,6 +23591,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/financial-model/src/adopted-defined-ratio.ts",
               "hash": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -23594,7 +23674,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-executor-contracts.ts",
-              "hash": "79f54569a6502bf6e1d81d4d56f634734570394aac938e605bc1986e82cba4df"
+              "hash": "03a6396cbad66fd90e0352d48bba8df8e9724e3c268883a16285fc4df1462293"
             },
             {
               "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
@@ -23642,11 +23722,27 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
-              "hash": "d71854c11779ea37e0bdc42a69f25093afda6b59f7f9103bb1fdbcf19dfc01a2"
+              "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+              "hash": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.ts",
+              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -23654,7 +23750,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "8f89ea9aedd6d5c91d8873e2179f2e44193d8fd6733da9ca9eaaaed96aca9e64"
+              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -23933,30 +24029,30 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "36a7a55345eeddd8facc7c98022edd3251e6dcfcd792cc73d91d183b789b372d"
+          "hash": "319f1f42e6aae97a7da87b57be3d9ca3055b3a9e7c75dd71d807eb486eca5101"
         },
         "evidence": []
       }
     ],
-    "manifestHash": "ee6aa71f072bac23fad26ab6d951583cbf77801b45d6d0c84300886caf17343e"
+    "manifestHash": "24bd2bf1f2c7d6c6461b07041668f07dcdba2583639ca7bdd965bf1ead2a22e6"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
       "id": "compare-financing-proposals",
-      "version": "2026.10.07-v1",
-      "maturity": "draft"
+      "version": "2026.10.19-v2",
+      "maturity": "implemented"
     },
     "source": {
       "path": "capital/compare-financing-proposals.md",
-      "hash": "31a4ae5f9d28a2c417c5f65e6a0d104056768757704e2ed1e1267f7ee2fdb537"
+      "hash": "5497667d142e22c5897063232e550105257ec5f0ca7a83a98c7bda24f6abbf2c"
     },
     "compiler": {
       "version": "2026.09.21-v9",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23991,39 +24087,62 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
-    "authoringStatus": "incomplete",
-    "pendingContent": [
-      "Compor os demais passos profissionais e seus dados autorizados, vincular as tarefas e validar a conversa real. O componente numérico registrado não conclui o procedimento nem libera execução."
-    ],
+    "authoringStatus": "ready_for_review",
+    "pendingContent": [],
     "grantsExecution": false,
     "budget": {
       "maxModelCalls": 0,
-      "maxDurationMs": 31000,
+      "maxDurationMs": 61000,
       "maxCostMinorUnits": 0,
-      "currency": "USD"
+      "currency": "BRL"
     },
     "allowedTools": [],
     "maximumEffect": "none",
     "components": [
       {
         "component": {
-          "id": "compare-financing-proposals-editorial",
-          "version": "2026.10.07-v1",
-          "title": "Comparar propostas de financiamento recebidas",
+          "id": "comparison.decision-framing",
+          "version": "2026.10.19-v2",
+          "title": "Enquadramento profissional da comparação de propostas",
           "inputs": {
-            "id": "compare-financing-proposals-editorial-contract",
-            "version": "2026.10.07-v1",
+            "id": "comparison.framing-input",
+            "version": "2026.10.19-v2",
             "value": {
-              "type": "string"
+              "type": "object",
+              "fields": {
+                "question": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           },
           "outputs": {
-            "id": "compare-financing-proposals-editorial-contract",
-            "version": "2026.10.07-v1",
+            "id": "comparison.framing-output",
+            "version": "2026.10.19-v2",
             "value": {
-              "type": "string"
+              "type": "object",
+              "fields": {
+                "scope": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "gaps": {
+                  "required": true,
+                  "value": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
             }
           },
           "dependencies": [],
@@ -24033,19 +24152,20 @@ export const procedureBuildProvenance = [
             "maxModelCalls": 0,
             "maxDurationMs": 1000,
             "maxCostMinorUnits": 0,
-            "currency": "USD"
+            "currency": "BRL"
           },
           "rights": {
             "inheritSourceRestrictions": true,
             "purposes": [
-              "analysis"
+              "decision_support"
             ],
             "sourceClasses": [
-              "house_method"
+              "authorized_context"
             ]
           },
           "competencies": [
-            "financial_analysis"
+            "financial_analysis",
+            "capital_structure"
           ],
           "invariants": [
             "law",
@@ -24058,41 +24178,4559 @@ export const procedureBuildProvenance = [
           "overridePoints": [],
           "evidence": [],
           "kind": "narrative",
-          "text": "Escolher ou comparar propostas para uma mesma necessidade pelo custo efetivo, caixa, restrições e executabilidade; preparar pontos de negociação quando solicitados. Uma preferência ou relação bancária é contexto da escolha, não critério que substitui a conta. Leitura das propostas comparáveis, eliminatórias antes da preferência, diferenças em número e pedidos de negociação por contraparte. Se o usuário pediu só comparação, preservar a análise sem recomendar escolha."
+          "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO decisor precisa saber com quem fechar, em que termos e até quando, e o que pedir a cada contraparte antes de decidir. A resposta abre desfazendo o atalho do menor spread: diz qual é a mais barata de verdade, qual é a mais segura para fechar hoje e o que cada uma faz com o caixa da companhia.\n\nN2. Árvore de decisão\n- Proposta que deixa o caixa negativo, rompe covenant ou consome garantia acima da regra da companhia num caso adotado: sai antes da preferência, com o número que a elimina.\n- Proposta que só cabe com condição (caixa abaixo do mínimo da política, waiver de outro credor, aprovação pendente): continua na mesa e a condição vira pedido de negociação.\n- Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.\n- A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.\n- Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.\n- Ninguém se move até a validade: fechar com a proposta firme.\n\nN3. Suficiência por conclusão\n- Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.\n- Para dizer se cabe é necessária a projeção da companhia com a dívida vigente até o último vencimento relevante.\n- Para recomendar são necessários firmeza, validade e as condições de cada proposta; sem elas, a resposta compara e diz o que falta.\n- O resíduo é pedido em um lote, cada item com o motivo.\n\nN4. Voz e três níveis de afirmação\nFato (term sheet, contrato ou adoção), leitura (o que o número significa para a escolha) e recomendação (o que fazer e sob que condição) ficam separados. Números com origem: documento, premissa ou estimativa. Sem slogan, metáfora, veredito binário, certeza sobre o banco ou julgamento da intenção de uma contraparte.\n\nTemplate\nT1. Uma leitura útil, com evidência aprofundável\n1. Leitura: qual é a mais barata de verdade, qual é a mais segura para fechar hoje e por quê, em duas ou três frases.\n2. Custo: spread nominal contra custo efetivo pela vida de cada uma.\n3. Caixa: serviço da dívida por ano e menor caixa com cada uma, no base e no caso do banco.\n4. Garantias e covenants: quanto cada uma consome e quanta folga deixa na definição e na frequência dela.\n5. Firmeza e flexibilidade: aprovação, validade, pré-pagamento.\n6. O que eu faria: pedido a cada contraparte com o número que ele compra e a regra de decisão na data de validade.\n7. Ressalvas: projeção, firmeza, reciprocidade não valorada.\n\nT2. Peças\nQuadro normalizado por proposta (spread nominal, custo efetivo, vida média, serviço por ano, menor caixa no base e no estresse, covenant e folga, datas de teste, garantia e recebíveis livres, waiver, custo no horizonte). Gráfico do caixa por trimestre com uma proposta em foco, fundo branco, sem vermelho."
         },
-        "componentHash": "eb8dbe7b33c1dfe9427e5ae0e8b9031865baebd6ee0607a511ab313969de2397",
+        "componentHash": "c9505c0056c389865ced0032ee0ab5ed3f13bead1284b052b2a10da17c510b81",
         "executor": null,
         "evidence": []
       },
       {
         "component": {
-          "id": "financing-proposal-evidence",
-          "version": "2026.10.07-v1",
-          "title": "Calcular e validar a evidência financeira adotada",
+          "id": "comparison.decision-packet",
+          "version": "2026.10.19-v2",
+          "title": "Comparar as propostas na companhia em cada caso adotado",
           "inputs": {
-            "id": "financing-proposal-evidence-input",
-            "version": "2026.10.07-v1",
+            "id": "financing-comparison-packet-input",
+            "version": "2026.10.19-v1",
             "value": {
               "type": "object",
               "fields": {
-                "envelope": {
+                "schemaVersion": {
                   "required": true,
                   "value": {
-                    "type": "object",
-                    "fields": {
-                      "canonical": {
-                        "required": true,
-                        "value": {
-                          "type": "string"
-                        }
-                      },
-                      "fingerprint": {
-                        "required": true,
-                        "value": {
-                          "type": "string"
+                    "type": "enum",
+                    "values": [
+                      "financing-comparison-packet-input.v1"
+                    ]
+                  }
+                },
+                "question": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "cases": {
+                  "required": true,
+                  "value": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "id": {
+                          "required": true,
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "role": {
+                          "required": true,
+                          "value": {
+                            "type": "enum",
+                            "values": [
+                              "base",
+                              "stress",
+                              "sensitivity"
+                            ]
+                          }
+                        },
+                        "label": {
+                          "required": true,
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "changes": {
+                          "required": true,
+                          "value": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "analysis": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "envelope": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "canonical": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "fingerprint": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "scope": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "workId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "purpose": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "versionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "entityId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "perimeter": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "currency": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "openingDate": {
+                                "required": true,
+                                "value": {
+                                  "type": "date"
+                                }
+                              },
+                              "endDate": {
+                                "required": true,
+                                "value": {
+                                  "type": "date"
+                                }
+                              },
+                              "numericInterpretations": {
+                                "required": false,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "id": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "mode": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "decisionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "definitionVersionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "definitionKind": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "reported",
+                                                  "managerial",
+                                                  "contractual"
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "members": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "decisionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "definitionVersionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "definitionKind": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "reported",
+                                                  "managerial",
+                                                  "contractual"
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "comparisonId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "scenario": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "inheritedScenario": {
+                                "required": false,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "periodEnds": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "company": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "openingAvailableCash": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "money": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "ebitda": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "cashLeasePayments": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "depreciationAndAmortization": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "workingCapitalCashFlow": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "maintenanceCapexPaid": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "growthCapexPaid": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "missingReason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "cashTaxRate": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "lossTaxTreatment": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "freeReceivablesPool": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "minimumCashFrom": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "covenantHistoryPeriods": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "covenantHistoryEbitda": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "covenantHistoryLeasePayments": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "minimumCashPolicy": {
+                                      "required": false,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "maximumCollateralShare": {
+                                      "required": false,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "instruments": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "id": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "terms": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "timing": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexer": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationTreatment": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponTreatment": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponBase": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "drawdownAccount": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "paymentAccount": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "openingPrincipal": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationRates": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponRates": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "drawdowns": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "scheduledPrincipal": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "prepayments": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "repayAll": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "paysAccruedCoupon": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "charges": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "chargeIds": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "categories": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "dates": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "amounts": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "deductible": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "proposals": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "id": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "label": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "terms": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "timing": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexer": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationTreatment": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponTreatment": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponBase": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "drawdownAccount": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "paymentAccount": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "openingPrincipal": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationRates": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "couponRates": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "drawdowns": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "scheduledPrincipal": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "prepayments": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "repayAll": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "paysAccruedCoupon": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "charges": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "chargeIds": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "categories": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "dates": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "amounts": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "deductible": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "collateralConsumed": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "decisionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "union",
+                                                "variants": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "definitionVersionId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "definitionKind": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "reported",
+                                                  "managerial",
+                                                  "contractual"
+                                                ]
+                                              }
+                                            },
+                                            "missingReason": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "union",
+                                                "variants": [
+                                                  {
+                                                    "type": "string"
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "covenant": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "name": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "leaseLiabilityInDebt": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "leaseLiability": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "ebitdaExcludesLeases": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "trailingPeriods": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "measurementPeriods": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "limit": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "comparator": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "lifetime": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "grossAdvance": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "upfrontWithheldCosts": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "annualSpread": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "unpaidInterestBase": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "lowerSpread": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "upperSpread": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "periodEnds": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "yearFractions": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "annualIndex": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "yearFractionConventions": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "scheduledPrincipal": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "paysAccruedInterest": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
+                  }
+                }
+              }
+            }
+          },
+          "outputs": {
+            "id": "financing-comparison-packet-output",
+            "version": "2026.10.19-v1",
+            "value": {
+              "type": "object",
+              "fields": {
+                "schemaVersion": {
+                  "required": true,
+                  "value": {
+                    "type": "enum",
+                    "values": [
+                      "financing-comparison-packet.v1"
+                    ]
+                  }
+                },
+                "executorVersion": {
+                  "required": true,
+                  "value": {
+                    "type": "enum",
+                    "values": [
+                      "2026.10.19-v1"
+                    ]
+                  }
+                },
+                "financialCoreVersion": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "question": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "basisFingerprint": {
+                  "required": true,
+                  "value": {
+                    "type": "string"
                   }
                 },
                 "scope": {
@@ -24139,32 +28777,8 @@ export const procedureBuildProvenance = [
                     "type": "string"
                   }
                 },
-                "scenario": {
+                "cases": {
                   "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "openingDate": {
-                  "required": true,
-                  "value": {
-                    "type": "date"
-                  }
-                },
-                "endDate": {
-                  "required": true,
-                  "value": {
-                    "type": "date"
-                  }
-                },
-                "proposalId": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "numericInterpretations": {
-                  "required": false,
                   "value": {
                     "type": "array",
                     "items": {
@@ -24176,1170 +28790,24 @@ export const procedureBuildProvenance = [
                             "type": "string"
                           }
                         },
-                        "mode": {
+                        "role": {
                           "required": true,
                           "value": {
-                            "type": "object",
-                            "fields": {
-                              "decisionId": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "definitionVersionId": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "definitionKind": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "reported",
-                                    "managerial",
-                                    "contractual"
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        },
-                        "members": {
-                          "required": true,
-                          "value": {
-                            "type": "object",
-                            "fields": {
-                              "decisionId": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "definitionVersionId": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "definitionKind": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "reported",
-                                    "managerial",
-                                    "contractual"
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "terms": {
-                  "required": true,
-                  "value": {
-                    "type": "object",
-                    "fields": {
-                      "grossAdvance": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "upfrontWithheldCosts": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "annualSpread": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "unpaidInterestBase": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "costScope": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "lowerSpread": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "upperSpread": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "periodEnds": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "yearFractions": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "annualIndex": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "yearFractionConventions": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "businessDayCounts": {
-                        "required": true,
-                        "value": {
-                          "type": "union",
-                          "variants": [
-                            {
-                              "type": "object",
-                              "fields": {
-                                "decisionId": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "union",
-                                    "variants": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "definitionVersionId": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "definitionKind": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "enum",
-                                    "values": [
-                                      "reported",
-                                      "managerial",
-                                      "contractual"
-                                    ]
-                                  }
-                                },
-                                "missingReason": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "union",
-                                    "variants": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                }
-                              }
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        }
-                      },
-                      "scheduledPrincipal": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "paysAccruedInterest": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "decisionId": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            },
-                            "definitionVersionId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "definitionKind": {
-                              "required": true,
-                              "value": {
-                                "type": "enum",
-                                "values": [
-                                  "reported",
-                                  "managerial",
-                                  "contractual"
-                                ]
-                              }
-                            },
-                            "missingReason": {
-                              "required": true,
-                              "value": {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "string"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "costAssessments": {
-                        "required": true,
-                        "value": {
-                          "type": "object",
-                          "fields": {
-                            "origination_fee": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionVersionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "definitionKind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "reported",
-                                        "managerial",
-                                        "contractual"
-                                      ]
-                                    }
-                                  },
-                                  "missingReason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "recurring_fee": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionVersionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "definitionKind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "reported",
-                                        "managerial",
-                                        "contractual"
-                                      ]
-                                    }
-                                  },
-                                  "missingReason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "tax": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionVersionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "definitionKind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "reported",
-                                        "managerial",
-                                        "contractual"
-                                      ]
-                                    }
-                                  },
-                                  "missingReason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "other": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionVersionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "definitionKind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "reported",
-                                        "managerial",
-                                        "contractual"
-                                      ]
-                                    }
-                                  },
-                                  "missingReason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "outputs": {
-            "id": "financing-proposal-evidence-output",
-            "version": "2026.10.07-v1",
-            "value": {
-              "type": "object",
-              "fields": {
-                "financialCoreVersion": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "scope": {
-                  "required": true,
-                  "value": {
-                    "type": "object",
-                    "fields": {
-                      "workId": {
-                        "required": true,
-                        "value": {
-                          "type": "string"
-                        }
-                      },
-                      "purpose": {
-                        "required": true,
-                        "value": {
-                          "type": "string"
-                        }
-                      },
-                      "versionId": {
-                        "required": true,
-                        "value": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                },
-                "entityId": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "currency": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "basisFingerprint": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "status": {
-                  "required": true,
-                  "value": {
-                    "type": "enum",
-                    "values": [
-                      "missing_inputs",
-                      "partial_composition"
-                    ]
-                  }
-                },
-                "gaps": {
-                  "required": true,
-                  "value": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "fields": {
-                        "operand": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "reason": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "bindings": {
-                  "required": true,
-                  "value": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "fields": {
-                        "operand": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "decisionId": {
-                          "required": true,
-                          "value": {
-                            "type": "union",
-                            "variants": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
+                            "type": "enum",
+                            "values": [
+                              "base",
+                              "stress",
+                              "sensitivity"
                             ]
                           }
                         },
-                        "interpretationDecisionIds": {
+                        "label": {
+                          "required": true,
+                          "value": {
+                            "type": "string"
+                          }
+                        },
+                        "changes": {
                           "required": true,
                           "value": {
                             "type": "array",
@@ -25347,624 +28815,218 @@ export const procedureBuildProvenance = [
                               "type": "string"
                             }
                           }
-                        }
-                      }
-                    }
-                  }
-                },
-                "normalization": {
-                  "required": true,
-                  "value": {
-                    "type": "union",
-                    "variants": [
-                      {
-                        "type": "object",
-                        "fields": {
-                          "schemaVersion": {
-                            "required": true,
-                            "value": {
-                              "type": "enum",
-                              "values": [
-                                "adopted-currency-representation.v1"
-                              ]
-                            }
-                          },
-                          "scope": {
-                            "required": true,
-                            "value": {
-                              "type": "object",
-                              "fields": {
-                                "workId": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "purpose": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "versionId": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
+                        },
+                        "result": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "financialCoreVersion": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
                                 }
-                              }
-                            }
-                          },
-                          "basisFingerprint": {
-                            "required": true,
-                            "value": {
-                              "type": "string"
-                            }
-                          },
-                          "status": {
-                            "required": true,
-                            "value": {
-                              "type": "enum",
-                              "values": [
-                                "partial",
-                                "resolved"
-                              ]
-                            }
-                          },
-                          "values": {
-                            "required": true,
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "number",
-                                        "list"
-                                      ]
-                                    }
-                                  },
-                                  "interpretationDecisionIds": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "array",
-                                      "items": {
+                              },
+                              "scope": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "workId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "purpose": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "versionId": {
+                                      "required": true,
+                                      "value": {
                                         "type": "string"
                                       }
                                     }
-                                  },
-                                  "trace": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "schemaVersion": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "currency-representation.v1"
-                                                ]
-                                              }
-                                            },
-                                            "engineVersion": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "operands": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "values": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "array",
-                                                      "items": {
-                                                        "type": "string"
-                                                      }
-                                                    }
-                                                  },
-                                                  "declaredScale": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "representation": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "enum",
-                                                      "values": [
-                                                        "reported_in_declared_scale",
-                                                        "already_in_currency_units"
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            "factor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "outputScale": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "1"
-                                                ]
-                                              }
-                                            },
-                                            "values": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "array",
-                                                "items": {
-                                                  "type": "string"
-                                                }
-                                              }
-                                            },
-                                            "rounding": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "none"
-                                                ]
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "null"
+                                  }
+                                }
+                              },
+                              "entityId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "currency": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "basisFingerprint": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "status": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "missing_inputs",
+                                    "partial_composition"
+                                  ]
+                                }
+                              },
+                              "gaps": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "operand": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
                                         }
-                                      ]
+                                      },
+                                      "reason": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      }
                                     }
                                   }
                                 }
-                              }
-                            }
-                          },
-                          "gaps": {
-                            "required": true,
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "reason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "representation_not_adopted"
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "contributions": {
-                            "required": true,
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "fields": {
-                                  "decisionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "slotKey": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "kind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "observation",
-                                        "hypothesis"
-                                      ]
-                                    }
-                                  },
-                                  "fieldPath": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "dimensions": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "object",
-                                      "fields": {
-                                        "entityId": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "perimeter": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "periodStart": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "date"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "periodEnd": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "date"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "currency": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "unit": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "scale": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "scenario": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        },
-                                        "definitionVersionId": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
+                              },
+                              "bindings": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "operand": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "decisionId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "interpretationDecisionIds": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
                                           }
                                         }
                                       }
                                     }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "type": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "number"
-                                                ]
-                                              }
-                                            },
-                                            "value": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "decimal_string"
-                                              }
-                                            }
+                                  }
+                                }
+                              },
+                              "normalization": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "object",
+                                      "fields": {
+                                        "schemaVersion": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "adopted-currency-representation.v1"
+                                            ]
                                           }
                                         },
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "type": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "text"
-                                                ]
-                                              }
-                                            },
-                                            "value": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "type": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "date"
-                                                ]
-                                              }
-                                            },
-                                            "value": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "date"
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "type": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "boolean"
-                                                ]
-                                              }
-                                            },
-                                            "value": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "boolean"
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "object",
-                                          "fields": {
-                                            "type": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "list"
-                                                ]
-                                              }
-                                            },
-                                            "value": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "array",
-                                                "items": {
+                                        "scope": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "object",
+                                            "fields": {
+                                              "workId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "purpose": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "versionId": {
+                                                "required": true,
+                                                "value": {
                                                   "type": "string"
                                                 }
                                               }
                                             }
                                           }
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "observationId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
                                         },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "referenceValue": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "union",
-                                          "variants": [
-                                            {
+                                        "basisFingerprint": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "status": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "partial",
+                                              "resolved"
+                                            ]
+                                          }
+                                        },
+                                        "values": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
                                               "type": "object",
                                               "fields": {
-                                                "type": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "enum",
-                                                    "values": [
-                                                      "number"
-                                                    ]
-                                                  }
-                                                },
-                                                "value": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "decimal_string"
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "type": "object",
-                                              "fields": {
-                                                "type": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "enum",
-                                                    "values": [
-                                                      "text"
-                                                    ]
-                                                  }
-                                                },
-                                                "value": {
+                                                "decisionId": {
                                                   "required": true,
                                                   "value": {
                                                     "type": "string"
                                                   }
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "type": "object",
-                                              "fields": {
-                                                "type": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "enum",
-                                                    "values": [
-                                                      "date"
-                                                    ]
-                                                  }
                                                 },
-                                                "value": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "date"
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "type": "object",
-                                              "fields": {
                                                 "type": {
                                                   "required": true,
                                                   "value": {
                                                     "type": "enum",
                                                     "values": [
-                                                      "boolean"
-                                                    ]
-                                                  }
-                                                },
-                                                "value": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "boolean"
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "type": "object",
-                                              "fields": {
-                                                "type": {
-                                                  "required": true,
-                                                  "value": {
-                                                    "type": "enum",
-                                                    "values": [
+                                                      "number",
                                                       "list"
                                                     ]
                                                   }
                                                 },
-                                                "value": {
+                                                "interpretationDecisionIds": {
                                                   "required": true,
                                                   "value": {
                                                     "type": "array",
@@ -25972,23 +29034,784 @@ export const procedureBuildProvenance = [
                                                       "type": "string"
                                                     }
                                                   }
+                                                },
+                                                "trace": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "schemaVersion": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "currency-representation.v1"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "engineVersion": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "operands": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "object",
+                                                              "fields": {
+                                                                "values": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  }
+                                                                },
+                                                                "declaredScale": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                },
+                                                                "representation": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "enum",
+                                                                    "values": [
+                                                                      "reported_in_declared_scale",
+                                                                      "already_in_currency_units"
+                                                                    ]
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "factor": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "outputScale": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "1"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "values": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "array",
+                                                              "items": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          },
+                                                          "rounding": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "none"
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               }
                                             }
-                                          ]
+                                          }
                                         },
-                                        {
-                                          "type": "null"
+                                        "gaps": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "reason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "representation_not_adopted"
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "contributions": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "fields": {
+                                                "decisionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "slotKey": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "kind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "observation",
+                                                      "hypothesis"
+                                                    ]
+                                                  }
+                                                },
+                                                "fieldPath": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "dimensions": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "entityId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "perimeter": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "periodStart": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "date"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "periodEnd": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "date"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "currency": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "unit": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "scale": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "scenario": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "type": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "number"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "value": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "decimal_string"
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "type": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "text"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "value": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "type": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "date"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "value": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "date"
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "type": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "boolean"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "value": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "boolean"
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "type": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "list"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "value": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "array",
+                                                              "items": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "observationId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "referenceValue": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "union",
+                                                        "variants": [
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "type": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "number"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "decimal_string"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "type": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "text"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "type": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "date"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "type": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "boolean"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "boolean"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "type": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "list"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "array",
+                                                                  "items": {
+                                                                    "type": "string"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        ]
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "referenceDimensions": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "entityId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "perimeter": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "periodStart": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "date"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "periodEnd": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "date"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "currency": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "unit": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "scale": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "scenario": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "definitionVersionId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "string"
+                                                                },
+                                                                {
+                                                                  "type": "null"
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionKind": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "reported",
+                                                      "managerial",
+                                                      "contractual"
+                                                    ]
+                                                  }
+                                                },
+                                                "actorId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "reason": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "grantsExecution": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "boolean"
+                                          }
+                                        },
+                                        "classification": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "working_hypothesis",
+                                              "working_selection"
+                                            ]
+                                          }
+                                        },
+                                        "fingerprint": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
                                         }
-                                      ]
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
                                     }
-                                  },
-                                  "referenceDimensions": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
+                                  ]
+                                }
+                              },
+                              "contributions": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "decisionId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "slotKey": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "kind": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "enum",
+                                          "values": [
+                                            "observation",
+                                            "hypothesis"
+                                          ]
+                                        }
+                                      },
+                                      "fieldPath": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "dimensions": {
+                                        "required": true,
+                                        "value": {
                                           "type": "object",
                                           "fields": {
                                             "entityId": {
@@ -26118,465 +29941,435 @@ export const procedureBuildProvenance = [
                                               }
                                             }
                                           }
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionKind": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "reported",
-                                        "managerial",
-                                        "contractual"
-                                      ]
-                                    }
-                                  },
-                                  "actorId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "reason": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "grantsExecution": {
-                            "required": true,
-                            "value": {
-                              "type": "boolean"
-                            }
-                          },
-                          "classification": {
-                            "required": true,
-                            "value": {
-                              "type": "enum",
-                              "values": [
-                                "working_hypothesis",
-                                "working_selection"
-                              ]
-                            }
-                          },
-                          "fingerprint": {
-                            "required": true,
-                            "value": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                },
-                "contributions": {
-                  "required": true,
-                  "value": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "fields": {
-                        "decisionId": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "slotKey": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "kind": {
-                          "required": true,
-                          "value": {
-                            "type": "enum",
-                            "values": [
-                              "observation",
-                              "hypothesis"
-                            ]
-                          }
-                        },
-                        "fieldPath": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "dimensions": {
-                          "required": true,
-                          "value": {
-                            "type": "object",
-                            "fields": {
-                              "entityId": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "perimeter": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "periodStart": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "date"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "periodEnd": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "date"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "currency": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "unit": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "scale": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "scenario": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              },
-                              "definitionVersionId": {
-                                "required": true,
-                                "value": {
-                                  "type": "union",
-                                  "variants": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        },
-                        "value": {
-                          "required": true,
-                          "value": {
-                            "type": "union",
-                            "variants": [
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "number"
-                                      ]
-                                    }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "decimal_string"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "text"
-                                      ]
-                                    }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "date"
-                                      ]
-                                    }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "date"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "boolean"
-                                      ]
-                                    }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "boolean"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "type": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "enum",
-                                      "values": [
-                                        "list"
-                                      ]
-                                    }
-                                  },
-                                  "value": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        "observationId": {
-                          "required": true,
-                          "value": {
-                            "type": "union",
-                            "variants": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "referenceValue": {
-                          "required": true,
-                          "value": {
-                            "type": "union",
-                            "variants": [
-                              {
-                                "type": "union",
-                                "variants": [
-                                  {
-                                    "type": "object",
-                                    "fields": {
-                                      "type": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "number"
-                                          ]
                                         }
                                       },
                                       "value": {
                                         "required": true,
                                         "value": {
-                                          "type": "decimal_string"
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "type": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "number"
+                                                    ]
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "decimal_string"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "type": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "text"
+                                                    ]
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "type": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "date"
+                                                    ]
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "date"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "type": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "boolean"
+                                                    ]
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "boolean"
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "type": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "list"
+                                                    ]
+                                                  }
+                                                },
+                                                "value": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          ]
                                         }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "object",
-                                    "fields": {
-                                      "type": {
+                                      },
+                                      "observationId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "referenceValue": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "type": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "number"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "value": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "decimal_string"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "type": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "text"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "value": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "type": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "date"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "value": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "type": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "boolean"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "value": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "boolean"
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "type": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "list"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "value": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "referenceDimensions": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "object",
+                                              "fields": {
+                                                "entityId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "perimeter": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "periodStart": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "date"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "periodEnd": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "date"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "currency": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "unit": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "scale": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "scenario": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "definitionVersionId": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "definitionKind": {
                                         "required": true,
                                         "value": {
                                           "type": "enum",
                                           "values": [
-                                            "text"
+                                            "reported",
+                                            "managerial",
+                                            "contractual"
                                           ]
                                         }
                                       },
-                                      "value": {
+                                      "actorId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "reason": {
                                         "required": true,
                                         "value": {
                                           "type": "string"
                                         }
                                       }
                                     }
-                                  },
-                                  {
+                                  }
+                                }
+                              },
+                              "derivedDependencies": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
                                     "type": "object",
                                     "fields": {
-                                      "type": {
+                                      "result": {
                                         "required": true,
                                         "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "date"
-                                          ]
+                                          "type": "string"
                                         }
                                       },
-                                      "value": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "date"
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "object",
-                                    "fields": {
-                                      "type": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "boolean"
-                                          ]
-                                        }
-                                      },
-                                      "value": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "boolean"
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "object",
-                                    "fields": {
-                                      "type": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "list"
-                                          ]
-                                        }
-                                      },
-                                      "value": {
+                                      "decisionIds": {
                                         "required": true,
                                         "value": {
                                           "type": "array",
@@ -26587,168 +30380,1736 @@ export const procedureBuildProvenance = [
                                       }
                                     }
                                   }
-                                ]
+                                }
                               },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        },
-                        "referenceDimensions": {
-                          "required": true,
-                          "value": {
-                            "type": "union",
-                            "variants": [
-                              {
-                                "type": "object",
-                                "fields": {
-                                  "entityId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
+                              "classification": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "working_hypothesis",
+                                    "working_selection"
+                                  ]
+                                }
+                              },
+                              "grantsExecution": {
+                                "required": true,
+                                "value": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "grantsPublication": {
+                                "required": true,
+                                "value": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "fingerprint": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "schemaVersion": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "adopted-financing-comparison.v1"
+                                  ]
+                                }
+                              },
+                              "adapterVersion": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "comparisonId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "perimeter": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "scenario": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "inheritedScenario": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
                                     }
-                                  },
-                                  "perimeter": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
+                                  ]
+                                }
+                              },
+                              "openingDate": {
+                                "required": true,
+                                "value": {
+                                  "type": "date"
+                                }
+                              },
+                              "endDate": {
+                                "required": true,
+                                "value": {
+                                  "type": "date"
+                                }
+                              },
+                              "comparison": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "object",
+                                      "fields": {
+                                        "schemaVersion": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "financing-proposal-comparison.v1"
+                                            ]
+                                          }
                                         },
-                                        {
-                                          "type": "null"
+                                        "engineVersion": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "operands": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "object",
+                                            "fields": {
+                                              "currency": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "openingDate": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "date"
+                                                }
+                                              },
+                                              "endDate": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "date"
+                                                }
+                                              },
+                                              "openingAvailable": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "periods": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "id": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "startDate": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "date"
+                                                        }
+                                                      },
+                                                      "endDate": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "date"
+                                                        }
+                                                      },
+                                                      "ebitda": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "leasePayments": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "depreciationAndAmortization": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "workingCapitalCashFlow": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "maintenanceCapexPaid": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "growthCapexPaid": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "commonInstruments": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "instrumentId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "currency": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "openingPrincipal": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "indexer": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "none",
+                                                            "IPCA",
+                                                            "CDI",
+                                                            "SOFR",
+                                                            "fixed",
+                                                            "other"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "indexationTreatment": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "not_applicable",
+                                                            "cash_paid",
+                                                            "capitalized_principal"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "couponTreatment": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "cash_paid",
+                                                            "capitalized_principal",
+                                                            "accrued_until_paid"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "couponBase": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "opening_principal",
+                                                            "indexed_principal",
+                                                            "average_principal"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "drawdownAccount": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "available",
+                                                            "restricted"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "paymentAccount": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "available",
+                                                            "restricted"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "periods": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "period": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "startDate": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "endDate": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "indexationRate": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "couponRate": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "drawdown": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "scheduledPrincipal": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "prepayment": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "repayAll": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "boolean"
+                                                                }
+                                                              },
+                                                              "paysAccruedCoupon": {
+                                                                "required": false,
+                                                                "value": {
+                                                                  "type": "boolean"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "commonCharges": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "id": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "economicId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "instrumentId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "category": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "origination_fee",
+                                                            "recurring_fee",
+                                                            "tax",
+                                                            "other"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "period": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "date": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "date"
+                                                        }
+                                                      },
+                                                      "amount": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "treatment": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "cash_paid"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "account": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "available"
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "commonNonDeductibleChargeIds": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              },
+                                              "covenantHistory": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "period": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "ebitda": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "leasePayments": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "tax": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "rate": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "lossTreatment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "no_cash_benefit"
+                                                        ]
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "freeReceivablesPool": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "minimumCashFromPeriod": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "proposals": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "id": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "label": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "cost": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "schedule": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "object",
+                                                                "fields": {
+                                                                  "baseDate": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "currency": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "moneyUnit": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "grossAdvance": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "upfrontWithheldCosts": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "annualSpread": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "unpaidInterestBase": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "enum",
+                                                                      "values": [
+                                                                        "principal_plus_accrued",
+                                                                        "principal_only"
+                                                                      ]
+                                                                    }
+                                                                  },
+                                                                  "periods": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "array",
+                                                                      "items": {
+                                                                        "type": "object",
+                                                                        "fields": {
+                                                                          "id": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "startDate": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "endDate": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "yearFraction": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "annualIndex": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "yearFractionConvention": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "enum",
+                                                                              "values": [
+                                                                                "business_days_252",
+                                                                                "actual_365_fixed",
+                                                                                "adopted_year_fraction"
+                                                                              ]
+                                                                            }
+                                                                          },
+                                                                          "businessDays": {
+                                                                            "required": false,
+                                                                            "value": {
+                                                                              "type": "integer"
+                                                                            }
+                                                                          },
+                                                                          "sourceAnchor": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "scheduledPrincipal": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "paysAccruedInterest": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "boolean"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "costInventory": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "category": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "origination_fee",
+                                                                          "recurring_fee",
+                                                                          "tax",
+                                                                          "other"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "status": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "specified",
+                                                                          "zero",
+                                                                          "not_applicable",
+                                                                          "unknown"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "reason": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            "lowerSpread": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "upperSpread": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "instrument": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "instrumentId": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "currency": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "openingPrincipal": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "indexer": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "none",
+                                                                  "IPCA",
+                                                                  "CDI",
+                                                                  "SOFR",
+                                                                  "fixed",
+                                                                  "other"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "indexationTreatment": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "not_applicable",
+                                                                  "cash_paid",
+                                                                  "capitalized_principal"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "couponTreatment": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "cash_paid",
+                                                                  "capitalized_principal",
+                                                                  "accrued_until_paid"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "couponBase": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "opening_principal",
+                                                                  "indexed_principal",
+                                                                  "average_principal"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "drawdownAccount": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "available",
+                                                                  "restricted"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "paymentAccount": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "available",
+                                                                  "restricted"
+                                                                ]
+                                                              }
+                                                            },
+                                                            "periods": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "period": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "startDate": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "date"
+                                                                      }
+                                                                    },
+                                                                    "endDate": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "date"
+                                                                      }
+                                                                    },
+                                                                    "indexationRate": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "couponRate": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "drawdown": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "scheduledPrincipal": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "prepayment": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "repayAll": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "boolean"
+                                                                      }
+                                                                    },
+                                                                    "paysAccruedCoupon": {
+                                                                      "required": false,
+                                                                      "value": {
+                                                                        "type": "boolean"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "charges": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "id": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "economicId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "instrumentId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "category": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "origination_fee",
+                                                                    "recurring_fee",
+                                                                    "tax",
+                                                                    "other"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "period": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "date": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "amount": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "treatment": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "cash_paid"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "account": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "available"
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "nonDeductibleChargeIds": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "string"
+                                                          }
+                                                        }
+                                                      },
+                                                      "collateralConsumed": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "covenant": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "name": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "leaseLiabilityInDebt": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "boolean"
+                                                              }
+                                                            },
+                                                            "leaseLiability": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "ebitdaExcludesLeases": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "boolean"
+                                                              }
+                                                            },
+                                                            "trailingPeriods": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "integer"
+                                                              }
+                                                            },
+                                                            "measurementPeriods": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            },
+                                                            "limit": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "comparator": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "enum",
+                                                                "values": [
+                                                                  "lte",
+                                                                  "lt"
+                                                                ]
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "currency": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "openingDate": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "date"
+                                          }
+                                        },
+                                        "endDate": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "date"
+                                          }
+                                        },
+                                        "minimumCashFromPeriod": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "proposals": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "fields": {
+                                                "id": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "label": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "equivalentSpread": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "costStatus": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "calculated",
+                                                      "missing_inputs",
+                                                      "root_not_bracketed"
+                                                    ]
+                                                  }
+                                                },
+                                                "weightedAverageLifeYears": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "minimumCash": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "amount": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "periodId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "debtServiceByYear": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "map",
+                                                    "values": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                },
+                                                "covenant": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "name": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "limit": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "worst": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "period": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "ratio": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "headroom": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      },
+                                                      "allComply": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "boolean"
+                                                        }
+                                                      },
+                                                      "rows": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "array",
+                                                          "items": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "period": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "netDebt": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "trailingEbitda": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "ratio": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "headroom": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "complies": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "boolean"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "collateralConsumed": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "freeReceivablesAfter": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "horizonFinancingCost": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "netDebtAtHorizon": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "taxesInHorizon": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "periods": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "periodId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "closingAvailable": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "closingDebt": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "cashTax": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "exclusions": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "enum",
+                                              "values": [
+                                                "firmness_and_validity",
+                                                "prepayment_terms",
+                                                "reciprocity",
+                                                "restricted_accounts",
+                                                "choice_of_counterparty",
+                                                "intraperiod_liquidity"
+                                              ]
+                                            }
+                                          }
                                         }
-                                      ]
+                                      }
+                                    },
+                                    {
+                                      "type": "null"
                                     }
-                                  },
-                                  "periodStart": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "date"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "periodEnd": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "date"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "currency": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "unit": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "scale": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "scenario": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "definitionVersionId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
+                                  ]
+                                }
+                              },
+                              "policies": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "minimumCash": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "maximumCollateralShare": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
                                     }
                                   }
                                 }
                               },
-                              {
-                                "type": "null"
+                              "exclusions": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "enum",
+                                    "values": [
+                                      "firmness_and_validity",
+                                      "prepayment_terms",
+                                      "reciprocity",
+                                      "restricted_accounts",
+                                      "choice_of_counterparty",
+                                      "intraperiod_liquidity",
+                                      "tax_law_inference"
+                                    ]
+                                  }
+                                }
                               }
-                            ]
+                            }
                           }
-                        },
-                        "definitionKind": {
+                        }
+                      }
+                    }
+                  }
+                },
+                "comparison": {
+                  "required": true,
+                  "value": {
+                    "type": "object",
+                    "fields": {
+                      "baseCaseId": {
+                        "required": true,
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "cases": {
+                        "required": true,
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "caseId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "role": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "base",
+                                    "stress",
+                                    "sensitivity"
+                                  ]
+                                }
+                              },
+                              "label": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "scenario": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "resultStatus": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "missing_inputs",
+                                    "partial_composition"
+                                  ]
+                                }
+                              },
+                              "proposals": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "proposalId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "label": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "equivalentSpread": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "weightedAverageLifeYears": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "minimumCash": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "amount": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "periodId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "covenant": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "name": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "worstPeriod": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "worstRatio": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "headroom": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "allComply": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "boolean"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "debtServiceByYear": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "map",
+                                          "values": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      "collateralConsumed": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "freeReceivablesAfter": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "horizonFinancingCost": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "netDebtAtHorizon": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "covenantTestsPerYear": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "integer"
+                                        }
+                                      },
+                                      "eliminatoryFacts": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "enum",
+                                            "values": [
+                                              "cash_below_zero",
+                                              "covenant_breach",
+                                              "cost_not_determined",
+                                              "collateral_above_policy"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "conditioningFacts": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "enum",
+                                            "values": [
+                                              "cash_below_policy_minimum"
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "viableProposalIds": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "lowestEquivalentCostProposalId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "highestMinimumCashProposalId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "viableInEveryCaseProposalIds": {
+                        "required": true,
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "conclusionChangingCaseIds": {
+                        "required": true,
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "nominalSpreadMisleads": {
+                        "required": true,
+                        "value": {
+                          "type": "union",
+                          "variants": [
+                            {
+                              "type": "boolean"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "gaps": {
+                  "required": true,
+                  "value": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "caseId": {
                           "required": true,
                           "value": {
-                            "type": "enum",
-                            "values": [
-                              "reported",
-                              "managerial",
-                              "contractual"
-                            ]
+                            "type": "string"
                           }
                         },
-                        "actorId": {
+                        "operand": {
                           "required": true,
                           "value": {
                             "type": "string"
@@ -26764,30 +32125,15 @@ export const procedureBuildProvenance = [
                     }
                   }
                 },
-                "derivedDependencies": {
+                "status": {
                   "required": true,
                   "value": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "fields": {
-                        "result": {
-                          "required": true,
-                          "value": {
-                            "type": "string"
-                          }
-                        },
-                        "decisionIds": {
-                          "required": true,
-                          "value": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
+                    "type": "enum",
+                    "values": [
+                      "framed",
+                      "partial",
+                      "prepared_for_human_review"
+                    ]
                   }
                 },
                 "classification": {
@@ -26798,6 +32144,22 @@ export const procedureBuildProvenance = [
                       "working_hypothesis",
                       "working_selection"
                     ]
+                  }
+                },
+                "exclusions": {
+                  "required": true,
+                  "value": {
+                    "type": "array",
+                    "items": {
+                      "type": "enum",
+                      "values": [
+                        "choice_of_counterparty",
+                        "firmness_and_validity",
+                        "reciprocity",
+                        "tax_law_inference",
+                        "method_release"
+                      ]
+                    }
                   }
                 },
                 "grantsExecution": {
@@ -26817,1334 +32179,36 @@ export const procedureBuildProvenance = [
                   "value": {
                     "type": "string"
                   }
-                },
-                "schemaVersion": {
-                  "required": true,
-                  "value": {
-                    "type": "enum",
-                    "values": [
-                      "adopted-financing-proposal.v1"
-                    ]
-                  }
-                },
-                "adapterVersion": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "proposalId": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "perimeter": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "scenario": {
-                  "required": true,
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "openingDate": {
-                  "required": true,
-                  "value": {
-                    "type": "date"
-                  }
-                },
-                "endDate": {
-                  "required": true,
-                  "value": {
-                    "type": "date"
-                  }
-                },
-                "schedule": {
-                  "required": true,
-                  "value": {
-                    "type": "union",
-                    "variants": [
-                      {
-                        "type": "object",
-                        "fields": {
-                          "schemaVersion": {
-                            "required": true,
-                            "value": {
-                              "type": "enum",
-                              "values": [
-                                "deferred-financing-schedule.v1"
-                              ]
-                            }
-                          },
-                          "engineVersion": {
-                            "required": true,
-                            "value": {
-                              "type": "string"
-                            }
-                          },
-                          "operands": {
-                            "required": true,
-                            "value": {
-                              "type": "object",
-                              "fields": {
-                                "baseDate": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "currency": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "moneyUnit": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "grossAdvance": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "upfrontWithheldCosts": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "annualSpread": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "string"
-                                  }
-                                },
-                                "unpaidInterestBase": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "enum",
-                                    "values": [
-                                      "principal_plus_accrued",
-                                      "principal_only"
-                                    ]
-                                  }
-                                },
-                                "periods": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object",
-                                      "fields": {
-                                        "id": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "startDate": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "endDate": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "yearFraction": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "annualIndex": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "yearFractionConvention": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "enum",
-                                            "values": [
-                                              "business_days_252",
-                                              "actual_365_fixed",
-                                              "adopted_year_fraction"
-                                            ]
-                                          }
-                                        },
-                                        "businessDays": {
-                                          "required": false,
-                                          "value": {
-                                            "type": "integer"
-                                          }
-                                        },
-                                        "sourceAnchor": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "scheduledPrincipal": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "paysAccruedInterest": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "boolean"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "rows": {
-                            "required": true,
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "fields": {
-                                  "periodId": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "startDate": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "date"
-                                    }
-                                  },
-                                  "endDate": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "date"
-                                    }
-                                  },
-                                  "openingPrincipal": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "openingAccruedInterest": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "interestBase": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "intervalFactor": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "interestAccrued": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "interestPaid": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "principalPaid": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "closingPrincipal": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "closingAccruedInterest": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "cashDebtService": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "netFlows": {
-                            "required": true,
-                            "value": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "fields": {
-                                  "id": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "date": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "amount": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "sourceAnchor": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "finalPaymentDate": {
-                            "required": true,
-                            "value": {
-                              "type": "date"
-                            }
-                          },
-                          "projectedThroughDate": {
-                            "required": true,
-                            "value": {
-                              "type": "date"
-                            }
-                          },
-                          "weightedAverageLifeYears": {
-                            "required": true,
-                            "value": {
-                              "type": "string"
-                            }
-                          },
-                          "totalInterestAccrued": {
-                            "required": true,
-                            "value": {
-                              "type": "string"
-                            }
-                          },
-                          "rounding": {
-                            "required": true,
-                            "value": {
-                              "type": "enum",
-                              "values": [
-                                "60-digit arithmetic; output half-up at 20 decimals"
-                              ]
-                            }
-                          }
-                        }
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                },
-                "cost": {
-                  "required": true,
-                  "value": {
-                    "type": "union",
-                    "variants": [
-                      {
-                        "type": "union",
-                        "variants": [
-                          {
-                            "type": "object",
-                            "fields": {
-                              "schemaVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "equivalent-financing-cost.v1"
-                                  ]
-                                }
-                              },
-                              "engineVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "operands": {
-                                "required": true,
-                                "value": {
-                                  "type": "object",
-                                  "fields": {
-                                    "baseDate": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "currency": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "moneyUnit": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "intervals": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "startDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "endDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFraction": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "annualIndex": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFractionConvention": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "business_days_252",
-                                                  "actual_365_fixed",
-                                                  "adopted_year_fraction"
-                                                ]
-                                              }
-                                            },
-                                            "businessDays": {
-                                              "required": false,
-                                              "value": {
-                                                "type": "integer"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "netFlows": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "date": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "amount": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "costInventory": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "category": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "origination_fee",
-                                                  "recurring_fee",
-                                                  "tax",
-                                                  "other"
-                                                ]
-                                              }
-                                            },
-                                            "status": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "specified",
-                                                  "zero",
-                                                  "not_applicable",
-                                                  "unknown"
-                                                ]
-                                              }
-                                            },
-                                            "reason": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "convention": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "enum",
-                                        "values": [
-                                          "multiplicative_index_and_spread_on_net_borrower_flows"
-                                        ]
-                                      }
-                                    },
-                                    "lowerSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "definition": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "annual multiplicative spread over the dated index curve on net borrower cash flows"
-                                  ]
-                                }
-                              },
-                              "regulatoryCet": {
-                                "required": true,
-                                "value": {
-                                  "type": "boolean"
-                                }
-                              },
-                              "status": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "missing_inputs"
-                                  ]
-                                }
-                              },
-                              "gaps": {
-                                "required": true,
-                                "value": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "fields": {
-                                      "category": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "origination_fee",
-                                            "recurring_fee",
-                                            "tax",
-                                            "other"
-                                          ]
-                                        }
-                                      },
-                                      "status": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "specified",
-                                            "zero",
-                                            "not_applicable",
-                                            "unknown"
-                                          ]
-                                        }
-                                      },
-                                      "reason": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "string"
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "annualSpread": {
-                                "required": true,
-                                "value": {
-                                  "type": "null"
-                                }
-                              },
-                              "residualPresentValue": {
-                                "required": true,
-                                "value": {
-                                  "type": "null"
-                                }
-                              },
-                              "trace": {
-                                "required": true,
-                                "value": {
-                                  "type": "null"
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "type": "object",
-                            "fields": {
-                              "schemaVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "equivalent-financing-cost.v1"
-                                  ]
-                                }
-                              },
-                              "engineVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "operands": {
-                                "required": true,
-                                "value": {
-                                  "type": "object",
-                                  "fields": {
-                                    "baseDate": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "currency": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "moneyUnit": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "intervals": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "startDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "endDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFraction": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "annualIndex": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFractionConvention": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "business_days_252",
-                                                  "actual_365_fixed",
-                                                  "adopted_year_fraction"
-                                                ]
-                                              }
-                                            },
-                                            "businessDays": {
-                                              "required": false,
-                                              "value": {
-                                                "type": "integer"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "netFlows": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "date": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "amount": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "costInventory": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "category": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "origination_fee",
-                                                  "recurring_fee",
-                                                  "tax",
-                                                  "other"
-                                                ]
-                                              }
-                                            },
-                                            "status": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "specified",
-                                                  "zero",
-                                                  "not_applicable",
-                                                  "unknown"
-                                                ]
-                                              }
-                                            },
-                                            "reason": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "convention": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "enum",
-                                        "values": [
-                                          "multiplicative_index_and_spread_on_net_borrower_flows"
-                                        ]
-                                      }
-                                    },
-                                    "lowerSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "definition": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "annual multiplicative spread over the dated index curve on net borrower cash flows"
-                                  ]
-                                }
-                              },
-                              "regulatoryCet": {
-                                "required": true,
-                                "value": {
-                                  "type": "boolean"
-                                }
-                              },
-                              "status": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "root_not_bracketed"
-                                  ]
-                                }
-                              },
-                              "gaps": {
-                                "required": true,
-                                "value": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "annualSpread": {
-                                "required": true,
-                                "value": {
-                                  "type": "null"
-                                }
-                              },
-                              "residualPresentValue": {
-                                "required": true,
-                                "value": {
-                                  "type": "null"
-                                }
-                              },
-                              "trace": {
-                                "required": true,
-                                "value": {
-                                  "type": "object",
-                                  "fields": {
-                                    "lowerSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "lowerPresentValue": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperPresentValue": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          {
-                            "type": "object",
-                            "fields": {
-                              "schemaVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "equivalent-financing-cost.v1"
-                                  ]
-                                }
-                              },
-                              "engineVersion": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "operands": {
-                                "required": true,
-                                "value": {
-                                  "type": "object",
-                                  "fields": {
-                                    "baseDate": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "currency": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "moneyUnit": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "intervals": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "startDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "endDate": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFraction": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "annualIndex": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "yearFractionConvention": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "business_days_252",
-                                                  "actual_365_fixed",
-                                                  "adopted_year_fraction"
-                                                ]
-                                              }
-                                            },
-                                            "businessDays": {
-                                              "required": false,
-                                              "value": {
-                                                "type": "integer"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "netFlows": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "id": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "date": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "amount": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "sourceAnchor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "costInventory": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "category": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "origination_fee",
-                                                  "recurring_fee",
-                                                  "tax",
-                                                  "other"
-                                                ]
-                                              }
-                                            },
-                                            "status": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "specified",
-                                                  "zero",
-                                                  "not_applicable",
-                                                  "unknown"
-                                                ]
-                                              }
-                                            },
-                                            "reason": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "convention": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "enum",
-                                        "values": [
-                                          "multiplicative_index_and_spread_on_net_borrower_flows"
-                                        ]
-                                      }
-                                    },
-                                    "lowerSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "definition": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "annual multiplicative spread over the dated index curve on net borrower cash flows"
-                                  ]
-                                }
-                              },
-                              "regulatoryCet": {
-                                "required": true,
-                                "value": {
-                                  "type": "boolean"
-                                }
-                              },
-                              "status": {
-                                "required": true,
-                                "value": {
-                                  "type": "enum",
-                                  "values": [
-                                    "calculated"
-                                  ]
-                                }
-                              },
-                              "gaps": {
-                                "required": true,
-                                "value": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "annualSpread": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "residualPresentValue": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "trace": {
-                                "required": true,
-                                "value": {
-                                  "type": "object",
-                                  "fields": {
-                                    "lowerSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperSpread": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "lowerPresentValue": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "upperPresentValue": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "iterations": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "integer"
-                                      }
-                                    },
-                                    "residualTolerance": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "discountedFlows": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "fields": {
-                                            "date": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "date"
-                                              }
-                                            },
-                                            "netAmount": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "cumulativeYearFraction": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "discountFactor": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                },
-                "exclusions": {
-                  "required": true,
-                  "value": {
-                    "type": "array",
-                    "items": {
-                      "type": "enum",
-                      "values": [
-                        "company_liquidity",
-                        "covenants",
-                        "guarantees",
-                        "firmness",
-                        "additional_cash_costs",
-                        "choice_of_counterparty"
-                      ]
-                    }
-                  }
                 }
               }
             }
           },
-          "dependencies": [],
+          "dependencies": [
+            {
+              "id": "comparison.decision-framing",
+              "version": "2026.10.19-v2"
+            }
+          ],
           "tools": [],
           "effect": "none",
           "budget": {
             "maxModelCalls": 0,
-            "maxDurationMs": 30000,
+            "maxDurationMs": 60000,
             "maxCostMinorUnits": 0,
-            "currency": "USD"
+            "currency": "BRL"
           },
           "rights": {
             "inheritSourceRestrictions": true,
             "purposes": [
-              "analysis"
+              "decision_support"
             ],
             "sourceClasses": [
-              "house_method",
-              "project_context",
-              "provided_documents",
-              "public_market"
+              "authorized_context"
             ]
           },
           "competencies": [
-            "financial_analysis"
+            "financial_analysis",
+            "capital_structure"
           ],
           "invariants": [
             "law",
@@ -28155,20 +32219,25 @@ export const procedureBuildProvenance = [
             "deterministic_financial_math"
           ],
           "overridePoints": [],
-          "evidence": [],
-          "kind": "quality_gate",
+          "evidence": [
+            "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
+            "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
+            "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json"
+          ],
+          "kind": "rule",
+          "authority": "house",
+          "statement": "Calcular cada proposta pelo mesmo motor em cada caso adotado da companhia, listar os fatos eliminatórios antes de qualquer preferência e mostrar a mais barata e a mais segura lado a lado, sem escolher contraparte, sem enviar pedido e sem adotar ou publicar por cálculo.",
           "executor": {
             "module": "@offroad/financial-model",
-            "exportName": "calculateFinancingProposalEvidence",
-            "version": "2026.10.07-v1"
-          },
-          "failure": "disclose_gap"
+            "exportName": "prepareFinancingComparisonPacket",
+            "version": "2026.10.19-v1"
+          }
         },
-        "componentHash": "3da1c5a3842cfb843fec4a0cc7262c456f95920fec9053b573b9c22ad0f7f64a",
+        "componentHash": "cd3a2af51bd41dc20db77c7ec24d9d6053253cf64aab5f84288d04509829d90e",
         "executor": {
           "module": "@offroad/financial-model",
-          "exportName": "calculateFinancingProposalEvidence",
-          "version": "2026.10.07-v1",
+          "exportName": "prepareFinancingComparisonPacket",
+          "version": "2026.10.19-v1",
           "sources": [
             {
               "path": "packages/credit-analysis/package.json",
@@ -28292,7 +32361,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+              "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
             },
             {
               "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -28788,7 +32857,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/dated-debt.ts",
-              "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+              "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
             },
             {
               "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -28827,8 +32896,16 @@ export const procedureBuildProvenance = [
               "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
             },
             {
+              "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
+              "hash": "6c98e437bce75d8d2e634d6d2c0c06569fd1fb7a2c5d97a859de690acb6e9f9f"
+            },
+            {
+              "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+            },
+            {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -28836,7 +32913,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/indexed-debt.ts",
-              "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+              "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
             },
             {
               "path": "packages/financial-core/src/investment-project.ts",
@@ -28863,8 +32940,16 @@ export const procedureBuildProvenance = [
               "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
             },
             {
+              "path": "packages/financial-core/src/period-financing-taxes.ts",
+              "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+            },
+            {
               "path": "packages/financial-core/src/price-arithmetic.ts",
               "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+            },
+            {
+              "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+              "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
             },
             {
               "path": "packages/financial-core/src/rate-composition.ts",
@@ -28935,8 +33020,8 @@ export const procedureBuildProvenance = [
               "hash": "f2794ba314bcd6f3212502a2daebe5e28a171f5792e698299365fd9935b3ece6"
             },
             {
-              "path": "packages/financial-model/contracts/financing-proposal-evidence.json",
-              "hash": "8ba91e1d9c82ee5455be5d8c85851d147d97e2d3c086eca36edc0c044d7c6ce6"
+              "path": "packages/financial-model/contracts/financing-comparison-packet.json",
+              "hash": "c299b6ff0bc3399f2ae7685f893d76752d2e090f4711132726e166069421c4c3"
             },
             {
               "path": "packages/financial-model/package.json",
@@ -28944,7 +33029,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
-              "hash": "7cbef24d9080c60dd2a87884fbb28e2b965447158c69c378cc9d55a7bb751ed1"
+              "hash": "8e47dfe9dbce4875642441cab983eea90cc7f9ace3aa2904a899feb8f9989768"
             },
             {
               "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -28977,6 +33062,14 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/financial-model/src/adopted-defined-ratio.ts",
               "hash": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.test.ts",
+              "hash": "f9027eacc92d66005142c5e4db3fd684aaf8a25fb20a4d43d2b41ae361a55dee"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -29056,7 +33149,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-executor-contracts.ts",
-              "hash": "79f54569a6502bf6e1d81d4d56f634734570394aac938e605bc1986e82cba4df"
+              "hash": "03a6396cbad66fd90e0352d48bba8df8e9724e3c268883a16285fc4df1462293"
             },
             {
               "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
@@ -29104,11 +33197,35 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
-              "hash": "d71854c11779ea37e0bdc42a69f25093afda6b59f7f9103bb1fdbcf19dfc01a2"
+              "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+              "hash": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.test.ts",
+              "hash": "f8d42ba05ca2f7c915095193a8c686bbcf8b54468c962fc53a7837c8cddc300d"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.ts",
+              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
+              "hash": "2dafbca0ecc4cd0c024d91b1438f638eb73bfe7c280c009c2f86d579fe840c5f"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -29116,7 +33233,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "8f89ea9aedd6d5c91d8873e2179f2e44193d8fd6733da9ca9eaaaed96aca9e64"
+              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -29395,12 +33512,25 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "476f59f9343a36eeb06de3c9027b509c5c11c58b65044f7e2e4a72c0da137b5f"
+          "hash": "16b4958de153035a34b70aa27eaf01eded31df4e16bd4cb2d09bb7d8a73a9f94"
         },
-        "evidence": []
+        "evidence": [
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
+            "hash": "953c866d1b9e9d2504a89222e8eefc54f5ed6bc7c001d8c11292965a14c292db"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
+            "hash": "d9c4348c65cb5dacf335a4170748425781ac5f8ec74e52c946f16cf063a3db94"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
+            "hash": "777ca691e1f9818cd105ddba7b033447ef7808c085eb721cf92588956f3cc098"
+          }
+        ]
       }
     ],
-    "manifestHash": "b09069f15bb9ae9c4e959952b0563da4c1052172808a575b31d2babd3639b47d"
+    "manifestHash": "803efdbe96c57d9d7be8274a7a19b094634d3b310e37f34570ad7799a4962521"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -29418,7 +33548,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -29453,7 +33583,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -51948,7 +56078,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+              "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
             },
             {
               "path": "packages/credit-playbook/src/capital-expertise-approval.test.ts",
@@ -52452,7 +56582,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/dated-debt.ts",
-              "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+              "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
             },
             {
               "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -52491,8 +56621,12 @@ export const procedureBuildProvenance = [
               "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
             },
             {
+              "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+            },
+            {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.test.ts",
@@ -52504,7 +56638,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/indexed-debt.ts",
-              "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+              "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
             },
             {
               "path": "packages/financial-core/src/investment-project.ts",
@@ -52531,8 +56665,16 @@ export const procedureBuildProvenance = [
               "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
             },
             {
+              "path": "packages/financial-core/src/period-financing-taxes.ts",
+              "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+            },
+            {
               "path": "packages/financial-core/src/price-arithmetic.ts",
               "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+            },
+            {
+              "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+              "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
             },
             {
               "path": "packages/financial-core/src/rate-composition.ts",
@@ -52612,7 +56754,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
-              "hash": "7cbef24d9080c60dd2a87884fbb28e2b965447158c69c378cc9d55a7bb751ed1"
+              "hash": "8e47dfe9dbce4875642441cab983eea90cc7f9ace3aa2904a899feb8f9989768"
             },
             {
               "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -52645,6 +56787,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/financial-model/src/adopted-defined-ratio.ts",
               "hash": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+            },
+            {
+              "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -52732,7 +56878,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-executor-contracts.ts",
-              "hash": "79f54569a6502bf6e1d81d4d56f634734570394aac938e605bc1986e82cba4df"
+              "hash": "03a6396cbad66fd90e0352d48bba8df8e9724e3c268883a16285fc4df1462293"
             },
             {
               "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
@@ -52800,11 +56946,27 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "4a21947bff86ca84a1ce805a2c76593254e3360164e2995b500afaab6fb26f68"
+              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
-              "hash": "d71854c11779ea37e0bdc42a69f25093afda6b59f7f9103bb1fdbcf19dfc01a2"
+              "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+              "hash": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-packet.ts",
+              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -52812,7 +56974,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "8f89ea9aedd6d5c91d8873e2179f2e44193d8fd6733da9ca9eaaaed96aca9e64"
+              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -53091,7 +57253,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5d79fdda56d1b1e155039152db16ee5b77109c6a9cf4df97536a94cb07601866"
+          "hash": "da0e90b1e6e7a2b2faedd318f979b8fd4f212a5d09b2ef67b310a918d45754d0"
         },
         "evidence": [
           {
@@ -53117,7 +57279,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "1093742b5714c5aebfe71d9904661ea401becc4dcd4a47a34a656792364e7283"
+    "manifestHash": "f3eed683005ac8e383279dbdbca7f5cd1763ad35da82f04f2a132805291bd4bf"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53135,7 +57297,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53170,7 +57332,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "79f3b7b8dc8c260b8fc57e5819f0348874f03e81d6cdf16d0ee226738c75a0d8",
     "compositionStatus": "legacy_contract",
@@ -53181,7 +57343,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53189,7 +57351,7 @@ export const procedureBuildProvenance = [
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "eae07318b9b11d9075e336ae0bfb55c9fc6733363d0a9849db10c37ead84b65a"
+    "manifestHash": "b216a6f6b40881ed0ab9afeeb1f014c32f6d7e545b9efac0719e3a978a8dd431"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53207,7 +57369,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53242,7 +57404,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "6364b4ea243d5c168f8b8c54e0ca8cad9c272e9950cd5855a66a81989770330d",
     "compositionStatus": "legacy_contract",
@@ -53253,7 +57415,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53261,7 +57423,7 @@ export const procedureBuildProvenance = [
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "2d6fd3e593094ab449517e62995f24407d4635842130910d333eda56bccdad5f"
+    "manifestHash": "ae2e1a374f6817befba011aac6eb707160dfefe7eb641a531a8b01008df2ed83"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53279,7 +57441,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53314,7 +57476,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "6e661629c022155da1631be5ef572337cadd32cfc1d67b50ec3be749ae06df7c",
     "compositionStatus": "legacy_contract",
@@ -53325,7 +57487,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53333,7 +57495,7 @@ export const procedureBuildProvenance = [
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "2971ab0489c4e9bff3d7e5084bc8d06392d260ef5faa889d9702058951d89036"
+    "manifestHash": "56a1e38e79eb4638db4b1c8fe6c5f364eff62a3cffb2cb0cb66d39d1674338d8"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53351,7 +57513,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53386,7 +57548,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "59239ddb82f3ec8ef19b7d3efce99226f0cac024a9695ea13e9f3c54911691d6",
     "compositionStatus": "legacy_contract",
@@ -53397,7 +57559,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53405,7 +57567,7 @@ export const procedureBuildProvenance = [
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "66032a9a84c4c3ccac7f8a589764c048105e1f1f27a6a9514142f71a6a52c8d2"
+    "manifestHash": "47bc2b4ae6a6707a5ad55e6b40563a684e02bdf36cf52c67eecb239a4a0a96d2"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53423,7 +57585,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53458,7 +57620,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "b7d5d41121e051a3147a3ffc3858187b385d2edb5e0ef97d118a0b42db35fd6b",
     "compositionStatus": "legacy_contract",
@@ -53469,7 +57631,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53477,7 +57639,7 @@ export const procedureBuildProvenance = [
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "1ec6ac42ec0180ddc6b97415ce6d5a941646b874540a489067d077c93824854b"
+    "manifestHash": "5993bc37c93adf59de5d991ffa276ea578507795a0fa6a272edd09cad4a2ba84"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53495,7 +57657,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53530,7 +57692,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "495babe03478b0f2d1ebe7eed8091b9b78dd530eeb57e997d89fda025745a28d",
     "compositionStatus": "legacy_contract",
@@ -53541,7 +57703,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53549,7 +57711,7 @@ export const procedureBuildProvenance = [
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "576380fe237860595d47cad56d3e8ba7052aff068fd3d8c90e124b5e0f751875"
+    "manifestHash": "198a751df11110a9585f81ef5b22748955a174d4656eafdee3b96f36fcb47ebc"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -53651,7 +57813,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53686,7 +57848,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "18e19567239919fcf991c4462a77dc997d923ab0b72704f42ea35f01928dbf4a",
     "compositionStatus": "legacy_contract",
@@ -53697,7 +57859,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53705,7 +57867,7 @@ export const procedureBuildProvenance = [
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "32708b6533d259e69da80bb1baf10b6aaca7fae50fa9283103787a623d50eba7"
+    "manifestHash": "113740989cb9abdcf9bb5bebe3fa2535f533984b0ab0dcefc99d541df8680842"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53723,7 +57885,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53758,7 +57920,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "0c32ca0c53b50e0f9cd811c43dbcb0ed3791b21039a662e123f0c9e530c0a225",
     "compositionStatus": "legacy_contract",
@@ -53769,7 +57931,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53777,7 +57939,7 @@ export const procedureBuildProvenance = [
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "92dc82a3037d9f162de026bdb19f584c4091bd2f9a1c82a1e580e58d4ff142b9"
+    "manifestHash": "2bc18047bba5d0a41bc9dd1af3b08140c662d6075b260d5c2c3d84823a42b3d3"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53795,7 +57957,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53830,7 +57992,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "d5c086654076080458f702b19105765e1a5052b5945a38a94ac674bbe82fac07",
     "compositionStatus": "legacy_contract",
@@ -53841,7 +58003,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53849,7 +58011,7 @@ export const procedureBuildProvenance = [
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "81d3e5a344f394ab6f95d91320dc51f77e8fd280a1395c439221ccff195cd316"
+    "manifestHash": "5767df8633a055a4743396c7ade437442382ca36fe62d67b14122a45e44f6acd"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -53867,7 +58029,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+          "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -53902,7 +58064,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "bc00e0e69a0e867b5e4aae850dc99fbc4629a68f0e8d81ce506f0e37770c18ac"
+      "hash": "8e6c423da1837b6172790eb8e53de2c34a6774dfb12c21653a495473be0aa22c"
     },
     "adapterHash": "188b796cf9665f6b08d8e5e81d6634b2ecd11bf37452a79f0bdf2904dd2ff66d",
     "compositionStatus": "legacy_contract",
@@ -53913,7 +58075,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a"
+      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
     },
     "evidence": [
       {
@@ -53921,12 +58083,12 @@ export const procedureBuildProvenance = [
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "20e0a1ed87e9f77cdc2fbc7ef67ac097b18559b33a4c745b6c72f6be26f3dc40"
+    "manifestHash": "6e23acf09de374da73e4056e9c2db1a82ea38da927f14f39c028038c1fdbd05f"
   }
 ] as const;
 
 export const procedureExecutorSourceClosures = {
-  "c161d95cbde5afcae0dd361bd68f60c15db522edc99eaf63fb79135a1b6a391a": [
+  "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "0f5f1ce7ae6f0ebb97b751c230cd6a3799abb49b5620c73454a78e90d09e7dc1"
@@ -53993,7 +58155,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/build-method-manifest.ts",
-      "hash": "6d38e537d55528c15994b00e084302c427042806bf956b9839211278cba3d355"
+      "hash": "58529103bca7a28f1ee2982b6518bc490ae388a9409a62a698eeff0b0a416b0d"
     },
     {
       "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -54393,7 +58555,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/financial-core/src/dated-debt.ts",
-      "hash": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+      "hash": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
     },
     {
       "path": "packages/financial-core/src/deal-arithmetic.ts",
@@ -54432,8 +58594,12 @@ export const procedureExecutorSourceClosures = {
       "hash": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
     },
     {
+      "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+      "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+    },
+    {
       "path": "packages/financial-core/src/index.ts",
-      "hash": "b15ef7da5d9d72f1c906837c91fda12459a10ce7ee0a239e373990440c60be85"
+      "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
     },
     {
       "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -54441,7 +58607,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/financial-core/src/indexed-debt.ts",
-      "hash": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+      "hash": "e1ee6ea765cebeac2ddea893439b005e3993a694f6ae1f2ca32a7d18b68a52dd"
     },
     {
       "path": "packages/financial-core/src/investment-project.ts",
@@ -54468,8 +58634,16 @@ export const procedureExecutorSourceClosures = {
       "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
     },
     {
+      "path": "packages/financial-core/src/period-financing-taxes.ts",
+      "hash": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+    },
+    {
       "path": "packages/financial-core/src/price-arithmetic.ts",
       "hash": "fca12db9dc8ce7a1639816ef37787fbddc94da6c94444e9940da8b608c8284eb"
+    },
+    {
+      "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+      "hash": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
     },
     {
       "path": "packages/financial-core/src/rate-composition.ts",

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "compare-financing-proposals-2026-10-19-v2-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "compare-financing-proposals",
+    "version": "2026.10.19-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareFinancingComparisonPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/financing-comparison-runs.test-support.ts",
+    "exportName": "buildFinancingComparisonRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-19T13:14:51.676Z",
+    "finishedAt": "2026-10-19T13:15:26.502Z",
+    "commit": "539b3de2d30ed0f60b9ab61ebdb3ab771f4b0f2d"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "c02-three-proposals-independent-oracle",
+      "expectation": "[[\"itau\",[4,3.5,13.2636,1.9475,51.892,81.3197]],[\"santander\",[4.0047,4,19.4592,1.9071,52.4246,81.6387]],[\"fundo\",[3.5475,4.75,20.7828,1.8788,51.2504,80.5113]]]",
+      "observed": "[[\"itau\",[4,3.5,13.2636,1.9475,51.892,81.3197]],[\"santander\",[4.0047,4,19.4592,1.9071,52.4246,81.6387]],[\"fundo\",[3.5475,4.75,20.7828,1.8788,51.2504,80.5113]]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "bank-stress-independent-oracle",
+      "expectation": "[[\"itau\",[-0.261,\"2028-12-31\",2.4513,0.5487,94.8443]],[\"santander\",[8.17,\"2028-12-31\",2.4368,0.5632,95.1633]],[\"fundo\",[9.7266,\"2028-12-31\",2.3936,0.3564,93.6068]]]",
+      "observed": "[[\"itau\",[-0.261,\"2028-12-31\",2.4513,0.5487,94.8443]],[\"santander\",[8.17,\"2028-12-31\",2.4368,0.5632,95.1633]],[\"fundo\",[9.7266,\"2028-12-31\",2.3936,0.3564,93.6068]]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "lowest-nominal-spread-is-not-the-lowest-cost",
+      "expectation": "{\"misleads\":true,\"lowestCost\":\"fundo\"}",
+      "observed": "{\"misleads\":true,\"lowestCost\":\"fundo\"}",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "cash-below-zero-eliminates-before-preference",
+      "expectation": "{\"facts\":[[\"itau\",[\"cash_below_zero\"]],[\"santander\",[]],[\"fundo\",[]]],\"everyCase\":[\"santander\",\"fundo\"],\"changing\":[\"bank-stress\"]}",
+      "observed": "{\"facts\":[[\"itau\",[\"cash_below_zero\"]],[\"santander\",[]],[\"fundo\",[]]],\"everyCase\":[\"santander\",\"fundo\"],\"changing\":[\"bank-stress\"]}",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "below-policy-minimum-conditions-without-eliminating",
+      "expectation": "{\"facts\":[[\"itau\",[[],[\"cash_below_policy_minimum\"]]],[\"santander\",[[],[]]],[\"fundo\",[[],[]]]],\"viable\":[\"itau\",\"santander\",\"fundo\"]}",
+      "observed": "{\"facts\":[[\"itau\",[[],[\"cash_below_policy_minimum\"]]],[\"santander\",[[],[]]],[\"fundo\",[[],[]]]],\"viable\":[\"itau\",\"santander\",\"fundo\"]}",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "covenant-test-frequency-per-year",
+      "expectation": "[[\"itau\",2],[\"santander\",1],[\"fundo\",2]]",
+      "observed": "[[\"itau\",2],[\"santander\",1],[\"fundo\",2]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "each-covenant-on-its-own-definition-and-limit",
+      "expectation": "[[\"itau\",[3,1.0525]],[\"santander\",[3,1.0929]],[\"fundo\",[2.75,0.8712]]]",
+      "observed": "[[\"itau\",[3,1.0525]],[\"santander\",[3,1.0929]],[\"fundo\",[2.75,0.8712]]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "collateral-consumed-reduces-free-receivables",
+      "expectation": "[[\"itau\",[28,30]],[\"santander\",[21,37]],[\"fundo\",[0,58]]]",
+      "observed": "[[\"itau\",[28,30]],[\"santander\",[21,37]],[\"fundo\",[0,58]]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "debt-service-in-2028",
+      "expectation": "[[\"itau\",64.3725],[\"santander\",56.1175],[\"fundo\",56.7119]]",
+      "observed": "[[\"itau\",64.3725],[\"santander\",56.1175],[\"fundo\",56.7119]]",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "cheapest-and-safest-shown-side-by-side",
+      "expectation": "{\"cost\":\"fundo\",\"cash\":\"fundo\",\"stressCash\":\"fundo\"}",
+      "observed": "{\"cost\":\"fundo\",\"cash\":\"fundo\",\"stressCash\":\"fundo\"}",
+      "inputFingerprint": "3018cfdbafc6d3cd093e3479621b6962670af71102d7ba128fdb72655a2b0fac",
+      "outputFingerprint": "4c591193c3956bd983ffc1ab564e0e492e86562ce290377a14d64617382f29c7",
+      "passed": true
+    },
+    {
+      "id": "negotiated-variants-move-the-cost",
+      "expectation": "[[\"itau-negotiated\",3.82],[\"santander-230\",3.74]]",
+      "observed": "[[\"itau-negotiated\",3.82],[\"santander-230\",3.74]]",
+      "inputFingerprint": "9e62ab741238b1a3180f11f60f6334c4a8c7381b622d28725463ccaadd7286ea",
+      "outputFingerprint": "8ff7a5c4a913a19a308c31210dff551ef1fb3a95080c04b160679e774edc7569",
+      "passed": true
+    },
+    {
+      "id": "collateral-above-company-rule-eliminates",
+      "expectation": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
+      "observed": "{\"facts\":[[\"itau\",[\"collateral_above_policy\"]],[\"santander\",[]],[\"fundo\",[]]],\"viable\":[\"santander\",\"fundo\"]}",
+      "inputFingerprint": "a7ede3ae85905af1c9eede216b3ef69861035d55edd075f8035545042d60e269",
+      "outputFingerprint": "f3cc4e8c346695ee1be74dad4b3dd69d22907ffd5163f7257a74f968d12ce35b",
+      "passed": true
+    },
+    {
+      "id": "absent-fee-is-a-gap-not-zero",
+      "expectation": "{\"status\":\"framed\",\"gap\":true,\"compared\":false}",
+      "observed": "{\"status\":\"framed\",\"gap\":true,\"compared\":false}",
+      "inputFingerprint": "17812c3926bd6d13893298dced8482244d8d60d037645695363bcd7cf314c1ec",
+      "outputFingerprint": "4d80abba2a870adafa30aa2bf02adeccc247a8cf80c478ae3ae0663332b9ba13",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "75a6c5dd8c221fab913770cfcfbe21849f9ca5c58636baeead86965822c8590e",
+  "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
