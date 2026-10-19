@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "analyze-relative-debt-cost-2026-10-19-v2-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "analyze-relative-debt-cost",
+    "version": "2026.10.19-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareRelativeDebtCostPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/relative-debt-cost-runs.test-support.ts",
+    "exportName": "buildRelativeDebtCostRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-19T14:24:13.336Z",
+    "finishedAt": "2026-10-19T14:24:13.489Z",
+    "commit": "dd35fa0439e9181ac4aca00b9b4aae13d61dcb56"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8bc53c9b69cddd7d7aff95fe8dbd822b0775742fa36f16a300e0b172a83158e4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "lens-from-another-comparison",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5c06c6655b6633b4bb097be0b9c46b5d8be48a998b40b6c9b73613a460880273",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "lever-without-action",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "1ebaa086b974939990f92aca25290632ec0cd4ec91208ccf558ae59738c09ac3",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "duplicate-lever",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "56996a3d1e95a6b80eb7dc69bf0e989f000b396082a0da45bb210d1b77a02689",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "peer-indicator-read-as-own",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8504eb9897fa65465657d5f718bc70fb21361b02fce1dc6354d7a16736804ce7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "overlapping-market-effect",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6a3644a898ec9ce2a8284033722afcff9abe65ccd061fea17c2e1305577e029c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "unlike-indexers",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b6af4199ced2f820d05b4b0e74258520c83b45a35270a3296eb76ae633431604",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "numbers-of-different-definitions",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "bd51ab05db67f5eea5eb2b258d8f14a2a8ce184724fc6cf7e92c0831d1fdd604",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "materiality-threshold-out-of-domain",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a0bdfeced49b6d54cd599f6a3db23f67c5f8d8644e7f9f39cfaf0b1fc720acd9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "inverted-notch-range",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d56579ef5ffa5829416227af6966b613cc14ac0bd46e687d5d273362455cb235",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-result-in-request",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4a98e02d099fca1863cf1e201148bbe10105eede86b2bbd20d2b9794e29a0361",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-grant-in-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e11884202ecba61e1477952ceca602925215f3ba8fd5344b0b12cf62cdc33a34",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "f8efc49887645547def128df91f150eff1003c6cfb55e85d0e40dc84dcec17f4",
+  "notes": "Synthetic deterministic execution calibrated on ficha C03. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

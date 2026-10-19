@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "assess-debt-capacity-2026-10-19-v2-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "assess-debt-capacity",
+    "version": "2026.10.19-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareDebtCapacityPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/debt-capacity-runs.test-support.ts",
+    "exportName": "buildDebtCapacityRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-19T14:24:13.692Z",
+    "finishedAt": "2026-10-19T14:24:14.347Z",
+    "commit": "dd35fa0439e9181ac4aca00b9b4aae13d61dcb56"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "c04-capacity-by-limit-independent-oracle",
+      "expectation": "[[\"covenant\",54.8],[\"market\",76.8],[\"interest\",72]]",
+      "observed": "[[\"covenant\",54.8],[\"market\",76.8],[\"interest\",72]]",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "phased-capacity-independent-oracle",
+      "expectation": "[[\"covenant\",79.5],[\"market\",108.6],[\"interest\",107.6]]",
+      "observed": "[[\"covenant\",79.5],[\"market\",108.6],[\"interest\",107.6]]",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "covenant-with-headroom-binds",
+      "expectation": "{\"informed\":[\"covenant\",\"2028-12-31\",\"adverse\"],\"phased\":[\"covenant\",\"2029-12-31\",\"adverse\"]}",
+      "observed": "{\"informed\":[\"covenant\",\"2028-12-31\",\"adverse\"],\"phased\":[\"covenant\",\"2029-12-31\",\"adverse\"]}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "joint-capacity-is-the-intersection-of-the-limits",
+      "expectation": "{\"perLimit\":[[\"cash\",200],[\"interest\",20]],\"joint\":null,\"status\":\"no_feasible_amount\"}",
+      "observed": "{\"perLimit\":[[\"cash\",200],[\"interest\",20]],\"joint\":null,\"status\":\"no_feasible_amount\"}",
+      "inputFingerprint": "d23057a75fd9d2b4dcfb26adf45c1ba16d65b16f4e9c8998c13744bd552186b8",
+      "outputFingerprint": "d74b0480d445a71799ecae56b7d245230a96f0f46d5c3b398fa03137b786e0ac",
+      "passed": true
+    },
+    {
+      "id": "sixty-breaks-the-covenant-in-the-adverse-case-as-informed",
+      "expectation": "{\"fits\":false,\"failing\":[\"covenant\"],\"view\":[[2.42,\"2028\",13.8,2.65],[3.12,\"2028\",-22.3,2.26]]}",
+      "observed": "{\"fits\":false,\"failing\":[\"covenant\"],\"view\":[[2.42,\"2028\",13.8,2.65],[3.12,\"2028\",-22.3,2.26]]}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "phasing-makes-sixty-fit-in-size",
+      "expectation": "{\"fits\":true,\"view\":[[1.88,\"2029\",13.5,3.17],[2.58,\"2029\",-21.4,2.7]]}",
+      "observed": "{\"fits\":true,\"view\":[[1.88,\"2029\",13.5,3.17],[2.58,\"2029\",-21.4,2.7]]}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case",
+      "expectation": "{\"fits\":true,\"adverseMinimumCashNegative\":true}",
+      "observed": "{\"fits\":true,\"adverseMinimumCashNegative\":true}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "bndes-eight-years-keeps-cash-positive",
+      "expectation": "{\"informed\":[[2.39,25.2],[3.08,2.4]],\"phased\":[[1.85,26.3],[2.55,3.4]]}",
+      "observed": "{\"informed\":[[2.39,25.2],[3.08,2.4]],\"phased\":[[1.85,26.3],[2.55,3.4]]}",
+      "inputFingerprint": "8a96b27891f38d9351a4e9b103006a656592b13236bf43862077a444ff7ea625",
+      "outputFingerprint": "aefa3aa493b2fe74035da5f69f4c688e6ea493226798a70aca6c6ded0dcb3e4e",
+      "passed": true
+    },
+    {
+      "id": "plan-pays-scheduled-principal-without-refinancing",
+      "expectation": "{\"date\":\"2029-12-31\",\"scheduled\":22.67,\"afterInterest\":23.56,\"pays\":true}",
+      "observed": "{\"date\":\"2029-12-31\",\"scheduled\":22.67,\"afterInterest\":23.56,\"pays\":true}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "window-ends-with-the-seasonal-line-open",
+      "expectation": "{\"calibrationOnly\":true}",
+      "observed": "{\"calibrationOnly\":true}",
+      "inputFingerprint": "493079ad9c4c05cd1486e6beac231528bc82efe385b72a66a9393f62ceddd287",
+      "outputFingerprint": "a387afdca66035f24a53f2f8d8fe233a280ad67d291921dbbd168be9fe2027f3",
+      "passed": true
+    },
+    {
+      "id": "absent-threshold-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"covenant\":null,\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"covenant\":null,\"gap\":true}",
+      "inputFingerprint": "9a3739d8380da720874142dc4b081d3196e60a18ec4a5934fe44454cda576d95",
+      "outputFingerprint": "0966656dd27717aaafd407378508071c79d6c6df0e57b5a0f4723e3bf821c80a",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "95582544f17d481fbb344d62b3c6f85f37ef57533c72cd3cce4c1f1332194dba",
+  "notes": "Synthetic deterministic execution calibrated on ficha C04. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
