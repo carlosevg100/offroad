@@ -1,34 +1,43 @@
 {
   "schemaVersion": "adapter-review.v1",
   "subject": {
-    "adapter": "packages/agent-contracts/src/execution-profile.ts",
+    "adapter": "compiled-single-deterministic.v1",
     "platformReleaseId": "analyze-investment-project-2026.10.09-v2",
     "artifactHash": "485c8509caaf14eb628a841a0976b3575126128c1f19ff73737101a4cbf957c2",
     "profileFingerprint": "370518282527eb3eae9c5a84d6d3e72f4fdad90145b45a5b14c9f444974db827"
   },
-  "subjectCommit": "e9678b4ef20f22bb82f3fd40957ebe612236acd0",
+  "subjectCommit": "a5c2ac77e5efd54f7477ba580a81f4db8f2ebcb4",
   "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
-  "occurredAt": "2026-10-19T02:27:39Z",
+  "occurredAt": "2026-10-19T10:43:21.240Z",
   "result": "approved",
   "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2",
+    "manifestFileHash": "2e25a70651809d8bae1f17dc169caa9b8d0a520db74752e16c6f9d395581de66",
     "canonicalProfileTextSha256": "9d79a2022e1b1fbace0aac82486e756426a0ba338f55ef125121bae816f49d22",
     "canonicalProfileTextBytes": 1450,
+    "reviewedWorktreeHead": "a5c2ac77e5efd54f7477ba580a81f4db8f2ebcb4",
+    "originMainHead": "305e94b4060202c804e0ad9a345ef292d65913fc",
     "checksPerformed": [
-      "A última entrada do compiled-executor-lock.json corresponde ao release solicitado; sourceCommit a2a9138b674c54d72146b9a343d8720998c1ef4b é ancestral de HEAD.",
-      "SHA-256 dos bytes do snapshot: f6a3f1201eabeab771dc5dca3210b36d1f762b13beedf400537a3e7fa4fb37e6, igual ao snapshotHash.",
-      "SHA-256 do manifesto obtido por git show no sourceCommit: 2e25a70651809d8bae1f17dc169caa9b8d0a520db74752e16c6f9d395581de66, igual ao manifestFileHash; manifesto atual idêntico.",
-      "Todos os 310 executorSources pins conferem com os bytes obtidos por git show no sourceCommit.",
-      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com código 0; duas reconstruções adicionais produziram bytes idênticos ao artefato instalado, com SHA-256 485c8509caaf14eb628a841a0976b3575126128c1f19ff73737101a4cbf957c2.",
-      "released-methods.generated.ts contém uma única entrada para o release, com methodId, methodVersion, manifestHash e artifactHash corretos.",
-      "Perfil derivado com deriveExecutionProfile e serializado com executionCanonicalText coincide byte a byte com o texto canônico a registrar.",
-      "Fingerprint interno recalculado sem o campo fingerprint coincide com o perfil e com o lock: 370518282527eb3eae9c5a84d6d3e72f4fdad90145b45a5b14c9f444974db827.",
-      "Política confirmada: grantsExecution false, zero chamadas de modelo, custo zero, allowedEffects [read_only], nenhuma ferramenta e exatamente um executor @offroad/financial-model#prepareInvestmentDecisionPacket versão 2026.10.09-v1, componente investment.decision-packet.",
-      "Em apps/document-worker, npx vitest run src/released-investment-executor.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts terminou com código 0: 4 arquivos e 16 testes aprovados.",
-      "Inspeção estática de 20261019020056_investment_payload_provenance.sql confirmou vínculo do método investment à versão 2026.10.09-v2, manifestHash aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2 e schema investment-decision-packet-input.v1; methodId nulo retorna false.",
-      "Comparação com 20260922194250_execution_capital_provenance.sql confirmou comportamento preservado para capital: mesmos vínculos de versão, manifesto e schema, mesmos limites e corpo compartilhado de validação de proveniência byte a byte idêntico.",
-      "Nenhum banco de dados acessado; git status e diferenças staged e unstaged permaneceram vazios."
+      "git merge-base --is-ancestor confirmou a2a9138b674c54d72146b9a343d8720998c1ef4b como ancestral de HEAD; a última entrada do lock corresponde ao release solicitado.",
+      "SHA-256 dos bytes do snapshot: f6a3f1201eabeab771dc5dca3210b36d1f762b13beedf400537a3e7fa4fb37e6, igual ao snapshotHash do lock.",
+      "Manifesto lido com git show no sourceCommit: manifestFileHash confirmado; bytes idênticos ao manifesto em HEAD e ao snapshot. deriveExecutionProfile validou o manifestHash e os vínculos internos.",
+      "Os 310 executorSources foram conferidos por SHA-256 contra git show no sourceCommit e comparados aos bytes do snapshot. Também conferidos 16 pins adicionais de compilador, evidências e dependências de parsing.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com código 0. Duas reconstruções adicionais produziram bytes idênticos ao artefato instalado de 1548344 bytes e ao artifactHash do lock.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente o platformReleaseId, methodId, methodVersion, manifestHash e artifactHash esperados; o manifesto empacotado tem o manifestFileHash esperado.",
+      "Perfil derivado com deriveExecutionProfile e serializado com executionCanonicalText, ambos de HEAD. Comparação byte a byte com /private/tmp/claude-501/-Users-olpi-Desktop-Offroad-Capital/7f2dac0a-614e-4bb1-9e01-c66e29b0d0e6/scratchpad/profile.txt passou: 1450 bytes.",
+      "Fingerprint recalculado sobre o perfil sem fingerprint: 370518282527eb3eae9c5a84d6d3e72f4fdad90145b45a5b14c9f444974db827. SHA-256 do texto canônico completo: 9d79a2022e1b1fbace0aac82486e756426a0ba338f55ef125121bae816f49d22.",
+      "Política confirmada: grantsExecution=false, maxModelCalls=0, maxCostMicrousd=0, orçamento original com custo zero, tools=[], allowedTools=[], allowedEffects=[read_only], maximumEffect=none.",
+      "Exatamente um executor no manifesto: @offroad/financial-model#prepareInvestmentDecisionPacket, versão 2026.10.09-v1; selectedComponentId=investment.decision-packet.",
+      "Em apps/document-worker, npx vitest run src/released-investment-executor.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts terminou com código 0: 4 arquivos e 16 testes passaram em 2,39 s.",
+      "Leitura estática de supabase/migrations/20261019020056_investment_payload_provenance.sql confirmou analyze-investment-project vinculado a 2026.10.09-v2, manifestHash aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2 e investment-decision-packet-input.v1, com recusa explícita de methodId nulo.",
+      "Comparação com 20260922194250_execution_capital_provenance.sql confirmou os mesmos vínculos de capital, limites, declarações, percurso de proveniência, tratamento de exceções e revoke. Para o método de capital, o novo ramo mantém o comportamento anterior.",
+      "Blobs e SHA-256 obtidos de HEAD; último commit do helper obtido por git log -1. git status --short vazio e git diff --exit-code HEAD passou após a verificação. Nenhum banco de dados acessado."
     ]
   },
   "findings": [],
-  "verdictText": "A revisão técnica independente aprovou o perfil e o executor empacotado no escopo solicitado. Os hashes, a ancestralidade, os pins, a reconstrução determinística e a identidade do perfil foram confirmados. Os 16 testes passaram, e a migração preserva o comportamento de capital enquanto vincula investimento à publicação exata. A revisão foi local, sem acesso a banco de dados e sem alteração de arquivos rastreados."
+  "verdictText": "Aprovado no escopo técnico solicitado. A ancestralidade, os pins, a reconstrução determinística, os bytes canônicos e a política do perfil foram confirmados independentemente. Os 16 testes passaram. A análise estática da migração confirmou o vínculo exato de investimento, a recusa de método nulo e a preservação do comportamento de capital. A revisão não acessou banco de dados nem alterou arquivos rastreados."
 }
