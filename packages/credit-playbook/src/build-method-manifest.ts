@@ -49,6 +49,8 @@ export function buildMethodManifest(repositoryRoot: string) {
     {path: "packages/financial-model/contracts/investment-decision-packet.json", exportName: "prepareInvestmentDecisionPacket"},
     {path: "packages/financial-model/contracts/financing-comparison-evidence.json", exportName: "calculateFinancingComparisonEvidence"},
     {path: "packages/financial-model/contracts/financing-comparison-packet.json", exportName: "prepareFinancingComparisonPacket"},
+    {path: "packages/financial-model/contracts/relative-debt-cost-packet.json", exportName: "prepareRelativeDebtCostPacket"},
+    {path: "packages/financial-model/contracts/debt-capacity-packet.json", exportName: "prepareDebtCapacityPacket"},
     {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
     {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},
