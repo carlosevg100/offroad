@@ -11,11 +11,14 @@ const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").to
 const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
 
 const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
-/** A quantity is a figure, or a number in words next to its unit ("três parcelas", "três vezes"); "uma frase" is not. */
-const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil)\s+(vez|vezes|parcela\w*|ano\w*|milh\w*|mil|bilh\w*|por cento|pontos?)\b|\b(milhao|milhoes|bilhao|bilhoes)\b/;
+/** A financial quantity: a number next to its unit (34%, 3x, três vezes, 60 milhões, três parcelas,
+ * R$ 15), or a year. A number by itself ("em 2 dias", "uma frase") is not one. */
+const numberWord = "um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil";
+const unit = "%|x\\b|vez\\b|vezes|por cento|pontos? percentuais|milh\\w*|mil\\b|bi\\b|bilh\\w*|mm\\b|mi\\b|parcela\\w*|anos?\\b";
+const quantity = new RegExp(`\\d+(?:[.,]\\d+)?\\s*(?:${unit})|\\b(?:${numberWord})\\s+(?:${unit})|r\\$\\s*\\d|\\b(?:19|20)\\d{2}\\b`);
 /** A question asks; it does not answer. Only a confirmation tag ("34%, certo?") keeps an answer an answer. */
-const interrogative = /^((e|mas|entao|ok|ah)\s+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que|existe|tem|ha|pode|poderia|consegue|da para)\b/;
-const explanation = /\b(explica\w*|explique|significa\w*|entender|detalha\w*|esclarec\w*)\b/;
+const interrogative = /^((e|mas|entao|ok|ah)[\s,]+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que)\b/;
+const explanation = /\b(explica|explique|explicar|significa|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b/;
 const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
 
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
