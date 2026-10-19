@@ -2454,6 +2454,11 @@
       "name": "investment_payload_provenance",
       "version": "20261019020056",
       "statements_md5": "e952afcd119eaf0b88902988653a6058"
+    },
+    {
+      "name": "execution_result_reply",
+      "version": "20261019021211",
+      "statements_md5": "23966932b650a7b81973f53f160f2f60"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",

@@ -101032,6 +101032,24 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER work_premise_proposals_set_updated_at BEFORE UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+      "kind": "function",
+      "name": "record_execution_result_reply_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_job uuid",
+      "security_definer": true
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"
