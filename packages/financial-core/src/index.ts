@@ -28,6 +28,7 @@ export * from "./financing-costs";
 export * from "./equivalent-financing-cost";
 export * from "./period-financing-taxes";
 export * from "./projected-leverage-covenant";
+export * from "./financing-proposal-comparison";
 export * from "./investment-project";
 export * from "./debt-capacity";
 export * from "./numeric-representation";
