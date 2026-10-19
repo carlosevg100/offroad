@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:04:35.211Z",
-    "finishedAt": "2026-10-19T14:05:26.827Z",
-    "commit": "b385c21d130902cf00374291c9e26723d58b1eb6"
+    "startedAt": "2026-10-19T14:23:20.361Z",
+    "finishedAt": "2026-10-19T14:24:13.111Z",
+    "commit": "dd35fa0439e9181ac4aca00b9b4aae13d61dcb56"
   },
   "modelCalls": 0,
   "cases": [
@@ -119,6 +119,22 @@
       "passed": true
     },
     {
+      "id": "charge-counted-twice",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "0e3462997f824077acc8b6abaf77ad0f2cbb6e4453b7a28b804454e9e139d833",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "business-days-off-the-national-calendar",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2080694802981b2c7ac56923fbad053df9d0633883d8a5fe005ad49369050e70",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "free-result-in-request",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -136,6 +152,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "eaecac411406c8e44d606d963add401e61e82689ee91713fdb217f7d197f5847",
+  "evidenceFingerprint": "0d9247277803ee7dd0c10379cb2c682bd3bb797da77b4e4600c113362c672001",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -5,11 +5,11 @@
     "id": "compare-financing-proposals",
     "version": "2026.10.19-v2"
   },
-  "commit": "dd256ca66d7c1a8424865b7abb772f902e4af566",
+  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
-      "sha256": "5fdaafaca37b956d04b317d65daa3f44bf04f2414d3e9d38c56483acb7bb1e58"
+      "sha256": "c58fe51e12cdb53b4c1223423ab13937c266f33c308c401dd91093ee2650bc95"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-packet.ts",
@@ -32,8 +32,36 @@
       "sha256": "c89ee3893cc7ee073ddf857c582b0ecbd5df090f8ace0e5ec2cc7269c9223940"
     },
     {
+      "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+      "sha256": "9e6dd485e58bd3e150d1a9c700686d20742b0ef7f4aef4007375001aa7d97246"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-packet.test.ts",
+      "sha256": "f8d42ba05ca2f7c915095193a8c686bbcf8b54468c962fc53a7837c8cddc300d"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-financing-comparison.test.ts",
+      "sha256": "5d6e2a1cc35ed1f4c9307327be540f10805f2d2d728229badfbb1ea6b9497e1b"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-composer.test.ts",
+      "sha256": "0689b486d8b5841d0706135a55edfc32c367f5fc0fec959c270e1f29a31d196e"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-premises.test.ts",
+      "sha256": "e7c0ae3bfabbeabd23b6db7b0a4386a766e1c205c1809c691e4848239cfeae38"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+      "sha256": "aed41779c55b798ffa5a49409809f4d0bb542a8353d3fe8f56eeb82c5e08b5c8"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
+      "sha256": "cb24e7e4b2f22c9e1a286d1706a890660f4b5931a6f12919266316952d716325"
+    },
+    {
       "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-      "sha256": "c02a9bd9933399afa1085a301b4411e01cf4d09635e072166330d95bffb7a9d9"
+      "sha256": "6cde598e69a92a801f6a3d39db0335b543d1c927192284c4adf5a34db4f4d4cd"
     },
     {
       "path": "packages/financial-core/src/business-day-calendar.ts",
@@ -68,36 +96,8 @@
       "sha256": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
     },
     {
-      "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-      "sha256": "9e6dd485e58bd3e150d1a9c700686d20742b0ef7f4aef4007375001aa7d97246"
-    },
-    {
-      "path": "packages/financial-model/src/financing-comparison-packet.test.ts",
-      "sha256": "f8d42ba05ca2f7c915095193a8c686bbcf8b54468c962fc53a7837c8cddc300d"
-    },
-    {
-      "path": "packages/financial-model/src/adopted-financing-comparison.test.ts",
-      "sha256": "5d6e2a1cc35ed1f4c9307327be540f10805f2d2d728229badfbb1ea6b9497e1b"
-    },
-    {
-      "path": "packages/financial-model/src/financing-comparison-composer.test.ts",
-      "sha256": "0689b486d8b5841d0706135a55edfc32c367f5fc0fec959c270e1f29a31d196e"
-    },
-    {
-      "path": "packages/financial-model/src/financing-comparison-premises.test.ts",
-      "sha256": "e7c0ae3bfabbeabd23b6db7b0a4386a766e1c205c1809c691e4848239cfeae38"
-    },
-    {
-      "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-      "sha256": "4edcbb84f734d765a40a0fe3b0df3cff3da04316364899c8b6e9b988e1ffc706"
-    },
-    {
-      "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
-      "sha256": "e376fb016695d29514f737e59b6c28dafb984dd6fc17fb613f8bd4675c4ac655"
-    },
-    {
       "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
-      "sha256": "c57e76475c502ef7f144182d9c14bb81ec44128d146be5a35ba0789e15c93667"
+      "sha256": "40095545720a0d50b788fa235d431351eb205801e3a8066a2623b299486b6d38"
     },
     {
       "path": "packages/financial-core/src/business-day-calendar.test.ts",
@@ -105,11 +105,11 @@
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
-      "sha256": "18a05e6e8609a666653d79c98047cb4a01ca6efa7533cf78cf0b275f8da3f9d4"
+      "sha256": "bec4d7950d5c2d975893301c7d42c2242c87565fb3f6cc89e7834163b6102ed9"
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
-      "sha256": "954f42a099d316513d8256a41f2fa7b7d660be05dd83fa869e116e4c6b85ab04"
+      "sha256": "fb23b168191e5ff7a3b4afebae78ef6d96cb5e7bafa3d5b161f8ae40f21c9ab6"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-packet.json",
@@ -129,15 +129,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
-      "sha256": "5f41f7bc9a92c25cc5e2dc05cd2465ce0d4df64d956e97bf87f7511180ef17e1"
+      "sha256": "9f68a3135681bd04aff425a5b83ce0c633478db4039dddb420b158b133a597bb"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-      "sha256": "19a04ca0c583da50c8ed21655eb6bf35537533036992f12833184bcbc78dc5b5"
+      "sha256": "123dba50687ff5fb43895098df3a972950ff02b0df66ce9d35676724bf58b95e"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
-      "sha256": "598065115fcc8a23e2a525199b12c6163f25bb0326d26cb2f613e4a21119e0bb"
+      "sha256": "95bd4e74cd2632336fc7c762181848713016ac89cad129adceee65cea849a5f8"
     }
   ],
   "externalOracle": [

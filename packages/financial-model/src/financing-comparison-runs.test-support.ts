@@ -135,6 +135,16 @@ function adversarialCases(): Case[] {
     ["draw-outside-the-horizon", () => mutateEntry(`proposal.${c02Ids.fundo}.lifetime.drawDate`, {type: "date", value: "2026-01-31"}), "proposal_comparison_draw_outside_horizon"],
     ["charge-paid-to-unknown-instrument", () => mutateEntry(`proposal.${c02Ids.itau}.charges.instrumentIds`, {type: "list", value: ["self", "self", "ac400000-0000-4000-9000-000000000999"]}), "comparison_charge_payee_unknown"],
     ["business-day-convention-without-counts", () => mutateEntry(`proposal.${c02Ids.itau}.lifetime.yearFractionConventions`, {type: "list", value: Array.from({length: 21}, () => "business_days_252")}), "comparison_business_days_required"],
+    ["charge-counted-twice", () => mutateEntry(`proposal.${c02Ids.itau}.charges.chargeIds`, {type: "list", value: ["itau-fee", "itau-fee", "itau-waiver"]}), "proposal_comparison_duplicate_charge"],
+    ["business-days-off-the-national-calendar", () => {
+      const a = adoptAuroraFacts(auroraFacts({dated: true})), e = a.entries.find((x) => x.fieldPath.endsWith(`proposal.${auroraIds.itau}.lifetime.businessDays`))!;
+      const counts = (e.value as {value: string[]}).value; counts[counts.length - 1] = String(Number(counts.at(-1)) + 1);
+      const fractions = a.entries.find((x) => x.fieldPath.endsWith(`proposal.${auroraIds.itau}.lifetime.yearFractions`))!;
+      (fractions.value as {value: string[]}).value[counts.length - 1] = new D(counts.at(-1)!).div(252).toDecimalPlaces(16).toFixed();
+      const canonical = JSON.stringify({...JSON.parse(a.envelope.canonical), entries: a.entries});
+      const envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
+      return composeBoundFinancingComparison({envelope, scope: a.scope, question: "q"});
+    }, "proposal_comparison_calendar_mismatch"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];

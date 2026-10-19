@@ -10,7 +10,7 @@ const mi = (v: string | null, p = 3) => v === null ? null : new D(v).div(1000000
 describe("C03 packet: why the company pays more than its peer", () => {
   const f = c03PacketInput(), packet = prepareRelativeDebtCostPacket(f.seal());
   it("decomposes 125 bps into 70 of date, structure and market and 55 of credit", () => {
-    expect(packet.decomposition).toEqual({grossBps: "125", afterPricingDateBps: "65", structureAndMarketBps: "70", creditResidualBps: "55", shareNotAboutCompanyRisk: "0.56"});
+    expect(packet.decomposition).toEqual({grossBps: "125", afterPricingDateBps: "65", structureAndMarketBps: "70", creditResidualBps: "55", shareNotAboutCompanyRisk: "0.56", residualReading: "under_adopted_adjustments"});
     expect(packet.status).toBe("prepared_for_human_review");
   });
   it("reads the committee lens: leverage is not a driver; scale, conversion and debt profile weigh against", () => {

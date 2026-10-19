@@ -47,7 +47,12 @@ const scenarioReading = z.strictObject({scenarioId: z.uuid(), peakLeverage: extr
 const caseOutput = z.strictObject({
   caseId: key, role: z.enum(roles), label: text, changes: z.array(text).max(20), resultStatus: z.enum(["missing_inputs", "partial_composition"]),
   limits: z.array(z.strictObject({id: key, label: text, capacity: decimal.nullable(), status: key.nullable()})).max(8),
-  capacity: decimal.nullable(), bindingLimitId: key.nullable(), calibrationOnly: z.boolean().nullable(),
+  /** The joint capacity: the largest amount that satisfies every adopted rule at once, as the engine
+   * intersects them (never the smallest of the per-limit maxima, which can overstate it). */
+  capacity: decimal.nullable(), capacityStatus: z.enum(["calculated", "calibration_only", "no_feasible_amount"]).nullable(),
+  /** What stops the next quantum: the limit, the date and the scenario of the first failing check. */
+  binding: z.strictObject({limitId: key, date: z.iso.date(), scenarioId: z.uuid()}).nullable(), bindingLimitId: key.nullable(),
+  boundedBySearchDomain: z.boolean().nullable(), calibrationOnly: z.boolean().nullable(),
   review: z.strictObject({amount: decimal, fits: z.boolean(), failingLimitIds: z.array(key).max(8), scenarios: z.array(scenarioReading).max(4)}).nullable(),
   plan: z.array(z.strictObject({date: z.iso.date(), scheduledExistingPrincipal: decimal, cashAfterInterest: decimal, paysWithoutRefinancing: z.boolean()})).max(240).nullable(),
   gaps: z.array(z.strictObject({operand: text, reason: text})).max(1024),
@@ -84,8 +89,11 @@ export function prepareDebtCapacityPacket(raw: unknown): DebtCapacityPacket {
       const r = calculateAdoptedDebtCapacity(subset) as {capacity: {maximumFeasibleAmount: string | null; status: string} | null};
       return {id: l.id, label: l.label, capacity: r.capacity?.maximumFeasibleAmount ?? null, status: r.capacity?.status ?? null};
     });
-    const known = limits.filter((l) => l.capacity !== null);
-    const binding = known.length === limits.length && known.length ? known.reduce((m, l) => (new Exact(l.capacity!).lt(m.capacity!) ? l : m)) : null;
+    const joint = full.capacity as {status: "calculated" | "calibration_only" | "no_feasible_amount"; maximumFeasibleAmount: string | null; boundedBySearchDomain: boolean;
+      followingChecks: {ruleId: string; passed: boolean; date: string; scenarioId: string}[] | null} | null;
+    const stop = joint?.followingChecks?.find((x) => !x.passed) ?? null;
+    const limitOf = (ruleId: string) => c.limits.find((l) => l.ruleIds.includes(ruleId))!.id;
+    const binding = stop ? {limitId: limitOf(stop.ruleId), date: stop.date, scenarioId: stop.scenarioId} : null;
     const profile = full.profile as DebtCapacityInput | null;
     const fixed = full.fixedReview as {amount: string; checks: {ruleId: string; passed: boolean}[]; financialRows: {scenarioId: string; rows: Row[]}[]} | null;
     const review = fixed ? {amount: fixed.amount, fits: fixed.checks.every((x) => x.passed),
@@ -106,13 +114,13 @@ export function prepareDebtCapacityPacket(raw: unknown): DebtCapacityPacket {
       });
     })() : null;
     return {caseId: c.id, role: c.role, label: c.label, changes: c.changes, resultStatus: full.status, limits,
-      capacity: binding?.capacity ?? null, bindingLimitId: binding?.id ?? null,
-      calibrationOnly: known.length ? known.some((l) => l.status === "calibration_only") : null, review, plan, gaps: full.gaps};
+      capacity: joint?.maximumFeasibleAmount ?? null, capacityStatus: joint?.status ?? null, binding, bindingLimitId: binding?.limitId ?? null,
+      boundedBySearchDomain: joint ? joint.boundedBySearchDomain : null, calibrationOnly: joint ? joint.status === "calibration_only" : null, review, plan, gaps: full.gaps};
   });
   const informed = cases.find((c) => c.role === "informed")!;
   const first = input.cases[0]!.analysis;
   const withCapacity = cases.filter((c) => c.capacity !== null);
-  const status = informed.capacity === null ? "framed" as const : cases.some((c) => c.gaps.length) ? "partial" as const : "prepared_for_human_review" as const;
+  const status = informed.capacityStatus === null ? "framed" as const : cases.some((c) => c.gaps.length) ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "debt-capacity-packet.v1" as const, executorVersion: debtCapacityPacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: first.envelope.fingerprint, scope: first.scope, entityId: first.entityId, currency: first.currency,
     cases, comparison: {informedCaseId: informed.caseId, requestedFitsIn: cases.filter((c) => c.review?.fits).map((c) => c.caseId),

@@ -77,6 +77,10 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(completeFinancingComparisonFacts({extraction: g, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.1.waiverCreditor"]});
     const h = c02Extraction(); h.proposals[1]!.paymentDay = none;
     expect(completeFinancingComparisonFacts({extraction: h, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.2.paymentDay"]});
+    const m = c02Extraction(); m.proposals[0]!.firstAmortizationMonth = doc("2028-08", "ts-itau.pdf");
+    expect(completeFinancingComparisonFacts({extraction: m, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.1.firstAmortizationMonth"]});
+    const d = c02Extraction(); d.proposals[1]!.drawDate = doc("2027-02-15", "ts-santander.pdf");
+    expect(completeFinancingComparisonFacts({extraction: d, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.2.drawDate"]});
     const z = c02Extraction(); z.proposals[2]!.feeRate = doc(0, "ts-fundo.pdf");
     const zc = completeFinancingComparisonFacts({extraction: z, ids, currency: "BRL"});
     if (zc.status !== "complete") throw new Error(zc.missing.join(","));

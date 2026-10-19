@@ -138,11 +138,16 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
   const built = proposals.map((p, n) => {
     const draw = inHorizon(p.draw!.value, `proposals.${n + 1}.drawMonth`);
     if (draw === null) return null;
-    const drawStart = months(firstStart) + 3 * draw, first = Math.floor((months(p.first!.value) - drawStart) / 3), step = p.every!.value / 3;
-    if (first < 0 || !Number.isInteger(step) || !Number.isInteger(p.coupon!.value / 3)) {missing.push(`proposals.${n + 1}.schedule`); return null;}
+    // Installments fall a whole number of quarters after the draw month; a month off that calendar is a
+    // gap to clarify with the counterparty, never rounded into another quarter.
+    const offset = months(p.first!.value) - months(p.draw!.value), first = offset / 3, step = p.every!.value / 3;
+    if (offset < 0 || !Number.isInteger(first)) {missing.push(`proposals.${n + 1}.firstAmortizationMonth`); return null;}
+    if (!Number.isInteger(step) || !Number.isInteger(p.coupon!.value / 3)) {missing.push(`proposals.${n + 1}.schedule`); return null;}
+    if (p.drawDate && p.drawDate.value.slice(0, 7) !== p.draw!.value) {missing.push(`proposals.${n + 1}.drawDate`); return null;}
     const sources = [p.amount!, p.spread!, p.fee!, p.collateral!, p.limit!].map((f) => f.source);
     // The consent fee is paid to the creditor the source names; an unknown creditor is a gap.
-    const creditor = p.waiver!.value === true ? existing.find((d) => d.label === p.waiverCreditor!.value)?.id ?? null : null;
+    const named = p.waiver!.value === true ? existing.filter((d) => d.label === p.waiverCreditor!.value) : [];
+    const creditor = named.length === 1 ? named[0]!.id : null;
     if (p.waiver!.value === true && !creditor) {missing.push(`proposals.${n + 1}.waiverCreditor`); return null;}
     const waiverQuarter = p.waiver!.value === true ? inHorizon(p.waiverMonth!.value, `proposals.${n + 1}.waiverMonth`) : null;
     if (p.waiver!.value === true && waiverQuarter === null) return null;

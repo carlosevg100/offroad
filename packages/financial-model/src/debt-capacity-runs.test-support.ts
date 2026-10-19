@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {debtCapacityPacketOutputSchema, prepareDebtCapacityPacket, type DebtCapacityPacketInput} from "./debt-capacity-packet";
-import {c04PacketInput} from "./debt-capacity.test-support";
+import {c04DisconnectedPacketInput, c04PacketInput} from "./debt-capacity.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic
 // calibrations of ficha C04 (modelo_c04.py), never production parameters.
@@ -39,7 +39,11 @@ function goldCases(): Case[] {
       (p) => at(p, "informed").limits.map((l) => [l.id, r(l.capacity!)])),
     reuse("phased-capacity-independent-oracle", packet, base, [["covenant", 79.5], ["market", 108.6], ["interest", 107.6]],
       (p) => at(p, "phased").limits.map((l) => [l.id, r(l.capacity!)])),
-    reuse("covenant-with-headroom-binds", packet, base, {informed: "covenant", phased: "covenant"}, (p) => ({informed: at(p, "informed").bindingLimitId, phased: at(p, "phased").bindingLimitId})),
+    reuse("covenant-with-headroom-binds", packet, base, {informed: ["covenant", "2028-12-31", "adverse"], phased: ["covenant", "2029-12-31", "adverse"]},
+      (p) => Object.fromEntries(["informed", "phased"].map((id) => {const c = at(p, id), sc = c.review!.scenarios.findIndex((x) => x.scenarioId === c.binding!.scenarioId);
+        return [id, [c.binding!.limitId, c.binding!.date, sc === 1 ? "adverse" : "base"]];}))),
+    observe("joint-capacity-is-the-intersection-of-the-limits", c04DisconnectedPacketInput(), {perLimit: [["cash", 200], ["interest", 20]], joint: null, status: "no_feasible_amount"},
+      (p) => ({perLimit: p.cases[0]!.limits.map((l) => [l.id, l.capacity === null ? null : r(l.capacity, 0)]), joint: p.cases[0]!.capacity, status: p.cases[0]!.capacityStatus})),
     reuse("sixty-breaks-the-covenant-in-the-adverse-case-as-informed", packet, base, {fits: false, failing: ["covenant"], view: [[2.42, "2028", 13.8, 2.65], [3.12, "2028", -22.3, 2.26]]},
       (p) => ({fits: at(p, "informed").review!.fits, failing: at(p, "informed").review!.failingLimitIds, view: view(p, "informed")})),
     reuse("phasing-makes-sixty-fit-in-size", packet, base, {fits: true, view: [[1.88, "2029", 13.5, 3.17], [2.58, "2029", -21.4, 2.7]]},

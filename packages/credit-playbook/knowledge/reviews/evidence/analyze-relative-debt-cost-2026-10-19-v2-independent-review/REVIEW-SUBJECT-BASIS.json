@@ -5,15 +5,15 @@
     "id": "analyze-relative-debt-cost",
     "version": "2026.10.19-v2"
   },
-  "commit": "dd256ca66d7c1a8424865b7abb772f902e4af566",
+  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/analyze-relative-debt-cost.md",
-      "sha256": "4d8b3d0fe298bc5f44e399dad0d9779886f658c45fa5822da8c347e6938cfa25"
+      "sha256": "f7673a7b8366246c473dc6c415a1a2225c859f1b3aaf8327e8337d228a2cbc2e"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-packet.ts",
-      "sha256": "f887eb9cb836f9e5bf5ed7e8bd4ce46f570581c088816ce034b0bbacba9f3602"
+      "sha256": "4987ec2cee8db5c5237c7e393aa5aa73ab8714acd3b5ccdd21836349ba65db7c"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-contracts.ts",
@@ -21,39 +21,39 @@
     },
     {
       "path": "packages/financial-model/src/adopted-relative-cost-lens.ts",
-      "sha256": "c273aaa7cb3110a458ff8429a88603c6da94c74f6eb37b387ca631f1e4a94e39"
+      "sha256": "48bcedbdfa210e550f287e73c99a34eb9165c7f3b42f58321e060de13805df61"
     },
     {
       "path": "packages/financial-model/src/adopted-relative-debt-cost.ts",
       "sha256": "23d5ea81e5e9524d8ad752b3aa9b71385f39dd93227131a37419ae258c9213c4"
     },
     {
-      "path": "packages/financial-core/src/relative-debt-cost.ts",
-      "sha256": "0d407d848f803640b503ecb3c74da1a960eabc85571007e845132251872fd145"
-    },
-    {
       "path": "packages/financial-model/src/relative-debt-cost.test-support.ts",
-      "sha256": "47aed07969a6bae0bbe902ceee342518fd51f7e86fa99f35ec11ef772f71c6ce"
+      "sha256": "ddab7db101ee6defc0a0e96a96f29feeecfe6a7dbb6bb0e3b32364c731e02299"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-packet.test.ts",
-      "sha256": "b320df4f185171176cded5d4f92c3385a48bd94a20b27d13d099878c34bd1667"
+      "sha256": "b42590c1b7aa05690778db417a9bf402ede2f21d7830e1ba7215e886303b2a6b"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-runs.test-support.ts",
-      "sha256": "20d4ccf29ef82e5fd3d55b3713512c29a861754366fb37537d69cdcc5a8ab401"
+      "sha256": "3af840a6c3d3f379aeb5606c55a9613b096cae44d78921c2f5f6142a274db7f4"
     },
     {
       "path": "packages/financial-model/src/relative-debt-cost-runs.test.ts",
-      "sha256": "b7f84b80c7f5b7bbcb5d4f4208dd0375f96fcd15a03adc63b584f4df58ae1859"
+      "sha256": "2d33c478b43051cccb09539547374aba830852d9c6885dcc7c746a423c599b45"
     },
     {
       "path": "packages/financial-model/src/adopted-relative-debt-cost.test.ts",
       "sha256": "0b6e28525a0267752b16ace1f660cbafc140ad97b66ab16f331c5fbfa896d7eb"
     },
     {
+      "path": "packages/financial-core/src/relative-debt-cost.ts",
+      "sha256": "0d407d848f803640b503ecb3c74da1a960eabc85571007e845132251872fd145"
+    },
+    {
       "path": "packages/financial-model/contracts/relative-debt-cost-packet.json",
-      "sha256": "24364d1c40f4266ad40d05aa955de68bf0bb6e4aba2538913f893d941f54e50a"
+      "sha256": "d59d0bed0ef6cd3241456bf7a7dc0bdc8041ebd618d1cb949195fd81312ac28d"
     },
     {
       "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -65,15 +65,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
-      "sha256": "14db7c286c87f159303b8be3a34e7ef7dde1b582bc0e3f92ac0f3ae15a8e3b68"
+      "sha256": "954813719e89507fe9c1cbf2d54711e69d329cb2ad28e48c28f852ca885f3f71"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
-      "sha256": "ba7cb1dc68eb7174274b15277886cd29275cf1086521dbcb4c601c7ad59dbb53"
+      "sha256": "3be34b99bb36169e33303805a0c16b6aa1c858163342c8fa077418f2c9ecd97d"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
-      "sha256": "4792bc30dabfcd76f71c6b9bd20b3b2eadb0fbce7bab7e83bd69734ecffa562e"
+      "sha256": "19e2f461b65898db36238ee51c16b9a1019a3258e6e2282b1f2cd64ac4905aec"
     }
   ],
   "externalOracle": [

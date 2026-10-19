@@ -56,7 +56,8 @@ export function c03PacketInput() {
   const lp = (rowId: string, name: string) => `lens.${rowId}.${name}`;
   const numeric = (k: number, label: string, definition: string, unit: "ratio" | "multiple" | "currency", own: string, peer: string, direction: "higher_is_better" | "higher_is_worse") => {
     const rowId = id(400 + k);
-    return {id: rowId, kind: "numeric" as const, label: text(lp(rowId, "label"), "explanation", label), definition: text(lp(rowId, "definition"), "explanation", definition), unit,
+    return {id: rowId, kind: "numeric" as const, label: text(lp(rowId, "label"), "explanation", label), definition: text(lp(rowId, "definition"), "explanation", definition),
+      peerDefinition: text(lp(rowId, "peerDefinition"), "explanation", definition, true), unit,
       own: number(lp(rowId, "own"), unit, own), peer: number(lp(rowId, "peer"), unit, peer, true), direction: text(lp(rowId, "direction"), "convention", direction)};
   };
   const qualitative = (k: number, label: string, own: string, peer: string, classification: string) => {
