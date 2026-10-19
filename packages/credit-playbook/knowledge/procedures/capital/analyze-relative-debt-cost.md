@@ -1,7 +1,7 @@
 ---
 id: analyze-relative-debt-cost
 version: 2026.10.19-v2
-maturity: implemented
+maturity: tested
 title_pt: Explicar o custo de dívida frente a pares
 title_en: Analyze Relative Debt Cost
 role: financial_analysis
@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: relative-debt-cost-packet.v1
 unit_test_files: [packages/financial-model/src/relative-debt-cost-packet.test.ts, packages/financial-model/src/relative-debt-cost-runs.test.ts, packages/financial-model/src/adopted-relative-debt-cost.test.ts, packages/financial-core/src/relative-debt-cost.test.ts]
-gold_case_ids: [c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, unknown-indexer-shows-no-gross-difference, unlike-indexers-with-a-missing-adjustment-show-no-gross-difference, a-lever-without-complete-costs-is-not-said-to-pay]
+gold_case_ids: [c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, unknown-indexer-shows-no-gross-difference, unlike-indexers-with-a-missing-adjustment-show-no-gross-difference, equivalent-spreads-without-the-bridge-show-no-gross-difference, a-negative-residual-reads-as-paying-less, a-zero-difference-has-no-share, a-lever-without-complete-costs-is-not-said-to-pay]
 adversarial_case_ids: [tampered-envelope, lens-from-another-comparison, lever-without-action, duplicate-lever, peer-indicator-read-as-own, overlapping-market-effect, unlike-indexers, numbers-of-different-definitions, materiality-threshold-out-of-domain, inverted-notch-range, free-result-in-request, fabricated-grant-in-result]
 e2e_scenario_ids: [domain:c03-decomposition-independent-oracle]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-consistency]
 adversarial_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-adversarial]
+review_ids: [analyze-relative-debt-cost-2026-10-19-v2-independent-review]
 gold_run_ids: [analyze-relative-debt-cost-2026-10-19-v2-gold]
 ---
 
@@ -68,9 +69,9 @@ Pacote da diferença: decomposição da diferença bruta em ajustes fundamentado
 # Cálculos determinísticos
 - Diferença bruta = spread da companhia menos spread do par, no mesmo indexador; indexadores diferentes exigem spreads equivalentes na mesma curva datada.
 - Cada ajuste vem de um objeto de mercado com amostra e pertence a um grupo de efeito independente; ajuste repetido ou sobreposto é recusado. Com datas de precificação diferentes, o ajuste de data é obrigatório, ainda que seja zero fundamentado.
-- Resíduo de crédito = diferença bruta menos a soma dos ajustes, somente com cobertura completa declarada, lido sob os ajustes adotados; parcela que não diz respeito ao risco da companhia = ajustes sobre a diferença bruta. Sem um ajuste, a diferença bruta continua apresentada quando os spreads estão no mesmo indexador conhecido, e o resíduo fica como lacuna; indexadores diferentes ou desconhecidos sem curva comum adotada não geram diferença bruta.
+- Resíduo de crédito = diferença bruta menos a soma dos ajustes, somente com cobertura completa declarada, lido sob os ajustes adotados; parcela que não diz respeito ao risco da companhia = ajustes sobre a diferença bruta; com diferença bruta zero a parcela fica indefinida, nunca 0%. Sem um ajuste, a diferença bruta continua apresentada somente quando a base de preço adotada declara spreads cotados no mesmo indexador conhecido, e o resíduo fica como lacuna; spread equivalente, indexadores diferentes ou desconhecidos sem a ponte completa não geram diferença bruta.
 - Lente: número só se compara com número da mesma definição, adotada para cada lado; definições diferentes viram linha qualitativa. Diferença relativa contra o par, com sinal pela direção adotada; acima do limiar adotado (entre zero e um) pesa contra, abaixo pesa pouco, igual é neutro, melhor favorece. Linha qualitativa guarda a classificação adotada por uma pessoa, com origem, e só vale com os dois lados informados; faltando valor ou definição, a linha fica sem classificação.
-- Degraus implícitos = resíduo dividido pelo maior e pelo menor valor de mercado de um degrau; é leitura, não rating.
+- Degraus implícitos = módulo do resíduo dividido pelo maior e pelo menor valor de mercado de um degrau, com o sentido informado à parte (a companhia paga mais, paga menos ou igual); é leitura, não rating.
 - Alavanca = economia nominal (principal afetado × diferença de spread × fração de ano adotada) menos custos conhecidos; não é valor presente da dívida. Dizer que compensa exige custos cobertos para o prazo da economia.
 - Precisão: aritmética decimal de alta precisão; resultados apresentados com até vinte casas decimais.
 
@@ -124,7 +125,7 @@ Pacote da diferença: decomposição da diferença bruta em ajustes fundamentado
 - packages/financial-model/src/adopted-relative-debt-cost.test.ts: ponte e ações sobre a base adotada, recusas de contexto e de indexador.
 - packages/financial-core/src/relative-debt-cost.test.ts: motores.
 ## Gold
-- c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, unknown-indexer-shows-no-gross-difference, unlike-indexers-with-a-missing-adjustment-show-no-gross-difference, a-lever-without-complete-costs-is-not-said-to-pay.
+- c03-decomposition-independent-oracle, more-than-half-is-not-company-risk, leverage-is-not-the-driver, committee-lens-weighs-scale-conversion-and-debt-profile, qualitative-rows-keep-the-adopted-judgment, residual-read-as-about-two-notches, prepaying-only-for-the-rate-does-not-pay, rating-breaks-even-on-spread, absent-market-adjustment-keeps-the-gross-difference, absent-indicator-is-a-gap-not-neutral, unknown-indexer-shows-no-gross-difference, unlike-indexers-with-a-missing-adjustment-show-no-gross-difference, equivalent-spreads-without-the-bridge-show-no-gross-difference, a-negative-residual-reads-as-paying-less, a-zero-difference-has-no-share, a-lever-without-complete-costs-is-not-said-to-pay.
 ## Adversarial
 - Base adulterada, lente de outra comparação, alavanca sem ação, alavanca repetida, indicador do par lido como da companhia, efeito de mercado sobreposto, indexadores diferentes como spread cotado, números de definições diferentes, limiar de materialidade fora do domínio, faixa de degrau invertida, número livre no pedido e concessão fabricada no resultado são recusados.
 ## Aceitação
@@ -4841,6 +4842,24 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                       }
                     }
                   },
+                  "pricingBasis": {
+                    "required": true,
+                    "value": {
+                      "type": "union",
+                      "variants": [
+                        {
+                          "type": "enum",
+                          "values": [
+                            "same_indexer_quoted_spread",
+                            "equivalent_spread_on_same_dated_curve"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
                   "bridge": {
                     "required": true,
                     "value": {
@@ -5816,6 +5835,17 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
                         {
                           "type": "object",
                           "fields": {
+                            "direction": {
+                              "required": true,
+                              "value": {
+                                "type": "enum",
+                                "values": [
+                                  "company_pays_more",
+                                  "company_pays_less",
+                                  "none"
+                                ]
+                              }
+                            },
                             "fewest": {
                               "required": true,
                               "value": {
@@ -6094,7 +6124,9 @@ A próxima captação reprecifica; a dívida atual só compensa refinanciar quan
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/analyze-relative-debt-cost-2026-10-19-v2-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/analyze-relative-debt-cost-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

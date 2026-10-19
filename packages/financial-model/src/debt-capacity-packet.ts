@@ -99,7 +99,10 @@ export function prepareDebtCapacityPacket(raw: unknown): DebtCapacityPacket {
     const review = fixed ? {amount: fixed.amount, fits: fixed.checks.every((x) => x.passed),
       failingLimitIds: c.limits.filter((l) => fixed.checks.some((x) => !x.passed && l.ruleIds.includes(x.ruleId))).map((l) => l.id),
       scenarios: fixed.financialRows.map((s) => {
-        const leverage = pick(s.rows, (r) => new Exact(r.covenantEbitda).gt(0) ? new Exact(r.closingDebt).minus(r.closingAvailableCash).div(r.covenantEbitda) : null, false)!;
+        // Leverage nets cash under each scenario's adopted convention, as the kernel's covenant does.
+        const nonnegative = profile?.scenarios.find((x) => x.id === s.scenarioId)?.cashNetting === "nonnegative_available";
+        const leverage = pick(s.rows, (r) => new Exact(r.covenantEbitda).gt(0)
+          ? new Exact(r.closingDebt).minus(nonnegative ? Exact.max(r.closingAvailableCash, 0) : new Exact(r.closingAvailableCash)).div(r.covenantEbitda) : null, false)!;
         const cash = pick(s.rows, (r) => new Exact(r.closingAvailableCash), true)!;
         const coverage = pick(s.rows, (r) => new Exact(r.cashInterest).gt(0) ? new Exact(r.ebitda).div(r.cashInterest) : null, true);
         return {scenarioId: s.scenarioId, peakLeverage: {value: fmt(leverage.value), date: leverage.date}, minimumCash: {value: fmt(cash.value), date: cash.date},

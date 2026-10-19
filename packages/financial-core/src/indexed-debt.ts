@@ -158,6 +158,11 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     const paidPrincipal = period.repayAll ? indexedPrincipal.plus(couponCapitalized) : requestedPrincipal;
     const scheduledPrincipal = period.repayAll ? paidPrincipal : scheduledRequested;
     principal = indexedPrincipal.plus(couponCapitalized).minus(paidPrincipal);
+    // Repaying the whole principal settles the accrued coupon in the same period; a calendar that
+    // leaves it unpaid after the debt is gone is refused, never carried silently.
+    if (deferred && principal.isZero() && !accruedUnpaid.isZero()) {
+      throw new RangeError(`full repayment requires settling the accrued coupon in ${period.period}`);
+    }
     const cashDebtService = indexationPaid.plus(couponPaid).plus(paidPrincipal);
     const nonCashDebtIncrease = indexationCapitalized.plus(couponCapitalized);
     const financeExpense = indexationAccrued.plus(couponAccrued);

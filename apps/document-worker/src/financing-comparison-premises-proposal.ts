@@ -21,11 +21,7 @@ const money = z.string().regex(/^-?\d{1,15}(?:\.\d{1,8})?$/);
 const month = z.string().regex(/^\d{4}-\d{2}$/);
 const share = z.number().min(0).max(1);
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
-/** The company situations in which offers for the same need are compared; the use of the funds decides. */
-export const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"] as const;
 export const financingComparisonExtractionSchema = z.strictObject({
-  /** What the money is for, as one of the company situations the comparison serves. */
-  needSituation: sourced(z.enum(comparisonSituations)),
   proposals: z.array(z.strictObject({
     label: z.string().min(1).max(80),
     amount: sourced(money), annualSpread: sourced(z.number().min(0).max(0.3)), feeRate: sourced(share), creditTax: sourced(z.boolean()),
@@ -36,7 +32,7 @@ export const financingComparisonExtractionSchema = z.strictObject({
     covenantLeasesInDebt: sourced(z.boolean()), covenantEbitdaExcludesLeases: sourced(z.boolean()),
     covenantTestFrequency: sourced(z.enum(["semiannual", "annual"])), covenantDescription: z.string().max(200).nullable(),
     /** Consent another creditor must give: whose (as named in the debt table), when and at what cost. */
-    waiverRequired: sourced(z.boolean()), waiverCreditor: sourced(z.string().min(1).max(80)), waiverMonth: sourced(month), waiverCost: sourced(money),
+    waiverRequired: sourced(z.boolean()), waiverCreditor: sourced(z.string().min(1).max(80)), waiverMonth: sourced(month), waiverCost: sourced(money), waiverDeductible: sourced(z.boolean()),
     /** Exact draw date and payment day, when the term sheet states them; the lifetime then runs on contract dates. */
     drawDate: sourced(z.iso.date()), paymentDay: sourced(z.number().int().min(1).max(28)),
   })).max(4),
@@ -45,13 +41,16 @@ export const financingComparisonExtractionSchema = z.strictObject({
       workingCapitalCashFlow: money, maintenanceCapex: money, growthCapex: money})).min(2).max(40)),
     previousQuarters: sourced(z.array(z.strictObject({period: z.string().min(1).max(20), ebitda: money, leasePayments: money})).min(1).max(8)),
     openingCash: sourced(money), cashTaxRate: sourced(share), minimumCash: sourced(money), receivablesPool: sourced(money), leaseLiability: sourced(money),
+    /** Company rule: the largest share of the free receivables a lender may take as collateral, when stated. */
+    maximumCollateralShare: sourced(share),
   }),
   existingDebt: sourced(z.array(z.strictObject({
     label: z.string().min(1).max(80), openingPrincipal: money, rateKind: z.enum(["floating", "fixed"]), annualRate: z.number().min(0).max(0.5),
     averagePrincipalCoupon: z.boolean(), couponEveryMonths: z.number().int().min(3).max(12),
     draws: z.array(z.strictObject({month, amount: money})).max(40), amortizations: z.array(z.strictObject({month, amount: money})).max(80),
     prepayments: z.array(z.strictObject({month, amount: money})).max(10),
-    charges: z.array(z.strictObject({label: z.string().min(1).max(80), kind: z.enum(["fee", "tax", "premium"]), month, amount: money})).max(10),
+    /** Whether the charge is deductible for income tax, as stated; null when nobody stated it. */
+    charges: z.array(z.strictObject({label: z.string().min(1).max(80), kind: z.enum(["fee", "tax", "premium"]), month, amount: money, deductible: z.boolean().nullable()})).max(10),
   })).max(10)),
   indexCurve: sourced(z.array(z.strictObject({year: z.number().int().min(2000).max(2100), annualRate: z.number().min(0).max(1)})).min(1).max(30)),
 });
@@ -66,7 +65,8 @@ export const financingComparisonExtractionContract = {
     "Meses em AAAA-MM. Para cada proposta: mês do desembolso, mês da primeira amortização, número de parcelas, meses entre parcelas, meses entre pagamentos de juros, parcela da operação cedida em garantia, limite do covenant de dívida líquida sobre EBITDA, se a dívida do covenant inclui arrendamentos e, separadamente, se o EBITDA do covenant exclui arrendamentos (IFRS 16), frequência de teste e se a proposta exige waiver de outro credor: qual credor (como aparece na tabela de dívida), em que mês e quanto custa.",
     "creditTax é true quando a operação paga IOF de crédito (CCB, empréstimo) e false quando não paga (debênture). origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     "Quando o term sheet trouxer a data exata do desembolso e o dia do mês dos pagamentos, devolva drawDate (AAAA-MM-DD) e paymentDay.",
-    "needSituation é o uso dos recursos: giro sazonal (seasonal-working-capital), giro estrutural (structural-working-capital), investimento (capex-infrastructure), refinanciamento de negócio estável (stable-business-high-conversion) ou companhia perto de covenant (near-covenant). Só preencha se a conversa ou o documento disser.",
+    "Política da companhia, quando dita: caixa mínimo (minimumCash) e o teto da carteira livre de recebíveis que pode ser cedido em garantia, em fração (maximumCollateralShare; 40% vira 0.4).",
+    "Dedutibilidade do custo do waiver (waiverDeductible) e de cada encargo da dívida existente (deductible) somente quando a pessoa ou o documento disser; senão null. Nunca presuma.",
     "A projeção da companhia é trimestral: um item por trimestre com EBITDA, arrendamentos pagos, depreciação, fluxo de capital de giro (negativo consome caixa), capex de manutenção e de expansão.",
   ].join("\n"),
   schema: financingComparisonExtractionSchema,
@@ -77,7 +77,7 @@ export const financingComparisonExtractionContract = {
 };
 
 export type ComparisonCompletion =
-  | {status: "complete"; facts: FinancingComparisonFacts; situationId: (typeof comparisonSituations)[number]; housePremiseKeys: string[]}
+  | {status: "complete"; facts: FinancingComparisonFacts; housePremiseKeys: string[]}
   | {status: "missing"; missing: string[]};
 
 const months = (m: string) => Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;
@@ -94,7 +94,6 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
     return {value: f.value, origin: f.origin, source: f.source ?? (f.origin === "informed" ? "Informado na conversa" : "Documento")};
   };
   if (e.proposals.length < 2) missing.push("proposals");
-  const situation = need("needSituation", e.needSituation);
   const quarters = need("company.quarters", e.company.quarters), previous = need("company.previousQuarters", e.company.previousQuarters);
   const opening = need("company.openingCash", e.company.openingCash), taxRate = need("company.cashTaxRate", e.company.cashTaxRate);
   const pool = need("company.receivablesPool", e.company.receivablesPool), debt = need("existingDebt", e.existingDebt), curve = need("indexCurve", e.indexCurve);
@@ -112,15 +111,16 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       waiver: need(k("waiverRequired"), p.waiverRequired), waiverCost: p.waiverRequired.value === true ? need(k("waiverCost"), p.waiverCost) : null,
       waiverCreditor: p.waiverRequired.value === true ? need(k("waiverCreditor"), p.waiverCreditor) : null,
       waiverMonth: p.waiverRequired.value === true ? need(k("waiverMonth"), p.waiverMonth) : null,
+      waiverDeductible: p.waiverRequired.value === true ? need(k("waiverDeductible"), p.waiverDeductible) : null,
       // Contract dates come as a pair or not at all; half of them is a gap, never a silent grid.
       ...(() => {
         const draw = p.drawDate.value !== null && p.drawDate.origin !== null, day = p.paymentDay.value !== null && p.paymentDay.origin !== null;
         if (draw !== day) missing.push(k(draw ? "paymentDay" : "drawDate"));
         return {drawDate: draw && day ? {value: p.drawDate.value!, origin: p.drawDate.origin!, source: p.drawDate.source ?? "Documento"} : null,
-          paymentDay: draw && day ? {value: p.paymentDay.value!} : null};
+          paymentDay: draw && day ? {value: p.paymentDay.value!, origin: p.paymentDay.origin!, source: p.paymentDay.source ?? "Documento"} : null};
       })()};
   });
-  if (missing.length || !situation || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
+  if (missing.length || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
   const ends = quarters.value.map((q) => q.quarterEnd);
   const firstStart = (() => {const d = new Date(`${ends[0]}T00:00:00Z`); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 2, 1)).toISOString().slice(0, 7);})();
   const openingDate = (() => {const d = new Date(`${ends[0]}T00:00:00Z`); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 2, 0)).toISOString().slice(0, 10);})();
@@ -136,8 +136,11 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       couponBase: d.averagePrincipalCoupon ? "average_principal" as const : "opening_principal" as const,
       draws: events(d.draws, `existingDebt.${n + 1}.draws`), amortization: events(d.amortizations, `existingDebt.${n + 1}.amortizations`),
       prepayments: events(d.prepayments, `existingDebt.${n + 1}.prepayments`), accruedPaymentQuarters: settles,
-      charges: d.charges.flatMap((c, i) => {const q = inHorizon(c.month, `existingDebt.${n + 1}.charges`); return q === null ? [] : [{id: `${d.label}-${i + 1}`,
-        category: c.kind === "fee" ? "origination_fee" as const : c.kind === "tax" ? "tax" as const : "other" as const, quarter: q, amount: c.amount, deductible: true}];})};
+      charges: d.charges.flatMap((c, i) => {const q = inHorizon(c.month, `existingDebt.${n + 1}.charges`);
+        // Deductibility is a tax definition: stated or a named gap, never assumed.
+        if (c.deductible === null) {missing.push(`existingDebt.${n + 1}.charges.${i + 1}.deductible`); return [];}
+        return q === null ? [] : [{id: `${d.label}-${i + 1}`,
+        category: c.kind === "fee" ? "origination_fee" as const : c.kind === "tax" ? "tax" as const : "other" as const, quarter: q, amount: c.amount, deductible: c.deductible}];})};
   });
   const built = proposals.map((p, n) => {
     const draw = inHorizon(p.draw!.value, `proposals.${n + 1}.drawMonth`);
@@ -156,20 +159,26 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
     const waiverQuarter = p.waiver!.value === true ? inHorizon(p.waiverMonth!.value, `proposals.${n + 1}.waiverMonth`) : null;
     if (p.waiver!.value === true && waiverQuarter === null) return null;
     const waiverOn = p.waiver!.value === true && creditor && waiverQuarter !== null;
-    if (waiverOn) used.push("waiverDeductibility");
     return {value: {id: uuidV5(`${input.ids.comparisonId}:proposal:${p.label}`), label: p.label, amount: p.amount!.value, annualSpread: String(p.spread!.value), feeRate: String(p.fee!.value),
       creditTax: p.creditTax!.value, drawQuarter: draw, amortizationQuarters: Array.from({length: p.installments!.value}, (_, k) => first + k * step),
       couponEveryQuarters: p.coupon!.value / 3, collateralShareOfLoan: String(p.collateral!.value),
       covenant: {name: p.description ?? `Dívida líquida ${p.leases!.value ? "com" : "sem"} arrendamentos sobre EBITDA ${p.excludes!.value ? "sem" : "com"} IFRS 16`, limit: String(p.limit!.value),
         leaseLiabilityInDebt: p.leases!.value, ebitdaExcludesLeases: p.excludes!.value, testFrequency: p.frequency!.value},
-      waiver: waiverOn ? {instrumentId: creditor!, quarter: waiverQuarter!, cost: p.waiverCost!.value, deductible: false} : null,
+      waiver: waiverOn ? {instrumentId: creditor!, quarter: waiverQuarter!, cost: p.waiverCost!.value, deductible: p.waiverDeductible!.value} : null,
       contractDates: p.drawDate && p.paymentDay ? {drawDate: p.drawDate.value, paymentDay: p.paymentDay.value} : null,
       // Each clause keeps the origin and source it was stated with.
-      provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), schedule: src(p.first!), collateral: src(p.collateral!),
-        covenant: src(p.limit!), ...(waiverOn ? {waiver: src(p.waiverCost!)} : {}), ...(p.drawDate ? {contractDates: {origin: p.drawDate.origin, source: p.drawDate.source}} : {})}},
+      provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), drawMonth: src(p.draw!),
+        amortization: src(p.first!), installments: src(p.installments!), installmentEveryMonths: src(p.every!), coupon: src(p.coupon!), collateral: src(p.collateral!), covenantLimit: src(p.limit!), covenantDebtDefinition: src(p.leases!),
+        covenantEbitdaDefinition: src(p.excludes!), covenantFrequency: src(p.frequency!),
+        ...(waiverOn ? {waiverCost: src(p.waiverCost!), waiverCreditor: src(p.waiverCreditor!), waiverMonth: src(p.waiverMonth!), waiverDeductible: src(p.waiverDeductible!)} : {}),
+        ...(p.drawDate && p.paymentDay ? {drawDate: {origin: p.drawDate.origin, source: p.drawDate.source}, paymentDay: {origin: p.paymentDay.origin, source: p.paymentDay.source}} : {})}},
       origin: [p.amount!, p.spread!].every((f) => f.origin === "document") ? "document" as const : "informed" as const,
       source: [...new Set(sources)].join("; ").slice(0, 2000)};
   });
+  // Two rates for the same year are an ambiguity to clarify, never a silent choice.
+  if (curve && new Set(curve.value.map((c) => c.year)).size !== curve.value.length) missing.push("indexCurve");
+  // The curve must cover the first projected year; nothing is extended backward.
+  if (curve && Math.min(...curve.value.map((c) => c.year)) > Number(ends[0]!.slice(0, 4))) missing.push("indexCurve");
   if (missing.length || built.some((b) => b === null)) return {status: "missing", missing: [...new Set(missing)]};
   used.push("creditTax", "stress");
   const col = (k: "ebitda" | "leasePayments" | "depreciation" | "workingCapitalCashFlow" | "maintenanceCapex" | "growthCapex") => ({...quarters, value: quarters.value.map((q) => q[k])});
@@ -182,17 +191,18 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       covenantHistory: previous,
       minimumCashPolicy: e.company.minimumCash.value !== null && e.company.minimumCash.origin !== null
         ? {value: e.company.minimumCash.value, origin: e.company.minimumCash.origin, source: e.company.minimumCash.source ?? "Informado na conversa"} : null,
-      maximumCollateralShare: null},
+      maximumCollateralShare: e.company.maximumCollateralShare.value !== null && e.company.maximumCollateralShare.origin !== null
+        ? {value: String(e.company.maximumCollateralShare.value), origin: e.company.maximumCollateralShare.origin, source: e.company.maximumCollateralShare.source ?? "Informado na conversa"} : null},
     existingDebt: {...debt, value: existing}, proposals: built,
     creditTax: {value: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365}, origin: "house", source: "IOF de crédito para pessoa jurídica: 0,38% mais 0,0082% ao dia, limitado a 365 dias"},
     stress: {ebitdaShock: {value: "0.15", origin: "house", source: "EBITDA 15% menor, o caso que um banco tende a usar"},
       fromQuarter: {value: Math.min(1, ends.length - 1), origin: "house", source: "A partir do trimestre seguinte ao atual"}}});
-  return {status: "complete", facts, situationId: situation.value, housePremiseKeys: [...new Set(used)]};
+  return {status: "complete", facts, housePremiseKeys: [...new Set(used)]};
 }
 
 /** The proposal the worker records next to its reply: facts with origin, the hypotheses one
  * confirmation adopts, a short summary for the card and the fingerprint the confirmation checks. */
-export function buildFinancingComparisonPremiseProposal(facts: FinancingComparisonFacts, situationId: (typeof comparisonSituations)[number]) {
+export function buildFinancingComparisonPremiseProposal(facts: FinancingComparisonFacts) {
   const hypotheses = proposeFinancingComparisonHypotheses(facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId: null, definitionVersionId: null}}));
   const summary = {
     proposals: facts.proposals.map((p) => ({label: p.value.label, amount: p.value.amount, annualSpread: p.value.annualSpread, feeRate: p.value.feeRate,
@@ -200,7 +210,7 @@ export function buildFinancingComparisonPremiseProposal(facts: FinancingComparis
     quarters: facts.quarterEnds.length, existingDebt: facts.existingDebt.value.map((d) => d.label),
     minimumCashPolicy: facts.company.minimumCashPolicy?.value ?? null,
     premises: [{key: "creditTax", origin: facts.creditTax.origin, source: facts.creditTax.source}, {key: "stress", origin: facts.stress.ebitdaShock.origin, source: facts.stress.ebitdaShock.source}],
-    cases: ["base", "bank-stress"], situationId,
+    cases: ["base", "bank-stress"],
   };
   const body = {methodId: financingComparisonPremiseMethod.methodId, methodVersion: financingComparisonPremiseMethod.methodVersion, facts, hypotheses, summary};
   return {...body, fingerprint: createHash("sha256").update(JSON.stringify(body)).digest("hex")};
@@ -229,7 +239,7 @@ export async function proposeFinancingComparisonPremisesForTurn(input: {
       input.log("comparison_premises.missing", {missing: completed.missing});
       return {forAdvisor: {status: "missing", missing: completed.missing}, proposal: null};
     }
-    const proposal = buildFinancingComparisonPremiseProposal(completed.facts, completed.situationId);
+    const proposal = buildFinancingComparisonPremiseProposal(completed.facts);
     input.log("comparison_premises.proposed", {hypotheses: proposal.hypotheses.length, housePremises: completed.housePremiseKeys});
     return {forAdvisor: {status: "proposed", summary: proposal.summary, housePremises: completed.housePremiseKeys}, proposal};
   } catch (error) {

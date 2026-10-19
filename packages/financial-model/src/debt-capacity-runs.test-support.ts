@@ -2,6 +2,7 @@ import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {debtCapacityPacketOutputSchema, prepareDebtCapacityPacket, type DebtCapacityPacketInput} from "./debt-capacity-packet";
+import {calculateAdoptedDebtCapacity} from "./adopted-debt-capacity";
 import {c04DisconnectedPacketInput, c04PacketInput} from "./debt-capacity.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic
@@ -55,6 +56,24 @@ function goldCases(): Case[] {
     reuse("plan-pays-scheduled-principal-without-refinancing", packet, base, {date: "2029-12-31", scheduled: 22.67, afterInterest: 23.56, pays: true},
       (p) => {const y = at(p, "informed").plan!.find((x) => x.date === "2029-12-31")!; return {date: y.date, scheduled: r(y.scheduledExistingPrincipal, 2), afterInterest: r(y.cashAfterInterest, 2), pays: y.paysWithoutRefinancing};}),
     reuse("window-ends-with-the-seasonal-line-open", packet, base, {calibrationOnly: true}, (p) => ({calibrationOnly: at(p, "informed").calibrationOnly})),
+    (() => {
+      // Under nonnegative netting, negative cash does not reduce debt: the leverage shown is the covenant's own.
+      const g = c04PacketInput();
+      // The independent review's reproduction: R$ 200 mi reviewed from zero opening cash, so cash turns negative.
+      for (const e of g.basis.entries) {
+        if (e.fieldPath.endsWith(".cashNetting")) e.value = {type: "text", value: "nonnegative_available"};
+        if (e.fieldPath.endsWith(".openingAvailableCash")) e.value = {type: "number", value: "0"};
+        if (e.fieldPath.endsWith(".fixedReviewAmount")) e.value = {type: "number", value: "200"};
+      }
+      const i = g.seal() as DebtCapacityPacketInput, informed = i.cases.find((c) => c.id === "informed")!;
+      const covenant = new Set(informed.limits.find((l) => l.id === "covenant")!.ruleIds);
+      const checks = (calculateAdoptedDebtCapacity(informed.analysis).fixedReview as {checks: {scenarioId: string; ruleId: string; metric: string | null}[]}).checks;
+      const kernel = informed.analysis.scenarios.map((sc) => r(checks.filter((x) => x.scenarioId === sc.id && covenant.has(x.ruleId) && x.metric !== null)
+        .reduce((m, x) => D.max(m, x.metric!), new D(-1e9)).toFixed(), 4));
+      return observe("leverage-nets-cash-under-the-adopted-convention", i, {leverage: kernel, adverseMinimumCashNegative: true},
+        (p) => ({leverage: at(p, "informed").review!.scenarios.map((x) => r(x.peakLeverage.value, 4)),
+          adverseMinimumCashNegative: new D(at(p, "informed").review!.scenarios[1]!.minimumCash.value).lt(0)}));
+    })(),
     (() => {
       const i = sealed(); const rule = i.cases[0]!.analysis.scenarios[0]!.rules[0]!;
       rule.threshold = {...rule.threshold, decisionId: null, missingReason: "Folga do covenant não adotada"};

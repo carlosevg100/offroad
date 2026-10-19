@@ -232,3 +232,11 @@ describe("coupon accrued until paid", () => {
       .toThrow("paysAccruedCoupon requires the accrued_until_paid coupon treatment");
   });
 });
+
+describe("accrued coupon at full repayment", () => {
+  it("refuses repaying the whole principal while the accrued coupon stays unpaid", () => {
+    expect(() => buildIndexedDebtSchedule({instrumentId: "d", openingPrincipal: "100", indexer: "none", indexationTreatment: "not_applicable",
+      couponTreatment: "accrued_until_paid", couponBase: "opening_principal",
+      periods: [{period: "1", indexationRate: "0", couponRate: "0.1", scheduledPrincipal: "100", paysAccruedCoupon: false}]})).toThrow("full repayment requires settling the accrued coupon");
+  });
+});

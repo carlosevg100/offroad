@@ -1,7 +1,7 @@
 ---
 id: compare-financing-proposals
 version: 2026.10.19-v2
-maturity: implemented
+maturity: tested
 title_pt: Comparar propostas de financiamento recebidas
 title_en: Compare Financing Proposals
 role: credit_structuring
@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: financing-comparison-packet.v1
 unit_test_files: [packages/financial-model/src/financing-comparison-premises.test.ts, packages/financial-model/src/financing-comparison-composer.test.ts, packages/financial-core/src/business-day-calendar.test.ts, packages/financial-model/src/financing-comparison-packet.test.ts, packages/financial-model/src/financing-comparison-runs.test.ts, packages/financial-model/src/adopted-financing-comparison.test.ts, packages/financial-core/src/financing-proposal-comparison.test.ts]
-gold_case_ids: [c02-three-proposals-independent-oracle, bank-stress-independent-oracle, lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, contract-dates-in-the-company-view]
-adversarial_case_ids: [tampered-envelope, undeclared-inheritance, base-inherits, two-bases, silent-stress, different-proposals-across-cases, mixed-currency, accrued-coupon-without-payment-schedule, repay-all-without-settling-the-accrued-coupon, draw-outside-the-horizon, charge-paid-to-unknown-instrument, business-day-convention-without-counts, charge-counted-twice, business-days-off-the-national-calendar, free-result-in-request, fabricated-grant-in-result]
+gold_case_ids: [c02-three-proposals-independent-oracle, bank-stress-independent-oracle, lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, an-empty-pool-under-a-cap-eliminates-any-collateral, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, a-fee-paid-after-the-draw-is-paid-on-its-date, contract-dates-in-the-company-view]
+adversarial_case_ids: [tampered-envelope, undeclared-inheritance, base-inherits, two-bases, silent-stress, different-proposals-across-cases, mixed-currency, accrued-coupon-without-payment-schedule, repay-all-without-settling-the-accrued-coupon, draw-outside-the-horizon, charge-paid-to-unknown-instrument, business-day-convention-without-counts, charge-counted-twice, business-days-off-the-national-calendar, negative-collateral, full-repayment-leaving-the-accrued-coupon, proposal-repaid-leaving-its-accrued-coupon, fee-after-the-draw-declared-as-withheld, repeated-installment-date, curve-not-covering-the-first-year, two-rates-for-one-year, stress-starting-outside-the-horizon, draw-date-outside-the-draw-quarter, free-result-in-request, fabricated-grant-in-result]
 e2e_scenario_ids: [domain:c02-three-proposals-independent-oracle]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [compare-financing-proposals-2026-10-19-v2-consistency]
 adversarial_run_ids: [compare-financing-proposals-2026-10-19-v2-adversarial]
+review_ids: [compare-financing-proposals-2026-10-19-v2-independent-review]
 gold_run_ids: [compare-financing-proposals-2026-10-19-v2-gold]
 ---
 
@@ -70,16 +71,17 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 8. [human_judgment] Devolver e continuar :: Leitura em duas ou três frases, quadro normalizado e fatos que mudam a escolha; ressalvas de firmeza e reciprocidade; oferecer os pedidos prontos sem enviá-los; refazer o quadro quando chegar versão nova | evidence: base autorizada, fontes e versões
 
 # Cálculos determinísticos
-- Custo efetivo equivalente: spread anual que, composto com o indexador de cada período da curva datada, zera o valor presente dos fluxos líquidos da companhia (desembolso líquido de comissão e tributos retidos, juros, principal e todo encargo pago ao credor depois da entrada, como tarifa recorrente, na data em que é pago). Comissão e tributo entram uma única vez. Não é CET regulatório e não usa CDI constante nem custo de entrada dividido pelo prazo.
+- Custo efetivo equivalente: spread anual que, composto com o indexador de cada período da curva datada, zera o valor presente dos fluxos líquidos da companhia (desembolso líquido de comissão e tributos retidos, juros, principal e todo encargo pago ao credor depois da entrada, como tarifa recorrente, na data em que é pago). Comissão e tributo entram uma única vez. IOF de crédito: alíquota fixa sobre o valor mais a diária sobre cada parcela, pelos dias corridos do desembolso ao pagamento dela, até o teto declarado. A última taxa da curva vale para os anos seguintes; nenhuma taxa é estendida para anos anteriores ao primeiro informado. Dedutibilidade de encargo da dívida existente e do waiver vem do documento ou da pessoa; sem ela, lacuna. Nas datas do contrato, só a comissão e o tributo datados no próprio desembolso são retidos na entrada; os pagos depois entram na data em que são pagos, e declarar como retido um encargo pago depois é recusado. Proposta em moeda diferente da companhia é recusada, porque não há conversão adotada. Encargo da proposta é pago do caixa disponível; outro tratamento declarado é recusado, porque não seria calculado. Fatos ambíguos (parcela repetida, curva que não cobre o primeiro ano projetado, duas taxas para o mesmo ano, estresse fora do horizonte, data do desembolso fora do trimestre) são recusados antes de propor premissas, e na extração viram lacuna nomeada. Não é CET regulatório e não usa CDI constante nem custo de entrada dividido pelo prazo.
 - Datas: com datas contratuais (desembolso e dia de pagamento), a vida corre nessas datas, o CDI acumula por dias úteis do calendário nacional de feriados bancários sobre 252 e os períodos se partem em 1º de janeiro, onde a curva muda; sem elas, cada trimestre conta como um quarto de ano e o resultado é declarado como aproximação trimestral.
 - Cada proposta é descrita uma única vez, pela vida da operação. A presença dela na companhia sai desse mesmo cronograma: o desembolso cai no período que contém a data, juros pagos e principal no período de cada pagamento, e os juros apropriados são cortados nos fins de período pela própria convenção (dias úteis do calendário nacional sobre 252, ou dias corridos sobre 365); uma fração de grade não se corta e precisa terminar nos fins de período. A entrada retida precisa ser igual à comissão e ao tributo do período do desembolso.
 - Vida média ponderada pelo principal nas datas efetivas de amortização.
 - Juros acumulados até o pagamento (periodicidade semestral, por exemplo) acumulam sobre principal mais juros não pagos somente quando a convenção adotada diz isso, e nunca viram principal.
 - Companhia com cada proposta: dívida vigente e pré-pagamentos decididos são comuns a todas; cada proposta traz seu instrumento e seus encargos (comissão, tributos, waiver que ela exige). Imposto caixa recalculado por período com os juros e os encargos dedutíveis daquela proposta; encargo não dedutível pela regra adotada afeta caixa e não base.
 - Menor caixa medido nos fechamentos de período a partir do período do desembolso de cada proposta; serviço da dívida por ano soma juros pagos e principal de todos os instrumentos.
-- Quitação antecipada de dívida existente com juros acumulados precisa liquidar também os juros acumulados no mesmo período; o contrário é recusado.
+- Quitação antecipada de dívida existente com juros acumulados precisa liquidar também os juros acumulados no mesmo período; quitação integral que deixa juros acumulados em aberto é recusada, tanto na dívida existente quanto no cronograma da própria proposta.
 - Covenant projetado: dívida líquida (com o passivo de arrendamento quando a definição inclui) sobre o EBITDA dos últimos quatro trimestres (menos arrendamentos pagos quando a definição exclui IFRS 16), nas datas de teste de cada proposta, com o histórico necessário para completar a janela. Folga = limite menos índice.
-- Recebíveis livres depois = carteira livre antes menos a garantia consumida; garantia acima do limite da política adotada elimina.
+- Folga do covenant na data de teste mais apertada: em pontos, limite menos índice; em EBITDA, EBITDA na definição do credor menos a dívida líquida dividida pelo limite, isto é, quanto o EBITDA pode cair até o índice tocar o limite (negativa quando já rompe).
+- Recebíveis livres depois = carteira livre antes menos a garantia consumida; garantia acima do limite da política adotada elimina. Com limite adotado e carteira livre zero, qualquer garantia positiva elimina. Carteira, garantia e participação da garantia no empréstimo são não negativas, e a participação fica entre 0 e 1.
 - Custo financeiro no horizonte = juros pagos mais todos os encargos no período projetado; não substitui o custo pela vida, porque a proposta que amortiza antes parece mais barata nesse recorte.
 - Precisão: aritmética decimal de alta precisão; taxas efetivas por período com até dezesseis casas e componentes monetários da dívida com até oito casas, como adotados; resultados sem arredondamento adicional.
 
@@ -139,9 +141,9 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 - packages/financial-model/src/financing-comparison-premises.test.ts e financing-comparison-composer.test.ts: fatos com origem, premissas propostas, base adotada e composição até o oráculo, na grade trimestral e nas datas do contrato.
 ## Gold
 - c02-three-proposals-independent-oracle e bank-stress-independent-oracle: custo efetivo, vida média, menor caixa, covenant, custo no horizonte e dívida líquida das três propostas reproduzem o oráculo independente.
-- lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, contract-dates-in-the-company-view.
+- lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, an-empty-pool-under-a-cap-eliminates-any-collateral, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, a-fee-paid-after-the-draw-is-paid-on-its-date, contract-dates-in-the-company-view.
 ## Adversarial
-- Base adulterada, herança não declarada, base que herda, duas bases, estresse sem descrição, propostas diferentes entre casos, moeda misturada, juros acumulados sem calendário de pagamento, quitação antecipada sem liquidar juros acumulados, desembolso fora do horizonte, encargo pago a instrumento inexistente, convenção de dias úteis sem a contagem, encargo contado duas vezes, dias úteis fora do calendário nacional, número livre no pedido e concessão fabricada no resultado são recusados.
+- Base adulterada, herança não declarada, base que herda, duas bases, estresse sem descrição, propostas diferentes entre casos, moeda misturada, juros acumulados sem calendário de pagamento, quitação antecipada sem liquidar juros acumulados, desembolso fora do horizonte, encargo pago a instrumento inexistente, convenção de dias úteis sem a contagem, encargo contado duas vezes, dias úteis fora do calendário nacional, garantia negativa, quitação integral que deixa juros acumulados, proposta quitada com juros acumulados em aberto, comissão paga depois declarada como retida na entrada, parcela repetida na mesma data, curva do indexador que não cobre o primeiro ano, duas taxas do indexador para o mesmo ano, estresse que começa fora do horizonte, data do desembolso fora do trimestre informado, número livre no pedido e concessão fabricada no resultado são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts, com tolerância declarada por indicador.
 - Executar a conversa da ficha C02 turno a turno pela interface real com fontes e direitos do ambiente de teste; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -7510,6 +7512,12 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                             "type": "string"
                                           }
                                         },
+                                        "ebitdaHeadroom": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
                                         "allComply": {
                                           "required": true,
                                           "value": {
@@ -7805,7 +7813,9 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/compare-financing-proposals-2026-10-19-v2-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/compare-financing-proposals-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

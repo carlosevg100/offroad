@@ -18,7 +18,7 @@ describe("C03 packet: why the company pays more than its peer", () => {
     expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(by)).toEqual(["weighs_against", "weighs_against", "neutral", "weighs_little", "weighs_against", "weighs_against",
       "weighs_against", "weighs_against", "weighs_against", "neutral"]);
     expect(packet.lens.notDrivers).toContain(c03Id(402));
-    expect(packet.lens.impliedNotches).toMatchObject({fewest: "1.83333333333333333333", most: "2.2", peerRating: "AA(bra)", readingOnly: true});
+    expect(packet.lens.impliedNotches).toMatchObject({direction: "company_pays_more", fewest: "1.83333333333333333333", most: "2.2", peerRating: "AA(bra)", readingOnly: true});
   });
   it("prices the levers: prepaying only for the rate does not pay; rating breaks even on spread", () => {
     const lever = (id: string) => packet.levers.find((l) => l.actionId === id)!;

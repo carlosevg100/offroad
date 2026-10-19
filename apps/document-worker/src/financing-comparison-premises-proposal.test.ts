@@ -18,8 +18,8 @@ function c02Extraction(): FinancingComparisonExtraction {
     covenantEbitdaExcludesLeases: doc(!leases, `ts-${label}.pdf`),
     covenantTestFrequency: doc(frequency, `ts-${label}.pdf`), covenantDescription: null, waiverRequired: doc(waiver, `ts-${label}.pdf`),
     waiverCreditor: waiver ? doc("Debênture 2021", `ts-${label}.pdf`) : none, waiverMonth: waiver ? doc("2026-12", `ts-${label}.pdf`) : none,
-    waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
-  return {needSituation: informed("seasonal-working-capital" as const, "alongar os vencimentos de 2027"),
+    waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, waiverDeductible: waiver ? informed(false, "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
+  return {
     proposals: [proposal("itau", 0.023, 0.01, true, "2028-07", 8, 6, 3, 0.4, 3, true, "semiannual", true),
       proposal("santander", 0.0255, 0.008, true, "2029-07", 6, 6, 3, 0.3, 3, false, "annual", true),
       proposal("fundo", 0.031, 0.015, false, "2031-01", 2, 12, 6, 0, 2.75, false, "semiannual", false)],
@@ -27,12 +27,12 @@ function c02Extraction(): FinancingComparisonExtraction {
       workingCapitalCashFlow: String(-0.625 + ([1, 5, 9].includes(q) ? -25 : 0) + ([2, 6].includes(q) ? 25 : 0)), maintenanceCapex: "2", growthCapex: "0"})), "projecao-trimestral.xlsx"),
       previousQuarters: doc([{period: "1T26", ebitda: "13.5", leasePayments: "0.75"}, {period: "2T26", ebitda: "13.5", leasePayments: "0.75"}], "gerencial"),
       openingCash: doc("35", "gerencial"), cashTaxRate: informed(0.34, "lucro real"), minimumCash: informed("15", "caixa mínimo de 15"),
-      receivablesPool: doc("58", "gerencial"), leaseLiability: doc("8", "demonstrações")},
+      receivablesPool: doc("58", "gerencial"), leaseLiability: doc("8", "demonstrações"), maximumCollateralShare: none},
     existingDebt: doc([
       {label: "Debênture 2021", openingPrincipal: "60", rateKind: "floating", annualRate: 0.024, averagePrincipalCoupon: false, couponEveryMonths: 6,
         draws: [], amortizations: ["2026-12", "2027-06", "2027-12", "2028-06"].map((month) => ({month, amount: "15"})), prepayments: [], charges: []},
       {label: "CCB Bradesco", openingPrincipal: "40", rateKind: "floating", annualRate: 0.026, averagePrincipalCoupon: false, couponEveryMonths: 3,
-        draws: [], amortizations: [], prepayments: [{month: "2027-01", amount: "40"}], charges: [{label: "prêmio", kind: "premium", month: "2027-01", amount: "0.4"}]},
+        draws: [], amortizations: [], prepayments: [{month: "2027-01", amount: "40"}], charges: [{label: "prêmio", kind: "premium", month: "2027-01", amount: "0.4", deductible: true}]},
     ], "tabela de dívida"),
     indexCurve: doc([{year: 2026, annualRate: 0.149}, {year: 2027, annualRate: 0.14}, {year: 2028, annualRate: 0.1275}, {year: 2029, annualRate: 0.12}], "curva DI"),
   };
@@ -55,7 +55,7 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(c.facts.existingDebt.value[0]!.accruedPaymentQuarters).toEqual([1, 3, 5, 7, 9]);
     expect(c.facts.openingDate).toBe("2026-06-30");
     expect(itau!.contractDates).toEqual({drawDate: "2027-01-15", paymentDay: 15});
-    expect(c.housePremiseKeys.sort()).toEqual(["creditTax", "stress", "waiverDeductibility"]);
+    expect(c.housePremiseKeys.sort()).toEqual(["creditTax", "stress"]);
   });
   it("asks for what nobody stated instead of inventing it", () => {
     const e = c02Extraction(); e.proposals[2]!.feeRate = none; e.company.cashTaxRate = none;
@@ -64,11 +64,10 @@ describe("financing comparison premises proposed from a turn", () => {
   it("builds a proposal whose hypotheses carry origin and no identity until the person confirms", () => {
     const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
-    const p = buildFinancingComparisonPremiseProposal(c.facts, c.situationId);
+    const p = buildFinancingComparisonPremiseProposal(c.facts);
     expect(p.methodId).toBe("compare-financing-proposals"); expect(p.hypotheses.length).toBeLessThanOrEqual(256);
     expect(p.hypotheses.every((h) => h.dimensions.entityId === null && h.fieldPath.startsWith(`comparison.${comparisonId}.`) && /^Origem: /.test(h.reason))).toBe(true);
-    expect(p.fingerprint).toBe(buildFinancingComparisonPremiseProposal(c.facts, c.situationId).fingerprint);
-    expect(p.summary.situationId).toBe("seasonal-working-capital");
+    expect(p.fingerprint).toBe(buildFinancingComparisonPremiseProposal(c.facts).fingerprint);
   });
   it("never infers a contract clause: EBITDA definition, the consenting creditor and a half pair of dates are gaps", () => {
     const e = c02Extraction(); e.proposals[0]!.covenantEbitdaExcludesLeases = none;
@@ -84,16 +83,40 @@ describe("financing comparison premises proposed from a turn", () => {
     const z = c02Extraction(); z.proposals[2]!.feeRate = doc(0, "ts-fundo.pdf");
     const zc = completeFinancingComparisonFacts({extraction: z, ids, currency: "BRL"});
     if (zc.status !== "complete") throw new Error(zc.missing.join(","));
-    expect(buildFinancingComparisonPremiseProposal(zc.facts, zc.situationId).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
+    expect(buildFinancingComparisonPremiseProposal(zc.facts).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
   });
   it("keeps each clause's own origin and refuses a coupon period off whole quarters", () => {
     const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
-    const p = buildFinancingComparisonPremiseProposal(c.facts, c.situationId);
+    const p = buildFinancingComparisonPremiseProposal(c.facts);
     const charges = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.charges.chargeIds`))!;
-    expect(charges.reason).toContain("waiver, informado (assembleia da debênture de 2021)");
+    expect(charges.reason).toContain("custo do waiver, informado (assembleia da debênture de 2021)");
+    expect(charges.reason).toContain("credor do waiver, documento (ts-itau.pdf)");
+    const ebitdaClause = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.covenant.ebitdaExcludesLeases`))!;
+    expect(ebitdaClause.reason).toBe("Origem: documento. ts-itau.pdf");
     expect(charges.reason).toContain("comissão, documento (ts-itau.pdf)");
     expect(charges.reason.startsWith("Origem: ")).toBe(true);
+    const cfo = c02Extraction(), first = cfo.proposals[0]!;
+    first.installments = {...first.installments!, origin: "informed", source: "CFO, número de parcelas"};
+    first.installmentEveryMonths = {...first.installmentEveryMonths!, origin: "informed", source: "CFO, intervalo"};
+    const q = completeFinancingComparisonFacts({extraction: cfo, ids, currency: "BRL"});
+    if (q.status !== "complete") throw new Error("expected complete");
+    const principal = buildFinancingComparisonPremiseProposal(q.facts).hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${q.facts.proposals[0]!.value.id}.lifetime.scheduledPrincipal`))!;
+    expect(principal.reason).toContain("número de parcelas, informado (CFO, número de parcelas)");
+    expect(principal.reason).toContain("intervalo entre parcelas, informado (CFO, intervalo)");
+    expect(principal.reason).toContain("primeira amortização, documento (ts-itau.pdf)");
+    const twice = c02Extraction(); twice.indexCurve.value!.push({...twice.indexCurve.value![0]!, annualRate: 0.15});
+    expect(completeFinancingComparisonFacts({extraction: twice, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
+    // Deductibility and curve coverage are stated or gaps, never assumed (independent review, ninth round).
+    const undeclared = c02Extraction(); undeclared.existingDebt.value!.find((d) => d.charges.length)!.charges[0]!.deductible = null;
+    expect(completeFinancingComparisonFacts({extraction: undeclared, ids, currency: "BRL"})).toMatchObject({status: "missing"});
+    const late = c02Extraction(); late.indexCurve.value = late.indexCurve.value!.filter((c) => c.year >= 2028);
+    expect(completeFinancingComparisonFacts({extraction: late, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
+    // The company's collateral cap, when stated, reaches the facts with its source (tenth review condition).
+    const cap = c02Extraction(); cap.company.maximumCollateralShare = informed(0.4, "política de garantias do CFO");
+    const capped = completeFinancingComparisonFacts({extraction: cap, ids, currency: "BRL"});
+    if (capped.status !== "complete") throw new Error("expected complete");
+    expect(capped.facts.company.maximumCollateralShare).toEqual({value: "0.4", origin: "informed", source: "política de garantias do CFO"});
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
     expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
   });

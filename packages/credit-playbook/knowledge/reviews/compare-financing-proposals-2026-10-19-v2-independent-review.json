@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "compare-financing-proposals-2026-10-19-v2-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "compare-financing-proposals",
+    "version": "2026.10.19-v2",
+    "fingerprint": "830ccf3bada795b99c2c2983db2e668ec36603b27bf182b9f74a58296bf49628"
+  },
+  "run": {
+    "id": "c02-r11-162623",
+    "startedAt": "2026-10-19T16:26:23Z",
+    "finishedAt": "2026-10-19T16:32:51Z",
+    "commit": "4d2cd4072811707e012e174ee50876507479e967"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 33 SHA-256 fixados conferem. Cada arquivo também é idêntico ao conteúdo do commit cd35fef1a40ae8454fa8bc1299dc92d550deb6fa. A reconferência final confirmou HEAD e árvore de trabalho limpa.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/compare-financing-proposals-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Desde o commit da décima revisão, mudaram somente o worker, seu teste e os metadados do manifesto de hashes. Nos arquivos fixados, a única mudança funcional é a extração e transmissão de maximumCollateralShare.",
+      "source": "git diff 275b571ee30a63a86dacac821594d75323227b2a 4d2cd4072811707e012e174ee50876507479e967",
+      "result": "confirmed",
+      "note": "Os outros 31 arquivos fixados permanecem byte a byte iguais. Procedimento, cálculos, contratos, calibrações, correções anteriores e três registros de execução foram preservados."
+    },
+    {
+      "claim": "Os dois hashes externalOracle conferem. O oráculo, executado exclusivamente em cópia temporária com sua dependência C32, reproduziu resultados.json byte a byte.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C02/modelo_c02.py",
+      "result": "confirmed",
+      "note": "SHA-256 do resultado regenerado: 43083633408bf5d3493b068593eeb29f99e98428f35d6b4d21b0ead4572c7311."
+    },
+    {
+      "claim": "Foram revisitados conteúdo profissional, cálculos, condições de parada, outputs, composição tipada, pacote, adaptador, binding, compositor, propositor de premissas, calendário, worker e kernels financeiros.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
+      "result": "confirmed",
+      "note": "Também foram lidos corpo.html, o modelo C32 e as revisões anteriores indicadas. O executor permanece prepareFinancingComparisonPacket, versão 2026.10.19-v1."
+    },
+    {
+      "claim": "Uma reconstrução própria em Python Decimal, sem importar cálculos TypeScript nem funções dos oráculos, confirmou 936 comparações principais e 144 adicionais.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/independent.py",
+      "result": "confirmed",
+      "note": "A maior diferença principal contra o pacote foi 0,000000033333334; contra o oráculo publicado com quatro casas, 0,000048843566. Todas ficaram abaixo de 0,00005. Foram confrontados indicadores, datas, covenants e séries de impostos, caixa, dívida, juros e principal. A modalidade contratual foi reconstruída por apropriação diária em dias úteis."
+    },
+    {
+      "claim": "Todos os indicadores trimestrais das três propostas conferem no caso base.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/independent-results.json",
+      "anchor": "quarterly.base",
+      "result": "confirmed",
+      "note": "Ordem: spread percentual; vida em anos; menor caixa/trimestre; serviço 2028; pior covenant/folga; recebíveis livres; custo no horizonte; dívida líquida final. Itaú: 4,0000; 3,5; 13,2636/4T28; 64,3725; 1,9475/1,0525; 30; 51,8920; 81,3197. Santander: 4,0047; 4; 19,4592/2T28; 56,1175; 1,9071/1,0929; 37; 52,4246; 81,6387. Fundo: 3,5475; 4,75; 20,7828/2T28; 56,7119; 1,8788/0,8712; 58; 51,2504; 80,5113. Valores monetários em R$ milhões."
+    },
+    {
+      "claim": "O estresse de EBITDA 15% menor desde 4T26 confere nas três propostas, respeitando definição, histórico móvel e datas de cada credor.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/independent-results.json",
+      "anchor": "quarterly.bank-stress",
+      "result": "confirmed",
+      "note": "Mínimos em 4T28: Itaú -0,2610; Santander 8,1700; fundo 9,7266. Piores covenants em 4T27, índice/folga: 2,4513/0,5487; 2,4368/0,5632; 2,3936/0,3564. Folgas em EBITDA: 8,7988; 8,4681; 5,8457. Dívidas líquidas finais: 94,8443; 95,1633; 93,6068. Spread, vida, serviço, garantias, recebíveis livres e custo no horizonte permanecem iguais ao base."
+    },
+    {
+      "claim": "A modalidade contratual também confere com o recálculo independente, incluindo apropriação entre pagamentos, impostos, caixa e covenants.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/independent-results.json",
+      "anchor": "dated",
+      "result": "confirmed",
+      "note": "Ordem Itaú, Santander, fundo. Spreads: 4,118857762%; 4,088867142%; 3,567112894%. Vidas DU/252: 3,220238095; 3,715608466; 4,468253968 anos. Mínimos no base: 15,852342679; 22,142922369; 26,125448550. No estresse: 2,327742679; 10,891912704; 15,334391061. Serviços de 2028: 64,458738362; 56,202390737; 57,054460380. A leitura contratual preserva caixa positivo do Itaú no estresse."
+    },
+    {
+      "claim": "A variante datada do oráculo mantém o erro de feriados móveis já declarado; o calendário do método confere com algoritmo gregoriano independente.",
+      "source": "packages/financial-core/src/business-day-calendar.ts",
+      "anchor": "gregorianEaster; brazilianBusinessDays",
+      "result": "limitation",
+      "note": "O recálculo independente confirma Páscoa em 28/03/2027. A seção datada incorreta do oráculo não foi usada como padrão numérico. Sua calibração trimestral permanece válida; os resultados contratuais foram confrontados com calendário e cálculo próprios."
+    },
+    {
+      "claim": "As variantes negociadas da ficha conferem: Itaú com carência de 30 meses e cessão de 30% resulta em CDI + 3,816571545%; Santander a CDI + 2,30 resulta em CDI + 3,744873917%.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/independent-results.json",
+      "anchor": "negotiated",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O teto declarado de 40% percorreu worker, fatos, proposta de premissas, adoção, composição e pacote, preservando fração, origem e fonte.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/reviewer-mutations.json",
+      "anchor": "cap",
+      "result": "confirmed",
+      "note": "O ensaio forneceu extração estruturada ao worker, sem chamada a modelo. O fato resultou em value=\"0.4\", origin=\"informed\" e fonte do CFO. A hipótese e a contribuição adotada preservaram essa fonte. A base contém 205 premissas; os dois casos receberam policies.maximumCollateralShare=\"0.4\"."
+    },
+    {
+      "claim": "A regra existente elimina corretamente o Itaú quando o teto extraído chega à base. A condição de cobertura da décima revisão foi resolvida.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/reviewer-mutations.json",
+      "anchor": "cap.proposals",
+      "result": "confirmed",
+      "note": "R$ 28 milhões excedem 40% de R$ 58 milhões, cujo teto é R$ 23,2 milhões. Itaú recebe collateral_above_policy no base e no estresse e sai das viáveis. Santander, com R$ 21 milhões, e fundo, sem garantia, permanecem viáveis quanto à regra. Ausência declarada permanece null; teto zero é preservado e elimina os dois bancos; informar 40 em vez de 0.4 é recusado pelo schema."
+    },
+    {
+      "claim": "As definições centrais foram confirmadas: fluxos líquidos com encargos contados uma vez, cupom acumulado fora do principal, impostos por proposta, covenant móvel e mínimo de caixa desde o desembolso.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/reviewer-mutations.json",
+      "result": "confirmed",
+      "note": "Principal 100 com cupom de 10% gera apropriações 10 e 11, pagamentos 0 e 21 e principal constante. Foram exercitadas as quatro combinações independentes de dívida com/sem arrendamentos e EBITDA com/sem IFRS 16, completando a janela com histórico. Caixa abaixo do mínimo adotado condiciona sem eliminar. Dedutibilidade e piso tributário foram confrontados com recálculo próprio."
+    },
+    {
+      "claim": "Premissa ausente gera lacuna nomeada, sem valor substituto. O estresse só herda operandos quando a herança está declarada.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/reviewer-mutations.json",
+      "anchor": "missingFee; noInheritance",
+      "result": "confirmed",
+      "note": "Retirar a adoção da comissão do fundo produz status partial, lacunas explícitas e comparação dos dois bancos. Retirar inheritedScenario provoca analysis_basis_context_mismatch. O worker também mantém as ausências de comissão e dedutibilidade como lacunas nos testes oficiais."
+    },
+    {
+      "claim": "Os 25 adversariais registrados representam fronteiras reais e reproduziram seus resultados. Mutações próprias adicionais também foram recusadas.",
+      "source": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+      "anchor": "adversarialCases",
+      "result": "confirmed",
+      "note": "Foram verificadas integridade da base, herança, identidade dos casos, moeda, cronogramas, liquidação de cupom, encargos, calendário, curva, garantias e concessões fabricadas. Ensaios próprios recusaram desembolso posterior ao horizonte, instrumento duplicado, encargo anterior à abertura, séries incompatíveis nos fatos e na adoção e contribuição monetária reutilizada."
+    },
+    {
+      "claim": "As correções anteriores de tributo por parcela, dedutibilidade e encargos posteriores ao horizonte permanecem corretas e foram exercitadas novamente.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/check-extra.py",
+      "result": "confirmed",
+      "note": "Parcelas de 35 em 15/04 e 15/07 após desembolso em 15/01/2027 produzem IOF de 1,043770 e spread de 9,684200431%, confirmados independentemente. Tarifa do fundo de 1 em 31/12/2029 eleva o spread para 3,816944382%, preservando caixa, dívida e custo até 4T28. Os registros também reexecutaram tarifa recorrente no horizonte e comissão posterior ao desembolso."
+    },
+    {
+      "claim": "Passaram todos os testes solicitados e complementares: 18 no financial-model, 58 no financial-core e sete no worker, além dos sete ensaios próprios.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s",
+      "result": "confirmed",
+      "note": "Os testes foram executados na cópia temporária, com resolução dos pacotes locais dessa cópia e cache externo. As corridas reproduziram integralmente 18 casos gold, 25 adversariais e seis de consistência, incluindo fingerprints."
+    },
+    {
+      "claim": "A repetição confirmou estabilidade dos bytes e ausência de mutação das entradas.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c02-r11-xmu5_31s/repo/packages/financial-model/src/reviewer-r11.test.ts",
+      "result": "confirmed",
+      "note": "Os pacotes trimestral, contratual e de negociação foram recalculados e comparados por serialização integral. A repetição do cálculo independente manteve o SHA-256 82e95a50683aa244bf6b08dcc08472ff21c3aa924459b1ee69aa770a23512c74. O oráculo regenerado também permaneceu idêntico."
+    },
+    {
+      "claim": "O conteúdo profissional atende ao padrão sênior de DCM no escopo declarado e incorpora os pontos essenciais do gabarito.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
+      "anchor": "Sequência operacional; Stop conditions; Narrativa; Fundamentação profissional",
+      "result": "confirmed",
+      "note": "Cobre custo, liquidez, garantias, definições de covenant, firmeza, validade, waiver, pré-pagamento, reciprocidade e negociação. Distingue aproximação trimestral de datas contratuais e limita a viabilidade ao horizonte calculado. Não identifiquei travessão, slogan, construção retórica proibida ou julgamento de intenção bancária. O pacote declara suas exclusões e não escolhe contraparte nem concede execução."
+    },
+    {
+      "claim": "O limite de 256 premissas continua aceitável como restrição explícita de capacidade, mantendo a condição de separar rodadas adicionais com rastreabilidade.",
+      "source": "packages/domain-contracts/src/contextual-adoption.ts",
+      "anchor": "entries.max(256); procedimento: Stop conditions, Capacidade",
+      "result": "limitation",
+      "note": "O percurso contratual com teto utiliza 205 premissas. Uma base com 257 foi recusada. A negociação em base própria preserva a matemática quando conserva fontes, versões, contexto comum e identificação dos termos alterados. O limite não autoriza truncamento silencioso nem comprova capacidade irrestrita para todas as combinações admitidas pelos schemas."
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "Manter explícito o limite de 256 premissas, com rodadas adicionais em bases separadas e rastreáveis, preservando fontes, versões, contexto comum e termos alterados, sem truncamento silencioso."
+  ],
+  "notes": "A condição da décima revisão relativa à extração do teto de garantias foi resolvida e confirmada por execução completa do caminho determinístico. Não encontrei divergência numérica acima de 0,00005 nem definição financeira incorreta nos caminhos ensaiados. O resultado permanece condicional exclusivamente pela restrição de capacidade já declarada. As calibrações, correções e corridas anteriores permaneceram inalteradas. A variante datada defeituosa do oráculo foi distinguida da referência trimestral válida e confrontada com calendário e recálculo independentes. O ensaio do worker verifica o processamento de uma extração estruturada; não comprova a qualidade de extração de um modelo sobre documentos arbitrários. A aprovação profissional humana permanece pendente conforme o procedimento. Esta revisão não constitui publicação, ativação, aprovação de crédito ou comprovação de jornada pela interface. Todos os arquivos gerados ficaram em diretório temporário fora do repositório original; nenhum arquivo foi escrito dentro dele, e a árvore de trabalho permaneceu limpa."
+}

@@ -40,8 +40,10 @@ export function composeBoundFinancingComparison(raw: unknown): FinancingComparis
   if (!comparisonId || !ids.includes(comparisonId)) throw new Error("financing_comparison_ambiguous");
   const prefix = `comparison.${comparisonId}.`;
   const own = entries.filter((e) => e.fieldPath.startsWith(prefix));
+  const member = new RegExp(`^(${uuid})\\.`);
   const members = (kind: "debt" | "proposal") => [...new Set(own.flatMap((e) => {
-    const m = new RegExp(`^${prefix.replace(/\./g, "\\.")}${kind}\\.(${uuid})\\.`).exec(e.fieldPath); return m ? [m[1]!] : [];}))].sort();
+    const head = `${prefix}${kind}.`;
+    const m = e.fieldPath.startsWith(head) ? member.exec(e.fieldPath.slice(head.length)) : null; return m ? [m[1]!] : [];}))].sort();
   const debtIds = members("debt"), proposalIds = members("proposal");
   const roleEntries = own.filter((e) => e.fieldPath === prefix + "case.role" && e.value.type === "text");
   if (!roleEntries.length) throw new Error("financing_comparison_cases_missing");

@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
+import type {AdoptionBasisEntry} from "@offroad/reconciliation";
 import {composeBoundFinancingComparison} from "./financing-comparison-composer";
 import {financingComparisonPacketOutputSchema, prepareFinancingComparisonPacket, type FinancingComparisonPacketInput} from "./financing-comparison-packet";
 import {adoptAuroraFacts, auroraFacts, auroraIds, c02Ids, c02PacketInput} from "./financing-comparison.test-support";
@@ -28,6 +29,26 @@ const datedInput = () => {
   const a = adoptAuroraFacts(auroraFacts({dated: true}));
   return composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
 };
+/** The dated case with the adopted premises edited before sealing (the review's own mutations). */
+const datedMutated = (edit: (entries: AdoptionBasisEntry[]) => void) => {
+  const a = adoptAuroraFacts(auroraFacts({dated: true})), snapshot = JSON.parse(a.envelope.canonical) as {entries: AdoptionBasisEntry[]};
+  edit(snapshot.entries);
+  const canonical = JSON.stringify(snapshot), envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
+  return composeBoundFinancingComparison({envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
+};
+/** Dated facts edited before any premise is proposed: ambiguity must stop at the facts. */
+const fromFacts = (edit: (f: ReturnType<typeof auroraFacts>) => void) => {
+  const f = auroraFacts({dated: true}); edit(f);
+  const a = adoptAuroraFacts(f);
+  return composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
+};
+/** Itaú's fee paid on 31/03/2027, after the 15/01/2027 draw; `withheld` says what the advance still withholds. */
+const itauFeeLater = (withheld: "iof" | "fee_and_iof") => datedMutated((entries) => {
+  const path = `proposal.${auroraIds.itau}.`, get = (k: string) => entries.find((e) => e.fieldPath.endsWith(path + k))!;
+  const ids = get("charges.chargeIds").value.value as string[], fee = ids.findIndex((x) => x.endsWith("-fee")), iof = ids.findIndex((x) => x.endsWith("-iof"));
+  const dates = get("charges.dates"); dates.value = {type: "list", value: (dates.value.value as string[]).map((d, n) => (n === fee ? "2027-03-31" : d))} as typeof dates.value;
+  if (withheld === "iof") {const u = get("lifetime.upfrontWithheldCosts"); u.value = {type: "number", value: (get("charges.amounts").value.value as string[])[iof]!} as typeof u.value;}
+});
 /** The fund with a deductible R$ 1 mi recurring fee on 31/12/2027, adopted next to its other charges. */
 const withRecurringFee = () => {
   const p = c02PacketInput(), path = `proposal.${c02Ids.fundo}.charges`;
@@ -87,6 +108,13 @@ function goldCases(): Case[] {
       return observe("negotiated-variants-move-the-cost", input, [["itau-negotiated", 3.82], ["santander-230", 3.74]],
         (p) => rows(p, "base", (m) => new D(m.equivalentSpread!).times(100).toDecimalPlaces(2).toNumber()));
     })(),
+    (() => {
+      const p = c02PacketInput(), rule = p.basis.contribute("company.maximumCollateralShare", "ratio", {type: "number", value: "0.4"});
+      for (const c of p.input.cases) c.analysis.company.maximumCollateralShare = rule;
+      p.basis.entries.find((x) => x.fieldPath.endsWith("company.freeReceivablesPool"))!.value = {type: "number", value: "0"};
+      return observe("an-empty-pool-under-a-cap-eliminates-any-collateral", p.seal() as FinancingComparisonPacketInput,
+        {facts: [["itau", ["collateral_above_policy"]], ["santander", ["collateral_above_policy"]], ["fundo", []]]}, (q) => ({facts: rows(q, "base", (m) => m.eliminatoryFacts)}));
+    })(),
     observe("collateral-above-company-rule-eliminates", withCollateralRule("0.4"), {facts: [["itau", ["collateral_above_policy"]], ["santander", []], ["fundo", []]], viable: ["santander", "fundo"]},
       (p) => ({facts: rows(p, "base", (m) => m.eliminatoryFacts), viable: at(p, "base").viableProposalIds.map((id) => names[id])})),
     (() => {
@@ -105,6 +133,9 @@ function goldCases(): Case[] {
     // Contract dates with national business days: the independent review's dated recomputation (the oracle's dated variant misplaces Easter 2027).
     observe("contract-dates-and-business-days", datedInput(), [["itau", 4.1189], ["santander", 4.0889], ["fundo", 3.5671]],
       (p) => at(p, "base").proposals.map((m) => [auroraNames[m.proposalId], new D(m.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()])),
+    // A fee paid after the draw is a payment on its own date, not withheld (review recomputation: CDI + 4.104439952%).
+    observe("a-fee-paid-after-the-draw-is-paid-on-its-date", itauFeeLater("iof"), {itau: 4.1044},
+      (p) => ({itau: new D(at(p, "base").proposals.find((m) => m.proposalId === auroraIds.itau)!.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()})),
     // The company view on contract dates (review recomputation: Itaú minimum in the bank's case of R$ 2.327742679 mi): the
     // quarterly approximation's negative cash with Itaú does not survive the contract calendar.
     observe("contract-dates-in-the-company-view", datedInput(), {itauStressMinimum: 2.3277, eliminated: [], itauBaseMinimum: 15.8523},
@@ -115,7 +146,7 @@ function goldCases(): Case[] {
 }
 
 /** The base case with one adopted premise replaced, sealed again: the boundary must hold on adopted data. */
-function mutateEntry(suffix: string, value: {type: "list" | "text" | "date"; value: string | string[]}) {
+function mutateEntry(suffix: string, value: {type: "list" | "text" | "date" | "number"; value: string | string[]}) {
   const p = c02PacketInput(), e = p.basis.entries.find((x) => x.fieldPath.endsWith(suffix))!;
   e.value = value as typeof e.value;
   const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
@@ -145,6 +176,23 @@ function adversarialCases(): Case[] {
       const envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
       return composeBoundFinancingComparison({envelope, scope: a.scope, question: "q"});
     }, "proposal_comparison_calendar_mismatch"],
+    ["negative-collateral", () => mutateEntry(`proposal.${c02Ids.itau}.collateralConsumed`, {type: "number", value: "-28"}), "comparison_negative_collateral"],
+    ["full-repayment-leaving-the-accrued-coupon", () => mutateEntry(`debt.${c02Ids.debenture}.paysAccruedCoupon`, {type: "list", value: ["false", "true", "false", "true", "false", "true", "false", "false", "false", "true"]}), "full repayment requires settling the accrued coupon"],
+    ["proposal-repaid-leaving-its-accrued-coupon", () => {
+      // The fund repays its 70 in the first lifetime period while its first coupon stays unpaid.
+      const p = c02PacketInput(), path = `proposal.${c02Ids.fundo}.lifetime.`;
+      const principal = p.basis.entries.find((x) => x.fieldPath.endsWith(path + "scheduledPrincipal"))!, pays = p.basis.entries.find((x) => x.fieldPath.endsWith(path + "paysAccruedInterest"))!;
+      const n = (principal.value.value as string[]).length;
+      principal.value = {type: "list", value: Array.from({length: n}, (_, k) => (k === 0 ? "70" : "0"))} as typeof principal.value;
+      pays.value = {type: "list", value: Array.from({length: n}, (_, k) => String(k > 0))} as typeof pays.value;
+      const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
+    }, "financing_full_repayment_requires_settling_accrued_interest"],
+    ["fee-after-the-draw-declared-as-withheld", () => itauFeeLater("fee_and_iof"), "proposal_comparison_upfront_charges_mismatch"],
+    ["repeated-installment-date", () => fromFacts((f) => {const q = f.proposals[0]!.value.amortizationQuarters; q[1] = q[0]!;}), "Amortization quarters must be distinct and increasing"],
+    ["curve-not-covering-the-first-year", () => fromFacts((f) => {f.indexCurve.value = f.indexCurve.value.filter((c) => c.year >= 2028);}), "Index curve does not cover the first projected year"],
+    ["two-rates-for-one-year", () => fromFacts((f) => {f.indexCurve.value.push({...f.indexCurve.value[0]!, annualRate: "0.15"});}), "Index curve has two rates for the same year"],
+    ["stress-starting-outside-the-horizon", () => fromFacts((f) => {f.stress.fromQuarter.value = 80;}), "Stress starts outside the horizon"],
+    ["draw-date-outside-the-draw-quarter", () => fromFacts((f) => {f.proposals[0]!.value.drawQuarter += 1;}), "Contract draw date outside the draw quarter"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];

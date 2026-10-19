@@ -2,6 +2,10 @@
 
 Teste SQL `supabase/tests/work_premise_proposals.sql` passou no staging (transação desfeita, nenhum dado remanescente): proposta só com capacidade do job, chaves e caminhos estranhos recusados, membro sem acesso não vê nem confirma, confirmação grava três hipóteses como o dono com entidade e definição escolhidas, retentativa idempotente, impressão digital alterada recusada, escrita direta negada. Worker: `investment-premises-proposal.test.ts` (C32 completa com premissas da casa marcadas, custo de capital nunca padrão, falha nunca derruba o turno, UUID v5 com vetor independente). Web: `investment-premises-card.test.tsx` nas duas línguas. financial-model: composer e construtor de premissas reproduzem a C32 pela base adotada.
 
+## 2026-10-19: lote 1 de fichas testado (C02, C03, C04)
+
+Corridas reexecutadas por `financing-comparison-runs.test.ts` (18/25/6), `relative-debt-cost-runs.test.ts` (16/12/6) e `debt-capacity-runs.test.ts` (12/10/6). financial-core 423/423, financial-model 517/517, credit-playbook 506/506, document-worker 1814 aprovados. Revisões independentes em `packages/credit-playbook/knowledge/reviews/*-2026-10-19-v2-independent-review.json`: C02 condicional (limite de 256 premissas declarado), C03 e C04 aprovadas.
+
 ## 2026-10-10: adaptadores revisados para executores compilados
 
 `compiled-executors.eval.mjs` 11/11 (inclui a reprodução do artefato v4 e a recusa de entrada substituída); worker 1802 testes, 1 condicional pulado; `compiled-method-adapters.test.ts` mantém a tabela do worker idêntica à da construção.

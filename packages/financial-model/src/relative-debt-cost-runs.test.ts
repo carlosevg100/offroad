@@ -19,7 +19,7 @@ describe("recorded relative debt cost evaluations", () => {
     expect(records.get(relativeDebtCostRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "c03-decomposition-independent-oracle", "more-than-half-is-not-company-risk", "leverage-is-not-the-driver", "committee-lens-weighs-scale-conversion-and-debt-profile",
       "qualitative-rows-keep-the-adopted-judgment", "residual-read-as-about-two-notches", "prepaying-only-for-the-rate-does-not-pay", "rating-breaks-even-on-spread",
-      "absent-market-adjustment-keeps-the-gross-difference", "absent-indicator-is-a-gap-not-neutral", "unknown-indexer-shows-no-gross-difference", "unlike-indexers-with-a-missing-adjustment-show-no-gross-difference", "a-lever-without-complete-costs-is-not-said-to-pay"]);
+      "absent-market-adjustment-keeps-the-gross-difference", "absent-indicator-is-a-gap-not-neutral", "unknown-indexer-shows-no-gross-difference", "unlike-indexers-with-a-missing-adjustment-show-no-gross-difference", "equivalent-spreads-without-the-bridge-show-no-gross-difference", "a-negative-residual-reads-as-paying-less", "a-zero-difference-has-no-share", "a-lever-without-complete-costs-is-not-said-to-pay"]);
     expect(records.get(relativeDebtCostRunIds.adversarial)!.cases).toHaveLength(12);
     expect(records.get(relativeDebtCostRunIds.consistency)!.cases).toHaveLength(6);
   });

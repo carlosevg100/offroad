@@ -78,6 +78,9 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
   const histLease = column(c.covenantHistoryLeasePayments, "company.covenantHistory.leasePayments", "currency", analysisAmount);
   const minimumCashPolicy = c.minimumCashPolicy ? scalar(c.minimumCashPolicy, "company.minimumCashPolicy", "currency", "number", analysisAmount) : null;
   const maximumCollateralShare = c.maximumCollateralShare ? scalar(c.maximumCollateralShare, "company.maximumCollateralShare", "ratio", "number", ratio) : null;
+  // Economic domains: a receivables pool and collateral are not negative; a share of the pool lies in [0, 1].
+  if (pool !== null && new Exact(pool).lt(0)) throw new Error("comparison_negative_receivables_pool");
+  if (maximumCollateralShare !== null && (new Exact(maximumCollateralShare).lt(0) || new Exact(maximumCollateralShare).gt(1))) throw new Error("comparison_collateral_share_domain");
 
   const instrument = (id: string, t: z.infer<typeof debtTerms>, path: string): DatedDebtInstrument | null => {
     const tx = <T>(k: string, unit: string, schema: z.ZodType<T>) => scalar((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, "text", schema);
@@ -157,6 +160,7 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       limit: scalar(cv.limit, `${path}.covenant.limit`, "ratio", "number", ratio),
       comparator: scalar(cv.comparator, `${path}.covenant.comparator`, "convention", "text", z.enum(["lte", "lt"]))};
     const collateral = scalar(p.collateralConsumed, `${path}.collateralConsumed`, "currency", "number", analysisAmount);
+    if (collateral !== null && new Exact(collateral).lt(0)) throw new Error("comparison_negative_collateral");
     const built = {p, life, cov, collateral, later, charges: charges(p.id, p.charges, `${path}.charges`)};
     return {...built, complete: b.gaps.length === before && collateral !== null
       && Object.entries(life).every(([k, v]) => v !== null || k === "businessDays") && Object.values(cov).every((v) => v !== null)

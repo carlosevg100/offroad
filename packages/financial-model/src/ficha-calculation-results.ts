@@ -76,7 +76,7 @@ const action = z.strictObject({schemaVersion: z.literal("debt-cost-action.v1"), 
 const price = z.strictObject({spreadBps: decimal.nullable(), indexer: text.nullable(), pricingDate: date.nullable()});
 export const adoptedRelativeDebtCostOutputSchema = z.strictObject({...common,
   schemaVersion: z.literal("adopted-relative-debt-cost.v1"), comparisonId: z.uuid(), peerEntityId: z.uuid(), asOfDate: date,
-  own: price, peer: price, bridge: bridge.nullable(), actions: z.array(z.strictObject({actionId: z.uuid(), result: action.nullable()})).max(16),
+  own: price, peer: price, pricingBasis: relativeDebtCostBridgeInputSchema.shape.pricingBasis.nullable(), bridge: bridge.nullable(), actions: z.array(z.strictObject({actionId: z.uuid(), result: action.nullable()})).max(16),
   exclusions: z.array(z.enum(["causal_credit_attribution", "official_rating", "qualitative_credit_lens", "guaranteed_repricing", "publication_or_contact"])).length(5).refine(v => v.join("|") === "causal_credit_attribution|official_rating|qualitative_credit_lens|guaranteed_repricing|publication_or_contact", "Exact exclusion ledger required")});
 
 const checks = z.array(z.strictObject({scenarioId: text, periodId: text, date, ruleId: text,

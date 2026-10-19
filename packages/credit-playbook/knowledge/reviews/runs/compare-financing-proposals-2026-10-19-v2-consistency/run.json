@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:37:18.947Z",
-    "finishedAt": "2026-10-19T14:38:12.318Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T16:11:25.789Z",
+    "finishedAt": "2026-10-19T16:12:33.279Z",
+    "commit": "e2ecb8024d11cfd977f92085c3062df6df9d6653"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "802dcf75b7cd5ae0085c06cc7eb6fff3a2cb12ba52bee129d62ecada1077933f",
-      "outputFingerprint": "e36464257e2663e176d7cf990d9fd0f2d4c7b254d7ccdf26f36e880139f06719",
+      "outputFingerprint": "663fec07441dedc61f99bf10cd01ec2e3a74c19c638a93d8a48dac8b35f0b81e",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "52053c0ad17adc17aa8b1bf43fa57cca9eede98bd020cdbe3b95f0d9843e887b",
-      "outputFingerprint": "877137238243fee046e798050b33cd901b3f674fecbacb37a2a9c6f290166b1b",
+      "outputFingerprint": "247256573b349f3942df9a0ffb38e8312d9b71e4aa3c31ba909fa7d61f46e294",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "52053c0ad17adc17aa8b1bf43fa57cca9eede98bd020cdbe3b95f0d9843e887b",
-      "outputFingerprint": "877137238243fee046e798050b33cd901b3f674fecbacb37a2a9c6f290166b1b",
+      "outputFingerprint": "247256573b349f3942df9a0ffb38e8312d9b71e4aa3c31ba909fa7d61f46e294",
       "passed": true
     },
     {
@@ -67,11 +67,11 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "52053c0ad17adc17aa8b1bf43fa57cca9eede98bd020cdbe3b95f0d9843e887b",
-      "outputFingerprint": "877137238243fee046e798050b33cd901b3f674fecbacb37a2a9c6f290166b1b",
+      "outputFingerprint": "247256573b349f3942df9a0ffb38e8312d9b71e4aa3c31ba909fa7d61f46e294",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7180e75a8423dd165345c05585693ba0f749d4b153c37fd850b46e5d3a0f9dde",
+  "evidenceFingerprint": "460e7328330b1692ab2e91754f9e69c318ce38d2e980337e323166c040659a82",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

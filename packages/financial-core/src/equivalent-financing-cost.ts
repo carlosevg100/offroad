@@ -156,6 +156,9 @@ export function buildDeferredFinancingSchedule(raw: DeferredFinancingScheduleInp
     const amortization = new Exact(p.scheduledPrincipal);
     if (amortization.gt(principal)) throw new Error("financing_amortization_exceeds_principal");
     principal = principal.minus(amortization); time = time.plus(p.yearFraction);
+    // Paying off the principal while accrued interest stays open would leave a residual obligation
+    // that keeps accruing; a full repayment settles the accrued interest in the same period.
+    if (amortization.gt(0) && principal.eq(0) && accrued.gt(0)) throw new Error("financing_full_repayment_requires_settling_accrued_interest");
     weightedLife = weightedLife.plus(amortization.times(time));
     netFlows.push({id: p.id, date: p.endDate,
       amount: formatted(interestPaid.plus(amortization).neg()), sourceAnchor: p.sourceAnchor});

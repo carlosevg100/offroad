@@ -80,6 +80,26 @@ function goldCases(): Case[] {
         (p) => ({decomposition: p.decomposition, gap: p.gaps.some((x) => x.operand.endsWith(".comparability"))}));
     })(),
     (() => {
+      // Equivalent spreads need the bridge's adopted curve: without the full bridge, no gross difference.
+      const g = c03PacketInput(); const a = g.input.analysis.adjustments[2]!;
+      a.terms.bps = {...a.terms.bps, decisionId: null, missingReason: "Missing comparable market sample"};
+      g.entries.find((x) => x.fieldPath.endsWith(".pricingBasis"))!.value = {type: "text", value: "equivalent_spread_on_same_dated_curve"};
+      return observe("equivalent-spreads-without-the-bridge-show-no-gross-difference", g.seal(), {decomposition: null},
+        (p) => ({decomposition: p.decomposition}));
+    })(),
+    (() => {
+      // The company pays less than the peer: a reading of direction and magnitude, never swapped ends.
+      const g = c03PacketInput(); g.entries.find((x) => x.fieldPath.endsWith("own.spreadBps"))!.value = {type: "number", value: "150"};
+      return observe("a-negative-residual-reads-as-paying-less", g.seal(), {residual: "-55", direction: "company_pays_less", fewest: 1.83, most: 2.2},
+        (p) => ({residual: p.decomposition!.creditResidualBps, direction: p.lens.impliedNotches!.direction,
+          fewest: new D(p.lens.impliedNotches!.fewest).toDecimalPlaces(2).toNumber(), most: Number(p.lens.impliedNotches!.most)}));
+    })(),
+    (() => {
+      // Same spread on both sides: the share of a zero difference is undefined, not 0%.
+      const g = c03PacketInput(); g.entries.find((x) => x.fieldPath.endsWith("own.spreadBps"))!.value = {type: "number", value: "135"};
+      return observe("a-zero-difference-has-no-share", g.seal(), {gross: "0", share: null}, (p) => ({gross: p.decomposition!.grossBps, share: p.decomposition!.shareNotAboutCompanyRisk}));
+    })(),
+    (() => {
       const g = c03PacketInput(); const e = g.entries.find((x) => x.fieldPath.endsWith(`action.${g.ids.refinance220}.costCoverage`))!;
       e.value = {type: "text", value: "incomplete"};
       return observe("a-lever-without-complete-costs-is-not-said-to-pay", g.seal(), {paysForItself: null},

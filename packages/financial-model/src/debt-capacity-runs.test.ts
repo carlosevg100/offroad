@@ -20,7 +20,7 @@ describe("recorded debt capacity evaluations", () => {
       "c04-capacity-by-limit-independent-oracle", "phased-capacity-independent-oracle", "covenant-with-headroom-binds", "joint-capacity-is-the-intersection-of-the-limits",
       "sixty-breaks-the-covenant-in-the-adverse-case-as-informed", "phasing-makes-sixty-fit-in-size",
       "size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case", "bndes-eight-years-keeps-cash-positive",
-      "plan-pays-scheduled-principal-without-refinancing", "window-ends-with-the-seasonal-line-open", "absent-threshold-is-a-gap-not-a-default"]);
+      "plan-pays-scheduled-principal-without-refinancing", "window-ends-with-the-seasonal-line-open", "leverage-nets-cash-under-the-adopted-convention", "absent-threshold-is-a-gap-not-a-default"]);
     expect(records.get(debtCapacityRunIds.adversarial)!.cases).toHaveLength(10);
     expect(records.get(debtCapacityRunIds.consistency)!.cases).toHaveLength(6);
   });

@@ -50,7 +50,9 @@ const proposalMetrics = z.strictObject({
   proposalId: z.uuid(), label: text,
   equivalentSpread: engine.nullable(), weightedAverageLifeYears: engine,
   minimumCash: z.strictObject({amount: engine, periodId: key}),
-  covenant: z.strictObject({name: text, worstPeriod: key, worstRatio: engine, headroom: engine, allComply: z.boolean()}),
+  covenant: z.strictObject({name: text, worstPeriod: key, worstRatio: engine, headroom: engine,
+    /** At the worst test date: trailing EBITDA that can be lost before the ratio reaches the limit (negative when it already exceeds). */
+    ebitdaHeadroom: engine, allComply: z.boolean()}),
   debtServiceByYear: z.record(z.string().regex(/^\d{4}$/), engine),
   collateralConsumed: engine, freeReceivablesAfter: engine, horizonFinancingCost: engine, netDebtAtHorizon: engine,
   /** Contractual test dates in the busiest year of the horizon. */
@@ -98,6 +100,12 @@ export type FinancingComparisonPacket = z.infer<typeof financingComparisonPacket
  * each lender's own definition, peak debt service, collateral and horizon cost. Eliminatory facts
  * come before any preference; cheapest and safest are shown side by side. Deterministic and
  * offline; it recommends nothing and grants nothing. */
+/** Covenant EBITDA headroom at the worst test date: trailing EBITDA minus net debt over the limit. */
+function ebitdaHeadroom(c: {limit: string; worst: {period: string}; rows: readonly {period: string; netDebt: string; trailingEbitda: string}[]}) {
+  const row = c.rows.find((r) => r.period === c.worst.period)!;
+  return new Exact(row.trailingEbitda).minus(new Exact(row.netDebt).div(c.limit)).toDecimalPlaces(20).toFixed();
+}
+
 export function prepareFinancingComparisonPacket(raw: unknown): FinancingComparisonPacket {
   const input = financingComparisonPacketInputSchema.parse(raw);
   const results = input.cases.map((c) => ({c, r: adoptedFinancingComparisonOutputSchema.parse(calculateAdoptedFinancingComparison(c.analysis))}));
@@ -108,13 +116,14 @@ export function prepareFinancingComparisonPacket(raw: unknown): FinancingCompari
       const share = r.policies.maximumCollateralShare;
       const facts = [...(new Exact(p.minimumCash.amount).lt(0) ? ["cash_below_zero" as const] : []), ...(p.covenant.allComply ? [] : ["covenant_breach" as const]),
         ...(p.equivalentSpread === null ? ["cost_not_determined" as const] : []),
-        ...(share !== null && pool!.gt(0) && new Exact(p.collateralConsumed).div(pool!).gt(share) ? ["collateral_above_policy" as const] : [])];
+        // With an adopted cap, collateral above the cap's share of the pool eliminates; with an empty pool any collateral does.
+        ...(share !== null && new Exact(p.collateralConsumed).gt(0) && (pool!.isZero() || new Exact(p.collateralConsumed).div(pool!).gt(share)) ? ["collateral_above_policy" as const] : [])];
       const policy = r.policies.minimumCash;
       const conditions = policy !== null && new Exact(p.minimumCash.amount).gte(0) && new Exact(p.minimumCash.amount).lt(policy) ? ["cash_below_policy_minimum" as const] : [];
       const dates = r.comparison!.operands.proposals.find((o) => o.id === p.id)!.covenant.measurementPeriods;
       const perYear = dates.reduce<Record<string, number>>((m, d) => ({...m, [d.slice(0, 4)]: (m[d.slice(0, 4)] ?? 0) + 1}), {});
       return {proposalId: p.id, label: p.label, equivalentSpread: p.equivalentSpread, weightedAverageLifeYears: p.weightedAverageLifeYears,
-        minimumCash: p.minimumCash, covenant: {name: p.covenant.name, worstPeriod: p.covenant.worst.period, worstRatio: p.covenant.worst.ratio, headroom: p.covenant.worst.headroom, allComply: p.covenant.allComply},
+        minimumCash: p.minimumCash, covenant: {name: p.covenant.name, worstPeriod: p.covenant.worst.period, worstRatio: p.covenant.worst.ratio, headroom: p.covenant.worst.headroom, ebitdaHeadroom: ebitdaHeadroom(p.covenant), allComply: p.covenant.allComply},
         debtServiceByYear: p.debtServiceByYear, collateralConsumed: p.collateralConsumed, freeReceivablesAfter: p.freeReceivablesAfter,
         horizonFinancingCost: p.horizonFinancingCost, netDebtAtHorizon: p.netDebtAtHorizon,
         covenantTestsPerYear: Math.max(0, ...Object.values(perYear)), eliminatoryFacts: facts, conditioningFacts: conditions};

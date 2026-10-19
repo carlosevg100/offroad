@@ -128,7 +128,7 @@ export function calculateAdoptedRelativeDebtCost(raw: unknown) {
   }
   const payload = {schemaVersion: "adopted-relative-debt-cost.v1" as const, financialCoreVersion, scope: input.scope,
     comparisonId: input.comparisonId, entityId: input.entityId, peerEntityId: input.peerEntityId, currency: input.currency, asOfDate: input.asOfDate,
-    basisFingerprint: input.envelope.fingerprint, own, peer, bridge, actions: actionResults, gaps, bindings, normalization,
+    basisFingerprint: input.envelope.fingerprint, own, peer, pricingBasis, bridge, actions: actionResults, gaps, bindings, normalization,
     contributions: [...used.values()], derivedDependencies: [{result: "bridge_and_action_estimates", decisionIds: [...used.keys()]}],
     status: gaps.length ? "missing_inputs" as const : "partial_composition" as const,
     classification: [...used.values()].some(e => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,

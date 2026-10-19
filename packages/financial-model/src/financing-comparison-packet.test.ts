@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 import {matchesMethodValue} from "@offroad/credit-playbook";
 import {financingComparisonPacketExecutorContracts} from "./financing-comparison-contracts";
 import {financingComparisonPacketOutputSchema, prepareFinancingComparisonPacket} from "./financing-comparison-packet";
+import {calculateAdoptedFinancingComparison} from "./adopted-financing-comparison";
 import {c02Ids, c02PacketInput} from "./financing-comparison.test-support";
 
 // Expectations come from the independent oracle modelo_c02.py (resultados.json).
@@ -26,6 +27,18 @@ describe("C02 decision packet: proposals compared on the company in every adopte
     expect(r4(stress!.proposals.find((p) => p.proposalId === c02Ids.itau)!.minimumCash.amount)).toBe(-0.261);
     expect(packet.comparison.viableInEveryCaseProposalIds).toEqual([c02Ids.santander, c02Ids.fundo]);
     expect(packet.comparison.conclusionChangingCaseIds).toEqual(["bank-stress"]);
+  });
+  it("states covenant headroom in EBITDA at the worst test date, on each lender's own definition", () => {
+    for (const [n, c] of packet.comparison.cases.entries()) {
+      const kernel = (calculateAdoptedFinancingComparison(sealed.cases[n]!.analysis) as {comparison: {proposals: {id: string; covenant: {limit: string; worst: {period: string}; rows: {period: string; netDebt: string; trailingEbitda: string}[]}}[]}}).comparison;
+      for (const p of c.proposals) {
+        const k = kernel.proposals.find((x) => x.id === p.proposalId)!.covenant, row = k.rows.find((r) => r.period === k.worst.period)!;
+        // EBITDA that can be lost: E - ND / limit, equal to ratio headroom times E over the limit.
+        expect(new Decimal(p.covenant.ebitdaHeadroom).minus(new Decimal(row.trailingEbitda).minus(new Decimal(row.netDebt).div(k.limit))).abs().lt("1e-15")).toBe(true);
+        expect(new Decimal(p.covenant.ebitdaHeadroom).minus(new Decimal(p.covenant.headroom).times(row.trailingEbitda).div(k.limit)).abs().lt("1e-15")).toBe(true);
+        expect(new Decimal(p.covenant.ebitdaHeadroom).gt(0)).toBe(new Decimal(p.covenant.headroom).gt(0));
+      }
+    }
   });
   it("shows the lowest nominal spread is not the lowest equivalent cost", () => {
     expect(packet.comparison.nominalSpreadMisleads).toBe(true);

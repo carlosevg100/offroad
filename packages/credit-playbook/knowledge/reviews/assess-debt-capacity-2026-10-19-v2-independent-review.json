@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "assess-debt-capacity-2026-10-19-v2-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "unknown",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "assess-debt-capacity",
+    "version": "2026.10.19-v2",
+    "fingerprint": "a5e215c709b6f5fd05831759146b08c4cbdbc8ae955da4115007fe5f3d716ce4"
+  },
+  "run": {
+    "id": "c04-r5-151812",
+    "startedAt": "2026-10-19T15:18:12Z",
+    "finishedAt": "2026-10-19T15:23:53Z",
+    "commit": "4c8d1e1d09e769cef1f3d26a588ba7dd3c02a8a6"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 16 arquivos fixados conferem com todos os SHA-256 declarados e permanecem idênticos aos bytes do commit 69d12b1ff4fada8d13564d9e3e1b045f7b727ff0. Os dois arquivos externos também conferem.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/assess-debt-capacity-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "Verificação repetida ao término. HEAD permaneceu no commit solicitado e git status permaneceu vazio."
+    },
+    {
+      "claim": "O oráculo foi executado exclusivamente em cópia temporária e reproduziu resultados.json byte a byte.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/oracle/modelo_c04.py",
+      "result": "confirmed",
+      "note": "SHA-256 do resultado reproduzido: 886486851fd2e507ff4c7391bfa77e96f7a17f1cb491e5a1c1bcce76cb0a70bd."
+    },
+    {
+      "claim": "Foram revisitados procedimento, composição tipada, pacote, adaptador, binding, normalização monetária, contratos e kernels. Os contratos gerados coincidem com o arquivo publicado e com os contratos da composição.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/assess-debt-capacity.md; packages/financial-model/src/debt-capacity-contracts.ts",
+      "result": "confirmed",
+      "note": "O binding confere integridade, escopo, cenário, período, entidade, definição, unidade, escala e reutilização de contribuições. A autorização permanece precondição externa ao executor."
+    },
+    {
+      "claim": "O espelhamento dos drivers anuais foi reconstruído independentemente em Python Decimal, incluindo EBITDA, arrendamentos, giro, manutenção, depreciação, imposto, dívida existente, juros, amortização e fatores da dívida nova.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/recalculate.py",
+      "result": "confirmed",
+      "note": "Foram feitas 2.656 comparações. Desvio máximo dos coeficientes contra frações exatas: 3,334e-21; das projeções: 8e-19, decorrente da serialização das frações; contra o oráculo em ponto flutuante: 3,47e-14. Ficaram dentro das tolerâncias verificadas de 5e-21, 1e-16 e 1e-12, respectivamente."
+    },
+    {
+      "claim": "O recálculo independente com os operandos efetivamente serializados confirmou 2.240 valores de projeção, nos valores revisados e nas capacidades máximas, incluindo as convenções alternativas de caixa.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/replay_serialized.py",
+      "result": "confirmed",
+      "note": "Desvio máximo de 5e-21, igual a meia unidade na vigésima casa decimal. Nenhuma divergência excedeu o arredondamento declarado."
+    },
+    {
+      "claim": "Capacidades em R$ milhões, no quantum de 0,01: informado, covenant 54,80, mercado 76,84 e juros 71,97; faseado, 79,47, 108,60 e 107,64. A uma decimal: 54,8/76,8/72,0 e 79,5/108,6/107,6.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "A enumeração independente percorreu todos os 40.002 pontos das duas grades monetárias. As capacidades conjuntas foram 54,80 e 79,47, coincidentes com o pacote."
+    },
+    {
+      "claim": "O covenant adverso prende no quantum seguinte: dezembro de 2028 no informado e dezembro de 2029 no faseado. As capacidades individuais restringem exatamente as regras adotadas de cada grupo.",
+      "source": "packages/financial-model/src/debt-capacity-packet.ts; packages/financial-model/src/debt-capacity-runs.test.ts",
+      "anchor": "subset; followingChecks; binding",
+      "result": "confirmed",
+      "note": "O contraexemplo de interseção vazia também foi reproduzido: máximos individuais de 200 pelo caixa e 20 pelos juros, com capacidade conjunta nula."
+    },
+    {
+      "claim": "R$ 60 mi, cinco anos, informado: pico base/adverso 2,42218x/3,12010x em 2028; caixa mínimo 13,83276 em 2031 e -22,28940 em 2032; cobertura mínima 2,65462x/2,25643x em 2028.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "Valores monetários em R$ milhões. O pedido rompe o covenant adverso. Projeções e extremos conferidos contra o pacote e o oráculo."
+    },
+    {
+      "claim": "R$ 60 mi, cinco anos, faseado: pico base/adverso 1,87646x/2,58452x em 2029; caixa mínimo 13,50126 em 2031 e -21,43290 em 2032; cobertura mínima 3,17123x/2,69554x em 2029.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "O pedido cabe nos limites de tamanho adotados, mas o perfil de cinco anos deixa caixa negativo no adverso."
+    },
+    {
+      "claim": "R$ 60 mi, BNDES informado: pico base/adverso 2,38909x/3,08080x em 2028; caixa mínimo 25,24762 em 2027 e 2,41381 em 2030; cobertura mínima 2,91197x/2,47517x em 2028.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "A estrutura mantém caixa positivo na janela, mas o cronograma informado ainda rompe o covenant adverso."
+    },
+    {
+      "claim": "R$ 60 mi, BNDES faseado: pico base/adverso 1,85069x/2,55392x em 2029; caixa mínimo 26,32672 em 2027 e 3,35741 em 2031; cobertura mínima 3,31780x/2,82013x em 2027.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "O tamanho cabe e o caixa permanece positivo dentro da janela anual examinada."
+    },
+    {
+      "claim": "Sem dívida nova, principal programado/caixa após juros, em R$ mi: 2027, 6,67/17,69672; 2028, 6,67/20,31823; 2029, 22,67/23,56147; 2030, 19,32/27,03869; 2031, 16/30,36840; 2032, 16/33,65784; 2033, 16/37,07928.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/independent-recalculation.json",
+      "result": "confirmed",
+      "note": "No base, o plano vigente paga o principal programado em todos os anos. Foi utilizado o perfil revisado da debênture, amortizando de 2029 a 2033."
+    },
+    {
+      "claim": "A divergência da quarta rodada foi corrigida: peakLeverage agora aplica a convenção de caixa de cada cenário e coincide com a métrica do covenant no kernel.",
+      "source": "packages/financial-model/src/debt-capacity-packet.ts",
+      "anchor": "prepareDebtCapacityPacket: cálculo de nonnegative e peakLeverage",
+      "result": "corrected",
+      "note": "No contraexemplo de R$ 200 mi com caixa inicial zero e nonnegative_available, o adverso informado apresenta 6,59833971902937420179x em 2028 e o faseado 5,86128110975112199102x em 2029. Ambos conferem com o kernel e com Python independente. Também foram testadas convenções diferentes entre base e adverso e o controle signed_available."
+    },
+    {
+      "claim": "O novo gold leverage-nets-cash-under-the-adopted-convention reproduz o contraexemplo e seu registro foi reexecutado com o mesmo fingerprint.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
+      "result": "confirmed",
+      "note": "O gold registra alavancagens de 5,447x no base e 6,5983x no adverso informado, com caixa adverso negativo. A revisão adicional verificou os valores completos, ambos os cronogramas e a aplicação por cenário."
+    },
+    {
+      "claim": "Na calibração, a alavancagem usa EBITDA menos arrendamentos e inclui a linha sazonal de 20 na dívida de dezembro. A cobertura usa EBITDA sobre juros pagos; a aproximação anual de saldo médio está declarada e o retorno do investimento fica excluído.",
+      "source": "packages/financial-model/src/debt-capacity.test-support.ts; packages/financial-core/src/debt-capacity.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Threshold, tipo de regra, EBITDA e valor solicitado declarados ausentes produziram lacunas explícitas, sem preenchimento por valores padrão. Os cálculos dependentes ficaram indisponíveis.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/packages/financial-model/src/independent-r5.test.ts",
+      "result": "confirmed",
+      "note": "Nos quatro casos, o pacote informado ficou framed; o valor solicitado ausente deixou a revisão nula."
+    },
+    {
+      "claim": "Seis mutações próprias foram recusadas: imposto de 101%, convenção de contrato datado com fatores de saldo médio, crédito de amortização causando juros negativos, tipo de regra desconhecido, threshold de razão zero e substituição do cenário de um operando.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/packages/financial-model/src/independent-r5.test.ts",
+      "result": "confirmed",
+      "note": "As alterações dos valores e dimensões foram feitas antes de selar o envelope, para testar as fronteiras financeiras e de contexto sem depender de uma falha de hash."
+    },
+    {
+      "claim": "Passaram os 16 testes solicitados, os 55 testes selecionados do financial-core e o teste próprio adicional. Foram reproduzidos os 12 casos gold, dez adversariais e seis de consistência, incluindo seus fingerprints.",
+      "source": "packages/financial-model/src/debt-capacity-runs.test.ts; packages/financial-core/src/debt-capacity.test.ts",
+      "result": "confirmed",
+      "note": "Os testes do financial-core incluíram capacidade, cronograma de financiamento e comparação de propostas."
+    },
+    {
+      "claim": "As alterações compartilhadas de liquidação com juros acumulados e de colateral negativo não alteram o caminho de capacidade. Com os dois arquivos anteriores, os pacotes, análises e mutações produziram exatamente os mesmos bytes.",
+      "source": "/var/folders/lc/5pps1dg508qb2vs39z078py40000gn/T/offroad-c04-r5-xkn2fnw6/head-output-snapshot.json",
+      "result": "confirmed",
+      "note": "Foram substituídos somente na cópia temporária equivalent-financing-cost.ts e financing-proposal-comparison.ts pelas versões anteriores a cce607a5. Após restaurar HEAD, a execução reproduziu novamente o SHA-256 508e90b0a70a273b0fa1d869e76ec891d44114b6c179c3d0ea332cf44e59d8fe. As entradas também permaneceram inalteradas."
+    },
+    {
+      "claim": "A projeção está corretamente identificada como janela de calibragem: calibrationOnly=true e fullLifeVerified=false. Em 2033 ainda existe a linha sazonal de 20 e, no BNDES de R$ 60 mi, aproximadamente 20 de principal novo.",
+      "source": "packages/financial-model/src/debt-capacity.test-support.ts; packages/financial-core/src/debt-capacity.ts",
+      "result": "limitation",
+      "note": "Caixa positivo até 2033 não certifica liquidação integral da estrutura de oito anos nem liquidez intraperíodo."
+    },
+    {
+      "claim": "O conteúdo profissional é compatível com análise sênior de DCM/crédito: distingue tamanho, perfil, cláusula, folga, mercado e retorno do investimento. A prosa respeita as regras de voz solicitadas.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/assess-debt-capacity.md; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C04/corpo.html",
+      "result": "confirmed",
+      "note": "A ficha conserva trechos históricos sobre pico em 2027, juros faseados de 115 e insuficiência do plano antigo. O procedimento e o pacote seguem o oráculo vigente: pico informado em 2028, juros faseados de 107,6 e principal pagável em 2029. Não identifiquei condição adicional de conteúdo profissional."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "A correção resolve a reprovação da quarta rodada e foi confirmada independentemente, inclusive com convenções de caixa diferentes entre cenários. Capacidades, limites vinculantes, revisões de R$ 60 milhões, estruturas, plano vigente, exceções e corridas registradas conferem dentro das precisões verificadas. A conclusão permanece circunscrita ao método determinístico e à janela anual adotada; não comprova liquidação integral, liquidez intraperíodo, qualidade de extração documental ou jornada real de produto. Toda gravação ocorreu fora do repositório, na cópia temporária, cujo inventário não apresentou links simbólicos externos. Nenhum arquivo foi escrito dentro do repositório. Esta revisão não concede aprovação humana, publicação ou execução. O ambiente identifica GPT-6 sem expor variante mais específica ou configuração de esforço."
+}

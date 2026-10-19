@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:37:18.947Z",
-    "finishedAt": "2026-10-19T14:38:12.318Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T16:11:25.789Z",
+    "finishedAt": "2026-10-19T16:12:33.279Z",
+    "commit": "e2ecb8024d11cfd977f92085c3062df6df9d6653"
   },
   "modelCalls": 0,
   "cases": [
@@ -130,7 +130,79 @@
       "id": "business-days-off-the-national-calendar",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c13b34c3832b3bbf8e3f4dd47a4c1479f036033a7d843fb99a2b24b40969e2f6",
+      "inputFingerprint": "7dc81c5b952bbea2360ea1bebd7c74de0d6a6e763042ca43cfca9d578457c372",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "negative-collateral",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9f8e0e89c86e2da3f4d53b57e000529652a5c8b12437b5a71dc185b252f03591",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "full-repayment-leaving-the-accrued-coupon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2a4eab9f09d33cfd6abe54081bbaa3ac359d635d7795375e9049e5d8062a36dc",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "proposal-repaid-leaving-its-accrued-coupon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3ce0f03e964a2d042c15e09e8912c0e26aea87cfc081cb5c2d4a37a6f8dc9506",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fee-after-the-draw-declared-as-withheld",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8c411ead0006b9191eac992d45649d5c896a3ded840364d6918d90f8bf54d534",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-installment-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "curve-not-covering-the-first-year",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-rates-for-one-year",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "stress-starting-outside-the-horizon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "draw-date-outside-the-draw-quarter",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -152,6 +224,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "512dd81d127141ee043ff626f3a6b9147e8d36b22af4f2fbccdfb83a651ded5a",
+  "evidenceFingerprint": "6b9c64fceb6a1890ff252fe33d16aa17e27bce8557543cc4b376c848e1cc2f25",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-19T16:40:50Z",
+  "manifestHash": "13574b282016b8122f07ab4164fa4c68e5af4b3eb26078189e9e72fe668484c5",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 19/10/2026 para o procedimento Avaliar a capacidade de endividamento, versão 2026.10.19-v2 (ficha C04). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-publication/founder-instruction.json; SHA-256 6a46b025409a5a872b78ad5748684d89d624028899791e65d54fbd0bc043fe93. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}
