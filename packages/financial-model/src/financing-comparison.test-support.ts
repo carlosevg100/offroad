@@ -1,5 +1,8 @@
 import Decimal from "decimal.js";
 import type {AdoptedFinancingComparisonInput} from "./adopted-financing-comparison";
+import {createHash} from "node:crypto";
+import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
+import {proposeFinancingComparisonHypotheses, type FinancingComparisonFacts} from "./financing-comparison-premises";
 import {analysisTestBasis, analysisTestId as id} from "./adopted-analysis.test-support";
 
 // Ficha C02 (fictitious company "Aurora") read entirely from adopted premises. Expected values
@@ -38,10 +41,11 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
     prepayments: list(`${path}.prepayments`, "currency", q10((q) => o.prepay?.[q] ?? "0")),
     repayAll: list(`${path}.repayAll`, "boolean", q10(() => "false")),
     ...(o.pays ? {paysAccruedCoupon: list(`${path}.paysAccruedCoupon`, "boolean", q10((q) => String(o.pays!.includes(q))))} : {})});
-  const charges = (path: string, rows: [string, string, number, string, boolean][]) => rows.length ? {
+  const charges = (path: string, rows: [string, string, number, string, boolean, string?][]) => rows.length ? {
     chargeIds: list(`${path}.chargeIds`, "identity", rows.map((r) => r[0])), categories: list(`${path}.categories`, "convention", rows.map((r) => r[1])),
     dates: list(`${path}.dates`, "date", rows.map((r) => starts[r[2]]!)), amounts: list(`${path}.amounts`, "currency", rows.map((r) => r[3])),
-    deductible: list(`${path}.deductible`, "boolean", rows.map((r) => String(r[4])))} : null;
+    deductible: list(`${path}.deductible`, "boolean", rows.map((r) => String(r[4]))),
+    ...(rows.some((r) => r[5]) ? {instrumentIds: list(`${path}.instrumentIds`, "identity", rows.map((r) => r[5] ?? "self"))} : {})} : null;
   const finameAmort = Object.fromEntries(c02PeriodEnds.map((_, q) => [q, new P(30).div(54).mul(3).toDecimalPlaces(8).toFixed()]));
   const instruments = [
     {id: c02Ids.debenture, terms: terms(`debt.${c02Ids.debenture}`, "60", floating("0.024"), {amort: {1: "15", 3: "15", 5: "15", 7: "15"}, pays: [1, 3, 5, 7, 9]}), charges: null},
@@ -63,8 +67,8 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
     }
     return {id: pid, label,
       terms: terms(`${path}.terms`, "0", floating(spread), {draw: [2, "70"], amort: inHorizon, ...(semiannual ? {pays: [3, 5, 7, 9]} : {})}),
-      charges: charges(`${path}.charges`, [[`${label}-fee`, "origination_fee", 2, new P(70).mul(fee).toFixed(), true], ...(withIof ? [[`${label}-iof`, "tax", 2, IOF70, true] as [string, string, number, string, boolean]] : []),
-        ...(new P(collateral).gt(0) ? [[`${label}-waiver`, "other", 1, "0.525", false] as [string, string, number, string, boolean]] : [])]),
+      charges: charges(`${path}.charges`, [[`${label}-fee`, "origination_fee", 2, new P(70).mul(fee).toFixed(), true], ...(withIof ? [[`${label}-iof`, "tax", 2, IOF70, true] as [string, string, number, string, boolean, string?]] : []),
+        ...(new P(collateral).gt(0) ? [[`${label}-waiver`, "other", 1, "0.525", false, c02Ids.debenture] as [string, string, number, string, boolean, string]] : [])]),
       collateralConsumed: number(`${path}.collateralConsumed`, "currency", collateral),
       covenant: {name: text(`${path}.covenant.name`, "identity", cov.lease ? "lease liability in debt, IFRS 16 EBITDA" : "excluding leases"),
         leaseLiabilityInDebt: text(`${path}.covenant.leaseLiabilityInDebt`, "boolean", String(cov.lease)), leaseLiability: number(`${path}.covenant.leaseLiability`, "currency", "8"),
@@ -125,4 +129,63 @@ export function c02PacketInput(o: {negotiated?: boolean} = {}) {
       {id: "bank-stress", role: "stress" as const, label: "Caso do banco", changes: ["EBITDA 15% menor a partir do 4T26"], analysis: stress}]};
   const seal = () => {const {envelope} = f.seal(); for (const c of input.cases) c.analysis.envelope = envelope; return input;};
   return {basis: f, input, seal};
+}
+
+// Ficha C02 (fictitious "Aurora") stated as facts with origin, the way a conversation and its
+// documents would state them. Expected values come from the independent oracle modelo_c02.py.
+const informed = <T>(value: T, source = "Term sheet ou tabela de dívida da companhia") => ({value, origin: "document" as const, source});
+const auroraEnds = ["2026-09-30", "2026-12-31", "2027-03-31", "2027-06-30", "2027-09-30", "2027-12-31", "2028-03-31", "2028-06-30", "2028-09-30", "2028-12-31"];
+const auroraQ10 = (v: (q: number) => string) => auroraEnds.map((_, q) => v(q));
+const auroraIof = (v: string, days: number) => new P(v).mul(new P("0.000082").mul(days).plus("0.0038")).toFixed();
+export const auroraIds = {itau: id(911), santander: id(912), fundo: id(913), debenture: id(901)};
+/** `dated` puts the lifetime on the contract dates of the ficha: draw on 15/jan/27, payments on the 15th. */
+export function auroraFacts(o: {dated?: boolean} = {}): FinancingComparisonFacts {
+  const giro = (n: number, spread: string, q: number, v: string, repay?: number) => ({id: id(903 + n), label: `Giro ${n}`, openingPrincipal: "0", rate: {kind: "floating" as const, annualSpread: spread},
+    couponBase: "opening_principal" as const, draws: [{quarter: q, amount: v}], amortization: repay === undefined ? [] : [{quarter: repay, amount: v}], prepayments: [], accruedPaymentQuarters: null,
+    charges: [{id: `giro-${n}-fee`, category: "origination_fee" as const, quarter: q, amount: new P(v).mul("0.003").toFixed(), deductible: true},
+      {id: `giro-${n}-iof`, category: "tax" as const, quarter: q, amount: auroraIof(v, 182), deductible: true}]});
+  const proposal = (pid: string, label: string, spread: string, fee: string, creditTax: boolean, amort: number[], every: number, share: string,
+    cov: {name: string; limit: string; lease: boolean; freq: "semiannual" | "annual"}) => informed({id: pid, label, amount: "70", annualSpread: spread, feeRate: fee, creditTax,
+    drawQuarter: 2, amortizationQuarters: amort, couponEveryQuarters: every, collateralShareOfLoan: share,
+    covenant: {name: cov.name, limit: cov.limit, leaseLiabilityInDebt: cov.lease, ebitdaExcludesLeases: !cov.lease, testFrequency: cov.freq},
+    waiver: share !== "0" ? {instrumentId: auroraIds.debenture, quarter: 1, cost: "0.525", deductible: false} : null,
+    contractDates: o.dated ? {drawDate: "2027-01-15", paymentDay: 15} : null}, `Term sheet ${label}`);
+  return {comparisonId: id(4), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3), openingDate: "2026-06-30", quarterEnds: auroraEnds,
+    indexCurve: informed([{year: 2026, annualRate: "0.149"}, {year: 2027, annualRate: "0.14"}, {year: 2028, annualRate: "0.1275"}, {year: 2029, annualRate: "0.12"}], "Curva DI de mercado na data"),
+    company: {openingAvailableCash: informed("35"), ebitda: informed(["13.5", "14", "14", "14", "14.3", "14.3", "14.7", "14.7", "14.7", "14.7"], "Projeção trimestral da companhia"),
+      leasePayments: informed(auroraQ10(() => "0.75")), depreciationAndAmortization: informed(auroraQ10(() => "3")),
+      workingCapitalCashFlow: informed(auroraQ10((q) => new P("-0.625").plus([1, 5, 9].includes(q) ? -25 : 0).plus([2, 6].includes(q) ? 25 : 0).toFixed())),
+      maintenanceCapexPaid: informed(auroraQ10(() => "2")), growthCapexPaid: informed(auroraQ10(() => "0")), cashTaxRate: informed("0.34"), freeReceivablesPool: informed("58"),
+      leaseLiability: informed("8"), covenantHistory: informed([{period: "1T26", ebitda: "13.5", leasePayments: "0.75"}, {period: "2T26", ebitda: "13.5", leasePayments: "0.75"}]),
+      minimumCashPolicy: informed("15", "Política de caixa mínimo informada"), maximumCollateralShare: null},
+    existingDebt: informed([
+      {id: auroraIds.debenture, label: "Debênture 2021", openingPrincipal: "60", rate: {kind: "floating", annualSpread: "0.024"}, couponBase: "opening_principal",
+        draws: [], amortization: [1, 3, 5, 7].map((quarter) => ({quarter, amount: "15"})), prepayments: [], accruedPaymentQuarters: [1, 3, 5, 7, 9], charges: []},
+      {id: id(902), label: "CCB Bradesco", openingPrincipal: "40", rate: {kind: "floating", annualSpread: "0.026"}, couponBase: "opening_principal",
+        draws: [], amortization: [], prepayments: [{quarter: 2, amount: "40"}], accruedPaymentQuarters: null,
+        charges: [{id: "bradesco-premium", category: "other", quarter: 2, amount: "0.4", deductible: true}]},
+      {id: id(903), label: "FINAME", openingPrincipal: "30", rate: {kind: "fixed", annualRate: "0.097"}, couponBase: "average_principal",
+        draws: [], amortization: auroraEnds.map((_, quarter) => ({quarter, amount: new P(30).div(54).mul(3).toDecimalPlaces(8).toFixed()})), prepayments: [], accruedPaymentQuarters: null, charges: []},
+      giro(1, "0.025", 1, "17", 2), giro(2, "0.020", 5, "20", 6), giro(3, "0.020", 9, "20"),
+    ]),
+    proposals: [
+      proposal(auroraIds.itau, "itau", "0.023", "0.010", true, [6, 8, 10, 12, 14, 16, 18, 20], 1, "0.4", {name: "Dívida líquida com arrendamentos sobre EBITDA IFRS 16", limit: "3", lease: true, freq: "semiannual"}),
+      proposal(auroraIds.santander, "santander", "0.0255", "0.008", true, [10, 12, 14, 16, 18, 20], 1, "0.3", {name: "Definição da escritura de 2021", limit: "3", lease: false, freq: "annual"}),
+      proposal(auroraIds.fundo, "fundo", "0.031", "0.015", false, [16, 20], 2, "0", {name: "Dívida líquida sobre EBITDA sem IFRS 16", limit: "2.75", lease: false, freq: "semiannual"}),
+    ],
+    creditTax: {value: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365}, origin: "house", source: "IOF de crédito para pessoa jurídica adotado pela casa"},
+    stress: {ebitdaShock: {value: "0.15", origin: "house", source: "Caso que um banco tende a usar"}, fromQuarter: {value: 1, origin: "house", source: "A partir do trimestre seguinte"}},
+  };
+}
+
+/** Adopts the hypotheses proposed from facts as a person's confirmation would, in one synthetic basis. */
+export function adoptAuroraFacts(facts: FinancingComparisonFacts) {
+  let n = 5000;
+  const entries: AdoptionBasisEntry[] = proposeFinancingComparisonHypotheses(facts).map((h) => ({decisionId: id(n++), slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"),
+    kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value, observationId: null, referenceValue: null, referenceDimensions: null,
+    definitionKind: "managerial", actorId: id(5), reason: h.reason}) as AdoptionBasisEntry);
+  const snapshot: AdoptionBasisSnapshot = {schemaVersion: "contextual-adoption.v1", versionId: id(500), setId: id(6), workId: id(7), purpose: "synthetic financing comparison",
+    contextKey: "synthetic", revision: 1, previousVersionId: null, classification: "working_basis", entries};
+  const canonical = JSON.stringify(snapshot);
+  return {entries, envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}, scope: {workId: id(7), purpose: snapshot.purpose, versionId: id(500)}};
 }

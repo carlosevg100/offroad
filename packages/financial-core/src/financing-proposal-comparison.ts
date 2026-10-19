@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {buildCapitalPeriodCash} from "./capital-period-cash";
 import type {DatedDebtInstrument} from "./dated-debt";
-import {buildDeferredFinancingSchedule, solveEquivalentFinancingSpread, type DeferredFinancingScheduleInput, type EquivalentFinancingCostInput} from "./equivalent-financing-cost";
+import {buildDeferredFinancingSchedule, solveEquivalentFinancingSpread, type DeferredFinancingScheduleInput} from "./equivalent-financing-cost";
 import {buildFinancingCashFlows, financingCostCategories, type FinancingCharge, type FinancingCostAssessment} from "./financing-costs";
 import type {OperatingWorkingCapital} from "./operating-cash-projection";
 import {calculatePeriodFinancingTaxes} from "./period-financing-taxes";
@@ -19,8 +19,11 @@ export type ComparisonPeriod = {
 
 export type ProposalUnderComparison = {
   id: string; label: string;
-  /** Lifetime terms of the proposal, to its final payment: equivalent cost and average life. */
-  cost: {schedule: DeferredFinancingScheduleInput; costInventory: EquivalentFinancingCostInput["costInventory"]; lowerSpread: string; upperSpread: string};
+  /** Lifetime terms of the proposal, to its final payment: equivalent cost and average life. The
+   * lender's charges outside the withheld entry (recurring fees, for example) enter the lifetime
+   * flows at their dates: those in the horizon come from `charges`, later ones from here. */
+  cost: {schedule: DeferredFinancingScheduleInput; lowerSpread: string; upperSpread: string;
+    chargesAfterHorizon?: readonly {id: string; category: FinancingCharge["category"]; date: string; amount: string}[]};
   /** The proposal's instrument within the company horizon (amortization after the horizon stays residual debt). */
   instrument: DatedDebtInstrument;
   /** Charges caused by choosing this proposal (fees, taxes on credit, waivers it requires). */
@@ -59,6 +62,36 @@ function assessments(instruments: readonly DatedDebtInstrument[], charges: reado
     : {instrumentId: i.instrumentId, category, status: "zero" as const, reason: "No charge of this category in the adopted terms"}));
 }
 
+/** The proposal's two views must describe the same loan: the lifetime schedule starts at the
+ * end of the period before the draw with the same gross advance; the entry withheld equals the
+ * lender's fee and tax in the draw period; principal in each horizon period equals the lifetime
+ * principal paid in it; an accrued coupon accrues on principal plus unpaid coupon in both and is
+ * settled in the same periods. Returns the withheld charges. */
+function reconcileProposalViews(input: FinancingProposalComparisonInput, proposal: ProposalUnderComparison, own: readonly FinancingCharge[]) {
+  const fail = (what: string): never => {throw new Error(`proposal_comparison_views_inconsistent:${what}`);};
+  const periods = proposal.instrument.periods, lifetime = proposal.cost.schedule;
+  const draw = periods.findIndex((p) => new D(p.drawdown).gt(0));
+  if (draw < 0) fail("draw");
+  if (periods.some((p, i) => i !== draw && !new D(p.drawdown).eq(0))) fail("single_draw");
+  if (!new D(periods[draw]!.drawdown).eq(lifetime.grossAdvance) || !new D(proposal.instrument.openingPrincipal).eq(0)) fail("gross_advance");
+  // The lifetime starts at the draw: the end of the period before it on a period grid, or the contractual draw date inside it.
+  const previousEnd = draw ? periods[draw - 1]!.endDate : input.openingDate;
+  if (lifetime.baseDate < previousEnd || lifetime.baseDate > periods[draw]!.endDate) fail("base_date");
+  if (proposal.instrument.couponTreatment === "capitalized_principal") fail("coupon_treatment");
+  if (proposal.instrument.couponTreatment === "accrued_until_paid" && lifetime.unpaidInterestBase !== "principal_plus_accrued") fail("unpaid_interest_base");
+  const drawPeriod = periods[draw]!;
+  const upfront = own.filter((c) => c.date >= drawPeriod.startDate && c.date <= drawPeriod.endDate && (c.category === "origination_fee" || c.category === "tax"));
+  if (!upfront.reduce((t, c) => t.plus(c.amount), new D(0)).eq(lifetime.upfrontWithheldCosts)) fail("upfront_charges");
+  const lastLifetime = lifetime.periods.at(-1)!.endDate;
+  for (const p of periods.slice(draw)) {
+    if (p.endDate > lastLifetime) {if (!new D(p.scheduledPrincipal).plus(p.prepayment).eq(0)) fail("principal_after_final_payment"); continue;}
+    const inside = lifetime.periods.filter((l) => l.endDate >= p.startDate && l.endDate <= p.endDate);
+    if (!inside.reduce((t, l) => t.plus(l.scheduledPrincipal), new D(0)).eq(new D(p.scheduledPrincipal).plus(p.prepayment))) fail("principal_schedule");
+    if (proposal.instrument.couponTreatment === "accrued_until_paid" && inside.some((l) => l.paysAccruedInterest) !== (p.paysAccruedCoupon === true)) fail("coupon_settlement");
+  }
+  return upfront;
+}
+
 /**
  * Compares financing proposals for the same need on the company itself: each proposal's
  * lifetime equivalent cost and average life, then the company projected with that proposal
@@ -73,12 +106,23 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
   if (!input.periods.some((p) => p.id === input.minimumCashFromPeriod)) throw new Error("proposal_comparison_window_outside_horizon");
   const pool = new D(input.freeReceivablesPool);
   const proposals = input.proposals.map((proposal) => {
-    // 1. Lifetime cost and average life of the proposal on its own terms.
-    const schedule = buildDeferredFinancingSchedule(proposal.cost.schedule);
-    const cost = solveEquivalentFinancingSpread({baseDate: proposal.cost.schedule.baseDate, currency: proposal.cost.schedule.currency, moneyUnit: proposal.cost.schedule.moneyUnit,
-      intervals: proposal.cost.schedule.periods.map(({scheduledPrincipal: _p, paysAccruedInterest: _c, ...p}) => p), netFlows: schedule.netFlows,
-      costInventory: proposal.cost.costInventory, convention: "multiplicative_index_and_spread_on_net_borrower_flows",
-      lowerSpread: proposal.cost.lowerSpread, upperSpread: proposal.cost.upperSpread});
+    // 1. Lifetime cost and average life of the proposal on its own terms, reconciled with the
+    // same proposal as it enters the company projection.
+    const lifetime = proposal.cost.schedule;
+    const own = proposal.charges.filter((c) => c.instrumentId === proposal.instrument.instrumentId);
+    const upfront = reconcileProposalViews(input, proposal, own);
+    const schedule = buildDeferredFinancingSchedule(lifetime);
+    const boundaries = new Set(lifetime.periods.map((p) => p.endDate));
+    const later = [...own.filter((c) => !upfront.includes(c)), ...(proposal.cost.chargesAfterHorizon ?? [])];
+    for (const c of later) if (!boundaries.has(c.date)) throw new Error("proposal_comparison_charge_off_lifetime_grid");
+    const costCharges = [...upfront, ...later];
+    const cost = solveEquivalentFinancingSpread({baseDate: lifetime.baseDate, currency: lifetime.currency, moneyUnit: lifetime.moneyUnit,
+      intervals: lifetime.periods.map(({scheduledPrincipal: _p, paysAccruedInterest: _c, ...p}) => p),
+      netFlows: [...schedule.netFlows, ...later.map((c) => ({id: `charge:${c.id}`, date: c.date, amount: new D(c.amount).neg().toFixed(), sourceAnchor: c.id}))],
+      costInventory: financingCostCategories.map((category) => costCharges.some((c) => c.category === category)
+        ? {category, status: "specified" as const, reason: "Adopted charge of this proposal"}
+        : {category, status: "zero" as const, reason: "No charge of this category in the adopted terms"}),
+      convention: "multiplicative_index_and_spread_on_net_borrower_flows", lowerSpread: proposal.cost.lowerSpread, upperSpread: proposal.cost.upperSpread});
     // 2. The company with this proposal: debt and charges first, taxes from them, then cash.
     const instruments = [...input.commonInstruments, proposal.instrument];
     const charges = [...input.commonCharges, ...proposal.charges];

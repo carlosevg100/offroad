@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {compareFinancingProposals, type DatedDebtInstrument, type DeferredFinancingScheduleInput, type EquivalentFinancingCostInput,
+import {compareFinancingProposals, type DatedDebtInstrument, type DeferredFinancingScheduleInput,
   type FinancingCharge, type FinancingProposalComparisonInput, type ProposalUnderComparison} from "./index";
 
 // Ficha C02 (fictitious company "Aurora"): three proposals for R$ 70 mi plugged into the company
@@ -46,8 +46,6 @@ const commonCharges = [
 ];
 
 // Lifetime terms for equivalent cost, on the C02 quarterly convention (21 quarters from 1T27).
-const inventory: EquivalentFinancingCostInput["costInventory"] = (["origination_fee", "recurring_fee", "tax", "other"] as const)
-  .map((category) => ({category, status: "zero" as const, reason: "Upfront costs are withheld from the net advance"}));
 function lifetime(spread: string, upfront: string, amort: number[], semiannual: boolean): DeferredFinancingScheduleInput {
   let previous = "2026-12-31"; let repaid = new P(0);
   return {baseDate: previous, currency: "BRL", moneyUnit: "BRL million", grossAdvance: "70", upfrontWithheldCosts: upfront,
@@ -68,7 +66,7 @@ function proposal(id: string, spread: string, fee: string, withIof: boolean, lif
   const charges = [charge(`${id}-fee`, id, "origination_fee", 2, new P(70).mul(fee).toFixed()), ...(withIof ? [charge(`${id}-iof`, id, "tax", 2, IOF70)] : []),
     ...(new P(collateral).gt(0) ? [charge(`${id}-waiver`, "debenture-2021", "other", 1, "0.525")] : [])];
   return {id, label: id, collateralConsumed: collateral, charges, nonDeductibleChargeIds: new P(collateral).gt(0) ? [`${id}-waiver`] : [],
-    cost: {schedule: lifetime(spread, new P(70).mul(fee).plus(withIof ? IOF70 : 0).toFixed(), lifeAmort, semiannual), costInventory: inventory, lowerSpread: "0", upperSpread: "0.2"},
+    cost: {schedule: lifetime(spread, new P(70).mul(fee).plus(withIof ? IOF70 : 0).toFixed(), lifeAmort, semiannual), lowerSpread: "0", upperSpread: "0.2"},
     instrument: instrument(id, "0", floating(spread), {draw: [2, "70"], amort: inHorizon, ...(semiannual ? {pays: [3, 5, 7, 9]} : {})}),
     covenant: {name: covenant.lease ? "lease liability in debt, IFRS 16 EBITDA" : "excluding leases", leaseLiabilityInDebt: covenant.lease, leaseLiability: "8",
       ebitdaExcludesLeases: !covenant.lease, trailingPeriods: 4, measurementPeriods: covenant.dates, limit: covenant.limit, comparator: "lte"}};
@@ -124,5 +122,26 @@ describe("C02: financing proposals compared on the company itself", () => {
     expect(near(r.covenant.worst.ratio, o.worst)).toBe(true);
     expect(near(r.covenant.worst.headroom, o.headroom)).toBe(true);
     expect(near(r.netDebtAtHorizon, o.netDebt)).toBe(true);
+  });
+  it("puts a lender's recurring fee in the lifetime cost, not only in cash (independent review case)", () => {
+    // Fund with a deductible R$ 1 mi fee on 2027-12-31: the reviewer's independent recomputation gives CDI + 3.914770708%.
+    const i = input("0"), fundo = i.proposals[2]!;
+    const withFee = {...fundo, charges: [...fundo.charges, charge("fundo-recurring", "fundo", "recurring_fee", 5, "1")].map((c) => c.id === "fundo-recurring" ? {...c, date: "2027-12-31"} : c)};
+    const r = compareFinancingProposals({...i, proposals: [withFee]}).proposals[0]!;
+    expect(near(new P(r.equivalentSpread!).mul(100).toFixed(), "3.914770708", "0.0000001")).toBe(true);
+    const offGrid = {...fundo, charges: [...fundo.charges, charge("fundo-recurring", "fundo", "recurring_fee", 5, "1")]};
+    expect(() => compareFinancingProposals({...i, proposals: [offGrid]})).toThrow("proposal_comparison_charge_off_lifetime_grid");
+  });
+  it("refuses two views of the same proposal that describe different loans", () => {
+    const i = input("0"), fundo = i.proposals[2]!;
+    const base = {...fundo, cost: {...fundo.cost, schedule: {...fundo.cost.schedule, unpaidInterestBase: "principal_only" as const}}};
+    expect(() => compareFinancingProposals({...i, proposals: [base]})).toThrow("proposal_comparison_views_inconsistent:unpaid_interest_base");
+    const upfront = {...fundo, cost: {...fundo.cost, schedule: {...fundo.cost.schedule, upfrontWithheldCosts: "0.5"}}};
+    expect(() => compareFinancingProposals({...i, proposals: [upfront]})).toThrow("proposal_comparison_views_inconsistent:upfront_charges");
+    const itau = i.proposals[0]!;
+    const moved = {...itau, instrument: {...itau.instrument, periods: itau.instrument.periods.map((p, q) => ({...p, scheduledPrincipal: q === 9 ? "8.75" : "0"}))}};
+    expect(() => compareFinancingProposals({...i, proposals: [moved]})).toThrow("proposal_comparison_views_inconsistent:principal_schedule");
+    const settles = {...fundo, instrument: {...fundo.instrument, periods: fundo.instrument.periods.map((p, q) => ({...p, paysAccruedCoupon: [4, 5, 7, 9].includes(q)}))}};
+    expect(() => compareFinancingProposals({...i, proposals: [settles]})).toThrow("proposal_comparison_views_inconsistent:coupon_settlement");
   });
 });

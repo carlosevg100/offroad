@@ -152,7 +152,8 @@ const comparisonOperands = z.strictObject({currency: z.string().regex(/^[A-Z]{3}
   covenantHistory: z.array(z.strictObject({period: text, ebitda: decimal, leasePayments: decimal})).max(24),
   tax: z.strictObject({rate: decimal, lossTreatment: z.literal("no_cash_benefit")}), freeReceivablesPool: decimal, minimumCashFromPeriod: text,
   proposals: z.array(z.strictObject({id: z.uuid(), label: text,
-    cost: z.strictObject({schedule: deferredFinancingScheduleInputSchema, costInventory: equivalentFinancingCostInputSchema.shape.costInventory, lowerSpread: decimal, upperSpread: decimal}),
+    cost: z.strictObject({schedule: deferredFinancingScheduleInputSchema, lowerSpread: decimal, upperSpread: decimal,
+      chargesAfterHorizon: z.array(z.strictObject({id: text, category: z.enum(["origination_fee", "recurring_fee", "tax", "other"]), date, amount: decimal})).max(240).optional()}),
     instrument: comparedInstrument, charges: z.array(comparedCharge).max(64), nonDeductibleChargeIds: z.array(text).max(64), collateralConsumed: decimal,
     covenant: z.strictObject({name: text, leaseLiabilityInDebt: z.boolean(), leaseLiability: decimal, ebitdaExcludesLeases: z.boolean(),
       trailingPeriods: z.number().int().min(1).max(24), measurementPeriods: z.array(text).min(1).max(480), limit: decimal, comparator: z.enum(["lte", "lt"])})})).min(1).max(8)});
@@ -162,5 +163,5 @@ const comparison = z.strictObject({schemaVersion: z.literal("financing-proposal-
 const adapterExclusions = [...comparisonExclusions, "tax_law_inference"] as const;
 export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-financing-comparison.v1"), adapterVersion: version,
   comparisonId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), openingDate: date, endDate: date, comparison: comparison.nullable(),
-  policies: z.strictObject({minimumCash: decimal.nullable(), maximumCollateralShare: decimal.nullable()}),
+  policies: z.strictObject({minimumCash: decimal.nullable(), maximumCollateralShare: decimal.nullable()}), incompleteProposalIds: z.array(z.uuid()).max(8),
   exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});

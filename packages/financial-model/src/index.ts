@@ -73,5 +73,7 @@ export * from "./investment-decision-contracts";
 export * from "./adopted-financing-comparison";
 export * from "./financing-comparison-packet";
 export * from "./financing-comparison-contracts";
+export * from "./financing-comparison-composer";
+export * from "./financing-comparison-premises";
 export * from "./investment-decision-composer";
 export * from "./investment-premises";

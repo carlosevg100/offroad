@@ -1,8 +1,9 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
+import {composeBoundFinancingComparison} from "./financing-comparison-composer";
 import {financingComparisonPacketOutputSchema, prepareFinancingComparisonPacket, type FinancingComparisonPacketInput} from "./financing-comparison-packet";
-import {c02Ids, c02PacketInput} from "./financing-comparison.test-support";
+import {adoptAuroraFacts, auroraFacts, auroraIds, c02Ids, c02PacketInput} from "./financing-comparison.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic
 // calibrations of ficha C02 (modelo_c02.py), never production parameters.
@@ -22,6 +23,20 @@ export const financingComparisonRunIds = {
 const names = {[c02Ids.itau]: "itau", [c02Ids.santander]: "santander", [c02Ids.fundo]: "fundo", [c02Ids.itauNegotiated]: "itau-negotiated", [c02Ids.santander230]: "santander-230"} as Record<string, string>;
 const sealed = () => c02PacketInput().seal() as FinancingComparisonPacketInput;
 const baseOnly = () => {const i = sealed(); i.cases = [i.cases[0]!]; return i;};
+const auroraNames = {[auroraIds.itau]: "itau", [auroraIds.santander]: "santander", [auroraIds.fundo]: "fundo"} as Record<string, string>;
+const datedInput = () => {
+  const a = adoptAuroraFacts(auroraFacts({dated: true}));
+  return composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual das três propostas cabe na companhia e quanto custa de fato?"});
+};
+/** The fund with a deductible R$ 1 mi recurring fee on 31/12/2027, adopted next to its other charges. */
+const withRecurringFee = () => {
+  const p = c02PacketInput(), path = `proposal.${c02Ids.fundo}.charges`;
+  for (const [k, v] of [["chargeIds", "fundo-recurring"], ["categories", "recurring_fee"], ["dates", "2027-12-31"], ["amounts", "1"], ["deductible", "true"]] as const) {
+    const e = p.basis.entries.find((x) => x.fieldPath.endsWith(`${path}.${k}`))!;
+    e.value = {type: "list", value: [...(e.value as {value: string[]}).value, v]};
+  }
+  const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
+};
 /** The company's own rule caps receivables given as collateral at a share of the free pool. */
 const withCollateralRule = (share: string) => {
   const p = c02PacketInput(), rule = p.basis.contribute("company.maximumCollateralShare", "ratio", {type: "number", value: share});
@@ -77,10 +92,27 @@ function goldCases(): Case[] {
     (() => {
       const input = baseOnly(); const fundo = input.cases[0]!.analysis.proposals.find((x) => x.id === c02Ids.fundo)!;
       fundo.lifetime.upfrontWithheldCosts = {...fundo.lifetime.upfrontWithheldCosts, decisionId: null, missingReason: "Comissão do fundo não adotada"};
-      return observe("absent-fee-is-a-gap-not-zero", input, {status: "framed", gap: true, compared: false},
-        (p) => ({status: p.status, gap: p.gaps.some((g) => g.reason === "Comissão do fundo não adotada"), compared: p.cases[0]!.result.comparison !== null}));
+      return observe("absent-fee-is-a-gap-not-zero", input, {status: "partial", gap: true, compared: ["itau", "santander"], incomplete: ["fundo"]},
+        (p) => ({status: p.status, gap: p.gaps.some((g) => g.reason === "Comissão do fundo não adotada"),
+          compared: at(p, "base").proposals.map((m) => names[m.proposalId]), incomplete: at(p, "base").incompleteProposalIds.map((id) => names[id])}));
     })(),
+    (() => {
+      // A lender's recurring fee enters the lifetime cost (independent review case: CDI + 3.914770708).
+        const input = withRecurringFee();
+      return observe("recurring-fee-enters-lifetime-cost", input, {fundo: 3.9148},
+        (p) => ({fundo: new D(at(p, "base").proposals.find((m) => m.proposalId === c02Ids.fundo)!.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()}));
+    })(),
+    // Contract dates with national business days: the independent review's dated recomputation (the oracle's dated variant misplaces Easter 2027).
+    observe("contract-dates-and-business-days", datedInput(), [["itau", 4.1189], ["santander", 4.0889], ["fundo", 3.5671]],
+      (p) => at(p, "base").proposals.map((m) => [auroraNames[m.proposalId], new D(m.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()])),
   ];
+}
+
+/** The base case with one adopted premise replaced, sealed again: the boundary must hold on adopted data. */
+function mutateEntry(suffix: string, value: {type: "list" | "text"; value: string | string[]}) {
+  const p = c02PacketInput(), e = p.basis.entries.find((x) => x.fieldPath.endsWith(suffix))!;
+  e.value = value as typeof e.value;
+  const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
 }
 
 function adversarialCases(): Case[] {
@@ -93,6 +125,9 @@ function adversarialCases(): Case[] {
     ["different-proposals-across-cases", () => {const i = sealed(); i.cases[1]!.analysis.proposals = i.cases[1]!.analysis.proposals.slice(0, 2); return i;}, "same proposals"],
     ["mixed-currency", () => {const i = sealed(); i.cases[1]!.analysis = {...i.cases[1]!.analysis, currency: "USD"}; return i;}, "same adopted basis"],
     ["accrued-coupon-without-payment-schedule", () => {const i = baseOnly(); delete (i.cases[0]!.analysis.proposals[2]!.terms as {paysAccruedCoupon?: unknown}).paysAccruedCoupon; return i;}, "comparison_accrued_coupon_schedule_mismatch"],
+    ["lifetime-and-company-views-disagree", () => mutateEntry(`proposal.${c02Ids.fundo}.lifetime.unpaidInterestBase`, {type: "text", value: "principal_only"}), "proposal_comparison_views_inconsistent:unpaid_interest_base"],
+    ["charge-paid-to-unknown-instrument", () => mutateEntry(`proposal.${c02Ids.itau}.charges.instrumentIds`, {type: "list", value: ["self", "self", "ac400000-0000-4000-9000-000000000999"]}), "comparison_charge_payee_unknown"],
+    ["business-day-convention-without-counts", () => mutateEntry(`proposal.${c02Ids.itau}.lifetime.yearFractionConventions`, {type: "list", value: Array.from({length: 21}, () => "business_days_252")}), "comparison_business_days_required"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];

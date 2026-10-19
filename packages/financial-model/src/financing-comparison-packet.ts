@@ -63,6 +63,8 @@ const proposalMetrics = z.strictObject({
 const caseComparison = z.strictObject({
   caseId: key, role: z.enum(roles), label: text, scenario: key, resultStatus: z.enum(["missing_inputs", "partial_composition"]),
   proposals: z.array(proposalMetrics).max(8),
+  /** Proposals left out of this case for a missing premise; their gaps are listed with the packet's gaps. */
+  incompleteProposalIds: z.array(z.uuid()).max(8),
   /** Proposals with no eliminatory fact in this case; conditioned proposals stay viable. */
   viableProposalIds: z.array(z.uuid()).max(8),
   /** Lowest equivalent cost and highest minimum cash among viable proposals; reported side by side, never merged. */
@@ -119,7 +121,7 @@ export function prepareFinancingComparisonPacket(raw: unknown): FinancingCompari
     });
     const viable = proposals.filter((p) => !p.eliminatoryFacts.length);
     const pick = (better: (a: typeof viable[number], b: typeof viable[number]) => boolean) => viable.length ? viable.reduce((m, p) => (better(p, m) ? p : m)).proposalId : null;
-    return {caseId: c.id, role: c.role, label: c.label, scenario: c.analysis.scenario, resultStatus: r.status, proposals,
+    return {caseId: c.id, role: c.role, label: c.label, scenario: c.analysis.scenario, resultStatus: r.status, proposals, incompleteProposalIds: r.incompleteProposalIds,
       viableProposalIds: viable.map((p) => p.proposalId),
       lowestEquivalentCostProposalId: pick((a, b) => new Exact(a.equivalentSpread!).lt(b.equivalentSpread!)),
       highestMinimumCashProposalId: pick((a, b) => new Exact(a.minimumCash.amount).gt(b.minimumCash.amount))};

@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {z} from "zod";
 import {compareFinancingProposals, financialCoreVersion, financingCostCategories, type DatedDebtInstrument, type FinancingCharge,
   type FinancingProposalComparisonInput} from "@offroad/financial-core";
@@ -6,11 +7,16 @@ import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, analysisAmount, analysisReference, createAnalysisBinding, type AnalysisSelection} from "./adopted-analysis-binding";
 
 export const adoptedFinancingComparisonVersion = "2026.10.19-v1";
-const debtTermNames = ["timing", "indexer", "indexationTreatment", "couponTreatment", "couponBase", "drawdownAccount", "paymentAccount",
-  "openingPrincipal", "indexationRates", "couponRates", "drawdowns", "scheduledPrincipal", "prepayments", "repayAll"] as const;
+const debtTermNames = ["timing", "indexer", "couponTreatment", "couponBase", "drawdownAccount", "paymentAccount",
+  "openingPrincipal", "couponRates", "drawdowns", "scheduledPrincipal", "prepayments", "repayAll"] as const;
+/** Without an indexer ("none") the principal is not corrected: the indexation treatment and rates follow
+ * from that adopted fact and are not adopted again. With an indexer both are required. */
 const debtTerms = z.strictObject({...Object.fromEntries(debtTermNames.map((k) => [k, selection])) as Record<typeof debtTermNames[number], typeof selection>,
-  paysAccruedCoupon: selection.optional()});
-const chargeSeries = z.strictObject({chargeIds: selection, categories: selection, dates: selection, amounts: selection, deductible: selection});
+  indexationTreatment: selection.optional(), indexationRates: selection.optional(), paysAccruedCoupon: selection.optional()});
+/** `instrumentIds`, when adopted, names who each charge is paid to: "self" (the instrument itself) or an existing debt
+ * (a consent fee paid to another lender's holders, for example). Without it every charge belongs to the instrument. */
+const chargeSeries = z.strictObject({chargeIds: selection, categories: selection, dates: selection, amounts: selection, deductible: selection, instrumentIds: selection.optional()});
+const laterChargeSeries = z.strictObject({chargeIds: selection, categories: selection, dates: selection, amounts: selection});
 const companyMoneyNames = ["ebitda", "cashLeasePayments", "depreciationAndAmortization", "workingCapitalCashFlow", "maintenanceCapexPaid", "growthCapexPaid"] as const;
 const lifetimeNames = ["periodEnds", "yearFractions", "annualIndex", "yearFractionConventions", "scheduledPrincipal", "paysAccruedInterest"] as const;
 
@@ -28,11 +34,18 @@ export const adoptedFinancingComparisonInputSchema = adoptedAnalysisContextSchem
     covenant: z.strictObject({name: selection, leaseLiabilityInDebt: selection, leaseLiability: selection, ebitdaExcludesLeases: selection,
       trailingPeriods: selection, measurementPeriods: selection, limit: selection, comparator: selection}),
     lifetime: z.strictObject({grossAdvance: selection, upfrontWithheldCosts: selection, annualSpread: selection, unpaidInterestBase: selection,
-      lowerSpread: selection, upperSpread: selection, ...Object.fromEntries(lifetimeNames.map((k) => [k, selection])) as Record<typeof lifetimeNames[number], typeof selection>}),
+      lowerSpread: selection, upperSpread: selection, ...Object.fromEntries(lifetimeNames.map((k) => [k, selection])) as Record<typeof lifetimeNames[number], typeof selection>,
+      /** Contractual draw date, when the lifetime runs on contract dates instead of the period grid. */
+      drawDate: selection.optional(),
+      /** Business days of each period, required for the DU/252 convention; the fraction is then derived from them. */
+      businessDays: selection.optional(),
+      /** The lender's charges after the horizon (recurring fees), on lifetime period ends. */
+      chargesAfterHorizon: laterChargeSeries.optional()}),
   })).min(1).max(8),
 }).refine((i) => i.inheritedScenario !== i.scenario, "A scenario cannot inherit from itself").refine((i) => new Set([...i.instruments.map((x) => x.id), ...i.proposals.map((x) => x.id)]).size === i.instruments.length + i.proposals.length, "Duplicate instrument");
 export type AdoptedFinancingComparisonInput = z.infer<typeof adoptedFinancingComparisonInputSchema>;
 
+const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
 const ratio = z.string().regex(/^-?\d{1,4}(?:\.\d{1,16})?$/);
 const flag = z.enum(["true", "false"]);
 const nextDate = (value: string) => {const d = new Date(`${value}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10);};
@@ -69,15 +82,17 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
   const instrument = (id: string, t: z.infer<typeof debtTerms>, path: string): DatedDebtInstrument | null => {
     const tx = <T>(k: string, unit: string, schema: z.ZodType<T>) => scalar((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, "text", schema);
     const col = <T>(k: string, unit: string, schema: z.ZodType<T>) => column((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, schema);
-    const v = {timing: tx("timing", "convention", z.literal("draw_at_period_start_pay_at_period_end")),
-      indexer: tx("indexer", "convention", z.enum(["none", "IPCA", "CDI", "SOFR", "fixed", "other"])),
-      indexationTreatment: tx("indexationTreatment", "convention", z.enum(["not_applicable", "cash_paid", "capitalized_principal"])),
+    const indexer = tx("indexer", "convention", z.enum(["none", "IPCA", "CDI", "SOFR", "fixed", "other"]));
+    const implied = indexer === "none" && !t.indexationTreatment && !t.indexationRates;
+    if (indexer !== null && !implied && (!t.indexationTreatment || !t.indexationRates)) throw new Error("comparison_indexation_terms_required");
+    const v = {timing: tx("timing", "convention", z.literal("draw_at_period_start_pay_at_period_end")), indexer,
+      indexationTreatment: implied ? "not_applicable" as const : t.indexationTreatment ? tx("indexationTreatment", "convention", z.enum(["not_applicable", "cash_paid", "capitalized_principal"])) : null,
       couponTreatment: tx("couponTreatment", "convention", z.enum(["cash_paid", "capitalized_principal", "accrued_until_paid"])),
       couponBase: tx("couponBase", "convention", z.enum(["opening_principal", "indexed_principal", "average_principal"])),
       drawdownAccount: tx("drawdownAccount", "convention", z.enum(["available", "restricted"])),
       paymentAccount: tx("paymentAccount", "convention", z.enum(["available", "restricted"])),
       openingPrincipal: scalar(t.openingPrincipal, `${path}.openingPrincipal`, "currency", "number", analysisAmount),
-      indexationRates: col("indexationRates", "ratio", ratio), couponRates: col("couponRates", "ratio", ratio),
+      indexationRates: implied ? ends?.map(() => "0") ?? null : t.indexationRates ? col("indexationRates", "ratio", ratio) : null, couponRates: col("couponRates", "ratio", ratio),
       drawdowns: col("drawdowns", "currency", analysisAmount), scheduledPrincipal: col("scheduledPrincipal", "currency", analysisAmount),
       prepayments: col("prepayments", "currency", analysisAmount), repayAll: col("repayAll", "boolean", flag),
       paysAccrued: t.paysAccruedCoupon ? column(t.paysAccruedCoupon, `${path}.paysAccruedCoupon`, "boolean", flag) : undefined};
@@ -98,18 +113,22 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
     const dates = column(s.dates, `${path}.dates`, "date", z.iso.date());
     const amounts = column(s.amounts, `${path}.amounts`, "currency", analysisAmount);
     const deductible = column(s.deductible, `${path}.deductible`, "boolean", flag);
-    if (!ids || !cats || !dates || !amounts || !deductible || !ends) return {list: [], nonDeductible: []};
-    if ([cats, dates, amounts, deductible].some((l) => l.length !== ids.length)) throw new Error("comparison_series_length_mismatch");
+    const payees = s.instrumentIds ? column(s.instrumentIds, `${path}.instrumentIds`, "identity", z.union([z.literal("self"), z.uuid()])) : null;
+    if (!ids || !cats || !dates || !amounts || !deductible || !ends || (s.instrumentIds && !payees)) return {list: [], nonDeductible: []};
+    if ([cats, dates, amounts, deductible, ...(payees ? [payees] : [])].some((l) => l.length !== ids.length)) throw new Error("comparison_series_length_mismatch");
+    if (payees?.some((x) => x !== "self" && !input.instruments.some((i) => i.id === x))) throw new Error("comparison_charge_payee_unknown");
     const list = ids.map((id, n): FinancingCharge => {
       const at = ends.findIndex((e) => dates[n]! <= e);
       if (at < 0 || dates[n]! <= input.openingDate) throw new Error("comparison_charge_outside_horizon");
-      return {id, economicId: id, instrumentId, category: cats[n]!, period: ends[at]!, date: dates[n]!, amount: amounts[n]!, treatment: "cash_paid", account: "available"};
+      return {id, economicId: id, instrumentId: payees && payees[n] !== "self" ? payees[n]! : instrumentId, category: cats[n]!, period: ends[at]!, date: dates[n]!, amount: amounts[n]!, treatment: "cash_paid", account: "available"};
     });
     return {list, nonDeductible: ids.filter((_, n) => deductible[n] === "false")};
   };
 
   const common = input.instruments.map((i) => ({instrument: instrument(i.id, i.terms, `debt.${i.id}`), charges: charges(i.id, i.charges, `debt.${i.id}.charges`)}));
+  const companyGaps = b.gaps.length;
   const proposals = input.proposals.map((p) => {
+    const before = b.gaps.length;
     const path = `proposal.${p.id}`;
     const l = p.lifetime;
     const ls = <T>(k: typeof lifetimeNames[number], unit: string, schema: z.ZodType<T>) => column(l[k], `${path}.lifetime.${k}`, unit, schema);
@@ -120,7 +139,14 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       lower: scalar(l.lowerSpread, `${path}.lifetime.lowerSpread`, "ratio", "number", ratio), upper: scalar(l.upperSpread, `${path}.lifetime.upperSpread`, "ratio", "number", ratio),
       ends: ls("periodEnds", "date", z.iso.date()), fractions: ls("yearFractions", "ratio", ratio), index: ls("annualIndex", "ratio", ratio),
       conventions: ls("yearFractionConventions", "convention", z.enum(["business_days_252", "actual_365_fixed", "adopted_year_fraction"])),
-      amort: ls("scheduledPrincipal", "currency", analysisAmount), pays: ls("paysAccruedInterest", "boolean", flag)};
+      amort: ls("scheduledPrincipal", "currency", analysisAmount), pays: ls("paysAccruedInterest", "boolean", flag),
+      businessDays: l.businessDays ? column(l.businessDays, `${path}.lifetime.businessDays`, "count", z.string().regex(/^\d{1,3}$/)) : undefined,
+      drawDate: l.drawDate ? scalar(l.drawDate, `${path}.lifetime.drawDate`, "date", "date", z.iso.date()) : undefined};
+    const lc = l.chargesAfterHorizon;
+    const later = lc ? {ids: column(lc.chargeIds, `${path}.lifetime.chargesAfterHorizon.chargeIds`, "identity", analysisReference),
+      categories: column(lc.categories, `${path}.lifetime.chargesAfterHorizon.categories`, "convention", z.enum(financingCostCategories)),
+      dates: column(lc.dates, `${path}.lifetime.chargesAfterHorizon.dates`, "date", z.iso.date()),
+      amounts: column(lc.amounts, `${path}.lifetime.chargesAfterHorizon.amounts`, "currency", analysisAmount)} : null;
     const cv = p.covenant;
     const cov = {name: scalar(cv.name, `${path}.covenant.name`, "identity", "text", analysisReference),
       inDebt: scalar(cv.leaseLiabilityInDebt, `${path}.covenant.leaseLiabilityInDebt`, "boolean", "text", flag),
@@ -131,14 +157,18 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       limit: scalar(cv.limit, `${path}.covenant.limit`, "ratio", "number", ratio),
       comparator: scalar(cv.comparator, `${path}.covenant.comparator`, "convention", "text", z.enum(["lte", "lt"]))};
     const collateral = scalar(p.collateralConsumed, `${path}.collateralConsumed`, "currency", "number", analysisAmount);
-    return {p, life, cov, collateral, instrument: instrument(p.id, p.terms, `${path}.terms`), charges: charges(p.id, p.charges, `${path}.charges`)};
+    const built = {p, life, cov, collateral, later, instrument: instrument(p.id, p.terms, `${path}.terms`), charges: charges(p.id, p.charges, `${path}.charges`)};
+    return {...built, complete: b.gaps.length === before && built.instrument !== null && collateral !== null
+      && Object.entries(life).every(([k, v]) => v !== null || k === "businessDays" || k === "drawDate") && Object.values(cov).every((v) => v !== null)
+      && (!later || Object.values(later).every((v) => v !== null))};
   });
+  const ready = proposals.filter((x) => x.complete);
 
   let comparison: ReturnType<typeof compareFinancingProposals> | null = null;
-  const complete = !b.gaps.length && ends && opening !== null && taxRate !== null && loss !== null && pool !== null && minFrom !== null
+  // A proposal with a missing premise leaves the comparison with its gaps named; the others are still compared.
+  const complete = companyGaps === 0 && ends && opening !== null && taxRate !== null && loss !== null && pool !== null && minFrom !== null
     && histPeriods && histEbitda && histLease && Object.values(companyCols).every((x) => x !== null)
-    && common.every((x) => x.instrument) && proposals.every((x) => x.instrument && x.collateral !== null
-      && Object.values(x.life).every((v) => v !== null) && Object.values(x.cov).every((v) => v !== null));
+    && common.every((x) => x.instrument) && ready.length > 0;
   if (complete) {
     if (Object.values(companyCols).some((col) => col!.length !== ends!.length) || histEbitda!.length !== histPeriods!.length || histLease!.length !== histPeriods!.length) throw new Error("comparison_series_length_mismatch");
     if (!ends!.includes(minFrom!)) throw new Error("comparison_window_outside_horizon");
@@ -149,17 +179,30 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       commonInstruments: common.map((x) => x.instrument!), commonCharges: common.flatMap((x) => x.charges.list), commonNonDeductibleChargeIds: common.flatMap((x) => x.charges.nonDeductible),
       covenantHistory: histPeriods!.map((period, i) => ({period, ebitda: histEbitda![i]!, leasePayments: histLease![i]!})),
       tax: {rate: taxRate!, lossTreatment: loss!}, freeReceivablesPool: pool!, minimumCashFromPeriod: minFrom!,
-      proposals: proposals.map((x) => {
+      proposals: ready.map((x) => {
         const l = x.life;
-        if ([l.fractions!, l.index!, l.conventions!, l.amort!, l.pays!].some((s) => s.length !== l.ends!.length)) throw new Error("comparison_series_length_mismatch");
+        if ([l.fractions!, l.index!, l.conventions!, l.amort!, l.pays!, ...(l.businessDays ? [l.businessDays] : [])].some((s) => s.length !== l.ends!.length)) throw new Error("comparison_series_length_mismatch");
+        const base = l.drawDate ?? lifetimeBase(input, x.instrument!);
+        const fraction = (i: number) => {
+          const convention = l.conventions![i]!, start = i ? l.ends![i - 1]! : base;
+          if (convention === "adopted_year_fraction") {if (l.businessDays) throw new Error("comparison_unused_business_days"); return l.fractions![i]!;}
+          // Derived exactly from the adopted count or the dates; the adopted fraction must agree with it.
+          const derived = convention === "business_days_252"
+            ? (l.businessDays ? new Exact(l.businessDays[i]!).div(252) : (() => {throw new Error("comparison_business_days_required");})())
+            : new Exact((Date.parse(`${l.ends![i]!}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86400000).div(365);
+          if (derived.minus(l.fractions![i]!).abs().gt("0.0000000000000001")) throw new Error("comparison_year_fraction_mismatch");
+          return derived.toDecimalPlaces(20).toFixed();
+        };
+        if (x.later && [x.later.categories!, x.later.dates!, x.later.amounts!].some((s) => s.length !== x.later!.ids!.length)) throw new Error("comparison_series_length_mismatch");
         return {id: x.p.id, label: x.p.label, collateralConsumed: x.collateral!, instrument: x.instrument!, charges: x.charges.list, nonDeductibleChargeIds: x.charges.nonDeductible,
-          cost: {schedule: {baseDate: lifetimeBase(input, x.instrument!),
+          cost: {schedule: {baseDate: base,
             currency: input.currency, moneyUnit: "currency units", grossAdvance: l.grossAdvance!, upfrontWithheldCosts: l.upfront!, annualSpread: l.spread!, unpaidInterestBase: l.unpaid!,
-            periods: l.ends!.map((endDate, i) => ({id: `${x.p.id}:${i}`, startDate: i ? l.ends![i - 1]! : lifetimeBase(input, x.instrument!), endDate,
-              yearFraction: l.fractions![i]!, annualIndex: l.index![i]!, yearFractionConvention: l.conventions![i]!, sourceAnchor: `adoption:${x.p.lifetime.periodEnds.decisionId}`,
+            periods: l.ends!.map((endDate, i) => ({id: `${x.p.id}:${i}`, startDate: i ? l.ends![i - 1]! : base, endDate,
+              yearFraction: fraction(i), annualIndex: l.index![i]!, yearFractionConvention: l.conventions![i]!,
+              ...(l.conventions![i] === "business_days_252" ? {businessDays: Number(l.businessDays![i])} : {}), sourceAnchor: `adoption:${x.p.lifetime.periodEnds.decisionId}`,
               scheduledPrincipal: l.amort![i]!, paysAccruedInterest: l.pays![i] === "true"}))},
-            costInventory: financingCostCategories.map((category) => ({category, status: "zero" as const, reason: "Upfront costs adopted as withheld from the net advance"})),
-            lowerSpread: l.lower!, upperSpread: l.upper!},
+            lowerSpread: l.lower!, upperSpread: l.upper!,
+            ...(x.later ? {chargesAfterHorizon: x.later.ids!.map((id, n) => ({id, category: x.later!.categories![n]!, date: x.later!.dates![n]!, amount: x.later!.amounts![n]!}))} : {})},
           covenant: {name: x.cov.name!, leaseLiabilityInDebt: x.cov.inDebt === "true", leaseLiability: x.cov.lease!, ebitdaExcludesLeases: x.cov.excludes === "true",
             trailingPeriods: Number(x.cov.window), measurementPeriods: x.cov.dates!, limit: x.cov.limit!, comparator: x.cov.comparator!}};
       })};
@@ -170,7 +213,7 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
     scenario: input.scenario, inheritedScenario: input.inheritedScenario ?? null,
     openingDate: input.openingDate, endDate: input.endDate, basisFingerprint: input.envelope.fingerprint,
     status: comparison ? "partial_composition" as const : "missing_inputs" as const, comparison,
-    policies: {minimumCash: minimumCashPolicy, maximumCollateralShare}, gaps: b.gaps, bindings: b.bindings, normalization: b.normalization,
+    policies: {minimumCash: minimumCashPolicy, maximumCollateralShare}, incompleteProposalIds: proposals.filter((x) => !x.complete).map((x) => x.p.id), gaps: b.gaps, bindings: b.bindings, normalization: b.normalization,
     contributions: [...b.used.values()], derivedDependencies: [{result: "financing_proposal_comparison", decisionIds: [...b.used.keys()]}],
     classification: [...b.used.values()].some((e) => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
     exclusions: ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity", "tax_law_inference"] as const,
