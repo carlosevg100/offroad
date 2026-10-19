@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T15:54:15.971Z",
-    "finishedAt": "2026-10-19T15:55:23.418Z",
-    "commit": "5596c5dac3a081a36193268d8d83a08d20ddf5b8"
+    "startedAt": "2026-10-19T16:11:25.789Z",
+    "finishedAt": "2026-10-19T16:12:33.278Z",
+    "commit": "e2ecb8024d11cfd977f92085c3062df6df9d6653"
   },
   "modelCalls": 0,
   "cases": [
@@ -146,28 +146,28 @@
       "id": "contract-dates-and-business-days",
       "expectation": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
       "observed": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
-      "inputFingerprint": "8740c1f5905a3d5bc7fd29cdedcdb49b60e856babf2795cd7bf571c8ad7f1bfb",
-      "outputFingerprint": "99b1134293e434418baf2b0de37177268d69ac6a99685b543bd3fcec749c598d",
+      "inputFingerprint": "eca81587ac88ab3fc50ba5af6f6244b9dd68657322aad5e519756985e76f3adf",
+      "outputFingerprint": "09639eec1e22f349ce87bb0b8e3088194f476c0a734e5dbf7a7a8fb10e005fcd",
       "passed": true
     },
     {
       "id": "a-fee-paid-after-the-draw-is-paid-on-its-date",
       "expectation": "{\"itau\":4.1044}",
       "observed": "{\"itau\":4.1044}",
-      "inputFingerprint": "9c63945057ef41eb01a2af0a01c827bbf56d74d9d17ca3ae58db9a44de1b703c",
-      "outputFingerprint": "b587d2ba948e62f2652d5ff65662d4534e7737ed2f1320aaddef3e75804435a1",
+      "inputFingerprint": "7cf653b3e0c5cc9333475d83c6f4325e61ffc4bb839f3d87e497d3d841ac3970",
+      "outputFingerprint": "eceed1876576e3127cb4c45c38d8a969224b959046e2325b322d130c4c0c42f7",
       "passed": true
     },
     {
       "id": "contract-dates-in-the-company-view",
       "expectation": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
       "observed": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
-      "inputFingerprint": "8740c1f5905a3d5bc7fd29cdedcdb49b60e856babf2795cd7bf571c8ad7f1bfb",
-      "outputFingerprint": "99b1134293e434418baf2b0de37177268d69ac6a99685b543bd3fcec749c598d",
+      "inputFingerprint": "eca81587ac88ab3fc50ba5af6f6244b9dd68657322aad5e519756985e76f3adf",
+      "outputFingerprint": "09639eec1e22f349ce87bb0b8e3088194f476c0a734e5dbf7a7a8fb10e005fcd",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "9143beb43ba055ebd98d64bdbc42e0747a5c355f643927932d391898d995d54b",
+  "evidenceFingerprint": "9eb46b82c9219e18b38d692dba58942e7bf7d11aac38cb939d70bc83320aad47",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

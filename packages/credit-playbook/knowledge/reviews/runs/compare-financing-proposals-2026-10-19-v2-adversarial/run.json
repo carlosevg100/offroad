@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T15:54:15.971Z",
-    "finishedAt": "2026-10-19T15:55:23.419Z",
-    "commit": "5596c5dac3a081a36193268d8d83a08d20ddf5b8"
+    "startedAt": "2026-10-19T16:11:25.789Z",
+    "finishedAt": "2026-10-19T16:12:33.279Z",
+    "commit": "e2ecb8024d11cfd977f92085c3062df6df9d6653"
   },
   "modelCalls": 0,
   "cases": [
@@ -130,7 +130,7 @@
       "id": "business-days-off-the-national-calendar",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2b2956257854a21a1f8c4c8819836897b0115594a62f76db4ce83b31cd997f06",
+      "inputFingerprint": "7dc81c5b952bbea2360ea1bebd7c74de0d6a6e763042ca43cfca9d578457c372",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -162,12 +162,20 @@
       "id": "fee-after-the-draw-declared-as-withheld",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0a3f11dbcb9b4929b6d1064b7137b3ebeabe60efe7989afc30e444fd19847730",
+      "inputFingerprint": "8c411ead0006b9191eac992d45649d5c896a3ded840364d6918d90f8bf54d534",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
     {
       "id": "repeated-installment-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "curve-not-covering-the-first-year",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
@@ -216,6 +224,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "60baacb1e857135e0481b990e77e00be0dff00296e346d9ad65cd9fe990d8e75",
+  "evidenceFingerprint": "6b9c64fceb6a1890ff252fe33d16aa17e27bce8557543cc4b376c848e1cc2f25",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
