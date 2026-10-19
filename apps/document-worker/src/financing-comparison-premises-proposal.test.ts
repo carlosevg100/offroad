@@ -18,7 +18,7 @@ function c02Extraction(): FinancingComparisonExtraction {
     covenantEbitdaExcludesLeases: doc(!leases, `ts-${label}.pdf`),
     covenantTestFrequency: doc(frequency, `ts-${label}.pdf`), covenantDescription: null, waiverRequired: doc(waiver, `ts-${label}.pdf`),
     waiverCreditor: waiver ? doc("Debênture 2021", `ts-${label}.pdf`) : none, waiverMonth: waiver ? doc("2026-12", `ts-${label}.pdf`) : none,
-    waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
+    waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, waiverDeductible: waiver ? informed(false, "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
   return {
     proposals: [proposal("itau", 0.023, 0.01, true, "2028-07", 8, 6, 3, 0.4, 3, true, "semiannual", true),
       proposal("santander", 0.0255, 0.008, true, "2029-07", 6, 6, 3, 0.3, 3, false, "annual", true),
@@ -32,7 +32,7 @@ function c02Extraction(): FinancingComparisonExtraction {
       {label: "Debênture 2021", openingPrincipal: "60", rateKind: "floating", annualRate: 0.024, averagePrincipalCoupon: false, couponEveryMonths: 6,
         draws: [], amortizations: ["2026-12", "2027-06", "2027-12", "2028-06"].map((month) => ({month, amount: "15"})), prepayments: [], charges: []},
       {label: "CCB Bradesco", openingPrincipal: "40", rateKind: "floating", annualRate: 0.026, averagePrincipalCoupon: false, couponEveryMonths: 3,
-        draws: [], amortizations: [], prepayments: [{month: "2027-01", amount: "40"}], charges: [{label: "prêmio", kind: "premium", month: "2027-01", amount: "0.4"}]},
+        draws: [], amortizations: [], prepayments: [{month: "2027-01", amount: "40"}], charges: [{label: "prêmio", kind: "premium", month: "2027-01", amount: "0.4", deductible: true}]},
     ], "tabela de dívida"),
     indexCurve: doc([{year: 2026, annualRate: 0.149}, {year: 2027, annualRate: 0.14}, {year: 2028, annualRate: 0.1275}, {year: 2029, annualRate: 0.12}], "curva DI"),
   };
@@ -55,7 +55,7 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(c.facts.existingDebt.value[0]!.accruedPaymentQuarters).toEqual([1, 3, 5, 7, 9]);
     expect(c.facts.openingDate).toBe("2026-06-30");
     expect(itau!.contractDates).toEqual({drawDate: "2027-01-15", paymentDay: 15});
-    expect(c.housePremiseKeys.sort()).toEqual(["creditTax", "stress", "waiverDeductibility"]);
+    expect(c.housePremiseKeys.sort()).toEqual(["creditTax", "stress"]);
   });
   it("asks for what nobody stated instead of inventing it", () => {
     const e = c02Extraction(); e.proposals[2]!.feeRate = none; e.company.cashTaxRate = none;
@@ -107,6 +107,11 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(principal.reason).toContain("primeira amortização, documento (ts-itau.pdf)");
     const twice = c02Extraction(); twice.indexCurve.value!.push({...twice.indexCurve.value![0]!, annualRate: 0.15});
     expect(completeFinancingComparisonFacts({extraction: twice, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
+    // Deductibility and curve coverage are stated or gaps, never assumed (independent review, ninth round).
+    const undeclared = c02Extraction(); undeclared.existingDebt.value!.find((d) => d.charges.length)!.charges[0]!.deductible = null;
+    expect(completeFinancingComparisonFacts({extraction: undeclared, ids, currency: "BRL"})).toMatchObject({status: "missing"});
+    const late = c02Extraction(); late.indexCurve.value = late.indexCurve.value!.filter((c) => c.year >= 2028);
+    expect(completeFinancingComparisonFacts({extraction: late, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
     expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
   });

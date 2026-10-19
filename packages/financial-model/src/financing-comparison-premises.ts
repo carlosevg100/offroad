@@ -43,7 +43,7 @@ const proposal = z.strictObject({
   /** Where each clause came from, when the clauses have different sources (a consent fee stated by the CFO,
    * the spread from the term sheet). A clause without its own entry takes the proposal's origin. */
   provenance: z.partialRecord(z.enum(["amount", "annualSpread", "feeRate", "creditTax", "drawMonth", "amortization", "installments", "installmentEveryMonths", "coupon", "collateral", "covenantLimit",
-    "covenantDebtDefinition", "covenantEbitdaDefinition", "covenantFrequency", "waiverCreditor", "waiverMonth", "waiverCost", "drawDate", "paymentDay"]),
+    "covenantDebtDefinition", "covenantEbitdaDefinition", "covenantFrequency", "waiverCreditor", "waiverMonth", "waiverCost", "waiverDeductible", "drawDate", "paymentDay"]),
     z.strictObject({origin: z.enum(origins), source: text})).optional(),
 });
 
@@ -81,6 +81,8 @@ export const financingComparisonFactsSchema = z.strictObject({
     const from = v.drawQuarter ? f.quarterEnds[v.drawQuarter - 1]! : f.openingDate, to = f.quarterEnds[v.drawQuarter];
     if (v.contractDates && to && !(v.contractDates.drawDate > from && v.contractDates.drawDate <= to)) fail("Contract draw date outside the draw quarter");
   }
+  // The curve must cover the first projected year; the last rate extends forward, nothing extends backward.
+  if (Math.min(...f.indexCurve.value.map((c) => c.year)) > Number(nextDay(f.openingDate).slice(0, 4))) fail("Index curve does not cover the first projected year");
   // One rate per year: two rates for the same year are an ambiguity, never a silent choice.
   if (new Set(f.indexCurve.value.map((c) => c.year)).size !== f.indexCurve.value.length) fail("Index curve has two rates for the same year");
   // The bank's stress must start inside the horizon, or it changes nothing and would read as a stress.
@@ -211,7 +213,11 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
       lifePeriods.push({end, fraction: "0.25", convention: "adopted_year_fraction", businessDays: null, index: indexOf(Number(end.slice(0, 4))).toFixed(),
         principal: lifeAmort[q]!.toFixed(), pays: settles(q)});
     }
-    const days = Math.min(tax.maxDays, 365 * 100), creditTax = v.creditTax ? new Exact(v.amount).mul(new Exact(tax.dailyRate).mul(days).plus(tax.fixedRate)) : new Exact(0);
+    // Credit tax: the fixed rate on the amount plus the daily rate on each installment for the calendar
+    // days from the draw to its payment, capped at the declared day limit.
+    const dayCount = (end: string) => (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${base}T00:00:00Z`)) / 86400000;
+    const creditTax = v.creditTax ? lifePeriods.reduce((t, l) => t.plus(new Exact(l.principal).mul(tax.dailyRate).mul(Math.min(tax.maxDays, dayCount(l.end)))),
+      new Exact(v.amount).mul(tax.fixedRate)) : new Exact(0);
     const fee = new Exact(v.amount).mul(v.feeRate);
     // A charge of zero is not a charge: an explicitly zero fee adds nothing. On contract dates the fee
     // and the tax withheld from the advance are dated on the draw itself.
@@ -220,7 +226,7 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
       ...(v.creditTax && creditTax.gt(0) ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, ...withheldOn, amount: creditTax.toFixed(), deductible: true}] : []),
       ...(v.waiver ? [{id: `${v.label}-waiver`, category: "other", quarter: v.waiver.quarter, amount: v.waiver.cost, deductible: v.waiver.deductible, payee: v.waiver.instrumentId}] : [])],
       `${cite([["feeRate", "comissão"], ...(v.creditTax ? [["creditTax", "IOF"] as [Clause, string]] : []), ["drawMonth", "mês do desembolso"], ...(v.contractDates ? [["drawDate", "data do desembolso"]] as [Clause, string][] : []),
-        ...(v.waiver ? [["waiverCost", "custo do waiver"], ["waiverCreditor", "credor do waiver"], ["waiverMonth", "mês do waiver"]] as [Clause, string][] : [])])}${v.creditTax ? ` Regra do IOF: ${f.creditTax.source}.` : ""}`);
+        ...(v.waiver ? [["waiverCost", "custo do waiver"], ["waiverCreditor", "credor do waiver"], ["waiverMonth", "mês do waiver"], ["waiverDeductible", "dedutibilidade do waiver"]] as [Clause, string][] : [])])}${v.creditTax ? ` Regra do IOF: ${f.creditTax.source}, alíquota diária por parcela pelos dias corridos do desembolso ao pagamento, até o teto.` : ""} Premissa da casa: comissão e IOF dedutíveis como despesa financeira.`);
     const collateral = new Exact(v.amount).mul(v.collateralShareOfLoan).toFixed();
     num(`${root}.collateralConsumed`, "currency", collateral, `${clause("collateral")} Cessão de ${new Exact(v.collateralShareOfLoan).times(100).toFixed()}% do saldo.`);
     const months = v.covenant.testFrequency === "annual" ? ["12"] : ["06", "12"];

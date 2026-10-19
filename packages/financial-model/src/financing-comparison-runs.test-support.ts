@@ -189,6 +189,7 @@ function adversarialCases(): Case[] {
     }, "financing_full_repayment_requires_settling_accrued_interest"],
     ["fee-after-the-draw-declared-as-withheld", () => itauFeeLater("fee_and_iof"), "proposal_comparison_upfront_charges_mismatch"],
     ["repeated-installment-date", () => fromFacts((f) => {const q = f.proposals[0]!.value.amortizationQuarters; q[1] = q[0]!;}), "Amortization quarters must be distinct and increasing"],
+    ["curve-not-covering-the-first-year", () => fromFacts((f) => {f.indexCurve.value = f.indexCurve.value.filter((c) => c.year >= 2028);}), "Index curve does not cover the first projected year"],
     ["two-rates-for-one-year", () => fromFacts((f) => {f.indexCurve.value.push({...f.indexCurve.value[0]!, annualRate: "0.15"});}), "Index curve has two rates for the same year"],
     ["stress-starting-outside-the-horizon", () => fromFacts((f) => {f.stress.fromQuarter.value = 80;}), "Stress starts outside the horizon"],
     ["draw-date-outside-the-draw-quarter", () => fromFacts((f) => {f.proposals[0]!.value.drawQuarter += 1;}), "Contract draw date outside the draw quarter"],
