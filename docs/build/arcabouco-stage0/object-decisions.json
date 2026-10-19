@@ -328192,6 +328192,12 @@
       "name": "versioned_information_packs"
     },
     {
+      "path": "supabase/migrations/20261019210807_lote1_payload_provenance.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "As cargas das fichas do lote 1 (comparar propostas, custo relativo da dívida e capacidade de endividamento) passam pela mesma prova de proveniência do capital: base adotada guardada, decisões fixadas no contrato, entidades, definições e fontes legíveis pelo solicitante."
+    },
+    {
       "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
       "sha256": "00700188d6e9097e21cc55421438370a6710d68429b7a8baf77b7e8990ec4d72",
       "name": "authorized_pack_distribution"

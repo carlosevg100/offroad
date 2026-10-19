@@ -1,0 +1,17 @@
+{
+  "source": "Mensagem direta do fundador nesta tarefa, 19 de outubro de 2026, autorizando preparar em produção a ativação das fichas do lote 1",
+  "author": "Carlos Eduardo Vasques Galves",
+  "scope": "Preparação em produção da ativação do método analyze-relative-debt-cost 2026.10.19-v2 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "release": "analyze-relative-debt-cost-2026.10.19-v2",
+  "manifestHash": "8ec65ef01d6640001ff7e5049f82d9d0add523cf4013085c05081e0550f57796",
+  "acts": [
+    {
+      "verbatim": "Autorizo publicar em produção as fichas C02, C03 e C04, com execução desligada.",
+      "recordedAt": "2026-10-19T21:09:49.112656+00:00"
+    },
+    {
+      "verbatim": "Autorizo preparar em produção a ativação das fichas C02, C03 e C04, mantendo as capacidades desligadas",
+      "recordedAt": "2026-10-19T21:09:49.112656+00:00"
+    }
+  ]
+}

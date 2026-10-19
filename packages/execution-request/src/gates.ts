@@ -27,6 +27,10 @@ export const releasedMethodReferenceDataKeys: Readonly<Record<string, readonly s
   "prepare-capital-structure-decision@2026.09.21-v4": ["policy.capital.iof", "policy.capital.anbima-b3-conventions", "policy.capital.tax-regime"],
   // The investment analysis reads only the adopted basis: no house reference data.
   "analyze-investment-project@2026.10.09-v2": [],
+  // Lote 1 reads only the adopted basis; credit tax and calendar conventions are adopted premises.
+  "compare-financing-proposals@2026.10.19-v2": [],
+  "analyze-relative-debt-cost@2026.10.19-v2": [],
+  "assess-debt-capacity@2026.10.19-v2": [],
 };
 
 export function referenceDataKeysOf(method: MethodIdentity): readonly string[] | null {

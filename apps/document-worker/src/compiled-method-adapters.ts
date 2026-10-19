@@ -6,6 +6,12 @@ export const compiledMethodAdapters = [
     exports: {calculate: "prepareCapitalProcedurePacketV2", input: "capitalProcedurePacketV2InputSchema", output: "capitalProcedurePacketV2OutputSchema"}},
   {methodId: "analyze-investment-project", executorKey: "@offroad/financial-model#prepareInvestmentDecisionPacket", executorVersion: "2026.10.09-v1",
     exports: {calculate: "prepareInvestmentDecisionPacket", input: "investmentDecisionPacketInputSchema", output: "investmentDecisionPacketOutputSchema"}},
+  {methodId: "compare-financing-proposals", executorKey: "@offroad/financial-model#prepareFinancingComparisonPacket", executorVersion: "2026.10.19-v1",
+    exports: {calculate: "prepareFinancingComparisonPacket", input: "financingComparisonPacketInputSchema", output: "financingComparisonPacketOutputSchema"}},
+  {methodId: "analyze-relative-debt-cost", executorKey: "@offroad/financial-model#prepareRelativeDebtCostPacket", executorVersion: "2026.10.19-v1",
+    exports: {calculate: "prepareRelativeDebtCostPacket", input: "relativeDebtCostPacketInputSchema", output: "relativeDebtCostPacketOutputSchema"}},
+  {methodId: "assess-debt-capacity", executorKey: "@offroad/financial-model#prepareDebtCapacityPacket", executorVersion: "2026.10.19-v1",
+    exports: {calculate: "prepareDebtCapacityPacket", input: "debtCapacityPacketInputSchema", output: "debtCapacityPacketOutputSchema"}},
 ] as const;
 export type CompiledMethodAdapter = (typeof compiledMethodAdapters)[number];
 export const compiledMethodIds: readonly string[] = compiledMethodAdapters.map(a => a.methodId);
