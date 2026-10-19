@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T15:33:57.047Z",
-    "finishedAt": "2026-10-19T15:35:01.872Z",
-    "commit": "2f2b271840ad6162afd246ad731afe06e2b48372"
+    "startedAt": "2026-10-19T15:54:15.971Z",
+    "finishedAt": "2026-10-19T15:55:23.419Z",
+    "commit": "5596c5dac3a081a36193268d8d83a08d20ddf5b8"
   },
   "modelCalls": 0,
   "cases": [
@@ -167,6 +167,38 @@
       "passed": true
     },
     {
+      "id": "repeated-installment-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-rates-for-one-year",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "stress-starting-outside-the-horizon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "draw-date-outside-the-draw-quarter",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "free-result-in-request",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -184,6 +216,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "9b644d0afc503597a307878931e8e537e8a6f8e375d7e5183f034dae3767b2c2",
+  "evidenceFingerprint": "60baacb1e857135e0481b990e77e00be0dff00296e346d9ad65cd9fe990d8e75",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
