@@ -102196,6 +102196,106 @@
       "definition": "CREATE TRIGGER work_premise_proposals_set_updated_at BEFORE UPDATE ON public.work_premise_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "function:private.put_platform_method_upload_part_v1(p_upload uuid, p_part integer, p_content text)",
+      "kind": "function",
+      "name": "put_platform_method_upload_part_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_upload uuid, p_part integer, p_content text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.submit_platform_method_candidate_from_parts_v1(p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text)",
+      "kind": "function",
+      "name": "submit_platform_method_candidate_from_parts_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_release_id text, p_upload uuid, p_part_count integer, p_manifest_hash text, p_evidence jsonb, p_source_commit text, p_author text",
+      "security_definer": false
+    },
+    {
+      "id": "r:private.platform_method_upload_parts",
+      "rls": true,
+      "kind": "table",
+      "name": "platform_method_upload_parts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "policy:private.platform_method_upload_parts.platform_method_upload_parts_deny",
+      "kind": "policy",
+      "name": "platform_method_upload_parts_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "platform_method_upload_parts",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "function:private.execution_result_investment_blocks_v1(p_packet jsonb)",
       "kind": "function",
       "name": "execution_result_investment_blocks_v1",
