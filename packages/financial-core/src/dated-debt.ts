@@ -10,6 +10,8 @@ export type DatedDebtPeriod = {
   /** Effective rates for this entire declared period; never annualized rates. */
   indexationRate: string; couponRate: string;
   drawdown: string; scheduledPrincipal: string; prepayment: string; repayAll: boolean;
+  /** Only with the `accrued_until_paid` coupon treatment: this period settles the accrued coupon. */
+  paysAccruedCoupon?: boolean;
 };
 export type DatedDebtInstrument = DebtTerms & {
   currency: string; openingPrincipal: string;
@@ -68,7 +70,7 @@ export function buildDatedDebtCashFlows(input: DatedDebtInput) {
     if (!["available", "restricted"].includes(instrument.drawdownAccount) || !["available", "restricted"].includes(instrument.paymentAccount)) throw new Error("dated_debt_account_required");
     if (!["none", "IPCA", "CDI", "SOFR", "fixed", "other"].includes(instrument.indexer)
       || !["not_applicable", "cash_paid", "capitalized_principal"].includes(instrument.indexationTreatment)
-      || !["cash_paid", "capitalized_principal"].includes(instrument.couponTreatment)
+      || !["cash_paid", "capitalized_principal", "accrued_until_paid"].includes(instrument.couponTreatment)
       || !["opening_principal", "indexed_principal", "average_principal"].includes(instrument.couponBase)) throw new Error("dated_debt_invalid_terms");
     amount(instrument.openingPrincipal);
     let previousEnd = input.openingDate;
@@ -79,6 +81,7 @@ export function buildDatedDebtCashFlows(input: DatedDebtInput) {
       amount(period.drawdown); amount(period.scheduledPrincipal); amount(period.prepayment);
       rate(period.indexationRate); rate(period.couponRate);
       if (typeof period.repayAll !== "boolean") throw new Error("dated_debt_repayment_convention_required");
+      if (period.paysAccruedCoupon !== undefined && (typeof period.paysAccruedCoupon !== "boolean" || instrument.couponTreatment !== "accrued_until_paid")) throw new Error("dated_debt_invalid_terms");
       if (instrument.indexationTreatment === "not_applicable" && !new Money(period.indexationRate).isZero()) throw new Error("dated_debt_unused_indexation_rate");
     }
     if (previousEnd !== input.endDate) throw new Error("dated_debt_period_coverage");

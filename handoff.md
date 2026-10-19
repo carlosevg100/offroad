@@ -2,6 +2,10 @@
 
 O resultado do método de investimento passa a virar revisão `execution_result`, como o de capital: o projetor escolhe o mapeamento pelo tipo do pacote (`private.execution_result_investment_blocks_v1`, espelho de `investmentDecisionPacketBlocks`, provado pelo fixture sintético C32 em `supabase/tests/investment_result_artifacts.sql`). Migração aplicada em staging (20261018205305) e produção (20261018205500), advisors limpos. A tela da execução mostra a comparação dos cenários (VPL, TIR, payback, capital de giro de partida, maior necessidade de caixa e caixa mínimo da companhia com e sem o projeto), arredondada só na exibição. Falta publicar o método e compor a resposta do turno a partir do resultado.
 
+## 2026-10-19: lote 1 de fichas testado
+
+C02, C03 e C04 implementadas e revisadas, ainda não publicadas. Próximos passos: aprovação de conteúdo do lote pelo fundador, publicação, captura, perfil, liberação, ponte de conversa (branch `feat/lote1-conversation-bridge`, migrações só em staging) e página de resultado.
+
 ## 2026-10-19: método de investimento publicado em produção
 
 `analyze-investment-project` 2026.10.09-v2 publicado em produção (release `analyze-investment-project-2026.10.09-v2`, manifestHash aff46390…, fonte a2a9138b), com revisão técnica independente e aprovação de conteúdo do fundador pela identidade de fundador. Capacidade `method.analyze-investment-project.2026.10.09-v2` fica `released=false`: execução desligada até a ativação do executor. O manifesto não cabe num comando administrativo; a via `private.put_platform_method_upload_part_v1` + `private.submit_platform_method_candidate_from_parts_v1` envia o texto em partes conferidas por md5 e exige o manifestHash revisado. Em staging a candidata foi submetida, mas não há fundador ativo para publicar. Próximo: captura do executor, perfil, trava de proveniência do payload, liberação, resposta da conversa.

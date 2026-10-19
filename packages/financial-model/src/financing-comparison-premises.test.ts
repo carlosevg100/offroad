@@ -1,0 +1,60 @@
+import Decimal from "decimal.js";
+import {describe, expect, it} from "vitest";
+import {composeBoundFinancingComparison} from "./financing-comparison-composer";
+import {prepareFinancingComparisonPacket} from "./financing-comparison-packet";
+import {proposeFinancingComparisonHypotheses} from "./financing-comparison-premises";
+import {adoptAuroraFacts, auroraFacts, auroraIds as ids} from "./financing-comparison.test-support";
+
+const P = Decimal.clone({precision: 60});
+
+const adopt = adoptAuroraFacts;
+const near = (a: string, b: string, tol = "0.00005") => new P(a).minus(b).abs().lte(tol);
+
+describe("C02 premises proposed from facts with origin, adopted, composed and compared", {timeout: 120000}, () => {
+  it("stays inside the basis limit and states the origin of every premise", () => {
+    const h = proposeFinancingComparisonHypotheses(auroraFacts());
+    expect(h.length).toBeLessThanOrEqual(256);
+    expect(h.every((x) => x.reason.startsWith("Origem: "))).toBe(true);
+  });
+  it("reproduces the oracle for the three proposals in the base and the bank's case", () => {
+    const a = adopt(auroraFacts());
+    const packet = prepareFinancingComparisonPacket(composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual eu fico?"}));
+    expect(packet.status).toBe("prepared_for_human_review");
+    const base = {[ids.itau]: ["4.0000", "13.2636", "1.9475", "51.8920"], [ids.santander]: ["4.0047", "19.4592", "1.9071", "52.4246"], [ids.fundo]: ["3.5475", "20.7828", "1.8788", "51.2504"]};
+    for (const p of packet.comparison.cases[0]!.proposals) {
+      const o = base[p.proposalId]!;
+      expect([near(new P(p.equivalentSpread!).mul(100).toFixed(), o[0]!), near(p.minimumCash.amount, o[1]!), near(p.covenant.worstRatio, o[2]!), near(p.horizonFinancingCost, o[3]!)]).toEqual([true, true, true, true]);
+    }
+    const stress = packet.comparison.cases.find((c) => c.caseId === "bank-stress")!;
+    expect(near(stress.proposals.find((p) => p.proposalId === ids.itau)!.minimumCash.amount, "-0.2610")).toBe(true);
+    expect(packet.comparison.cases[0]!.proposals.find((p) => p.proposalId === ids.itau)!.conditioningFacts).toEqual(["cash_below_policy_minimum"]);
+  });
+  it("runs the lifetime on contract dates with national business days (independent review's dated recomputation)", () => {
+    // Expected: the independent reviewer's dated recomputation with the correct Gregorian Easter (the
+    // oracle's dated variant misplaces Easter 2027 and is not used): CDI + 4.118857762, 4.088867142, 3.567112894.
+    const a = adopt(auroraFacts({dated: true}));
+    const packet = prepareFinancingComparisonPacket(composeBoundFinancingComparison({envelope: a.envelope, scope: a.scope, question: "Qual eu fico?"}));
+    const spread = (pid: string) => new P(packet.comparison.cases[0]!.proposals.find((p) => p.proposalId === pid)!.equivalentSpread!).mul(100).toFixed();
+    expect([near(spread(ids.itau), "4.118857762", "0.0000001"), near(spread(ids.santander), "4.088867142", "0.0000001"), near(spread(ids.fundo), "3.567112894", "0.0000001")])
+      .toEqual([true, true, true]);
+  });
+  it("charges the daily credit tax by each installment's term, up to the cap (independent review recomputation)", () => {
+    const f = auroraFacts({dated: true}); f.proposals[0]!.value.amortizationQuarters = [1, 2];
+    const iof = proposeFinancingComparisonHypotheses(f), path = `proposal.${ids.itau}.charges.`;
+    const idsList = iof.find((h) => h.fieldPath.endsWith(path + "chargeIds"))!.value.value as string[];
+    const amount = (iof.find((h) => h.fieldPath.endsWith(path + "amounts"))!.value.value as string[])[idsList.findIndex((x) => x.endsWith("-iof"))]!;
+    expect(new P(amount).toDecimalPlaces(6).toFixed()).toBe("1.04377");
+  });
+  it("refuses ambiguous facts before proposing premises (independent review's eighth round)", () => {
+    const repeated = auroraFacts({dated: true}); const q = repeated.proposals[0]!.value.amortizationQuarters; q[1] = q[0]!;
+    expect(() => proposeFinancingComparisonHypotheses(repeated)).toThrow("Amortization quarters must be distinct and increasing");
+    const curve = auroraFacts(); curve.indexCurve.value.push({...curve.indexCurve.value[0]!, annualRate: "0.15"});
+    expect(() => proposeFinancingComparisonHypotheses(curve)).toThrow("Index curve has two rates for the same year");
+    const stress = auroraFacts(); stress.stress.fromQuarter.value = 80;
+    expect(() => proposeFinancingComparisonHypotheses(stress)).toThrow("Stress starts outside the horizon");
+    const late = auroraFacts(); late.indexCurve.value = late.indexCurve.value.filter((c) => c.year >= 2028);
+    expect(() => proposeFinancingComparisonHypotheses(late)).toThrow("Index curve does not cover the first projected year");
+    const draw = auroraFacts({dated: true}); draw.proposals[0]!.value.drawQuarter += 1;
+    expect(() => proposeFinancingComparisonHypotheses(draw)).toThrow("Contract draw date outside the draw quarter");
+  });
+});

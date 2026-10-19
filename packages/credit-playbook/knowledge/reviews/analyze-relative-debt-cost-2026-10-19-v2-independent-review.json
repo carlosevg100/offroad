@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "analyze-relative-debt-cost-2026-10-19-v2-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "analyze-relative-debt-cost",
+    "version": "2026.10.19-v2",
+    "fingerprint": "7676c4d110e0d8f45b1f819a535e078bbe1bba479715f1fe175ace0cb0dd9d95"
+  },
+  "run": {
+    "id": "c03-r4-openai-145954",
+    "startedAt": "2026-10-19T14:59:54Z",
+    "finishedAt": "2026-10-19T15:03:07Z",
+    "commit": "352eeafffd7c713af3e710320d51813f0f878275"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 17 arquivos fixados conferem com todos os SHA-256 declarados. Seus bytes no checkout, no commit c437a77100805b165aad16c960e6ca848f2353a1 e na cópia executada são idênticos. A conferência foi repetida ao final.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/analyze-relative-debt-cost-2026-10-19-v2-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "HEAD permaneceu no commit solicitado e git status permaneceu vazio. Todas as escritas ocorreram exclusivamente em /private/tmp/offroad-c03-r4-b65orjq5."
+    },
+    {
+      "claim": "Os hashes externos conferem. Duas execuções do oráculo em cópia temporária reproduziram exatamente os bytes originais de resultados.json.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C03/modelo_c03.py",
+      "result": "confirmed",
+      "note": "Script: 49e27b06692758def3ae01b56479b96c917a7741754455a1253079435673be74. Resultados: 5a948a79025eb9d4a6fa4ca7fcdbb0da0fdd70c967a67d93fc7f56502ac78217."
+    },
+    {
+      "claim": "Revisitei o procedimento, sua composição tipada, contratos, pacote, leitor da lente, adaptador, leitura da base adotada, normalização monetária e ambos os motores. O executor corresponde à versão 2026.10.19-v1.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/analyze-relative-debt-cost.md",
+      "result": "confirmed",
+      "note": "Também li corpo.html, lente.html e o relatório r3/review-C03.json."
+    },
+    {
+      "claim": "Recálculo independente com Decimal: 260 menos 135 = 125 bps; ajustes de 60, menos 10, menos 15, mais 20 e mais 15 somam 70; resíduo 55; diferença após data 65; parcela explicada 70/125 = 56%. Pacote e oráculo coincidem.",
+      "source": "/private/tmp/offroad-c03-r4-b65orjq5/independent-decimal.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As diferenças relativas desfavoráveis conferem: receita 61,8182%, margem 17,3333%, alavancagem 0%, cobertura 12,1212%, conversão 23,6111%, vencimentos curtos 188,8889% e prazo médio 54,7619%.",
+      "source": "packages/financial-model/src/adopted-relative-cost-lens.ts",
+      "anchor": "linhas 70 a 82",
+      "result": "confirmed",
+      "note": "Com materialidade de 15%, alavancagem é neutra, cobertura pesa pouco e os demais indicadores numéricos pesam contra. Concentração e rating/divulgação preservam juízo qualitativo desfavorável; histórico permanece neutro. Concentração dos dois maiores contra cinco maiores não recebe comparação numérica."
+    },
+    {
+      "claim": "Definições numéricas distintas são recusadas. Ausência de valor ou definição em qualquer lado suprime classificação e diferença. Linha qualitativa sem o par fica sem classificação. Exatamente 15% pesa pouco; acima disso pesa contra; melhora na direção adotada favorece.",
+      "source": "/private/tmp/offroad-c03-r4-b65orjq5/packages/financial-model/src/independent-c03-r4.test.ts",
+      "result": "confirmed",
+      "note": "Denominador zero e limiares zero, um e negativo foram recusados."
+    },
+    {
+      "claim": "A leitura positiva confere: 55/30 = 1,83333333333333333333 e 55/25 = 2,2 degraus. A ausência de qualquer um dos valores de mercado elimina a faixa, registra lacuna e preserva o resíduo de 55 bps.",
+      "source": "packages/financial-model/src/adopted-relative-cost-lens.ts",
+      "anchor": "linhas 84 a 95",
+      "result": "confirmed",
+      "note": "readingOnly permanece verdadeiro, creditRating permanece nulo e o pacote não atribui nota."
+    },
+    {
+      "claim": "Sobre R$ 40 milhões por 13 meses, as economias nominais são R$ 303.333,3333 a CDI + 1,90 e R$ 173.333,3333 a CDI + 2,20. Tarifa de R$ 400.000 e IOF adotado de R$ 1.349.200 somam R$ 1.749.200. Ambos os líquidos são negativos.",
+      "source": "packages/financial-core/src/relative-debt-cost.ts",
+      "anchor": "calculateDebtCostAction",
+      "result": "confirmed",
+      "note": "Os arredondamentos coincidem com o oráculo. O recálculo também reproduziu os valores completos usando a fração anual adotada. IOF tratado como premissa explícita do cenário, sem validação tributária externa."
+    },
+    {
+      "claim": "Rating sobre R$ 90 milhões economiza R$ 135.000 a R$ 225.000 anuais para ganhos de 15 a 25 bps. Contra custos de R$ 300.000 e R$ 200.000, os líquidos são menos R$ 165.000 e mais R$ 25.000 anuais.",
+      "source": "/private/tmp/offroad-c03-r4-b65orjq5/independent-decimal.json",
+      "result": "confirmed",
+      "note": "Reduzir a exposição otimista para R$ 45 milhões reduziu a economia a R$ 112.500. Aumentar seu custo para R$ 250.000 produziu líquido de menos R$ 25.000. Custos incompletos suprimiram paysForItself e o netNominalBenefit do motor."
+    },
+    {
+      "claim": "A primeira falha da terceira rodada foi corrigida: sem ponte, o bruto exige pricingBasis adotado igual a same_indexer_quoted_spread e indexadores conhecidos e iguais. Base ausente ou spreads equivalentes com ponte incompleta não produzem bruto.",
+      "source": "packages/financial-model/src/relative-debt-cost-packet.ts",
+      "anchor": "linhas 67 a 85",
+      "result": "corrected",
+      "note": "Reexecutei equivalent-spreads-without-the-bridge-show-no-gross-difference. Mutações próprias retiraram pricingBasis, retiraram curva e ajuste, e mantiveram curva válida com âncora de ajuste ausente. Todas suprimiram decomposition. Equivalentes com curva válida, ponte completa e indexadores distintos preservaram o resultado esperado."
+    },
+    {
+      "claim": "A segunda falha da terceira rodada foi corrigida: degraus usam o módulo do resíduo e informam a direção separadamente. O caso registrado de menos 55 bps retorna magnitude de 1,83333333333333333333 a 2,2 e company_pays_less.",
+      "source": "packages/financial-model/src/adopted-relative-cost-lens.ts",
+      "anchor": "linhas 89 a 92",
+      "result": "corrected",
+      "note": "Reexecutei a-negative-residual-reads-as-paying-less. Uma mutação própria com resíduo de menos 105 bps retornou 3,5 a 4,2 degraus, ordenados. Resíduo zero retornou zero degraus e direção none."
+    },
+    {
+      "claim": "A terceira falha da terceira rodada foi corrigida: diferença bruta zero produz shareNotAboutCompanyRisk nulo. Isso vale tanto com ajustes de 70 bps quanto quando os ajustes também somam zero.",
+      "source": "packages/financial-model/src/relative-debt-cost-packet.ts",
+      "anchor": "linhas 72 a 76",
+      "result": "corrected",
+      "note": "Reexecutei a-zero-difference-has-no-share e acrescentei a fronteira 0/0."
+    },
+    {
+      "claim": "Datas distintas sem ajuste de data impedem a ponte completa e registram lacuna, preservando somente o bruto comparável. Ajuste de data zero explicitamente adotado permite a ponte e produz resíduo de 115 bps. Ajuste de mercado ausente preserva o bruto cotado de 125 bps e suprime o resíduo.",
+      "source": "/private/tmp/offroad-c03-r4-b65orjq5/packages/financial-model/src/independent-c03-r4.test.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os 18 testes solicitados, 31 testes independentes adicionais e 10 testes dos motores passaram. Os registros de 16 casos gold, 12 adversariais e seis de consistência foram reproduzidos com seus fingerprints.",
+      "source": "packages/financial-model/src/relative-debt-cost-runs.test.ts",
+      "result": "confirmed",
+      "note": "Cada adversarial registrado exercita uma fronteira real: integridade, comparação divergente, ação inexistente, duplicidade, identidade do par, sobreposição, indexadores, definições, materialidade, faixa de degrau, resultado livre ou concessão fabricada. As mutações próprias usaram contribuições alteradas e envelopes íntegros."
+    },
+    {
+      "claim": "Vinte repetições preservaram os bytes do pacote e dos operandos. Nova execução em processo separado repetiu as 49 aprovações dos testes do financial-model e reproduziu exatamente o pacote completo. O oráculo também permaneceu estável entre processos.",
+      "source": "/private/tmp/offroad-c03-r4-b65orjq5/repeated-tests.txt",
+      "result": "confirmed",
+      "note": "SHA-256 do pacote: d0a75176a9ae4bcc0e7df69e4c3c4b881d801c6b79bab842d26222cc533f5155."
+    },
+    {
+      "claim": "O conteúdo profissional atende ao gabarito C03 em padrão compatível com revisão sênior de DCM/crédito: comparação explícita, data e estrutura antes do resíduo, alavancagem neutra, leitura sem atribuir rating e alavancas confrontadas com exposição, custos e prazo.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/analyze-relative-debt-cost.md",
+      "anchor": "Objetivo; Cálculos determinísticos; Exemplos; Fundamentação profissional",
+      "result": "confirmed",
+      "note": "O resíduo é qualificado pelos ajustes adotados e não prova causalidade. Não identifiquei travessão, slogan, construção proibida de contraste ou julgamento da intenção de banco ou tesouraria."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As três falhas da terceira rodada foram corrigidas nos bytes fixados e confirmadas por execução independente. Os novos casos registrados foram reproduzidos. Foram acrescentadas 31 verificações próprias, incluindo novas mutações de resíduo zero, parcela 0/0, curva válida com âncora de ajuste ausente e custo adicional de rating. Não encontrei divergência numérica além da precisão declarada nem definição implementada incorretamente no escopo examinado. Nenhum arquivo foi escrito no repositório; cópias, dependências, caches, testes adicionais e resultados ficaram em diretório temporário externo. Esta revisão cobre o método determinístico e seu conteúdo profissional. Não comprova recuperação de fontes públicas, autorização SQL, conversa pela interface, implantação ou publicação. Não constitui aprovação humana."
+}

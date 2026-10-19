@@ -1,0 +1,153 @@
+{
+  "schemaVersion": "review-subject-basis.v1",
+  "subject": {
+    "kind": "method",
+    "id": "compare-financing-proposals",
+    "version": "2026.10.19-v2"
+  },
+  "commit": "cd35fef1a40ae8454fa8bc1299dc92d550deb6fa",
+  "pins": [
+    {
+      "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
+      "sha256": "895241337bd79831c759f040a1e6ad7485e67b47ba23c34637383037c51a88ab"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-packet.ts",
+      "sha256": "506d5893dc1f7be1ab98f1edc5a7e31e685d99be21862d0b64c7efce88a078ee"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-contracts.ts",
+      "sha256": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-composer.ts",
+      "sha256": "66b55e7e386755da8fef0712d6d3384191f5ddf407799ff29c278a1f6ece545c"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-premises.ts",
+      "sha256": "9b7aef626e75ce14428c5c2685986e62219861f8ae88b02fff7fe2b6904e319e"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-financing-comparison.ts",
+      "sha256": "3c8801205c9848d9d4556a6e13bc0f8f1e0d145b23d0f5083e363b34d2776d5f"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison.test-support.ts",
+      "sha256": "9e6dd485e58bd3e150d1a9c700686d20742b0ef7f4aef4007375001aa7d97246"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-packet.test.ts",
+      "sha256": "5d034d157108c105338a8807049c06878865c6db238cdc32654b442fb7f54e73"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-financing-comparison.test.ts",
+      "sha256": "5d6e2a1cc35ed1f4c9307327be540f10805f2d2d728229badfbb1ea6b9497e1b"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-composer.test.ts",
+      "sha256": "0689b486d8b5841d0706135a55edfc32c367f5fc0fec959c270e1f29a31d196e"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-premises.test.ts",
+      "sha256": "1900db8448ec39cad7f6e3752961c4e0141449371f5e4779655e457024f302fd"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
+      "sha256": "f49070470b7539639b222cb3b051dd496588c119611a0f127e38639b638350e7"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
+      "sha256": "41fe52037e1df99478b76d2085bf73a2b03de3c0d4983c33ee3bf50cbb8a2aba"
+    },
+    {
+      "path": "packages/financial-core/src/financing-proposal-comparison.ts",
+      "sha256": "1a3416835106cbbd09416f4435eaa88573a24c7492244b089b53cb3e4e03e996"
+    },
+    {
+      "path": "packages/financial-core/src/business-day-calendar.ts",
+      "sha256": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+    },
+    {
+      "path": "packages/financial-core/src/period-financing-taxes.ts",
+      "sha256": "004d0bb92ba974fb9752056e3024f5c26ec4fa5bb66e3381036874f81784978a"
+    },
+    {
+      "path": "packages/financial-core/src/projected-leverage-covenant.ts",
+      "sha256": "e2166ca0c88d2ebdd1a1e54b42c988bc7f695ef9793aec4f1ab51ba47226cb04"
+    },
+    {
+      "path": "packages/financial-core/src/indexed-debt.ts",
+      "sha256": "1979b6edc12a429042bdfc25327d0ca739c2d0038816af69b81cdfc29494238e"
+    },
+    {
+      "path": "packages/financial-core/src/dated-debt.ts",
+      "sha256": "1b8fe2a91ab5961e3d9f50d6ac4818d3e82a03aa31c902d3697dc2882ee137ba"
+    },
+    {
+      "path": "packages/financial-core/src/equivalent-financing-cost.ts",
+      "sha256": "9340237cd6ac0ce10d9d1c0e02a5bba80e119fd04b33d646601f58f3f0bb4086"
+    },
+    {
+      "path": "packages/financial-core/src/financing-costs.ts",
+      "sha256": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
+    },
+    {
+      "path": "packages/financial-core/src/capital-period-cash.ts",
+      "sha256": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
+    },
+    {
+      "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
+      "sha256": "283aaee66901a15d9500e7a2704afdea2c2a539ed5f21ca18c9a55321f5f1727"
+    },
+    {
+      "path": "packages/financial-core/src/business-day-calendar.test.ts",
+      "sha256": "d9576772b77438c6b7e61fbdc2157d2241c3b8e7f441b1195242d30d84295298"
+    },
+    {
+      "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
+      "sha256": "1236882bb7267112b5618355e33ec18376487ca02a3deb32e06ed7afa284dcee"
+    },
+    {
+      "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
+      "sha256": "28a97cde3d067fd3cb547758bfb87ad05a1fb9a0b18ea77b99df8b9802d58eaa"
+    },
+    {
+      "path": "packages/financial-model/contracts/financing-comparison-packet.json",
+      "sha256": "b06065929796283938b38014d891b180332c2c2beac64e9d04f417e403fd712f"
+    },
+    {
+      "path": "packages/financial-model/contracts/financing-comparison-evidence.json",
+      "sha256": "29febf921b537c63ec8603e5ecb757c6c6d8320a6d0e709ca789f76598969226"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+      "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+    },
+    {
+      "path": "packages/financial-model/src/ficha-calculation-results.ts",
+      "sha256": "a76f7cd69d6c430e1bd0723b9d1fa4ca88ae8d859eff10d48293d6e32376e7af"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
+      "sha256": "aeee66da24e022f9d5960f06e5e8eb8afb5736188d3ad81e8540a3a901245464"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
+      "sha256": "43f0b26c2435fec30b1fe25e623904861e65cfc2f61a8b9a37d22d4cd0c91595"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
+      "sha256": "0d10450432a0e422b52310c8a5ed58b104ab30eb7745419cf43daf037bf9029f"
+    }
+  ],
+  "externalOracle": [
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C02/modelo_c02.py",
+      "sha256": "8ca68a7adde3d5c9982157ba43c2db59d4fa0fc05cde0fa5db756d7bedfeae71"
+    },
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C02/resultados.json",
+      "sha256": "43083633408bf5d3493b068593eeb29f99e98428f35d6b4d21b0ead4572c7311"
+    }
+  ]
+}

@@ -151,7 +151,13 @@ describe("unpaid contractual interest and full amortization horizon", () => {
     const input = deferred(); input.periods.pop();
     expect(() => buildDeferredFinancingSchedule(input)).toThrow("financing_full_settlement_horizon_required");
     const unpaid = deferred(); unpaid.periods[1]!.paysAccruedInterest = false;
-    expect(() => buildDeferredFinancingSchedule(unpaid)).toThrow("financing_full_settlement_horizon_required");
+    expect(() => buildDeferredFinancingSchedule(unpaid)).toThrow("financing_full_repayment_requires_settling_accrued_interest");
+  });
+  it("refuses paying off the principal while accrued interest stays open", () => {
+    const early = deferred(); early.periods[0]!.scheduledPrincipal = "100"; early.periods[1]!.scheduledPrincipal = "0";
+    expect(() => buildDeferredFinancingSchedule(early)).toThrow("financing_full_repayment_requires_settling_accrued_interest");
+    early.periods[0]!.paysAccruedInterest = true;
+    expect(buildDeferredFinancingSchedule(early).rows[0]).toMatchObject({closingPrincipal: "0", closingAccruedInterest: "0"});
   });
   it("does not relabel a later zero-balance forecast date as the actual final payment", () => {
     const input = deferred();
