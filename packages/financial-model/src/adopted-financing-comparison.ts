@@ -1,0 +1,181 @@
+import {createHash} from "node:crypto";
+import {z} from "zod";
+import {compareFinancingProposals, financialCoreVersion, financingCostCategories, type DatedDebtInstrument, type FinancingCharge,
+  type FinancingProposalComparisonInput} from "@offroad/financial-core";
+import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
+import {adoptedAnalysisContextSchema, analysisAmount, analysisReference, createAnalysisBinding, type AnalysisSelection} from "./adopted-analysis-binding";
+
+export const adoptedFinancingComparisonVersion = "2026.10.19-v1";
+const debtTermNames = ["timing", "indexer", "indexationTreatment", "couponTreatment", "couponBase", "drawdownAccount", "paymentAccount",
+  "openingPrincipal", "indexationRates", "couponRates", "drawdowns", "scheduledPrincipal", "prepayments", "repayAll"] as const;
+const debtTerms = z.strictObject({...Object.fromEntries(debtTermNames.map((k) => [k, selection])) as Record<typeof debtTermNames[number], typeof selection>,
+  paysAccruedCoupon: selection.optional()});
+const chargeSeries = z.strictObject({chargeIds: selection, categories: selection, dates: selection, amounts: selection, deductible: selection});
+const companyMoneyNames = ["ebitda", "cashLeasePayments", "depreciationAndAmortization", "workingCapitalCashFlow", "maintenanceCapexPaid", "growthCapexPaid"] as const;
+const lifetimeNames = ["periodEnds", "yearFractions", "annualIndex", "yearFractionConventions", "scheduledPrincipal", "paysAccruedInterest"] as const;
+
+export const adoptedFinancingComparisonInputSchema = adoptedAnalysisContextSchema.safeExtend({
+  comparisonId: analysisReference, scenario: z.string().trim().min(1).max(160), inheritedScenario: z.string().trim().min(1).max(160).optional(),
+  periodEnds: selection,
+  company: z.strictObject({openingAvailableCash: selection, money: z.strictObject(Object.fromEntries(companyMoneyNames.map((k) => [k, selection])) as Record<typeof companyMoneyNames[number], typeof selection>),
+    cashTaxRate: selection, lossTaxTreatment: selection, freeReceivablesPool: selection, minimumCashFrom: selection,
+    covenantHistoryPeriods: selection, covenantHistoryEbitda: selection, covenantHistoryLeasePayments: selection}),
+  instruments: z.array(z.strictObject({id: z.uuid(), terms: debtTerms, charges: chargeSeries.nullable()})).max(15),
+  proposals: z.array(z.strictObject({id: z.uuid(), label: z.string().trim().min(1).max(160), terms: debtTerms, charges: chargeSeries.nullable(),
+    collateralConsumed: selection,
+    covenant: z.strictObject({name: selection, leaseLiabilityInDebt: selection, leaseLiability: selection, ebitdaExcludesLeases: selection,
+      trailingPeriods: selection, measurementPeriods: selection, limit: selection, comparator: selection}),
+    lifetime: z.strictObject({grossAdvance: selection, upfrontWithheldCosts: selection, annualSpread: selection, unpaidInterestBase: selection,
+      lowerSpread: selection, upperSpread: selection, ...Object.fromEntries(lifetimeNames.map((k) => [k, selection])) as Record<typeof lifetimeNames[number], typeof selection>}),
+  })).min(1).max(8),
+}).refine((i) => i.inheritedScenario !== i.scenario, "A scenario cannot inherit from itself").refine((i) => new Set([...i.instruments.map((x) => x.id), ...i.proposals.map((x) => x.id)]).size === i.instruments.length + i.proposals.length, "Duplicate instrument");
+export type AdoptedFinancingComparisonInput = z.infer<typeof adoptedFinancingComparisonInputSchema>;
+
+const ratio = z.string().regex(/^-?\d{1,4}(?:\.\d{1,16})?$/);
+const flag = z.enum(["true", "false"]);
+const nextDate = (value: string) => {const d = new Date(`${value}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10);};
+
+/** Reads every operand of the comparison from the adopted basis, then recomputes. Nothing is
+ * injected by the caller: periods, debt terms, charges, collateral, covenant definitions, tax rule
+ * and lifetime terms are adopted with origin. Missing operands become named gaps; no default. */
+export function calculateAdoptedFinancingComparison(raw: unknown) {
+  const input = adoptedFinancingComparisonInputSchema.parse(raw);
+  const termMoney = (t: z.infer<typeof debtTerms>) => [t.openingPrincipal, t.drawdowns, t.scheduledPrincipal, t.prepayments];
+  const money: AnalysisSelection[] = [input.company.openingAvailableCash, ...Object.values(input.company.money), input.company.freeReceivablesPool,
+    input.company.covenantHistoryEbitda, input.company.covenantHistoryLeasePayments,
+    ...input.instruments.flatMap((i) => [...termMoney(i.terms), ...(i.charges ? [i.charges.amounts] : [])]),
+    ...input.proposals.flatMap((p) => [...termMoney(p.terms), ...(p.charges ? [p.charges.amounts] : []), p.collateralConsumed, p.covenant.leaseLiability,
+      p.lifetime.grossAdvance, p.lifetime.upfrontWithheldCosts, p.lifetime.scheduledPrincipal])];
+  const b = createAnalysisBinding(input, money, {inheritedScenario: input.inheritedScenario});
+  const prefix = `comparison.${input.comparisonId}.`;
+  const scalar = <T>(s: AnalysisSelection, path: string, unit: string, type: "number" | "text" | "date", schema: z.ZodType<T>) => b.read(s, prefix + path, input.scenario, unit, type, schema);
+  const column = <T>(s: AnalysisSelection, path: string, unit: string, schema: z.ZodType<T>) => b.read(s, prefix + path, input.scenario, unit, "list", z.array(schema).min(1).max(2000));
+  const ends = column(input.periodEnds, "periodEnds", "date", z.iso.date());
+  const c = input.company;
+  const companyCols = Object.fromEntries(companyMoneyNames.map((k) => [k, column(c.money[k], "company." + k, "currency", analysisAmount)])) as Record<typeof companyMoneyNames[number], string[] | null>;
+  const opening = scalar(c.openingAvailableCash, "company.openingAvailableCash", "currency", "number", analysisAmount);
+  const taxRate = scalar(c.cashTaxRate, "company.cashTaxRate", "ratio", "number", ratio);
+  const loss = scalar(c.lossTaxTreatment, "company.lossTaxTreatment", "convention", "text", z.literal("no_cash_benefit"));
+  const pool = scalar(c.freeReceivablesPool, "company.freeReceivablesPool", "currency", "number", analysisAmount);
+  const minFrom = scalar(c.minimumCashFrom, "company.minimumCashFrom", "date", "date", z.iso.date());
+  const histPeriods = column(c.covenantHistoryPeriods, "company.covenantHistory.periods", "identity", analysisReference);
+  const histEbitda = column(c.covenantHistoryEbitda, "company.covenantHistory.ebitda", "currency", analysisAmount);
+  const histLease = column(c.covenantHistoryLeasePayments, "company.covenantHistory.leasePayments", "currency", analysisAmount);
+
+  const instrument = (id: string, t: z.infer<typeof debtTerms>, path: string): DatedDebtInstrument | null => {
+    const tx = <T>(k: string, unit: string, schema: z.ZodType<T>) => scalar((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, "text", schema);
+    const col = <T>(k: string, unit: string, schema: z.ZodType<T>) => column((t as Record<string, AnalysisSelection>)[k]!, `${path}.${k}`, unit, schema);
+    const v = {timing: tx("timing", "convention", z.literal("draw_at_period_start_pay_at_period_end")),
+      indexer: tx("indexer", "convention", z.enum(["none", "IPCA", "CDI", "SOFR", "fixed", "other"])),
+      indexationTreatment: tx("indexationTreatment", "convention", z.enum(["not_applicable", "cash_paid", "capitalized_principal"])),
+      couponTreatment: tx("couponTreatment", "convention", z.enum(["cash_paid", "capitalized_principal", "accrued_until_paid"])),
+      couponBase: tx("couponBase", "convention", z.enum(["opening_principal", "indexed_principal", "average_principal"])),
+      drawdownAccount: tx("drawdownAccount", "convention", z.enum(["available", "restricted"])),
+      paymentAccount: tx("paymentAccount", "convention", z.enum(["available", "restricted"])),
+      openingPrincipal: scalar(t.openingPrincipal, `${path}.openingPrincipal`, "currency", "number", analysisAmount),
+      indexationRates: col("indexationRates", "ratio", ratio), couponRates: col("couponRates", "ratio", ratio),
+      drawdowns: col("drawdowns", "currency", analysisAmount), scheduledPrincipal: col("scheduledPrincipal", "currency", analysisAmount),
+      prepayments: col("prepayments", "currency", analysisAmount), repayAll: col("repayAll", "boolean", flag),
+      paysAccrued: t.paysAccruedCoupon ? column(t.paysAccruedCoupon, `${path}.paysAccruedCoupon`, "boolean", flag) : undefined};
+    if (v.couponTreatment !== null && (v.couponTreatment === "accrued_until_paid") !== (t.paysAccruedCoupon !== undefined)) throw new Error("comparison_accrued_coupon_schedule_mismatch");
+    if (!ends || Object.values(v).some((x) => x === null)) return null;
+    const lists = [v.indexationRates!, v.couponRates!, v.drawdowns!, v.scheduledPrincipal!, v.prepayments!, v.repayAll!, ...(v.paysAccrued ? [v.paysAccrued] : [])];
+    if (lists.some((l) => l.length !== ends.length)) throw new Error("comparison_series_length_mismatch");
+    return {instrumentId: id, currency: input.currency, openingPrincipal: v.openingPrincipal!, indexer: v.indexer!, indexationTreatment: v.indexationTreatment!,
+      couponTreatment: v.couponTreatment!, couponBase: v.couponBase!, drawdownAccount: v.drawdownAccount!, paymentAccount: v.paymentAccount!,
+      periods: ends.map((endDate, i) => ({period: endDate, startDate: nextDate(i ? ends[i - 1]! : input.openingDate), endDate,
+        indexationRate: v.indexationRates![i]!, couponRate: v.couponRates![i]!, drawdown: v.drawdowns![i]!, scheduledPrincipal: v.scheduledPrincipal![i]!,
+        prepayment: v.prepayments![i]!, repayAll: v.repayAll![i] === "true", ...(v.paysAccrued ? {paysAccruedCoupon: v.paysAccrued[i] === "true"} : {})}))};
+  };
+  const charges = (instrumentId: string, s: z.infer<typeof chargeSeries> | null, path: string) => {
+    if (!s) return {list: [] as FinancingCharge[], nonDeductible: [] as string[]};
+    const ids = column(s.chargeIds, `${path}.chargeIds`, "identity", analysisReference);
+    const cats = column(s.categories, `${path}.categories`, "convention", z.enum(financingCostCategories));
+    const dates = column(s.dates, `${path}.dates`, "date", z.iso.date());
+    const amounts = column(s.amounts, `${path}.amounts`, "currency", analysisAmount);
+    const deductible = column(s.deductible, `${path}.deductible`, "boolean", flag);
+    if (!ids || !cats || !dates || !amounts || !deductible || !ends) return {list: [], nonDeductible: []};
+    if ([cats, dates, amounts, deductible].some((l) => l.length !== ids.length)) throw new Error("comparison_series_length_mismatch");
+    const list = ids.map((id, n): FinancingCharge => {
+      const at = ends.findIndex((e) => dates[n]! <= e);
+      if (at < 0 || dates[n]! <= input.openingDate) throw new Error("comparison_charge_outside_horizon");
+      return {id, economicId: id, instrumentId, category: cats[n]!, period: ends[at]!, date: dates[n]!, amount: amounts[n]!, treatment: "cash_paid", account: "available"};
+    });
+    return {list, nonDeductible: ids.filter((_, n) => deductible[n] === "false")};
+  };
+
+  const common = input.instruments.map((i) => ({instrument: instrument(i.id, i.terms, `debt.${i.id}`), charges: charges(i.id, i.charges, `debt.${i.id}.charges`)}));
+  const proposals = input.proposals.map((p) => {
+    const path = `proposal.${p.id}`;
+    const l = p.lifetime;
+    const ls = <T>(k: typeof lifetimeNames[number], unit: string, schema: z.ZodType<T>) => column(l[k], `${path}.lifetime.${k}`, unit, schema);
+    const life = {grossAdvance: scalar(l.grossAdvance, `${path}.lifetime.grossAdvance`, "currency", "number", analysisAmount),
+      upfront: scalar(l.upfrontWithheldCosts, `${path}.lifetime.upfrontWithheldCosts`, "currency", "number", analysisAmount),
+      spread: scalar(l.annualSpread, `${path}.lifetime.annualSpread`, "ratio", "number", ratio),
+      unpaid: scalar(l.unpaidInterestBase, `${path}.lifetime.unpaidInterestBase`, "convention", "text", z.enum(["principal_plus_accrued", "principal_only"])),
+      lower: scalar(l.lowerSpread, `${path}.lifetime.lowerSpread`, "ratio", "number", ratio), upper: scalar(l.upperSpread, `${path}.lifetime.upperSpread`, "ratio", "number", ratio),
+      ends: ls("periodEnds", "date", z.iso.date()), fractions: ls("yearFractions", "ratio", ratio), index: ls("annualIndex", "ratio", ratio),
+      conventions: ls("yearFractionConventions", "convention", z.enum(["business_days_252", "actual_365_fixed", "adopted_year_fraction"])),
+      amort: ls("scheduledPrincipal", "currency", analysisAmount), pays: ls("paysAccruedInterest", "boolean", flag)};
+    const cv = p.covenant;
+    const cov = {name: scalar(cv.name, `${path}.covenant.name`, "identity", "text", analysisReference),
+      inDebt: scalar(cv.leaseLiabilityInDebt, `${path}.covenant.leaseLiabilityInDebt`, "boolean", "text", flag),
+      lease: scalar(cv.leaseLiability, `${path}.covenant.leaseLiability`, "currency", "number", analysisAmount),
+      excludes: scalar(cv.ebitdaExcludesLeases, `${path}.covenant.ebitdaExcludesLeases`, "boolean", "text", flag),
+      window: scalar(cv.trailingPeriods, `${path}.covenant.trailingPeriods`, "count", "number", z.string().regex(/^\d{1,2}$/)),
+      dates: column(cv.measurementPeriods, `${path}.covenant.measurementPeriods`, "date", z.iso.date()),
+      limit: scalar(cv.limit, `${path}.covenant.limit`, "ratio", "number", ratio),
+      comparator: scalar(cv.comparator, `${path}.covenant.comparator`, "convention", "text", z.enum(["lte", "lt"]))};
+    const collateral = scalar(p.collateralConsumed, `${path}.collateralConsumed`, "currency", "number", analysisAmount);
+    return {p, life, cov, collateral, instrument: instrument(p.id, p.terms, `${path}.terms`), charges: charges(p.id, p.charges, `${path}.charges`)};
+  });
+
+  let comparison: ReturnType<typeof compareFinancingProposals> | null = null;
+  const complete = !b.gaps.length && ends && opening !== null && taxRate !== null && loss !== null && pool !== null && minFrom !== null
+    && histPeriods && histEbitda && histLease && Object.values(companyCols).every((x) => x !== null)
+    && common.every((x) => x.instrument) && proposals.every((x) => x.instrument && x.collateral !== null
+      && Object.values(x.life).every((v) => v !== null) && Object.values(x.cov).every((v) => v !== null));
+  if (complete) {
+    if (Object.values(companyCols).some((col) => col!.length !== ends!.length) || histEbitda!.length !== histPeriods!.length || histLease!.length !== histPeriods!.length) throw new Error("comparison_series_length_mismatch");
+    if (!ends!.includes(minFrom!)) throw new Error("comparison_window_outside_horizon");
+    const comparisonInput: FinancingProposalComparisonInput = {currency: input.currency, openingDate: input.openingDate, endDate: input.endDate, openingAvailable: opening!,
+      periods: ends!.map((endDate, i) => ({id: endDate, startDate: nextDate(i ? ends![i - 1]! : input.openingDate), endDate,
+        ebitda: companyCols.ebitda![i]!, leasePayments: companyCols.cashLeasePayments![i]!, depreciationAndAmortization: companyCols.depreciationAndAmortization![i]!,
+        workingCapitalCashFlow: companyCols.workingCapitalCashFlow![i]!, maintenanceCapexPaid: companyCols.maintenanceCapexPaid![i]!, growthCapexPaid: companyCols.growthCapexPaid![i]!})),
+      commonInstruments: common.map((x) => x.instrument!), commonCharges: common.flatMap((x) => x.charges.list), commonNonDeductibleChargeIds: common.flatMap((x) => x.charges.nonDeductible),
+      covenantHistory: histPeriods!.map((period, i) => ({period, ebitda: histEbitda![i]!, leasePayments: histLease![i]!})),
+      tax: {rate: taxRate!, lossTreatment: loss!}, freeReceivablesPool: pool!, minimumCashFromPeriod: minFrom!,
+      proposals: proposals.map((x) => {
+        const l = x.life;
+        if ([l.fractions!, l.index!, l.conventions!, l.amort!, l.pays!].some((s) => s.length !== l.ends!.length)) throw new Error("comparison_series_length_mismatch");
+        return {id: x.p.id, label: x.p.label, collateralConsumed: x.collateral!, instrument: x.instrument!, charges: x.charges.list, nonDeductibleChargeIds: x.charges.nonDeductible,
+          cost: {schedule: {baseDate: lifetimeBase(input, x.instrument!),
+            currency: input.currency, moneyUnit: "currency units", grossAdvance: l.grossAdvance!, upfrontWithheldCosts: l.upfront!, annualSpread: l.spread!, unpaidInterestBase: l.unpaid!,
+            periods: l.ends!.map((endDate, i) => ({id: `${x.p.id}:${i}`, startDate: i ? l.ends![i - 1]! : lifetimeBase(input, x.instrument!), endDate,
+              yearFraction: l.fractions![i]!, annualIndex: l.index![i]!, yearFractionConvention: l.conventions![i]!, sourceAnchor: `adoption:${x.p.lifetime.periodEnds.decisionId}`,
+              scheduledPrincipal: l.amort![i]!, paysAccruedInterest: l.pays![i] === "true"}))},
+            costInventory: financingCostCategories.map((category) => ({category, status: "zero" as const, reason: "Upfront costs adopted as withheld from the net advance"})),
+            lowerSpread: l.lower!, upperSpread: l.upper!},
+          covenant: {name: x.cov.name!, leaseLiabilityInDebt: x.cov.inDebt === "true", leaseLiability: x.cov.lease!, ebitdaExcludesLeases: x.cov.excludes === "true",
+            trailingPeriods: Number(x.cov.window), measurementPeriods: x.cov.dates!, limit: x.cov.limit!, comparator: x.cov.comparator!}};
+      })};
+    comparison = compareFinancingProposals(comparisonInput);
+  }
+  const payload = {schemaVersion: "adopted-financing-comparison.v1" as const, adapterVersion: adoptedFinancingComparisonVersion, financialCoreVersion,
+    scope: input.scope, comparisonId: input.comparisonId, entityId: input.entityId, perimeter: input.perimeter, currency: input.currency,
+    scenario: input.scenario, inheritedScenario: input.inheritedScenario ?? null,
+    openingDate: input.openingDate, endDate: input.endDate, basisFingerprint: input.envelope.fingerprint,
+    status: comparison ? "partial_composition" as const : "missing_inputs" as const, comparison, gaps: b.gaps, bindings: b.bindings, normalization: b.normalization,
+    contributions: [...b.used.values()], derivedDependencies: [{result: "financing_proposal_comparison", decisionIds: [...b.used.keys()]}],
+    classification: [...b.used.values()].some((e) => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
+    exclusions: ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity", "tax_law_inference"] as const,
+    grantsExecution: false as const, grantsPublication: false as const};
+  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+}
+
+/** The lifetime schedule starts on the end of the period before the proposal's draw. */
+function lifetimeBase(input: {openingDate: string}, instrument: DatedDebtInstrument) {
+  const drawn = instrument.periods.findIndex((p) => p.drawdown !== "0" && Number(p.drawdown) > 0);
+  if (drawn < 0) throw new Error("comparison_proposal_without_draw");
+  return drawn ? instrument.periods[drawn - 1]!.endDate : input.openingDate;
+}

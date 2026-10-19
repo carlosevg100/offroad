@@ -141,7 +141,7 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
       periods: rows.map((r, i) => ({periodId: r.periodId, closingAvailable: r.closingAvailable, closingDebt: r.closingDebt, cashTax: taxes.rows[i]!.cashTax})),
     };
   });
-  return {schemaVersion: "financing-proposal-comparison.v1" as const, engineVersion: financingProposalComparisonVersion, currency: input.currency,
+  return {schemaVersion: "financing-proposal-comparison.v1" as const, engineVersion: financingProposalComparisonVersion, operands: input, currency: input.currency,
     openingDate: input.openingDate, endDate: input.endDate, minimumCashFromPeriod: input.minimumCashFromPeriod, proposals,
     exclusions: ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity"] as const};
 }

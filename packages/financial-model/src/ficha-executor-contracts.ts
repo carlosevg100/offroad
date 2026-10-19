@@ -4,8 +4,9 @@ import {adoptedFinancingProposalInputSchema, calculateAdoptedFinancingProposal} 
 import {adoptedRelativeDebtCostInputSchema, calculateAdoptedRelativeDebtCost} from "./adopted-relative-debt-cost";
 import {adoptedDebtCapacityInputSchema, calculateAdoptedDebtCapacity} from "./adopted-debt-capacity";
 import {adoptedInvestmentAnalysisInputSchema, calculateAdoptedInvestmentAnalysis} from "./adopted-investment-analysis";
+import {adoptedFinancingComparisonInputSchema, calculateAdoptedFinancingComparison} from "./adopted-financing-comparison";
 import {adoptedFinancingProposalOutputSchema, adoptedRelativeDebtCostOutputSchema,
-  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema} from "./ficha-calculation-results";
+  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema} from "./ficha-calculation-results";
 
 export const fichaCalculationExecutorVersion = "2026.10.07-v1";
 /** Build-owned entry points validate the complete result, including operands, trace,
@@ -22,6 +23,9 @@ export function calculateDebtCapacityEvidence(raw: unknown) {
 export function calculateInvestmentAnalysisEvidence(raw: unknown) {
   const result = calculateAdoptedInvestmentAnalysis(raw); adoptedInvestmentAnalysisOutputSchema.parse(result); return result;
 }
+export function calculateFinancingComparisonEvidence(raw: unknown) {
+  const result = calculateAdoptedFinancingComparison(raw); adoptedFinancingComparisonOutputSchema.parse(result); return result;
+}
 
 function contracts(id: string, exportName: string, input: z.ZodType, output: z.ZodType) {
   const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
@@ -37,5 +41,6 @@ export function fichaCalculationExecutorContracts() {
     {name: "relative-debt-cost-evidence", ...contracts("relative-debt-cost-evidence", "calculateRelativeDebtCostEvidence", adoptedRelativeDebtCostInputSchema, adoptedRelativeDebtCostOutputSchema)},
     {name: "debt-capacity-evidence", ...contracts("debt-capacity-evidence", "calculateDebtCapacityEvidence", adoptedDebtCapacityInputSchema, adoptedDebtCapacityOutputSchema)},
     {name: "investment-analysis-evidence", ...contracts("investment-analysis-evidence", "calculateInvestmentAnalysisEvidence", adoptedInvestmentAnalysisInputSchema, adoptedInvestmentAnalysisOutputSchema)},
+    {name: "financing-comparison-evidence", ...contracts("financing-comparison-evidence", "calculateFinancingComparisonEvidence", adoptedFinancingComparisonInputSchema, adoptedFinancingComparisonOutputSchema)},
   ];
 }

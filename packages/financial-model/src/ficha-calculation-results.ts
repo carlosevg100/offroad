@@ -125,3 +125,41 @@ export const adoptedInvestmentAnalysisOutputSchema = z.strictObject({...common, 
   analysisId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), project: project.nullable(), startupCapital: startup.nullable(), ramp: ramp.nullable(),
   company: company.nullable(), valuation: valuation.nullable(), valuationPerspective: z.enum(["standalone_project", "incremental_company"]).nullable(),
   exclusions: z.array(z.enum(["automatic_terminal_release", "intraperiod_cash_certification", "tax_law_inference", "financing_recommendation", "method_release"])).length(5).refine(v => v.join("|") === "automatic_terminal_release|intraperiod_cash_certification|tax_law_inference|financing_recommendation|method_release", "Exact exclusion ledger required")});
+
+// Engine values keep the kernel's full precision; they are never rounded back into observations.
+const engine = z.string().regex(/^-?\d{1,30}(?:\.\d{1,80})?$/);
+const comparedProposal = z.strictObject({id: z.uuid(), label: text, equivalentSpread: engine.nullable(),
+  costStatus: z.enum(["calculated", "missing_inputs", "root_not_bracketed"]), weightedAverageLifeYears: engine,
+  minimumCash: z.strictObject({amount: engine, periodId: text}), debtServiceByYear: z.record(z.string().regex(/^\d{4}$/), engine),
+  covenant: z.strictObject({name: text, limit: engine, worst: z.strictObject({period: text, ratio: engine, headroom: engine}), allComply: z.boolean(),
+    rows: z.array(z.strictObject({period: text, netDebt: engine, trailingEbitda: engine, ratio: engine, headroom: engine, complies: z.boolean()})).min(1).max(480)}),
+  collateralConsumed: engine, freeReceivablesAfter: engine, horizonFinancingCost: engine, netDebtAtHorizon: engine, taxesInHorizon: engine,
+  periods: z.array(z.strictObject({periodId: text, closingAvailable: engine, closingDebt: engine, cashTax: engine})).min(1).max(480)});
+const comparisonExclusions = ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity"] as const;
+const account = z.enum(["available", "restricted"]);
+const comparedInstrument = z.strictObject({instrumentId: text, currency: z.string().regex(/^[A-Z]{3}$/), openingPrincipal: decimal,
+  indexer: z.enum(["none", "IPCA", "CDI", "SOFR", "fixed", "other"]), indexationTreatment: z.enum(["not_applicable", "cash_paid", "capitalized_principal"]),
+  couponTreatment: z.enum(["cash_paid", "capitalized_principal", "accrued_until_paid"]), couponBase: z.enum(["opening_principal", "indexed_principal", "average_principal"]),
+  drawdownAccount: account, paymentAccount: account,
+  periods: z.array(z.strictObject({period: text, startDate: date, endDate: date, indexationRate: decimal, couponRate: decimal, drawdown: decimal,
+    scheduledPrincipal: decimal, prepayment: decimal, repayAll: z.boolean(), paysAccruedCoupon: z.boolean().optional()})).min(1).max(480)});
+const comparedCharge = z.strictObject({id: text, economicId: text, instrumentId: text, category: z.enum(["origination_fee", "recurring_fee", "tax", "other"]),
+  period: text, date, amount: decimal, treatment: z.literal("cash_paid"), account: z.literal("available")});
+const comparisonOperands = z.strictObject({currency: z.string().regex(/^[A-Z]{3}$/), openingDate: date, endDate: date, openingAvailable: decimal,
+  periods: z.array(z.strictObject({id: text, startDate: date, endDate: date, ...numbers(["ebitda", "leasePayments", "depreciationAndAmortization",
+    "workingCapitalCashFlow", "maintenanceCapexPaid", "growthCapexPaid"])})).min(1).max(480),
+  commonInstruments: z.array(comparedInstrument).max(15), commonCharges: z.array(comparedCharge).max(512), commonNonDeductibleChargeIds: z.array(text).max(512),
+  covenantHistory: z.array(z.strictObject({period: text, ebitda: decimal, leasePayments: decimal})).max(24),
+  tax: z.strictObject({rate: decimal, lossTreatment: z.literal("no_cash_benefit")}), freeReceivablesPool: decimal, minimumCashFromPeriod: text,
+  proposals: z.array(z.strictObject({id: z.uuid(), label: text,
+    cost: z.strictObject({schedule: deferredFinancingScheduleInputSchema, costInventory: equivalentFinancingCostInputSchema.shape.costInventory, lowerSpread: decimal, upperSpread: decimal}),
+    instrument: comparedInstrument, charges: z.array(comparedCharge).max(64), nonDeductibleChargeIds: z.array(text).max(64), collateralConsumed: decimal,
+    covenant: z.strictObject({name: text, leaseLiabilityInDebt: z.boolean(), leaseLiability: decimal, ebitdaExcludesLeases: z.boolean(),
+      trailingPeriods: z.number().int().min(1).max(24), measurementPeriods: z.array(text).min(1).max(480), limit: decimal, comparator: z.enum(["lte", "lt"])})})).min(1).max(8)});
+const comparison = z.strictObject({schemaVersion: z.literal("financing-proposal-comparison.v1"), engineVersion: version, operands: comparisonOperands, currency: z.string().regex(/^[A-Z]{3}$/),
+  openingDate: date, endDate: date, minimumCashFromPeriod: text, proposals: z.array(comparedProposal).min(1).max(8),
+  exclusions: z.array(z.enum(comparisonExclusions)).length(6).refine(v => v.join("|") === comparisonExclusions.join("|"), "Exact exclusion ledger required")});
+const adapterExclusions = [...comparisonExclusions, "tax_law_inference"] as const;
+export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-financing-comparison.v1"), adapterVersion: version,
+  comparisonId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), openingDate: date, endDate: date, comparison: comparison.nullable(),
+  exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});

@@ -12,8 +12,6 @@ const terms = z.strictObject({
   couponBase: selection, drawdownAccount: selection, paymentAccount: selection,
   openingPrincipal: selection, periodEnds: selection, indexationRates: selection, couponRates: selection,
   drawdowns: selection, scheduledPrincipal: selection, prepayments: selection, repayAll: selection,
-  /** Only for the accrued_until_paid coupon treatment: the periods that settle the accrued coupon. */
-  paysAccruedCoupon: selection.optional(),
 });
 // Direct cash convention: no accrual-to-cash working-capital adjustment can be added.
 // Operating payments exclude the separately declared capex and operating tax categories.
@@ -92,12 +90,12 @@ export function resolveAdoptedDebtInputs(raw: unknown) {
   const instrumentBindings = new Map<string, string[]>();
   for (const instrument of input.instruments) {
     const start = bindings.length;
-    const term = <T>(key: keyof typeof instrument.terms, unit: string, type: "text" | "list", schema: z.ZodType<T>) => read(instrument.terms[key]!, `debt.${instrument.id}.${key}`, `debt.${instrument.id}.${key}`, unit, firstDate, input.endDate, input.scenario, type, schema);
+    const term = <T>(key: keyof typeof instrument.terms, unit: string, type: "text" | "list", schema: z.ZodType<T>) => read(instrument.terms[key], `debt.${instrument.id}.${key}`, `debt.${instrument.id}.${key}`, unit, firstDate, input.endDate, input.scenario, type, schema);
     const principal = read(instrument.terms.openingPrincipal, `debt.${instrument.id}.openingPrincipal`, `debt.${instrument.id}.openingPrincipal`, "currency", null, input.openingDate, input.openingScenario, "number", unsigned);
     const timing = term("timing", "convention", "text", z.literal("draw_at_period_start_pay_at_period_end"));
     const indexer = term("indexer", "convention", "text", z.enum(["none", "IPCA", "CDI", "SOFR", "fixed", "other"]));
     const indexationTreatment = term("indexationTreatment", "convention", "text", z.enum(["not_applicable", "cash_paid", "capitalized_principal"]));
-    const couponTreatment = term("couponTreatment", "convention", "text", z.enum(["cash_paid", "capitalized_principal", "accrued_until_paid"]));
+    const couponTreatment = term("couponTreatment", "convention", "text", z.enum(["cash_paid", "capitalized_principal"]));
     const couponBase = term("couponBase", "convention", "text", z.enum(["opening_principal", "indexed_principal", "average_principal"]));
     const drawdownAccount = term("drawdownAccount", "convention", "text", z.enum(["available", "restricted"]));
     const paymentAccount = term("paymentAccount", "convention", "text", z.enum(["available", "restricted"]));
@@ -108,15 +106,12 @@ export function resolveAdoptedDebtInputs(raw: unknown) {
     const scheduledPrincipal = term("scheduledPrincipal", "currency", "list", z.array(unsigned).min(1).max(2000));
     const prepayments = term("prepayments", "currency", "list", z.array(unsigned).min(1).max(2000));
     const repayAll = term("repayAll", "boolean", "list", z.array(z.enum(["true", "false"])).min(1).max(2000));
-    const paysAccrued = instrument.terms.paysAccruedCoupon === undefined ? undefined
-      : term("paysAccruedCoupon", "boolean", "list", z.array(z.enum(["true", "false"])).min(1).max(2000));
-    if (couponTreatment !== null && (couponTreatment === "accrued_until_paid") !== (instrument.terms.paysAccruedCoupon !== undefined)) throw new Error("debt_basis_accrued_coupon_schedule_mismatch");
     instrumentBindings.set(instrument.id, [...new Set(bindings.slice(start).flatMap(b => b.decisionId ? [b.decisionId, ...b.interpretationDecisionIds] : []))]);
-    if (principal === null || timing === null || indexer === null || indexationTreatment === null || couponTreatment === null || couponBase === null || drawdownAccount === null || paymentAccount === null || periodEnds === null || indexationRates === null || couponRates === null || drawdowns === null || scheduledPrincipal === null || prepayments === null || repayAll === null || paysAccrued === null) continue;
-    if ([indexationRates, couponRates, drawdowns, scheduledPrincipal, prepayments, repayAll, ...(paysAccrued ? [paysAccrued] : [])].some(v => v.length !== periodEnds.length)) throw new Error("debt_basis_series_length_mismatch");
+    if (principal === null || timing === null || indexer === null || indexationTreatment === null || couponTreatment === null || couponBase === null || drawdownAccount === null || paymentAccount === null || periodEnds === null || indexationRates === null || couponRates === null || drawdowns === null || scheduledPrincipal === null || prepayments === null || repayAll === null) continue;
+    if ([indexationRates, couponRates, drawdowns, scheduledPrincipal, prepayments, repayAll].some(v => v.length !== periodEnds.length)) throw new Error("debt_basis_series_length_mismatch");
     instruments.push({instrumentId: instrument.id, currency: input.currency, openingPrincipal: principal, indexer, indexationTreatment, couponTreatment, couponBase, drawdownAccount, paymentAccount,
       periods: periodEnds.map((endDate, i) => ({period: endDate, startDate: i ? nextDate(periodEnds[i - 1]!) : firstDate, endDate,
-        indexationRate: indexationRates[i]!, couponRate: couponRates[i]!, drawdown: drawdowns[i]!, scheduledPrincipal: scheduledPrincipal[i]!, prepayment: prepayments[i]!, repayAll: repayAll[i] === "true", ...(paysAccrued ? {paysAccruedCoupon: paysAccrued[i] === "true"} : {})})),
+        indexationRate: indexationRates[i]!, couponRate: couponRates[i]!, drawdown: drawdowns[i]!, scheduledPrincipal: scheduledPrincipal[i]!, prepayment: prepayments[i]!, repayAll: repayAll[i] === "true"})),
     });
   }
   const operatingEvents: LiquidityEvent[] = input.operatingEvents.map(event => {
