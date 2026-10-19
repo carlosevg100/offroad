@@ -87,6 +87,13 @@ function goldCases(): Case[] {
       return observe("negotiated-variants-move-the-cost", input, [["itau-negotiated", 3.82], ["santander-230", 3.74]],
         (p) => rows(p, "base", (m) => new D(m.equivalentSpread!).times(100).toDecimalPlaces(2).toNumber()));
     })(),
+    (() => {
+      const p = c02PacketInput(), rule = p.basis.contribute("company.maximumCollateralShare", "ratio", {type: "number", value: "0.4"});
+      for (const c of p.input.cases) c.analysis.company.maximumCollateralShare = rule;
+      p.basis.entries.find((x) => x.fieldPath.endsWith("company.freeReceivablesPool"))!.value = {type: "number", value: "0"};
+      return observe("an-empty-pool-under-a-cap-eliminates-any-collateral", p.seal() as FinancingComparisonPacketInput,
+        {facts: [["itau", ["collateral_above_policy"]], ["santander", ["collateral_above_policy"]], ["fundo", []]]}, (q) => ({facts: rows(q, "base", (m) => m.eliminatoryFacts)}));
+    })(),
     observe("collateral-above-company-rule-eliminates", withCollateralRule("0.4"), {facts: [["itau", ["collateral_above_policy"]], ["santander", []], ["fundo", []]], viable: ["santander", "fundo"]},
       (p) => ({facts: rows(p, "base", (m) => m.eliminatoryFacts), viable: at(p, "base").viableProposalIds.map((id) => names[id])})),
     (() => {
@@ -115,7 +122,7 @@ function goldCases(): Case[] {
 }
 
 /** The base case with one adopted premise replaced, sealed again: the boundary must hold on adopted data. */
-function mutateEntry(suffix: string, value: {type: "list" | "text" | "date"; value: string | string[]}) {
+function mutateEntry(suffix: string, value: {type: "list" | "text" | "date" | "number"; value: string | string[]}) {
   const p = c02PacketInput(), e = p.basis.entries.find((x) => x.fieldPath.endsWith(suffix))!;
   e.value = value as typeof e.value;
   const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
@@ -145,6 +152,8 @@ function adversarialCases(): Case[] {
       const envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
       return composeBoundFinancingComparison({envelope, scope: a.scope, question: "q"});
     }, "proposal_comparison_calendar_mismatch"],
+    ["negative-collateral", () => mutateEntry(`proposal.${c02Ids.itau}.collateralConsumed`, {type: "number", value: "-28"}), "comparison_negative_collateral"],
+    ["full-repayment-leaving-the-accrued-coupon", () => mutateEntry(`debt.${c02Ids.debenture}.paysAccruedCoupon`, {type: "list", value: ["false", "true", "false", "true", "false", "true", "false", "false", "false", "true"]}), "full repayment requires settling the accrued coupon"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];

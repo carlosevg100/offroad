@@ -90,7 +90,10 @@ describe("financing comparison premises proposed from a turn", () => {
     if (c.status !== "complete") throw new Error("expected complete");
     const p = buildFinancingComparisonPremiseProposal(c.facts);
     const charges = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.charges.chargeIds`))!;
-    expect(charges.reason).toContain("waiver, informado (assembleia da debênture de 2021)");
+    expect(charges.reason).toContain("custo do waiver, informado (assembleia da debênture de 2021)");
+    expect(charges.reason).toContain("credor do waiver, documento (ts-itau.pdf)");
+    const ebitdaClause = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.covenant.ebitdaExcludesLeases`))!;
+    expect(ebitdaClause.reason).toBe("Origem: documento. ts-itau.pdf");
     expect(charges.reason).toContain("comissão, documento (ts-itau.pdf)");
     expect(charges.reason.startsWith("Origem: ")).toBe(true);
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;

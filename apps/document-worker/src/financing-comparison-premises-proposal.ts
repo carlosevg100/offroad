@@ -111,7 +111,7 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
         const draw = p.drawDate.value !== null && p.drawDate.origin !== null, day = p.paymentDay.value !== null && p.paymentDay.origin !== null;
         if (draw !== day) missing.push(k(draw ? "paymentDay" : "drawDate"));
         return {drawDate: draw && day ? {value: p.drawDate.value!, origin: p.drawDate.origin!, source: p.drawDate.source ?? "Documento"} : null,
-          paymentDay: draw && day ? {value: p.paymentDay.value!} : null};
+          paymentDay: draw && day ? {value: p.paymentDay.value!, origin: p.paymentDay.origin!, source: p.paymentDay.source ?? "Documento"} : null};
       })()};
   });
   if (missing.length || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
@@ -159,8 +159,11 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       waiver: waiverOn ? {instrumentId: creditor!, quarter: waiverQuarter!, cost: p.waiverCost!.value, deductible: false} : null,
       contractDates: p.drawDate && p.paymentDay ? {drawDate: p.drawDate.value, paymentDay: p.paymentDay.value} : null,
       // Each clause keeps the origin and source it was stated with.
-      provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), schedule: src(p.first!), collateral: src(p.collateral!),
-        covenant: src(p.limit!), ...(waiverOn ? {waiver: src(p.waiverCost!)} : {}), ...(p.drawDate ? {contractDates: {origin: p.drawDate.origin, source: p.drawDate.source}} : {})}},
+      provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), drawMonth: src(p.draw!),
+        amortization: src(p.first!), coupon: src(p.coupon!), collateral: src(p.collateral!), covenantLimit: src(p.limit!), covenantDebtDefinition: src(p.leases!),
+        covenantEbitdaDefinition: src(p.excludes!), covenantFrequency: src(p.frequency!),
+        ...(waiverOn ? {waiverCost: src(p.waiverCost!), waiverCreditor: src(p.waiverCreditor!), waiverMonth: src(p.waiverMonth!)} : {}),
+        ...(p.drawDate && p.paymentDay ? {drawDate: {origin: p.drawDate.origin, source: p.drawDate.source}, paymentDay: {origin: p.paymentDay.origin, source: p.paymentDay.source}} : {})}},
       origin: [p.amount!, p.spread!].every((f) => f.origin === "document") ? "document" as const : "informed" as const,
       source: [...new Set(sources)].join("; ").slice(0, 2000)};
   });

@@ -108,7 +108,8 @@ export function prepareFinancingComparisonPacket(raw: unknown): FinancingCompari
       const share = r.policies.maximumCollateralShare;
       const facts = [...(new Exact(p.minimumCash.amount).lt(0) ? ["cash_below_zero" as const] : []), ...(p.covenant.allComply ? [] : ["covenant_breach" as const]),
         ...(p.equivalentSpread === null ? ["cost_not_determined" as const] : []),
-        ...(share !== null && pool!.gt(0) && new Exact(p.collateralConsumed).div(pool!).gt(share) ? ["collateral_above_policy" as const] : [])];
+        // With an adopted cap, collateral above the cap's share of the pool eliminates; with an empty pool any collateral does.
+        ...(share !== null && new Exact(p.collateralConsumed).gt(0) && (pool!.isZero() || new Exact(p.collateralConsumed).div(pool!).gt(share)) ? ["collateral_above_policy" as const] : [])];
       const policy = r.policies.minimumCash;
       const conditions = policy !== null && new Exact(p.minimumCash.amount).gte(0) && new Exact(p.minimumCash.amount).lt(policy) ? ["cash_below_policy_minimum" as const] : [];
       const dates = r.comparison!.operands.proposals.find((o) => o.id === p.id)!.covenant.measurementPeriods;

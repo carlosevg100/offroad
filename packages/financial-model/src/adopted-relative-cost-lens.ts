@@ -84,8 +84,12 @@ export function readAdoptedRelativeCostLens(raw: unknown, residualBps: string | 
   const low = read(input.notch.bpsLow, "notch.bpsLow", "basis_points", "number", decimal), high = read(input.notch.bpsHigh, "notch.bpsHigh", "basis_points", "number", decimal);
   const peerRating = read(input.notch.peerRating, "notch.peerRating", "explanation", "text", text, true);
   if (low !== null && high !== null && (!new Exact(low).gt(0) || new Exact(high).lt(low))) throw new Error("relative_cost_lens_notch_range");
-  const notches = residualBps !== null && low !== null && high !== null
-    ? {fewest: fmt(new Exact(residualBps).div(high)), most: fmt(new Exact(residualBps).div(low)), bpsPerNotch: {low, high}, peerRating, readingOnly: true as const} : null;
+  // Direction and magnitude are read separately: a negative residual (the company pays less) is not a
+  // range with its ends swapped.
+  const residual = residualBps === null ? null : new Exact(residualBps);
+  const notches = residual !== null && low !== null && high !== null
+    ? {direction: residual.isZero() ? "none" as const : residual.gt(0) ? "company_pays_more" as const : "company_pays_less" as const,
+      fewest: fmt(residual.abs().div(high)), most: fmt(residual.abs().div(low)), bpsPerNotch: {low, high}, peerRating, readingOnly: true as const} : null;
   return {schemaVersion: "relative-cost-lens.v1" as const, version: relativeCostLensVersion, rows, materialityThreshold: threshold, impliedNotches: notches,
     notDrivers: rows.filter((r) => r.classification === "neutral").map((r) => r.id), gaps, contributions: [...used.values()],
     creditRating: null, causalAttribution: false as const};

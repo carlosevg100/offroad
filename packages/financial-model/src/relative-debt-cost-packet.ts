@@ -42,7 +42,8 @@ export const relativeDebtCostPacketOutputSchema = z.strictObject({
     shareNotAboutCompanyRisk: decimal.nullable(), residualReading: z.literal("under_adopted_adjustments")}).nullable(),
   lens: z.strictObject({rows: z.array(lensRow).max(24), materialityThreshold: decimal.nullable(), notDrivers: z.array(z.uuid()).max(24),
     weighsAgainst: z.array(z.uuid()).max(24),
-    impliedNotches: z.strictObject({fewest: decimal, most: decimal, bpsPerNotch: z.strictObject({low: decimal, high: decimal}), peerRating: text.nullable(), readingOnly: z.literal(true)}).nullable()}),
+    impliedNotches: z.strictObject({direction: z.enum(["company_pays_more", "company_pays_less", "none"]), fewest: decimal, most: decimal,
+      bpsPerNotch: z.strictObject({low: decimal, high: decimal}), peerRating: text.nullable(), readingOnly: z.literal(true)}).nullable()}),
   levers: z.array(z.strictObject({actionId: z.uuid(), role: z.enum(leverRoles), label: text, scenario: z.enum(["low", "high", "single"]),
     savings: decimal.nullable(), knownCosts: decimal.nullable(), netOfKnownCosts: decimal.nullable(), paysForItself: z.boolean().nullable()})).max(16),
   gaps: z.array(z.strictObject({operand: text, reason: text})).max(1024),
@@ -66,10 +67,11 @@ export function prepareRelativeDebtCostPacket(raw: unknown): RelativeDebtCostPac
   const ownSide = result.own as {spreadBps: string | null; indexer: string | null}, peerSide = result.peer as {spreadBps: string | null; indexer: string | null};
   // Without the full bridge, a gross difference is shown only for quoted spreads on the same known
   // indexer; other spreads need an adopted equivalent curve, which only the bridge establishes.
-  const comparable = ownSide.indexer !== null && ownSide.indexer === peerSide.indexer;
+  const comparable = (result as {pricingBasis: string | null}).pricingBasis === "same_indexer_quoted_spread" && ownSide.indexer !== null && ownSide.indexer === peerSide.indexer;
   const own = comparable ? ownSide.spreadBps : null, peer = comparable ? peerSide.spreadBps : null;
   const decomposition = b ? {grossBps: b.grossBps, afterPricingDateBps: b.afterPricingDateBps, structureAndMarketBps: b.knownAdjustmentsBps, creditResidualBps: b.residualBps,
-    shareNotAboutCompanyRisk: new Exact(b.grossBps).isZero() ? "0" : fmt(new Exact(b.knownAdjustmentsBps).div(b.grossBps)), residualReading: "under_adopted_adjustments" as const}
+    // A share of a zero difference is undefined, never 0%.
+    shareNotAboutCompanyRisk: new Exact(b.grossBps).isZero() ? null : fmt(new Exact(b.knownAdjustmentsBps).div(b.grossBps)), residualReading: "under_adopted_adjustments" as const}
     : own !== null && peer !== null ? {grossBps: fmt(new Exact(own).minus(peer)), afterPricingDateBps: null, structureAndMarketBps: null, creditResidualBps: null,
       shareNotAboutCompanyRisk: null, residualReading: "under_adopted_adjustments" as const} : null;
   const levers = input.levers.map((lever) => {
