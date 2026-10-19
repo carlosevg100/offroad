@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-19T16:40:50Z",
+  "manifestHash": "8ec65ef01d6640001ff7e5049f82d9d0add523cf4013085c05081e0550f57796",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 19/10/2026 para o procedimento Explicar o custo de dívida frente a pares, versão 2026.10.19-v2 (ficha C03). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-publication/founder-instruction.json; SHA-256 26cf6331b0cfc1428bcfe6671b39cc9aa0dd0d24fe54b5de3f5a2f1c30b48f3d. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}

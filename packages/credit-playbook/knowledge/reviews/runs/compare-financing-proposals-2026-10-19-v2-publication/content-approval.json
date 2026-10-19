@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-19T16:40:50Z",
+  "manifestHash": "99845f7641e498c7fb0aa6f439b0376076d849c523a5a15af8935a113be43726",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 19/10/2026 para o procedimento Comparar propostas de financiamento, versão 2026.10.19-v2 (ficha C02). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-publication/founder-instruction.json; SHA-256 0382c116e7d3523d3462541027cae9f6f703a22969c9d8e16f7b9ab2c107e242. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}

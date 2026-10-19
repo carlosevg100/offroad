@@ -19,13 +19,16 @@ describe("recorded deterministic runs behind a maturity rung", () => {
       ))
     ));
     expect(declared.length).toBeGreaterThan(0);
+    // Compiled once: rebuilding the whole manifest for every declared run grows with the library.
+    let manifest: ReturnType<typeof buildMethodManifest> | undefined;
     for (const {method, kind, runId} of declared) {
       const record = runs.get(runId);
       expect(record, `${method.procedure.id} declares run ${runId} which is not on record`).toBeDefined();
       expect(record!.kind).toBe(kind);
       expect(record!.method).toEqual({id: method.procedure.id, version: method.procedure.version});
       if (method.composition) {
-        const compiled = buildMethodManifest(resolve(here, "../../..")).provenance.find(p => p.procedure.id === method.procedure.id)!;
+        manifest ??= buildMethodManifest(resolve(here, "../../.."));
+        const compiled = manifest.provenance.find(p => p.procedure.id === method.procedure.id)!;
         if (!("components" in compiled)) throw new Error("Typed method requires compiled components");
         const executors = (compiled as import("./procedure-compiler").CompiledProcedureManifest).components
           .flatMap(c => c.executor ? [c.executor] : []);
