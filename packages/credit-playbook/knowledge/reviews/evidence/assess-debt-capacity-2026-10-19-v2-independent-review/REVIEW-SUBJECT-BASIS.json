@@ -5,7 +5,7 @@
     "id": "assess-debt-capacity",
     "version": "2026.10.19-v2"
   },
-  "commit": "f1a8160a9795eb5f8a69423b9f29e3f4d197905a",
+  "commit": "c437a77100805b165aad16c960e6ca848f2353a1",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/assess-debt-capacity.md",
@@ -57,7 +57,7 @@
     },
     {
       "path": "packages/financial-model/src/ficha-calculation-results.ts",
-      "sha256": "26d78e415897178f7d61622bac3a4a05965b96121d5c48ec6161a5283042e61e"
+      "sha256": "a76f7cd69d6c430e1bd0723b9d1fa4ca88ae8d859eff10d48293d6e32376e7af"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
