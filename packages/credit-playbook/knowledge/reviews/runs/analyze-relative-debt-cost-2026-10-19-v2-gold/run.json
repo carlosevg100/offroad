@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "analyze-relative-debt-cost-2026-10-19-v2-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "analyze-relative-debt-cost",
+    "version": "2026.10.19-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareRelativeDebtCostPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/relative-debt-cost-runs.test-support.ts",
+    "exportName": "buildRelativeDebtCostRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-19T14:05:27.034Z",
+    "finishedAt": "2026-10-19T14:05:27.164Z",
+    "commit": "b385c21d130902cf00374291c9e26723d58b1eb6"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "c03-decomposition-independent-oracle",
+      "expectation": "{\"gross\":\"125\",\"explained\":\"70\",\"credit\":\"55\",\"afterDate\":\"65\"}",
+      "observed": "{\"gross\":\"125\",\"explained\":\"70\",\"credit\":\"55\",\"afterDate\":\"65\"}",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "more-than-half-is-not-company-risk",
+      "expectation": "{\"share\":0.56}",
+      "observed": "{\"share\":0.56}",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "leverage-is-not-the-driver",
+      "expectation": "{\"leverage\":\"neutral\",\"coverage\":\"weighs_little\"}",
+      "observed": "{\"leverage\":\"neutral\",\"coverage\":\"weighs_little\"}",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "committee-lens-weighs-scale-conversion-and-debt-profile",
+      "expectation": "[\"weighs_against\",\"weighs_against\",\"weighs_against\",\"weighs_against\",\"weighs_against\"]",
+      "observed": "[\"weighs_against\",\"weighs_against\",\"weighs_against\",\"weighs_against\",\"weighs_against\"]",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "qualitative-rows-keep-the-adopted-judgment",
+      "expectation": "[[\"adopted_judgment\",\"weighs_against\"],[\"adopted_judgment\",\"weighs_against\"],[\"adopted_judgment\",\"neutral\"]]",
+      "observed": "[[\"adopted_judgment\",\"weighs_against\"],[\"adopted_judgment\",\"weighs_against\"],[\"adopted_judgment\",\"neutral\"]]",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "residual-read-as-about-two-notches",
+      "expectation": "{\"fewest\":1.83,\"most\":2.2,\"rating\":null}",
+      "observed": "{\"fewest\":1.83,\"most\":2.2,\"rating\":null}",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "prepaying-only-for-the-rate-does-not-pay",
+      "expectation": "[[0.3,1.75,false],[0.17,1.75,false]]",
+      "observed": "[[0.3,1.75,false],[0.17,1.75,false]]",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "rating-breaks-even-on-spread",
+      "expectation": "{\"low\":[0.135,-0.165],\"high\":[0.225,0.025]}",
+      "observed": "{\"low\":[0.135,-0.165],\"high\":[0.225,0.025]}",
+      "inputFingerprint": "f0e48df00b92b1f0125a546388ec4b23ae3f72012b81b0515f4cbb62c3b5781f",
+      "outputFingerprint": "fc7e1d72f549ea5c6e0d721db968bceb170acb33f62b33a9bcad5b4ae81d15ae",
+      "passed": true
+    },
+    {
+      "id": "absent-market-adjustment-is-a-gap",
+      "expectation": "{\"status\":\"framed\",\"decomposition\":null,\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"decomposition\":null,\"gap\":true}",
+      "inputFingerprint": "6031644276aa09b48dcd712dc57fe9f4d6108255c383c9bf0c564b6543490834",
+      "outputFingerprint": "9eb1605bbd2f31517f7657055dff7d6b7b3ca585595481347162e838f57e7bfc",
+      "passed": true
+    },
+    {
+      "id": "absent-indicator-is-a-gap-not-neutral",
+      "expectation": "{\"status\":\"partial\",\"classification\":null}",
+      "observed": "{\"status\":\"partial\",\"classification\":null}",
+      "inputFingerprint": "2eb834e84c30d01d4970774ba42aa9da04f89fae6b2e2ff40dc3b6bc1693309c",
+      "outputFingerprint": "67d7cdc12d31e254a491ad13b2e049b0d481583e1af6181103914211844b35f5",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "f5d487f3561cdf03ce65444213c3d7fd222937aaacaf1d1c4823b52084c553f2",
+  "notes": "Synthetic deterministic execution calibrated on ficha C03. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
