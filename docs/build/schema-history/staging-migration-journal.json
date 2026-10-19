@@ -2524,6 +2524,11 @@
       "name": "investment_result_artifacts",
       "version": "20261018205305",
       "statements_md5": "625a9867612c647926c8dd2d260b9b2f"
+    },
+    {
+      "name": "investment_result_blocks_guard",
+      "version": "20261019015140",
+      "statements_md5": "bc4ae93cbea8ce3142149eb5975c1d40"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",

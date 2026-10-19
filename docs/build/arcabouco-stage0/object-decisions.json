@@ -327822,6 +327822,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Resultado da análise de investimento vira revisão execution_result como o de capital; o projetor escolhe o mapeamento pelo tipo do pacote. Nenhuma mudança de RLS, grants ou liberação de método."
+    },
+    {
+      "path": "supabase/migrations/20261019015156_investment_result_blocks_guard.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Guarda nula-segura do mapeamento de blocos do resultado de investimento; recusa pacote sem comparação, métricas ou casos."
     }
   ],
   "staging_archive": [
