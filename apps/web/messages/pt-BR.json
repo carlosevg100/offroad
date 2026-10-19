@@ -2760,6 +2760,38 @@
           "lowest_available_cash_by_period": "Caixa disponível no fim de cada período",
           "largest_net_financing_outflow_by_period": "Fluxo líquido de financiamento em cada período"
         }
+      },
+      "investment": {
+        "title": "Análise do investimento",
+        "status": "Situação",
+        "question": "Pergunta",
+        "units": "Valores em milhões de {currency}. Taxa de desconto adotada: {rate}. Cada cenário recalcula o projeto inteiro com a premissa alterada.",
+        "unitsNoRate": "Valores em milhões de {currency}. Sem taxa de desconto adotada, o valor presente não é calculado.",
+        "columns": {
+          "case": "Cenário",
+          "npv": "VPL",
+          "deltaNpv": "Diferença para a base",
+          "irr": "TIR",
+          "payback": "Payback (anos)",
+          "startup": "Capital de giro de partida",
+          "peak": "Maior necessidade acumulada de caixa",
+          "minWithout": "Caixa mínimo da companhia sem o projeto",
+          "minWith": "Caixa mínimo da companhia com o projeto"
+        },
+        "irrNotDefined": "não definida para este fluxo",
+        "changing": "Premissas que mudam o sinal do valor",
+        "noneChanging": "Nenhum cenário muda o sinal do valor em relação à base.",
+        "timing": "Cenários de prazo, lidos pelo caixa da companhia",
+        "cases": "O que cada cenário altera",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "financing_recommendation": "Recomendação de financiamento",
+          "tax_law_inference": "Interpretação da legislação tributária",
+          "intraperiod_cash_certification": "Certificação do caixa dentro de cada período",
+          "method_release": "Liberação do método"
+        }
       }
     },
     "overview": "Visão geral",

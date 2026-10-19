@@ -1,7 +1,8 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {executionCanonicalText, executionGatesSchema, type ExecutionGates} from "@offroad/agent-contracts";
-import {capitalProcedurePacketV2OutputSchema, deriveCapitalChartSeries, evaluateMdTest, type CapitalMdTestGates} from "@offroad/financial-model";
+import {investmentDecisionPacketBlocks, readInvestmentDecisionPacketBlocks, type InvestmentDecisionPacketLike, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {capitalProcedurePacketV2OutputSchema, deriveCapitalChartSeries, evaluateMdTest, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
 import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -63,6 +64,8 @@ export type WorkExecutionView = {
   result: null | {withheld: true; reason: "inputs_not_current" | "revision_restricted"; resultFingerprint: string; committedAt: string}
     | {withheld: false; source: "packet" | "revision"; resultFingerprint: string; committedAt: string; packet: WorkExecutionPacket | null; marker: {status: string; reason: string} | null;
       mdTest: WorkExecutionMdTest | null; decisiveNumbers: WorkExecutionDecisiveNumber[] | null;
+      /** The case comparison of an investment analysis; absent for a capital result. */
+      investment?: InvestmentResultBlocksView | null;
       revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
@@ -82,6 +85,14 @@ function parseCommittedResult(canonicalResult: string): {data: PacketOutput | nu
   if (packet.success) return {data: packet.data, marker: null};
   const marker = z.object({status: z.literal("partial"), reason: z.string()}).strict().safeParse(parsed);
   return {data: null, marker: marker.success ? marker.data : null};
+}
+
+/** The committed bytes of an investment analysis, read through the same blocks its revision carries. */
+export function readInvestmentResult(canonicalResult: string): InvestmentResultBlocksView | null {
+  try {
+    const parsed = investmentDecisionPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readInvestmentDecisionPacketBlocks(investmentDecisionPacketBlocks(parsed.data as unknown as InvestmentDecisionPacketLike)) : null;
+  } catch { return null; }
 }
 
 function packetView(data: PacketOutput): WorkExecutionPacket {
@@ -152,7 +163,8 @@ function decisiveNumbersOf(data: PacketOutput): WorkExecutionDecisiveNumber[] | 
 }
 
 /** The packet as the screen shows it, taken from the blocks of the registered revision instead of the bytes. */
-function blocksPacketView(revision: ExecutionRevision): WorkExecutionPacket {
+type CapitalRevision = Extract<ExecutionRevision, {readonly blocks: unknown}>;
+function blocksPacketView(revision: CapitalRevision): WorkExecutionPacket {
   const {framing, alternatives, informationGaps, contractualGaps, nextRequirements} = revision.blocks;
   return {status: framing.status, question: framing.question, asOf: framing.asOf,
     alternatives: alternatives.map(a => ({id: a.id, label: a.label, kind: a.kind, calculated: a.calculated})),
@@ -164,7 +176,7 @@ function blocksPacketView(revision: ExecutionRevision): WorkExecutionPacket {
 /** The MD test of a registered result: the one evaluator, over the committed packet and the gate
  * receipt the revision pinned. A packet or a receipt read now that is not the pinned one is not
  * evaluated; a receipt whose bytes do not match its fingerprint stays unverified, as before. */
-function pinnedMdTestOf(data: PacketOutput | null, gates: WorkExecutionGates | null, resultFingerprint: string, revision: ExecutionRevision): WorkExecutionMdTest {
+function pinnedMdTestOf(data: PacketOutput | null, gates: WorkExecutionGates | null, resultFingerprint: string, revision: CapitalRevision): WorkExecutionMdTest {
   const {pins} = revision;
   if (!data || resultFingerprint !== pins.resultFingerprint || data.fingerprint !== pins.packetFingerprint || (gates?.fingerprint ?? null) !== pins.gatesFingerprint) {
     return {evaluated: false, reason: "pins_mismatch"};
@@ -179,7 +191,12 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
   let result: WorkExecutionView["result"] = null;
   if (r.result !== null && "withheld" in r.result) result = {withheld: true, reason: "inputs_not_current", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
   else if (r.result !== null && registered && ["withheld", "unavailable", "mismatch"].includes(registered.state)) result = {withheld: true, reason: "revision_restricted", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
-  else if (r.result !== null && registered?.state === "ready") {
+  else if (r.result !== null && registered?.state === "ready" && registered.revision.kind === "investment") {
+    const {revision} = registered;
+    result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
+      mdTest: null, decisiveNumbers: null, investment: revision.investment,
+      revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
+  } else if (r.result !== null && registered?.state === "ready" && registered.revision.kind !== "investment") {
     const {data} = parseCommittedResult(r.result.canonicalResult);
     const {revision} = registered;
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: blocksPacketView(revision), marker: null,
@@ -187,8 +204,9 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
   } else if (r.result !== null) {
     const {data, marker} = parseCommittedResult(r.result.canonicalResult);
+    const investment = data || marker ? null : readInvestmentResult(r.result.canonicalResult);
     result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
-      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, revision: null};
+      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),

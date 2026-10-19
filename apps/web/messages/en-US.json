@@ -2760,6 +2760,38 @@
           "lowest_available_cash_by_period": "Available cash at the end of each period",
           "largest_net_financing_outflow_by_period": "Net financing flow in each period"
         }
+      },
+      "investment": {
+        "title": "Investment analysis",
+        "status": "Status",
+        "question": "Question",
+        "units": "Amounts in millions of {currency}. Adopted discount rate: {rate}. Each scenario recomputes the whole project with the changed premise.",
+        "unitsNoRate": "Amounts in millions of {currency}. With no adopted discount rate, present value is not calculated.",
+        "columns": {
+          "case": "Scenario",
+          "npv": "NPV",
+          "deltaNpv": "Difference to base",
+          "irr": "IRR",
+          "payback": "Payback (years)",
+          "startup": "Startup working capital",
+          "peak": "Peak cumulative cash need",
+          "minWithout": "Company minimum cash without the project",
+          "minWith": "Company minimum cash with the project"
+        },
+        "irrNotDefined": "not defined for this stream",
+        "changing": "Premises that change the sign of value",
+        "noneChanging": "No scenario changes the sign of value relative to the base.",
+        "timing": "Timing scenarios, read through company cash",
+        "cases": "What each scenario changes",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "financing_recommendation": "Financing recommendation",
+          "tax_law_inference": "Interpretation of tax law",
+          "intraperiod_cash_certification": "Certification of cash within each period",
+          "method_release": "Method release"
+        }
       }
     },
     "overview": "Overview",

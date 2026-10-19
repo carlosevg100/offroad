@@ -1,4 +1,5 @@
-import {capitalProcedurePacketBlocks, readCapitalProcedurePacketBlocks, type CapitalProcedurePacketLike} from "@offroad/domain-contracts";
+import {capitalProcedurePacketBlocks, investmentDecisionPacketBlocks, readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type CapitalProcedurePacketLike, type InvestmentDecisionPacketLike} from "@offroad/domain-contracts";
+import investmentPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/investment-result-packet.json";
 // The packet the SQL producer and the contract mapping are proved against.
 import packetFixture from "../../../../../packages/domain-contracts/src/fixtures/execution-result-packet.json";
 import {describe, expect, it, vi} from "vitest";
@@ -38,6 +39,19 @@ describe("the registered revision of an execution result", () => {
     // Without a gate receipt among the traces, the revision pins none.
     const plain = executionRevisionFromRead(parsed(recorded({traces: traces.slice(0, 3)})), executionId);
     expect(plain.state === "ready" && plain.revision.pins.gatesFingerprint).toBeNull();
+  });
+
+  it("reads an investment result by its packet trace, with that packet's pins and its own reader", () => {
+    const investment = investmentPacketFixture as unknown as InvestmentDecisionPacketLike;
+    const investmentBlocks = investmentDecisionPacketBlocks(investment) as unknown as NonNullable<Parameters<typeof artifactReadFixture>[0]["blocks"]>;
+    const investmentTraces = [`investment-decision-packet:${investment.fingerprint}`, "financial-core:financial-core.2026.09.18", `execution-gates:${"f".repeat(64)}`];
+    const state = executionRevisionFromRead(parsed(recorded({traces: investmentTraces, blocks: investmentBlocks})), executionId);
+    expect(state.state === "ready" && state.revision.kind).toBe("investment");
+    expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(investment.fingerprint);
+    expect(state.state === "ready" && state.revision.kind === "investment" && state.revision.investment).toEqual(readInvestmentDecisionPacketBlocks(investmentBlocks));
+    // Capital blocks under an investment trace, or investment blocks under a capital trace, are not read.
+    expect(executionRevisionFromRead(parsed(recorded({traces: investmentTraces})), executionId)).toEqual({state: "unavailable"});
+    expect(executionRevisionFromRead(parsed(recorded({blocks: investmentBlocks})), executionId)).toEqual({state: "unavailable"});
   });
 
   it("serves nothing the database withheld and reads nothing it cannot map", () => {

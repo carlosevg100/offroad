@@ -1,0 +1,260 @@
+{
+ "schemaVersion": "investment-decision-packet.v1",
+ "executorVersion": "2026.10.09-v1",
+ "financialCoreVersion": "2026.10.07-v29",
+ "question": "A linha de embalagem se paga e deve seguir agora?",
+ "basisFingerprint": "6d9608d5ee8a02787438d0fe391ac4395adcd2138bf108c6ab91ef6a1a10ecca",
+ "scope": {
+  "workId": "ac400000-0000-4000-9000-000000001007",
+  "purpose": "synthetic investment decision",
+  "versionId": "ac400000-0000-4000-9000-000000001500"
+ },
+ "entityId": "ac400000-0000-4000-9000-000000001001",
+ "perimeter": "standalone",
+ "currency": "BRL",
+ "cases": [
+  {
+   "id": "base",
+   "role": "base",
+   "label": "Linha de embalagem, cronograma original",
+   "changes": [],
+   "result": {
+    "fingerprint": "f3b9af3b1233ab4ba57ac33c2355e45324551fa80567bd0d663b7828082ddaa6"
+   }
+  },
+  {
+   "id": "economy-4",
+   "role": "sensitivity",
+   "label": "Economia de R$ 4 milhões por ano",
+   "changes": [
+    "Economia anual em regime de R$ 4 milhões em vez de R$ 6 milhões"
+   ],
+   "result": {
+    "fingerprint": "32043a42d1b6532cff7d489ee65fca3805e53a37acce76f1fb4e48141c8923ca"
+   }
+  },
+  {
+   "id": "capex-120",
+   "role": "sensitivity",
+   "label": "Capex 20% maior",
+   "changes": [
+    "Capex e depreciação 20% maiores"
+   ],
+   "result": {
+    "fingerprint": "9416970d1a45b9871dba20fd86ad16f9dbca5b4f3da093ec20ebe8b5436a3b0e"
+   }
+  },
+  {
+   "id": "slower-start",
+   "role": "sensitivity",
+   "label": "Partida seis meses mais lenta",
+   "changes": [
+    "Operação começa em novembro de 2027"
+   ],
+   "result": {
+    "fingerprint": "ed8137bcd42d76ec18e9b17d9dc77fdfbbba54a87a0e4f1b0763474de1b94e52"
+   }
+  },
+  {
+   "id": "defer-12",
+   "role": "deferral",
+   "label": "Adiar doze meses",
+   "changes": [
+    "Desembolsos e partida um ano depois"
+   ],
+   "result": {
+    "fingerprint": "863d58601d7cb66fea8a2a470a54368e30b6245c07bff2a18e96526d5e1a4d67"
+   }
+  }
+ ],
+ "comparison": {
+  "baseCaseId": "base",
+  "metrics": [
+   {
+    "caseId": "base",
+    "role": "base",
+    "label": "Linha de embalagem, cronograma original",
+    "scenario": "base",
+    "netPresentValue": "731754.8878738955342058638",
+    "deltaNetPresentValue": "0",
+    "npvSign": "positive",
+    "signDiffersFromBase": false,
+    "annualIrr": "0.15802828421429292137",
+    "irrStatus": "calculated",
+    "irrMinusDiscountRate": "0.00802828421429292137",
+    "discountRate": "0.15",
+    "paybackYears": "5.8530020703933747412",
+    "paybackRemainsRecoveredAtEnd": true,
+    "startupWorkingCapital": "5812500",
+    "peakCumulativeCashNeed": {
+     "amount": "-21659499.99999999999998676",
+     "periodEndDate": "2027-12-31"
+    },
+    "totalUnleveredCashFlow": "27845184.20691604940001324",
+    "companyMinimumCash": {
+     "withoutProject": {
+      "amount": "20000000",
+      "periodEndDate": "2025-12-31"
+     },
+     "withProject": {
+      "amount": "10740500.00000000000001324",
+      "periodEndDate": "2027-12-31"
+     }
+    },
+    "resultStatus": "partial_composition"
+   },
+   {
+    "caseId": "economy-4",
+    "role": "sensitivity",
+    "label": "Economia de R$ 4 milhões por ano",
+    "scenario": "economy-4",
+    "netPresentValue": "-6345147.90536566536261117816",
+    "deltaNetPresentValue": "-7076902.79323956089681704196",
+    "npvSign": "negative",
+    "signDiffersFromBase": true,
+    "annualIrr": "0.07660398428149065493",
+    "irrStatus": "calculated",
+    "irrMinusDiscountRate": "-0.07339601571850934507",
+    "discountRate": "0.15",
+    "paybackYears": "8.16528925619834710744",
+    "paybackRemainsRecoveredAtEnd": true,
+    "startupWorkingCapital": "5812500",
+    "peakCumulativeCashNeed": {
+     "amount": "-22374499.99999999999999116",
+     "periodEndDate": "2027-12-31"
+    },
+    "totalUnleveredCashFlow": "12602122.80461069740000884",
+    "companyMinimumCash": {
+     "withoutProject": {
+      "amount": "20000000",
+      "periodEndDate": "2025-12-31"
+     },
+     "withProject": {
+      "amount": "10025500.00000000000000884",
+      "periodEndDate": "2027-12-31"
+     }
+    },
+    "resultStatus": "partial_composition"
+   },
+   {
+    "caseId": "capex-120",
+    "role": "sensitivity",
+    "label": "Capex 20% maior",
+    "scenario": "capex-120",
+    "netPresentValue": "-2080079.67805466062211466017",
+    "deltaNetPresentValue": "-2811834.56592855615632052397",
+    "npvSign": "negative",
+    "signDiffersFromBase": true,
+    "annualIrr": "0.12972845319484164188",
+    "irrStatus": "calculated",
+    "irrMinusDiscountRate": "-0.02027154680515835812",
+    "discountRate": "0.15",
+    "paybackYears": "6.42718446601941747573",
+    "paybackRemainsRecoveredAtEnd": true,
+    "startupWorkingCapital": "5812500",
+    "peakCumulativeCashNeed": {
+     "amount": "-25177899.999999999999986352",
+     "periodEndDate": "2027-12-31"
+    },
+    "totalUnleveredCashFlow": "25428384.206916049400013648",
+    "companyMinimumCash": {
+     "withoutProject": {
+      "amount": "20000000",
+      "periodEndDate": "2025-12-31"
+     },
+     "withProject": {
+      "amount": "7222100.000000000000013648",
+      "periodEndDate": "2027-12-31"
+     }
+    },
+    "resultStatus": "partial_composition"
+   },
+   {
+    "caseId": "slower-start",
+    "role": "sensitivity",
+    "label": "Partida seis meses mais lenta",
+    "scenario": "slower-start",
+    "netPresentValue": "-979398.23121873206503799253",
+    "deltaNetPresentValue": "-1711153.11909262759924385633",
+    "npvSign": "negative",
+    "signDiffersFromBase": true,
+    "annualIrr": "0.13978902724248366871",
+    "irrStatus": "calculated",
+    "irrMinusDiscountRate": "-0.01021097275751633129",
+    "discountRate": "0.15",
+    "paybackYears": "6.2549800796812749004",
+    "paybackRemainsRecoveredAtEnd": true,
+    "startupWorkingCapital": "5812500",
+    "peakCumulativeCashNeed": {
+     "amount": "-23480500.00000000000001316",
+     "periodEndDate": "2027-12-31"
+    },
+    "totalUnleveredCashFlow": "25852584.206916049399973112",
+    "companyMinimumCash": {
+     "withoutProject": {
+      "amount": "20000000",
+      "periodEndDate": "2025-12-31"
+     },
+     "withProject": {
+      "amount": "8919499.99999999999998684",
+      "periodEndDate": "2027-12-31"
+     }
+    },
+    "resultStatus": "partial_composition"
+   },
+   {
+    "caseId": "defer-12",
+    "role": "deferral",
+    "label": "Adiar doze meses",
+    "scenario": "defer-12",
+    "netPresentValue": "1380320.70315031801330718248",
+    "deltaNetPresentValue": "648565.81527642247910131868",
+    "npvSign": "positive",
+    "signDiffersFromBase": false,
+    "annualIrr": "0.16732516644683874075",
+    "irrStatus": "calculated",
+    "irrMinusDiscountRate": "0.01732516644683874075",
+    "discountRate": "0.15",
+    "paybackYears": "6.66334661354581673307",
+    "paybackRemainsRecoveredAtEnd": true,
+    "startupWorkingCapital": "5812500",
+    "peakCumulativeCashNeed": {
+     "amount": "-21573699.999999999999986232",
+     "periodEndDate": "2028-12-31"
+    },
+    "totalUnleveredCashFlow": "29674351.575192689000013768",
+    "companyMinimumCash": {
+     "withoutProject": {
+      "amount": "20000000",
+      "periodEndDate": "2025-12-31"
+     },
+     "withProject": {
+      "amount": "17026300.000000000000013768",
+      "periodEndDate": "2028-12-31"
+     }
+    },
+    "resultStatus": "partial_composition"
+   }
+  ],
+  "conclusionChangingCaseIds": [
+   "economy-4",
+   "capex-120",
+   "slower-start"
+  ],
+  "timingCaseIds": [
+   "defer-12"
+  ]
+ },
+ "gaps": [],
+ "status": "prepared_for_human_review",
+ "classification": "working_hypothesis",
+ "exclusions": [
+  "financing_recommendation",
+  "tax_law_inference",
+  "intraperiod_cash_certification",
+  "method_release"
+ ],
+ "grantsExecution": false,
+ "grantsPublication": false,
+ "fingerprint": "c57696f14140d77174510abbbfe9f7a34a5c701a6177bd45949c57cc349fea8a"
+}
