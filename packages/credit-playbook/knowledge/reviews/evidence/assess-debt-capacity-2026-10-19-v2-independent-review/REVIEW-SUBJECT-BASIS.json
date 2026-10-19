@@ -5,11 +5,11 @@
     "id": "assess-debt-capacity",
     "version": "2026.10.19-v2"
   },
-  "commit": "08555f1be2c37dc99344e04ad5e5c486a4edcc46",
+  "commit": "f1a8160a9795eb5f8a69423b9f29e3f4d197905a",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/assess-debt-capacity.md",
-      "sha256": "9d539188eb783e50d526385195ee8c45d2959096f041cb971dd1a7f174de9a1b"
+      "sha256": "d4b2ef7e49abe4cb9d47a6f0b443f15482290673809c0bd638e1db0334eb14fb"
     },
     {
       "path": "packages/financial-model/src/debt-capacity-packet.ts",
@@ -61,15 +61,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-gold/run.json",
-      "sha256": "ca0f4a431bbfb4ebf0a65499c97f3df9a3006076989744e8619789b56eeae460"
+      "sha256": "d7877854f5c260658cf9fccf040740d3305546f34997eb7e8597f9fbb7f24088"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-adversarial/run.json",
-      "sha256": "73259cc171d16bf2b755d99776c8cf3e8d74bff1416252c4920277a3d1ef173d"
+      "sha256": "b3175261cb634fe2a9daa4f9c45a4cc7d64a280e9d65821288213abac1996fc6"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/assess-debt-capacity-2026-10-19-v2-consistency/run.json",
-      "sha256": "911fa003e387cdb7b3672bc1d8b749505ca458463cde3c9564a9c03007d04676"
+      "sha256": "8397cd9924a144f31fd275552fb1de89046b5de8a82e47e461718cf963f7262b"
     }
   ],
   "externalOracle": [
