@@ -11,20 +11,23 @@ const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").to
 const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
 
 const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
-const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil|milhao|milhoes|bilhao|bilhoes)\b/;
-
-/** A question about a figure ("qual o EBITDA de 2029?") asks; it does not answer. */
-const interrogative = /^(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que|existe|tem|ha)\b/;
+/** A quantity is a figure, or a number in words next to its unit ("três parcelas", "três vezes"); "uma frase" is not. */
+const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil)\s+(vez|vezes|parcela\w*|ano\w*|milh\w*|mil|bilh\w*|por cento|pontos?)\b|\b(milhao|milhoes|bilhao|bilhoes)\b/;
+/** A question asks; it does not answer. Only a confirmation tag ("34%, certo?") keeps an answer an answer. */
+const interrogative = /^((e|mas|entao|ok|ah)\s+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que|existe|tem|ha|pode|poderia|consegue|da para)\b/;
+const explanation = /\b(explica\w*|explique|significa\w*|entender|detalha\w*|esclarec\w*)\b/;
+const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
 
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
  * is among the messages the agent reads (the last twelve of the conversation), an answer that states
  * capacity data with a quantity continues it, even when it asks for confirmation ("34%, certo?"), so
- * the data asked for reaches the extraction without the question being repeated. A question about a
- * figure, or a remark without such data, does not continue it, with or without documents. */
+ * the data asked for reaches the extraction without the question being repeated. A question, a
+ * request for explanation or a remark without such data does not continue it, with or without documents. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
   const text = fold(message).trim();
   if (capacityCue.test(text)) return compileObjectiveToPlan({message, hasAttachments}).objectiveKind !== "factual_question";
-  return !interrogative.test(text) && capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
+  const asks = interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
+  return !asks && capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
 }
 
 const origin = z.enum(["informed", "document"]);
