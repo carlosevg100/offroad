@@ -328353,6 +328353,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Segunda rodada da revisão independente da ponte do lote 1: contexto próprio por cartão, sem cartão repetido para as mesmas premissas, e resposta citada da comparação que conta à parte as propostas sem leitura completa."
+    },
+    {
+      "path": "supabase/migrations/20261019225748_lote1_bridge_review_fixes_3.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Terceira rodada da revisão independente da ponte do lote 1: a mensagem mais recente substitui o cartão pendente antes de pular um cartão idêntico, e a resposta citada da comparação só diz que nenhuma proposta cabe quando todos os casos foram calculados e lidos por inteiro."
     }
   ],
   "staging_archive": [

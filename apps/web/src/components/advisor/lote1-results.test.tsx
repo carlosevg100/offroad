@@ -58,6 +58,16 @@ describe("comparison result with gaps", () => {
   });
 });
 
+describe("comparison result without a calculated scenario", () => {
+  it("draws no conclusion over a scenario that was not calculated", async () => {
+    const view = {...comparison, proposals: [], conclusion: {...comparison.conclusion, viableInEveryCaseProposalIds: [], cases: []}};
+    const html = renderToStaticMarkup(await ComparisonResult({locale: "pt-BR", view}));
+    expect(html).toContain(pt.App.workExecutions.comparison.noneCompleteViableEverywhere);
+    expect(html).toContain("Cenários sem cálculo por lacuna: " + comparison.cases.map((c) => c.label).join("; "));
+    expect(html).not.toContain(pt.App.workExecutions.comparison.noneViableEverywhere);
+  });
+});
+
 describe("capacity result", () => {
   it("shows the capacity per schedule with the binding limit, every limit, the amount asked and the plan", async () => {
     expect(capacity).not.toBeNull();

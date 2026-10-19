@@ -2836,7 +2836,8 @@
           "method_release": "Method release"
         },
         "noneCompleteViableEverywhere": "No offer with a complete reading is viable in every scenario.",
-        "incomplete": "Offers without a complete reading because of gaps: {count}. The gaps are listed below."
+        "incomplete": "Offers without a complete reading because of gaps: {count}. The gaps are listed below.",
+        "uncomputed": "Scenarios not calculated because of gaps: {list}. The gaps are listed below."
       },
       "capacity": {
         "title": "New debt capacity",

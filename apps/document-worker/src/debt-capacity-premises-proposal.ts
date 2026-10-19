@@ -14,14 +14,14 @@ const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|care
 const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil|milhao|milhoes|bilhao|bilhoes)\b/;
 
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
- * is open in the person's recent messages, an answer that states capacity data with a quantity
+ * is among the person's recent messages, an answer that states capacity data with a quantity
  * continues it, so the data asked for reaches the extraction without the question being repeated; a
- * new question or a remark without such data does not. */
+ * factual question or a remark without such data does not. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
+  if (compileObjectiveToPlan({message, hasAttachments}).objectiveKind === "factual_question") return false;
   const text = fold(message);
-  if (kind !== "factual_question" && capacityCue.test(text)) return true;
-  return !text.includes("?") && capacityData.test(text) && quantity.test(text) && earlierUserMessages.slice(-4).some((m) => capacityCue.test(fold(m)));
+  if (capacityCue.test(text)) return true;
+  return capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
 }
 
 const origin = z.enum(["informed", "document"]);

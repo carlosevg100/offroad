@@ -122,5 +122,9 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     const thread = [...earlier, "A alíquota é 34%", "O covenant é 3x"];
     expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, thread)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Covenant de três vezes o EBITDA", false, earlier)).toBe(true);
+    const long = [...earlier, "A alíquota é 34%", "O covenant é 3x", "CDI de 12% em 2029", "Spread de 2,5%"];
+    expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, long)).toBe(true);
+    expect(shouldProposeDebtCapacityPremises("O covenant é 3x, certo?", false, earlier)).toBe(true);
+    expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029", false, earlier)).toBe(false);
   });
 });
