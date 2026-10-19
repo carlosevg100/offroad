@@ -126,5 +126,8 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, long)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("O covenant é 3x, certo?", false, earlier)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029", false, earlier)).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", true, earlier)).toBe(false);
+    for (const m of ["A alíquota é 34%, certo?", "Três parcelas anuais a partir de 2030, certo?", "O CDI é 12%, certo?"])
+      expect(shouldProposeDebtCapacityPremises(m, false, earlier), m).toBe(true);
   });
 });

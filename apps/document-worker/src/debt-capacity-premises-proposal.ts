@@ -13,15 +13,18 @@ const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|n
 const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
 const quantity = /\d|\b(um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|doze|quinze|vinte|trinta|cem|mil|milhao|milhoes|bilhao|bilhoes)\b/;
 
+/** A question about a figure ("qual o EBITDA de 2029?") asks; it does not answer. */
+const interrogative = /^(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que|existe|tem|ha)\b/;
+
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
- * is among the person's recent messages, an answer that states capacity data with a quantity
- * continues it, so the data asked for reaches the extraction without the question being repeated; a
- * factual question or a remark without such data does not. */
+ * is among the messages the agent reads (the last twelve of the conversation), an answer that states
+ * capacity data with a quantity continues it, even when it asks for confirmation ("34%, certo?"), so
+ * the data asked for reaches the extraction without the question being repeated. A question about a
+ * figure, or a remark without such data, does not continue it, with or without documents. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  if (compileObjectiveToPlan({message, hasAttachments}).objectiveKind === "factual_question") return false;
-  const text = fold(message);
-  if (capacityCue.test(text)) return true;
-  return capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
+  const text = fold(message).trim();
+  if (capacityCue.test(text)) return compileObjectiveToPlan({message, hasAttachments}).objectiveKind !== "factual_question";
+  return !interrogative.test(text) && capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
 }
 
 const origin = z.enum(["informed", "document"]);
