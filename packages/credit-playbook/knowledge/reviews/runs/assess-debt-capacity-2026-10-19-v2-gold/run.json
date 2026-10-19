@@ -16,9 +16,9 @@
     "exportName": "buildDebtCapacityRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:38:12.912Z",
-    "finishedAt": "2026-10-19T14:38:13.553Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T15:15:51.747Z",
+    "finishedAt": "2026-10-19T15:15:52.545Z",
+    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
   },
   "modelCalls": 0,
   "cases": [
@@ -103,6 +103,14 @@
       "passed": true
     },
     {
+      "id": "leverage-nets-cash-under-the-adopted-convention",
+      "expectation": "{\"leverage\":[5.447,6.5983],\"adverseMinimumCashNegative\":true}",
+      "observed": "{\"leverage\":[5.447,6.5983],\"adverseMinimumCashNegative\":true}",
+      "inputFingerprint": "31d21bebed6dd9ad0d1c0344dcc9c8d3ebaf3742f1659bed3ab8296552c294c5",
+      "outputFingerprint": "f2c84f881057f6063b46e65879680d684d12bb57604b3e6fc4bc75b76b99dec8",
+      "passed": true
+    },
+    {
       "id": "absent-threshold-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"framed\",\"covenant\":null,\"gap\":true}",
       "observed": "{\"status\":\"framed\",\"covenant\":null,\"gap\":true}",
@@ -112,6 +120,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "95582544f17d481fbb344d62b3c6f85f37ef57533c72cd3cce4c1f1332194dba",
+  "evidenceFingerprint": "68c1de6a3271f6bdb1ac6937d29c94a1557cd2b476de81630c7926de5ad3dd34",
   "notes": "Synthetic deterministic execution calibrated on ficha C04. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

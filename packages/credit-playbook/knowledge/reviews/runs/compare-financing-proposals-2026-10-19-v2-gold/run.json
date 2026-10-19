@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:55:26.681Z",
-    "finishedAt": "2026-10-19T14:56:26.049Z",
-    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
+    "startedAt": "2026-10-19T15:14:50.327Z",
+    "finishedAt": "2026-10-19T15:15:51.520Z",
+    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
   },
   "modelCalls": 0,
   "cases": [
@@ -146,20 +146,20 @@
       "id": "contract-dates-and-business-days",
       "expectation": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
       "observed": "[[\"itau\",4.1189],[\"santander\",4.0889],[\"fundo\",3.5671]]",
-      "inputFingerprint": "217eeadc4e9bb870bc92813489a52154cecbac5ddd8ecb3a9e3424f8eaa60c63",
-      "outputFingerprint": "d931ecbc22fc22cfc1cd4f77e1e51f634ebfad706874039f72d3406441a73ab7",
+      "inputFingerprint": "5d15a36f56b15bbb70cae3d0e1b1397056c747fdf2036781516ce045378c8a27",
+      "outputFingerprint": "37c41086498653ad029dba8d6539d6d8e27f680fdbcc9cd2133625b861f34368",
       "passed": true
     },
     {
       "id": "contract-dates-in-the-company-view",
       "expectation": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
       "observed": "{\"itauStressMinimum\":2.3277,\"eliminated\":[],\"itauBaseMinimum\":15.8523}",
-      "inputFingerprint": "217eeadc4e9bb870bc92813489a52154cecbac5ddd8ecb3a9e3424f8eaa60c63",
-      "outputFingerprint": "d931ecbc22fc22cfc1cd4f77e1e51f634ebfad706874039f72d3406441a73ab7",
+      "inputFingerprint": "5d15a36f56b15bbb70cae3d0e1b1397056c747fdf2036781516ce045378c8a27",
+      "outputFingerprint": "37c41086498653ad029dba8d6539d6d8e27f680fdbcc9cd2133625b861f34368",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "da4ce2fc9b0c235db743bca51093edd523bb0f01ab0344ee8d81ad919ccd795b",
+  "evidenceFingerprint": "c7b169cd051b693393a1611f72a7527f916e30f0225da70edd43ed1b74943e00",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

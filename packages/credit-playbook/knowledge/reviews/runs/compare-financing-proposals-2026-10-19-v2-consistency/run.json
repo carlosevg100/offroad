@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:55:26.681Z",
-    "finishedAt": "2026-10-19T14:56:26.050Z",
-    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
+    "startedAt": "2026-10-19T15:14:50.327Z",
+    "finishedAt": "2026-10-19T15:15:51.521Z",
+    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
   },
   "modelCalls": 0,
   "cases": [

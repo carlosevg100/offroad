@@ -16,9 +16,9 @@
     "exportName": "buildFinancingComparisonRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:55:26.681Z",
-    "finishedAt": "2026-10-19T14:56:26.049Z",
-    "commit": "c501fc91d5e96eca52dcca9f6af1999bddbe724b"
+    "startedAt": "2026-10-19T15:14:50.327Z",
+    "finishedAt": "2026-10-19T15:15:51.521Z",
+    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
   },
   "modelCalls": 0,
   "cases": [
@@ -130,7 +130,7 @@
       "id": "business-days-off-the-national-calendar",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "799d4ba6633d5899b133ff67295bade510c84737c477039712180e673834a496",
+      "inputFingerprint": "9fd73f1c58664036710dd9e313fe3b4c17eb3270718d6f30eeb7d217fe6f97ca",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -147,6 +147,14 @@
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "2a4eab9f09d33cfd6abe54081bbaa3ac359d635d7795375e9049e5d8062a36dc",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "proposal-repaid-leaving-its-accrued-coupon",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3ce0f03e964a2d042c15e09e8912c0e26aea87cfc081cb5c2d4a37a6f8dc9506",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -168,6 +176,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "e370dce3130b8dd3d3741577168ebff57ed563d8faf62c5264c25e86d50443b1",
+  "evidenceFingerprint": "c3aabca44a49537293965c16476a39adc522f2b53c2f9dbccd3ff5f50b60667c",
   "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

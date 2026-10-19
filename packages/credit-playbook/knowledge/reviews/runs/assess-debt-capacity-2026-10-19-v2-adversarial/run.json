@@ -16,9 +16,9 @@
     "exportName": "buildDebtCapacityRuns"
   },
   "run": {
-    "startedAt": "2026-10-19T14:38:12.912Z",
-    "finishedAt": "2026-10-19T14:38:13.554Z",
-    "commit": "3c8690c4481d55237f1c60571afe0df30c1b1ca9"
+    "startedAt": "2026-10-19T15:15:51.747Z",
+    "finishedAt": "2026-10-19T15:15:52.546Z",
+    "commit": "cce607a5c67c96648da481bae72344b87a1311c8"
   },
   "modelCalls": 0,
   "cases": [
