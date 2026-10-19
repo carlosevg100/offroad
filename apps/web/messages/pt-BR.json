@@ -2792,6 +2792,94 @@
           "intraperiod_cash_certification": "Certificação do caixa dentro de cada período",
           "method_release": "Liberação do método"
         }
+      },
+      "comparison": {
+        "title": "Comparação das propostas",
+        "status": "Situação",
+        "question": "Pergunta",
+        "units": "Valores em milhões de {currency}. Custo em spread equivalente sobre o mesmo indexador; prazo médio em anos; alavancagem em múltiplos do EBITDA. Cada cenário refaz a projeção inteira da companhia com cada proposta.",
+        "nominalMisleads": "O spread nominal ordena as propostas de forma diferente do custo equivalente: comissões, IOF e cronograma mudam a leitura.",
+        "columns": {
+          "proposal": "Proposta",
+          "spread": "Spread equivalente",
+          "life": "Prazo médio",
+          "minimumCash": "Caixa mínimo",
+          "worstRatio": "Pior alavancagem",
+          "headroom": "Folga no covenant",
+          "ebitdaHeadroom": "Queda de EBITDA suportada",
+          "tests": "Testes de covenant por ano",
+          "freeReceivables": "Recebíveis livres depois",
+          "horizonCost": "Custo no horizonte",
+          "facts": "O que elimina ou condiciona"
+        },
+        "facts": {
+          "cash_below_zero": "caixa negativo em algum período",
+          "covenant_breach": "rompe o covenant",
+          "cost_not_determined": "custo não determinado",
+          "collateral_above_policy": "garantia acima da política",
+          "cash_below_policy_minimum": "caixa abaixo do mínimo da política"
+        },
+        "conclusion": "Leitura",
+        "viableEverywhere": "Viáveis em todos os cenários: {list}.",
+        "noneViableEverywhere": "Nenhuma proposta é viável em todos os cenários.",
+        "perCase": "{case}: menor custo equivalente, {cheapest}; maior caixa mínimo, {safest}.",
+        "changing": "Cenários que mudam a conclusão: {list}.",
+        "cases": "O que cada cenário altera",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "choice_of_counterparty": "Escolha da contraparte",
+          "firmness_and_validity": "Firmeza e validade das propostas",
+          "reciprocity": "Reciprocidade com o banco",
+          "tax_law_inference": "Interpretação da legislação tributária",
+          "method_release": "Liberação do método"
+        }
+      },
+      "capacity": {
+        "title": "Capacidade de dívida nova",
+        "status": "Situação",
+        "question": "Pergunta",
+        "units": "Valores em milhões de {currency}; alavancagem e cobertura em múltiplos. Cada cronograma é testado contra todos os limites, na base e no cenário adverso.",
+        "columns": {
+          "schedule": "Cronograma",
+          "capacity": "Quanto cabe",
+          "binding": "Limite que trava",
+          "limit": "Limite",
+          "scenario": "Cenário",
+          "fits": "Cabe?",
+          "peakLeverage": "Pico de alavancagem",
+          "minimumCash": "Caixa mínimo",
+          "coverage": "Menor cobertura de juros",
+          "year": "Ano",
+          "scheduled": "Principal contratado da dívida atual",
+          "cashAfterInterest": "Caixa depois dos juros",
+          "pays": "Paga sem refinanciar?"
+        },
+        "calibrationOnly": "só calibração",
+        "bounded": "limitado pela faixa testada",
+        "bindingWhen": "em {year}, {scenario}",
+        "scenarios": {
+          "base": "base",
+          "adverse": "adverso"
+        },
+        "byLimit": "Quanto cabe sob cada limite",
+        "review": "O valor pedido, {amount} milhões, em cada cronograma",
+        "fits": "Cabe",
+        "doesNotFit": "Não cabe: {limits}",
+        "plan": "O plano atual contra o caixa",
+        "needsRefinancing": "Precisa refinanciar",
+        "cases": "O que cada cronograma altera",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "credit_approval": "Aprovação de crédito",
+          "nonlinear_pricing": "Preço que muda com o tamanho da dívida",
+          "intraperiod_cash_certification": "Certificação do caixa dentro de cada período",
+          "investment_return": "Retorno do investimento financiado",
+          "method_release": "Liberação do método"
+        }
       }
     },
     "overview": "Visão geral",
@@ -7289,6 +7377,33 @@
     "pendingRelease": "Premissas confirmadas. A comparação roda assim que o método estiver liberado.",
     "requested": "Premissas confirmadas. Comparação em andamento.",
     "openCalculation": "Abrir a comparação",
+    "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
+    "errors": {
+      "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
+      "unavailable": "Não consegui confirmar agora. Tente de novo."
+    }
+  },
+  "CapacityPremisesCard": {
+    "title": "Premissas para medir a capacidade de dívida",
+    "lead": "Meço quanto de dívida nova cabe com estes cronogramas de uso, esta estrutura e estes limites, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+    "schedules": "Cronogramas de uso",
+    "schedule": "Uso total de R$ {use} mi{informed, select, true {, o plano informado} other {}}",
+    "company": "Companhia",
+    "years": "{count, plural, one {# ano} other {# anos}} de projeção, de {first} a {last}",
+    "requested": "Valor pedido: R$ {value} mi",
+    "structure": "Dívida nova: {label}, vencimento final em {year}",
+    "limits": "Limites testados",
+    "houseLimit": "Premissa da casa",
+    "house": "Premissas da casa",
+    "premise": {
+      "stress": "Cenário adverso"
+    },
+    "cases": "Testo cada cronograma contra todos os limites, na base e num cenário adverso com EBITDA menor: quanto cabe, qual limite trava e quando, e se o plano atual paga sem refinanciar.",
+    "confirm": "Confirmar premissas e calcular",
+    "confirming": "Gravando as premissas",
+    "pendingRelease": "Premissas confirmadas. O cálculo roda assim que o método estiver liberado.",
+    "calculating": "Premissas confirmadas. Cálculo em andamento.",
+    "openCalculation": "Abrir o cálculo",
     "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
     "errors": {
       "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",

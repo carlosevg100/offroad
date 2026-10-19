@@ -1,8 +1,9 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {executionCanonicalText, executionGatesSchema, type ExecutionGates} from "@offroad/agent-contracts";
-import {investmentDecisionPacketBlocks, readInvestmentDecisionPacketBlocks, type InvestmentDecisionPacketLike, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
-import {capitalProcedurePacketV2OutputSchema, deriveCapitalChartSeries, evaluateMdTest, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
+import {debtCapacityPacketBlocks, financingComparisonPacketBlocks, investmentDecisionPacketBlocks, readDebtCapacityPacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks,
+  type DebtCapacityPacketLike, type DebtCapacityResultBlocksView, type FinancingComparisonPacketLike, type FinancingComparisonResultBlocksView, type InvestmentDecisionPacketLike, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {capitalProcedurePacketV2OutputSchema, debtCapacityPacketOutputSchema, deriveCapitalChartSeries, evaluateMdTest, financingComparisonPacketOutputSchema, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
 import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -66,6 +67,10 @@ export type WorkExecutionView = {
       mdTest: WorkExecutionMdTest | null; decisiveNumbers: WorkExecutionDecisiveNumber[] | null;
       /** The case comparison of an investment analysis; absent for a capital result. */
       investment?: InvestmentResultBlocksView | null;
+      /** The offers compared per case (ficha C02). */
+      comparison?: FinancingComparisonResultBlocksView | null;
+      /** The capacity per limit and schedule (ficha C04). */
+      capacity?: DebtCapacityResultBlocksView | null;
       revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
@@ -92,6 +97,22 @@ export function readInvestmentResult(canonicalResult: string): InvestmentResultB
   try {
     const parsed = investmentDecisionPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
     return parsed.success ? readInvestmentDecisionPacketBlocks(investmentDecisionPacketBlocks(parsed.data as unknown as InvestmentDecisionPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a comparison of offers, read through the same blocks its revision carries. */
+export function readComparisonResult(canonicalResult: string): FinancingComparisonResultBlocksView | null {
+  try {
+    const parsed = financingComparisonPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readFinancingComparisonPacketBlocks(financingComparisonPacketBlocks(parsed.data as unknown as FinancingComparisonPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a capacity analysis, read through the same blocks its revision carries. */
+export function readCapacityResult(canonicalResult: string): DebtCapacityResultBlocksView | null {
+  try {
+    const parsed = debtCapacityPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readDebtCapacityPacketBlocks(debtCapacityPacketBlocks(parsed.data as unknown as DebtCapacityPacketLike)) : null;
   } catch { return null; }
 }
 
@@ -196,7 +217,12 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
       mdTest: null, decisiveNumbers: null, investment: revision.investment,
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
-  } else if (r.result !== null && registered?.state === "ready" && registered.revision.kind !== "investment") {
+  } else if (r.result !== null && registered?.state === "ready" && (registered.revision.kind === "comparison" || registered.revision.kind === "capacity")) {
+    const {revision} = registered;
+    result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
+      mdTest: null, decisiveNumbers: null, ...(revision.kind === "comparison" ? {comparison: revision.comparison} : {capacity: revision.capacity}),
+      revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
+  } else if (r.result !== null && registered?.state === "ready" && (registered.revision.kind === undefined || registered.revision.kind === "capital")) {
     const {data} = parseCommittedResult(r.result.canonicalResult);
     const {revision} = registered;
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: blocksPacketView(revision), marker: null,
@@ -205,8 +231,10 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
   } else if (r.result !== null) {
     const {data, marker} = parseCommittedResult(r.result.canonicalResult);
     const investment = data || marker ? null : readInvestmentResult(r.result.canonicalResult);
+    const comparison = data || marker || investment ? null : readComparisonResult(r.result.canonicalResult);
+    const capacity = data || marker || investment || comparison ? null : readCapacityResult(r.result.canonicalResult);
     result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
-      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, revision: null};
+      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),

@@ -51,6 +51,7 @@ import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief
 import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
 import {InvestmentPremisesCard, type InvestmentPremiseProposalView} from "./investment-premises-card";
+import {CapacityPremisesCard} from "./capacity-premises-card";
 import {ComparisonPremisesCard} from "./comparison-premises-card";
 import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, ProjectCapabilityId, ProjectWorkContext, ProjectWorkDispatch, VisibleExecutionBrief} from "@offroad/work-plan";
 
@@ -450,6 +451,8 @@ export function AdvisorProject(props: Props) {
                 <CitedResultLinks citedResults={message.citedResults} />
                 {message.role === "assistant" && message.premiseProposal ? message.premiseProposal.methodId === "compare-financing-proposals"
                   ? <ComparisonPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={{...message.premiseProposal, summary: message.premiseProposal.summary ?? {}}} />
+                  : message.premiseProposal.methodId === "assess-debt-capacity"
+                  ? <CapacityPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={{...message.premiseProposal, summary: message.premiseProposal.summary ?? {}}} />
                   : <InvestmentPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={message.premiseProposal} /> : null}
                 {proposal && props.sessionId ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>

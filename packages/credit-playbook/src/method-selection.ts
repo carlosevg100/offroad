@@ -22,6 +22,9 @@ export const investmentProjectMethodId = "analyze-investment-project";
 /** The comparison of offers received for the same need (ficha C02): it serves the company situations
  * in which a choice between proposals is a structuring decision. */
 export const financingComparisonMethodId = "compare-financing-proposals";
+/** The capacity analysis (ficha C04): how much new debt fits and with what profile, in the company
+ * situations in which the size and the profile of the debt are the structuring question. */
+export const debtCapacityMethodId = "assess-debt-capacity";
 /** The receivables method behind task R01 (`underwrite-receivables-pool`, bound to `taskIds: ["R01"]` in the runtime manifest). */
 export const receivablesPoolMethodId = "underwrite-receivables-pool";
 
@@ -40,10 +43,10 @@ export type StructuringSituation = {
 
 export const structuringSituations = [
   {situationId: "seasonal-working-capital", label: "Giro sazonal", structuringMethods: "Fluxo direto de 13 semanas, extensão mensal, ciclo financeiro, NCG/Fleuriet e cobertura no pior período.", misleadingAlone: "EBITDA ou DSCR anual que esconde o mês de falta de caixa.", servedBy: [capitalStructureMethodId, financingComparisonMethodId]},
-  {situationId: "structural-working-capital", label: "Giro estrutural", structuringMethods: "Fleuriet em série, NCG/receita, ciclo de conversão e fluxo indireto; carteira quando relevante.", misleadingAlone: "Fluxo curto sem explicar a necessidade permanente.", servedBy: [capitalStructureMethodId, financingComparisonMethodId]},
-  {situationId: "capex-infrastructure", label: "Capex/infraestrutura", structuringMethods: "Manutenção separada de expansão, construção e maturação; DSCR por período e, em projeto, LLCR/PLCR.", misleadingAlone: "EBITDA corrente durante construção.", servedBy: [capitalStructureMethodId, investmentProjectMethodId, financingComparisonMethodId]},
-  {situationId: "stable-business-high-conversion", label: "Negócio estável com alta conversão", structuringMethods: "Cadeia EBITDA a caixa, FCF/dívida, cobertura e alavancagem nas definições pertinentes.", misleadingAlone: "Métrica de projeto aplicada sem finalidade.", servedBy: [capitalStructureMethodId, financingComparisonMethodId]},
-  {situationId: "near-covenant", label: "Próxima de covenant", structuringMethods: "Curva por contrato/data/caso, teste reverso, liquidez 12/24 meses e refinanciamento.", misleadingAlone: "Preço como critério principal.", servedBy: [capitalStructureMethodId, financingComparisonMethodId]},
+  {situationId: "structural-working-capital", label: "Giro estrutural", structuringMethods: "Fleuriet em série, NCG/receita, ciclo de conversão e fluxo indireto; carteira quando relevante.", misleadingAlone: "Fluxo curto sem explicar a necessidade permanente.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId]},
+  {situationId: "capex-infrastructure", label: "Capex/infraestrutura", structuringMethods: "Manutenção separada de expansão, construção e maturação; DSCR por período e, em projeto, LLCR/PLCR.", misleadingAlone: "EBITDA corrente durante construção.", servedBy: [capitalStructureMethodId, investmentProjectMethodId, financingComparisonMethodId, debtCapacityMethodId]},
+  {situationId: "stable-business-high-conversion", label: "Negócio estável com alta conversão", structuringMethods: "Cadeia EBITDA a caixa, FCF/dívida, cobertura e alavancagem nas definições pertinentes.", misleadingAlone: "Métrica de projeto aplicada sem finalidade.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId]},
+  {situationId: "near-covenant", label: "Próxima de covenant", structuringMethods: "Curva por contrato/data/caso, teste reverso, liquidez 12/24 meses e refinanciamento.", misleadingAlone: "Preço como critério principal.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId]},
   {situationId: "growth-without-ebitda", label: "Crescimento sem EBITDA", structuringMethods: "Queima, pista de caixa, unit economics, compromissos e próxima rodada sob atraso.", misleadingAlone: "Múltiplo de EBITDA, DSCR ou régua de agência sem aplicabilidade.", servedBy: [capitalStructureMethodId]},
   {situationId: "holding-group", label: "Holding/grupo", structuringMethods: "Caixa que pode subir, dívida individual, subordinação, dupla alavancagem e garantias cruzadas.", misleadingAlone: "Consolidado sozinho.", servedBy: [capitalStructureMethodId]},
   {situationId: "receivables", label: "Recebíveis", structuringMethods: "Aging, concentração, diluição, roll-rate, elegibilidade, avanço, subordinação e custo do veículo.", misleadingAlone: "Tratar carteira como companhia ou garantia nominal como caixa.", servedBy: [receivablesPoolMethodId]},

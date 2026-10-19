@@ -1,5 +1,5 @@
 import {executionCanonicalText, type ExecutionContract, type ExecutionGates} from "@offroad/agent-contracts";
-import {composeBoundCapitalPacketV2, composeBoundFinancingComparison, composeBoundInvestmentPacket, deriveBoundCapitalScope} from "@offroad/financial-model";
+import {composeBoundCapitalPacketV2, composeBoundDebtCapacity, composeBoundFinancingComparison, composeBoundInvestmentPacket, deriveBoundCapitalScope} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {composeExecutionContract, contractBasisVersions, executionContractText, type ExecutionContractBasis, type ExecutionRequestIds} from "./contract";
 import {closeExecutionGates, openExecutionGates} from "./gates";
@@ -39,6 +39,8 @@ const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: Capit
     composeBoundInvestmentPacket({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
   "compare-financing-proposals": (basis, ask) =>
     composeBoundFinancingComparison({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "assess-debt-capacity": (basis, ask) =>
+    composeBoundDebtCapacity({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
 };
 
 /** Same order and refusals as the capital request, for any method with a packet composer. */

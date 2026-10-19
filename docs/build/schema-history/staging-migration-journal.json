@@ -2564,6 +2564,21 @@
       "name": "comparison_blocks_ebitda_headroom",
       "version": "20261019212116",
       "statements_md5": "623d5ea19af0c2ab2bc1d59778503c20"
+    },
+    {
+      "name": "premise_proposals_capacity",
+      "version": "20261019220549",
+      "statements_md5": "f4b721cdb3838e8c644c8bc7387b1ebb"
+    },
+    {
+      "name": "capacity_result_artifacts",
+      "version": "20261019220642",
+      "statements_md5": "4301dc5ab815451ffae1126130e1c04b"
+    },
+    {
+      "name": "execution_result_reply_lote1",
+      "version": "20261019220709",
+      "statements_md5": "01285619dcb88f555709f23f96a167c8"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",

@@ -1,0 +1,309 @@
+[
+ {
+  "blockKey": "framing",
+  "kind": "section",
+  "content": {
+   "status": "prepared_for_human_review",
+   "question": "Quanto de dívida a gente aguenta tomar para a segunda linha de R$ 60 milhões?",
+   "currency": "BRL",
+   "informedCaseId": "informed",
+   "largestCapacityCaseId": "phased",
+   "requestedFitsIn": [
+    "phased"
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "cases",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "informed",
+     "role": "informed",
+     "label": "2S27 e 1S28, como informado",
+     "changes": []
+    },
+    {
+     "id": "phased",
+     "role": "alternative",
+     "label": "Faseado em 2028 e 2029",
+     "changes": [
+      "Desembolso em 2028 e 2029; resultado a partir de 2030"
+     ]
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "informed",
+    "kind": "judgment",
+    "value": "2S27 e 1S28, como informado",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "d177609158a1c8f0a58eb53aa82c5c75267704bb9cbec4f754154307de85ef00"
+    ]
+   },
+   {
+    "claimId": "phased",
+    "kind": "judgment",
+    "value": "Faseado em 2028 e 2029",
+    "unit": null,
+    "period": null,
+    "supportIds": [
+     "d177609158a1c8f0a58eb53aa82c5c75267704bb9cbec4f754154307de85ef00"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "capacity",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "informed",
+     "capacity": "54.8",
+     "capacityStatus": "calibration_only",
+     "resultStatus": "partial_composition",
+     "bindingLimitId": "covenant",
+     "bindingDate": "2028-12-31",
+     "bindingScenario": "adverse",
+     "boundedBySearchDomain": false,
+     "calibrationOnly": true
+    },
+    {
+     "caseId": "phased",
+     "capacity": "79.47",
+     "capacityStatus": "calibration_only",
+     "resultStatus": "partial_composition",
+     "bindingLimitId": "covenant",
+     "bindingDate": "2029-12-31",
+     "bindingScenario": "adverse",
+     "boundedBySearchDomain": false,
+     "calibrationOnly": true
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "capacity:informed",
+    "kind": "calculation",
+    "value": "54.8",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d177609158a1c8f0a58eb53aa82c5c75267704bb9cbec4f754154307de85ef00"
+    ]
+   },
+   {
+    "claimId": "capacity:phased",
+    "kind": "calculation",
+    "value": "79.47",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d177609158a1c8f0a58eb53aa82c5c75267704bb9cbec4f754154307de85ef00"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "limits",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "informed",
+     "limitId": "covenant",
+     "label": "Covenant da escritura com folga de 0,5x no base e 3,0x no adverso",
+     "capacity": "54.8",
+     "status": "calibration_only"
+    },
+    {
+     "caseId": "informed",
+     "limitId": "market",
+     "label": "Alavancagem de 2,75x acima da qual preço e apetite pioram",
+     "capacity": "76.84",
+     "status": "calibration_only"
+    },
+    {
+     "caseId": "informed",
+     "limitId": "interest",
+     "label": "Cobertura de juros mínima de 2,5x",
+     "capacity": "71.97",
+     "status": "calibration_only"
+    },
+    {
+     "caseId": "phased",
+     "limitId": "covenant",
+     "label": "Covenant da escritura com folga de 0,5x no base e 3,0x no adverso",
+     "capacity": "79.47",
+     "status": "calibration_only"
+    },
+    {
+     "caseId": "phased",
+     "limitId": "market",
+     "label": "Alavancagem de 2,75x acima da qual preço e apetite pioram",
+     "capacity": "108.6",
+     "status": "calibration_only"
+    },
+    {
+     "caseId": "phased",
+     "limitId": "interest",
+     "label": "Cobertura de juros mínima de 2,5x",
+     "capacity": "107.64",
+     "status": "calibration_only"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "review",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "informed",
+     "scenario": "base",
+     "amount": "60",
+     "fits": false,
+     "failingLimitIds": [
+      "covenant"
+     ],
+     "peakLeverage": "2.42218273118279569892",
+     "peakLeverageDate": "2028-12-31",
+     "minimumCash": "13.83275730000000000036",
+     "minimumCashDate": "2031-12-31",
+     "minimumInterestCoverage": "2.65462454331315653143",
+     "minimumInterestCoverageDate": "2028-12-31"
+    },
+    {
+     "caseId": "informed",
+     "scenario": "adverse",
+     "amount": "60",
+     "fits": false,
+     "failingLimitIds": [
+      "covenant"
+     ],
+     "peakLeverage": "3.12010209450830140485",
+     "peakLeverageDate": "2028-12-31",
+     "minimumCash": "-22.28940269999999999949",
+     "minimumCashDate": "2032-12-31",
+     "minimumInterestCoverage": "2.25643086181618305171",
+     "minimumInterestCoverageDate": "2028-12-31"
+    },
+    {
+     "caseId": "phased",
+     "scenario": "base",
+     "amount": "60",
+     "fits": true,
+     "failingLimitIds": [],
+     "peakLeverage": "1.87645755154639175258",
+     "peakLeverageDate": "2029-12-31",
+     "minimumCash": "13.50125730000000000036",
+     "minimumCashDate": "2031-12-31",
+     "minimumInterestCoverage": "3.1712251733097875046",
+     "minimumInterestCoverageDate": "2029-12-31"
+    },
+    {
+     "caseId": "phased",
+     "scenario": "adverse",
+     "amount": "60",
+     "fits": true,
+     "failingLimitIds": [],
+     "peakLeverage": "2.58452120563035495716",
+     "peakLeverageDate": "2029-12-31",
+     "minimumCash": "-21.43290269999999999949",
+     "minimumCashDate": "2032-12-31",
+     "minimumInterestCoverage": "2.69554139731331937891",
+     "minimumInterestCoverageDate": "2029-12-31"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "plan",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "caseId": "informed",
+     "date": "2027-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "17.6967201",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2028-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "20.3182335",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2029-12-31",
+     "scheduledExistingPrincipal": "22.67",
+     "cashAfterInterest": "23.5614669",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2030-12-31",
+     "scheduledExistingPrincipal": "19.32",
+     "cashAfterInterest": "27.0386868",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2031-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "30.3684",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2032-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "33.65784",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "caseId": "informed",
+     "date": "2033-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "37.07928",
+     "paysWithoutRefinancing": true
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "information-gaps",
+  "kind": "table",
+  "content": {
+   "rows": []
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "exclusions",
+  "kind": "section",
+  "content": {
+   "items": [
+    "credit_approval",
+    "nonlinear_pricing",
+    "intraperiod_cash_certification",
+    "investment_return",
+    "method_release"
+   ]
+  },
+  "claims": []
+ }
+]

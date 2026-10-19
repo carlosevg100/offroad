@@ -65,6 +65,7 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
 
 /** What each method's confirmed premises are and what the confirmation asks the method to answer. */
 const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"];
+const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"];
 const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
   "analyze-investment-project": {key: "investment.premises",
     text: "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.",
@@ -74,6 +75,12 @@ const premiseMethods: Record<string, {key: string; text: string; ask: (summary: 
     ask: (summary) => typeof summary.situationId === "string" && comparisonSituations.includes(summary.situationId)
       ? {question: "Qual das propostas cabe na companhia e quanto custa de fato?",
         objectives: ["Comparar custo efetivo pela vida, caixa com a dívida existente, covenant na definição de cada credor, garantia e firmeza, e o que elimina antes da preferência"],
+        situationIds: [summary.situationId]} : null},
+  "assess-debt-capacity": {key: "capacity.premises",
+    text: "Projeção, dívida vigente, cronogramas do uso, estrutura da dívida nova e limites confirmados pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && capacitySituations.includes(summary.situationId)
+      ? {question: "Quanto de dívida nova cabe na companhia e com que perfil?",
+        objectives: ["Medir o maior valor sob cada limite e o que prende, revisar o valor pedido nos casos adotados e conferir o plano vigente contra o caixa"],
         situationIds: [summary.situationId]} : null},
 };
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};

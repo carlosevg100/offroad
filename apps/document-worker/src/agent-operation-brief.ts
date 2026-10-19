@@ -64,6 +64,7 @@ import {specialistCandidateExecutorRuntimeManifest} from "./specialist-method-ru
 import {safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
 import {investmentFactExtractionContract, proposeInvestmentPremisesForTurn} from "./investment-premises-proposal";
 import {financingComparisonExtractionContract, proposeFinancingComparisonPremisesForTurn, shouldProposeFinancingComparisonPremises} from "./financing-comparison-premises-proposal";
+import {debtCapacityExtractionContract, proposeDebtCapacityPremisesForTurn, shouldProposeDebtCapacityPremises} from "./debt-capacity-premises-proposal";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -271,6 +272,14 @@ Rules:
   and that the numbers come after the user confirms. Never state which offer is cheaper or safer before
   the calculation exists. When its status is missing, ask for the missing terms in one batch, each
   with the reason; a term absent from a term sheet becomes a question for that counterparty.
+- capacityPremises is the premise proposal for how much new debt fits. When proposed, the projection,
+  the debt in place, each schedule of the use (as informed and any alternative), the structure of the
+  new debt and the limits appear in a card below your reply, each with its origin. Say what will be
+  measured (the largest amount under each limit and which one binds, with the date, in the company's
+  case and the adverse case; the amount asked reviewed on every limit; whether the plan in place pays
+  without refinancing) and that the numbers come after the user confirms. Never state a capacity or
+  whether the amount fits before the calculation exists. When its status is missing, ask for the
+  missing items in one batch, each with the reason.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -548,7 +557,8 @@ export async function processAgentOperationBriefJob(
     // nothing is adopted or calculated until the person confirms them.
     const premiseStepOpen = !(deterministicClarification || deterministicActivation || executionRoute.action !== "continue_private_case"
       || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises);
-    // One premise step per turn: offers for the same need are compared; otherwise an investment is analyzed.
+    // One premise step per turn: offers for the same need are compared; a capacity question is measured;
+    // otherwise an investment is analyzed.
     const comparisonTurn = premiseStepOpen && shouldProposeFinancingComparisonPremises(context.message, context.documents.length > 0);
     const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
@@ -563,7 +573,21 @@ export async function processAgentOperationBriefJob(
           })).output,
           log: (event, detail) => log(event, {job: job.job_id, ...detail}),
         });
-    const premises = !premiseStepOpen || comparisonTurn ? null
+    const capacityTurn = premiseStepOpen && !comparisonTurn && shouldProposeDebtCapacityPremises(context.message, context.documents.length > 0);
+    const capacity = !capacityTurn ? null : await proposeDebtCapacityPremisesForTurn({
+          message: context.message, hasAttachments: context.documents.length > 0,
+          recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
+          projectId: context.project?.id ?? null,
+          loadEvidence: () => queue.loadPremiseEvidence!(job),
+          extract: async (text) => (await gateway.complete({
+            ...debtCapacityExtractionContract,
+            input: [{type: "text", text}],
+            dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+            metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+          })).output,
+          log: (event, detail) => log(event, {job: job.job_id, ...detail}),
+        });
+    const premises = !premiseStepOpen || comparisonTurn || capacityTurn ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
           recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
@@ -616,6 +640,7 @@ export async function processAgentOperationBriefJob(
               latestUserMessage: context.message,
               investmentPremises: premises?.forAdvisor ?? null,
               comparisonPremises: comparison?.forAdvisor ?? null,
+              capacityPremises: capacity?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -731,7 +756,7 @@ export async function processAgentOperationBriefJob(
         });
       }
     }
-    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? null;
+    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? null;
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
@@ -740,6 +765,7 @@ export async function processAgentOperationBriefJob(
     await queue.writeStage(job, "agent_operation_brief", "succeeded", {
       investmentPremises: premises?.forAdvisor.status,
       comparisonPremises: comparison?.forAdvisor.status,
+      capacityPremises: capacity?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

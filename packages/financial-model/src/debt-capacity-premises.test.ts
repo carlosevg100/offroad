@@ -40,6 +40,9 @@ describe("C04 premises proposed from facts with origin, adopted, composed and me
     const plan = at("informed").plan!.find((y) => y.date === "2029-12-31")!;
     expect([r(plan.scheduledExistingPrincipal, 2), r(plan.cashAfterInterest, 2), plan.paysWithoutRefinancing]).toEqual([22.67, 23.56, true]);
     expect(at("informed").calibrationOnly).toBe(true);
+    // The company's case is read first, whatever the scenario identities.
+    const a = adopt(auroraCapacityFacts()), input = composeBoundDebtCapacity({envelope: a.envelope, scope: a.scope, question});
+    expect(input.cases.every((c) => c.analysis.scenarios[0]!.scenario === `${c.id}:base` && c.analysis.scenarios[1]!.scenario === `${c.id}:adverse`)).toBe(true);
   });
   it("refuses inconsistent facts before proposing premises", () => {
     const two = auroraCapacityFacts(); two.cases[1]!.value.role = "informed";

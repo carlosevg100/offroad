@@ -20,7 +20,7 @@ const project = (ebitda: Record<number, number>, capex: Record<number, number>) 
 
 /** Turn of ficha C04: the projection, the debt table, the indenture and the second line of R$ 60 mi, in reais. */
 function c04Extraction(): DebtCapacityExtraction {
-  return {
+  return {needSituation: informed("capex-infrastructure" as const, "segunda linha de produção"),
     projection: doc(years.map((y) => ({yearEnd: `${y}-12-31`, ebitda: M(EBITDA[y]!), leasePayments: M(3), depreciation: M(12), maintenanceCapex: M(8), workingCapitalInvestment: M(2.5)})), "projeção 2027-2033"),
     openingCash: doc(M(15.3), "balanço de dezembro de 2026"), cashTaxRate: informed(0.34, "lucro real"), covenantEbitdaExcludesLeases: doc(true, "escritura, EBITDA sem IFRS 16"),
     covenantLimit: doc(3, "escritura da debênture"), minimumCash: none,
@@ -46,7 +46,7 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
   it("proposes premises that reproduce the oracle in reais once adopted", () => {
     const c = completeDebtCapacityFacts({extraction: c04Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error(JSON.stringify(c));
-    const proposal = buildDebtCapacityPremiseProposal(c.facts);
+    const proposal = buildDebtCapacityPremiseProposal(c.facts, c.situationId);
     expect(proposal.hypotheses.length).toBeLessThanOrEqual(256);
     expect(proposal.hypotheses.every((h) => /^Origem: /.test(h.reason) && h.dimensions.entityId === null)).toBe(true);
     let n = 0;
@@ -65,8 +65,8 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     expect(phased.review!.fits).toBe(true);
   });
   it("asks for what nobody stated instead of assuming it", () => {
-    const e = c04Extraction(); e.covenantLimit = none; e.structure.repayments = none; e.uses = [];
-    expect(completeDebtCapacityFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["covenantLimit", "structure.repayments", "uses"]});
+    const e = c04Extraction(); e.covenantLimit = none; e.structure.repayments = none; e.uses = []; e.needSituation = none;
+    expect(completeDebtCapacityFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["needSituation", "covenantLimit", "structure.repayments", "uses"]});
     const off = c04Extraction(); off.existingDebt.value!.pop();
     expect(completeDebtCapacityFacts({extraction: off, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt"]});
     const alt = c04Extraction(); alt.uses[1]!.change = null;

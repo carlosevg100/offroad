@@ -46,6 +46,9 @@ begin
    '{"state":"idle","reply":"Resposta sintética."}',jsonb_set(premises,'{methodId}','"compare-financing-proposals"')); raise exception 'premise_cross_method_path_accepted';
  exception when invalid_parameter_value then if sqlerrm <> 'invalid_premise_hypothesis' then raise; end if; end;
  begin perform public.worker_record_agent_response_with_premises_v1('a11b0000-0000-4000-9000-000000000912',repeat('p',64),gen_random_uuid(),
+   '{"state":"idle","reply":"Resposta sintética."}',jsonb_set(premises,'{methodId}','"assess-debt-capacity"')); raise exception 'premise_cross_method_path_accepted';
+ exception when invalid_parameter_value then if sqlerrm <> 'invalid_premise_hypothesis' then raise; end if; end;
+ begin perform public.worker_record_agent_response_with_premises_v1('a11b0000-0000-4000-9000-000000000912',repeat('p',64),gen_random_uuid(),
    '{"state":"idle","reply":"Resposta sintética."}',jsonb_set(premises,'{methodId}','"unknown-method"')); raise exception 'premise_unknown_method_accepted';
  exception when invalid_parameter_value then if sqlerrm <> 'invalid_premise_proposal' then raise; end if; end;
  perform public.worker_record_agent_response_with_premises_v1('a11b0000-0000-4000-9000-000000000912',repeat('p',64),'a11b0000-0000-4000-9000-000000000914',
@@ -107,6 +110,11 @@ do $$ begin
   raise exception 'premise_context_crossed'; exception when check_violation then null; end;
  insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
   values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'compare-financing-proposals','2026.10.19-v2','prepare-capital-structure-decision','propostas','{}','[{}]','{}',repeat('b',64));
+ begin insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
+  values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'assess-debt-capacity','2026.10.19-v2','prepare-capital-structure-decision','propostas','{}','[{}]','{}',repeat('b',64));
+  raise exception 'premise_context_crossed'; exception when check_violation then null; end;
+ insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
+  values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'assess-debt-capacity','2026.10.19-v2','prepare-capital-structure-decision','capacidade','{}','[{}]','{}',repeat('b',64));
 end $$;
 select 'work_premise_proposals' as test,'PASS' as result;
 rollback;

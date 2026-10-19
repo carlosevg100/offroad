@@ -59,9 +59,12 @@ export function composeBoundDebtCapacity(raw: unknown): DebtCapacityPacketInput 
     }
     const meta = (suffix: string, type: ValueType) => own.find((e) => e.fieldPath === prefix + suffix && e.value.type === type && e.dimensions.scenario === top)?.value.value;
     const role = z.enum(["informed", "alternative"]).parse(roleEntry.value.value);
-    const scenarioIds = [...new Set(own.flatMap((e) => {const m = scenarioPath.exec(e.fieldPath.slice(prefix.length)); return m ? [m[1]!] : [];}))].sort();
+    // The company's case comes first: the plan in place is read on the first scenario.
+    const labelOf = (sid: string) => own.find((e) => e.fieldPath === `${prefix}scenario.${sid}.periodEnds`)!.dimensions.scenario!;
+    const scenarioIds = [...new Set(own.flatMap((e) => {const m = scenarioPath.exec(e.fieldPath.slice(prefix.length)); return m ? [m[1]!] : [];}))]
+      .sort((a, b) => (labelOf(a) === top ? 0 : 1) - (labelOf(b) === top ? 0 : 1) || (a < b ? -1 : 1));
     const scenarios = scenarioIds.map((sid) => {
-      const label = own.find((e) => e.fieldPath === `${prefix}scenario.${sid}.periodEnds`)!.dimensions.scenario!;
+      const label = labelOf(sid);
       const p = `scenario.${sid}.`, at = (name: string, unit: string, type: ValueType) => select(p + name, label, unit, type);
       const ruleIds = [...new Set(own.flatMap((e) => {const m = rulePath.exec(e.fieldPath.slice(prefix.length)); return m && m[1] === sid ? [m[2]!] : [];}))].sort();
       return {id: sid, scenario: label, terms: {openingAvailableCash: at("openingAvailableCash", "currency", "number"), cashNetting: at("cashNetting", "convention", "text"),

@@ -21,8 +21,12 @@ const sourced = <T extends z.ZodType>(value: T) => z.strictObject({value: value.
 const money = z.string().regex(/^-?\d{1,15}(?:\.\d{1,8})?$/);
 const year = z.string().regex(/^\d{4}-12-31$/);
 const share = z.number().min(0).max(1);
+/** The company situations in which how much new debt fits is the structuring question; the use of the funds decides. */
+export const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"] as const;
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const debtCapacityExtractionSchema = z.strictObject({
+  /** What the money is for, as one of the company situations the capacity analysis serves. */
+  needSituation: sourced(z.enum(capacitySituations)),
   /** The company's own projection, one item per year (December). */
   projection: sourced(z.array(z.strictObject({yearEnd: year, ebitda: money, leasePayments: money, depreciation: money, maintenanceCapex: money, workingCapitalInvestment: money})).min(2).max(15)),
   openingCash: sourced(money), cashTaxRate: sourced(share),
@@ -51,6 +55,7 @@ export const debtCapacityExtractionContract = {
   system: [
     "Você extrai os dados que permitem medir quanto de dívida nova cabe na companhia, a partir da mensagem de uma pessoa, das mensagens anteriores e de campos já extraídos de documentos (projeção, tabela de dívida, escritura).",
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null em value, origin e source. Nunca estime, nunca complete, nunca arredonde por conta própria.",
+    "needSituation é o uso dos recursos: investimento (capex-infrastructure), giro estrutural (structural-working-capital), refinanciamento de negócio estável (stable-business-high-conversion) ou companhia perto de covenant (near-covenant). Só preencha se a conversa ou o documento disser.",
     "Valores monetários em reais, sem separador de milhar (R$ 60 milhões vira 60000000). Taxas em fração (CDI + 2,5% vira annualSpread 0.025; alíquota de 34% vira 0.34).",
     "A projeção é anual, um item por ano com data de dezembro (AAAA-12-31): EBITDA, arrendamentos pagos, depreciação, capex de manutenção e investimento em capital de giro (positivo consome caixa).",
     "A dívida vigente também é anual: saldo de fechamento como o covenant conta (inclua linhas rotativas em aberto), principal pago e juros pagos no ano; e a data do último pagamento.",
@@ -67,7 +72,7 @@ export const debtCapacityExtractionContract = {
 };
 
 export type CapacityCompletion =
-  | {status: "complete"; facts: DebtCapacityFacts; housePremiseKeys: string[]}
+  | {status: "complete"; facts: DebtCapacityFacts; situationId: (typeof capacitySituations)[number]; housePremiseKeys: string[]}
   | {status: "missing"; missing: string[]};
 type Sourced<T> = {value: T | null; origin: "informed" | "document" | null; source: string | null};
 const Exact = Decimal.clone({precision: 60});
@@ -84,6 +89,7 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
     if (f.value === null || f.origin === null) {missing.push(name); return null;}
     return {value: f.value, origin: f.origin, source: f.source ?? (f.origin === "informed" ? "Informado na conversa" : "Documento")};
   };
+  const situation = need("needSituation", e.needSituation);
   const projection = need("projection", e.projection), opening = need("openingCash", e.openingCash), tax = need("cashTaxRate", e.cashTaxRate);
   const excludes = need("covenantEbitdaExcludesLeases", e.covenantEbitdaExcludesLeases), limit = need("covenantLimit", e.covenantLimit);
   const debt = need("existingDebt", e.existingDebt), finalDebt = need("existingDebtFinalPaymentDate", e.existingDebtFinalPaymentDate);
@@ -93,7 +99,7 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
   if (!e.uses.length) missing.push("uses");
   if (e.uses.filter((u) => u.role === "informed").length > 1) missing.push("uses.informed");
   const uses = e.uses.map((u, n) => ({u, years: need(`uses.${n + 1}.years`, u.years)}));
-  if (missing.length || !projection || !opening || !tax || !excludes || !limit || !debt || !finalDebt || !indexer || !first || !count || !rateFact || (indexer.value === "CDI" && !curve)) return {status: "missing", missing: [...new Set(missing)]};
+  if (missing.length || !situation || !projection || !opening || !tax || !excludes || !limit || !debt || !finalDebt || !indexer || !first || !count || !rateFact || (indexer.value === "CDI" && !curve)) return {status: "missing", missing: [...new Set(missing)]};
   const ends = projection.value.map((p) => p.yearEnd);
   if (ends.some((d, i) => i > 0 && d <= ends[i - 1]!)) return {status: "missing", missing: ["projection"]};
   // The debt table and each use are read on the projection's years; a year off that grid is a question, never a fill.
@@ -144,12 +150,12 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
     stress: {ebitdaShock: {value: "0.15", origin: "house", source: "EBITDA 15% menor, o caso que um banco tende a usar"}},
     requestedAmount: e.requestedAmount.value !== null && e.requestedAmount.origin !== null ? {value: e.requestedAmount.value, origin: e.requestedAmount.origin, source: e.requestedAmount.source ?? "Informado na conversa"} : null,
     monetaryQuantum: {value: "10000", origin: "house", source: "Resolução da busca de R$ 10 mil"}});
-  return {status: "complete", facts, housePremiseKeys: [...new Set(used)]};
+  return {status: "complete", facts, situationId: situation!.value, housePremiseKeys: [...new Set(used)]};
 }
 
 /** The proposal the worker records next to its reply: facts with origin, the hypotheses one
  * confirmation adopts, a short summary for the card and the fingerprint the confirmation checks. */
-export function buildDebtCapacityPremiseProposal(facts: DebtCapacityFacts) {
+export function buildDebtCapacityPremiseProposal(facts: DebtCapacityFacts, situationId: (typeof capacitySituations)[number]) {
   const hypotheses = proposeDebtCapacityHypotheses(facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId: null, definitionVersionId: null}}));
   const summary = {
     years: facts.periodEnds.length, firstYear: facts.periodEnds[0]!.slice(0, 4), lastYear: facts.periodEnds.at(-1)!.slice(0, 4),
@@ -158,7 +164,7 @@ export function buildDebtCapacityPremiseProposal(facts: DebtCapacityFacts) {
     structure: {label: facts.structure.value.label, finalPaymentDate: facts.structure.value.finalPaymentDate, origin: facts.structure.origin, source: facts.structure.source},
     limits: facts.limits.map((l) => ({id: l.value.id, label: l.value.label, origin: l.origin, source: l.source})),
     premises: [{key: "stress", origin: facts.stress.ebitdaShock.origin, source: facts.stress.ebitdaShock.source}],
-    scenarios: ["base", "adverse"],
+    scenarios: ["base", "adverse"], situationId,
   };
   const body = {methodId: debtCapacityPremiseMethod.methodId, methodVersion: debtCapacityPremiseMethod.methodVersion, facts, hypotheses, summary};
   return {...body, fingerprint: createHash("sha256").update(JSON.stringify(body)).digest("hex")};
@@ -186,7 +192,7 @@ export async function proposeDebtCapacityPremisesForTurn(input: {
       input.log("capacity_premises.missing", {missing: completed.missing});
       return {forAdvisor: {status: "missing", missing: completed.missing}, proposal: null};
     }
-    const proposal = buildDebtCapacityPremiseProposal(completed.facts);
+    const proposal = buildDebtCapacityPremiseProposal(completed.facts, completed.situationId);
     input.log("capacity_premises.proposed", {hypotheses: proposal.hypotheses.length, housePremises: completed.housePremiseKeys});
     return {forAdvisor: {status: "proposed", summary: proposal.summary, housePremises: completed.housePremiseKeys}, proposal};
   } catch (error) {

@@ -1,6 +1,6 @@
 import "server-only";
 
-import {readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type ExecutionResultBlocksView, type ExecutionResultCitation, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {readCapitalProcedurePacketBlocks, readDebtCapacityPacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks, type DebtCapacityResultBlocksView, type ExecutionResultBlocksView, type ExecutionResultCitation, type FinancingComparisonResultBlocksView, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 import {artifactServing, readArtifactHead, readArtifactRevision, revisionBelongsTo, type ArtifactRead} from "@/lib/artifacts/authorized-artifact-reader";
@@ -23,10 +23,13 @@ type ExecutionRevisionBase = {
   readonly freshness: Freshness;
   readonly pins: ExecutionRevisionPins;
 };
-/** A capital result carries its decision blocks; an investment result carries the case comparison. */
+/** A capital result carries its decision blocks; an investment result the case comparison; a
+ * comparison of offers its proposals per case; a capacity analysis its limits per schedule. */
 export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind?: "capital"; readonly blocks: ExecutionResultBlocksView}
-  | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView});
+  | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView}
+  | {readonly kind: "comparison"; readonly comparison: FinancingComparisonResultBlocksView}
+  | {readonly kind: "capacity"; readonly capacity: DebtCapacityResultBlocksView});
 
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
@@ -62,6 +65,14 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   if (pinned(manifest.traces, "investment-decision-packet:")) {
     const investment = readInvestmentDecisionPacketBlocks(serving.blocks);
     return investment ? {state: "ready", revision: {...base("investment-decision-packet:"), kind: "investment", investment}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "financing-comparison-packet:")) {
+    const comparison = readFinancingComparisonPacketBlocks(serving.blocks);
+    return comparison ? {state: "ready", revision: {...base("financing-comparison-packet:"), kind: "comparison", comparison}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "debt-capacity-packet:")) {
+    const capacity = readDebtCapacityPacketBlocks(serving.blocks);
+    return capacity ? {state: "ready", revision: {...base("debt-capacity-packet:"), kind: "capacity", capacity}} : {state: "unavailable"};
   }
   const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
   if (!blocks) return {state: "unavailable"};
