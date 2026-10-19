@@ -320565,6 +320565,67 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.execution_result_comparison_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_comparison_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_comparison_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_comparison_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_comparison_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 1 de fichas (resultado da comparação)",
+      "decision": "preservar",
+      "stage": "fichas C02, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado da comparação de propostas; copia os valores do pacote, inclusive a folga em EBITDA, sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019212323_comparison_result_artifacts.sql",
+          "line": 6,
+          "anchor": "create function private.execution_result_comparison_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261019212359_comparison_blocks_ebitda_headroom.sql",
+          "line": 5,
+          "anchor": "create or replace function private.execution_result_comparison_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
       "kind": "function",
       "catalogues": {
@@ -328190,6 +328251,24 @@
       "path": "docs/build/schema-history/staging-only-distribution/20260911012528_versioned_information_packs.sql",
       "sha256": "30e73a6bd75a4022dc116ebeb6db949857bb17409499dad90496ce7ccc5d2f0c",
       "name": "versioned_information_packs"
+    },
+    {
+      "path": "supabase/migrations/20261019212152_premise_proposals_comparison.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "A comparação de propostas (ficha C02) ganha contexto próprio de premissas ('propostas'), evidência de alavancagem e garantias, e a gravação da proposta por método, sem adotar nem calcular."
+    },
+    {
+      "path": "supabase/migrations/20261019212323_comparison_result_artifacts.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "O resultado da comparação de propostas vira revisão de execution_result, com blocos copiados do pacote e rastreio pelo próprio fingerprint."
+    },
+    {
+      "path": "supabase/migrations/20261019212359_comparison_blocks_ebitda_headroom.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "O espelho em SQL dos blocos da comparação passa a copiar a folga do covenant em EBITDA, que o pacote publica."
     },
     {
       "path": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",

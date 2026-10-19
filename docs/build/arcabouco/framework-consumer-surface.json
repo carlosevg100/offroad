@@ -1142,7 +1142,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
-      "sha256": "3bebfff11d0a6f639096406fbfee0d0a44982af5524d9c85f211ece33cce16db",
+      "sha256": "38293885857409e7b49cf7c41347c77d75b9c71e86e9b47ce7addb2bfc74c46d",
       "entrypoint": true,
       "rpcs": [
         "confirm_work_premise_proposal_v1",
@@ -1195,7 +1195,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
-      "sha256": "fdf8958ee6fc20d327f083c5c32a5f48d85620097dcb26a21fd94bafdcaa2331",
+      "sha256": "a7edc916bf8a8457604e49b9fa9e9dde8e23f938cda8847aaa6a56e1e81a9b83",
       "entrypoint": false,
       "rpcs": [
         "read_advisor_execution_brief_approval_v1",

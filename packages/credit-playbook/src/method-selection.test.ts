@@ -68,7 +68,9 @@ describe("R3 situation catalogue", () => {
     const bound = specialistMethodRuntimeManifest.find((method) => method.procedure.id === receivablesPoolMethodId);
     expect(bound?.taskIds).toContain("R01");
     for (const situation of structuringSituations) {
-      if (situation.situationId === "capex-infrastructure") expect(situation.servedBy).toEqual([capitalStructureMethodId, "analyze-investment-project"]);
+      const offers = ["seasonal-working-capital", "structural-working-capital", "stable-business-high-conversion", "near-covenant"];
+      if (situation.situationId === "capex-infrastructure") expect(situation.servedBy).toEqual([capitalStructureMethodId, "analyze-investment-project", "compare-financing-proposals"]);
+      else if (offers.includes(situation.situationId)) expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId, "compare-financing-proposals"]);
       else if (situation.situationId !== "receivables") expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId]);
     }
   });

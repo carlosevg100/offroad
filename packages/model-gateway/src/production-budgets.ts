@@ -63,8 +63,11 @@ export const productionModelCeilingsUsd = {
    * A capital turn about an identifiable investment adds one bounded fact extraction (Sonnet 5
    * low, 2.5k output, the turn and at most 400 reviewed document fields): about 0.08 per request and
    * 0.16 through the Terra fallback, x1.10 = 0.18 on top of the 1.8443 above: 2.03.
+   * A turn runs one premise step at most. The comparison of offers extracts more (Sonnet 5 low, 6k
+   * output, three term sheets, the debt table and the projection): about 0.12 per request and 0.24
+   * through the Terra fallback, x1.10 = 0.26 on top of 1.8443: 2.11.
    */
-  agentOperationBrief: 2.05,
+  agentOperationBrief: 2.15,
   /**
    * Database: 0.25 and 1 call (`private.enqueue_work_turn_v1`, and a literal of the worker's job
    * schema). Largest request 0.1867 (Sonnet 5, 0.0886 old); x1.10 = 0.2054. The value stays.
