@@ -5,23 +5,31 @@
     "id": "compare-financing-proposals",
     "version": "2026.10.19-v2"
   },
-  "commit": "b91fd9672b171444bac6d366f86685cf62d77ca0",
+  "commit": "7488c5bd5ce56f39ebfa038b809f8238e361d0ca",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
-      "sha256": "5497667d142e22c5897063232e550105257ec5f0ca7a83a98c7bda24f6abbf2c"
+      "sha256": "91a83cba27da5880b5a20f6d4c36eb0df8cf59ca2b0dce3ef376b768eb1fdb88"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-packet.ts",
-      "sha256": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+      "sha256": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-contracts.ts",
       "sha256": "179eb55aebd3040a49cb12cef5ec2ad66ebb538286aa56e8e1be202ba0488e9e"
     },
     {
+      "path": "packages/financial-model/src/financing-comparison-composer.ts",
+      "sha256": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-premises.ts",
+      "sha256": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
+    },
+    {
       "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-      "sha256": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+      "sha256": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
     },
     {
       "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -29,11 +37,15 @@
     },
     {
       "path": "packages/financial-model/src/ficha-calculation-results.ts",
-      "sha256": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+      "sha256": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
     },
     {
       "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-      "sha256": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+      "sha256": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
+    },
+    {
+      "path": "packages/financial-core/src/business-day-calendar.ts",
+      "sha256": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
     },
     {
       "path": "packages/financial-core/src/period-financing-taxes.ts",
@@ -65,7 +77,7 @@
     },
     {
       "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-      "sha256": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+      "sha256": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-packet.test.ts",
@@ -76,36 +88,56 @@
       "sha256": "f9027eacc92d66005142c5e4db3fd684aaf8a25fb20a4d43d2b41ae361a55dee"
     },
     {
+      "path": "packages/financial-model/src/financing-comparison-composer.test.ts",
+      "sha256": "0689b486d8b5841d0706135a55edfc32c367f5fc0fec959c270e1f29a31d196e"
+    },
+    {
+      "path": "packages/financial-model/src/financing-comparison-premises.test.ts",
+      "sha256": "e7c0ae3bfabbeabd23b6db7b0a4386a766e1c205c1809c691e4848239cfeae38"
+    },
+    {
       "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-      "sha256": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+      "sha256": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
-      "sha256": "2dafbca0ecc4cd0c024d91b1438f638eb73bfe7c280c009c2f86d579fe840c5f"
+      "sha256": "46c522f4473256fe29181e5483b36d083661acebaaa156c05be7d2f3b3922384"
     },
     {
       "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
-      "sha256": "6c98e437bce75d8d2e634d6d2c0c06569fd1fb7a2c5d97a859de690acb6e9f9f"
+      "sha256": "e2e852bea0274bac4d5dd041657b8e1dc912843baea637972777603870160b75"
+    },
+    {
+      "path": "packages/financial-core/src/business-day-calendar.test.ts",
+      "sha256": "d9576772b77438c6b7e61fbdc2157d2241c3b8e7f441b1195242d30d84295298"
+    },
+    {
+      "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
+      "sha256": "714dfed130d4257e6480565c14435b8155a7087e7f626ac496b3fee2955e6f05"
+    },
+    {
+      "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
+      "sha256": "33c5195e957cc7413ccc1525f84e9008bdd3253809ce517487332e43942e7ad4"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-packet.json",
-      "sha256": "c299b6ff0bc3399f2ae7685f893d76752d2e090f4711132726e166069421c4c3"
+      "sha256": "0bc37cc67045b131f0a8841d712cab7786882e4c8ad8dbf4c932b52bb720842d"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-evidence.json",
-      "sha256": "91c552ba82148c1935f3fca64a6a6424405161b99c80e9c0b25dd74522b5e5f5"
+      "sha256": "7c2a654352ec0ffbd7eb5e871a752d5cc45efe1b932dd6ba4ca59b3bf4fa54c7"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
-      "sha256": "953c866d1b9e9d2504a89222e8eefc54f5ed6bc7c001d8c11292965a14c292db"
+      "sha256": "2061d43d8fd2c6002338f8bb792796fe52339f0daa92cfd144e6e4b37bc042a9"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-      "sha256": "d9c4348c65cb5dacf335a4170748425781ac5f8ec74e52c946f16cf063a3db94"
+      "sha256": "f1afe4aec621c9303e30ef591f7c2b5b0339d5933b0c6d7ecae525201da0d70a"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
-      "sha256": "777ca691e1f9818cd105ddba7b033447ef7808c085eb721cf92588956f3cc098"
+      "sha256": "4544536470f44c7e4fea5b6654d88ff6e977b4b3ebc9ae0ec546937e8150dc6b"
     }
   ],
   "externalOracle": [
