@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "review-subject-basis.v1",
+  "subject": {
+    "kind": "method",
+    "id": "analyze-relative-debt-cost",
+    "version": "2026.10.19-v2"
+  },
+  "commit": "dd256ca66d7c1a8424865b7abb772f902e4af566",
+  "pins": [
+    {
+      "path": "packages/credit-playbook/knowledge/procedures/capital/analyze-relative-debt-cost.md",
+      "sha256": "4d8b3d0fe298bc5f44e399dad0d9779886f658c45fa5822da8c347e6938cfa25"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost-packet.ts",
+      "sha256": "f887eb9cb836f9e5bf5ed7e8bd4ce46f570581c088816ce034b0bbacba9f3602"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost-contracts.ts",
+      "sha256": "6bf5ec48868a5b893d9d61b100dfb1af939345573ed5945915f278baf5f2c4ab"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-relative-cost-lens.ts",
+      "sha256": "c273aaa7cb3110a458ff8429a88603c6da94c74f6eb37b387ca631f1e4a94e39"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-relative-debt-cost.ts",
+      "sha256": "23d5ea81e5e9524d8ad752b3aa9b71385f39dd93227131a37419ae258c9213c4"
+    },
+    {
+      "path": "packages/financial-core/src/relative-debt-cost.ts",
+      "sha256": "0d407d848f803640b503ecb3c74da1a960eabc85571007e845132251872fd145"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost.test-support.ts",
+      "sha256": "47aed07969a6bae0bbe902ceee342518fd51f7e86fa99f35ec11ef772f71c6ce"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost-packet.test.ts",
+      "sha256": "b320df4f185171176cded5d4f92c3385a48bd94a20b27d13d099878c34bd1667"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost-runs.test-support.ts",
+      "sha256": "20d4ccf29ef82e5fd3d55b3713512c29a861754366fb37537d69cdcc5a8ab401"
+    },
+    {
+      "path": "packages/financial-model/src/relative-debt-cost-runs.test.ts",
+      "sha256": "b7f84b80c7f5b7bbcb5d4f4208dd0375f96fcd15a03adc63b584f4df58ae1859"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-relative-debt-cost.test.ts",
+      "sha256": "0b6e28525a0267752b16ace1f660cbafc140ad97b66ab16f331c5fbfa896d7eb"
+    },
+    {
+      "path": "packages/financial-model/contracts/relative-debt-cost-packet.json",
+      "sha256": "24364d1c40f4266ad40d05aa955de68bf0bb6e4aba2538913f893d941f54e50a"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+      "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+    },
+    {
+      "path": "packages/financial-model/src/ficha-calculation-results.ts",
+      "sha256": "26d78e415897178f7d61622bac3a4a05965b96121d5c48ec6161a5283042e61e"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-gold/run.json",
+      "sha256": "14db7c286c87f159303b8be3a34e7ef7dde1b582bc0e3f92ac0f3ae15a8e3b68"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-adversarial/run.json",
+      "sha256": "ba7cb1dc68eb7174274b15277886cd29275cf1086521dbcb4c601c7ad59dbb53"
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/analyze-relative-debt-cost-2026-10-19-v2-consistency/run.json",
+      "sha256": "4792bc30dabfcd76f71c6b9bd20b3b2eadb0fbce7bab7e83bd69734ecffa562e"
+    }
+  ],
+  "externalOracle": [
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C03/modelo_c03.py",
+      "sha256": "49e27b06692758def3ae01b56479b96c917a7741754455a1253079435673be74"
+    },
+    {
+      "path": "outputs/fichas-ensaio-2026-10/C03/resultados.json",
+      "sha256": "5a948a79025eb9d4a6fa4ca7fcdbb0da0fdd70c967a67d93fc7f56502ac78217"
+    }
+  ]
+}
