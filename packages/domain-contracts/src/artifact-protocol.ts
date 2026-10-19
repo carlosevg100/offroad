@@ -1550,6 +1550,13 @@ export type DebtCapacityPacketLike = {
   readonly exclusions: readonly string[];
 };
 
+/** The scenario of the binding check, by its position in the review (company case first, adverse
+ * second). Without the review the packet does not say which scenario it is, so none is named. */
+function bindingScenarioOf(c: {binding: {scenarioId: string} | null; review: {scenarios: ReadonlyArray<{scenarioId: string}>} | null}): "base" | "adverse" | null {
+  const at = c.binding && c.review ? c.review.scenarios.findIndex((s) => s.scenarioId === c.binding!.scenarioId) : -1;
+  return at === 0 ? "base" : at === 1 ? "adverse" : null;
+}
+
 /** Blocks of a capacity result. Values are copied from the packet, never recomputed; the scenario
  * of each review row is named by its position (the company's case first, then the adverse case), as
  * the composer orders them. `private.execution_result_capacity_blocks_v1` mirrors this key for key. */
@@ -1565,7 +1572,7 @@ export function debtCapacityPacketBlocks(packet: DebtCapacityPacketLike): readon
     {blockKey: "capacity", kind: "table",
       content: {rows: packet.cases.map((c) => ({caseId: c.caseId, capacity: c.capacity, capacityStatus: c.capacityStatus, resultStatus: c.resultStatus,
         bindingLimitId: c.binding?.limitId ?? null, bindingDate: c.binding?.date ?? null,
-        bindingScenario: c.binding === null ? null : (c.review?.scenarios.findIndex((s) => s.scenarioId === c.binding!.scenarioId) ?? -1) === 0 ? "base" : "adverse",
+        bindingScenario: bindingScenarioOf(c),
         boundedBySearchDomain: c.boundedBySearchDomain, calibrationOnly: c.calibrationOnly}))},
       claims: packet.cases.flatMap((c) => c.capacity === null ? [] : [{claimId: `capacity:${c.caseId}`, kind: "calculation", value: c.capacity, unit: packet.currency, period: null, supportIds: [packet.fingerprint]}])},
     {blockKey: "limits", kind: "table", claims: [],

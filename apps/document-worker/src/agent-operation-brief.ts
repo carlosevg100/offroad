@@ -573,10 +573,12 @@ export async function processAgentOperationBriefJob(
           })).output,
           log: (event, detail) => log(event, {job: job.job_id, ...detail}),
         });
-    const capacityTurn = premiseStepOpen && !comparisonTurn && shouldProposeDebtCapacityPremises(context.message, context.documents.length > 0);
+    // The person's earlier messages, without the one this turn answers.
+    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id).map((message) => message.content);
+    const capacityTurn = premiseStepOpen && !comparisonTurn && shouldProposeDebtCapacityPremises(context.message, context.documents.length > 0, earlierUserMessages);
     const capacity = !capacityTurn ? null : await proposeDebtCapacityPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
-          recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
+          recentUserMessages: earlierUserMessages,
           projectId: context.project?.id ?? null,
           loadEvidence: () => queue.loadPremiseEvidence!(job),
           extract: async (text) => (await gateway.complete({

@@ -46,7 +46,9 @@ export const debtCapacityFactsSchema = z.strictObject({
   }),
   /** The debt in place with its plan: closing balance as the covenant counts it, scheduled principal and cash interest. */
   existingDebt: fact(z.strictObject({closingDebt: series, principalPaid: series, cashInterest: series, finalPaymentDates: z.array(z.iso.date()).max(40)})),
-  cases: z.array(fact(projectCase)).min(1).max(3),
+  /** The informed use and at most one alternative: a working basis holds 256 premises and each schedule
+   * carries a complete analysis in both scenarios. */
+  cases: z.array(fact(projectCase)).min(1).max(2),
   /** The structure of the new debt: all-in annual rate per period, share of principal repaid at each period end, last payment. */
   structure: fact(z.strictObject({label: text, annualRate: z.array(ratio).min(1).max(40), amortizationShares: z.array(ratio).min(1).max(40), finalPaymentDate: z.iso.date()})),
   limits: z.array(fact(limit)).min(1).max(4),
@@ -74,6 +76,8 @@ export const debtCapacityFactsSchema = z.strictObject({
     if (v.role === "alternative" && !v.changes.length) fail("An alternative must say what it changes");
   }
   if (new Set(f.limits.map((l) => l.value.id)).size !== f.limits.length) fail("Duplicate limit");
+  // The adverse scenario is a scenario only when some limit applies there.
+  if (f.limits.every((l) => l.value.adverse === null)) fail("At least one limit must apply in the adverse case");
 });
 export type DebtCapacityFacts = z.infer<typeof debtCapacityFactsSchema>;
 
@@ -94,6 +98,8 @@ const scenarioId = (capacityId: string, caseId: string, stressed: boolean) => ca
  * EBITDA the stress names. The new debt finances the case's use and is drawn as it is spent; its
  * interest uses the annual average-balance approximation the method declares. Every reason states
  * the origin of the number. Deterministic; nothing is calculated here. */
+/** The size of one working basis. */
+export const maxCapacityHypotheses = 256;
 export function proposeDebtCapacityHypotheses(raw: unknown): ProposedHypothesis[] {
   const f = debtCapacityFactsSchema.parse(raw);
   const out: ProposedHypothesis[] = [], n = f.periodEnds.length, endDate = f.periodEnds[n - 1]!;
@@ -192,5 +198,7 @@ export function proposeDebtCapacityHypotheses(raw: unknown): ProposedHypothesis[
       }
     }
   }
+  // A working basis holds at most 256 premises; a set larger than that is refused here, not at confirmation.
+  if (out.length > maxCapacityHypotheses) throw new Error("capacity_premises_exceed_basis");
   return out;
 }

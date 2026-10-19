@@ -26,7 +26,7 @@ export async function CapacityResult({locale, view}: {locale: string; view: Debt
         <tbody>{view.capacity.map((c) => <tr key={c.caseId} className={c.caseId === view.framing.informedCaseId ? "investment-base" : undefined}>
           <th scope="row">{caseLabel(c.caseId)}</th>
           <td>{mi(c.capacity)}{c.calibrationOnly ? <small>{t("calibrationOnly")}</small> : null}{c.boundedBySearchDomain ? <small>{t("bounded")}</small> : null}</td>
-          <td>{c.bindingLimitId ? <>{limitLabel(c.caseId, c.bindingLimitId)}<small>{t("bindingWhen", {year: year(c.bindingDate), scenario: t(`scenarios.${c.bindingScenario ?? "base"}`)})}</small></> : "·"}</td>
+          <td>{c.bindingLimitId ? <>{limitLabel(c.caseId, c.bindingLimitId)}<small>{c.bindingScenario ? t("bindingWhen", {year: year(c.bindingDate), scenario: t(`scenarios.${c.bindingScenario}`)}) : t("bindingIn", {year: year(c.bindingDate)})}</small></> : "·"}</td>
         </tr>)}</tbody>
       </table>
     </div>

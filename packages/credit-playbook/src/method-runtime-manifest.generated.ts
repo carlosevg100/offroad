@@ -9043,7 +9043,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/artifact-protocol.ts",
-              "hash": "41f23d3307216842bae0d207879e9cedd02b0adbf21b814ab5f8fe2d590a3766"
+              "hash": "be95fb7826d28a2f6b9480b2c109615a3bc8af5cb6d82bac0a407ec996ce4842"
             },
             {
               "path": "packages/domain-contracts/src/artifact-roundtrip.ts",
@@ -9479,7 +9479,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/debt-capacity-premises.ts",
-              "hash": "cc00d11a3ecae309ef399d7bcbef3f97c685b6822bda54dfec3c66d3a3c3cbde"
+              "hash": "4ab4b9403d1e78feca5468140d7e11be735822cb475ea3f739a6f8b65acc6680"
             },
             {
               "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
@@ -9834,7 +9834,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "dc24a9502018d1ac1b13c631d67e3d3d342f9e3d13ad4c41ebb88839949e143d"
+          "hash": "80d13667945369efa1bd37af2b6571acf89fcf6d7ed8b0ecc54be4144a6e48c2"
         },
         "evidence": [
           {
@@ -9860,7 +9860,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "dfed047dc9550393d0a6aad9c10e38944cfaa04d00339e1b2ade8de2c88f80c6"
+    "manifestHash": "a53a765b332c930d16beeaf161ded2d92863694b9a94968483b5ca62288ece3a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -16388,7 +16388,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/artifact-protocol.ts",
-              "hash": "41f23d3307216842bae0d207879e9cedd02b0adbf21b814ab5f8fe2d590a3766"
+              "hash": "be95fb7826d28a2f6b9480b2c109615a3bc8af5cb6d82bac0a407ec996ce4842"
             },
             {
               "path": "packages/domain-contracts/src/artifact-roundtrip.ts",
@@ -16824,7 +16824,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/debt-capacity-premises.ts",
-              "hash": "cc00d11a3ecae309ef399d7bcbef3f97c685b6822bda54dfec3c66d3a3c3cbde"
+              "hash": "4ab4b9403d1e78feca5468140d7e11be735822cb475ea3f739a6f8b65acc6680"
             },
             {
               "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
@@ -17179,7 +17179,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "ee356c525a0b4f14af0e97be0177965ecd436537a481375613df985b16cd9f2e"
+          "hash": "0acde282d84ecb79131a41f0b43178cfc1c507ee82303be44bbb09f1dbed4470"
         },
         "evidence": [
           {
@@ -17205,7 +17205,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "61c8e19692577260b5b610b39c45ddf1a480dea3eb3dcf9c81764808cbdab2b2"
+    "manifestHash": "105777ceb228c1fc595db08de630d1aea68689c7d51d23fb8b4fe0e903fd9c2a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -21636,7 +21636,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/artifact-protocol.ts",
-              "hash": "41f23d3307216842bae0d207879e9cedd02b0adbf21b814ab5f8fe2d590a3766"
+              "hash": "be95fb7826d28a2f6b9480b2c109615a3bc8af5cb6d82bac0a407ec996ce4842"
             },
             {
               "path": "packages/domain-contracts/src/artifact-roundtrip.ts",
@@ -22076,7 +22076,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/debt-capacity-premises.ts",
-              "hash": "cc00d11a3ecae309ef399d7bcbef3f97c685b6822bda54dfec3c66d3a3c3cbde"
+              "hash": "4ab4b9403d1e78feca5468140d7e11be735822cb475ea3f739a6f8b65acc6680"
             },
             {
               "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
@@ -22427,7 +22427,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "272aa8b95981711c5da490a8e178052ac103507ed93bcfc65cc24cb12538a801"
+          "hash": "70a167a6be8adcdcb8f76361457311cdd3a644c76a49c528d4502c92d43e441f"
         },
         "evidence": [
           {
@@ -22453,7 +22453,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "ad7384a17127f26c012824448454fee16dd08738bd001c9dbe585b92f64ef609"
+    "manifestHash": "b22f90f2343f08179a3814f5af149fd26258a0580015f573081745dc427c98f7"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -30646,7 +30646,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/artifact-protocol.ts",
-              "hash": "41f23d3307216842bae0d207879e9cedd02b0adbf21b814ab5f8fe2d590a3766"
+              "hash": "be95fb7826d28a2f6b9480b2c109615a3bc8af5cb6d82bac0a407ec996ce4842"
             },
             {
               "path": "packages/domain-contracts/src/artifact-roundtrip.ts",
@@ -31086,7 +31086,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/debt-capacity-premises.ts",
-              "hash": "cc00d11a3ecae309ef399d7bcbef3f97c685b6822bda54dfec3c66d3a3c3cbde"
+              "hash": "4ab4b9403d1e78feca5468140d7e11be735822cb475ea3f739a6f8b65acc6680"
             },
             {
               "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
@@ -31449,7 +31449,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "832ce08d03c3dfbb125a32112a5f1b95fd603fbb23ecc4ec7548b5d06e58abca"
+          "hash": "efa3667e569d0b30437a7796e63fee6e9609c0e3f6b310d7b6d97d0d869c8ba0"
         },
         "evidence": [
           {
@@ -31475,7 +31475,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "820060711134f9fbf6e125fc4f02e5433878494dab4709ffadbb3c9936651f0d"
+    "manifestHash": "c0bdc2030ddd88039b8a33760f6a7959b45eae6e8104c90cfb7244e08d77507f"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -54447,7 +54447,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/artifact-protocol.ts",
-              "hash": "41f23d3307216842bae0d207879e9cedd02b0adbf21b814ab5f8fe2d590a3766"
+              "hash": "be95fb7826d28a2f6b9480b2c109615a3bc8af5cb6d82bac0a407ec996ce4842"
             },
             {
               "path": "packages/domain-contracts/src/artifact-roundtrip.ts",
@@ -54907,7 +54907,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/debt-capacity-premises.ts",
-              "hash": "cc00d11a3ecae309ef399d7bcbef3f97c685b6822bda54dfec3c66d3a3c3cbde"
+              "hash": "4ab4b9403d1e78feca5468140d7e11be735822cb475ea3f739a6f8b65acc6680"
             },
             {
               "path": "packages/financial-model/src/debt-capacity-runs.test-support.ts",
@@ -55254,7 +55254,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "1d761dd543d04809015f07564e01291c25e2ef5be05d8b6c40a96ea67242ce0b"
+          "hash": "3f101d2a338b6d73ae4d9f80bb58b3264aa24141a3de660cd19d267cfa7bef66"
         },
         "evidence": [
           {
@@ -55280,7 +55280,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "bda13e4457b674e186e9188d19ae5a32caf16a1ac6ece2027ca5eb77644b427e"
+    "manifestHash": "dd3bf81c9c3818e699bd5054a7a37dda0a01e81e12ab649a5bed8afd9291d769"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

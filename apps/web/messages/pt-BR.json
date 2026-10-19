@@ -2834,7 +2834,9 @@
           "reciprocity": "Reciprocidade com o banco",
           "tax_law_inference": "Interpretação da legislação tributária",
           "method_release": "Liberação do método"
-        }
+        },
+        "noneCompleteViableEverywhere": "Nenhuma proposta com leitura completa é viável em todos os cenários.",
+        "incomplete": "Sem leitura completa por lacuna: {list}."
       },
       "capacity": {
         "title": "Capacidade de dívida nova",
@@ -2879,7 +2881,9 @@
           "intraperiod_cash_certification": "Certificação do caixa dentro de cada período",
           "investment_return": "Retorno do investimento financiado",
           "method_release": "Liberação do método"
-        }
+        },
+        "pays": "Paga",
+        "bindingIn": "em {year}"
       }
     },
     "overview": "Visão geral",

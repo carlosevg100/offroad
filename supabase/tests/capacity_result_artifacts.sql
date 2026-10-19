@@ -18,6 +18,16 @@ begin
  raise notice 'PASS: the SQL mapping of the shared capacity packet equals the contract mapping';
 end $$;
 
+-- 1b. Without the review the packet does not say which scenario binds, so no scenario is named.
+do $$
+declare got jsonb:=private.execution_result_capacity_blocks_v1(jsonb_set(current_setting('test.capacity.packet')::jsonb,'{cases,1,review}','null'));
+begin
+ if (select r->'bindingScenario' from jsonb_array_elements(got->2->'content'->'rows') r where r->>'caseId'='phased')<>'null'::jsonb
+  or (select r->>'bindingScenario' from jsonb_array_elements(got->2->'content'->'rows') r where r->>'caseId'='informed')<>'adverse'
+ then raise exception 'binding scenario named without the review: %',got->2; end if;
+ raise notice 'PASS: the binding scenario is named only from the review';
+end $$;
+
 -- 2. Anything but a capacity packet is refused by the mapping.
 do $$
 begin

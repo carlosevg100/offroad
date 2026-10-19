@@ -10,10 +10,13 @@ export const debtCapacityPremiseMethod = {methodId: "assess-debt-capacity", meth
 const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
 
-/** How much new debt fits: the turn may propose the capacity analysis's premises. */
-export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean): boolean {
+/** How much new debt fits: the turn may propose the capacity analysis's premises. A message that
+ * answers with figures right after a capacity question continues it, so the data asked for in one
+ * batch reaches the extraction without the person repeating the question. */
+export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
   const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
-  return kind !== "factual_question" && capacityCue.test(fold(message));
+  if (kind !== "factual_question" && capacityCue.test(fold(message))) return true;
+  return /\d/.test(message) && earlierUserMessages.slice(-2).some((m) => capacityCue.test(fold(m)));
 }
 
 const origin = z.enum(["informed", "document"]);
@@ -98,6 +101,8 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
   const curve = indexer?.value === "CDI" ? need("indexCurve", e.indexCurve) : null;
   if (!e.uses.length) missing.push("uses");
   if (e.uses.filter((u) => u.role === "informed").length > 1) missing.push("uses.informed");
+  // One informed use and at most one alternative fit in a working basis; a third is asked to be set aside.
+  if (e.uses.length > 2) missing.push("uses.atMostTwo");
   const uses = e.uses.map((u, n) => ({u, years: need(`uses.${n + 1}.years`, u.years)}));
   if (missing.length || !situation || !projection || !opening || !tax || !excludes || !limit || !debt || !finalDebt || !indexer || !first || !count || !rateFact || (indexer.value === "CDI" && !curve)) return {status: "missing", missing: [...new Set(missing)]};
   const ends = projection.value.map((p) => p.yearEnd);
@@ -110,6 +115,9 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
   for (const [n, {u, years}] of uses.entries()) {
     const rows = byYear(years!.value);
     if ([...rows.keys()].some((d) => !ends.includes(d))) return {status: "missing", missing: [`uses.${n + 1}.years`]};
+    // Before its first year the use has not started; from then to the end of the projection every year is stated.
+    const start = ends.findIndex((d) => rows.has(d));
+    if (start < 0 || ends.slice(start).some((d) => !rows.has(d))) return {status: "missing", missing: [`uses.${n + 1}.years`]};
     if (u.role === "alternative" && !u.change) return {status: "missing", missing: [`uses.${n + 1}.change`]};
     const col = (k: "capex" | "ebitda" | "depreciation" | "maintenanceCapex" | "workingCapitalInvestment") => ends.map((d) => rows.get(d)?.[k] ?? "0");
     cases.push({value: {id: u.role === "informed" ? "informed" : key(u.label, n), role: u.role, label: u.label, changes: u.role === "informed" ? [] : [u.change!],
@@ -118,10 +126,17 @@ export function completeDebtCapacityFacts(input: {extraction: DebtCapacityExtrac
   }
   if (!cases.some((c) => c.value.role === "informed")) cases[0]!.value = {...cases[0]!.value, role: "informed", id: "informed", changes: []};
   // Rate by year and equal annual repayments from the first repayment year.
-  const indexOf = (y: number) => {const c = [...curve!.value].sort((a, b) => a.year - b.year); return new Exact((c.filter((x) => x.year <= y).at(-1) ?? c[0]!).annualRate);};
+  // The index of a year is the stated one, or the last stated before it carried forward (a house premise);
+  // a year before the first stated index is a question, never filled with a later rate.
+  const sortedCurve = curve ? [...curve.value].sort((a, b) => a.year - b.year) : [];
+  if (curve && ends.some((d) => Number(d.slice(0, 4)) < sortedCurve[0]!.year)) return {status: "missing", missing: ["indexCurve"]};
+  if (curve && ends.some((d) => Number(d.slice(0, 4)) > sortedCurve.at(-1)!.year)) used.push("indexCarriedForward");
+  const indexOf = (y: number) => new Exact(sortedCurve.filter((x) => x.year <= y).at(-1)!.annualRate);
   const rate = ends.map((d) => s20(indexer.value === "fixed" ? new Exact(rateFact.value as number) : indexOf(Number(d.slice(0, 4))).plus(rateFact.value as number)));
-  const firstYear = first.value, lastYear = firstYear + count.value - 1, each = new Exact(1).div(count.value);
-  const shares = ends.map((d) => {const y = Number(d.slice(0, 4)); return y >= firstYear && y <= lastYear ? s20(each) : "0";});
+  // Equal annual repayments; the last one closes the principal exactly, so the shares add up to one.
+  const firstYear = first.value, lastYear = firstYear + count.value - 1, each = new Exact(s20(new Exact(1).div(count.value)));
+  const last = new Exact(1).minus(each.times(count.value - 1));
+  const shares = ends.map((d) => {const y = Number(d.slice(0, 4)); return y < firstYear || y > lastYear ? "0" : y === lastYear ? s20(last) : each.toFixed();});
   const structureSources = [indexer, rateFact, first, count, ...(curve ? [curve] : [])];
   const covenant = new Exact(limit.value), headroom = new Exact("0.5");
   used.push("covenantHeadroom", "marketLeverage", "interestCoverage", "stress", "monetaryQuantum");
@@ -181,7 +196,7 @@ export async function proposeDebtCapacityPremisesForTurn(input: {
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }): Promise<CapacityTurnPremises | null> {
-  if (!input.projectId || !shouldProposeDebtCapacityPremises(input.message, input.hasAttachments)) return null;
+  if (!input.projectId || !shouldProposeDebtCapacityPremises(input.message, input.hasAttachments, input.recentUserMessages)) return null;
   try {
     const documentFields = await input.loadEvidence();
     const extraction = debtCapacityExtractionSchema.parse(await input.extract(JSON.stringify({

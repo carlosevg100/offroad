@@ -18,7 +18,7 @@ vi.mock("next-intl/server", () => ({
     const catalog = resolve((locale === "en-US" ? en : pt) as Catalog, namespace) as Catalog;
     const t = (key: string, values?: Record<string, string>) => {
       const raw = resolve(catalog, key);
-      if (typeof raw !== "string") return key;
+      if (typeof raw !== "string") throw new Error(`missing message ${namespace}.${key}`);
       return values ? raw.replace(/\{(\w+)\}/g, (_match, name: string) => String(values[name])) : raw;
     };
     t.has = (key: string) => typeof resolve(catalog, key) === "string";
@@ -45,6 +45,18 @@ describe("comparison result", () => {
   });
 });
 
+describe("comparison result with gaps", () => {
+  it("names offers without a complete reading apart instead of calling them unviable", async () => {
+    const id = comparison.proposals[0]!.proposalId;
+    const view = {...comparison, conclusion: {...comparison.conclusion, viableInEveryCaseProposalIds: [],
+      cases: comparison.conclusion.cases.map((c, n) => n ? c : {...c, incompleteProposalIds: [id]})}};
+    const html = renderToStaticMarkup(await ComparisonResult({locale: "pt-BR", view}));
+    expect(html).toContain(pt.App.workExecutions.comparison.noneCompleteViableEverywhere);
+    expect(html).toContain("Sem leitura completa por lacuna: " + comparison.proposals[0]!.label);
+    expect(html).not.toContain(pt.App.workExecutions.comparison.noneViableEverywhere);
+  });
+});
+
 describe("capacity result", () => {
   it("shows the capacity per schedule with the binding limit, every limit, the amount asked and the plan", async () => {
     expect(capacity).not.toBeNull();
@@ -54,6 +66,12 @@ describe("capacity result", () => {
     expect(html).toContain(pt.App.workExecutions.capacity.byLimit);
     if (capacity.plan.length) expect(html).toContain(pt.App.workExecutions.capacity.plan);
     expect(html).not.toMatch(/scenarios\.|exclusions\.|columns\./);
+  });
+  it("names no binding scenario when the packet does not say it", async () => {
+    const view = {...capacity, capacity: capacity.capacity.map((c) => ({...c, bindingScenario: null}))};
+    const html = renderToStaticMarkup(await CapacityResult({locale: "pt-BR", view}));
+    expect(html).not.toContain("adverso</small>");
+    expect(html).toContain("em 2028");
   });
   it("speaks the viewer's locale", async () => {
     const html = renderToStaticMarkup(await CapacityResult({locale: "en-US", view: capacity}));

@@ -82,4 +82,34 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     if (d.status !== "complete") throw new Error("expected complete");
     expect(d.facts.limits.at(-1)!.value).toMatchObject({id: "minimum-cash", kind: "minimum_available_cash", base: M(15)});
   });
+  it("asks for a missing year of a use and an index before the first stated year, never filling them", () => {
+    const gap = c04Extraction(); gap.uses[0]!.years.value = gap.uses[0]!.years.value!.filter((r) => r.yearEnd !== "2029-12-31");
+    expect(completeDebtCapacityFacts({extraction: gap, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.1.years"]});
+    const tail = c04Extraction(); tail.uses[0]!.years.value!.pop();
+    expect(completeDebtCapacityFacts({extraction: tail, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.1.years"]});
+    const late = c04Extraction(); late.indexCurve.value = [{year: 2028, annualRate: 0.1275}];
+    expect(completeDebtCapacityFacts({extraction: late, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
+    const carried = c04Extraction(); carried.indexCurve.value = [{year: 2027, annualRate: 0.14}, {year: 2028, annualRate: 0.1275}];
+    const c = completeDebtCapacityFacts({extraction: carried, ids, currency: "BRL"});
+    if (c.status !== "complete") throw new Error("expected complete");
+    expect(c.housePremiseKeys).toContain("indexCarriedForward");
+  });
+  it("closes equal repayments exactly, so six annual parcels add up to one", () => {
+    const e = c04Extraction(); e.structure.firstRepaymentYear = informed(2027, "amortiza desde 2027"); e.structure.repayments = informed(6, "seis parcelas");
+    const c = completeDebtCapacityFacts({extraction: e, ids, currency: "BRL"});
+    if (c.status !== "complete") throw new Error(JSON.stringify(c));
+    const shares = c.facts.structure.value.amortizationShares;
+    expect(shares.reduce((t, x) => t.plus(x), new Decimal(0)).toFixed()).toBe("1");
+    expect(shares.filter((x) => x !== "0")).toHaveLength(6);
+  });
+  it("keeps one informed use and at most one alternative within a working basis", () => {
+    const e = c04Extraction(); e.uses.push({...e.uses[1]!, label: "Outra alternativa"});
+    expect(completeDebtCapacityFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["uses.atMostTwo"]});
+  });
+  it("continues a capacity question when the next message answers with figures", () => {
+    const earlier = ["Quanto de dívida cabe para a segunda linha?"];
+    expect(shouldProposeDebtCapacityPremises("A alíquota é 34%, covenant 3x e três parcelas a partir de 2030", false, earlier)).toBe(true);
+    expect(shouldProposeDebtCapacityPremises("Obrigado, vou pensar", false, earlier)).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("A alíquota é 34%", false, ["Qual o prazo da debênture?"])).toBe(false);
+  });
 });

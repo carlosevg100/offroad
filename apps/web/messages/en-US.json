@@ -2834,7 +2834,9 @@
           "reciprocity": "Reciprocity with the bank",
           "tax_law_inference": "Interpretation of tax law",
           "method_release": "Method release"
-        }
+        },
+        "noneCompleteViableEverywhere": "No offer with a complete reading is viable in every scenario.",
+        "incomplete": "Without a complete reading because of gaps: {list}."
       },
       "capacity": {
         "title": "New debt capacity",
@@ -2879,7 +2881,9 @@
           "intraperiod_cash_certification": "Certification of cash within each period",
           "investment_return": "Return of the financed investment",
           "method_release": "Method release"
-        }
+        },
+        "pays": "Pays",
+        "bindingIn": "in {year}"
       }
     },
     "overview": "Overview",

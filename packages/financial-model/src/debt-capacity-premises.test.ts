@@ -53,6 +53,15 @@ describe("C04 premises proposed from facts with origin, adopted, composed and me
     expect(() => proposeDebtCapacityHypotheses(over)).toThrow("Repayment shares");
     const nothing = auroraCapacityFacts(); nothing.cases[0]!.value.capex = nothing.cases[0]!.value.capex.map(() => "0");
     expect(() => proposeDebtCapacityHypotheses(nothing)).toThrow("needs a positive use");
+    const noAdverse = auroraCapacityFacts(); noAdverse.limits = noAdverse.limits.map((l) => ({...l, value: {...l.value, adverse: null}}));
+    expect(() => proposeDebtCapacityHypotheses(noAdverse)).toThrow("At least one limit must apply in the adverse case");
+    const three = auroraCapacityFacts(); three.cases.push({...three.cases[1]!, value: {...three.cases[1]!.value, id: "third"}});
+    expect(() => proposeDebtCapacityHypotheses(three)).toThrow();
+  });
+  it("fits two schedules with every limit in one working basis", () => {
+    const facts = auroraCapacityFacts();
+    facts.limits.push({value: {id: "minimum-cash", label: "Caixa mínimo", kind: "minimum_available_cash", base: "5", adverse: "5"}, origin: "informed", source: "conversa"});
+    expect(proposeDebtCapacityHypotheses(facts).length).toBeLessThanOrEqual(256);
   });
   it("leaves an unstated limit out and an absent operand as a named gap, never a default", () => {
     const facts = auroraCapacityFacts(); facts.requestedAmount = null;

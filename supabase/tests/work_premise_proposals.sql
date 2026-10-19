@@ -115,6 +115,12 @@ do $$ begin
   raise exception 'premise_context_crossed'; exception when check_violation then null; end;
  insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
   values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'assess-debt-capacity','2026.10.19-v2','prepare-capital-structure-decision','capacidade','{}','[{}]','{}',repeat('b',64));
+ -- Each proposal of the comparison or the capacity may have its own generation context, never the other's.
+ insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
+  values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'assess-debt-capacity','2026.10.19-v2','prepare-capital-structure-decision','capacidade:'||repeat('c',16),'{}','[{}]','{}',repeat('c',64));
+ begin insert into public.work_premise_proposals(organization_id,capital_project_id,intake_session_id,source_message_id,assistant_message_id,method_id,method_version,purpose,context_key,facts,hypotheses,summary,fingerprint)
+  values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000003',gen_random_uuid(),gen_random_uuid(),'compare-financing-proposals','2026.10.19-v2','prepare-capital-structure-decision','capacidade:'||repeat('c',16),'{}','[{}]','{}',repeat('c',64));
+  raise exception 'premise_context_crossed'; exception when check_violation then null; end;
 end $$;
 select 'work_premise_proposals' as test,'PASS' as result;
 rollback;
