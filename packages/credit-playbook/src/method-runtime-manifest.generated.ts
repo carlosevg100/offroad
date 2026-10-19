@@ -9102,6 +9102,10 @@ export const procedureBuildProvenance = [
               "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
             },
             {
+              "path": "packages/financial-core/src/business-day-calendar.ts",
+              "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+            },
+            {
               "path": "packages/financial-core/src/capital-period-cash.ts",
               "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
             },
@@ -9163,11 +9167,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+              "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
             },
             {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+              "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -9331,7 +9335,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+              "hash": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -9463,11 +9467,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+              "hash": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
               "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.ts",
+              "hash": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-contracts.ts",
@@ -9475,15 +9483,19 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/financing-comparison-packet.ts",
-              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+              "hash": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.ts",
+              "hash": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+              "hash": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
             },
             {
               "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+              "hash": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -9491,7 +9503,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
+              "hash": "93fb7a7db80e912954a8821ee95e1d9c06a70aca96f5893023746108d2af36c6"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -9778,7 +9790,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "3e7464ccb11ec429c300b5763a8fd94ff00c0341484b5beca77ae06633870f04"
+          "hash": "bd46e50e649bc3ffbef841592abfbbbe87f783e4484ba090bb58bc39aafcc0c2"
         },
         "evidence": [
           {
@@ -9804,7 +9816,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "308767445bf10920fc9163c16a1d5c12517709fd223798b3c85ed91a934fcee7"
+    "manifestHash": "13370cbe3df3648fabf33031bdeee0e812fb58b138eea64b173a4c8b5be97931"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -14762,6 +14774,10 @@ export const procedureBuildProvenance = [
               "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
             },
             {
+              "path": "packages/financial-core/src/business-day-calendar.ts",
+              "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+            },
+            {
               "path": "packages/financial-core/src/capital-period-cash.ts",
               "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
             },
@@ -14823,11 +14839,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+              "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
             },
             {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+              "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -14987,7 +15003,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+              "hash": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -15115,11 +15131,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+              "hash": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
               "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.ts",
+              "hash": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-contracts.ts",
@@ -15127,15 +15147,19 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/financing-comparison-packet.ts",
-              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+              "hash": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.ts",
+              "hash": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+              "hash": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
             },
             {
               "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+              "hash": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -15143,7 +15167,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
+              "hash": "93fb7a7db80e912954a8821ee95e1d9c06a70aca96f5893023746108d2af36c6"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -15422,12 +15446,12 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "b74bd4be168f1ad4097d742f24a18edc5087010e1f4cbbdce555c0e434f48c52"
+          "hash": "693bb721549b120cf28cc0f1ab415e2e614548461b7bf1bc361e9864f1730bdb"
         },
         "evidence": []
       }
     ],
-    "manifestHash": "da8b3006d3ac7c309dd6f769f825119642d131ca7a351df7bd34a82da99620d2"
+    "manifestHash": "d504bc30327fa86f674e03d613009e7af24ab335af96ea5e0d36be1d27c57340"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -23369,6 +23393,10 @@ export const procedureBuildProvenance = [
               "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
             },
             {
+              "path": "packages/financial-core/src/business-day-calendar.ts",
+              "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+            },
+            {
               "path": "packages/financial-core/src/capital-period-cash.ts",
               "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
             },
@@ -23430,11 +23458,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+              "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
             },
             {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+              "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -23594,7 +23622,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+              "hash": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -23722,11 +23750,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+              "hash": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
               "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.ts",
+              "hash": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-contracts.ts",
@@ -23734,15 +23766,19 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/financing-comparison-packet.ts",
-              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+              "hash": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.ts",
+              "hash": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+              "hash": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
             },
             {
               "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+              "hash": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -23750,7 +23786,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
+              "hash": "93fb7a7db80e912954a8821ee95e1d9c06a70aca96f5893023746108d2af36c6"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -24029,12 +24065,12 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "319f1f42e6aae97a7da87b57be3d9ca3055b3a9e7c75dd71d807eb486eca5101"
+          "hash": "c62652923fa7b0002846a4f174247f9882ebd7a4064ebb1e72fc9d25bc175139"
         },
         "evidence": []
       }
     ],
-    "manifestHash": "24bd2bf1f2c7d6c6461b07041668f07dcdba2583639ca7bdd965bf1ead2a22e6"
+    "manifestHash": "386ee7a68bc67d6a5d0095b9835c45ee9e9df3d430ea9125746c6f3965fb8d45"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -24045,7 +24081,7 @@ export const procedureBuildProvenance = [
     },
     "source": {
       "path": "capital/compare-financing-proposals.md",
-      "hash": "5497667d142e22c5897063232e550105257ec5f0ca7a83a98c7bda24f6abbf2c"
+      "hash": "91a83cba27da5880b5a20f6d4c36eb0df8cf59ca2b0dce3ef376b768eb1fdb88"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -24178,9 +24214,9 @@ export const procedureBuildProvenance = [
           "overridePoints": [],
           "evidence": [],
           "kind": "narrative",
-          "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO decisor precisa saber com quem fechar, em que termos e até quando, e o que pedir a cada contraparte antes de decidir. A resposta abre desfazendo o atalho do menor spread: diz qual é a mais barata de verdade, qual é a mais segura para fechar hoje e o que cada uma faz com o caixa da companhia.\n\nN2. Árvore de decisão\n- Proposta que deixa o caixa negativo, rompe covenant ou consome garantia acima da regra da companhia num caso adotado: sai antes da preferência, com o número que a elimina.\n- Proposta que só cabe com condição (caixa abaixo do mínimo da política, waiver de outro credor, aprovação pendente): continua na mesa e a condição vira pedido de negociação.\n- Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.\n- A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.\n- Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.\n- Ninguém se move até a validade: fechar com a proposta firme.\n\nN3. Suficiência por conclusão\n- Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.\n- Para dizer se cabe é necessária a projeção da companhia com a dívida vigente até o último vencimento relevante.\n- Para recomendar são necessários firmeza, validade e as condições de cada proposta; sem elas, a resposta compara e diz o que falta.\n- O resíduo é pedido em um lote, cada item com o motivo.\n\nN4. Voz e três níveis de afirmação\nFato (term sheet, contrato ou adoção), leitura (o que o número significa para a escolha) e recomendação (o que fazer e sob que condição) ficam separados. Números com origem: documento, premissa ou estimativa. Sem slogan, metáfora, veredito binário, certeza sobre o banco ou julgamento da intenção de uma contraparte.\n\nTemplate\nT1. Uma leitura útil, com evidência aprofundável\n1. Leitura: qual é a mais barata de verdade, qual é a mais segura para fechar hoje e por quê, em duas ou três frases.\n2. Custo: spread nominal contra custo efetivo pela vida de cada uma.\n3. Caixa: serviço da dívida por ano e menor caixa com cada uma, no base e no caso do banco.\n4. Garantias e covenants: quanto cada uma consome e quanta folga deixa na definição e na frequência dela.\n5. Firmeza e flexibilidade: aprovação, validade, pré-pagamento.\n6. O que eu faria: pedido a cada contraparte com o número que ele compra e a regra de decisão na data de validade.\n7. Ressalvas: projeção, firmeza, reciprocidade não valorada.\n\nT2. Peças\nQuadro normalizado por proposta (spread nominal, custo efetivo, vida média, serviço por ano, menor caixa no base e no estresse, covenant e folga, datas de teste, garantia e recebíveis livres, waiver, custo no horizonte). Gráfico do caixa por trimestre com uma proposta em foco, fundo branco, sem vermelho."
+          "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO decisor precisa saber com quem fechar, em que termos e até quando, e o que pedir a cada contraparte antes de decidir. A resposta abre desfazendo o atalho do menor spread: diz qual é a mais barata de verdade, qual é a mais segura para fechar hoje e o que cada uma faz com o caixa da companhia.\n\nN2. Árvore de decisão\n- Proposta que deixa o caixa negativo, rompe covenant ou consome garantia acima da regra da companhia num caso adotado: sai antes da preferência, com o número que a elimina.\n- Proposta que só cabe com condição (caixa abaixo do mínimo da política, waiver de outro credor, aprovação pendente): continua na mesa e a condição vira pedido de negociação.\n- Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.\n- A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.\n- Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.\n- Ninguém se move até a validade: fechar com a proposta firme se ela continuar viável no caso adotado de estresse e com waivers e condições precedentes obtidos ou com data; se não, renovar a validade ou voltar ao desenho da estrutura.\n\nN3. Suficiência por conclusão\n- Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.\n- Para dizer se cabe é necessária a projeção da companhia com a dívida vigente até o último vencimento relevante.\n- Para recomendar são necessários firmeza, validade e as condições de cada proposta; sem elas, a resposta compara e diz o que falta.\n- O resíduo é pedido em um lote, cada item com o motivo.\n\nN4. Voz e três níveis de afirmação\nFato (term sheet, contrato ou adoção), leitura (o que o número significa para a escolha) e recomendação (o que fazer e sob que condição) ficam separados. Números com origem: documento, premissa ou estimativa. Sem slogan, metáfora, veredito binário, certeza sobre o banco ou julgamento da intenção de uma contraparte.\n\nTemplate\nT1. Uma leitura útil, com evidência aprofundável\n1. Leitura: qual é a mais barata de verdade, qual é a mais segura para fechar hoje e por quê, em duas ou três frases.\n2. Custo: spread nominal contra custo efetivo pela vida de cada uma.\n3. Caixa: serviço da dívida por ano e menor caixa com cada uma, no base e no caso do banco.\n4. Garantias e covenants: quanto cada uma consome e quanta folga deixa na definição e na frequência dela.\n5. Firmeza e flexibilidade: aprovação, validade, pré-pagamento.\n6. O que eu faria: pedido a cada contraparte com o número que ele compra e a regra de decisão na data de validade.\n7. Ressalvas: projeção, firmeza, reciprocidade não valorada.\n\nT2. Peças\nQuadro normalizado por proposta (spread nominal, custo efetivo, vida média, serviço por ano, menor caixa no base e no estresse, covenant e folga, datas de teste, garantia e recebíveis livres, waiver, custo no horizonte). Gráfico do caixa por trimestre com uma proposta em foco, fundo branco, sem vermelho."
         },
-        "componentHash": "c9505c0056c389865ced0032ee0ab5ed3f13bead1284b052b2a10da17c510b81",
+        "componentHash": "c69d20847456a05ebb9197fda1eb0cb710e9caa5207eb1aeaafe4d42f556e2f5",
         "executor": null,
         "evidence": []
       },
@@ -25468,59 +25504,6 @@ export const procedureBuildProvenance = [
                                                 }
                                               }
                                             },
-                                            "indexationTreatment": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "decisionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  },
-                                                  "definitionVersionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "definitionKind": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "enum",
-                                                      "values": [
-                                                        "reported",
-                                                        "managerial",
-                                                        "contractual"
-                                                      ]
-                                                    }
-                                                  },
-                                                  "missingReason": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            },
                                             "couponTreatment": {
                                               "required": true,
                                               "value": {
@@ -25734,59 +25717,6 @@ export const procedureBuildProvenance = [
                                               }
                                             },
                                             "openingPrincipal": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "decisionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  },
-                                                  "definitionVersionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "definitionKind": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "enum",
-                                                      "values": [
-                                                        "reported",
-                                                        "managerial",
-                                                        "contractual"
-                                                      ]
-                                                    }
-                                                  },
-                                                  "missingReason": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            "indexationRates": {
                                               "required": true,
                                               "value": {
                                                 "type": "object",
@@ -26053,6 +25983,112 @@ export const procedureBuildProvenance = [
                                             },
                                             "repayAll": {
                                               "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationTreatment": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationRates": {
+                                              "required": false,
                                               "value": {
                                                 "type": "object",
                                                 "fields": {
@@ -26382,6 +26418,59 @@ export const procedureBuildProvenance = [
                                                 },
                                                 "deductible": {
                                                   "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "instrumentIds": {
+                                                  "required": false,
                                                   "value": {
                                                     "type": "object",
                                                     "fields": {
@@ -26575,59 +26664,6 @@ export const procedureBuildProvenance = [
                                                 }
                                               }
                                             },
-                                            "indexationTreatment": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "decisionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  },
-                                                  "definitionVersionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "definitionKind": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "enum",
-                                                      "values": [
-                                                        "reported",
-                                                        "managerial",
-                                                        "contractual"
-                                                      ]
-                                                    }
-                                                  },
-                                                  "missingReason": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            },
                                             "couponTreatment": {
                                               "required": true,
                                               "value": {
@@ -26841,59 +26877,6 @@ export const procedureBuildProvenance = [
                                               }
                                             },
                                             "openingPrincipal": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "decisionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  },
-                                                  "definitionVersionId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "definitionKind": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "enum",
-                                                      "values": [
-                                                        "reported",
-                                                        "managerial",
-                                                        "contractual"
-                                                      ]
-                                                    }
-                                                  },
-                                                  "missingReason": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "union",
-                                                      "variants": [
-                                                        {
-                                                          "type": "string"
-                                                        },
-                                                        {
-                                                          "type": "null"
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            },
-                                            "indexationRates": {
                                               "required": true,
                                               "value": {
                                                 "type": "object",
@@ -27160,6 +27143,112 @@ export const procedureBuildProvenance = [
                                             },
                                             "repayAll": {
                                               "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationTreatment": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexationRates": {
+                                              "required": false,
                                               "value": {
                                                 "type": "object",
                                                 "fields": {
@@ -27489,6 +27578,59 @@ export const procedureBuildProvenance = [
                                                 },
                                                 "deductible": {
                                                   "required": true,
+                                                  "value": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "decisionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      "definitionVersionId": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      },
+                                                      "definitionKind": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "enum",
+                                                          "values": [
+                                                            "reported",
+                                                            "managerial",
+                                                            "contractual"
+                                                          ]
+                                                        }
+                                                      },
+                                                      "missingReason": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "union",
+                                                          "variants": [
+                                                            {
+                                                              "type": "string"
+                                                            },
+                                                            {
+                                                              "type": "null"
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                "instrumentIds": {
+                                                  "required": false,
                                                   "value": {
                                                     "type": "object",
                                                     "fields": {
@@ -28669,6 +28811,332 @@ export const procedureBuildProvenance = [
                                                           "type": "null"
                                                         }
                                                       ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "drawDate": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "businessDays": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "chargesAfterHorizon": {
+                                              "required": false,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "chargeIds": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decisionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        },
+                                                        "definitionVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "definitionKind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "reported",
+                                                              "managerial",
+                                                              "contractual"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "missingReason": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "categories": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decisionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        },
+                                                        "definitionVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "definitionKind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "reported",
+                                                              "managerial",
+                                                              "contractual"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "missingReason": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "dates": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decisionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        },
+                                                        "definitionVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "definitionKind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "reported",
+                                                              "managerial",
+                                                              "contractual"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "missingReason": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "amounts": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decisionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        },
+                                                        "definitionVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "definitionKind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "reported",
+                                                              "managerial",
+                                                              "contractual"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "missingReason": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "union",
+                                                            "variants": [
+                                                              {
+                                                                "type": "string"
+                                                              },
+                                                              {
+                                                                "type": "null"
+                                                              }
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
                                                     }
                                                   }
                                                 }
@@ -31057,13 +31525,31 @@ export const procedureBuildProvenance = [
                                                                 }
                                                               }
                                                             },
-                                                            "costInventory": {
+                                                            "lowerSpread": {
                                                               "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "upperSpread": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "chargesAfterHorizon": {
+                                                              "required": false,
                                                               "value": {
                                                                 "type": "array",
                                                                 "items": {
                                                                   "type": "object",
                                                                   "fields": {
+                                                                    "id": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
                                                                     "category": {
                                                                       "required": true,
                                                                       "value": {
@@ -31076,19 +31562,13 @@ export const procedureBuildProvenance = [
                                                                         ]
                                                                       }
                                                                     },
-                                                                    "status": {
+                                                                    "date": {
                                                                       "required": true,
                                                                       "value": {
-                                                                        "type": "enum",
-                                                                        "values": [
-                                                                          "specified",
-                                                                          "zero",
-                                                                          "not_applicable",
-                                                                          "unknown"
-                                                                        ]
+                                                                        "type": "date"
                                                                       }
                                                                     },
-                                                                    "reason": {
+                                                                    "amount": {
                                                                       "required": true,
                                                                       "value": {
                                                                         "type": "string"
@@ -31096,18 +31576,6 @@ export const procedureBuildProvenance = [
                                                                     }
                                                                   }
                                                                 }
-                                                              }
-                                                            },
-                                                            "lowerSpread": {
-                                                              "required": true,
-                                                              "value": {
-                                                                "type": "string"
-                                                              }
-                                                            },
-                                                            "upperSpread": {
-                                                              "required": true,
-                                                              "value": {
-                                                                "type": "string"
                                                               }
                                                             }
                                                           }
@@ -31771,6 +32239,15 @@ export const procedureBuildProvenance = [
                                   }
                                 }
                               },
+                              "incompleteProposalIds": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
                               "exclusions": {
                                 "required": true,
                                 "value": {
@@ -32020,6 +32497,15 @@ export const procedureBuildProvenance = [
                                   }
                                 }
                               },
+                              "incompleteProposalIds": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
                               "viableProposalIds": {
                                 "required": true,
                                 "value": {
@@ -32233,7 +32719,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.19-v1"
           }
         },
-        "componentHash": "cd3a2af51bd41dc20db77c7ec24d9d6053253cf64aab5f84288d04509829d90e",
+        "componentHash": "d13c0899cbf2b46d780e05644cae993f6c4b186f795db0bb432a27e417fea310",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareFinancingComparisonPacket",
@@ -32836,6 +33322,14 @@ export const procedureBuildProvenance = [
               "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
             },
             {
+              "path": "packages/financial-core/src/business-day-calendar.test.ts",
+              "hash": "d9576772b77438c6b7e61fbdc2157d2241c3b8e7f441b1195242d30d84295298"
+            },
+            {
+              "path": "packages/financial-core/src/business-day-calendar.ts",
+              "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+            },
+            {
               "path": "packages/financial-core/src/capital-period-cash.ts",
               "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
             },
@@ -32897,15 +33391,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
-              "hash": "6c98e437bce75d8d2e634d6d2c0c06569fd1fb7a2c5d97a859de690acb6e9f9f"
+              "hash": "e2e852bea0274bac4d5dd041657b8e1dc912843baea637972777603870160b75"
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+              "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
             },
             {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+              "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.ts",
@@ -33021,7 +33515,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/contracts/financing-comparison-packet.json",
-              "hash": "c299b6ff0bc3399f2ae7685f893d76752d2e090f4711132726e166069421c4c3"
+              "hash": "0bc37cc67045b131f0a8841d712cab7786882e4c8ad8dbf4c932b52bb720842d"
             },
             {
               "path": "packages/financial-model/package.json",
@@ -33069,7 +33563,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+              "hash": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -33197,11 +33691,19 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+              "hash": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
               "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.test.ts",
+              "hash": "0689b486d8b5841d0706135a55edfc32c367f5fc0fec959c270e1f29a31d196e"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.ts",
+              "hash": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-contracts.ts",
@@ -33213,19 +33715,27 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/financing-comparison-packet.ts",
-              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+              "hash": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.test.ts",
+              "hash": "e7c0ae3bfabbeabd23b6db7b0a4386a766e1c205c1809c691e4848239cfeae38"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.ts",
+              "hash": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+              "hash": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
-              "hash": "2dafbca0ecc4cd0c024d91b1438f638eb73bfe7c280c009c2f86d579fe840c5f"
+              "hash": "46c522f4473256fe29181e5483b36d083661acebaaa156c05be7d2f3b3922384"
             },
             {
               "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+              "hash": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -33233,7 +33743,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
+              "hash": "93fb7a7db80e912954a8821ee95e1d9c06a70aca96f5893023746108d2af36c6"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -33512,25 +34022,25 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "16b4958de153035a34b70aa27eaf01eded31df4e16bd4cb2d09bb7d8a73a9f94"
+          "hash": "10d6f8e54793d95caa2a726edecb64bee60cd5f4adf70f70ed83539a9dbfc501"
         },
         "evidence": [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
-            "hash": "953c866d1b9e9d2504a89222e8eefc54f5ed6bc7c001d8c11292965a14c292db"
+            "hash": "2061d43d8fd2c6002338f8bb792796fe52339f0daa92cfd144e6e4b37bc042a9"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-            "hash": "d9c4348c65cb5dacf335a4170748425781ac5f8ec74e52c946f16cf063a3db94"
+            "hash": "f1afe4aec621c9303e30ef591f7c2b5b0339d5933b0c6d7ecae525201da0d70a"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
-            "hash": "777ca691e1f9818cd105ddba7b033447ef7808c085eb721cf92588956f3cc098"
+            "hash": "4544536470f44c7e4fea5b6654d88ff6e977b4b3ebc9ae0ec546937e8150dc6b"
           }
         ]
       }
     ],
-    "manifestHash": "803efdbe96c57d9d7be8274a7a19b094634d3b310e37f34570ad7799a4962521"
+    "manifestHash": "69dce1fe779bc3ca89470251162303e0c527e0f57cf76320630378847c6c37a0"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -56561,6 +57071,10 @@ export const procedureBuildProvenance = [
               "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
             },
             {
+              "path": "packages/financial-core/src/business-day-calendar.ts",
+              "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+            },
+            {
               "path": "packages/financial-core/src/capital-period-cash.ts",
               "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
             },
@@ -56622,11 +57136,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-              "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+              "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
             },
             {
               "path": "packages/financial-core/src/index.ts",
-              "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+              "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
             },
             {
               "path": "packages/financial-core/src/indexed-contract-events.test.ts",
@@ -56790,7 +57304,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/adopted-financing-comparison.ts",
-              "hash": "a3cd1736adcb8ac2fd3932e3d3e6b76369bf4c4510a90bc1aa5e8a6244012813"
+              "hash": "b24c3db78b8dcf0f1a7e8bef204c46bd8a72c479e04d8fc4381f971c97716edc"
             },
             {
               "path": "packages/financial-model/src/adopted-financing-costs.ts",
@@ -56946,11 +57460,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/ficha-calculation-results.ts",
-              "hash": "09fb58f1238731c585dfeed63b95e2ecb338df3d95b9ec3f287bb563d150e889"
+              "hash": "080f01fcbdc7e7c7028fee6b7ad936bc6a7a0a0db29a170c9338f0e4930f2b66"
             },
             {
               "path": "packages/financial-model/src/ficha-executor-contracts.ts",
               "hash": "863a9db30f29a7dec4967a683130393da8e694807ee106416b741b2148e4ee03"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-composer.ts",
+              "hash": "6836dab6e84956c1737eb5e76b94dc8bb5143d50cc7f2512be08b2cb5f7d36ff"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-contracts.ts",
@@ -56958,15 +57476,19 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/financing-comparison-packet.ts",
-              "hash": "e8f82ce0e90309bb316be6e21775c1b95878e40117be7ccbde130c23fea92ed3"
+              "hash": "af27a37a56ce5d33b76e9b8fc3709e616625cfa5f0e9995b8c35b0afc0c02c65"
+            },
+            {
+              "path": "packages/financial-model/src/financing-comparison-premises.ts",
+              "hash": "bee5c7f21b3f5bfd8643ea35f697dcb19c0cbb2d3aa375591c65e7bdbf2aede6"
             },
             {
               "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-              "hash": "729dc981188bf2025e3073e6814cfd4abbf79556abe82b70336f3266c98735ce"
+              "hash": "9ec6fad2639d45be61de1c700f9e056ba7b95a71094106bdc3dac7777180eb77"
             },
             {
               "path": "packages/financial-model/src/financing-comparison.test-support.ts",
-              "hash": "38cecc1d235cfd114216fd4ef75cbab194fb70e2f72b0e0c42fe6eb1afafda57"
+              "hash": "9d700a1849bd8e37990ead77cd04b00de61a2d95bfc9094f59a1035b9ac1e5ba"
             },
             {
               "path": "packages/financial-model/src/governed-workbook.ts",
@@ -56974,7 +57496,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/index.ts",
-              "hash": "3ccf4cc6613b74af06e1154107ca59b7282b1b3a8cda150404dc25868a2dac44"
+              "hash": "93fb7a7db80e912954a8821ee95e1d9c06a70aca96f5893023746108d2af36c6"
             },
             {
               "path": "packages/financial-model/src/institutional-assumption-answer.ts",
@@ -57253,7 +57775,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "da0e90b1e6e7a2b2faedd318f979b8fd4f212a5d09b2ef67b310a918d45754d0"
+          "hash": "227c96f170792fc2ef0afe31c6b9505dc5eb1085fd7a695aac798bcba36bd00f"
         },
         "evidence": [
           {
@@ -57279,7 +57801,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "f3eed683005ac8e383279dbdbca7f5cd1763ad35da82f04f2a132805291bd4bf"
+    "manifestHash": "b46479de8f022770ee04f2517a54b8d3d8e4ff7a7db67aee9f4252f25f041c57"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57343,7 +57865,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57351,7 +57873,7 @@ export const procedureBuildProvenance = [
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "b216a6f6b40881ed0ab9afeeb1f014c32f6d7e545b9efac0719e3a978a8dd431"
+    "manifestHash": "4b276ecef0320ce497fdc7a072c2fde8ec7bf79f4976e6f69ab78601ccb383cb"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57415,7 +57937,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57423,7 +57945,7 @@ export const procedureBuildProvenance = [
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "ae2e1a374f6817befba011aac6eb707160dfefe7eb641a531a8b01008df2ed83"
+    "manifestHash": "cab00797750e10b5dfdd683106bc9e74599f50b5ee3abd6c5238b55b6346a229"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57487,7 +58009,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57495,7 +58017,7 @@ export const procedureBuildProvenance = [
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "56a1e38e79eb4638db4b1c8fe6c5f364eff62a3cffb2cb0cb66d39d1674338d8"
+    "manifestHash": "0d57b55141cba9f402879e9cb5b7225338a3fe0155f4b8835a4fce07b62a1cd5"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57559,7 +58081,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57567,7 +58089,7 @@ export const procedureBuildProvenance = [
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "47bc2b4ae6a6707a5ad55e6b40563a684e02bdf36cf52c67eecb239a4a0a96d2"
+    "manifestHash": "90f5e279a69002c598c7bf19ee63b2f7430d8cb607eed53d20b6ed4608124966"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57631,7 +58153,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57639,7 +58161,7 @@ export const procedureBuildProvenance = [
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "5993bc37c93adf59de5d991ffa276ea578507795a0fa6a272edd09cad4a2ba84"
+    "manifestHash": "922dab17983a5fe3f94ad28087996b9042b13bd8b5910ea7b0fd98b885ca7c69"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57703,7 +58225,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57711,7 +58233,7 @@ export const procedureBuildProvenance = [
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "198a751df11110a9585f81ef5b22748955a174d4656eafdee3b96f36fcb47ebc"
+    "manifestHash": "b6b8797b1025c87a0543ca3c7993316817ee630302d8db34699764528a925c0a"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -57859,7 +58381,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57867,7 +58389,7 @@ export const procedureBuildProvenance = [
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "113740989cb9abdcf9bb5bebe3fa2535f533984b0ab0dcefc99d541df8680842"
+    "manifestHash": "c65a1e301243725aa0dbf3b5687098a28d0405eec46268970d4aa3d8567fb8a1"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -57931,7 +58453,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -57939,7 +58461,7 @@ export const procedureBuildProvenance = [
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "2bc18047bba5d0a41bc9dd1af3b08140c662d6075b260d5c2c3d84823a42b3d3"
+    "manifestHash": "ce8c4d2028178d428a35034c555e30fcb7dd452c9f3a4dcef5ddeb5642d63772"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -58003,7 +58525,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -58011,7 +58533,7 @@ export const procedureBuildProvenance = [
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "5767df8633a055a4743396c7ade437442382ca36fe62d67b14122a45e44f6acd"
+    "manifestHash": "730a690c728881f2a458212abce25d68479ffb9b6bb58e07975bd32edb507c05"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -58075,7 +58597,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22"
+      "sourceClosureHash": "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1"
     },
     "evidence": [
       {
@@ -58083,12 +58605,12 @@ export const procedureBuildProvenance = [
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "6e23acf09de374da73e4056e9c2db1a82ea38da927f14f39c028038c1fdbd05f"
+    "manifestHash": "cae47919ddb0c332e0dadbc360b04f54a5144fe0e822563efb086e3c3223ddf0"
   }
 ] as const;
 
 export const procedureExecutorSourceClosures = {
-  "c01a6c1d0166439d75d802bd0bc9a11dab76fc1fcff2753b908f45fc87c60b22": [
+  "33e7eee2bf32215db06acc26f1c224897ffab6c1401f8e5169f8f72f624416a1": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "0f5f1ce7ae6f0ebb97b751c230cd6a3799abb49b5620c73454a78e90d09e7dc1"
@@ -58534,6 +59056,10 @@ export const procedureExecutorSourceClosures = {
       "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
     },
     {
+      "path": "packages/financial-core/src/business-day-calendar.ts",
+      "hash": "0f2a9b901c7a345f9b3bb16e425497df461a3e052cbcd43359f76173f0d5253b"
+    },
+    {
       "path": "packages/financial-core/src/capital-period-cash.ts",
       "hash": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
     },
@@ -58595,11 +59121,11 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-      "hash": "4b00213372122dc6719c759f66fb91ec36dd513aef364d14f007ef9751083fca"
+      "hash": "a96b09eba4aaf489b2c9fe0e234435a0bd3216b0791680789856670e255cd2c3"
     },
     {
       "path": "packages/financial-core/src/index.ts",
-      "hash": "ad0907836de97fa5ef8208e8628efe7369594b4db5652276d1755a0d516cd1a5"
+      "hash": "365f226ea53c382c210bf8a583ffbaf639ebd919d8a45d5d2e033f599d29545f"
     },
     {
       "path": "packages/financial-core/src/indexed-contract-events.ts",

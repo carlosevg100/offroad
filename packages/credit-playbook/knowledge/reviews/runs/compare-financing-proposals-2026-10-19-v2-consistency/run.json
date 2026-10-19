@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "compare-financing-proposals-2026-10-19-v2-consistency",
+  "kind": "consistency",
+  "humanApproval": false,
+  "method": {
+    "id": "compare-financing-proposals",
+    "version": "2026.10.19-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareFinancingComparisonPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/financing-comparison-runs.test-support.ts",
+    "exportName": "buildFinancingComparisonRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-19T13:38:58.966Z",
+    "finishedAt": "2026-10-19T13:39:43.915Z",
+    "commit": "03d31728b3246db2af7e05eab15c1bc994392355"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "fixture-1-repeat-1",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "a6bc0bba6ee6cd6a95fc2f5b32826da0a4e5a055dbab7d0344af107493a868d6",
+      "outputFingerprint": "2d31379dbb48faa2999acfe7bc859163568f383c752a57207964bbb90ba937b4",
+      "passed": true
+    },
+    {
+      "id": "fixture-1-repeat-2",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "a6bc0bba6ee6cd6a95fc2f5b32826da0a4e5a055dbab7d0344af107493a868d6",
+      "outputFingerprint": "2d31379dbb48faa2999acfe7bc859163568f383c752a57207964bbb90ba937b4",
+      "passed": true
+    },
+    {
+      "id": "fixture-1-repeat-3",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "a6bc0bba6ee6cd6a95fc2f5b32826da0a4e5a055dbab7d0344af107493a868d6",
+      "outputFingerprint": "2d31379dbb48faa2999acfe7bc859163568f383c752a57207964bbb90ba937b4",
+      "passed": true
+    },
+    {
+      "id": "fixture-2-repeat-1",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "d2ef66b87827a31e3e511b12826ea97980d2aed54ddae2463d383b221c743cc7",
+      "outputFingerprint": "fb4bfad528169ff6e77866e5998e618060de4865169467f1219b7072e5ebb45f",
+      "passed": true
+    },
+    {
+      "id": "fixture-2-repeat-2",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "d2ef66b87827a31e3e511b12826ea97980d2aed54ddae2463d383b221c743cc7",
+      "outputFingerprint": "fb4bfad528169ff6e77866e5998e618060de4865169467f1219b7072e5ebb45f",
+      "passed": true
+    },
+    {
+      "id": "fixture-2-repeat-3",
+      "expectation": "same inputs and versions reproduce all output bytes without mutation",
+      "observed": "same inputs and versions reproduce all output bytes without mutation",
+      "inputFingerprint": "d2ef66b87827a31e3e511b12826ea97980d2aed54ddae2463d383b221c743cc7",
+      "outputFingerprint": "fb4bfad528169ff6e77866e5998e618060de4865169467f1219b7072e5ebb45f",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "4a46cbbefba950015edc6de73b0c87b4efe2a5e88bb386b6db1bf05433adc43a",
+  "notes": "Synthetic deterministic execution calibrated on ficha C02. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
