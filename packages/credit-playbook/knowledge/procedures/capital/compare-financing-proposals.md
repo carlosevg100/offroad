@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: financing-comparison-packet.v1
 unit_test_files: [packages/financial-model/src/financing-comparison-premises.test.ts, packages/financial-model/src/financing-comparison-composer.test.ts, packages/financial-core/src/business-day-calendar.test.ts, packages/financial-model/src/financing-comparison-packet.test.ts, packages/financial-model/src/financing-comparison-runs.test.ts, packages/financial-model/src/adopted-financing-comparison.test.ts, packages/financial-core/src/financing-proposal-comparison.test.ts]
-gold_case_ids: [c02-three-proposals-independent-oracle, bank-stress-independent-oracle, lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days]
-adversarial_case_ids: [tampered-envelope, undeclared-inheritance, base-inherits, two-bases, silent-stress, different-proposals-across-cases, mixed-currency, accrued-coupon-without-payment-schedule, lifetime-and-company-views-disagree, charge-paid-to-unknown-instrument, business-day-convention-without-counts, free-result-in-request, fabricated-grant-in-result]
+gold_case_ids: [c02-three-proposals-independent-oracle, bank-stress-independent-oracle, lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, contract-dates-in-the-company-view]
+adversarial_case_ids: [tampered-envelope, undeclared-inheritance, base-inherits, two-bases, silent-stress, different-proposals-across-cases, mixed-currency, accrued-coupon-without-payment-schedule, repay-all-without-settling-the-accrued-coupon, draw-outside-the-horizon, charge-paid-to-unknown-instrument, business-day-convention-without-counts, free-result-in-request, fabricated-grant-in-result]
 e2e_scenario_ids: [domain:c02-three-proposals-independent-oracle]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -72,11 +72,12 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 # Cálculos determinísticos
 - Custo efetivo equivalente: spread anual que, composto com o indexador de cada período da curva datada, zera o valor presente dos fluxos líquidos da companhia (desembolso líquido de comissão e tributos retidos, juros, principal e todo encargo pago ao credor depois da entrada, como tarifa recorrente, na data em que é pago). Comissão e tributo entram uma única vez. Não é CET regulatório e não usa CDI constante nem custo de entrada dividido pelo prazo.
 - Datas: com datas contratuais (desembolso e dia de pagamento), a vida corre nessas datas, o CDI acumula por dias úteis do calendário nacional de feriados bancários sobre 252 e os períodos se partem em 1º de janeiro, onde a curva muda; sem elas, cada trimestre conta como um quarto de ano e o resultado é declarado como aproximação trimestral.
-- As duas visões da mesma proposta (pela vida e na projeção da companhia) descrevem o mesmo empréstimo: mesmo valor bruto, entrada retida igual à comissão e ao tributo do trimestre do desembolso, mesmo principal por trimestre e o mesmo acúmulo e pagamento de juros; divergência é recusada, nunca conciliada em silêncio.
+- Cada proposta é descrita uma única vez, pela vida da operação. A presença dela na companhia sai desse mesmo cronograma: o desembolso cai no período que contém a data, juros pagos e principal no período de cada pagamento, e os juros apropriados são cortados nos fins de período pela própria convenção (dias úteis do calendário nacional sobre 252, ou dias corridos sobre 365); uma fração de grade não se corta e precisa terminar nos fins de período. A entrada retida precisa ser igual à comissão e ao tributo do período do desembolso.
 - Vida média ponderada pelo principal nas datas efetivas de amortização.
 - Juros acumulados até o pagamento (periodicidade semestral, por exemplo) acumulam sobre principal mais juros não pagos somente quando a convenção adotada diz isso, e nunca viram principal.
 - Companhia com cada proposta: dívida vigente e pré-pagamentos decididos são comuns a todas; cada proposta traz seu instrumento e seus encargos (comissão, tributos, waiver que ela exige). Imposto caixa recalculado por período com os juros e os encargos dedutíveis daquela proposta; encargo não dedutível pela regra adotada afeta caixa e não base.
-- Menor caixa medido nos fechamentos de período a partir do desembolso; serviço da dívida por ano soma juros pagos e principal de todos os instrumentos.
+- Menor caixa medido nos fechamentos de período a partir do período do desembolso de cada proposta; serviço da dívida por ano soma juros pagos e principal de todos os instrumentos.
+- Quitação antecipada de dívida existente com juros acumulados precisa liquidar também os juros acumulados no mesmo período; o contrário é recusado.
 - Covenant projetado: dívida líquida (com o passivo de arrendamento quando a definição inclui) sobre o EBITDA dos últimos quatro trimestres (menos arrendamentos pagos quando a definição exclui IFRS 16), nas datas de teste de cada proposta, com o histórico necessário para completar a janela. Folga = limite menos índice.
 - Recebíveis livres depois = carteira livre antes menos a garantia consumida; garantia acima do limite da política adotada elimina.
 - Custo financeiro no horizonte = juros pagos mais todos os encargos no período projetado; não substitui o custo pela vida, porque a proposta que amortiza antes parece mais barata nesse recorte.
@@ -103,6 +104,7 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 - Julgamento sobre a intenção de um banco ou gerente; enviar pedido ou aceitar proposta sem autorização.
 
 # Stop conditions
+- Afirmações de viabilidade valem para o horizonte projetado; depois dele, só o custo pela vida está calculado, e a resposta diz isso.
 - Bloquear o número ou a conclusão que dependa de operando, data, definição, curva ou fonte ausente. Proposta com premissa faltante sai da comparação com a lacuna nomeada e as demais continuam comparadas; companhia ou dívida vigente incompleta bloqueia a comparação inteira.
 - Capacidade: uma base de trabalho guarda até 256 premissas adotadas. Rodada de negociação ou proposta adicional que não caiba é comparada em base própria, com as mesmas fontes, versões e contexto comum e com os termos alterados identificados; o limite nunca trunca premissa em silêncio.
 - Não declarar proposta aprovada, desembolso, waiver obtido ou refinanciamento garantido sem evidência correspondente.
@@ -123,7 +125,7 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 
 # Exemplos
 ## Bom
-- Três propostas de R$ 70 milhões: Itaú a CDI + 2,30, Santander a CDI + 2,55 e um fundo a CDI + 3,10. Somando comissão e IOF pela vida, as duas CCBs custam cerca de CDI + 4,0 e o fundo cerca de CDI + 3,55, sem IOF, na aproximação trimestral; nas datas do contrato, com dias úteis, ficam em CDI + 4,12, 4,09 e 3,57, e a leitura de que as CCBs custam praticamente o mesmo se mantém. O Itaú amortiza um ano antes, leva o serviço de 2028 a R$ 64 milhões contra R$ 56 a 57 milhões e deixa o caixa perto de R$ 13 milhões, abaixo do mínimo de R$ 15 milhões; no caso do banco, com EBITDA 15% menor, o caixa com o Itaú fica negativo. O fundo testa 2,75x a cada semestre e tem a menor folga no adverso. Usar os 15 dias do Santander, aprovado, para pedir ao fundo covenant de 3,0x anual e ao Itaú carência de 30 meses com cessão de 30%, que levaria o custo dele a cerca de CDI + 3,82 na aproximação trimestral.
+- Três propostas de R$ 70 milhões: Itaú a CDI + 2,30, Santander a CDI + 2,55 e um fundo a CDI + 3,10. Somando comissão e IOF pela vida, as duas CCBs custam cerca de CDI + 4,0 e o fundo cerca de CDI + 3,55, sem IOF, na aproximação trimestral; nas datas do contrato, com dias úteis, ficam em CDI + 4,12, 4,09 e 3,57, e a leitura de que as CCBs custam praticamente o mesmo se mantém. O caixa muda mais com as datas: na aproximação trimestral, com o Itaú, ele fica perto de R$ 13 milhões no fim de 2028 e negativo no caso do banco; nas datas do contrato fica perto de R$ 15,9 milhões e R$ 2,3 milhões. Com cronograma contratual, vale a leitura datada; o Itaú continua sendo o que mais aperta 2028. O Itaú amortiza um ano antes, leva o serviço de 2028 a R$ 64 milhões contra R$ 56 a 57 milhões e deixa o caixa perto de R$ 13 milhões, abaixo do mínimo de R$ 15 milhões; no caso do banco, com EBITDA 15% menor, o caixa com o Itaú fica negativo. O fundo testa 2,75x a cada semestre e tem a menor folga no adverso. Usar os 15 dias do Santander, aprovado, para pedir ao fundo covenant de 3,0x anual e ao Itaú carência de 30 meses com cessão de 30%, que levaria o custo dele a cerca de CDI + 3,82 na aproximação trimestral.
 - "Compare, mas não me diga qual escolher": quadro normalizado, encaixe, garantias, covenants e firmeza, sem recomendação e sem pedidos de negociação.
 ## Ruim
 - "O Itaú tem o menor spread e parece a melhor opção; avalie também garantias e covenants."
@@ -137,9 +139,9 @@ Pacote de comparação com o caso da companhia e os casos adotados de estresse n
 - packages/financial-model/src/financing-comparison-premises.test.ts e financing-comparison-composer.test.ts: fatos com origem, premissas propostas, base adotada e composição até o oráculo, na grade trimestral e nas datas do contrato.
 ## Gold
 - c02-three-proposals-independent-oracle e bank-stress-independent-oracle: custo efetivo, vida média, menor caixa, covenant, custo no horizonte e dívida líquida das três propostas reproduzem o oráculo independente.
-- lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days.
+- lowest-nominal-spread-is-not-the-lowest-cost, cash-below-zero-eliminates-before-preference, below-policy-minimum-conditions-without-eliminating, covenant-test-frequency-per-year, each-covenant-on-its-own-definition-and-limit, collateral-consumed-reduces-free-receivables, debt-service-in-2028, cheapest-and-safest-shown-side-by-side, negotiated-variants-move-the-cost, collateral-above-company-rule-eliminates, absent-fee-is-a-gap-not-zero, recurring-fee-enters-lifetime-cost, contract-dates-and-business-days, contract-dates-in-the-company-view.
 ## Adversarial
-- Base adulterada, herança não declarada, base que herda, duas bases, estresse sem descrição, propostas diferentes entre casos, moeda misturada, juros acumulados sem calendário de pagamento, visões da mesma proposta que divergem, encargo pago a instrumento inexistente, convenção de dias úteis sem a contagem, número livre no pedido e concessão fabricada no resultado são recusados.
+- Base adulterada, herança não declarada, base que herda, duas bases, estresse sem descrição, propostas diferentes entre casos, moeda misturada, juros acumulados sem calendário de pagamento, quitação antecipada sem liquidar juros acumulados, desembolso fora do horizonte, encargo pago a instrumento inexistente, convenção de dias úteis sem a contagem, número livre no pedido e concessão fabricada no resultado são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts, com tolerância declarada por indicador.
 - Executar a conversa da ficha C02 turno a turno pela interface real com fontes e direitos do ambiente de teste; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -169,7 +171,7 @@ O decisor precisa saber com quem fechar, em que termos e até quando, e o que pe
 - Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.
 - A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.
 - Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.
-- Ninguém se move até a validade: fechar com a proposta firme se ela continuar viável no caso adotado de estresse e com waivers e condições precedentes obtidos ou com data; se não, renovar a validade ou voltar ao desenho da estrutura.
+- Ninguém se move até a validade: fechar com a proposta firme se ela continuar viável no caso adotado de estresse e com waivers e condições precedentes cumpridos; waiver ou condição apenas com data prevista não equivale a cumprimento e fica como condição do fechamento. Se não, renovar a validade ou voltar ao desenho da estrutura.
 
 ## N3. Suficiência por conclusão
 - Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.
@@ -314,7 +316,7 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
         "currency": "BRL"
       },
       "evidence": [],
-      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO decisor precisa saber com quem fechar, em que termos e até quando, e o que pedir a cada contraparte antes de decidir. A resposta abre desfazendo o atalho do menor spread: diz qual é a mais barata de verdade, qual é a mais segura para fechar hoje e o que cada uma faz com o caixa da companhia.\n\nN2. Árvore de decisão\n- Proposta que deixa o caixa negativo, rompe covenant ou consome garantia acima da regra da companhia num caso adotado: sai antes da preferência, com o número que a elimina.\n- Proposta que só cabe com condição (caixa abaixo do mínimo da política, waiver de outro credor, aprovação pendente): continua na mesa e a condição vira pedido de negociação.\n- Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.\n- A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.\n- Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.\n- Ninguém se move até a validade: fechar com a proposta firme se ela continuar viável no caso adotado de estresse e com waivers e condições precedentes obtidos ou com data; se não, renovar a validade ou voltar ao desenho da estrutura.\n\nN3. Suficiência por conclusão\n- Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.\n- Para dizer se cabe é necessária a projeção da companhia com a dívida vigente até o último vencimento relevante.\n- Para recomendar são necessários firmeza, validade e as condições de cada proposta; sem elas, a resposta compara e diz o que falta.\n- O resíduo é pedido em um lote, cada item com o motivo.\n\nN4. Voz e três níveis de afirmação\nFato (term sheet, contrato ou adoção), leitura (o que o número significa para a escolha) e recomendação (o que fazer e sob que condição) ficam separados. Números com origem: documento, premissa ou estimativa. Sem slogan, metáfora, veredito binário, certeza sobre o banco ou julgamento da intenção de uma contraparte.\n\nTemplate\nT1. Uma leitura útil, com evidência aprofundável\n1. Leitura: qual é a mais barata de verdade, qual é a mais segura para fechar hoje e por quê, em duas ou três frases.\n2. Custo: spread nominal contra custo efetivo pela vida de cada uma.\n3. Caixa: serviço da dívida por ano e menor caixa com cada uma, no base e no caso do banco.\n4. Garantias e covenants: quanto cada uma consome e quanta folga deixa na definição e na frequência dela.\n5. Firmeza e flexibilidade: aprovação, validade, pré-pagamento.\n6. O que eu faria: pedido a cada contraparte com o número que ele compra e a regra de decisão na data de validade.\n7. Ressalvas: projeção, firmeza, reciprocidade não valorada.\n\nT2. Peças\nQuadro normalizado por proposta (spread nominal, custo efetivo, vida média, serviço por ano, menor caixa no base e no estresse, covenant e folga, datas de teste, garantia e recebíveis livres, waiver, custo no horizonte). Gráfico do caixa por trimestre com uma proposta em foco, fundo branco, sem vermelho."
+      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO decisor precisa saber com quem fechar, em que termos e até quando, e o que pedir a cada contraparte antes de decidir. A resposta abre desfazendo o atalho do menor spread: diz qual é a mais barata de verdade, qual é a mais segura para fechar hoje e o que cada uma faz com o caixa da companhia.\n\nN2. Árvore de decisão\n- Proposta que deixa o caixa negativo, rompe covenant ou consome garantia acima da regra da companhia num caso adotado: sai antes da preferência, com o número que a elimina.\n- Proposta que só cabe com condição (caixa abaixo do mínimo da política, waiver de outro credor, aprovação pendente): continua na mesa e a condição vira pedido de negociação.\n- Entre as viáveis, a mais barata e a mais segura coincidem: recomendar sob a condição de firmeza e dentro da validade.\n- A mais barata não é a mais segura: dizer o que a segurança custa em pontos ao ano e o que se pede à mais barata para ela ficar segura.\n- Preferência por relação bancária: aceitar como critério do decisor e transformar em pedido objetivo de igualar termos, com o custo de não pedir.\n- Ninguém se move até a validade: fechar com a proposta firme se ela continuar viável no caso adotado de estresse e com waivers e condições precedentes cumpridos; waiver ou condição apenas com data prevista não equivale a cumprimento e fica como condição do fechamento. Se não, renovar a validade ou voltar ao desenho da estrutura.\n\nN3. Suficiência por conclusão\n- Para comparar custo basta o term sheet completo e a curva; campo ausente vira pergunta à contraparte.\n- Para dizer se cabe é necessária a projeção da companhia com a dívida vigente até o último vencimento relevante.\n- Para recomendar são necessários firmeza, validade e as condições de cada proposta; sem elas, a resposta compara e diz o que falta.\n- O resíduo é pedido em um lote, cada item com o motivo.\n\nN4. Voz e três níveis de afirmação\nFato (term sheet, contrato ou adoção), leitura (o que o número significa para a escolha) e recomendação (o que fazer e sob que condição) ficam separados. Números com origem: documento, premissa ou estimativa. Sem slogan, metáfora, veredito binário, certeza sobre o banco ou julgamento da intenção de uma contraparte.\n\nTemplate\nT1. Uma leitura útil, com evidência aprofundável\n1. Leitura: qual é a mais barata de verdade, qual é a mais segura para fechar hoje e por quê, em duas ou três frases.\n2. Custo: spread nominal contra custo efetivo pela vida de cada uma.\n3. Caixa: serviço da dívida por ano e menor caixa com cada uma, no base e no caso do banco.\n4. Garantias e covenants: quanto cada uma consome e quanta folga deixa na definição e na frequência dela.\n5. Firmeza e flexibilidade: aprovação, validade, pré-pagamento.\n6. O que eu faria: pedido a cada contraparte com o número que ele compra e a regra de decisão na data de validade.\n7. Ressalvas: projeção, firmeza, reciprocidade não valorada.\n\nT2. Peças\nQuadro normalizado por proposta (spread nominal, custo efetivo, vida média, serviço por ano, menor caixa no base e no estresse, covenant e folga, datas de teste, garantia e recebíveis livres, waiver, custo no horizonte). Gráfico do caixa por trimestre com uma proposta em foco, fundo branco, sem vermelho."
     },
     {
       "id": "comparison.decision-packet",
@@ -1105,59 +1107,6 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                   }
                                 },
                                 "freeReceivablesPool": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "object",
-                                    "fields": {
-                                      "decisionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      },
-                                      "definitionVersionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "definitionKind": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "reported",
-                                            "managerial",
-                                            "contractual"
-                                          ]
-                                        }
-                                      },
-                                      "missingReason": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    }
-                                  }
-                                },
-                                "minimumCashFrom": {
                                   "required": true,
                                   "value": {
                                     "type": "object",
@@ -2651,809 +2600,6 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                       "type": "string"
                                     }
                                   },
-                                  "terms": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "object",
-                                      "fields": {
-                                        "timing": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "indexer": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "couponTreatment": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "couponBase": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "drawdownAccount": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "paymentAccount": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "openingPrincipal": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "couponRates": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "drawdowns": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "scheduledPrincipal": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "prepayments": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "repayAll": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "indexationTreatment": {
-                                          "required": false,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "indexationRates": {
-                                          "required": false,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        },
-                                        "paysAccruedCoupon": {
-                                          "required": false,
-                                          "value": {
-                                            "type": "object",
-                                            "fields": {
-                                              "decisionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              },
-                                              "definitionVersionId": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "string"
-                                                }
-                                              },
-                                              "definitionKind": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "enum",
-                                                  "values": [
-                                                    "reported",
-                                                    "managerial",
-                                                    "contractual"
-                                                  ]
-                                                }
-                                              },
-                                              "missingReason": {
-                                                "required": true,
-                                                "value": {
-                                                  "type": "union",
-                                                  "variants": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
                                   "charges": {
                                     "required": true,
                                     "value": {
@@ -4915,7 +4061,7 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                           }
                                         },
                                         "drawDate": {
-                                          "required": false,
+                                          "required": true,
                                           "value": {
                                             "type": "object",
                                             "fields": {
@@ -7048,7 +6194,7 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                       "value": {
                                         "type": "enum",
                                         "values": [
-                                          "financing-proposal-comparison.v1"
+                                          "financing-proposal-comparison.v2"
                                         ]
                                       }
                                     },
@@ -7463,12 +6609,6 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                               "type": "string"
                                             }
                                           },
-                                          "minimumCashFromPeriod": {
-                                            "required": true,
-                                            "value": {
-                                              "type": "string"
-                                            }
-                                          },
                                           "proposals": {
                                             "required": true,
                                             "value": {
@@ -7679,170 +6819,6 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                                       }
                                                     }
                                                   },
-                                                  "instrument": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "object",
-                                                      "fields": {
-                                                        "instrumentId": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        },
-                                                        "currency": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        },
-                                                        "openingPrincipal": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        },
-                                                        "indexer": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "none",
-                                                              "IPCA",
-                                                              "CDI",
-                                                              "SOFR",
-                                                              "fixed",
-                                                              "other"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "indexationTreatment": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "not_applicable",
-                                                              "cash_paid",
-                                                              "capitalized_principal"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "couponTreatment": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "cash_paid",
-                                                              "capitalized_principal",
-                                                              "accrued_until_paid"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "couponBase": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "opening_principal",
-                                                              "indexed_principal",
-                                                              "average_principal"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "drawdownAccount": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "available",
-                                                              "restricted"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "paymentAccount": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "enum",
-                                                            "values": [
-                                                              "available",
-                                                              "restricted"
-                                                            ]
-                                                          }
-                                                        },
-                                                        "periods": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "array",
-                                                            "items": {
-                                                              "type": "object",
-                                                              "fields": {
-                                                                "period": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "startDate": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "date"
-                                                                  }
-                                                                },
-                                                                "endDate": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "date"
-                                                                  }
-                                                                },
-                                                                "indexationRate": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "couponRate": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "drawdown": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "scheduledPrincipal": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "prepayment": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "string"
-                                                                  }
-                                                                },
-                                                                "repayAll": {
-                                                                  "required": true,
-                                                                  "value": {
-                                                                    "type": "boolean"
-                                                                  }
-                                                                },
-                                                                "paysAccruedCoupon": {
-                                                                  "required": false,
-                                                                  "value": {
-                                                                    "type": "boolean"
-                                                                  }
-                                                                }
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  },
                                                   "charges": {
                                                     "required": true,
                                                     "value": {
@@ -8023,12 +6999,6 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                         "type": "date"
                                       }
                                     },
-                                    "minimumCashFromPeriod": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
                                     "proposals": {
                                       "required": true,
                                       "value": {
@@ -8074,6 +7044,12 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                               }
                                             },
                                             "weightedAverageLifeYears": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "drawPeriodId": {
                                               "required": true,
                                               "value": {
                                                 "type": "string"
@@ -8263,6 +7239,24 @@ A proposta aprovada em comitê é o piso da decisão e sua validade é o prazo d
                                                       }
                                                     },
                                                     "cashTax": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "proposalInterestAccrued": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "proposalInterestPaid": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "proposalPrincipalPaid": {
                                                       "required": true,
                                                       "value": {
                                                         "type": "string"

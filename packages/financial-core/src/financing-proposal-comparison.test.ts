@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {compareFinancingProposals, type DatedDebtInstrument, type DeferredFinancingScheduleInput,
+import {compareFinancingProposals, proposalCompanyLedger, type DatedDebtInstrument, type DeferredFinancingScheduleInput,
   type FinancingCharge, type FinancingProposalComparisonInput, type ProposalUnderComparison} from "./index";
 
 // Ficha C02 (fictitious company "Aurora"): three proposals for R$ 70 mi plugged into the company
@@ -61,13 +61,12 @@ function lifetime(spread: string, upfront: string, amort: number[], semiannual: 
     })};
 }
 const IOF70 = new P(70).mul("0.03373").toFixed();
-function proposal(id: string, spread: string, fee: string, withIof: boolean, lifeAmort: number[], semiannual: boolean, inHorizon: Record<number, string>,
+function proposal(id: string, spread: string, fee: string, withIof: boolean, lifeAmort: number[], semiannual: boolean, _inHorizon: Record<number, string>,
   collateral: string, covenant: {lease: boolean; dates: string[]; limit: string}): ProposalUnderComparison {
   const charges = [charge(`${id}-fee`, id, "origination_fee", 2, new P(70).mul(fee).toFixed()), ...(withIof ? [charge(`${id}-iof`, id, "tax", 2, IOF70)] : []),
     ...(new P(collateral).gt(0) ? [charge(`${id}-waiver`, "debenture-2021", "other", 1, "0.525")] : [])];
   return {id, label: id, collateralConsumed: collateral, charges, nonDeductibleChargeIds: new P(collateral).gt(0) ? [`${id}-waiver`] : [],
     cost: {schedule: lifetime(spread, new P(70).mul(fee).plus(withIof ? IOF70 : 0).toFixed(), lifeAmort, semiannual), lowerSpread: "0", upperSpread: "0.2"},
-    instrument: instrument(id, "0", floating(spread), {draw: [2, "70"], amort: inHorizon, ...(semiannual ? {pays: [3, 5, 7, 9]} : {})}),
     covenant: {name: covenant.lease ? "lease liability in debt, IFRS 16 EBITDA" : "excluding leases", leaseLiabilityInDebt: covenant.lease, leaseLiability: "8",
       ebitdaExcludesLeases: !covenant.lease, trailingPeriods: 4, measurementPeriods: covenant.dates, limit: covenant.limit, comparator: "lte"}};
 }
@@ -84,7 +83,7 @@ function input(shock: string): FinancingProposalComparisonInput {
       maintenanceCapexPaid: "2", growthCapexPaid: "0"})),
     commonInstruments: common, commonCharges, commonNonDeductibleChargeIds: [],
     covenantHistory: [{period: "1T26", ebitda: "13.5", leasePayments: "0.75"}, {period: "2T26", ebitda: "13.5", leasePayments: "0.75"}],
-    tax: {rate: "0.34", lossTreatment: "no_cash_benefit"}, freeReceivablesPool: "58", minimumCashFromPeriod: "1T27", proposals};
+    tax: {rate: "0.34", lossTreatment: "no_cash_benefit"}, freeReceivablesPool: "58", proposals};
 }
 
 const oracle = {
@@ -132,16 +131,33 @@ describe("C02: financing proposals compared on the company itself", () => {
     const offGrid = {...fundo, charges: [...fundo.charges, charge("fundo-recurring", "fundo", "recurring_fee", 5, "1")]};
     expect(() => compareFinancingProposals({...i, proposals: [offGrid]})).toThrow("proposal_comparison_charge_off_lifetime_grid");
   });
-  it("refuses two views of the same proposal that describe different loans", () => {
+  it("derives the proposal in the company from its single schedule", () => {
+    const r = compareFinancingProposals(input("0")).proposals.find((p) => p.id === "fundo")!;
+    // Semiannual coupon: interest accrues every quarter and is paid in 2T27, 4T27, 2T28 and 4T28 only.
+    expect(r.periods.map((p) => new P(p.proposalInterestPaid).gt(0))).toEqual([false, false, false, true, false, true, false, true, false, true]);
+    expect(r.periods.slice(2).every((p) => new P(p.proposalInterestAccrued).gt(0))).toBe(true);
+    expect(r.drawPeriodId).toBe("1T27");
+  });
+  it("cuts a contract-date period at the company period end with the national calendar and refuses what it cannot cut", () => {
+    const schedule = {baseDate: "2027-01-15", currency: "BRL", moneyUnit: "BRL million", grossAdvance: "70", upfrontWithheldCosts: "0", annualSpread: "0.03",
+      unpaidInterestBase: "principal_plus_accrued" as const,
+      periods: [{id: "p1", startDate: "2027-01-15", endDate: "2027-04-15", yearFraction: new P(61).div(252).toDecimalPlaces(20).toFixed(), annualIndex: "0.14",
+        yearFractionConvention: "business_days_252" as const, businessDays: 61, sourceAnchor: "x", scheduledPrincipal: "70", paysAccruedInterest: true}]};
+    const quarters = [{startDate: "2027-01-01", endDate: "2027-03-31"}, {startDate: "2027-04-01", endDate: "2027-06-30"}];
+    const l = proposalCompanyLedger(schedule, quarters);
+    const total = new P(70).times(new P("1.14").times("1.03").pow(new P(61).div(252)).minus(1));
+    expect(l[0]!.interestAccrued.plus(l[1]!.interestAccrued).minus(total).abs().lt("1e-15")).toBe(true);
+    expect(l[0]!.interestAccrued.gt(0) && l[1]!.interestAccrued.gt(0)).toBe(true);
+    expect([l[0]!.interestPaid.toNumber(), l[1]!.principalPaid.toNumber(), l[0]!.closingPrincipal.toNumber(), l[1]!.closingPrincipal.toNumber()]).toEqual([0, 70, 70, 0]);
+    expect(() => proposalCompanyLedger({...schedule, periods: [{...schedule.periods[0]!, businessDays: 60, yearFraction: new P(60).div(252).toDecimalPlaces(20).toFixed()}]}, quarters)).toThrow("proposal_comparison_calendar_mismatch");
+    expect(() => proposalCompanyLedger({...schedule, periods: [{...schedule.periods[0]!, yearFractionConvention: "adopted_year_fraction" as const, businessDays: undefined, yearFraction: "0.25"}]}, quarters)).toThrow("proposal_comparison_lifetime_split_unavailable");
+  });
+  it("refuses an entry that does not match the lender's charges and a charge to an unknown instrument", () => {
     const i = input("0"), fundo = i.proposals[2]!;
-    const base = {...fundo, cost: {...fundo.cost, schedule: {...fundo.cost.schedule, unpaidInterestBase: "principal_only" as const}}};
-    expect(() => compareFinancingProposals({...i, proposals: [base]})).toThrow("proposal_comparison_views_inconsistent:unpaid_interest_base");
     const upfront = {...fundo, cost: {...fundo.cost, schedule: {...fundo.cost.schedule, upfrontWithheldCosts: "0.5"}}};
-    expect(() => compareFinancingProposals({...i, proposals: [upfront]})).toThrow("proposal_comparison_views_inconsistent:upfront_charges");
+    expect(() => compareFinancingProposals({...i, proposals: [upfront]})).toThrow("proposal_comparison_upfront_charges_mismatch");
     const itau = i.proposals[0]!;
-    const moved = {...itau, instrument: {...itau.instrument, periods: itau.instrument.periods.map((p, q) => ({...p, scheduledPrincipal: q === 9 ? "8.75" : "0"}))}};
-    expect(() => compareFinancingProposals({...i, proposals: [moved]})).toThrow("proposal_comparison_views_inconsistent:principal_schedule");
-    const settles = {...fundo, instrument: {...fundo.instrument, periods: fundo.instrument.periods.map((p, q) => ({...p, paysAccruedCoupon: [4, 5, 7, 9].includes(q)}))}};
-    expect(() => compareFinancingProposals({...i, proposals: [settles]})).toThrow("proposal_comparison_views_inconsistent:coupon_settlement");
+    const stray = {...itau, charges: itau.charges.map((c) => c.id.endsWith("waiver") ? {...c, instrumentId: "unknown"} : c)};
+    expect(() => compareFinancingProposals({...i, proposals: [stray]})).toThrow("proposal_comparison_charge_payee_unknown");
   });
 });

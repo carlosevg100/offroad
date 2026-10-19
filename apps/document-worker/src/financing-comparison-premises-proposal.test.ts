@@ -15,7 +15,9 @@ function c02Extraction(): FinancingComparisonExtraction {
     creditTax: doc(creditTax, `ts-${label}.pdf`), drawMonth: doc("2027-01", `ts-${label}.pdf`), firstAmortizationMonth: doc(first, `ts-${label}.pdf`),
     installments: doc(installments, `ts-${label}.pdf`), installmentEveryMonths: doc(every, `ts-${label}.pdf`), couponEveryMonths: doc(coupon, `ts-${label}.pdf`),
     collateralShareOfLoan: doc(share, `ts-${label}.pdf`), covenantLimit: doc(limit, `ts-${label}.pdf`), covenantLeasesInDebt: doc(leases, `ts-${label}.pdf`),
+    covenantEbitdaExcludesLeases: doc(!leases, `ts-${label}.pdf`),
     covenantTestFrequency: doc(frequency, `ts-${label}.pdf`), covenantDescription: null, waiverRequired: doc(waiver, `ts-${label}.pdf`),
+    waiverCreditor: waiver ? doc("Debênture 2021", `ts-${label}.pdf`) : none, waiverMonth: waiver ? doc("2026-12", `ts-${label}.pdf`) : none,
     waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
   return {
     proposals: [proposal("itau", 0.023, 0.01, true, "2028-07", 8, 6, 3, 0.4, 3, true, "semiannual", true),
@@ -66,6 +68,18 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(p.methodId).toBe("compare-financing-proposals"); expect(p.hypotheses.length).toBeLessThanOrEqual(256);
     expect(p.hypotheses.every((h) => h.dimensions.entityId === null && h.fieldPath.startsWith(`comparison.${comparisonId}.`) && /^Origem: /.test(h.reason))).toBe(true);
     expect(p.fingerprint).toBe(buildFinancingComparisonPremiseProposal(c.facts).fingerprint);
+  });
+  it("never infers a contract clause: EBITDA definition, the consenting creditor and a half pair of dates are gaps", () => {
+    const e = c02Extraction(); e.proposals[0]!.covenantEbitdaExcludesLeases = none;
+    expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.1.covenantEbitdaExcludesLeases"]});
+    const g = c02Extraction(); g.proposals[0]!.waiverCreditor = doc("Credor inexistente", "ts-itau.pdf");
+    expect(completeFinancingComparisonFacts({extraction: g, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.1.waiverCreditor"]});
+    const h = c02Extraction(); h.proposals[1]!.paymentDay = none;
+    expect(completeFinancingComparisonFacts({extraction: h, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["proposals.2.paymentDay"]});
+    const z = c02Extraction(); z.proposals[2]!.feeRate = doc(0, "ts-fundo.pdf");
+    const zc = completeFinancingComparisonFacts({extraction: z, ids, currency: "BRL"});
+    if (zc.status !== "complete") throw new Error(zc.missing.join(","));
+    expect(buildFinancingComparisonPremiseProposal(zc.facts).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
   });
   it("never fails the turn", async () => {
     const events: string[] = [];

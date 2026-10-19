@@ -105,11 +105,17 @@ function goldCases(): Case[] {
     // Contract dates with national business days: the independent review's dated recomputation (the oracle's dated variant misplaces Easter 2027).
     observe("contract-dates-and-business-days", datedInput(), [["itau", 4.1189], ["santander", 4.0889], ["fundo", 3.5671]],
       (p) => at(p, "base").proposals.map((m) => [auroraNames[m.proposalId], new D(m.equivalentSpread!).times(100).toDecimalPlaces(4).toNumber()])),
+    // The company view on contract dates (review recomputation: Itaú minimum in the bank's case of R$ 2.327742679 mi): the
+    // quarterly approximation's negative cash with Itaú does not survive the contract calendar.
+    observe("contract-dates-in-the-company-view", datedInput(), {itauStressMinimum: 2.3277, eliminated: [], itauBaseMinimum: 15.8523},
+      (p) => {const s = at(p, "bank-stress"), b = at(p, "base"), itau = (c: typeof s) => c.proposals.find((m) => m.proposalId === auroraIds.itau)!;
+        return {itauStressMinimum: new D(itau(s).minimumCash.amount).toDecimalPlaces(4).toNumber(), eliminated: s.proposals.flatMap((m) => m.eliminatoryFacts),
+          itauBaseMinimum: new D(itau(b).minimumCash.amount).toDecimalPlaces(4).toNumber()};}),
   ];
 }
 
 /** The base case with one adopted premise replaced, sealed again: the boundary must hold on adopted data. */
-function mutateEntry(suffix: string, value: {type: "list" | "text"; value: string | string[]}) {
+function mutateEntry(suffix: string, value: {type: "list" | "text" | "date"; value: string | string[]}) {
   const p = c02PacketInput(), e = p.basis.entries.find((x) => x.fieldPath.endsWith(suffix))!;
   e.value = value as typeof e.value;
   const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
@@ -124,8 +130,9 @@ function adversarialCases(): Case[] {
     ["silent-stress", () => {const i = sealed(); i.cases[1]!.changes = []; return i;}, "must say what it changes"],
     ["different-proposals-across-cases", () => {const i = sealed(); i.cases[1]!.analysis.proposals = i.cases[1]!.analysis.proposals.slice(0, 2); return i;}, "same proposals"],
     ["mixed-currency", () => {const i = sealed(); i.cases[1]!.analysis = {...i.cases[1]!.analysis, currency: "USD"}; return i;}, "same adopted basis"],
-    ["accrued-coupon-without-payment-schedule", () => {const i = baseOnly(); delete (i.cases[0]!.analysis.proposals[2]!.terms as {paysAccruedCoupon?: unknown}).paysAccruedCoupon; return i;}, "comparison_accrued_coupon_schedule_mismatch"],
-    ["lifetime-and-company-views-disagree", () => mutateEntry(`proposal.${c02Ids.fundo}.lifetime.unpaidInterestBase`, {type: "text", value: "principal_only"}), "proposal_comparison_views_inconsistent:unpaid_interest_base"],
+    ["accrued-coupon-without-payment-schedule", () => {const i = baseOnly(); delete (i.cases[0]!.analysis.instruments[0]!.terms as {paysAccruedCoupon?: unknown}).paysAccruedCoupon; return i;}, "comparison_accrued_coupon_schedule_mismatch"],
+    ["repay-all-without-settling-the-accrued-coupon", () => mutateEntry(`debt.${c02Ids.debenture}.repayAll`, {type: "list", value: ["false", "false", "true", "false", "false", "false", "false", "false", "false", "false"]}), "repayAll requires paysAccruedCoupon"],
+    ["draw-outside-the-horizon", () => mutateEntry(`proposal.${c02Ids.fundo}.lifetime.drawDate`, {type: "date", value: "2026-01-31"}), "proposal_comparison_draw_outside_horizon"],
     ["charge-paid-to-unknown-instrument", () => mutateEntry(`proposal.${c02Ids.itau}.charges.instrumentIds`, {type: "list", value: ["self", "self", "ac400000-0000-4000-9000-000000000999"]}), "comparison_charge_payee_unknown"],
     ["business-day-convention-without-counts", () => mutateEntry(`proposal.${c02Ids.itau}.lifetime.yearFractionConventions`, {type: "list", value: Array.from({length: 21}, () => "business_days_252")}), "comparison_business_days_required"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],

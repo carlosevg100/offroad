@@ -56,7 +56,7 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
       terms: terms(`debt.${gid}`, "0", floating(s), {draw: [q, v], ...(repay !== undefined ? {amort: {[repay]: v}} : {})}),
       charges: charges(`debt.${gid}.charges`, [[`${gid}-fee`, "origination_fee", q, new P(v).mul("0.003").toFixed(), true], [`${gid}-iof`, "tax", q, iof(v), true]])})),
   ];
-  const proposal = (pid: string, label: string, spread: string, fee: string, withIof: boolean, lifeAmort: number[], semiannual: boolean, inHorizon: Record<number, string>,
+  const proposal = (pid: string, label: string, spread: string, fee: string, withIof: boolean, lifeAmort: number[], semiannual: boolean, _inHorizon: Record<number, string>,
     collateral: string, cov: {lease: boolean; dates: number[]; limit: string}) => {
     const path = `proposal.${pid}`;
     let repaid = new P(0); const lifeEnds: string[] = [], amort: string[] = [], pays: string[] = [], index: string[] = [];
@@ -66,7 +66,6 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
       repaid = repaid.plus(a); amort.push(a.toFixed()); pays.push(String(!semiannual || q % 2 === 1 || q === 20)); index.push(q < 4 ? "0.14" : q < 8 ? "0.1275" : "0.12");
     }
     return {id: pid, label,
-      terms: terms(`${path}.terms`, "0", floating(spread), {draw: [2, "70"], amort: inHorizon, ...(semiannual ? {pays: [3, 5, 7, 9]} : {})}),
       charges: charges(`${path}.charges`, [[`${label}-fee`, "origination_fee", 2, new P(70).mul(fee).toFixed(), true], ...(withIof ? [[`${label}-iof`, "tax", 2, IOF70, true] as [string, string, number, string, boolean, string?]] : []),
         ...(new P(collateral).gt(0) ? [[`${label}-waiver`, "other", 1, "0.525", false, c02Ids.debenture] as [string, string, number, string, boolean, string]] : [])]),
       collateralConsumed: number(`${path}.collateralConsumed`, "currency", collateral),
@@ -75,7 +74,7 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
         ebitdaExcludesLeases: text(`${path}.covenant.ebitdaExcludesLeases`, "boolean", String(!cov.lease)), trailingPeriods: number(`${path}.covenant.trailingPeriods`, "count", "4"),
         measurementPeriods: list(`${path}.covenant.measurementPeriods`, "date", cov.dates.map((q) => c02PeriodEnds[q]!)), limit: number(`${path}.covenant.limit`, "ratio", cov.limit),
         comparator: text(`${path}.covenant.comparator`, "convention", "lte")},
-      lifetime: {grossAdvance: number(`${path}.lifetime.grossAdvance`, "currency", "70"),
+      lifetime: {grossAdvance: number(`${path}.lifetime.grossAdvance`, "currency", "70"), drawDate: date(`${path}.lifetime.drawDate`, "2026-12-31"),
         upfrontWithheldCosts: number(`${path}.lifetime.upfrontWithheldCosts`, "currency", new P(70).mul(fee).plus(withIof ? IOF70 : 0).toFixed()),
         annualSpread: number(`${path}.lifetime.annualSpread`, "ratio", spread), unpaidInterestBase: text(`${path}.lifetime.unpaidInterestBase`, "convention", "principal_plus_accrued"),
         lowerSpread: number(`${path}.lifetime.lowerSpread`, "ratio", "0"), upperSpread: number(`${path}.lifetime.upperSpread`, "ratio", "0.2"),
@@ -100,7 +99,7 @@ export function c02ComparisonFixture(shock = "0", o: {negotiated?: boolean} = {}
       workingCapitalCashFlow: list("company.workingCapitalCashFlow", "currency", q10((q) => new P("-0.625").plus([1, 5, 9].includes(q) ? -25 : 0).plus([2, 6].includes(q) ? 25 : 0).toFixed())),
       maintenanceCapexPaid: list("company.maintenanceCapexPaid", "currency", q10(() => "2")), growthCapexPaid: list("company.growthCapexPaid", "currency", q10(() => "0"))},
     cashTaxRate: number("company.cashTaxRate", "ratio", "0.34"), lossTaxTreatment: text("company.lossTaxTreatment", "convention", "no_cash_benefit"),
-    freeReceivablesPool: number("company.freeReceivablesPool", "currency", "58"), minimumCashPolicy: number("company.minimumCashPolicy", "currency", "15"), minimumCashFrom: date("company.minimumCashFrom", c02PeriodEnds[2]!),
+    freeReceivablesPool: number("company.freeReceivablesPool", "currency", "58"), minimumCashPolicy: number("company.minimumCashPolicy", "currency", "15"),
     covenantHistoryPeriods: list("company.covenantHistory.periods", "identity", ["1T26", "2T26"]),
     covenantHistoryEbitda: list("company.covenantHistory.ebitda", "currency", ["13.5", "13.5"]),
     covenantHistoryLeasePayments: list("company.covenantHistory.leasePayments", "currency", ["0.75", "0.75"])};

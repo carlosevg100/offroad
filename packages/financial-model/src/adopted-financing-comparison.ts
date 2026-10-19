@@ -6,7 +6,7 @@ import {compareFinancingProposals, financialCoreVersion, financingCostCategories
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, analysisAmount, analysisReference, createAnalysisBinding, type AnalysisSelection} from "./adopted-analysis-binding";
 
-export const adoptedFinancingComparisonVersion = "2026.10.19-v1";
+export const adoptedFinancingComparisonVersion = "2026.10.19-v2";
 const debtTermNames = ["timing", "indexer", "couponTreatment", "couponBase", "drawdownAccount", "paymentAccount",
   "openingPrincipal", "couponRates", "drawdowns", "scheduledPrincipal", "prepayments", "repayAll"] as const;
 /** Without an indexer ("none") the principal is not corrected: the indexation treatment and rates follow
@@ -24,19 +24,20 @@ export const adoptedFinancingComparisonInputSchema = adoptedAnalysisContextSchem
   comparisonId: analysisReference, scenario: z.string().trim().min(1).max(160), inheritedScenario: z.string().trim().min(1).max(160).optional(),
   periodEnds: selection,
   company: z.strictObject({openingAvailableCash: selection, money: z.strictObject(Object.fromEntries(companyMoneyNames.map((k) => [k, selection])) as Record<typeof companyMoneyNames[number], typeof selection>),
-    cashTaxRate: selection, lossTaxTreatment: selection, freeReceivablesPool: selection, minimumCashFrom: selection,
+    cashTaxRate: selection, lossTaxTreatment: selection, freeReceivablesPool: selection,
     covenantHistoryPeriods: selection, covenantHistoryEbitda: selection, covenantHistoryLeasePayments: selection,
     /** Company policy, when adopted: minimum cash at period ends and maximum share of the receivables pool given as collateral. */
     minimumCashPolicy: selection.optional(), maximumCollateralShare: selection.optional()}),
   instruments: z.array(z.strictObject({id: z.uuid(), terms: debtTerms, charges: chargeSeries.nullable()})).max(15),
-  proposals: z.array(z.strictObject({id: z.uuid(), label: z.string().trim().min(1).max(160), terms: debtTerms, charges: chargeSeries.nullable(),
+  /** Each proposal is described once, over its life; its place in the company is derived from it. */
+  proposals: z.array(z.strictObject({id: z.uuid(), label: z.string().trim().min(1).max(160), charges: chargeSeries.nullable(),
     collateralConsumed: selection,
     covenant: z.strictObject({name: selection, leaseLiabilityInDebt: selection, leaseLiability: selection, ebitdaExcludesLeases: selection,
       trailingPeriods: selection, measurementPeriods: selection, limit: selection, comparator: selection}),
     lifetime: z.strictObject({grossAdvance: selection, upfrontWithheldCosts: selection, annualSpread: selection, unpaidInterestBase: selection,
       lowerSpread: selection, upperSpread: selection, ...Object.fromEntries(lifetimeNames.map((k) => [k, selection])) as Record<typeof lifetimeNames[number], typeof selection>,
-      /** Contractual draw date, when the lifetime runs on contract dates instead of the period grid. */
-      drawDate: selection.optional(),
+      /** Draw date: the contractual date, or on a period grid the end of the period before the draw. */
+      drawDate: selection,
       /** Business days of each period, required for the DU/252 convention; the fraction is then derived from them. */
       businessDays: selection.optional(),
       /** The lender's charges after the horizon (recurring fees), on lifetime period ends. */
@@ -59,7 +60,7 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
   const money: AnalysisSelection[] = [input.company.openingAvailableCash, ...Object.values(input.company.money), input.company.freeReceivablesPool, ...(input.company.minimumCashPolicy ? [input.company.minimumCashPolicy] : []),
     input.company.covenantHistoryEbitda, input.company.covenantHistoryLeasePayments,
     ...input.instruments.flatMap((i) => [...termMoney(i.terms), ...(i.charges ? [i.charges.amounts] : [])]),
-    ...input.proposals.flatMap((p) => [...termMoney(p.terms), ...(p.charges ? [p.charges.amounts] : []), p.collateralConsumed, p.covenant.leaseLiability,
+    ...input.proposals.flatMap((p) => [...(p.charges ? [p.charges.amounts] : []), ...(p.lifetime.chargesAfterHorizon ? [p.lifetime.chargesAfterHorizon.amounts] : []), p.collateralConsumed, p.covenant.leaseLiability,
       p.lifetime.grossAdvance, p.lifetime.upfrontWithheldCosts, p.lifetime.scheduledPrincipal])];
   const b = createAnalysisBinding(input, money, {inheritedScenario: input.inheritedScenario});
   const prefix = `comparison.${input.comparisonId}.`;
@@ -72,7 +73,6 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
   const taxRate = scalar(c.cashTaxRate, "company.cashTaxRate", "ratio", "number", ratio);
   const loss = scalar(c.lossTaxTreatment, "company.lossTaxTreatment", "convention", "text", z.literal("no_cash_benefit"));
   const pool = scalar(c.freeReceivablesPool, "company.freeReceivablesPool", "currency", "number", analysisAmount);
-  const minFrom = scalar(c.minimumCashFrom, "company.minimumCashFrom", "date", "date", z.iso.date());
   const histPeriods = column(c.covenantHistoryPeriods, "company.covenantHistory.periods", "identity", analysisReference);
   const histEbitda = column(c.covenantHistoryEbitda, "company.covenantHistory.ebitda", "currency", analysisAmount);
   const histLease = column(c.covenantHistoryLeasePayments, "company.covenantHistory.leasePayments", "currency", analysisAmount);
@@ -141,7 +141,7 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       conventions: ls("yearFractionConventions", "convention", z.enum(["business_days_252", "actual_365_fixed", "adopted_year_fraction"])),
       amort: ls("scheduledPrincipal", "currency", analysisAmount), pays: ls("paysAccruedInterest", "boolean", flag),
       businessDays: l.businessDays ? column(l.businessDays, `${path}.lifetime.businessDays`, "count", z.string().regex(/^\d{1,3}$/)) : undefined,
-      drawDate: l.drawDate ? scalar(l.drawDate, `${path}.lifetime.drawDate`, "date", "date", z.iso.date()) : undefined};
+      drawDate: scalar(l.drawDate, `${path}.lifetime.drawDate`, "date", "date", z.iso.date())};
     const lc = l.chargesAfterHorizon;
     const later = lc ? {ids: column(lc.chargeIds, `${path}.lifetime.chargesAfterHorizon.chargeIds`, "identity", analysisReference),
       categories: column(lc.categories, `${path}.lifetime.chargesAfterHorizon.categories`, "convention", z.enum(financingCostCategories)),
@@ -157,32 +157,31 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
       limit: scalar(cv.limit, `${path}.covenant.limit`, "ratio", "number", ratio),
       comparator: scalar(cv.comparator, `${path}.covenant.comparator`, "convention", "text", z.enum(["lte", "lt"]))};
     const collateral = scalar(p.collateralConsumed, `${path}.collateralConsumed`, "currency", "number", analysisAmount);
-    const built = {p, life, cov, collateral, later, instrument: instrument(p.id, p.terms, `${path}.terms`), charges: charges(p.id, p.charges, `${path}.charges`)};
-    return {...built, complete: b.gaps.length === before && built.instrument !== null && collateral !== null
-      && Object.entries(life).every(([k, v]) => v !== null || k === "businessDays" || k === "drawDate") && Object.values(cov).every((v) => v !== null)
+    const built = {p, life, cov, collateral, later, charges: charges(p.id, p.charges, `${path}.charges`)};
+    return {...built, complete: b.gaps.length === before && collateral !== null
+      && Object.entries(life).every(([k, v]) => v !== null || k === "businessDays") && Object.values(cov).every((v) => v !== null)
       && (!later || Object.values(later).every((v) => v !== null))};
   });
   const ready = proposals.filter((x) => x.complete);
 
   let comparison: ReturnType<typeof compareFinancingProposals> | null = null;
   // A proposal with a missing premise leaves the comparison with its gaps named; the others are still compared.
-  const complete = companyGaps === 0 && ends && opening !== null && taxRate !== null && loss !== null && pool !== null && minFrom !== null
+  const complete = companyGaps === 0 && ends && opening !== null && taxRate !== null && loss !== null && pool !== null
     && histPeriods && histEbitda && histLease && Object.values(companyCols).every((x) => x !== null)
     && common.every((x) => x.instrument) && ready.length > 0;
   if (complete) {
     if (Object.values(companyCols).some((col) => col!.length !== ends!.length) || histEbitda!.length !== histPeriods!.length || histLease!.length !== histPeriods!.length) throw new Error("comparison_series_length_mismatch");
-    if (!ends!.includes(minFrom!)) throw new Error("comparison_window_outside_horizon");
     const comparisonInput: FinancingProposalComparisonInput = {currency: input.currency, openingDate: input.openingDate, endDate: input.endDate, openingAvailable: opening!,
       periods: ends!.map((endDate, i) => ({id: endDate, startDate: nextDate(i ? ends![i - 1]! : input.openingDate), endDate,
         ebitda: companyCols.ebitda![i]!, leasePayments: companyCols.cashLeasePayments![i]!, depreciationAndAmortization: companyCols.depreciationAndAmortization![i]!,
         workingCapitalCashFlow: companyCols.workingCapitalCashFlow![i]!, maintenanceCapexPaid: companyCols.maintenanceCapexPaid![i]!, growthCapexPaid: companyCols.growthCapexPaid![i]!})),
       commonInstruments: common.map((x) => x.instrument!), commonCharges: common.flatMap((x) => x.charges.list), commonNonDeductibleChargeIds: common.flatMap((x) => x.charges.nonDeductible),
       covenantHistory: histPeriods!.map((period, i) => ({period, ebitda: histEbitda![i]!, leasePayments: histLease![i]!})),
-      tax: {rate: taxRate!, lossTreatment: loss!}, freeReceivablesPool: pool!, minimumCashFromPeriod: minFrom!,
+      tax: {rate: taxRate!, lossTreatment: loss!}, freeReceivablesPool: pool!,
       proposals: ready.map((x) => {
         const l = x.life;
         if ([l.fractions!, l.index!, l.conventions!, l.amort!, l.pays!, ...(l.businessDays ? [l.businessDays] : [])].some((s) => s.length !== l.ends!.length)) throw new Error("comparison_series_length_mismatch");
-        const base = l.drawDate ?? lifetimeBase(input, x.instrument!);
+        const base = l.drawDate!;
         const fraction = (i: number) => {
           const convention = l.conventions![i]!, start = i ? l.ends![i - 1]! : base;
           if (convention === "adopted_year_fraction") {if (l.businessDays) throw new Error("comparison_unused_business_days"); return l.fractions![i]!;}
@@ -194,7 +193,7 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
           return derived.toDecimalPlaces(20).toFixed();
         };
         if (x.later && [x.later.categories!, x.later.dates!, x.later.amounts!].some((s) => s.length !== x.later!.ids!.length)) throw new Error("comparison_series_length_mismatch");
-        return {id: x.p.id, label: x.p.label, collateralConsumed: x.collateral!, instrument: x.instrument!, charges: x.charges.list, nonDeductibleChargeIds: x.charges.nonDeductible,
+        return {id: x.p.id, label: x.p.label, collateralConsumed: x.collateral!, charges: x.charges.list, nonDeductibleChargeIds: x.charges.nonDeductible,
           cost: {schedule: {baseDate: base,
             currency: input.currency, moneyUnit: "currency units", grossAdvance: l.grossAdvance!, upfrontWithheldCosts: l.upfront!, annualSpread: l.spread!, unpaidInterestBase: l.unpaid!,
             periods: l.ends!.map((endDate, i) => ({id: `${x.p.id}:${i}`, startDate: i ? l.ends![i - 1]! : base, endDate,
@@ -219,11 +218,4 @@ export function calculateAdoptedFinancingComparison(raw: unknown) {
     exclusions: ["firmness_and_validity", "prepayment_terms", "reciprocity", "restricted_accounts", "choice_of_counterparty", "intraperiod_liquidity", "tax_law_inference"] as const,
     grantsExecution: false as const, grantsPublication: false as const};
   return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
-}
-
-/** The lifetime schedule starts on the end of the period before the proposal's draw. */
-function lifetimeBase(input: {openingDate: string}, instrument: DatedDebtInstrument) {
-  const drawn = instrument.periods.findIndex((p) => p.drawdown !== "0" && Number(p.drawdown) > 0);
-  if (drawn < 0) throw new Error("comparison_proposal_without_draw");
-  return drawn ? instrument.periods[drawn - 1]!.endDate : input.openingDate;
 }

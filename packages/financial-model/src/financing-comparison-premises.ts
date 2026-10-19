@@ -118,8 +118,6 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
   num("company.cashTaxRate", "ratio", c.cashTaxRate.value, why(c.cashTaxRate));
   txt("company.lossTaxTreatment", "convention", "no_cash_benefit", house("Prejuízo não gera benefício de caixa"));
   num("company.freeReceivablesPool", "currency", c.freeReceivablesPool.value, why(c.freeReceivablesPool));
-  const firstDraw = Math.min(...f.proposals.map((p) => p.value.drawQuarter));
-  add("company.minimumCashFrom", "date", {type: "date", value: f.quarterEnds[firstDraw]!}, house("Menor caixa medido a partir do trimestre do desembolso"));
   list("company.covenantHistory.periods", "identity", c.covenantHistory.value.map((h) => h.period), why(c.covenantHistory));
   list("company.covenantHistory.ebitda", "currency", c.covenantHistory.value.map((h) => h.ebitda), why(c.covenantHistory));
   list("company.covenantHistory.leasePayments", "currency", c.covenantHistory.value.map((h) => h.leasePayments), why(c.covenantHistory));
@@ -190,17 +188,11 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
       lifePeriods.push({end, fraction: "0.25", convention: "adopted_year_fraction", businessDays: null, index: indexOf(Number(end.slice(0, 4))).toFixed(),
         principal: lifeAmort[q]!.toFixed(), pays: settles(q)});
     }
-    // In the company view each payment lands in the quarter that contains its date.
-    const quarterOf = (date: string) => f.quarterEnds.findIndex((e, q) => date <= e && date >= start(q));
-    const inQuarter = f.quarterEnds.map((_, q) => lifePeriods.filter((l) => quarterOf(l.end) === q));
-    terms(`${root}.terms`, reason, {opening: "0", rates: floating(v.annualSpread), base: "opening_principal",
-      draws: f.quarterEnds.map((_, q) => q === v.drawQuarter ? v.amount : "0"),
-      amort: inQuarter.map((ls) => ls.reduce((t, l) => t.plus(l.principal), new Exact(0)).toFixed()), prepay: f.quarterEnds.map(() => "0"),
-      pays: v.couponEveryQuarters > 1 ? f.quarterEnds.map((_, q) => q).filter((q) => inQuarter[q]!.some((l) => l.pays)) : null});
     const days = Math.min(tax.maxDays, 365 * 100), creditTax = v.creditTax ? new Exact(v.amount).mul(new Exact(tax.dailyRate).mul(days).plus(tax.fixedRate)) : new Exact(0);
     const fee = new Exact(v.amount).mul(v.feeRate);
-    charges(`${root}.charges`, [{id: `${v.label}-fee`, category: "origination_fee", quarter: v.drawQuarter, amount: fee.toFixed(), deductible: true},
-      ...(v.creditTax ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, amount: creditTax.toFixed(), deductible: true}] : []),
+    // A charge of zero is not a charge: an explicitly zero fee adds nothing.
+    charges(`${root}.charges`, [...(fee.gt(0) ? [{id: `${v.label}-fee`, category: "origination_fee", quarter: v.drawQuarter, amount: fee.toFixed(), deductible: true}] : []),
+      ...(v.creditTax && creditTax.gt(0) ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, amount: creditTax.toFixed(), deductible: true}] : []),
       ...(v.waiver ? [{id: `${v.label}-waiver`, category: "other", quarter: v.waiver.quarter, amount: v.waiver.cost, deductible: v.waiver.deductible, payee: v.waiver.instrumentId}] : [])],
       `${reason}${v.creditTax ? ` IOF: ${why(f.creditTax)}` : ""}`);
     const collateral = new Exact(v.amount).mul(v.collateralShareOfLoan).toFixed();
@@ -225,8 +217,9 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
       v.contractDates ? house("Dias úteis do calendário nacional sobre 252") : house("Cada trimestre como um quarto de ano"));
     list(`${root}.lifetime.annualIndex`, "ratio", lifePeriods.map((l) => l.index), why(f.indexCurve));
     list(`${root}.lifetime.yearFractionConventions`, "convention", lifePeriods.map((l) => l.convention), v.contractDates ? house("CDI em dias úteis, base 252") : house("Fração de ano adotada"));
+    add(`${root}.lifetime.drawDate`, "date", {type: "date", value: base},
+      v.contractDates ? reason : house("Na grade trimestral, o desembolso abre o trimestre e é registrado no fim do trimestre anterior"));
     if (v.contractDates) {
-      add(`${root}.lifetime.drawDate`, "date", {type: "date", value: v.contractDates.drawDate}, reason);
       list(`${root}.lifetime.businessDays`, "count", lifePeriods.map((l) => String(l.businessDays)), house("Dias úteis entre as datas pelo calendário nacional de feriados bancários"));
     }
     list(`${root}.lifetime.scheduledPrincipal`, "currency", lifePeriods.map((l) => l.principal), reason);

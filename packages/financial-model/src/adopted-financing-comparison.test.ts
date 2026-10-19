@@ -56,10 +56,10 @@ describe("C02 comparison over adopted company, debt and proposals", {timeout: 60
     expect(r.status).toBe("missing_inputs"); expect(r.comparison).toBeNull();
     expect(r.gaps.map((g) => g.operand)).toContain(`comparison.${id(4)}.company.cashTaxRate`);
   });
-  it("refuses an accrued coupon without its payment schedule and a window outside the horizon", () => {
-    const f = fixture(); delete (f.input.proposals[2]!.terms as {paysAccruedCoupon?: unknown}).paysAccruedCoupon;
+  it("refuses an accrued coupon without its payment schedule and a draw outside the horizon", () => {
+    const f = fixture(); delete (f.input.instruments[0]!.terms as {paysAccruedCoupon?: unknown}).paysAccruedCoupon;
     expect(() => calculateAdoptedFinancingComparison(f.seal())).toThrow("comparison_accrued_coupon_schedule_mismatch");
-    const g = fixture(); g.set("company.minimumCashFrom", {type: "date", value: "2029-03-31"});
-    expect(() => calculateAdoptedFinancingComparison(g.seal())).toThrow();
+    const g = fixture(); g.set(`proposal.${UUID.fundo}.lifetime.drawDate`, {type: "date", value: "2026-01-31"});
+    expect(() => calculateAdoptedFinancingComparison(g.seal())).toThrow("proposal_comparison_draw_outside_horizon");
   });
 });

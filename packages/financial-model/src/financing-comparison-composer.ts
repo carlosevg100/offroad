@@ -88,7 +88,7 @@ export function composeBoundFinancingComparison(raw: unknown): FinancingComparis
     const company = {openingAvailableCash: select("company.openingAvailableCash", "currency", "number"),
       money: Object.fromEntries(companyMoney.map((k) => [k, select(`company.${k}`, "currency", "list")])),
       cashTaxRate: select("company.cashTaxRate", "ratio", "number"), lossTaxTreatment: select("company.lossTaxTreatment", "convention", "text"),
-      freeReceivablesPool: select("company.freeReceivablesPool", "currency", "number"), minimumCashFrom: select("company.minimumCashFrom", "date", "date"),
+      freeReceivablesPool: select("company.freeReceivablesPool", "currency", "number"),
       covenantHistoryPeriods: select("company.covenantHistory.periods", "identity", "list"), covenantHistoryEbitda: select("company.covenantHistory.ebitda", "currency", "list"),
       covenantHistoryLeasePayments: select("company.covenantHistory.leasePayments", "currency", "list"),
       ...(has("company.minimumCashPolicy") ? {minimumCashPolicy: select("company.minimumCashPolicy", "currency", "number")} : {}),
@@ -97,17 +97,16 @@ export function composeBoundFinancingComparison(raw: unknown): FinancingComparis
     const proposals = proposalIds.map((id) => {
       const root = `proposal.${id}`;
       return {id, label: (own.find((e) => e.fieldPath === `${prefix}${root}.label` && e.value.type === "text" && scenarios.some((s) => sameCase(e, s)))?.value.value as string | undefined) ?? id,
-        terms: terms(`${root}.terms`), charges: charges(`${root}.charges`), collateralConsumed: select(`${root}.collateralConsumed`, "currency", "number"),
+        charges: charges(`${root}.charges`), collateralConsumed: select(`${root}.collateralConsumed`, "currency", "number"),
         covenant: {name: select(`${root}.covenant.name`, "identity", "text"), leaseLiabilityInDebt: select(`${root}.covenant.leaseLiabilityInDebt`, "boolean", "text"),
           leaseLiability: select(`${root}.covenant.leaseLiability`, "currency", "number"), ebitdaExcludesLeases: select(`${root}.covenant.ebitdaExcludesLeases`, "boolean", "text"),
           trailingPeriods: select(`${root}.covenant.trailingPeriods`, "count", "number"), measurementPeriods: select(`${root}.covenant.measurementPeriods`, "date", "list"),
           limit: select(`${root}.covenant.limit`, "ratio", "number"), comparator: select(`${root}.covenant.comparator`, "convention", "text")},
-        lifetime: {grossAdvance: select(`${root}.lifetime.grossAdvance`, "currency", "number"), upfrontWithheldCosts: select(`${root}.lifetime.upfrontWithheldCosts`, "currency", "number"),
+        lifetime: {grossAdvance: select(`${root}.lifetime.grossAdvance`, "currency", "number"), drawDate: select(`${root}.lifetime.drawDate`, "date", "date"), upfrontWithheldCosts: select(`${root}.lifetime.upfrontWithheldCosts`, "currency", "number"),
           annualSpread: select(`${root}.lifetime.annualSpread`, "ratio", "number"), unpaidInterestBase: select(`${root}.lifetime.unpaidInterestBase`, "convention", "text"),
           lowerSpread: select(`${root}.lifetime.lowerSpread`, "ratio", "number"), upperSpread: select(`${root}.lifetime.upperSpread`, "ratio", "number"),
           ...Object.fromEntries(lifetimeLists.map(([k, unit]) => [k, select(`${root}.lifetime.${k}`, unit, "list")])),
           ...(has(`${root}.lifetime.businessDays`) ? {businessDays: select(`${root}.lifetime.businessDays`, "count", "list")} : {}),
-          ...(has(`${root}.lifetime.drawDate`) ? {drawDate: select(`${root}.lifetime.drawDate`, "date", "date")} : {}),
           ...(has(`${root}.lifetime.chargesAfterHorizon.chargeIds`) ? {chargesAfterHorizon: laterCharges(`${root}.lifetime.chargesAfterHorizon`)!} : {})}};
     });
     const periodEnds = select("periodEnds", "date", "list");

@@ -104,6 +104,10 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
   if (!deferred && input.periods.some((period) => period.paysAccruedCoupon !== undefined)) {
     throw new RangeError("paysAccruedCoupon requires the accrued_until_paid coupon treatment");
   }
+  // Repaying the whole debt settles the accrued coupon; the adopted calendar must say so too.
+  if (deferred && input.periods.some((period) => period.repayAll && period.paysAccruedCoupon !== true)) {
+    throw new RangeError("repayAll requires paysAccruedCoupon in the accrued_until_paid coupon treatment");
+  }
   let principal = nonNegative(input.openingPrincipal, "opening principal");
   let accruedUnpaid = new Decimal(0);
   let totalCashDebtService = new Decimal(0);

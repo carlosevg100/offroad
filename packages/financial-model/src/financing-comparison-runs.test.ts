@@ -21,8 +21,8 @@ describe("recorded financing comparison evaluations", () => {
       "cash-below-zero-eliminates-before-preference", "below-policy-minimum-conditions-without-eliminating", "covenant-test-frequency-per-year",
       "each-covenant-on-its-own-definition-and-limit", "collateral-consumed-reduces-free-receivables", "debt-service-in-2028",
       "cheapest-and-safest-shown-side-by-side", "negotiated-variants-move-the-cost", "collateral-above-company-rule-eliminates", "absent-fee-is-a-gap-not-zero",
-      "recurring-fee-enters-lifetime-cost", "contract-dates-and-business-days"]);
-    expect(records.get(financingComparisonRunIds.adversarial)!.cases).toHaveLength(13);
+      "recurring-fee-enters-lifetime-cost", "contract-dates-and-business-days", "contract-dates-in-the-company-view"]);
+    expect(records.get(financingComparisonRunIds.adversarial)!.cases).toHaveLength(14);
     expect(records.get(financingComparisonRunIds.consistency)!.cases).toHaveLength(6);
     expect(records.get(financingComparisonRunIds.gold)!.notes).toContain("do not constitute independent review");
   });
