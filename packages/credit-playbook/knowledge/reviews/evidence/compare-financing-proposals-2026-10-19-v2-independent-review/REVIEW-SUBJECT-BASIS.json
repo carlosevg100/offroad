@@ -5,11 +5,11 @@
     "id": "compare-financing-proposals",
     "version": "2026.10.19-v2"
   },
-  "commit": "c437a77100805b165aad16c960e6ca848f2353a1",
+  "commit": "69d12b1ff4fada8d13564d9e3e1b045f7b727ff0",
   "pins": [
     {
       "path": "packages/credit-playbook/knowledge/procedures/capital/compare-financing-proposals.md",
-      "sha256": "5b70c0eab718350e490479f8fe4d38f9f87062480a8b1a3d14422253ed877699"
+      "sha256": "4bc1b9483fb55980b2b5aeeb1481053c6e9519e863b2435bd0d38e0f6508449d"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-packet.ts",
@@ -25,7 +25,7 @@
     },
     {
       "path": "packages/financial-model/src/financing-comparison-premises.ts",
-      "sha256": "66268241c966af7e65be8b20977eb3f7a2ca459ac1aa6c9b8bcfebfb8ed35f09"
+      "sha256": "8bcabf30ff5356221a56c651c841be30474f2e773b2a44df499f886d5b9ecacc"
     },
     {
       "path": "packages/financial-model/src/adopted-financing-comparison.ts",
@@ -53,15 +53,15 @@
     },
     {
       "path": "packages/financial-model/src/financing-comparison-runs.test-support.ts",
-      "sha256": "4541961e23222a517db423b459bdf5236c4de3e1f89f3a4778a4f2bd98a762d7"
+      "sha256": "706c84a9bf73c68e0b8a3eeb1f338057dcd0349949159e08fbcbdc8238f4f77a"
     },
     {
       "path": "packages/financial-model/src/financing-comparison-runs.test.ts",
-      "sha256": "80d727edb3435c8342a0fed2ed1748d0467d2502f4f92e49054991addca91e46"
+      "sha256": "13a96466edd0285c0c333b7508f2ab3d8bb0984323f9c716e38952cb4a2d9a98"
     },
     {
       "path": "packages/financial-core/src/financing-proposal-comparison.ts",
-      "sha256": "6cde598e69a92a801f6a3d39db0335b543d1c927192284c4adf5a34db4f4d4cd"
+      "sha256": "a0650b985e0862885aef41f0964f329275a05b9025719de5c23a23676f04efe9"
     },
     {
       "path": "packages/financial-core/src/business-day-calendar.ts",
@@ -85,7 +85,7 @@
     },
     {
       "path": "packages/financial-core/src/equivalent-financing-cost.ts",
-      "sha256": "df9e58b9f9d24801d9068b92008a9cee58eea7f577d55730e01f6c75d68a536b"
+      "sha256": "9340237cd6ac0ce10d9d1c0e02a5bba80e119fd04b33d646601f58f3f0bb4086"
     },
     {
       "path": "packages/financial-core/src/financing-costs.ts",
@@ -97,7 +97,7 @@
     },
     {
       "path": "packages/financial-core/src/financing-proposal-comparison.test.ts",
-      "sha256": "40095545720a0d50b788fa235d431351eb205801e3a8066a2623b299486b6d38"
+      "sha256": "3d12f1f94fd22d47f7cd6102acc8611291e5f4639e138052b6a7b5e50d767f13"
     },
     {
       "path": "packages/financial-core/src/business-day-calendar.test.ts",
@@ -105,11 +105,11 @@
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.ts",
-      "sha256": "d60bd5641b88a784b30970edf2d5091c9cf627ba0f16ace496ad130fa432ba35"
+      "sha256": "0ce0540be50da27b415d939dc92c679f0ccb569827224b83d99e8b89281f39be"
     },
     {
       "path": "apps/document-worker/src/financing-comparison-premises-proposal.test.ts",
-      "sha256": "c723dc600101432bd8e97db5ee328f60fb93539476741f982fe3726992fe3f31"
+      "sha256": "c96efa87e9eccf636e982f22b1fda03f5004339b069cd81d05f7d56f3def23d5"
     },
     {
       "path": "packages/financial-model/contracts/financing-comparison-packet.json",
@@ -129,15 +129,15 @@
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-gold/run.json",
-      "sha256": "6f67afc668b11356b436cee84964fc9f4992ada46e3136cb162613c885bf960e"
+      "sha256": "fbb3902d61350e9def51f3e0e7d9f147019422440acc0414a7b51335ce0adc36"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-adversarial/run.json",
-      "sha256": "4993e0c41b03fe4a3ba3291d0382211f507e28069551352f4f72ee621cd83934"
+      "sha256": "37296bcde7aef9610a1c3e7ed95fb1d5b397460e591c00aaafa9288de8632ff8"
     },
     {
       "path": "packages/credit-playbook/knowledge/reviews/runs/compare-financing-proposals-2026-10-19-v2-consistency/run.json",
-      "sha256": "b1ee27580798854371d35c040f5b7a48f2f6ee2a279a1c0bd03b5b6c325086d5"
+      "sha256": "49ce64b9ffb39deb05fddb00c67f607b04a6041c196395763c486e10c63efae9"
     }
   ],
   "externalOracle": [
