@@ -41,6 +41,8 @@ export const financingComparisonExtractionSchema = z.strictObject({
       workingCapitalCashFlow: money, maintenanceCapex: money, growthCapex: money})).min(2).max(40)),
     previousQuarters: sourced(z.array(z.strictObject({period: z.string().min(1).max(20), ebitda: money, leasePayments: money})).min(1).max(8)),
     openingCash: sourced(money), cashTaxRate: sourced(share), minimumCash: sourced(money), receivablesPool: sourced(money), leaseLiability: sourced(money),
+    /** Company rule: the largest share of the free receivables a lender may take as collateral, when stated. */
+    maximumCollateralShare: sourced(share),
   }),
   existingDebt: sourced(z.array(z.strictObject({
     label: z.string().min(1).max(80), openingPrincipal: money, rateKind: z.enum(["floating", "fixed"]), annualRate: z.number().min(0).max(0.5),
@@ -63,6 +65,7 @@ export const financingComparisonExtractionContract = {
     "Meses em AAAA-MM. Para cada proposta: mês do desembolso, mês da primeira amortização, número de parcelas, meses entre parcelas, meses entre pagamentos de juros, parcela da operação cedida em garantia, limite do covenant de dívida líquida sobre EBITDA, se a dívida do covenant inclui arrendamentos e, separadamente, se o EBITDA do covenant exclui arrendamentos (IFRS 16), frequência de teste e se a proposta exige waiver de outro credor: qual credor (como aparece na tabela de dívida), em que mês e quanto custa.",
     "creditTax é true quando a operação paga IOF de crédito (CCB, empréstimo) e false quando não paga (debênture). origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     "Quando o term sheet trouxer a data exata do desembolso e o dia do mês dos pagamentos, devolva drawDate (AAAA-MM-DD) e paymentDay.",
+    "Política da companhia, quando dita: caixa mínimo (minimumCash) e o teto da carteira livre de recebíveis que pode ser cedido em garantia, em fração (maximumCollateralShare; 40% vira 0.4).",
     "Dedutibilidade do custo do waiver (waiverDeductible) e de cada encargo da dívida existente (deductible) somente quando a pessoa ou o documento disser; senão null. Nunca presuma.",
     "A projeção da companhia é trimestral: um item por trimestre com EBITDA, arrendamentos pagos, depreciação, fluxo de capital de giro (negativo consome caixa), capex de manutenção e de expansão.",
   ].join("\n"),
@@ -188,7 +191,8 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       covenantHistory: previous,
       minimumCashPolicy: e.company.minimumCash.value !== null && e.company.minimumCash.origin !== null
         ? {value: e.company.minimumCash.value, origin: e.company.minimumCash.origin, source: e.company.minimumCash.source ?? "Informado na conversa"} : null,
-      maximumCollateralShare: null},
+      maximumCollateralShare: e.company.maximumCollateralShare.value !== null && e.company.maximumCollateralShare.origin !== null
+        ? {value: String(e.company.maximumCollateralShare.value), origin: e.company.maximumCollateralShare.origin, source: e.company.maximumCollateralShare.source ?? "Informado na conversa"} : null},
     existingDebt: {...debt, value: existing}, proposals: built,
     creditTax: {value: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365}, origin: "house", source: "IOF de crédito para pessoa jurídica: 0,38% mais 0,0082% ao dia, limitado a 365 dias"},
     stress: {ebitdaShock: {value: "0.15", origin: "house", source: "EBITDA 15% menor, o caso que um banco tende a usar"},

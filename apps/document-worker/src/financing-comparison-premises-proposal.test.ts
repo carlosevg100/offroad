@@ -27,7 +27,7 @@ function c02Extraction(): FinancingComparisonExtraction {
       workingCapitalCashFlow: String(-0.625 + ([1, 5, 9].includes(q) ? -25 : 0) + ([2, 6].includes(q) ? 25 : 0)), maintenanceCapex: "2", growthCapex: "0"})), "projecao-trimestral.xlsx"),
       previousQuarters: doc([{period: "1T26", ebitda: "13.5", leasePayments: "0.75"}, {period: "2T26", ebitda: "13.5", leasePayments: "0.75"}], "gerencial"),
       openingCash: doc("35", "gerencial"), cashTaxRate: informed(0.34, "lucro real"), minimumCash: informed("15", "caixa mínimo de 15"),
-      receivablesPool: doc("58", "gerencial"), leaseLiability: doc("8", "demonstrações")},
+      receivablesPool: doc("58", "gerencial"), leaseLiability: doc("8", "demonstrações"), maximumCollateralShare: none},
     existingDebt: doc([
       {label: "Debênture 2021", openingPrincipal: "60", rateKind: "floating", annualRate: 0.024, averagePrincipalCoupon: false, couponEveryMonths: 6,
         draws: [], amortizations: ["2026-12", "2027-06", "2027-12", "2028-06"].map((month) => ({month, amount: "15"})), prepayments: [], charges: []},
@@ -112,6 +112,11 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(completeFinancingComparisonFacts({extraction: undeclared, ids, currency: "BRL"})).toMatchObject({status: "missing"});
     const late = c02Extraction(); late.indexCurve.value = late.indexCurve.value!.filter((c) => c.year >= 2028);
     expect(completeFinancingComparisonFacts({extraction: late, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["indexCurve"]});
+    // The company's collateral cap, when stated, reaches the facts with its source (tenth review condition).
+    const cap = c02Extraction(); cap.company.maximumCollateralShare = informed(0.4, "política de garantias do CFO");
+    const capped = completeFinancingComparisonFacts({extraction: cap, ids, currency: "BRL"});
+    if (capped.status !== "complete") throw new Error("expected complete");
+    expect(capped.facts.company.maximumCollateralShare).toEqual({value: "0.4", origin: "informed", source: "política de garantias do CFO"});
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
     expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
   });
