@@ -320563,6 +320563,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_reply_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_reply_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, ficha C32 (resposta da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, ativação",
+      "reason": "Resposta determinística da conversa que propôs as premissas, citando a revisão do resultado; nunca falha o commit e é idempotente por execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019021211_execution_result_reply.sql",
+          "line": 8,
+          "anchor": "create function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Chamada apenas pelo commit da execução; nenhum grant a API."
     }
   ],
   "repository_items": [
@@ -328116,6 +328171,18 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Guarda nula-segura do mapeamento de blocos do resultado de investimento; recusa pacote sem comparação, métricas ou casos."
+    },
+    {
+      "path": "supabase/migrations/20261019020056_investment_payload_provenance.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "A carga do método de investimento passa pela mesma prova de proveniência do capital: base adotada guardada, decisões fixadas no contrato, entidades, definições e fontes legíveis pelo solicitante."
+    },
+    {
+      "path": "supabase/migrations/20261019021211_execution_result_reply.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Resposta da conversa ao fim do cálculo de investimento, com citação do resultado registrado; commit chama a função após o produtor de artefato."
     }
   ],
   "staging_archive": [

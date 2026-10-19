@@ -100,7 +100,7 @@
     {
       "signature": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text)",
       "file": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text).sql",
-      "sha256": "f2e39d370b8962b9117410cbc083cf5133756fe9b693c0b04ef7e84b7fd2e8f0"
+      "sha256": "5b00223819bd0f3270f28e24be53c7beb031c458e59d8ab962112b12c19480a3"
     },
     {
       "signature": "private.complete_event_outbox_v1(text,uuid,text)",

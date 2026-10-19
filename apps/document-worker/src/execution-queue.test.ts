@@ -10,9 +10,9 @@ function transport(data:unknown, error:unknown=null) {
   return {queue:createExecutionQueue({rpc} as unknown as SupabaseClient,"synthetic-worker-token"),rpc};
 }
 describe("execution queue transport",()=>{
-  it("claims only installed capital manifests and treats an empty queue as idle",async()=>{
+  it("claims only installed compiled manifests, capital and investment, and treats an empty queue as idle",async()=>{
     const t=transport({claimed:false});expect(await t.queue.claim()).toBeNull();
-    expect(t.rpc).toHaveBeenCalledWith("worker_claim_execution_v1",{p_worker_token:"synthetic-worker-token",p_manifest_hashes:releasedMethodArtifacts.filter(r=>r.methodId==="prepare-capital-structure-decision").map(r=>r.manifestHash)});
+    expect(t.rpc).toHaveBeenCalledWith("worker_claim_execution_v1",{p_worker_token:"synthetic-worker-token",p_manifest_hashes:releasedMethodArtifacts.filter(r=>["prepare-capital-structure-decision","analyze-investment-project"].includes(r.methodId)).map(r=>r.manifestHash)});
   });
   it("rejects malformed and extended claim receipts",async()=>{
     for(const data of [{claimed:true},{...claim,capability:"short"},{...claim,authorityOverride:true}]) await expect(transport(data).queue.claim()).rejects.toThrow();

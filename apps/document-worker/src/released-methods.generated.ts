@@ -13,5 +13,12 @@ export const releasedMethodArtifacts = [
     "methodVersion": "2026.09.21-v4",
     "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
     "artifactHash": "e2ac1fd058314efb5b8f56e56e7987a9cb185e711a87f927306eb95baf9c8638"
+  },
+  {
+    "platformReleaseId": "analyze-investment-project-2026.10.09-v2",
+    "methodId": "analyze-investment-project",
+    "methodVersion": "2026.10.09-v2",
+    "manifestHash": "aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2",
+    "artifactHash": "485c8509caaf14eb628a841a0976b3575126128c1f19ff73737101a4cbf957c2"
   }
 ] as const;

@@ -1,0 +1,19 @@
+{
+  "source": "Mensagem direta do fundador nesta tarefa, 18 de outubro de 2026, autorizando a ativação da execução deste método",
+  "author": "Carlos Eduardo Vasques Galves",
+  "scope": "Ativação da execução do método analyze-investment-project 2026.10.09-v2 em produção (perfil de execução, liberação da capacidade). Não aprova outro método nem efeito externo.",
+  "release": "analyze-investment-project-2026.10.09-v2",
+  "manifestHash": "aff463906b33b63104790fe9beb18521511dffbbf4cb63344c015e79496cf9d2",
+  "acts": [
+    {
+      "verbatim": "Autorizo ativar a execução",
+      "context": "Resposta ao pedido explícito: Autorizo ativar a execução do método Analisar o investimento antes do financiamento, versão 2026.10.09-v2, em produção.",
+      "recordedAt": "2026-10-19T02:01:20.741355+00:00"
+    },
+    {
+      "verbatim": "Autorizo registrar o perfil de execução e liberar a capacidade method.analyze-investment-project.2026.10.09-v2 em produção para todas as organizações.",
+      "recordedAt": "2026-10-19T02:32:19.427023+00:00",
+      "effect": "Perfil ade331aa-4ac9-5fbb-a2aa-819d28743f34 registrado (payload 9d79a2022e1b1fbace0aac82486e756426a0ba338f55ef125121bae816f49d22) e capacidade liberada com exposição universal em produção."
+    }
+  ]
+}

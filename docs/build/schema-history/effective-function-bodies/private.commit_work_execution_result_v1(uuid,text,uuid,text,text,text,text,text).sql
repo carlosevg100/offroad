@@ -40,6 +40,8 @@ declare j public.processing_jobs;b private.execution_budget_accounts;m private.e
  perform private.record_execution_result_milestone_v1(j.organization_id,j.execution_id);
  -- The result as an artifact revision (stage 19); the producer never fails the commit.
  perform private.record_execution_result_artifact_v1(j.organization_id,j.execution_id,j.id);
+ -- The conversation that proposed the premises receives the cited reply; it never fails the commit.
+ perform private.record_execution_result_reply_v1(j.organization_id,j.execution_id,j.id);
  update public.processing_jobs set status='succeeded',result=jsonb_build_object('executionId',j.execution_id,'outcome',p_outcome,'resultFingerprint',result_hash) where id=j.id;
  update public.processing_runs set status=p_outcome,completed_at=clock_timestamp(),usage=jsonb_build_object('costMicrousd',b.spent_microusd,'modelCalls',b.spent_calls,'activeDurationMs',b.active_duration_ms)
  where organization_id=j.organization_id and id=j.processing_run_id;
