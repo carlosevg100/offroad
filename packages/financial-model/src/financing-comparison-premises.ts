@@ -39,6 +39,10 @@ const proposal = z.strictObject({
    * lifetime runs on those dates, CDI accrues by national business days over 252 and periods split on
    * 1 January where the curve changes; without them each quarter counts as a quarter of a year. */
   contractDates: z.strictObject({drawDate: z.iso.date(), paymentDay: z.number().int().min(1).max(28)}).nullable(),
+  /** Where each clause came from, when the clauses have different sources (a consent fee stated by the CFO,
+   * the spread from the term sheet). A clause without its own entry takes the proposal's origin. */
+  provenance: z.partialRecord(z.enum(["amount", "annualSpread", "feeRate", "creditTax", "schedule", "collateral", "covenant", "waiver", "contractDates"]),
+    z.strictObject({origin: z.enum(origins), source: text})).optional(),
 });
 
 /** The facts of one comparison, each with its origin. These are proposals: nothing here is
@@ -155,6 +159,10 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
   const tax = f.creditTax.value;
   for (const p of f.proposals) {
     const v = p.value, root = `proposal.${v.id}`, reason = why(p);
+    const clause = (k: keyof NonNullable<typeof v.provenance>) => v.provenance?.[k] ? why(v.provenance[k]!) : reason;
+    // Several clauses in one premise: each cited with its own origin, in one "Origem:" line.
+    const cite = (parts: [keyof NonNullable<typeof v.provenance>, string][]) => `Origem: ${parts.map(([k, name]) => {
+      const x = v.provenance?.[k] ?? p; return `${name}, ${originLabel[x.origin]} (${x.source})`;}).join("; ")}.`;
     add(`${root}.label`, "identity", {type: "text", value: v.label}, reason);
     const life = Math.max(...v.amortizationQuarters) + 1, share = new Exact(v.amount).div(v.amortizationQuarters.length).toDecimalPlaces(8);
     let repaid = new Exact(0);
@@ -194,36 +202,37 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
     charges(`${root}.charges`, [...(fee.gt(0) ? [{id: `${v.label}-fee`, category: "origination_fee", quarter: v.drawQuarter, amount: fee.toFixed(), deductible: true}] : []),
       ...(v.creditTax && creditTax.gt(0) ? [{id: `${v.label}-iof`, category: "tax", quarter: v.drawQuarter, amount: creditTax.toFixed(), deductible: true}] : []),
       ...(v.waiver ? [{id: `${v.label}-waiver`, category: "other", quarter: v.waiver.quarter, amount: v.waiver.cost, deductible: v.waiver.deductible, payee: v.waiver.instrumentId}] : [])],
-      `${reason}${v.creditTax ? ` IOF: ${why(f.creditTax)}` : ""}`);
+      `${cite([["feeRate", "comissão"], ...(v.creditTax ? [["creditTax", "IOF"] as [keyof NonNullable<typeof v.provenance>, string]] : []),
+        ...(v.waiver ? [["waiver", "waiver"] as [keyof NonNullable<typeof v.provenance>, string]] : [])])}${v.creditTax ? ` Regra do IOF: ${f.creditTax.source}.` : ""}`);
     const collateral = new Exact(v.amount).mul(v.collateralShareOfLoan).toFixed();
-    num(`${root}.collateralConsumed`, "currency", collateral, `${reason} Cessão de ${new Exact(v.collateralShareOfLoan).times(100).toFixed()}% do saldo.`);
+    num(`${root}.collateralConsumed`, "currency", collateral, `${clause("collateral")} Cessão de ${new Exact(v.collateralShareOfLoan).times(100).toFixed()}% do saldo.`);
     const months = v.covenant.testFrequency === "annual" ? ["12"] : ["06", "12"];
-    txt(`${root}.covenant.name`, "identity", v.covenant.name, reason);
-    txt(`${root}.covenant.leaseLiabilityInDebt`, "boolean", String(v.covenant.leaseLiabilityInDebt), reason);
+    txt(`${root}.covenant.name`, "identity", v.covenant.name, clause("covenant"));
+    txt(`${root}.covenant.leaseLiabilityInDebt`, "boolean", String(v.covenant.leaseLiabilityInDebt), clause("covenant"));
     num(`${root}.covenant.leaseLiability`, "currency", c.leaseLiability.value, why(c.leaseLiability));
-    txt(`${root}.covenant.ebitdaExcludesLeases`, "boolean", String(v.covenant.ebitdaExcludesLeases), reason);
+    txt(`${root}.covenant.ebitdaExcludesLeases`, "boolean", String(v.covenant.ebitdaExcludesLeases), clause("covenant"));
     num(`${root}.covenant.trailingPeriods`, "count", "4", house("EBITDA dos últimos quatro trimestres"));
-    list(`${root}.covenant.measurementPeriods`, "date", f.quarterEnds.filter((e, q) => q >= v.drawQuarter && months.includes(e.slice(5, 7))), reason);
-    num(`${root}.covenant.limit`, "ratio", v.covenant.limit, reason);
+    list(`${root}.covenant.measurementPeriods`, "date", f.quarterEnds.filter((e, q) => q >= v.drawQuarter && months.includes(e.slice(5, 7))), clause("covenant"));
+    num(`${root}.covenant.limit`, "ratio", v.covenant.limit, clause("covenant"));
     txt(`${root}.covenant.comparator`, "convention", "lte", house("Cumpre quando o índice não passa do limite"));
-    num(`${root}.lifetime.grossAdvance`, "currency", v.amount, reason);
-    num(`${root}.lifetime.upfrontWithheldCosts`, "currency", fee.plus(creditTax).toFixed(), `${reason} Comissão e IOF retidos na entrada.`);
-    num(`${root}.lifetime.annualSpread`, "ratio", v.annualSpread, reason);
+    num(`${root}.lifetime.grossAdvance`, "currency", v.amount, clause("amount"));
+    num(`${root}.lifetime.upfrontWithheldCosts`, "currency", fee.plus(creditTax).toFixed(), `${cite([["feeRate", "comissão"], ...(v.creditTax ? [["creditTax", "IOF"] as [keyof NonNullable<typeof v.provenance>, string]] : [])])} Comissão e IOF retidos na entrada.`);
+    num(`${root}.lifetime.annualSpread`, "ratio", v.annualSpread, clause("annualSpread"));
     txt(`${root}.lifetime.unpaidInterestBase`, "convention", "principal_plus_accrued", house("Juros não pagos acumulam sobre principal e juros"));
     num(`${root}.lifetime.lowerSpread`, "ratio", "0", house("Intervalo de busca do custo efetivo"));
     num(`${root}.lifetime.upperSpread`, "ratio", "0.2", house("Intervalo de busca do custo efetivo"));
-    list(`${root}.lifetime.periodEnds`, "date", lifePeriods.map((l) => l.end), reason);
+    list(`${root}.lifetime.periodEnds`, "date", lifePeriods.map((l) => l.end), clause(v.contractDates ? "contractDates" : "schedule"));
     list(`${root}.lifetime.yearFractions`, "ratio", lifePeriods.map((l) => l.fraction),
       v.contractDates ? house("Dias úteis do calendário nacional sobre 252") : house("Cada trimestre como um quarto de ano"));
     list(`${root}.lifetime.annualIndex`, "ratio", lifePeriods.map((l) => l.index), why(f.indexCurve));
     list(`${root}.lifetime.yearFractionConventions`, "convention", lifePeriods.map((l) => l.convention), v.contractDates ? house("CDI em dias úteis, base 252") : house("Fração de ano adotada"));
     add(`${root}.lifetime.drawDate`, "date", {type: "date", value: base},
-      v.contractDates ? reason : house("Na grade trimestral, o desembolso abre o trimestre e é registrado no fim do trimestre anterior"));
+      v.contractDates ? clause("contractDates") : house("Na grade trimestral, o desembolso abre o trimestre e é registrado no fim do trimestre anterior"));
     if (v.contractDates) {
       list(`${root}.lifetime.businessDays`, "count", lifePeriods.map((l) => String(l.businessDays)), house("Dias úteis entre as datas pelo calendário nacional de feriados bancários"));
     }
-    list(`${root}.lifetime.scheduledPrincipal`, "currency", lifePeriods.map((l) => l.principal), reason);
-    list(`${root}.lifetime.paysAccruedInterest`, "boolean", lifePeriods.map((l) => String(l.pays)), reason);
+    list(`${root}.lifetime.scheduledPrincipal`, "currency", lifePeriods.map((l) => l.principal), clause("schedule"));
+    list(`${root}.lifetime.paysAccruedInterest`, "boolean", lifePeriods.map((l) => String(l.pays)), clause("schedule"));
   }
   return out;
 }

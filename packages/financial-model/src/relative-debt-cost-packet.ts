@@ -63,7 +63,11 @@ export function prepareRelativeDebtCostPacket(raw: unknown): RelativeDebtCostPac
   const result = adoptedRelativeDebtCostOutputSchema.parse(calculateAdoptedRelativeDebtCost(input.analysis));
   const b = result.bridge as {grossBps: string; knownAdjustmentsBps: string; residualBps: string | null; afterPricingDateBps: string | null; steps: {family: string; bps: string}[]} | null;
   const lens = readAdoptedRelativeCostLens(input.lens, b?.residualBps ?? null);
-  const own = (result.own as {spreadBps: string | null}).spreadBps, peer = (result.peer as {spreadBps: string | null}).spreadBps;
+  const ownSide = result.own as {spreadBps: string | null; indexer: string | null}, peerSide = result.peer as {spreadBps: string | null; indexer: string | null};
+  // Without the full bridge, a gross difference is shown only for quoted spreads on the same known
+  // indexer; other spreads need an adopted equivalent curve, which only the bridge establishes.
+  const comparable = ownSide.indexer !== null && ownSide.indexer === peerSide.indexer;
+  const own = comparable ? ownSide.spreadBps : null, peer = comparable ? peerSide.spreadBps : null;
   const decomposition = b ? {grossBps: b.grossBps, afterPricingDateBps: b.afterPricingDateBps, structureAndMarketBps: b.knownAdjustmentsBps, creditResidualBps: b.residualBps,
     shareNotAboutCompanyRisk: new Exact(b.grossBps).isZero() ? "0" : fmt(new Exact(b.knownAdjustmentsBps).div(b.grossBps)), residualReading: "under_adopted_adjustments" as const}
     : own !== null && peer !== null ? {grossBps: fmt(new Exact(own).minus(peer)), afterPricingDateBps: null, structureAndMarketBps: null, creditResidualBps: null,
@@ -75,7 +79,8 @@ export function prepareRelativeDebtCostPacket(raw: unknown): RelativeDebtCostPac
     const covered = action?.status === "stated_horizon_estimate";
     return {...lever, savings: action?.nominalSavings ?? null, knownCosts: action?.knownCosts ?? null, netOfKnownCosts: net ? fmt(net) : null, paysForItself: net && covered ? net.gt(0) : null};
   });
-  const gaps = [...result.gaps, ...lens.gaps];
+  const gaps = [...result.gaps, ...lens.gaps,
+    ...(!b && !comparable ? [{operand: `relative_cost.${input.analysis.comparisonId}.comparability`, reason: "Spreads on different or unknown indexers are not compared without an adopted equivalent curve"}] : [])];
   const status = !b || !decomposition ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "relative-debt-cost-packet.v1" as const, executorVersion: relativeDebtCostPacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, peerEntityId: result.peerEntityId, currency: result.currency,

@@ -57,7 +57,7 @@ Pacote de capacidade: para o cronograma informado e para cada alternativa adotad
 # Sequência operacional
 1. [human_judgment] Enquadrar a pergunta :: Separar o uso, o cronograma e a decisão; se há projeto, conferir antes o retorno pelo método do investimento | evidence: base autorizada, fontes e versões
 2. [deterministic] Projetar a companhia :: Companhia com o plano vigente e a dívida nova em escala com o uso, base e adverso, até a amortização final relevante | evidence: base autorizada, fontes e versões
-3. [deterministic] Medir cada limite :: Maior valor que respeita cada limite em todas as datas e cenários; o menor é o que prende, com a data em que prende | evidence: base autorizada, fontes e versões
+3. [deterministic] Medir a capacidade :: Maior valor que respeita todas as regras ao mesmo tempo, em todas as datas e cenários; o limite que prende é o primeiro a falhar no valor seguinte, com data e cenário; o máximo de cada limite isolado fica como diagnóstico | evidence: base autorizada, fontes e versões
 4. [deterministic] Revisar o valor pedido :: Alavancagem máxima e data, menor caixa e data e cobertura de juros, no base e no adverso, com o limite que falha | evidence: base autorizada, fontes e versões
 5. [deterministic] Testar alternativas :: Faseamento e estruturas adotadas, cada uma completa na mesma base; tamanho e perfil separados | evidence: base autorizada, fontes e versões
 6. [deterministic] Conferir o plano vigente :: Amortização programada contra caixa depois dos juros, ano a ano, sem dívida nova | evidence: base autorizada, fontes e versões
