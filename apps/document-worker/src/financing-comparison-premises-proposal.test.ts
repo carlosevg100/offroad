@@ -19,7 +19,7 @@ function c02Extraction(): FinancingComparisonExtraction {
     covenantTestFrequency: doc(frequency, `ts-${label}.pdf`), covenantDescription: null, waiverRequired: doc(waiver, `ts-${label}.pdf`),
     waiverCreditor: waiver ? doc("Debênture 2021", `ts-${label}.pdf`) : none, waiverMonth: waiver ? doc("2026-12", `ts-${label}.pdf`) : none,
     waiverCost: waiver ? informed("0.525", "assembleia da debênture de 2021") : none, waiverDeductible: waiver ? informed(false, "assembleia da debênture de 2021") : none, drawDate: doc("2027-01-15", `ts-${label}.pdf`), paymentDay: doc(15, `ts-${label}.pdf`)});
-  return {
+  return {needSituation: informed("seasonal-working-capital" as const, "alongar os vencimentos de 2027"),
     proposals: [proposal("itau", 0.023, 0.01, true, "2028-07", 8, 6, 3, 0.4, 3, true, "semiannual", true),
       proposal("santander", 0.0255, 0.008, true, "2029-07", 6, 6, 3, 0.3, 3, false, "annual", true),
       proposal("fundo", 0.031, 0.015, false, "2031-01", 2, 12, 6, 0, 2.75, false, "semiannual", false)],
@@ -64,10 +64,11 @@ describe("financing comparison premises proposed from a turn", () => {
   it("builds a proposal whose hypotheses carry origin and no identity until the person confirms", () => {
     const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
-    const p = buildFinancingComparisonPremiseProposal(c.facts);
+    const p = buildFinancingComparisonPremiseProposal(c.facts, c.situationId);
     expect(p.methodId).toBe("compare-financing-proposals"); expect(p.hypotheses.length).toBeLessThanOrEqual(256);
     expect(p.hypotheses.every((h) => h.dimensions.entityId === null && h.fieldPath.startsWith(`comparison.${comparisonId}.`) && /^Origem: /.test(h.reason))).toBe(true);
-    expect(p.fingerprint).toBe(buildFinancingComparisonPremiseProposal(c.facts).fingerprint);
+    expect(p.fingerprint).toBe(buildFinancingComparisonPremiseProposal(c.facts, c.situationId).fingerprint);
+    expect(p.summary.situationId).toBe("seasonal-working-capital");
   });
   it("never infers a contract clause: EBITDA definition, the consenting creditor and a half pair of dates are gaps", () => {
     const e = c02Extraction(); e.proposals[0]!.covenantEbitdaExcludesLeases = none;
@@ -83,12 +84,12 @@ describe("financing comparison premises proposed from a turn", () => {
     const z = c02Extraction(); z.proposals[2]!.feeRate = doc(0, "ts-fundo.pdf");
     const zc = completeFinancingComparisonFacts({extraction: z, ids, currency: "BRL"});
     if (zc.status !== "complete") throw new Error(zc.missing.join(","));
-    expect(buildFinancingComparisonPremiseProposal(zc.facts).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
+    expect(buildFinancingComparisonPremiseProposal(zc.facts, zc.situationId).hypotheses.some((x) => x.fieldPath.endsWith("charges.chargeIds") && (x.value.value as string[]).includes("fundo-fee"))).toBe(false);
   });
   it("keeps each clause's own origin and refuses a coupon period off whole quarters", () => {
     const c = completeFinancingComparisonFacts({extraction: c02Extraction(), ids, currency: "BRL"});
     if (c.status !== "complete") throw new Error("expected complete");
-    const p = buildFinancingComparisonPremiseProposal(c.facts);
+    const p = buildFinancingComparisonPremiseProposal(c.facts, c.situationId);
     const charges = p.hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${c.facts.proposals[0]!.value.id}.charges.chargeIds`))!;
     expect(charges.reason).toContain("custo do waiver, informado (assembleia da debênture de 2021)");
     expect(charges.reason).toContain("credor do waiver, documento (ts-itau.pdf)");
@@ -101,7 +102,7 @@ describe("financing comparison premises proposed from a turn", () => {
     first.installmentEveryMonths = {...first.installmentEveryMonths!, origin: "informed", source: "CFO, intervalo"};
     const q = completeFinancingComparisonFacts({extraction: cfo, ids, currency: "BRL"});
     if (q.status !== "complete") throw new Error("expected complete");
-    const principal = buildFinancingComparisonPremiseProposal(q.facts).hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${q.facts.proposals[0]!.value.id}.lifetime.scheduledPrincipal`))!;
+    const principal = buildFinancingComparisonPremiseProposal(q.facts, q.situationId).hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${q.facts.proposals[0]!.value.id}.lifetime.scheduledPrincipal`))!;
     expect(principal.reason).toContain("número de parcelas, informado (CFO, número de parcelas)");
     expect(principal.reason).toContain("intervalo entre parcelas, informado (CFO, intervalo)");
     expect(principal.reason).toContain("primeira amortização, documento (ts-itau.pdf)");

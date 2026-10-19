@@ -63,6 +63,7 @@ import {rejectRetiredFrameworkJob} from "./framework-dispatch-policy";
 import {specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
 import {safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
 import {investmentFactExtractionContract, proposeInvestmentPremisesForTurn} from "./investment-premises-proposal";
+import {financingComparisonExtractionContract, proposeFinancingComparisonPremisesForTurn, shouldProposeFinancingComparisonPremises} from "./financing-comparison-premises-proposal";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -263,6 +264,13 @@ Rules:
   and that the calculation runs only after the user confirms or corrects them. Never state a result
   (value, return, payback) before the calculation exists. When its status is missing, ask for the
   missing items in one batch, each with the reason it changes the analysis.
+- comparisonPremises is the premise proposal for offers received for the same need. When proposed,
+  the terms of each proposal and the company premises appear in a card below your reply, each with its
+  origin. Say which offers will be put on the same basis and what each one is compared on (lifetime
+  cost, cash with the existing debt, covenant in each lender's own definition, collateral, firmness),
+  and that the numbers come after the user confirms. Never state which offer is cheaper or safer before
+  the calculation exists. When its status is missing, ask for the missing terms in one batch, each
+  with the reason; a term absent from a term sheet becomes a question for that counterparty.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -538,8 +546,24 @@ export async function processAgentOperationBriefJob(
     const deterministicActivation = deterministicClarification ? null : buildDeterministicActivation(context, executionRoute);
     // A capital question about an identifiable investment in private work proposes its premises;
     // nothing is adopted or calculated until the person confirms them.
-    const premises = deterministicClarification || deterministicActivation || executionRoute.action !== "continue_private_case"
-      || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises ? null
+    const premiseStepOpen = !(deterministicClarification || deterministicActivation || executionRoute.action !== "continue_private_case"
+      || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises);
+    // One premise step per turn: offers for the same need are compared; otherwise an investment is analyzed.
+    const comparisonTurn = premiseStepOpen && shouldProposeFinancingComparisonPremises(context.message, context.documents.length > 0);
+    const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
+          message: context.message, hasAttachments: context.documents.length > 0,
+          recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
+          projectId: context.project?.id ?? null,
+          loadEvidence: () => queue.loadPremiseEvidence!(job),
+          extract: async (text) => (await gateway.complete({
+            ...financingComparisonExtractionContract,
+            input: [{type: "text", text}],
+            dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+            metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+          })).output,
+          log: (event, detail) => log(event, {job: job.job_id, ...detail}),
+        });
+    const premises = !premiseStepOpen || comparisonTurn ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
           recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
@@ -591,6 +615,7 @@ export async function processAgentOperationBriefJob(
               recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
               latestUserMessage: context.message,
               investmentPremises: premises?.forAdvisor ?? null,
+              comparisonPremises: comparison?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -706,13 +731,15 @@ export async function processAgentOperationBriefJob(
         });
       }
     }
-    if (premises?.proposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
-      await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premises.proposal);
+    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? null;
+    if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
+      await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
       await queue.recordAgentResponse(job, assistantMessageId, response, proposal, response.activation, executionBrief);
     }
     await queue.writeStage(job, "agent_operation_brief", "succeeded", {
       investmentPremises: premises?.forAdvisor.status,
+      comparisonPremises: comparison?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

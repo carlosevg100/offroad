@@ -20,8 +20,12 @@ const sourced = <T extends z.ZodType>(value: T) => z.strictObject({value: value.
 const money = z.string().regex(/^-?\d{1,15}(?:\.\d{1,8})?$/);
 const month = z.string().regex(/^\d{4}-\d{2}$/);
 const share = z.number().min(0).max(1);
+/** The company situations in which offers for the same need are compared; the use of the funds decides. */
+export const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"] as const;
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const financingComparisonExtractionSchema = z.strictObject({
+  /** What the money is for, as one of the company situations the comparison serves. */
+  needSituation: sourced(z.enum(comparisonSituations)),
   proposals: z.array(z.strictObject({
     label: z.string().min(1).max(80),
     amount: sourced(money), annualSpread: sourced(z.number().min(0).max(0.3)), feeRate: sourced(share), creditTax: sourced(z.boolean()),
@@ -61,6 +65,7 @@ export const financingComparisonExtractionContract = {
   system: [
     "Você extrai os termos de propostas de financiamento para a mesma necessidade e os dados da companhia que permitem compará-las, a partir da mensagem de uma pessoa, das mensagens anteriores e de campos já extraídos de documentos (term sheets, tabela de dívida, projeção).",
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null em value, origin e source. Nunca estime, nunca complete, nunca arredonde por conta própria.",
+    "needSituation é o uso dos recursos: giro sazonal (seasonal-working-capital), giro estrutural (structural-working-capital), investimento (capex-infrastructure), refinanciamento de negócio estável (stable-business-high-conversion) ou companhia perto de covenant (near-covenant). Só preencha se a conversa ou o documento disser.",
     "Valores monetários em reais, sem separador de milhar (R$ 70 milhões vira 70000000). Taxas em fração (CDI + 2,30% vira annualSpread 0.023; comissão de 1% vira 0.01).",
     "Meses em AAAA-MM. Para cada proposta: mês do desembolso, mês da primeira amortização, número de parcelas, meses entre parcelas, meses entre pagamentos de juros, parcela da operação cedida em garantia, limite do covenant de dívida líquida sobre EBITDA, se a dívida do covenant inclui arrendamentos e, separadamente, se o EBITDA do covenant exclui arrendamentos (IFRS 16), frequência de teste e se a proposta exige waiver de outro credor: qual credor (como aparece na tabela de dívida), em que mês e quanto custa.",
     "creditTax é true quando a operação paga IOF de crédito (CCB, empréstimo) e false quando não paga (debênture). origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
@@ -77,7 +82,7 @@ export const financingComparisonExtractionContract = {
 };
 
 export type ComparisonCompletion =
-  | {status: "complete"; facts: FinancingComparisonFacts; housePremiseKeys: string[]}
+  | {status: "complete"; facts: FinancingComparisonFacts; situationId: (typeof comparisonSituations)[number]; housePremiseKeys: string[]}
   | {status: "missing"; missing: string[]};
 
 const months = (m: string) => Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;
@@ -96,6 +101,7 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
   if (e.proposals.length < 2) missing.push("proposals");
   const quarters = need("company.quarters", e.company.quarters), previous = need("company.previousQuarters", e.company.previousQuarters);
   const opening = need("company.openingCash", e.company.openingCash), taxRate = need("company.cashTaxRate", e.company.cashTaxRate);
+  const situation = need("needSituation", e.needSituation);
   const pool = need("company.receivablesPool", e.company.receivablesPool), debt = need("existingDebt", e.existingDebt), curve = need("indexCurve", e.indexCurve);
   const anyLease = e.proposals.some((p) => p.covenantLeasesInDebt.value === true);
   const lease = anyLease ? need("company.leaseLiability", e.company.leaseLiability) : null;
@@ -120,7 +126,7 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
           paymentDay: draw && day ? {value: p.paymentDay.value!, origin: p.paymentDay.origin!, source: p.paymentDay.source ?? "Documento"} : null};
       })()};
   });
-  if (missing.length || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
+  if (missing.length || !situation || !quarters || !previous || !opening || !taxRate || !pool || !debt || !curve) return {status: "missing", missing};
   const ends = quarters.value.map((q) => q.quarterEnd);
   const firstStart = (() => {const d = new Date(`${ends[0]}T00:00:00Z`); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 2, 1)).toISOString().slice(0, 7);})();
   const openingDate = (() => {const d = new Date(`${ends[0]}T00:00:00Z`); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 2, 0)).toISOString().slice(0, 10);})();
@@ -197,12 +203,12 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
     creditTax: {value: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365}, origin: "house", source: "IOF de crédito para pessoa jurídica: 0,38% mais 0,0082% ao dia, limitado a 365 dias"},
     stress: {ebitdaShock: {value: "0.15", origin: "house", source: "EBITDA 15% menor, o caso que um banco tende a usar"},
       fromQuarter: {value: Math.min(1, ends.length - 1), origin: "house", source: "A partir do trimestre seguinte ao atual"}}});
-  return {status: "complete", facts, housePremiseKeys: [...new Set(used)]};
+  return {status: "complete", facts, situationId: situation.value, housePremiseKeys: [...new Set(used)]};
 }
 
 /** The proposal the worker records next to its reply: facts with origin, the hypotheses one
  * confirmation adopts, a short summary for the card and the fingerprint the confirmation checks. */
-export function buildFinancingComparisonPremiseProposal(facts: FinancingComparisonFacts) {
+export function buildFinancingComparisonPremiseProposal(facts: FinancingComparisonFacts, situationId: (typeof comparisonSituations)[number]) {
   const hypotheses = proposeFinancingComparisonHypotheses(facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId: null, definitionVersionId: null}}));
   const summary = {
     proposals: facts.proposals.map((p) => ({label: p.value.label, amount: p.value.amount, annualSpread: p.value.annualSpread, feeRate: p.value.feeRate,
@@ -210,7 +216,7 @@ export function buildFinancingComparisonPremiseProposal(facts: FinancingComparis
     quarters: facts.quarterEnds.length, existingDebt: facts.existingDebt.value.map((d) => d.label),
     minimumCashPolicy: facts.company.minimumCashPolicy?.value ?? null,
     premises: [{key: "creditTax", origin: facts.creditTax.origin, source: facts.creditTax.source}, {key: "stress", origin: facts.stress.ebitdaShock.origin, source: facts.stress.ebitdaShock.source}],
-    cases: ["base", "bank-stress"],
+    cases: ["base", "bank-stress"], situationId,
   };
   const body = {methodId: financingComparisonPremiseMethod.methodId, methodVersion: financingComparisonPremiseMethod.methodVersion, facts, hypotheses, summary};
   return {...body, fingerprint: createHash("sha256").update(JSON.stringify(body)).digest("hex")};
@@ -239,7 +245,7 @@ export async function proposeFinancingComparisonPremisesForTurn(input: {
       input.log("comparison_premises.missing", {missing: completed.missing});
       return {forAdvisor: {status: "missing", missing: completed.missing}, proposal: null};
     }
-    const proposal = buildFinancingComparisonPremiseProposal(completed.facts);
+    const proposal = buildFinancingComparisonPremiseProposal(completed.facts, completed.situationId);
     input.log("comparison_premises.proposed", {hypotheses: proposal.hypotheses.length, housePremises: completed.housePremiseKeys});
     return {forAdvisor: {status: "proposed", summary: proposal.summary, housePremises: completed.housePremiseKeys}, proposal};
   } catch (error) {

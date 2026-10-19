@@ -11,6 +11,7 @@ export function selectClientMessages(messages: Messages) {
     decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,
     InvestmentPremisesCard: messages.InvestmentPremisesCard,
+    ComparisonPremisesCard: messages.ComparisonPremisesCard,
     AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
     AdvisorWorkSurface: messages.AdvisorWorkSurface,
     Intake: {executionApproval: messages.Intake.executionApproval},

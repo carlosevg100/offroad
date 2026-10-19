@@ -1418,3 +1418,115 @@ export function readInvestmentDecisionPacketBlocks(blocks: ReadonlyArray<{readon
     conclusionChangingCaseIds: conclusion.content.conclusionChangingCaseIds, timingCaseIds: conclusion.content.timingCaseIds,
     informationGaps: gaps.content.rows, exclusions: exclusions.content.items});
 }
+
+/** The financing comparison packet as the result protocol reads it (ficha C02). */
+export type FinancingComparisonPacketLike = {
+  readonly schemaVersion: "financing-comparison-packet.v1";
+  readonly status: "framed" | "partial" | "prepared_for_human_review";
+  readonly question: string; readonly currency: string; readonly fingerprint: string; readonly financialCoreVersion: string;
+  readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]; readonly result: {readonly fingerprint: string}}>;
+  readonly comparison: {
+    readonly baseCaseId: string; readonly viableInEveryCaseProposalIds: readonly string[]; readonly conclusionChangingCaseIds: readonly string[]; readonly nominalSpreadMisleads: boolean | null;
+    readonly cases: ReadonlyArray<{readonly caseId: string; readonly viableProposalIds: readonly string[]; readonly incompleteProposalIds: readonly string[];
+      readonly lowestEquivalentCostProposalId: string | null; readonly highestMinimumCashProposalId: string | null;
+      readonly proposals: ReadonlyArray<{readonly proposalId: string; readonly label: string; readonly equivalentSpread: string | null; readonly weightedAverageLifeYears: string;
+        readonly minimumCash: {readonly amount: string; readonly periodId: string}; readonly covenant: {readonly worstPeriod: string; readonly worstRatio: string; readonly headroom: string; readonly ebitdaHeadroom: string; readonly allComply: boolean};
+        readonly debtServiceByYear: Readonly<Record<string, string>>; readonly collateralConsumed: string; readonly freeReceivablesAfter: string; readonly horizonFinancingCost: string;
+        readonly netDebtAtHorizon: string; readonly covenantTestsPerYear: number; readonly eliminatoryFacts: readonly string[]; readonly conditioningFacts: readonly string[]}>}>;
+  };
+  readonly gaps: ReadonlyArray<{readonly caseId: string; readonly operand: string; readonly reason: string}>;
+  readonly exclusions: readonly string[];
+};
+
+/** Blocks of a financing comparison result. Values are copied from the packet, never recomputed;
+ * `private.execution_result_comparison_blocks_v1` mirrors this mapping key for key. */
+export function financingComparisonPacketBlocks(packet: FinancingComparisonPacketLike): readonly ArtifactBlockDraft[] {
+  if (packet.schemaVersion !== "financing-comparison-packet.v1") throw new Error("execution_result_unmappable");
+  const fingerprintOf = new Map(packet.cases.map((c) => [c.id, c.result.fingerprint]));
+  const rows = packet.comparison.cases.flatMap((c) => c.proposals.map((p) => ({c, p})));
+  const drafts: unknown[] = [
+    {blockKey: "framing", kind: "section", claims: [],
+      content: {status: packet.status, question: packet.question, currency: packet.currency, baseCaseId: packet.comparison.baseCaseId, caseCount: packet.cases.length,
+        nominalSpreadMisleads: packet.comparison.nominalSpreadMisleads}},
+    {blockKey: "cases", kind: "table",
+      content: {rows: packet.cases.map((c) => ({id: c.id, role: c.role, label: c.label, changes: [...c.changes]}))},
+      claims: packet.cases.map((c) => ({claimId: c.id, kind: "judgment", value: c.label, unit: null, period: null, supportIds: [c.result.fingerprint]}))},
+    {blockKey: "proposals", kind: "table",
+      content: {rows: rows.map(({c, p}) => ({caseId: c.caseId, proposalId: p.proposalId, label: p.label, equivalentSpread: p.equivalentSpread, weightedAverageLifeYears: p.weightedAverageLifeYears,
+        minimumCash: p.minimumCash.amount, minimumCashPeriod: p.minimumCash.periodId, worstRatio: p.covenant.worstRatio, worstPeriod: p.covenant.worstPeriod,
+        headroom: p.covenant.headroom, ebitdaHeadroom: p.covenant.ebitdaHeadroom, covenantComplies: p.covenant.allComply, covenantTestsPerYear: p.covenantTestsPerYear, collateralConsumed: p.collateralConsumed,
+        freeReceivablesAfter: p.freeReceivablesAfter, horizonFinancingCost: p.horizonFinancingCost, netDebtAtHorizon: p.netDebtAtHorizon,
+        eliminatoryFacts: [...p.eliminatoryFacts], conditioningFacts: [...p.conditioningFacts]}))},
+      claims: rows.flatMap(({c, p}) => [
+        ...(p.equivalentSpread !== null ? [{claimId: `spread:${c.caseId}:${p.proposalId}`, kind: "calculation", value: p.equivalentSpread, unit: "ratio", period: null,
+          supportIds: [fingerprintOf.get(c.caseId) ?? packet.fingerprint]}] : []),
+        {claimId: `minimum-cash:${c.caseId}:${p.proposalId}`, kind: "calculation", value: p.minimumCash.amount, unit: packet.currency, period: p.minimumCash.periodId,
+          supportIds: [fingerprintOf.get(c.caseId) ?? packet.fingerprint]}])},
+    {blockKey: "debt-service", kind: "table", claims: [],
+      content: {rows: rows.flatMap(({c, p}) => Object.keys(p.debtServiceByYear).sort().map((year) => ({caseId: c.caseId, proposalId: p.proposalId, year, amount: p.debtServiceByYear[year]!})))}},
+    {blockKey: "conclusion", kind: "section", claims: [],
+      content: {viableInEveryCaseProposalIds: [...packet.comparison.viableInEveryCaseProposalIds], conclusionChangingCaseIds: [...packet.comparison.conclusionChangingCaseIds],
+        cases: packet.comparison.cases.map((c) => ({caseId: c.caseId, viableProposalIds: [...c.viableProposalIds], incompleteProposalIds: [...c.incompleteProposalIds],
+          lowestEquivalentCostProposalId: c.lowestEquivalentCostProposalId, highestMinimumCashProposalId: c.highestMinimumCashProposalId}))}},
+    {blockKey: "information-gaps", kind: "table", claims: [],
+      content: {rows: packet.gaps.map((g) => ({caseId: g.caseId, operand: g.operand, reason: g.reason}))}},
+    {blockKey: "exclusions", kind: "section", claims: [], content: {items: [...packet.exclusions]}},
+  ];
+  const blocks = drafts.map((draft) => artifactBlockDraftSchema.parse(draft));
+  if (duplicates(blocks.map((block) => block.blockKey))) throw new Error("duplicate_block_key");
+  if (duplicates(blocks.flatMap((block) => block.claims.map((claim) => claim.claimId)))) throw new Error("duplicate_claim_id");
+  return freezeArtifactValue(blocks);
+}
+
+export type FinancingComparisonResultBlocksView = {
+  readonly framing: {readonly status: "framed" | "partial" | "prepared_for_human_review"; readonly question: string; readonly currency: string; readonly baseCaseId: string;
+    readonly caseCount: number; readonly nominalSpreadMisleads: boolean | null};
+  readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]}>;
+  readonly proposals: ReadonlyArray<{readonly caseId: string; readonly proposalId: string; readonly label: string; readonly equivalentSpread: string | null; readonly weightedAverageLifeYears: string;
+    readonly minimumCash: string; readonly minimumCashPeriod: string; readonly worstRatio: string; readonly worstPeriod: string; readonly headroom: string; readonly ebitdaHeadroom: string; readonly covenantComplies: boolean;
+    readonly covenantTestsPerYear: number; readonly collateralConsumed: string; readonly freeReceivablesAfter: string; readonly horizonFinancingCost: string; readonly netDebtAtHorizon: string;
+    readonly eliminatoryFacts: readonly string[]; readonly conditioningFacts: readonly string[]}>;
+  readonly debtService: ReadonlyArray<{readonly caseId: string; readonly proposalId: string; readonly year: string; readonly amount: string}>;
+  readonly conclusion: {readonly viableInEveryCaseProposalIds: readonly string[]; readonly conclusionChangingCaseIds: readonly string[];
+    readonly cases: ReadonlyArray<{readonly caseId: string; readonly viableProposalIds: readonly string[]; readonly incompleteProposalIds: readonly string[];
+      readonly lowestEquivalentCostProposalId: string | null; readonly highestMinimumCashProposalId: string | null}>};
+  readonly informationGaps: ReadonlyArray<{readonly caseId: string; readonly operand: string; readonly reason: string}>;
+  readonly exclusions: readonly string[];
+};
+const num = z.string().regex(decimalText);
+const comparisonBlocks = {
+  framing: z.strictObject({blockKey: z.literal("framing"), kind: z.literal("section"), claims: noClaims, content: z.strictObject({status: z.enum(["framed", "partial", "prepared_for_human_review"]),
+    question: z.string(), currency: z.string(), baseCaseId: z.string(), caseCount: z.number().int().positive(), nominalSpreadMisleads: z.boolean().nullable()})}),
+  cases: investmentCasesBlock,
+  proposals: z.strictObject({blockKey: z.literal("proposals"), kind: z.literal("table"), claims: z.array(artifactClaimSchema), content: z.strictObject({rows: z.array(z.strictObject({
+    caseId: z.string(), proposalId: z.string(), label: z.string(), equivalentSpread: num.nullable(), weightedAverageLifeYears: num, minimumCash: num, minimumCashPeriod: z.string(),
+    worstRatio: num, worstPeriod: z.string(), headroom: num, ebitdaHeadroom: num, covenantComplies: z.boolean(), covenantTestsPerYear: z.number().int().nonnegative(), collateralConsumed: num,
+    freeReceivablesAfter: num, horizonFinancingCost: num, netDebtAtHorizon: num, eliminatoryFacts: z.array(z.string()), conditioningFacts: z.array(z.string())}))})}),
+  debtService: z.strictObject({blockKey: z.literal("debt-service"), kind: z.literal("table"), claims: noClaims,
+    content: z.strictObject({rows: z.array(z.strictObject({caseId: z.string(), proposalId: z.string(), year: z.string(), amount: num}))})}),
+  conclusion: z.strictObject({blockKey: z.literal("conclusion"), kind: z.literal("section"), claims: noClaims, content: z.strictObject({viableInEveryCaseProposalIds: z.array(z.string()),
+    conclusionChangingCaseIds: z.array(z.string()), cases: z.array(z.strictObject({caseId: z.string(), viableProposalIds: z.array(z.string()), incompleteProposalIds: z.array(z.string()),
+      lowestEquivalentCostProposalId: z.string().nullable(), highestMinimumCashProposalId: z.string().nullable()}))})}),
+};
+
+/** The reader of `financingComparisonPacketBlocks`; any unknown, missing or inconsistent block gives null. */
+export function readFinancingComparisonPacketBlocks(blocks: ReadonlyArray<{readonly blockKey: string; readonly kind: string; readonly content: unknown; readonly claims: unknown}>): FinancingComparisonResultBlocksView | null {
+  const byKey = new Map<string, unknown>();
+  for (const block of blocks) {
+    if (byKey.has(block.blockKey)) return null;
+    byKey.set(block.blockKey, {blockKey: block.blockKey, kind: block.kind, content: block.content, claims: block.claims});
+  }
+  const parse = <T>(key: string, schema: z.ZodType<T>): T | null => {const r = schema.safeParse(byKey.get(key)); byKey.delete(key); return r.success ? r.data : null;};
+  const framing = parse("framing", comparisonBlocks.framing), cases = parse("cases", comparisonBlocks.cases), proposals = parse("proposals", comparisonBlocks.proposals);
+  const service = parse("debt-service", comparisonBlocks.debtService), conclusion = parse("conclusion", comparisonBlocks.conclusion);
+  const gaps = parse("information-gaps", investmentGapsBlock), exclusions = parse("exclusions", investmentExclusionsBlock);
+  if (!framing || !cases || !proposals || !service || !conclusion || !gaps || !exclusions || byKey.size > 0) return null;
+  for (const claim of proposals.claims) {
+    const [kind, caseId, proposalId] = claim.claimId.split(":");
+    const row = proposals.content.rows.find((r) => r.caseId === caseId && r.proposalId === proposalId);
+    const value = kind === "spread" ? row?.equivalentSpread : kind === "minimum-cash" ? row?.minimumCash : undefined;
+    if (value === undefined || value === null || claim.value !== value) return null;
+  }
+  return freezeArtifactValue({framing: framing.content, cases: cases.content.rows, proposals: proposals.content.rows, debtService: service.content.rows,
+    conclusion: conclusion.content, informationGaps: gaps.content.rows, exclusions: exclusions.content.items});
+}
