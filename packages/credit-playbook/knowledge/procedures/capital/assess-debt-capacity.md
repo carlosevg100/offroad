@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: debt-capacity-packet.v1
 unit_test_files: [packages/financial-model/src/debt-capacity-packet.test.ts, packages/financial-model/src/debt-capacity-runs.test.ts, packages/financial-model/src/adopted-debt-capacity.test.ts, packages/financial-core/src/debt-capacity.test.ts]
-gold_case_ids: [c04-capacity-by-limit-independent-oracle, phased-capacity-independent-oracle, covenant-with-headroom-binds, joint-capacity-is-the-intersection-of-the-limits, sixty-breaks-the-covenant-in-the-adverse-case-as-informed, phasing-makes-sixty-fit-in-size, size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case, bndes-eight-years-keeps-cash-positive, plan-pays-scheduled-principal-without-refinancing, window-ends-with-the-seasonal-line-open, absent-threshold-is-a-gap-not-a-default]
+gold_case_ids: [c04-capacity-by-limit-independent-oracle, phased-capacity-independent-oracle, covenant-with-headroom-binds, joint-capacity-is-the-intersection-of-the-limits, sixty-breaks-the-covenant-in-the-adverse-case-as-informed, phasing-makes-sixty-fit-in-size, size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case, bndes-eight-years-keeps-cash-positive, plan-pays-scheduled-principal-without-refinancing, window-ends-with-the-seasonal-line-open, leverage-nets-cash-under-the-adopted-convention, absent-threshold-is-a-gap-not-a-default]
 adversarial_case_ids: [tampered-envelope, two-informed-cases, silent-alternative, same-analysis-twice, limit-names-unknown-rule, rule-in-two-limits, rule-left-out, another-basis, free-result-in-request, fabricated-grant-in-result]
 e2e_scenario_ids: [domain:c04-capacity-by-limit-independent-oracle]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -67,7 +67,7 @@ Pacote de capacidade: para o cronograma informado e para cada alternativa adotad
 # Cálculos determinísticos
 - Cada limite é uma restrição afim na dívida nova dentro de regiões explícitas de imposto e de caixa; a capacidade de um limite é o maior valor, no quantum adotado, que respeita todas as suas restrições em todas as datas e cenários. A capacidade total é a interseção de todos os limites ao mesmo tempo, calculada pelo motor; o menor dos máximos por limite só coincide com ela quando os conjuntos viáveis se cruzam, e um limite que exige dívida mínima pode tornar a interseção vazia.
 - O limite que prende é o primeiro a falhar no valor seguinte ao máximo, com data e cenário.
-- Alavancagem = (dívida, inclusive a linha sazonal em aberto na data, menos caixa) sobre o EBITDA na definição do covenant; cobertura de juros = EBITDA sobre juros pagos no período.
+- Alavancagem = (dívida, inclusive a linha sazonal em aberto na data, menos caixa) sobre o EBITDA na definição do covenant, com o caixa descontado pela convenção adotada no cenário (quando ela não admite caixa negativo, caixa negativo não reduz a dívida); a alavancagem máxima apresentada é a mesma que o covenant testa; cobertura de juros = EBITDA sobre juros pagos no período.
 - A dívida nova desembolsa com o uso; juros pela aproximação anual de saldo médio quando adotada, declarada como tal; o imposto é recalculado com os juros novos.
 - Pagar parte do uso com caixa em vez de dívida não muda a alavancagem líquida: o covenant mede dívida líquida.
 - Plano vigente: amortização programada da dívida existente contra caixa disponível depois dos juros, ano a ano; o que não se paga depende de refinanciamento e isso é dito.
@@ -118,7 +118,7 @@ Pacote de capacidade: para o cronograma informado e para cada alternativa adotad
 - packages/financial-model/src/debt-capacity-packet.test.ts: capacidade por limite, revisão, plano, contra o oráculo.
 - packages/financial-model/src/adopted-debt-capacity.test.ts e packages/financial-core/src/debt-capacity.test.ts: leitor adotado e motor.
 ## Gold
-- c04-capacity-by-limit-independent-oracle, phased-capacity-independent-oracle, covenant-with-headroom-binds, joint-capacity-is-the-intersection-of-the-limits, sixty-breaks-the-covenant-in-the-adverse-case-as-informed, phasing-makes-sixty-fit-in-size, size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case, bndes-eight-years-keeps-cash-positive, plan-pays-scheduled-principal-without-refinancing, window-ends-with-the-seasonal-line-open, absent-threshold-is-a-gap-not-a-default.
+- c04-capacity-by-limit-independent-oracle, phased-capacity-independent-oracle, covenant-with-headroom-binds, joint-capacity-is-the-intersection-of-the-limits, sixty-breaks-the-covenant-in-the-adverse-case-as-informed, phasing-makes-sixty-fit-in-size, size-fits-but-a-five-year-profile-runs-out-of-cash-in-the-adverse-case, bndes-eight-years-keeps-cash-positive, plan-pays-scheduled-principal-without-refinancing, window-ends-with-the-seasonal-line-open, leverage-nets-cash-under-the-adopted-convention, absent-threshold-is-a-gap-not-a-default.
 ## Adversarial
 - Base adulterada, dois casos informados, alternativa sem descrição, mesma análise duas vezes, limite com regra inexistente, regra em dois limites, regra fora de qualquer limite, outra base, número livre no pedido e concessão fabricada no resultado são recusados.
 ## Aceitação

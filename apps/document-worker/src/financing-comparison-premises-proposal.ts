@@ -160,7 +160,7 @@ export function completeFinancingComparisonFacts(input: {extraction: FinancingCo
       contractDates: p.drawDate && p.paymentDay ? {drawDate: p.drawDate.value, paymentDay: p.paymentDay.value} : null,
       // Each clause keeps the origin and source it was stated with.
       provenance: {amount: src(p.amount!), annualSpread: src(p.spread!), feeRate: src(p.fee!), creditTax: src(p.creditTax!), drawMonth: src(p.draw!),
-        amortization: src(p.first!), coupon: src(p.coupon!), collateral: src(p.collateral!), covenantLimit: src(p.limit!), covenantDebtDefinition: src(p.leases!),
+        amortization: src(p.first!), installments: src(p.installments!), installmentEveryMonths: src(p.every!), coupon: src(p.coupon!), collateral: src(p.collateral!), covenantLimit: src(p.limit!), covenantDebtDefinition: src(p.leases!),
         covenantEbitdaDefinition: src(p.excludes!), covenantFrequency: src(p.frequency!),
         ...(waiverOn ? {waiverCost: src(p.waiverCost!), waiverCreditor: src(p.waiverCreditor!), waiverMonth: src(p.waiverMonth!)} : {}),
         ...(p.drawDate && p.paymentDay ? {drawDate: {origin: p.drawDate.origin, source: p.drawDate.source}, paymentDay: {origin: p.paymentDay.origin, source: p.paymentDay.source}} : {})}},

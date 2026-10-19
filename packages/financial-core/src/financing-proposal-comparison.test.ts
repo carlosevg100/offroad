@@ -130,6 +130,8 @@ describe("C02: financing proposals compared on the company itself", () => {
     expect(near(new P(r.equivalentSpread!).mul(100).toFixed(), "3.914770708", "0.0000001")).toBe(true);
     const offGrid = {...fundo, charges: [...fundo.charges, charge("fundo-recurring", "fundo", "recurring_fee", 5, "1")]};
     expect(() => compareFinancingProposals({...i, proposals: [offGrid]})).toThrow("proposal_comparison_charge_off_lifetime_grid");
+    expect(() => compareFinancingProposals({...i, freeReceivablesPool: "-1"})).toThrow("proposal_comparison_negative_collateral");
+    expect(() => compareFinancingProposals({...i, proposals: i.proposals.map((p) => ({...p, collateralConsumed: "-28"}))})).toThrow("proposal_comparison_negative_collateral");
   });
   it("derives the proposal in the company from its single schedule", () => {
     const r = compareFinancingProposals(input("0")).proposals.find((p) => p.id === "fundo")!;

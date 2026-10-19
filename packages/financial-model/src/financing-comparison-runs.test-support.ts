@@ -154,6 +154,15 @@ function adversarialCases(): Case[] {
     }, "proposal_comparison_calendar_mismatch"],
     ["negative-collateral", () => mutateEntry(`proposal.${c02Ids.itau}.collateralConsumed`, {type: "number", value: "-28"}), "comparison_negative_collateral"],
     ["full-repayment-leaving-the-accrued-coupon", () => mutateEntry(`debt.${c02Ids.debenture}.paysAccruedCoupon`, {type: "list", value: ["false", "true", "false", "true", "false", "true", "false", "false", "false", "true"]}), "full repayment requires settling the accrued coupon"],
+    ["proposal-repaid-leaving-its-accrued-coupon", () => {
+      // The fund repays its 70 in the first lifetime period while its first coupon stays unpaid.
+      const p = c02PacketInput(), path = `proposal.${c02Ids.fundo}.lifetime.`;
+      const principal = p.basis.entries.find((x) => x.fieldPath.endsWith(path + "scheduledPrincipal"))!, pays = p.basis.entries.find((x) => x.fieldPath.endsWith(path + "paysAccruedInterest"))!;
+      const n = (principal.value.value as string[]).length;
+      principal.value = {type: "list", value: Array.from({length: n}, (_, k) => (k === 0 ? "70" : "0"))} as typeof principal.value;
+      pays.value = {type: "list", value: Array.from({length: n}, (_, k) => String(k > 0))} as typeof pays.value;
+      const i = p.seal() as FinancingComparisonPacketInput; i.cases = [i.cases[0]!]; return i;
+    }, "financing_full_repayment_requires_settling_accrued_interest"],
     ["free-result-in-request", () => ({...sealed(), equivalentSpread: "0.01"}), "Unrecognized key"],
     ["fabricated-grant-in-result", () => ({forge: true}), "grantsExecution"],
   ];

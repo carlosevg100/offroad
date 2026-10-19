@@ -42,7 +42,7 @@ const proposal = z.strictObject({
   contractDates: z.strictObject({drawDate: z.iso.date(), paymentDay: z.number().int().min(1).max(28)}).nullable(),
   /** Where each clause came from, when the clauses have different sources (a consent fee stated by the CFO,
    * the spread from the term sheet). A clause without its own entry takes the proposal's origin. */
-  provenance: z.partialRecord(z.enum(["amount", "annualSpread", "feeRate", "creditTax", "drawMonth", "amortization", "coupon", "collateral", "covenantLimit",
+  provenance: z.partialRecord(z.enum(["amount", "annualSpread", "feeRate", "creditTax", "drawMonth", "amortization", "installments", "installmentEveryMonths", "coupon", "collateral", "covenantLimit",
     "covenantDebtDefinition", "covenantEbitdaDefinition", "covenantFrequency", "waiverCreditor", "waiverMonth", "waiverCost", "drawDate", "paymentDay"]),
     z.strictObject({origin: z.enum(origins), source: text})).optional(),
 });
@@ -224,7 +224,7 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
     txt(`${root}.lifetime.unpaidInterestBase`, "convention", "principal_plus_accrued", house("Juros não pagos acumulam sobre principal e juros"));
     num(`${root}.lifetime.lowerSpread`, "ratio", "0", house("Intervalo de busca do custo efetivo"));
     num(`${root}.lifetime.upperSpread`, "ratio", "0.2", house("Intervalo de busca do custo efetivo"));
-    list(`${root}.lifetime.periodEnds`, "date", lifePeriods.map((l) => l.end), cite([["drawMonth", "mês do desembolso"], ["amortization", "amortização"], ["coupon", "pagamento de juros"],
+    list(`${root}.lifetime.periodEnds`, "date", lifePeriods.map((l) => l.end), cite([["drawMonth", "mês do desembolso"], ["amortization", "primeira amortização"], ["installments", "número de parcelas"], ["installmentEveryMonths", "intervalo entre parcelas"], ["coupon", "pagamento de juros"],
       ...(v.contractDates ? [["drawDate", "data do desembolso"], ["paymentDay", "dia de pagamento"]] as [Clause, string][] : [])]));
     list(`${root}.lifetime.yearFractions`, "ratio", lifePeriods.map((l) => l.fraction),
       v.contractDates ? house("Dias úteis do calendário nacional sobre 252") : house("Cada trimestre como um quarto de ano"));
@@ -235,7 +235,7 @@ export function proposeFinancingComparisonHypotheses(raw: unknown): ProposedHypo
     if (v.contractDates) {
       list(`${root}.lifetime.businessDays`, "count", lifePeriods.map((l) => String(l.businessDays)), house("Dias úteis entre as datas pelo calendário nacional de feriados bancários"));
     }
-    list(`${root}.lifetime.scheduledPrincipal`, "currency", lifePeriods.map((l) => l.principal), cite([["amount", "valor"], ["amortization", "amortização"]]));
+    list(`${root}.lifetime.scheduledPrincipal`, "currency", lifePeriods.map((l) => l.principal), cite([["amount", "valor"], ["amortization", "primeira amortização"], ["installments", "número de parcelas"], ["installmentEveryMonths", "intervalo entre parcelas"]]));
     list(`${root}.lifetime.paysAccruedInterest`, "boolean", lifePeriods.map((l) => String(l.pays)), clause("coupon"));
   }
   return out;

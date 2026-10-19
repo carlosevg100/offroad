@@ -131,6 +131,8 @@ export function compareFinancingProposals(input: FinancingProposalComparisonInpu
   for (const p of input.proposals) for (const c of [...p.charges, ...(p.cost.chargesAfterHorizon ?? [])]) if (!new D(c.amount).gt(0)) throw new Error("proposal_comparison_positive_charge_required");
   for (const p of input.proposals) for (const c of p.cost.chargesAfterHorizon ?? []) if (c.date <= input.endDate) throw new Error("proposal_comparison_charge_inside_horizon");
   const pool = new D(input.freeReceivablesPool);
+  // Receivables and the collateral a proposal takes from them are amounts, never negative.
+  if (pool.lt(0) || input.proposals.some((p) => new D(p.collateralConsumed).lt(0))) throw new Error("proposal_comparison_negative_collateral");
   const proposals = input.proposals.map((proposal) => {
     if (commonIds.has(proposal.id)) throw new Error("proposal_comparison_duplicate");
     const lifetime = proposal.cost.schedule;

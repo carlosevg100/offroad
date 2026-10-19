@@ -96,6 +96,15 @@ describe("financing comparison premises proposed from a turn", () => {
     expect(ebitdaClause.reason).toBe("Origem: documento. ts-itau.pdf");
     expect(charges.reason).toContain("comissão, documento (ts-itau.pdf)");
     expect(charges.reason.startsWith("Origem: ")).toBe(true);
+    const cfo = c02Extraction(), first = cfo.proposals[0]!;
+    first.installments = {...first.installments!, origin: "informed", source: "CFO, número de parcelas"};
+    first.installmentEveryMonths = {...first.installmentEveryMonths!, origin: "informed", source: "CFO, intervalo"};
+    const q = completeFinancingComparisonFacts({extraction: cfo, ids, currency: "BRL"});
+    if (q.status !== "complete") throw new Error("expected complete");
+    const principal = buildFinancingComparisonPremiseProposal(q.facts).hypotheses.find((h) => h.fieldPath.endsWith(`proposal.${q.facts.proposals[0]!.value.id}.lifetime.scheduledPrincipal`))!;
+    expect(principal.reason).toContain("número de parcelas, informado (CFO, número de parcelas)");
+    expect(principal.reason).toContain("intervalo entre parcelas, informado (CFO, intervalo)");
+    expect(principal.reason).toContain("primeira amortização, documento (ts-itau.pdf)");
     const e = c02Extraction(); e.existingDebt.value![0]!.couponEveryMonths = 5;
     expect(completeFinancingComparisonFacts({extraction: e, ids, currency: "BRL"})).toEqual({status: "missing", missing: ["existingDebt.1.couponEveryMonths"]});
   });
