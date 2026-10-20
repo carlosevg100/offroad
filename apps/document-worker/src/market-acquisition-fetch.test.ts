@@ -8,7 +8,7 @@ type Reply = {status: number; headers?: Record<string, string>; body?: Buffer | 
 const publicDns: ResolveHost = async () => [{address: "200.218.1.1", family: 4}];
 const json = Buffer.from('[{"data":"16/10/2026","valor":"0.055131"}]');
 
-function server(replies: Record<string, Reply>, seen: {url: string; address: string}[] = []): PinnedRequest {
+function server(replies: Record<string, Reply>, seen: {url: string; address: string}[] = [], streams: PassThrough[] = []): PinnedRequest {
  return async (url, address) => {
   seen.push({url: url.toString(), address});
   const reply = replies[url.toString()];
@@ -16,6 +16,7 @@ function server(replies: Record<string, Reply>, seen: {url: string; address: str
   const stream = new PassThrough() as unknown as IncomingMessage & PassThrough;
   Object.assign(stream, {statusCode: reply.status, headers: reply.headers ?? {}});
   stream.end(reply.body ?? "");
+  streams.push(stream);
   return stream;
  };
 }
@@ -93,6 +94,20 @@ describe("fetchMarketFile", () => {
   const broken: PinnedRequest = async () => { throw new Error("ECONNRESET"); };
   const network = await failure(fetchMarketFile(base, {resolve: publicDns, request: broken}));
   expect([network.code, network.retryable]).toEqual(["network", true]);
+ });
+
+ it("destroys every response it does not use instead of draining it", async () => {
+  const streams: PassThrough[] = [];
+  const big = Buffer.alloc(100_000, 0x20);
+  const refused = server({[base.url]: {status: 200, headers: {"content-type": "application/json", "content-length": String(big.length)}, body: big}}, [], streams);
+  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: refused}))).code).toBe("too_large");
+  const redirected = server({[base.url]: {status: 302, headers: {location: "https://api.bcb.gov.br/final.json"}, body: big},
+   "https://api.bcb.gov.br/final.json": {status: 404, body: big}}, [], streams);
+  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: redirected}))).code).toBe("http_status");
+  const wrongType = server({[base.url]: {status: 200, headers: {"content-type": "text/html"}, body: big}}, [], streams);
+  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: wrongType}))).code).toBe("content_type");
+  expect(streams).toHaveLength(4);
+  for (const stream of streams) expect(stream.destroyed).toBe(true);
  });
 
  it("classifies addresses", () => {

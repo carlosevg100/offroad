@@ -108,7 +108,7 @@ end $$;
 do $$ declare c jsonb;begin
  c:=pg_temp.claim('a');
  if (c->>'claimed')::boolean is not true or c->>'bucket'<>'market-reference' or c->>'objectPath' !~ '^bcb-sgs-cdi/[0-9]{4}/[0-9]{2}/[0-9a-f-]{36}\.json$'
- or c->'allowedHosts'<>'["api.bcb.gov.br"]'::jsonb or (c->>'maxBytes')::bigint<>52428800 then raise exception 'claim answer wrong: %',c;end if;
+ or c->'allowedHosts'<>'["api.bcb.gov.br"]'::jsonb or (c->>'maxBytes')::bigint<>5242880 then raise exception 'claim answer wrong: %',c;end if;
  if (pg_temp.claim('none')->>'claimed')::boolean then raise exception 'a leased job was claimed twice';end if;
 end $$;
 
@@ -333,6 +333,15 @@ do $$ declare c jsonb;o jsonb;n integer;begin
  perform set_config('storage.operation','',true);
 end $$;
 reset role;
+
+-- A confirmed attempt is replayed only while its worker token is active.
+do $$ declare c jsonb;at timestamptz;begin
+ select claim into strict c from claims where name='a';
+ select (e.detail->'fingerprint'->>'acquiredAt')::timestamptz into strict at from private.market_acquisition_job_events e
+  where e.job_id=(c->>'jobId')::uuid and e.event='committed';
+ update private.worker_tokens set status='revoked',revoked_at=clock_timestamp() where id='3a730000-0000-4000-8000-000000000011';
+ perform pg_temp.expect(format($q$select pg_temp.commit_claim('a','https://api.bcb.gov.br/x',md5('0123456789'),10,'application/json',%L)$q$,at),'market_acquisition_lease_denied','replay after the worker token was revoked');
+end $$;
 
 -- 10. Identity and history are immutable; nothing reaches the API roles.
 do $$ declare t text;f text;r text;begin

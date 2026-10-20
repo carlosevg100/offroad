@@ -40,7 +40,8 @@ const acceptedTypes: Record<MarketExtension, readonly string[]> = {
  * https on port 443, no user information, a host from the list, and every DNS answer public; the
  * connection then goes to the vetted address only, so a second resolution cannot redirect it. A
  * redirect is followed manually and checked the same way. The body is streamed under the byte limit
- * and both digests are taken from the bytes that will be stored.
+ * and both digests are taken from the bytes that will be stored. A response that is not used (a
+ * redirect, a refused status, type or length) is destroyed, never drained.
  */
 export async function fetchMarketFile(request: MarketFetchRequest, deps: MarketFetchDeps = {}): Promise<MarketFetchResult> {
  const resolve = deps.resolve ?? defaultResolve;
@@ -56,19 +57,19 @@ export async function fetchMarketFile(request: MarketFetchRequest, deps: MarketF
    const response = await send(url, address, family, signal);
    const status = response.statusCode ?? 0;
    if (status >= 300 && status < 400 && response.headers.location) {
-    response.resume();
+    response.destroy();
     if (hop >= maxRedirects) throw new MarketFetchError("redirect_not_allowed", false, "too many redirects");
     url = vetUrl(new URL(response.headers.location, url).toString(), hosts, "redirect_not_allowed");
     continue;
    }
    if (status !== 200) {
-    response.resume();
+    response.destroy();
     throw new MarketFetchError("http_status", status >= 500 || status === 429, String(status));
    }
    const declared = String(response.headers["content-type"] ?? "").split(";")[0]!.trim().toLowerCase();
-   if (!acceptedTypes[request.extension].includes(declared)) { response.resume(); throw new MarketFetchError("content_type", false, declared || "missing"); }
+   if (!acceptedTypes[request.extension].includes(declared)) { response.destroy(); throw new MarketFetchError("content_type", false, declared || "missing"); }
    const length = Number(response.headers["content-length"]);
-   if (Number.isFinite(length) && length > request.maxBytes) { response.resume(); throw new MarketFetchError("too_large", false); }
+   if (Number.isFinite(length) && length > request.maxBytes) { response.destroy(); throw new MarketFetchError("too_large", false); }
    const bytes = await readCapped(response, request.maxBytes);
    if (bytes.length === 0 || !signatureMatches(request.extension, bytes)) throw new MarketFetchError("content_type", false, "body does not match the extension");
    return {finalUrl: url.toString(), bytes, sha256: digest("sha256", bytes), md5: digest("md5", bytes), byteSize: bytes.length,

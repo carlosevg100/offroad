@@ -9,13 +9,17 @@
    confirmation in progress makes the deletion wait, then delete nothing.
 6. An expired lease claimed again by another worker: the late confirmation is refused and the new
    lease confirms against its own allocation.
+7. An upload whose storage check waits on the source lock until the lease expires is refused once
+   the lock is released, although source and delegation are still valid.
+8. Two confirmations of the same attempt at once: one records the receipt, the other replays it.
 The database may already hold the market publisher and the source from earlier steps of the same CI
 job; the setup reuses them. Every row here is synthetic and lives only in the disposable database.
 """
 import json
 import os
-import select
+import queue
 import subprocess
+import threading
 import time
 
 URL = os.environ['DATABASE_URL']
@@ -82,20 +86,33 @@ def claim(account, token):
 def session(name, first=''):
     proc = subprocess.Popen(['psql', URL, '-v', 'ON_ERROR_STOP=1', '-At', '-q'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, bufsize=1, env={**os.environ, 'PGAPPNAME': name})
+    # One reader per session drains every line into a queue, so a marker buffered behind earlier
+    # output is never missed by a readiness check on the descriptor.
+    proc.lines = queue.Queue()
+    proc.seen = []
+    def pump():
+        for line in proc.stdout:
+            proc.lines.put(line)
+        proc.lines.put(None)
+    proc.reader = threading.Thread(target=pump, daemon=True)
+    proc.reader.start()
     proc.stdin.write(f"set statement_timeout='15s';begin;{first}\n")
     return proc
 
 
 def barrier(proc, mark):
     proc.stdin.write(f"\\echo {mark}\n"); proc.stdin.flush()
+    deadline = time.monotonic() + 15
     while True:
-        if not select.select([proc.stdout], [], [], 15)[0]:
+        try:
+            line = proc.lines.get(timeout=max(0.1, deadline - time.monotonic()))
+        except queue.Empty:
             raise AssertionError(f'{mark} not reached')
-        line = proc.stdout.readline()
+        if line is None:
+            raise AssertionError(f'{mark}: session ended: ' + ''.join(proc.seen))
         if line.strip() == mark:
             return
-        if not line:
-            raise AssertionError(f'{mark}: session ended')
+        proc.seen.append(line)
 
 
 def wait_for_lock(name):
@@ -106,12 +123,20 @@ def wait_for_lock(name):
         time.sleep(.05)
 
 
-def finish(proc, expect_ok=True):
+def finish(proc, expect_ok=True, end='commit'):
     try:
-        proc.stdin.write('commit;\n'); proc.stdin.close()
+        proc.stdin.write(f'{end};\n'); proc.stdin.close()
     except BrokenPipeError:
         pass
-    out = proc.stdout.read(); code = proc.wait(timeout=15)
+    code = proc.wait(timeout=15)
+    proc.reader.join(timeout=15)
+    lines = list(proc.seen)
+    while True:
+        line = proc.lines.get()
+        if line is None:
+            break
+        lines.append(line)
+    out = ''.join(lines)
     if expect_ok and code != 0:
         raise AssertionError(out)
     return out
@@ -233,6 +258,36 @@ def main():
     at = psql("select clock_timestamp();")
     if psql(f"begin;{commit_sql(WORKER_B, second, md5, size, at)}commit;").splitlines()[-1] != 'true':
         raise AssertionError('the current lease did not confirm')
+    # 7. Storage waits on the source lock until the lease expires: the upload is refused after the wait.
+    job = enqueue('seven')
+    c = claim(WORKER_A, TOKEN_A)
+    psql(f"update private.market_acquisition_jobs set lease_expires_at=clock_timestamp()+interval '2 seconds' where id='{c['jobId']}';")
+    holder = session('market_acq_source_holder', f"select pg_advisory_xact_lock(hashtextextended('market-source:{SOURCE}',0));")
+    barrier(holder, 'HOLD')
+    upload = session('market_acq_waiting_upload', f"set local role authenticated;{as_account(WORKER_A)}select set_config('storage.operation','object.upload',true);")
+    barrier(upload, 'U')
+    upload.stdin.write(f"insert into storage.objects(bucket_id,name,metadata,version) values('market-reference','{c['objectPath']}',"
+                       f"jsonb_build_object('size',3,'mimetype','application/json','eTag','\"x\"'),'market-race');\n"); upload.stdin.flush()
+    wait_for_lock('market_acq_waiting_upload')
+    time.sleep(3)
+    finish(holder, end='rollback')
+    out = finish(upload, expect_ok=False)
+    if 'row-level security' not in out:
+        raise AssertionError('upload accepted after the lease expired during the wait: ' + out)
+    # 8. Two confirmations of the same attempt at once: one receipt, one replay, both succeed.
+    enqueue('eight')
+    c = claim(WORKER_A, TOKEN_A)
+    md5, size = put_object(c['objectPath'], b'[8]')
+    at = psql("select clock_timestamp();")
+    first, second = session('market_acq_confirm_1'), session('market_acq_confirm_2')
+    barrier(first, 'F'); barrier(second, 'S')
+    first.stdin.write(commit_sql(WORKER_A, c, md5, size, at) + '\n'); first.stdin.flush()
+    second.stdin.write(commit_sql(WORKER_A, c, md5, size, at) + '\n'); second.stdin.flush()
+    out_first, out_second = finish(first), finish(second)
+    if out_first.splitlines()[-1] != 'true' or out_second.splitlines()[-1] != 'true':
+        raise AssertionError('simultaneous confirmations did not both answer committed: ' + out_first + out_second)
+    if psql(f"select count(*) from private.market_acquisitions where object_path='{c['objectPath']}';") != '1':
+        raise AssertionError('simultaneous confirmations recorded more than one receipt')
     print('PASS: market acquisition claims, pauses, revocations, withdrawals, deletions and lease expiry serialize across sessions')
 
 
