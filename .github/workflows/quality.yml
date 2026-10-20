@@ -335,6 +335,11 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-configuration-review-concurrency.py
+      - name: Market reference version state across real sessions
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-market-reference-concurrency.py
       - name: Capital public capture authority and lock concurrency
         if: ${{ !inputs.native_diagnostic }}
         env:

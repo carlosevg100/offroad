@@ -112,7 +112,7 @@ declare org uuid:=private.market_publisher_organization_v1();acq uuid:='3a710000
  a_ver uuid:='3a710000-0000-4000-c000-000000000002';b_ver uuid:='3a710000-0000-4000-c000-000000000003';c_ver uuid:='3a710000-0000-4000-c000-000000000004';
  d_ver uuid:='3a710000-0000-4000-c000-000000000005';e_ver uuid:='3a710000-0000-4000-c000-000000000006';
  lic jsonb:=(private.market_source_in_force_v1('bcb-sgs-cdi')).license;
- at timestamptz:=date_trunc('second',clock_timestamp());avail timestamptz:=date_trunc('second',clock_timestamp())-interval '1 hour';
+ at timestamptz:=clock_timestamp();avail timestamptz:=clock_timestamp()-interval '1 hour';f_ver uuid:='3a710000-0000-4000-c000-000000000007';
  canonical text;iso text;german text;
 begin
  perform pg_temp.expect($q$insert into private.market_logical_objects(logical_id,source_id,family,kind,category,keys) values('market:no-source:daily:0123456789abcdef','no-source','daily','series','observed','{}')$q$,'23503','object of unknown source');
@@ -182,6 +182,16 @@ begin
  insert into private.market_version_inputs(version_id,dependency_version_id) values(e_ver,b_ver);
  insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(e_ver,'2027-12-31',avail-interval '1 day',at,13,'percent_per_year','1');
  perform pg_temp.expect(format($q$select private.seal_market_version_v1(%L)$q$,e_ver),'22023','derived dates before the dependency');
+ -- Version F: a derived version with dates no earlier than its dependency seals.
+ canonical:=concat_ws(E'\n','parser:path.v1','methodology:{"id": "synthetic", "version": "1"}','inputs:v:'||b_ver::text,pg_temp.obs_line('2027-12-31',avail,at,'13'));
+ insert into private.market_versions(id,logical_id,parser_version,methodology,sha256,license) values(f_ver,'market:bcb-sgs-cdi:path:0123456789abcdef','path.v1','{"id":"synthetic","version":"1"}',
+  encode(extensions.digest(convert_to(canonical,'UTF8'),'sha256'),'hex'),lic);
+ insert into private.market_version_inputs(version_id,dependency_version_id) values(f_ver,b_ver);
+ insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(f_ver,'2027-12-31',avail,at,13,'percent_per_year','1');
+ perform private.seal_market_version_v1(f_ver);
+ -- One object, one identity: a non-canonical UUID spelling is refused.
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Other spelling','3a710000-0000-4000-8000-000000000002')$q$,
+  upper(b_ver::text)),'22023','non-canonical UUID subject');
  -- Purge: no session flag; a purge event of this transaction; purge is complete and terminal.
  perform set_config('offroad.market_purge','on',true);
  perform pg_temp.expect(format($q$delete from private.market_observations where version_id=%L$q$,b_ver),'23514','delete under the retired flag');
@@ -193,6 +203,7 @@ begin
  if exists(select 1 from private.market_observations where version_id=b_ver) or private.market_version_quality_approved_v1(b_ver) then raise exception 'purge incomplete';end if;
  perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'approved','Approval after purge','3a710000-0000-4000-8000-000000000002')$q$,b_ver),'23514','approval after purge');
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',c_ver::text,'purged','Synthetic incomplete purge','3a710000-0000-4000-8000-000000000002');
+ perform pg_temp.expect(format($q$insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(%L,'2026-10-18',%L,%L,1,'percent_per_year','1')$q$,c_ver,avail,at),'23514','content into a purged version');
  perform pg_temp.expect('set constraints private.market_events_purge_complete immediate','23514','purge event without removing the content');
 end $$;
 
@@ -208,13 +219,15 @@ begin
  end loop;
  perform pg_temp.expect('update private.market_observations set unit=unit','23514','update market_observations');
  perform pg_temp.expect('truncate private.market_observations','23514','truncate market_observations');
+ perform pg_temp.expect('delete from private.market_version_states','23514','delete market_version_states');
+ perform pg_temp.expect($q$update private.market_version_states set state='open'$q$,'23514','reopen a version');
 end $$;
 
 -- 5. The API roles reach nothing.
 do $$
 declare t text;f text;r text;
 begin
- foreach t in array array['market_publisher','market_source_revisions','market_logical_objects','market_acquisitions','market_versions','market_version_inputs','market_observations','market_events','market_version_seals'] loop
+ foreach t in array array['market_publisher','market_source_revisions','market_logical_objects','market_acquisitions','market_versions','market_version_inputs','market_observations','market_events','market_version_seals','market_version_states'] loop
   foreach r in array array['anon','authenticated','service_role'] loop
    if has_table_privilege(r,'private.'||t,'select,insert,update,delete,truncate,references,trigger') then raise exception '% reaches %',r,t;end if;
   end loop;
