@@ -107,6 +107,11 @@ end $$;
 create function pg_temp.obs_line(p_end text,p_avail timestamptz,p_acq timestamptz,p_value text) returns text language sql as $$
  select concat_ws('|','',p_end,to_char(p_avail at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),to_char(p_acq at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),p_value,'percent_per_year','1');
 $$;
+create function pg_temp.incomplete_purge(p_version uuid) returns void language plpgsql as $$
+begin
+ insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',p_version::text,'purged','Synthetic incomplete purge','3a710000-0000-4000-8000-000000000002');
+ set constraints private.market_events_purge_complete immediate;
+end $$;
 do $$
 declare org uuid:=private.market_publisher_organization_v1();acq uuid:='3a710000-0000-4000-c000-000000000001';bad uuid:='3a710000-0000-4000-c000-000000000009';
  a_ver uuid:='3a710000-0000-4000-c000-000000000002';b_ver uuid:='3a710000-0000-4000-c000-000000000003';c_ver uuid:='3a710000-0000-4000-c000-000000000004';
@@ -189,22 +194,42 @@ begin
  insert into private.market_version_inputs(version_id,dependency_version_id) values(f_ver,b_ver);
  insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(f_ver,'2027-12-31',avail,at,13,'percent_per_year','1');
  perform private.seal_market_version_v1(f_ver);
- -- One object, one identity: a non-canonical UUID spelling is refused.
+ -- One object, one identity: every non-canonical UUID spelling is refused, for versions and acquisitions.
  perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Other spelling','3a710000-0000-4000-8000-000000000002')$q$,
   upper(b_ver::text)),'22023','non-canonical UUID subject');
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Braces','3a710000-0000-4000-8000-000000000002')$q$,
+  '{'||b_ver::text||'}'),'22023','braced UUID subject');
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','No hyphens','3a710000-0000-4000-8000-000000000002')$q$,
+  replace(b_ver::text,'-','')),'22023','UUID subject without hyphens');
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',%L,'quarantined','Other spelling','3a710000-0000-4000-8000-000000000002')$q$,
+  upper(acq::text)),'22023','non-canonical acquisition subject');
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',%L,'quarantined','No hyphens','3a710000-0000-4000-8000-000000000002')$q$,
+  replace(acq::text,'-','')),'22023','acquisition subject without hyphens');
+ -- The state row is the anchor: content and quality events move its revisions forward.
+ if (select content_revision<2 or quality_revision<>1 from private.market_version_states where version_id=b_ver) then raise exception 'version state anchor not updated';end if;
  -- Purge: no session flag; a purge event of this transaction; purge is complete and terminal.
  perform set_config('offroad.market_purge','on',true);
  perform pg_temp.expect(format($q$delete from private.market_observations where version_id=%L$q$,b_ver),'23514','delete under the retired flag');
  insert into private.market_versions(id,logical_id,parser_version,sha256,license) values(c_ver,'market:bcb-sgs-cdi:daily:0123456789abcdef','bcb-sgs-json.v2',repeat('9',64),lic);
  insert into private.market_version_inputs(version_id,acquisition_id) values(c_ver,acq);
  insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(c_ver,'2026-10-16',avail,at,14.9,'percent_per_year','1');
+ -- A direct update of the state cannot replace the seal or the purge event, nor move a revision back.
+ perform pg_temp.expect(format($q$update private.market_version_states set state='sealed' where version_id=%L$q$,c_ver),'23514','sealed state without a seal');
+ perform pg_temp.expect(format($q$update private.market_version_states set state='purged' where version_id=%L$q$,c_ver),'23514','purged state without a purge event');
+ perform pg_temp.expect(format($q$update private.market_version_states set state='purged' where version_id=%L$q$,b_ver),'23514','sealed to purged without a purge event');
+ perform pg_temp.expect(format($q$update private.market_version_states set content_revision=0 where version_id=%L$q$,c_ver),'23514','content revision moved back');
+ perform pg_temp.expect(format($q$update private.market_version_states set quality_revision=0 where version_id=%L$q$,b_ver),'23514','quality revision moved back');
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',b_ver::text,'purged','Synthetic purge','3a710000-0000-4000-8000-000000000002');
  delete from private.market_observations where version_id=b_ver;
  if exists(select 1 from private.market_observations where version_id=b_ver) or private.market_version_quality_approved_v1(b_ver) then raise exception 'purge incomplete';end if;
+ -- The complete purge passes its deferred check, and the purged version takes no content again.
+ set constraints private.market_events_purge_complete immediate;
+ set constraints private.market_events_purge_complete deferred;
+ perform pg_temp.expect(format($q$insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(%L,'2026-10-16',%L,%L,14.9,'percent_per_year','1')$q$,b_ver,avail,at),'23514','refill after a complete purge');
+ perform pg_temp.expect(format($q$insert into private.market_version_inputs(version_id,acquisition_id) values(%L,%L)$q$,b_ver,acq),'23514','input after a complete purge');
  perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'approved','Approval after purge','3a710000-0000-4000-8000-000000000002')$q$,b_ver),'23514','approval after purge');
- insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',c_ver::text,'purged','Synthetic incomplete purge','3a710000-0000-4000-8000-000000000002');
- perform pg_temp.expect(format($q$insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(%L,'2026-10-18',%L,%L,1,'percent_per_year','1')$q$,c_ver,avail,at),'23514','content into a purged version');
- perform pg_temp.expect('set constraints private.market_events_purge_complete immediate','23514','purge event without removing the content');
+ -- A purge event that leaves content behind fails its check; the subtransaction leaves nothing pending.
+ perform pg_temp.expect(format('select pg_temp.incomplete_purge(%L)',c_ver),'23514','purge event without removing the content');
 end $$;
 
 -- 4. Immutability of every ledger table, update, delete and truncate.
@@ -235,7 +260,7 @@ begin
  end loop;
  foreach r in array array['anon','authenticated','service_role'] loop
   if has_sequence_privilege(r,'private.market_events_sequence_seq','usage,select,update') then raise exception '% reaches the event sequence',r;end if;
-  for f in select p.oid::regprocedure::text from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname ~ '^(market_|register_market_|record_market_|seal_market_|guard_market_)' loop
+  for f in select p.oid::regprocedure::text from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname ~ '^(market_|register_market_|record_market_|seal_market_|guard_market_|mark_market_|lock_market_|open_market_)' loop
    if has_function_privilege(r,f,'execute') then raise exception '% executes %',r,f;end if;
   end loop;
  end loop;

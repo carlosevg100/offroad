@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Real two-session races on the market reference ledger (ADR 0023), on the disposable CI database.
 
-1. A REPEATABLE READ writer whose snapshot predates a committed seal cannot add content: the locked
-   version state was updated after its snapshot, so PostgreSQL raises a serialization failure.
-2. A READ COMMITTED writer that reaches a version while its seal is in progress waits, then sees the
-   committed seal and is refused.
-3. A derived seal that reaches a dependency while that dependency is being purged waits, then sees
-   the purge and is refused.
+The version state row is the anchor of every decision: content, quality events, seals and purges all
+update it, and every writer locks it before deciding.
+1. A REPEATABLE READ writer whose snapshot predates a committed seal cannot add content.
+2. A READ COMMITTED writer that reaches a version while its seal is in progress waits, then is refused.
+3. A derived seal that reaches a dependency while that dependency is being purged waits, then is refused.
+4. A REPEATABLE READ seal whose snapshot predates committed content fails instead of sealing an
+   incomplete version.
+5. A derived seal that reaches a dependency while its revocation is in progress waits, then is refused.
+6. A REPEATABLE READ derived seal whose snapshot predates a committed revocation of its dependency fails.
 Every row here is synthetic and lives only in the disposable database.
 """
 import os
@@ -19,7 +22,7 @@ URL = os.environ['DATABASE_URL']
 P = '3a720000'
 FOUNDER, OPERATOR = f'{P}-0000-4000-8000-000000000001', f'{P}-0000-4000-8000-000000000002'
 ACQ = f'{P}-0000-4000-c000-000000000001'
-V_RR, V_RC, V_DEP, V_DERIVED = (f'{P}-0000-4000-c000-00000000001{n}' for n in range(4))
+V_RR, V_RC, V_DEP, V_DERIVED, V_STALE, V_DEP2, V_DERIVED2, V_DEP3, V_DERIVED3 = (f'{P}-0000-4000-c000-00000000001{n}' for n in range(9))
 
 
 def psql(sql, check=True):
@@ -48,24 +51,30 @@ create temp table t(at timestamptz,avail timestamptz,lic jsonb);
 insert into t select clock_timestamp(),clock_timestamp()-interval '1 hour',(private.market_source_in_force_v1('bcb-sgs-cdi')).license;
 insert into private.market_acquisitions(id,publisher_organization_id,source_id,source_revision,url,final_url,acquired_at,sha256,byte_size,content_type,object_path)
  select '{ACQ}',private.market_publisher_organization_v1(),'bcb-sgs-cdi',1,'https://api.bcb.gov.br/x','https://api.bcb.gov.br/x',at,repeat('a',64),1,'application/json','bcb-sgs-cdi/2026/10/{ACQ}.json' from t;
-create function pg_temp.line(p_end text,p_avail timestamptz,p_acq timestamptz) returns text language sql as $$
- select concat_ws('|','',p_end,to_char(p_avail at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),to_char(p_acq at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),'14.9','percent_per_year','1');
+create function pg_temp.line(p_end text,p_avail timestamptz,p_acq timestamptz,p_value text) returns text language sql as $$
+ select concat_ws('|','',p_end,to_char(p_avail at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),to_char(p_acq at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),p_value,'percent_per_year','1');
 $$;
-create function pg_temp.direct(p_version uuid) returns void language sql as $$
+create function pg_temp.direct(p_version uuid,p_value text) returns void language sql as $$
  insert into private.market_versions(id,logical_id,parser_version,sha256,license)
-  select p_version,'market:bcb-sgs-cdi:daily:00000000000000aa','race.v1',encode(extensions.digest(convert_to(concat_ws(E'\\n','parser:race.v1','methodology:null','inputs:a:{ACQ}',pg_temp.line('2026-10-16',avail,at)),'UTF8'),'sha256'),'hex'),lic from t;
+  select p_version,'market:bcb-sgs-cdi:daily:00000000000000aa','race.v1',encode(extensions.digest(convert_to(concat_ws(E'\\n','parser:race.v1','methodology:null','inputs:a:{ACQ}',pg_temp.line('2026-10-16',avail,at,p_value)),'UTF8'),'sha256'),'hex'),lic from t;
  insert into private.market_version_inputs(version_id,acquisition_id) values(p_version,'{ACQ}');
- insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) select p_version,'2026-10-16',avail,at,14.9,'percent_per_year','1' from t;
+ insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) select p_version,'2026-10-16',avail,at,p_value::numeric,'percent_per_year','1' from t;
 $$;
-select pg_temp.direct('{V_RR}'),pg_temp.direct('{V_RC}'),pg_temp.direct('{V_DEP}');
-select private.seal_market_version_v1('{V_DEP}');
-insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version','{V_DEP}','approved','Synthetic approval','{OPERATOR}');
-insert into private.market_versions(id,logical_id,parser_version,methodology,sha256,license)
- select '{V_DERIVED}','market:bcb-sgs-cdi:path:00000000000000aa','race.path.v1','{{"id":"race","version":"1"}}',
-  encode(extensions.digest(convert_to(concat_ws(E'\\n','parser:race.path.v1','methodology:{{"id": "race", "version": "1"}}','inputs:v:{V_DEP}',
-   concat_ws('|','','2027-12-31',to_char(avail at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),to_char(at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),'13','percent_per_year','1')),'UTF8'),'sha256'),'hex'),lic from t;
-insert into private.market_version_inputs(version_id,dependency_version_id) values('{V_DERIVED}','{V_DEP}');
-insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) select '{V_DERIVED}','2027-12-31',avail,at,13,'percent_per_year','1' from t;
+create function pg_temp.derived(p_version uuid,p_dep uuid) returns void language sql as $$
+ insert into private.market_versions(id,logical_id,parser_version,methodology,sha256,license)
+  select p_version,'market:bcb-sgs-cdi:path:00000000000000aa','race.path.v1','{{"id":"race","version":"1"}}',
+   encode(extensions.digest(convert_to(concat_ws(E'\\n','parser:race.path.v1','methodology:{{"id": "race", "version": "1"}}','inputs:v:'||p_dep::text,
+    pg_temp.line('2027-12-31',avail,at,'13')),'UTF8'),'sha256'),'hex'),lic from t;
+ insert into private.market_version_inputs(version_id,dependency_version_id) values(p_version,p_dep);
+ insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) select p_version,'2027-12-31',avail,at,13,'percent_per_year','1' from t;
+$$;
+-- Distinct canonical content per direct version: one logical object never holds two equal versions.
+select pg_temp.direct('{V_RR}','14.1'),pg_temp.direct('{V_RC}','14.2'),pg_temp.direct('{V_DEP}','14.3'),pg_temp.direct('{V_STALE}','14.4'),
+ pg_temp.direct('{V_DEP2}','14.5'),pg_temp.direct('{V_DEP3}','14.6');
+select private.seal_market_version_v1(v) from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}']::uuid[]) v;
+insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
+ select 'version',v,'approved','Synthetic approval','{OPERATOR}' from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}']) v;
+select pg_temp.derived('{V_DERIVED}','{V_DEP}'),pg_temp.derived('{V_DERIVED2}','{V_DEP2}'),pg_temp.derived('{V_DERIVED3}','{V_DEP3}');
 commit;
 """
 
@@ -143,7 +152,38 @@ def main():
     finish(b, 'market_version_dependency_invalid')
     if psql(f"select count(*) from private.market_version_seals where version_id='{V_DERIVED}';") != '0':
         raise AssertionError('derived version sealed over a purged dependency')
-    print('PASS: market reference version state serializes seal, content and purge across sessions')
+    # 4. Stale REPEATABLE READ snapshot before committed content: the seal fails, it does not omit content.
+    b = session('market_stale_' + uuid.uuid4().hex[:8])
+    b.stdin.write("set statement_timeout='15s';begin isolation level repeatable read;select count(*) from private.market_version_states;\n")
+    barrier(b, 'STALE_SNAPSHOT_TAKEN')
+    psql(INSERT_OBS.format(v=V_STALE))
+    b.stdin.write(f"select private.seal_market_version_v1('{V_STALE}');\n")
+    finish(b, 'could not serialize access')
+    if psql(f"select count(*) from private.market_version_seals where version_id='{V_STALE}';") != '0':
+        raise AssertionError('version sealed from a stale snapshot')
+    # 5. Derived seal against a dependency revocation in progress.
+    a = session('market_revoke_' + uuid.uuid4().hex[:8])
+    a.stdin.write(f"set statement_timeout='15s';begin;insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                  f"values('version','{V_DEP2}','revoked','Synthetic race revocation','{OPERATOR}');\n")
+    barrier(a, 'REVOKE_HELD')
+    app = 'market_derived2_' + uuid.uuid4().hex[:8]
+    b = session(app)
+    b.stdin.write(f"set statement_timeout='15s';begin;select private.seal_market_version_v1('{V_DERIVED2}');\n"); b.stdin.flush()
+    wait_for_lock(app)
+    a.stdin.write('commit;\n'); a.stdin.close()
+    if a.wait(timeout=15) != 0:
+        raise AssertionError('revocation failed: ' + a.stdout.read())
+    finish(b, 'market_version_dependency_invalid')
+    # 6. Stale REPEATABLE READ derived seal after a committed revocation of its dependency.
+    b = session('market_derived3_' + uuid.uuid4().hex[:8])
+    b.stdin.write("set statement_timeout='15s';begin isolation level repeatable read;select count(*) from private.market_version_states;\n")
+    barrier(b, 'DERIVED_SNAPSHOT_TAKEN')
+    psql(f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version','{V_DEP3}','revoked','Synthetic race revocation','{OPERATOR}');")
+    b.stdin.write(f"select private.seal_market_version_v1('{V_DERIVED3}');\n")
+    finish(b, 'could not serialize access')
+    if psql(f"select count(*) from private.market_version_seals where version_id in ('{V_DERIVED2}','{V_DERIVED3}');") != '0':
+        raise AssertionError('derived version sealed over a revoked dependency')
+    print('PASS: market reference version state serializes content, quality, seal and purge across sessions')
 
 
 if __name__ == '__main__':
