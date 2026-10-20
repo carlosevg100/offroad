@@ -320626,6 +320626,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_reply_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_reply_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, ficha C32 (resposta da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C32, ativação",
+      "reason": "Resposta determinística da conversa que propôs as premissas, citando a revisão do resultado; nunca falha o commit e é idempotente por execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261019021211_execution_result_reply.sql",
+          "line": 8,
+          "anchor": "create function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Chamada apenas pelo commit da execução; nenhum grant a API."
+    },
+    {
       "id": "function:private.execution_result_capacity_blocks_v1(p_packet jsonb)",
       "kind": "function",
       "catalogues": {
@@ -320685,61 +320740,6 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
-    },
-    {
-      "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
-      "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
-          "kind": "function",
-          "name": "record_execution_result_reply_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_org uuid, p_execution uuid, p_job uuid",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
-          "kind": "function",
-          "name": "record_execution_result_reply_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_org uuid, p_execution uuid, p_job uuid",
-          "security_definer": true
-        }
-      },
-      "owner": "Claude, ficha C32 (resposta da conversa)",
-      "decision": "preservar",
-      "stage": "fichas C32, ativação",
-      "reason": "Resposta determinística da conversa que propôs as premissas, citando a revisão do resultado; nunca falha o commit e é idempotente por execução.",
-      "sources": [
-        {
-          "path": "supabase/migrations/20261019021211_execution_result_reply.sql",
-          "line": 8,
-          "anchor": "create function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
-          "mechanism": "direct_ddl"
-        }
-      ],
-      "consumer_status": "Chamada apenas pelo commit da execução; nenhum grant a API."
     }
   ],
   "repository_items": [
@@ -328323,6 +328323,12 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "O espelho em SQL dos blocos da comparação passa a copiar a folga do covenant em EBITDA, que o pacote publica."
+    },
+    {
+      "path": "supabase/migrations/20261019210807_lote1_payload_provenance.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "As cargas das fichas do lote 1 (comparar propostas, custo relativo da dívida e capacidade de endividamento) passam pela mesma prova de proveniência do capital: base adotada guardada, decisões fixadas no contrato, entidades, definições e fontes legíveis pelo solicitante."
     },
     {
       "path": "supabase/migrations/20261019220834_premise_proposals_capacity.sql",
