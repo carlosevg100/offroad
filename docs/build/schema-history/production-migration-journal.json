@@ -2529,8 +2529,38 @@
       "name": "lote1_bridge_review_fixes_3",
       "version": "20261019225748",
       "statements_md5": "183418c39ce7e439da5dd7efb023be2a"
+    },
+    {
+      "name": "market_reference_foundation",
+      "version": "20261020144214",
+      "statements_md5": "fe31e4afd26b85da5ad950470440b3ba"
+    },
+    {
+      "name": "market_reference_foundation_hardening",
+      "version": "20261020144335",
+      "statements_md5": "b0b9c9de541b87900a5ed6e26732552b"
+    },
+    {
+      "name": "market_reference_foundation_integrity",
+      "version": "20261020144430",
+      "statements_md5": "d64d551041b99de326f7175a1aaf6567"
+    },
+    {
+      "name": "market_reference_version_state",
+      "version": "20261020144508",
+      "statements_md5": "ae2129f25d2ccde73dc219a373087919"
+    },
+    {
+      "name": "market_reference_state_anchor",
+      "version": "20261020144550",
+      "statements_md5": "078bf5905130e423040ed97649ea1e5c"
+    },
+    {
+      "name": "market_reference_event_order",
+      "version": "20261020144603",
+      "statements_md5": "cee8a8beed415f4517abf5a5af04ae28"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-10T11:40:50.735739+00:00"
+  "captured_at": "2026-10-20T14:47:17Z"
 }
