@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {describe, expect, it} from "vitest";
 import {classifyDebtSource, compileDebtResearchStrategy, debtSourceRegistry, inferDebtJurisdiction} from "./source-registry";
 
@@ -60,6 +62,15 @@ describe("debt intelligence source registry", () => {
     expect(publicData).toMatchObject({access: "public_site", status: "manual_only", activationEnv: null});
     expect(publicData?.capabilities).not.toContain("lender_mandates");
     expect(feed).toMatchObject({access: "contracted_api", status: "contract_ready", activationEnv: "ANBIMA_CLIENT_ID"});
+  });
+
+  it("classifies reuse by the terms in force and cites the captured evidence (ADR 0023)", () => {
+    const byId = (id: string) => debtSourceRegistry.find((source) => source.id === id)!;
+    expect(byId("anbima_data")).toMatchObject({status: "manual_only", reuse: "faithful_case_evidence", licenseEvidence: ["anbima-portal-terms"]});
+    expect(byId("b3_public")).toMatchObject({status: "contract_ready", reuse: "licensed_reusable_within_contract"});
+    expect(byId("cvm_open_data").reuse).toBe("public_reusable");
+    const evidence = new Set((JSON.parse(readFileSync(resolve(import.meta.dirname, "../../../docs/build/market-reference/license-evidence.json"), "utf8")) as {captures: {id: string}[]}).captures.map((c) => c.id));
+    for (const source of debtSourceRegistry) for (const id of source.licenseEvidence) expect(evidence.has(id), `${source.id} -> ${id}`).toBe(true);
   });
 
   it("uses geography or a country domain before locale and marks locale defaults for confirmation", () => {

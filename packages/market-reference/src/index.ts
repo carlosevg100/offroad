@@ -197,3 +197,5 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
 export * from "./pricing-truth";
 
 export * from "./decision-reference";
+
+export * from "./market-objects";
