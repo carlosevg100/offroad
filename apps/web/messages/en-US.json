@@ -7414,5 +7414,18 @@
       "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
       "unavailable": "I could not confirm now. Try again."
     }
+  },
+  "CompanyRegistration": {
+    "title": "Company of this analysis",
+    "lead": "To calculate, state once the company the premises were confirmed for. After that, the calculation proceeds by itself.",
+    "name": "Legal name",
+    "cnpj": "CNPJ",
+    "register": "Register and calculate",
+    "registering": "Registering the company",
+    "errors": {
+      "invalidCnpj": "The CNPJ does not match its check digits. Check it and try again.",
+      "roleExists": "This work already has a company registered with another perimeter. Adjust it in the analysis basis.",
+      "unavailable": "I could not register it now. Try again."
+    }
   }
 }

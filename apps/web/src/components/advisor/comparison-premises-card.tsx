@@ -6,6 +6,7 @@ import {useRef, useState} from "react";
 import {useFormatter, useTranslations} from "next-intl";
 
 import {confirmPremiseProposal} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
+import {CompanyRegistration} from "./company-registration";
 
 /** One proposal as the premise summary recorded it. */
 type ProposalSummary = {label: string; amount: string; annualSpread: string; feeRate: string; creditTax: boolean; collateralShareOfLoan: string; covenantLimit: string; origin: string; source: string};
@@ -77,5 +78,6 @@ export function ComparisonPremisesCard({locale, projectId, proposal}: {locale: "
       </button>}
     {state.kind === "error" ? <p role="alert" className="investment-premises-card__error">{state.error === "company_unregistered" ? t("errors.companyUnregistered")
       : state.error === "superseded" ? t("superseded") : t("errors.unavailable")}</p> : null}
+    {state.kind === "error" && state.error === "company_unregistered" ? <CompanyRegistration locale={locale} projectId={projectId} onRegistered={confirm} /> : null}
   </section>;
 }

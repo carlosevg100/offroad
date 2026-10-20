@@ -13523,4 +13523,9 @@ button[disabled].workspace-search,
 .investment-premises-card__cases {color: #616b71; font-size: 11px; line-height: 1.5; margin: 0;}
 .investment-premises-card__done {align-items: center; color: #4f6b2f; display: flex; font-size: 11px; gap: 6px; margin: 0;}
 .investment-premises-card__error {color: #8a4b1f; font-size: 11px; margin: 0;}
+.company-registration {border-top: 1px solid #eef0ec; display: grid; gap: 8px; padding-top: 12px;}
+.company-registration p {color: #616b71; font-size: 11px; line-height: 1.5; margin: 0;}
+.company-registration label {color: #4a545a; display: grid; font-size: 11px; gap: 4px;}
+.company-registration input {border: 1px solid #dde2d9; border-radius: 8px; font-size: 12px; padding: 7px 9px;}
+.company-registration .button {justify-self: start;}
 @media (max-width: 640px) {.investment-premises-card__group dl > div {grid-template-columns: minmax(0, 1fr);}}

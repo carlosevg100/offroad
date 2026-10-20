@@ -8,6 +8,8 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
 import {executionRequestTextMaxLength} from "@/lib/execution/request-limits";
+import {normalizeCnpj} from "@/lib/identity/cnpj";
+import {recordBasisEntity} from "../basis/actions";
 
 const route = z.object({locale: z.enum(["pt-BR", "en-US"]), projectId: z.uuid()});
 const text = z.string().trim().min(1).max(executionRequestTextMaxLength);
@@ -157,4 +159,24 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!result.success) return failure(null);
   revalidatePath(`/${locale}/app/projects/${projectId}/executions`);
   return {ok: true, versionId, executionId: result.data.executionId, calculation: "requested"};
+}
+
+/** The company a premise card calculates for, registered from the card itself when the work's dossier
+ * names none yet: the person states the company's name and CNPJ once, the identity is reviewed under
+ * that identifier and linked as the dossier's subject, exactly as the basis page does. Nothing is
+ * inferred; a CNPJ that fails its check digits is refused before anything is written. */
+export async function registerWorkCompany(input: unknown): Promise<{ok: true} | {ok: false; error: "invalid_cnpj" | "role_exists" | ExecutionRequestError}> {
+  const parsed = route.extend({name: z.string().trim().min(2).max(300), cnpj: z.string().trim().min(14).max(24)}).strict().safeParse(input);
+  if (!parsed.success) return failure({code: "22023"});
+  const {locale, projectId, name} = parsed.data;
+  const cnpj = normalizeCnpj(parsed.data.cnpj);
+  if (!cnpj) return {ok: false, error: "invalid_cnpj"};
+  const {supabase, organization} = await requireWorkspace(locale);
+  const dossier = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).eq("resource_id", projectId).maybeSingle();
+  if (dossier.error || !dossier.data) return failure({code: "42501"});
+  const recorded = await recordBasisEntity({locale, projectId, dossierId: dossier.data.id, name, namespace: "BR:CNPJ", value: cnpj,
+    reason: "Companhia analisada informada no cartão de premissas da conversa, para calcular sobre as premissas confirmadas.", relationship: "subject", perimeter: "consolidated"});
+  if (recorded.ok) return {ok: true};
+  if (recorded.error === "roleExists") return {ok: false, error: "role_exists"};
+  return failure({code: {invalid: "22023", denied: "42501", conflict: "40001", unavailable: undefined}[recorded.error]});
 }

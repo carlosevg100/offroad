@@ -13,6 +13,7 @@ export function selectClientMessages(messages: Messages) {
     InvestmentPremisesCard: messages.InvestmentPremisesCard,
     ComparisonPremisesCard: messages.ComparisonPremisesCard,
     CapacityPremisesCard: messages.CapacityPremisesCard,
+    CompanyRegistration: messages.CompanyRegistration,
     AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
     AdvisorWorkSurface: messages.AdvisorWorkSurface,
     Intake: {executionApproval: messages.Intake.executionApproval},
