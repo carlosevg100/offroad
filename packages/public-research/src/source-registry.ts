@@ -69,6 +69,9 @@ export const debtSourceReuseSchema = z.enum([
   "licensed_reusable_within_contract",
   "tenant_only",
   "no_persistent_content",
+  /** Faithful reproduction of public screen content in one case, with credit and the source's
+   * disclaimer; never promoted to an aggregable observation nor stored in a global layer. */
+  "faithful_case_evidence",
 ]);
 export type DebtSourceReuse = z.infer<typeof debtSourceReuseSchema>;
 
@@ -89,6 +92,8 @@ export const debtSourceDefinitionSchema = z.object({
   limitations: z.array(z.string().min(3).max(300)).default([]),
   activationEnv: z.string().regex(/^[A-Z0-9_]+$/).nullable().default(null),
   retrievalOnly: z.boolean().default(false),
+  /** Ids of the captured terms in docs/build/market-reference/license-evidence.json that back the reuse class. */
+  licenseEvidence: z.array(z.string().regex(/^[a-z0-9.-]+$/)).default([]),
 });
 export type DebtSourceDefinition = z.infer<typeof debtSourceDefinitionSchema>;
 
@@ -105,7 +110,7 @@ export const debtSourceRegistry = [
     id: "cvm_open_data", name: "CVM Dados Abertos", jurisdictions: ["BR"],
     sourceClass: "regulator", access: "public_keyless", status: "implemented", authorityTier: 1,
     capabilities: ["entity_identity", "issuer_filings", "financial_statements", "debt_book", "covenants_and_security", "company_events", "sector_and_regulation", "primary_market_terms"],
-    domains: ["dados.cvm.gov.br", "cvm.gov.br", "gov.br"], reuse: "public_reusable",
+    domains: ["dados.cvm.gov.br", "cvm.gov.br", "gov.br"], reuse: "public_reusable", licenseEvidence: ["cvm-dfp-dataset", "cvm-offerings-dataset", "odbl-1.0"],
     purpose: "Fonte oficial para cadastro de companhia aberta, ITR, DFP, FRE e documentos periódicos ou eventuais.",
     limitations: ["Periodicidade e estrutura variam por conjunto; reapresentações devem superseder, nunca sobrescrever, a versão anterior."],
   }),
@@ -113,7 +118,8 @@ export const debtSourceRegistry = [
     id: "b3_public", name: "B3 Dados Públicos", jurisdictions: ["BR"],
     sourceClass: "exchange", access: "public_site", status: "contract_ready", authorityTier: 1,
     capabilities: ["entity_identity", "debt_instruments", "company_events", "primary_market_terms", "secondary_market_pricing"],
-    domains: ["b3.com.br"], reuse: "public_reusable",
+    domains: ["b3.com.br"], reuse: "licensed_reusable_within_contract",
+    licenseEvidence: ["b3-site-terms", "b3-market-data-policies", "b3-consumo-v1.1", "b3-comercial-2026-v1.1", "b3-comercial-2027-v1.1"],
     purpose: "Fonte oficial de listagem, características e eventos de instrumentos registrados ou negociados na B3.",
     limitations: ["Alguns produtos detalhados são licenciados; dados públicos e contratados devem permanecer separados."],
   }),
@@ -121,12 +127,12 @@ export const debtSourceRegistry = [
     id: "anbima_data", name: "ANBIMA Data", jurisdictions: ["BR"],
     sourceClass: "self_regulatory_organization", access: "public_site", status: "manual_only", authorityTier: 2,
     capabilities: ["debt_instruments", "primary_market_terms", "secondary_market_pricing", "comparable_transactions"],
-    domains: ["anbima.com.br"], reuse: "public_reusable",
+    domains: ["anbima.com.br"], reuse: "faithful_case_evidence", licenseEvidence: ["anbima-portal-terms"],
     purpose: "Referência pública para ofertas, emissões, termos e preços indicativos recentes de debêntures, notas comerciais, CRI e CRA publicados pela ANBIMA.",
     limitations: [
       "O site público não é o ANBIMA Feed e não oferece a mesma cobertura histórica ou um contrato de API de produção.",
       "Parte da consulta diária gratuita mantém apenas os cinco dias úteis mais recentes; histórico amplo pertence ao Feed contratado.",
-      "Uso automatizado e retenção precisam de validação dos termos aplicáveis antes de um adaptador sair de manual_only.",
+      "Termos do portal de 1/7/2026: uso de bancos de dados só com autorização prévia por escrito e robôs proibidos; só a tela pública, fiel, com crédito e isenção, por caso (ADR 0023).",
       "Não comprova mandato ou apetite de financiador e não substitui escritura, prospecto, documento do emissor, CVM ou B3.",
     ],
   }),
