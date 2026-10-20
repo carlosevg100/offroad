@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "offroad.market-license-evidence.v1",
+  "capturedAt": "2026-10-20",
+  "note": "Hash SHA-256 de cada página ou documento capturado na data. As capturas estão guardadas fora do repositório público, em outputs/market-reference/license-captures-2026-10-20/ (pasta privada do fundador), com o nome igual ao id e a extensão do arquivo; na fase M1b sobem para o bucket privado da publicadora como versões de fonte com estes mesmos hashes. Uma mudança de hash exige nova conferência antes de qualquer ativação.",
+  "captures": [
+    {
+      "id": "anbima-portal-terms",
+      "url": "https://www.anbima.com.br/pt_br/termos-de-uso.htm",
+      "sha256": "681b785e0236e46bc1c53537f880c9f6cfb79ea6b054bf99bc5b9d160169afc7",
+      "title": "Termos do portal ANBIMA, atualizados em 1/7/2026",
+      "finding": "8.2: uso de programas, bancos de dados, redes e arquivos só com autorização prévia por escrito; 8.3: conteúdo público de tela reproduzível sem alteração, com crédito e com a isenção do 9.2.1; 2.4: proibidos aplicativos spider e mineração de dados",
+      "capture": "anbima-portal-terms.html"
+    },
+    {
+      "id": "anbima-feed-investor-terms",
+      "url": "https://www.anbima.com.br/pt_br/informar/termos-de-uso-anbima-feed-segmento-do-investidor.htm",
+      "sha256": "b36234a989ea64e6c415e62a752367dabd7ab28aadf91cb340c99e01af64043d",
+      "title": "Termos do ANBIMA Feed, segmento investidor",
+      "finding": "uso exclusivo para gestão de risco de liquidez; vedado vender, publicar, distribuir, dar acesso ou criar derivados para terceiros sem autorização",
+      "capture": "anbima-feed-investor-terms.html"
+    },
+    {
+      "id": "b3-site-terms",
+      "url": "https://www.b3.com.br/pt_br/termos-de-uso-e-protecao-de-dados/termos-de-uso",
+      "sha256": "0ab34b99f20a591452c978d3019fc2337e7ec21e1c36cdbacc9486ac98138663",
+      "title": "Termos de uso do site da B3",
+      "finding": "uso pessoal; reprodução, distribuição ou uso comercial dependem de autorização prévia por escrito",
+      "capture": "b3-site-terms.html"
+    },
+    {
+      "id": "b3-market-data-policies",
+      "url": "https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/distribuidores/politica-comercial-e-contratos/",
+      "sha256": "f8b4c62a71fa54e38f3837bb19d368db01fe79a81be94ac4d1162f52b2ccd6f3",
+      "title": "Políticas e contratos de market data da B3",
+      "finding": "políticas vigentes até 31/10/2026; Política de Consumo a partir de 1/11/2026; Política Comercial válida até 31/12/2026 e nova a partir de 1/1/2027",
+      "capture": "b3-market-data-policies.html"
+    },
+    {
+      "id": "odbl-1.0",
+      "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "sha256": "b8d8aebb21bf405f93f6e21bbf0d8f0a749844f9812ec58692f189add6402b47",
+      "title": "Open Database License 1.0",
+      "finding": "4.4 e 4.6: base derivada usada publicamente e obra produzida; 2.3 e 2.4: direitos sobre a base distintos dos direitos sobre conteúdos individuais",
+      "capture": "odbl-1.0.html"
+    },
+    {
+      "id": "cvm-dfp-dataset",
+      "url": "https://dados.cvm.gov.br/dataset/cia_aberta-doc-dfp",
+      "sha256": "c19969ab92ce3dc81d1644b8a8046935c109e01a52422195c8fbf25e96c1da1f",
+      "title": "CVM, DFP de companhias abertas",
+      "finding": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+      "capture": "cvm-dfp-dataset.html"
+    },
+    {
+      "id": "cvm-offerings-dataset",
+      "url": "https://dados.cvm.gov.br/dataset/oferta-distrib",
+      "sha256": "409f6c4c815cde7eb2e705639fd45cac753812f4d9196f17ec3934c91315f5d1",
+      "title": "CVM, ofertas públicas de distribuição",
+      "finding": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+      "capture": "cvm-offerings-dataset.html"
+    },
+    {
+      "id": "tesouro-taxas-dataset",
+      "url": "https://www.tesourotransparente.gov.br/ckan/dataset/taxas-dos-titulos-ofertados-pelo-tesouro-direto",
+      "sha256": "7f35e38482d64a6880326fe29f88a27ef0f1a3cbd7f76095438f58d52ea523c9",
+      "title": "Tesouro Transparente, taxas dos títulos ofertados pelo Tesouro Direto",
+      "finding": "Licença Aberta para Bases de Dados (ODbL) do Open Data Commons",
+      "capture": "tesouro-taxas-dataset.html"
+    },
+    {
+      "id": "bcb-open-data",
+      "url": "https://dadosabertos.bcb.gov.br/dataset/11-taxa-de-juros---selic",
+      "sha256": "42f945878aa5a0778f6f30de1a67b6b5886071a4098dd99fcd8eafd3fc69fa0b",
+      "title": "Banco Central, portal de dados abertos (série 11): captura falhou",
+      "finding": "a página devolveu 'Requisição Inválida' na captura automática; o hash identifica essa resposta, não o catálogo. A licença de cada série é conferida no catálogo e registrada aqui antes de M2.",
+      "capture": "bcb-open-data.html"
+    },
+    {
+      "id": "b3-consumo-ate-2026-10-31",
+      "url": "https://www.b3.com.br/data/files/66/82/D8/17/973699100A29E189AC094EA8/Politica%20de%20Consumo%20Market%20Data%20B3.pdf",
+      "sha256": "1e56c699070a099945989abd1d4e891f4df6b7f05d25fda5d6552de7c0936285",
+      "title": "Política de Consumo de Market Data B3 (instrumento vigente até 31/10/2026)",
+      "finding": "instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
+      "capture": "b3-consumo-ate-2026-10-31.pdf"
+    },
+    {
+      "id": "b3-comercial-2026-antiga",
+      "url": "https://www.b3.com.br/data/files/EA/C2/79/58/A73699100A29E189AC094EA8/Politica%20Comercial%20de%20Market%20Data_2026.pdf",
+      "sha256": "457ec1f22561b59fc7aa97eed21d36268a08fe622e72503c40f85b5c3122b39c",
+      "title": "Política Comercial de Market Data 2026 (instrumento vigente até 31/10/2026)",
+      "finding": "vigência original declarada no documento até 31/12/2026; vigência efetiva encerrada em 31/10/2026 pela substituição pela V1.1, conforme a página índice. instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
+      "capture": "b3-comercial-2026-antiga.pdf"
+    },
+    {
+      "id": "b3-consumo-v1.1",
+      "url": "https://www.b3.com.br/data/files/0D/97/1F/B7/4CCFF91094DCD8F9AC094EA8/Politica%20de%20Consumo%20de%20Market%20Data%20B3%20V1.1.pdf",
+      "sha256": "ce605710784afd202564cedbdb97208a3092c7a5ee56ded94716d4226702c44f",
+      "title": "Política de Consumo de Market Data B3 V1.1 (a partir de 1/11/2026)",
+      "finding": "instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
+      "capture": "b3-consumo-v1.1.pdf"
+    },
+    {
+      "id": "b3-comercial-2026-v1.1",
+      "url": "https://www.b3.com.br/data/files/20/35/7A/71/5CCFF91094DCD8F9AC094EA8/Politica%20Comercial%20de%20Market%20Data%20B3%202026%20V1.1.pdf",
+      "sha256": "219f34b47b5ffe43c84f74a9ed80e59f4fce3ef7f98cefeb7ee2e1634840c64b",
+      "title": "Política Comercial de Market Data B3 2026 V1.1 (a partir de 1/11/2026, válida até 31/12/2026)",
+      "finding": "instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
+      "capture": "b3-comercial-2026-v1.1.pdf"
+    },
+    {
+      "id": "b3-comercial-2027-v1.1",
+      "url": "https://www.b3.com.br/data/files/42/81/A5/AC/5CCFF91094DCD8F9AC094EA8/Politica%20Comercial%20de%20Market%20Data%20B3%202027%20V1.1.pdf",
+      "sha256": "066109071721ca74ee19711c444c3ab4d7f223514dc8a5b4c351ea47a963b887",
+      "title": "Política Comercial de Market Data B3 2027 V1.1 (de 1/1/2027 a 31/12/2027)",
+      "finding": "instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
+      "capture": "b3-comercial-2027-v1.1.pdf"
+    }
+  ],
+  "pendingBeforeM7": [
+    "Capturar os dois Manuais de Envio de Relatório Periódico da B3 vinculados na página índice, que a Política Comercial manda ler em conjunto",
+    "Fixar, para a modalidade de licença contratada, as cláusulas aplicáveis de cada instrumento B3, com versão, vigência original e vigência efetiva",
+    "Teste de seleção do conjunto completo de instrumentos em cada lado de 1/11/2026 e 1/1/2027"
+  ]
+}
