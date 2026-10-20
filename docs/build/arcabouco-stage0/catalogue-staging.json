@@ -6562,6 +6562,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.check_market_purge_complete_v1()",
+      "kind": "function",
+      "name": "check_market_purge_complete_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
       "kind": "function",
       "name": "claim_case_brief",
@@ -10061,6 +10079,132 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_market_acquisition_v1()",
+      "kind": "function",
+      "name": "guard_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_content_v1()",
+      "kind": "function",
+      "name": "guard_market_content_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_event_v1()",
+      "kind": "function",
+      "name": "guard_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_logical_object_v1()",
+      "kind": "function",
+      "name": "guard_market_logical_object_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_version_open_v1()",
+      "kind": "function",
+      "name": "guard_market_version_open_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_version_seal_v1()",
+      "kind": "function",
+      "name": "guard_market_version_seal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_version_state_v1()",
+      "kind": "function",
+      "name": "guard_market_version_state_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.guard_method_release_v1()",
       "kind": "function",
       "name": "guard_method_release_v1",
@@ -12503,6 +12647,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.lock_market_version_state_v1(p_version uuid, p_exclusive boolean)",
+      "kind": "function",
+      "name": "lock_market_version_state_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid, p_exclusive boolean",
+      "security_definer": true
+    },
+    {
       "id": "function:private.lock_new_declinable_jobs_v1(p_org uuid, p_jobs uuid[], p_locked uuid[])",
       "kind": "function",
       "name": "lock_new_declinable_jobs_v1",
@@ -12680,6 +12842,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.mark_market_version_purged_v1()",
+      "kind": "function",
+      "name": "mark_market_version_purged_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.mark_market_version_sealed_v1()",
+      "kind": "function",
+      "name": "mark_market_version_sealed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.mark_native_work_update_v1()",
       "kind": "function",
       "name": "mark_native_work_update_v1",
@@ -12718,6 +12916,168 @@
         "search_path=\"\""
       ],
       "signature": "p_target_id uuid, p_resolution_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_contract_in_force_v1(p jsonb, p_on date)",
+      "kind": "function",
+      "name": "market_contract_in_force_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p jsonb, p_on date",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_hosts_valid_v1(p text[])",
+      "kind": "function",
+      "name": "market_hosts_valid_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p text[]",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_license_valid_v1(p jsonb)",
+      "kind": "function",
+      "name": "market_license_valid_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_publisher_organization_v1()",
+      "kind": "function",
+      "name": "market_publisher_organization_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_source_acquirable_v1(p_source_id text, p_on date)",
+      "kind": "function",
+      "name": "market_source_acquirable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_source_id text, p_on date",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_source_in_force_v1(p_source_id text)",
+      "kind": "function",
+      "name": "market_source_in_force_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_source_id text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_version_canonical_v1(p_version uuid)",
+      "kind": "function",
+      "name": "market_version_canonical_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_version_quality_approved_v1(p_version uuid)",
+      "kind": "function",
+      "name": "market_version_quality_approved_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_version_sealed_v1(p_version uuid)",
+      "kind": "function",
+      "name": "market_version_sealed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid",
       "security_definer": true
     },
     {
@@ -13368,6 +13728,24 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_source uuid, p_rights uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.open_market_version_state_v1()",
+      "kind": "function",
+      "name": "open_market_version_state_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -17521,6 +17899,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_market_source_revision_v1(p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid)",
+      "kind": "function",
+      "name": "record_market_source_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.record_material_communication(p_organization_id uuid, p_intake_session_id uuid, p_package_fingerprint text, p_recipient_id text, p_channel text, p_content_fingerprint text, p_has_material_commitment boolean)",
       "kind": "function",
       "name": "record_material_communication",
@@ -17928,6 +18324,24 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.register_market_publisher_v1(p_command uuid, p_name text, p_actor uuid)",
+      "kind": "function",
+      "name": "register_market_publisher_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_name text, p_actor uuid",
       "security_definer": false
     },
     {
@@ -20301,6 +20715,24 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.seal_market_version_v1(p_version uuid)",
+      "kind": "function",
+      "name": "seal_market_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid",
       "security_definer": true
     },
     {
@@ -54646,6 +55078,146 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.market_acquisitions.market_acquisitions_deny",
+      "kind": "policy",
+      "name": "market_acquisitions_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_acquisitions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_events.market_events_deny",
+      "kind": "policy",
+      "name": "market_events_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_events",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_logical_objects.market_logical_objects_deny",
+      "kind": "policy",
+      "name": "market_logical_objects_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_logical_objects",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_observations.market_observations_deny",
+      "kind": "policy",
+      "name": "market_observations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_observations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_publisher.market_publisher_deny",
+      "kind": "policy",
+      "name": "market_publisher_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_publisher",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_source_revisions.market_source_revisions_deny",
+      "kind": "policy",
+      "name": "market_source_revisions_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_source_revisions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_version_inputs.market_version_inputs_deny",
+      "kind": "policy",
+      "name": "market_version_inputs_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_version_inputs",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_version_seals.market_version_seals_deny",
+      "kind": "policy",
+      "name": "market_version_seals_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_version_seals",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_version_states.market_version_states_deny",
+      "kind": "policy",
+      "name": "market_version_states_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_version_states",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_versions.market_versions_deny",
+      "kind": "policy",
+      "name": "market_versions_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_versions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.material_package_review_intents.material_package_review_intents_no_delete",
       "kind": "policy",
       "name": "material_package_review_intents_no_delete",
@@ -71156,6 +71728,506 @@
       "rls": true,
       "kind": "table",
       "name": "legal_holds",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_acquisitions",
+      "rls": true,
+      "kind": "table",
+      "name": "market_acquisitions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_events",
+      "rls": true,
+      "kind": "table",
+      "name": "market_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_logical_objects",
+      "rls": true,
+      "kind": "table",
+      "name": "market_logical_objects",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_observations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_observations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_publisher",
+      "rls": true,
+      "kind": "table",
+      "name": "market_publisher",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_source_revisions",
+      "rls": true,
+      "kind": "table",
+      "name": "market_source_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_version_inputs",
+      "rls": true,
+      "kind": "table",
+      "name": "market_version_inputs",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_version_seals",
+      "rls": true,
+      "kind": "table",
+      "name": "market_version_seals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_version_states",
+      "rls": true,
+      "kind": "table",
+      "name": "market_version_states",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_versions",
+      "rls": true,
+      "kind": "table",
+      "name": "market_versions",
       "grants": [
         [
           "postgres",
@@ -94780,6 +95852,306 @@
       "enabled": "O",
       "function": "private.capture_lifecycle_command_operation_v1()",
       "definition": "CREATE TRIGGER lifecycle_hold_admin_operation AFTER INSERT OR UPDATE ON private.legal_holds FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_immutable",
+      "kind": "trigger",
+      "name": "market_acquisitions_immutable",
+      "table": "market_acquisitions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_acquisitions_immutable BEFORE DELETE OR UPDATE ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_publisher",
+      "kind": "trigger",
+      "name": "market_acquisitions_publisher",
+      "table": "market_acquisitions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_acquisition_v1()",
+      "definition": "CREATE TRIGGER market_acquisitions_publisher BEFORE INSERT ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_truncate_guard",
+      "kind": "trigger",
+      "name": "market_acquisitions_truncate_guard",
+      "table": "market_acquisitions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_acquisitions_truncate_guard BEFORE TRUNCATE ON private.market_acquisitions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_immutable",
+      "kind": "trigger",
+      "name": "market_events_immutable",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_events_immutable BEFORE DELETE OR UPDATE ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_mark_purged",
+      "kind": "trigger",
+      "name": "market_events_mark_purged",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.mark_market_version_purged_v1()",
+      "definition": "CREATE TRIGGER market_events_mark_purged AFTER INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_purged_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_purge_complete",
+      "kind": "trigger",
+      "name": "market_events_purge_complete",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.check_market_purge_complete_v1()",
+      "definition": "CREATE CONSTRAINT TRIGGER market_events_purge_complete AFTER INSERT ON private.market_events DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.check_market_purge_complete_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_subject",
+      "kind": "trigger",
+      "name": "market_events_subject",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_event_v1()",
+      "definition": "CREATE TRIGGER market_events_subject BEFORE INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_truncate_guard",
+      "kind": "trigger",
+      "name": "market_events_truncate_guard",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_events_truncate_guard BEFORE TRUNCATE ON private.market_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_immutable",
+      "kind": "trigger",
+      "name": "market_logical_objects_immutable",
+      "table": "market_logical_objects",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_logical_objects_immutable BEFORE DELETE OR UPDATE ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_source",
+      "kind": "trigger",
+      "name": "market_logical_objects_source",
+      "table": "market_logical_objects",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_logical_object_v1()",
+      "definition": "CREATE TRIGGER market_logical_objects_source BEFORE INSERT ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_market_logical_object_v1()"
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_truncate_guard",
+      "kind": "trigger",
+      "name": "market_logical_objects_truncate_guard",
+      "table": "market_logical_objects",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_logical_objects_truncate_guard BEFORE TRUNCATE ON private.market_logical_objects FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_content",
+      "kind": "trigger",
+      "name": "market_observations_content",
+      "table": "market_observations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_content_v1()",
+      "definition": "CREATE TRIGGER market_observations_content BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_content_v1()"
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_open",
+      "kind": "trigger",
+      "name": "market_observations_open",
+      "table": "market_observations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_version_open_v1()",
+      "definition": "CREATE TRIGGER market_observations_open BEFORE INSERT ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_observations_truncate_guard",
+      "table": "market_observations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_observations_truncate_guard BEFORE TRUNCATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_publisher.market_publisher_immutable",
+      "kind": "trigger",
+      "name": "market_publisher_immutable",
+      "table": "market_publisher",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_publisher_immutable BEFORE DELETE OR UPDATE ON private.market_publisher FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_publisher.market_publisher_truncate_guard",
+      "kind": "trigger",
+      "name": "market_publisher_truncate_guard",
+      "table": "market_publisher",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_publisher_truncate_guard BEFORE TRUNCATE ON private.market_publisher FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_source_revisions.market_source_revisions_immutable",
+      "kind": "trigger",
+      "name": "market_source_revisions_immutable",
+      "table": "market_source_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_source_revisions_immutable BEFORE DELETE OR UPDATE ON private.market_source_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_source_revisions.market_source_revisions_truncate_guard",
+      "kind": "trigger",
+      "name": "market_source_revisions_truncate_guard",
+      "table": "market_source_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_source_revisions_truncate_guard BEFORE TRUNCATE ON private.market_source_revisions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_immutable",
+      "kind": "trigger",
+      "name": "market_version_inputs_immutable",
+      "table": "market_version_inputs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_version_inputs_immutable BEFORE DELETE OR UPDATE ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_open",
+      "kind": "trigger",
+      "name": "market_version_inputs_open",
+      "table": "market_version_inputs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_version_open_v1()",
+      "definition": "CREATE TRIGGER market_version_inputs_open BEFORE INSERT ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_truncate_guard",
+      "kind": "trigger",
+      "name": "market_version_inputs_truncate_guard",
+      "table": "market_version_inputs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_version_inputs_truncate_guard BEFORE TRUNCATE ON private.market_version_inputs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_immutable",
+      "kind": "trigger",
+      "name": "market_version_seals_immutable",
+      "table": "market_version_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_version_seals_immutable BEFORE DELETE OR UPDATE ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_mark_sealed",
+      "kind": "trigger",
+      "name": "market_version_seals_mark_sealed",
+      "table": "market_version_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.mark_market_version_sealed_v1()",
+      "definition": "CREATE TRIGGER market_version_seals_mark_sealed AFTER INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_sealed_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_truncate_guard",
+      "kind": "trigger",
+      "name": "market_version_seals_truncate_guard",
+      "table": "market_version_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_version_seals_truncate_guard BEFORE TRUNCATE ON private.market_version_seals FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_validate",
+      "kind": "trigger",
+      "name": "market_version_seals_validate",
+      "table": "market_version_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_version_seal_v1()",
+      "definition": "CREATE TRIGGER market_version_seals_validate BEFORE INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_seal_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_states.market_version_states_guard",
+      "kind": "trigger",
+      "name": "market_version_states_guard",
+      "table": "market_version_states",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_version_state_v1()",
+      "definition": "CREATE TRIGGER market_version_states_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_version_states FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_state_v1()"
+    },
+    {
+      "id": "trigger:private.market_version_states.market_version_states_truncate_guard",
+      "kind": "trigger",
+      "name": "market_version_states_truncate_guard",
+      "table": "market_version_states",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_version_states_truncate_guard BEFORE TRUNCATE ON private.market_version_states FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_immutable",
+      "kind": "trigger",
+      "name": "market_versions_immutable",
+      "table": "market_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_versions_immutable BEFORE DELETE OR UPDATE ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_open_state",
+      "kind": "trigger",
+      "name": "market_versions_open_state",
+      "table": "market_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.open_market_version_state_v1()",
+      "definition": "CREATE TRIGGER market_versions_open_state AFTER INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.open_market_version_state_v1()"
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_truncate_guard",
+      "kind": "trigger",
+      "name": "market_versions_truncate_guard",
+      "table": "market_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_versions_truncate_guard BEFORE TRUNCATE ON private.market_versions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.material_package_review_intents.material_package_review_intents_audit",

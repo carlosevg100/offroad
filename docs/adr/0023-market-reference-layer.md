@@ -94,13 +94,17 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
    adotado em `capital_public_delivery_licenses` (organização licenciadora distinta da consumidora,
    pinos de entrega e de dependência), sem reaproveitar suas tabelas de payload de pesquisa.
 
-2. **Bytes da publicadora, contrato de armazenamento explícito.** `source_versions.bucket_id` só
-   admite `opportunity-documents`. A decisão é evoluir essa restrição por migração para uma regra
-   equivalente por classe de fonte: versões de tenant continuam presas a `opportunity-documents`;
-   versões da publicadora de mercado ficam presas ao bucket privado `market-reference`, e só a
-   publicadora pode ter versão nele. A troca vem com as políticas de Storage, a verificação física
-   (`source_version_verifications`), o download autorizado e o expurgo do novo bucket; o `CHECK`
-   nunca é removido sem a substituição equivalente.
+2. **Bytes da publicadora em recibos próprios.** As versões de fonte de tenant (`source_versions`)
+   estão presas ao upload de documentos (recurso de origem, vínculos, gatilho de projeção e bucket
+   `opportunity-documents`). Em vez de alargar essa restrição, as aquisições de mercado são recibos
+   imutáveis próprios da publicadora (`private.market_acquisitions`), com as mesmas invariantes: URL
+   e URL final em https, hash SHA-256, tamanho, tipo, caminho exato no bucket privado
+   `market-reference`, nenhuma alteração ou exclusão do recibo, RLS forçada e nenhum privilégio para
+   os papéis da API. `source_versions` e sua restrição de bucket ficam intactas. As políticas de
+   Storage do novo bucket, a verificação física, o download autorizado e o expurgo chegam com o job
+   de aquisição; até lá o bucket não tem política para os papéis comuns, e só a administração do
+   Storage e o `service_role` o alcançam, como em qualquer bucket privado.
+   (Emenda de 20/10/2026, na implementação da fundação.)
 
 3. **Autoridade de plataforma nova e estreita.** Hoje todo job depende de autoridade humana sobre um
    recurso de tenant; a conta do worker não pertence a organização nenhuma. A aquisição de mercado
@@ -246,8 +250,8 @@ prova em staging e produção.
 - **M1a Contratos, direitos e fechamento.** Organização publicadora; principal de plataforma e
   delegação; regime de licença aberta e de entitlements; referência de mercado tipada; ramo do
   fechamento; resolvedor tipado; registro de fontes corrigido. Sem coleta.
-- **M1b Aquisição e retenção.** Bucket `market-reference` e a evolução da restrição de
-  `source_versions`; esquema `market` (identidade lógica, aquisições, revisões, versões normalizadas,
+- **M1b Aquisição e retenção.** Bucket `market-reference` com recibos de aquisição próprios
+  (decisão 2); esquema `market` (identidade lógica, aquisições, revisões, versões normalizadas,
   observações com as três datas, eventos, quarentena); job `market_acquisition` com capacidades e
   testes negativos; expurgo com recibo; calendário e frescor; `pg_cron` instalado sem tarefas.
 - **M2 Primeiro consumo completo.** Gate de entrada: licença de cada série do Banco Central conferida

@@ -320740,6 +320740,4312 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.check_market_purge_complete_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.check_market_purge_complete_v1()",
+          "kind": "function",
+          "name": "check_market_purge_complete_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.check_market_purge_complete_v1()",
+          "kind": "function",
+          "name": "check_market_purge_complete_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Verificação diferida de que o expurgo de uma versão removeu todo o conteúdo na mesma transação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 180,
+          "anchor": "create function private.check_market_purge_complete_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_acquisition_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_acquisition_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_acquisition_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Aquisição só pela publicadora, no caminho da própria fonte, em https e sob revisão habilitada e vigente na data.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 145,
+          "anchor": "create function private.guard_market_acquisition_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 147,
+          "anchor": "create or replace function private.guard_market_acquisition_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_content_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_content_v1()",
+          "kind": "function",
+          "name": "guard_market_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_content_v1()",
+          "kind": "function",
+          "name": "guard_market_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Conteúdo da versão é imutável; só sai de versão expurgada, na transação do evento de expurgo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 201,
+          "anchor": "create function private.guard_market_content_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 274,
+          "anchor": "create or replace function private.guard_market_content_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 190,
+          "anchor": "create or replace function private.guard_market_content_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 155,
+          "anchor": "create or replace function private.guard_market_content_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_event_v1()",
+          "kind": "function",
+          "name": "guard_market_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_event_v1()",
+          "kind": "function",
+          "name": "guard_market_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Evento sobre sujeito existente em grafia canônica; evento de versão trava o estado, avança a âncora e recebe o ordinal serializado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 248,
+          "anchor": "create function private.guard_market_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 163,
+          "anchor": "create or replace function private.guard_market_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 134,
+          "anchor": "create or replace function private.guard_market_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 103,
+          "anchor": "create or replace function private.guard_market_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144603_market_reference_event_order.sql",
+          "line": 13,
+          "anchor": "create or replace function private.guard_market_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_logical_object_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_logical_object_v1()",
+          "kind": "function",
+          "name": "guard_market_logical_object_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_logical_object_v1()",
+          "kind": "function",
+          "name": "guard_market_logical_object_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Objeto lógico só de fonte registrada, com identidade derivada das chaves.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 136,
+          "anchor": "create function private.guard_market_logical_object_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_version_open_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_open_v1()",
+          "kind": "function",
+          "name": "guard_market_version_open_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_open_v1()",
+          "kind": "function",
+          "name": "guard_market_version_open_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Conteúdo entra só em versão aberta e sem selo, avança a âncora; derivado só lê dependência selada e aprovada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 184,
+          "anchor": "create function private.guard_market_version_open_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 76,
+          "anchor": "create or replace function private.guard_market_version_open_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 54,
+          "anchor": "create or replace function private.guard_market_version_open_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 35,
+          "anchor": "create or replace function private.guard_market_version_open_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144603_market_reference_event_order.sql",
+          "line": 46,
+          "anchor": "create or replace function private.guard_market_version_open_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_version_seal_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_seal_v1()",
+          "kind": "function",
+          "name": "guard_market_version_seal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_seal_v1()",
+          "kind": "function",
+          "name": "guard_market_version_seal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Selo valida contagens, fingerprint canônico, licenças e datas sob o lock da versão e das dependências.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 100,
+          "anchor": "create function private.guard_market_version_seal_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 79,
+          "anchor": "create or replace function private.guard_market_version_seal_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 60,
+          "anchor": "create or replace function private.guard_market_version_seal_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_version_state_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_state_v1()",
+          "kind": "function",
+          "name": "guard_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_state_v1()",
+          "kind": "function",
+          "name": "guard_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Estado da versão só avança, com selo validado ou evento de expurgo da mesma transação como prova.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 30,
+          "anchor": "create function private.guard_market_version_state_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 14,
+          "anchor": "create or replace function private.guard_market_version_state_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.lock_market_version_state_v1(p_version uuid, p_exclusive boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_market_version_state_v1(p_version uuid, p_exclusive boolean)",
+          "kind": "function",
+          "name": "lock_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_exclusive boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_market_version_state_v1(p_version uuid, p_exclusive boolean)",
+          "kind": "function",
+          "name": "lock_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_exclusive boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Trava a linha de estado antes de toda decisão sobre a versão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 44,
+          "anchor": "create function private.lock_market_version_state_v1(p_version uuid,p_exclusive boolean) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.mark_market_version_purged_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.mark_market_version_purged_v1()",
+          "kind": "function",
+          "name": "mark_market_version_purged_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.mark_market_version_purged_v1()",
+          "kind": "function",
+          "name": "mark_market_version_purged_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Move a versão para expurgada depois que o evento de expurgo existe.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 123,
+          "anchor": "create function private.mark_market_version_purged_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.mark_market_version_sealed_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.mark_market_version_sealed_v1()",
+          "kind": "function",
+          "name": "mark_market_version_sealed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.mark_market_version_sealed_v1()",
+          "kind": "function",
+          "name": "mark_market_version_sealed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Move a versão para selada depois que o selo validado existe.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 94,
+          "anchor": "create function private.mark_market_version_sealed_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_contract_in_force_v1(p jsonb, p_on date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_contract_in_force_v1(p jsonb, p_on date)",
+          "kind": "function",
+          "name": "market_contract_in_force_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb, p_on date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_contract_in_force_v1(p jsonb, p_on date)",
+          "kind": "function",
+          "name": "market_contract_in_force_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb, p_on date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Lê se a licença contratada cobre a data, por direito e política vigentes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 78,
+          "anchor": "create function private.market_contract_in_force_v1(p jsonb,p_on date) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_hosts_valid_v1(p text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_hosts_valid_v1(p text[])",
+          "kind": "function",
+          "name": "market_hosts_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_hosts_valid_v1(p text[])",
+          "kind": "function",
+          "name": "market_hosts_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Valida a lista de hosts permitidos de uma fonte (sem IP, localhost, sufixo reservado ou duplicata).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 69,
+          "anchor": "create function private.market_hosts_valid_v1(p text[]) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 62,
+          "anchor": "create or replace function private.market_hosts_valid_v1(p text[]) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_license_valid_v1(p jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_license_valid_v1(p jsonb)",
+          "kind": "function",
+          "name": "market_license_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_license_valid_v1(p jsonb)",
+          "kind": "function",
+          "name": "market_license_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Valida a licença de uma fonte por elemento, aberta ou contratada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 58,
+          "anchor": "create function private.market_license_valid_v1(p jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 13,
+          "anchor": "create or replace function private.market_license_valid_v1(p jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 10,
+          "anchor": "create or replace function private.market_license_valid_v1(p jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_publisher_organization_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_publisher_organization_v1()",
+          "kind": "function",
+          "name": "market_publisher_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_publisher_organization_v1()",
+          "kind": "function",
+          "name": "market_publisher_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Organização publicadora única da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 34,
+          "anchor": "create function private.market_publisher_organization_v1() returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_source_acquirable_v1(p_source_id text, p_on date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_source_acquirable_v1(p_source_id text, p_on date)",
+          "kind": "function",
+          "name": "market_source_acquirable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source_id text, p_on date",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_source_acquirable_v1(p_source_id text, p_on date)",
+          "kind": "function",
+          "name": "market_source_acquirable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source_id text, p_on date",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Fonte habilitada e com direito vigente na data.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 129,
+          "anchor": "create function private.market_source_acquirable_v1(p_source_id text,p_on date) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_source_in_force_v1(p_source_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_source_in_force_v1(p_source_id text)",
+          "kind": "function",
+          "name": "market_source_in_force_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_source_in_force_v1(p_source_id text)",
+          "kind": "function",
+          "name": "market_source_in_force_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Revisão em vigor da fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 106,
+          "anchor": "create function private.market_source_in_force_v1(p_source_id text) returns private.market_source_revisions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_version_canonical_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_version_canonical_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_canonical_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_version_canonical_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_canonical_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Texto canônico da versão, independente de DateStyle, base do fingerprint.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 167,
+          "anchor": "create function private.market_version_canonical_v1(p_version uuid) returns text",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 60,
+          "anchor": "create or replace function private.market_version_canonical_v1(p_version uuid) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_version_quality_approved_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_version_quality_approved_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_quality_approved_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_version_quality_approved_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_quality_approved_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Versão selada, não expurgada e cujo último evento de qualidade, na ordem serializada, é aprovação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 266,
+          "anchor": "create function private.market_version_quality_approved_v1(p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 125,
+          "anchor": "create or replace function private.market_version_quality_approved_v1(p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144603_market_reference_event_order.sql",
+          "line": 36,
+          "anchor": "create or replace function private.market_version_quality_approved_v1(p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_version_sealed_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_version_sealed_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_sealed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_version_sealed_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_sealed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Leitura de selo da versão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 181,
+          "anchor": "create function private.market_version_sealed_v1(p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.open_market_version_state_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.open_market_version_state_v1()",
+          "kind": "function",
+          "name": "open_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.open_market_version_state_v1()",
+          "kind": "function",
+          "name": "open_market_version_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Toda versão nasce aberta.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 16,
+          "anchor": "create function private.open_market_version_state_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.record_market_source_revision_v1(p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_market_source_revision_v1(p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid)",
+          "kind": "function",
+          "name": "record_market_source_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.record_market_source_revision_v1(p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid)",
+          "kind": "function",
+          "name": "record_market_source_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_source_id text, p_definition jsonb, p_actor uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Comando de operador da plataforma que registra revisão de fonte com licença e hosts validados, com replay por fingerprint.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 84,
+          "anchor": "create function private.record_market_source_revision_v1(p_command uuid,p_source_id text,p_definition jsonb,p_actor uuid) returns integer",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 82,
+          "anchor": "create or replace function private.record_market_source_revision_v1(p_command uuid,p_source_id text,p_definition jsonb,p_actor uuid) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.register_market_publisher_v1(p_command uuid, p_name text, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_market_publisher_v1(p_command uuid, p_name text, p_actor uuid)",
+          "kind": "function",
+          "name": "register_market_publisher_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_name text, p_actor uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.register_market_publisher_v1(p_command uuid, p_name text, p_actor uuid)",
+          "kind": "function",
+          "name": "register_market_publisher_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_name text, p_actor uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Comando do fundador que registra a publicadora única, com replay pelo nome registrado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 18,
+          "anchor": "create function private.register_market_publisher_v1(p_command uuid,p_name text,p_actor uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 109,
+          "anchor": "create or replace function private.register_market_publisher_v1(p_command uuid,p_name text,p_actor uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 204,
+          "anchor": "create or replace function private.register_market_publisher_v1(p_command uuid,p_name text,p_actor uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.seal_market_version_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.seal_market_version_v1(p_version uuid)",
+          "kind": "function",
+          "name": "seal_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.seal_market_version_v1(p_version uuid)",
+          "kind": "function",
+          "name": "seal_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Fecha a versão pelo selo validado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 210,
+          "anchor": "create function private.seal_market_version_v1(p_version uuid) returns void",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 135,
+          "anchor": "create or replace function private.seal_market_version_v1(p_version uuid) returns void",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 115,
+          "anchor": "create or replace function private.seal_market_version_v1(p_version uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "r:private.market_acquisitions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_acquisitions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_acquisitions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Recibos de aquisição da publicadora, com hash e caminho no bucket privado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 123,
+          "anchor": "create table private.market_acquisitions(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_acquisitions.market_acquisitions_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_acquisitions.market_acquisitions_deny",
+          "kind": "policy",
+          "name": "market_acquisitions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisitions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_acquisitions.market_acquisitions_deny",
+          "kind": "policy",
+          "name": "market_acquisitions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisitions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisitions_truncate_guard",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_truncate_guard BEFORE TRUNCATE ON private.market_acquisitions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisitions_truncate_guard",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_truncate_guard BEFORE TRUNCATE ON private.market_acquisitions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_immutable",
+          "kind": "trigger",
+          "name": "market_acquisitions_immutable",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_immutable BEFORE DELETE OR UPDATE ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_immutable",
+          "kind": "trigger",
+          "name": "market_acquisitions_immutable",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_immutable BEFORE DELETE OR UPDATE ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_events",
+          "rls": true,
+          "kind": "table",
+          "name": "market_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_events",
+          "rls": true,
+          "kind": "table",
+          "name": "market_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Eventos de qualidade e expurgo com ordinal serializado por versão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 179,
+          "anchor": "create table private.market_events(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_events.market_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_events.market_events_deny",
+          "kind": "policy",
+          "name": "market_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_events.market_events_deny",
+          "kind": "policy",
+          "name": "market_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_events.market_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_events.market_events_truncate_guard",
+          "kind": "trigger",
+          "name": "market_events_truncate_guard",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_events_truncate_guard BEFORE TRUNCATE ON private.market_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_events.market_events_truncate_guard",
+          "kind": "trigger",
+          "name": "market_events_truncate_guard",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_events_truncate_guard BEFORE TRUNCATE ON private.market_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_events.market_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_events.market_events_immutable",
+          "kind": "trigger",
+          "name": "market_events_immutable",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_events_immutable BEFORE DELETE OR UPDATE ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_events.market_events_immutable",
+          "kind": "trigger",
+          "name": "market_events_immutable",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_events_immutable BEFORE DELETE OR UPDATE ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_logical_objects",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_logical_objects",
+          "rls": true,
+          "kind": "table",
+          "name": "market_logical_objects",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_logical_objects",
+          "rls": true,
+          "kind": "table",
+          "name": "market_logical_objects",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Identidade lógica de cada série ou objeto de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 112,
+          "anchor": "create table private.market_logical_objects(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_logical_objects.market_logical_objects_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_logical_objects.market_logical_objects_deny",
+          "kind": "policy",
+          "name": "market_logical_objects_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_logical_objects",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_logical_objects.market_logical_objects_deny",
+          "kind": "policy",
+          "name": "market_logical_objects_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_logical_objects",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_truncate_guard",
+          "kind": "trigger",
+          "name": "market_logical_objects_truncate_guard",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_truncate_guard BEFORE TRUNCATE ON private.market_logical_objects FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_truncate_guard",
+          "kind": "trigger",
+          "name": "market_logical_objects_truncate_guard",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_truncate_guard BEFORE TRUNCATE ON private.market_logical_objects FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_immutable",
+          "kind": "trigger",
+          "name": "market_logical_objects_immutable",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_immutable BEFORE DELETE OR UPDATE ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_immutable",
+          "kind": "trigger",
+          "name": "market_logical_objects_immutable",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_immutable BEFORE DELETE OR UPDATE ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_observations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_observations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_observations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_observations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_observations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Observações com três datas (período, disponível, adquirida).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 165,
+          "anchor": "create table private.market_observations(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_observations.market_observations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_observations.market_observations_deny",
+          "kind": "policy",
+          "name": "market_observations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_observations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_observations.market_observations_deny",
+          "kind": "policy",
+          "name": "market_observations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_observations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_observations.market_observations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_observations_truncate_guard",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_observations_truncate_guard BEFORE TRUNCATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_observations.market_observations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_observations_truncate_guard",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_observations_truncate_guard BEFORE TRUNCATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_publisher",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_publisher",
+          "rls": true,
+          "kind": "table",
+          "name": "market_publisher",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_publisher",
+          "rls": true,
+          "kind": "table",
+          "name": "market_publisher",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Publicadora única da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 11,
+          "anchor": "create table private.market_publisher(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_publisher.market_publisher_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_publisher.market_publisher_deny",
+          "kind": "policy",
+          "name": "market_publisher_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_publisher",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_publisher.market_publisher_deny",
+          "kind": "policy",
+          "name": "market_publisher_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_publisher",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_publisher.market_publisher_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_publisher.market_publisher_truncate_guard",
+          "kind": "trigger",
+          "name": "market_publisher_truncate_guard",
+          "table": "market_publisher",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_publisher_truncate_guard BEFORE TRUNCATE ON private.market_publisher FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_publisher.market_publisher_truncate_guard",
+          "kind": "trigger",
+          "name": "market_publisher_truncate_guard",
+          "table": "market_publisher",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_publisher_truncate_guard BEFORE TRUNCATE ON private.market_publisher FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_publisher.market_publisher_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_publisher.market_publisher_immutable",
+          "kind": "trigger",
+          "name": "market_publisher_immutable",
+          "table": "market_publisher",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_publisher_immutable BEFORE DELETE OR UPDATE ON private.market_publisher FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_publisher.market_publisher_immutable",
+          "kind": "trigger",
+          "name": "market_publisher_immutable",
+          "table": "market_publisher",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_publisher_immutable BEFORE DELETE OR UPDATE ON private.market_publisher FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_source_revisions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_source_revisions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_source_revisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_source_revisions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_source_revisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Revisões das fontes com licença, hosts, calendário e habilitação; só operador da plataforma escreve.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 41,
+          "anchor": "create table private.market_source_revisions(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_source_revisions.market_source_revisions_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_source_revisions.market_source_revisions_deny",
+          "kind": "policy",
+          "name": "market_source_revisions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_source_revisions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_source_revisions.market_source_revisions_deny",
+          "kind": "policy",
+          "name": "market_source_revisions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_source_revisions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_source_revisions.market_source_revisions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_source_revisions.market_source_revisions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_source_revisions_truncate_guard",
+          "table": "market_source_revisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_source_revisions_truncate_guard BEFORE TRUNCATE ON private.market_source_revisions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_source_revisions.market_source_revisions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_source_revisions_truncate_guard",
+          "table": "market_source_revisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_source_revisions_truncate_guard BEFORE TRUNCATE ON private.market_source_revisions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_source_revisions.market_source_revisions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_source_revisions.market_source_revisions_immutable",
+          "kind": "trigger",
+          "name": "market_source_revisions_immutable",
+          "table": "market_source_revisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_source_revisions_immutable BEFORE DELETE OR UPDATE ON private.market_source_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_source_revisions.market_source_revisions_immutable",
+          "kind": "trigger",
+          "name": "market_source_revisions_immutable",
+          "table": "market_source_revisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_source_revisions_immutable BEFORE DELETE OR UPDATE ON private.market_source_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_version_inputs",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_inputs",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_inputs",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_inputs",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_inputs",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Entradas de cada versão: aquisição (direta) ou dependência (derivada).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 155,
+          "anchor": "create table private.market_version_inputs(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_version_inputs.market_version_inputs_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_inputs.market_version_inputs_deny",
+          "kind": "policy",
+          "name": "market_version_inputs_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_inputs",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_inputs.market_version_inputs_deny",
+          "kind": "policy",
+          "name": "market_version_inputs_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_inputs",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_inputs_truncate_guard",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_truncate_guard BEFORE TRUNCATE ON private.market_version_inputs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_inputs_truncate_guard",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_truncate_guard BEFORE TRUNCATE ON private.market_version_inputs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_immutable",
+          "kind": "trigger",
+          "name": "market_version_inputs_immutable",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_immutable BEFORE DELETE OR UPDATE ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_immutable",
+          "kind": "trigger",
+          "name": "market_version_inputs_immutable",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_immutable BEFORE DELETE OR UPDATE ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_version_seals",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_seals",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_seals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_seals",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_seals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Selo validado da versão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 159,
+          "anchor": "create table private.market_version_seals(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_version_seals.market_version_seals_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_seals.market_version_seals_deny",
+          "kind": "policy",
+          "name": "market_version_seals_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_seals",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_seals.market_version_seals_deny",
+          "kind": "policy",
+          "name": "market_version_seals_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_seals",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 287,
+          "anchor": "execute 'create policy market_version_seals_deny on private.market_version_seals as restrictive for all to public using(false) with check(false)';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_seals.market_version_seals_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_seals_truncate_guard",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_truncate_guard BEFORE TRUNCATE ON private.market_version_seals FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_seals.market_version_seals_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_seals_truncate_guard",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_truncate_guard BEFORE TRUNCATE ON private.market_version_seals FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 289,
+          "anchor": "execute 'create trigger market_version_seals_truncate_guard before truncate on private.market_version_seals for each statement execute function private.guard_platform_ledger_truncate_v1()';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_seals.market_version_seals_immutable",
+          "kind": "trigger",
+          "name": "market_version_seals_immutable",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_immutable BEFORE DELETE OR UPDATE ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_seals.market_version_seals_immutable",
+          "kind": "trigger",
+          "name": "market_version_seals_immutable",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_immutable BEFORE DELETE OR UPDATE ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 284,
+          "anchor": "execute 'create trigger market_version_seals_immutable before update or delete on private.market_version_seals for each row execute function private.guard_contribution_immutable_v1()';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_version_states",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_states",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_states",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_states",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_states",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Estado da versão e âncora de serialização (revisões de conteúdo e qualidade).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 10,
+          "anchor": "create table private.market_version_states(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_version_states.market_version_states_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_states.market_version_states_deny",
+          "kind": "policy",
+          "name": "market_version_states_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_states",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_states.market_version_states_deny",
+          "kind": "policy",
+          "name": "market_version_states_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_states",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 167,
+          "anchor": "execute 'create policy market_version_states_deny on private.market_version_states as restrictive for all to public using(false) with check(false)';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_version_states.market_version_states_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_states.market_version_states_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_states_truncate_guard",
+          "table": "market_version_states",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_states_truncate_guard BEFORE TRUNCATE ON private.market_version_states FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_states.market_version_states_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_states_truncate_guard",
+          "table": "market_version_states",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_states_truncate_guard BEFORE TRUNCATE ON private.market_version_states FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 169,
+          "anchor": "execute 'create trigger market_version_states_truncate_guard before truncate on private.market_version_states for each statement execute function private.guard_platform_ledger_truncate_v1()';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Versões normalizadas, com fingerprint canônico e licença.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 144,
+          "anchor": "create table private.market_versions(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Ledger privado da publicadora; RLS forçado, negação explícita e nenhum grant a papel da API."
+    },
+    {
+      "id": "policy:private.market_versions.market_versions_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_versions.market_versions_deny",
+          "kind": "policy",
+          "name": "market_versions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_versions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_versions.market_versions_deny",
+          "kind": "policy",
+          "name": "market_versions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_versions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Negação explícita, como nas demais tabelas da plataforma.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 215,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_versions.market_versions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_versions_truncate_guard",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_versions_truncate_guard BEFORE TRUNCATE ON private.market_versions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_versions.market_versions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_versions_truncate_guard",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_versions_truncate_guard BEFORE TRUNCATE ON private.market_versions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Ledger não aceita TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 217,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_versions.market_versions_immutable",
+          "kind": "trigger",
+          "name": "market_versions_immutable",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_versions_immutable BEFORE DELETE OR UPDATE ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_versions.market_versions_immutable",
+          "kind": "trigger",
+          "name": "market_versions_immutable",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_versions_immutable BEFORE DELETE OR UPDATE ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Linha do ledger é imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 209,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisitions.market_acquisitions_publisher",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_publisher",
+          "kind": "trigger",
+          "name": "market_acquisitions_publisher",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_publisher BEFORE INSERT ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisitions.market_acquisitions_publisher",
+          "kind": "trigger",
+          "name": "market_acquisitions_publisher",
+          "table": "market_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_v1()",
+          "definition": "CREATE TRIGGER market_acquisitions_publisher BEFORE INSERT ON private.market_acquisitions FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 153,
+          "anchor": "create trigger market_acquisitions_publisher before insert on private.market_acquisitions for each row execute function private.guard_market_acquisition_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_events.market_events_mark_purged",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_events.market_events_mark_purged",
+          "kind": "trigger",
+          "name": "market_events_mark_purged",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.mark_market_version_purged_v1()",
+          "definition": "CREATE TRIGGER market_events_mark_purged AFTER INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_purged_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_events.market_events_mark_purged",
+          "kind": "trigger",
+          "name": "market_events_mark_purged",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.mark_market_version_purged_v1()",
+          "definition": "CREATE TRIGGER market_events_mark_purged AFTER INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_purged_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 130,
+          "anchor": "create trigger market_events_mark_purged after insert on private.market_events for each row execute function private.mark_market_version_purged_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_events.market_events_subject",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_events.market_events_subject",
+          "kind": "trigger",
+          "name": "market_events_subject",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_event_v1()",
+          "definition": "CREATE TRIGGER market_events_subject BEFORE INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_events.market_events_subject",
+          "kind": "trigger",
+          "name": "market_events_subject",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_event_v1()",
+          "definition": "CREATE TRIGGER market_events_subject BEFORE INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 261,
+          "anchor": "create trigger market_events_subject before insert on private.market_events for each row execute function private.guard_market_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_logical_objects.market_logical_objects_source",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_source",
+          "kind": "trigger",
+          "name": "market_logical_objects_source",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_logical_object_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_source BEFORE INSERT ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_market_logical_object_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_logical_objects.market_logical_objects_source",
+          "kind": "trigger",
+          "name": "market_logical_objects_source",
+          "table": "market_logical_objects",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_logical_object_v1()",
+          "definition": "CREATE TRIGGER market_logical_objects_source BEFORE INSERT ON private.market_logical_objects FOR EACH ROW EXECUTE FUNCTION private.guard_market_logical_object_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 142,
+          "anchor": "create trigger market_logical_objects_source before insert on private.market_logical_objects for each row execute function private.guard_market_logical_object_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_content",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_observations.market_observations_content",
+          "kind": "trigger",
+          "name": "market_observations_content",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_content_v1()",
+          "definition": "CREATE TRIGGER market_observations_content BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_content_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_observations.market_observations_content",
+          "kind": "trigger",
+          "name": "market_observations_content",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_content_v1()",
+          "definition": "CREATE TRIGGER market_observations_content BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_content_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+          "line": 211,
+          "anchor": "execute 'create trigger market_observations_content before update or delete on private.market_observations for each row execute function private.guard_market_content_v1()';",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_open",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_observations.market_observations_open",
+          "kind": "trigger",
+          "name": "market_observations_open",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_observations_open BEFORE INSERT ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_observations.market_observations_open",
+          "kind": "trigger",
+          "name": "market_observations_open",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_observations_open BEFORE INSERT ON private.market_observations FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 205,
+          "anchor": "create trigger market_observations_open before insert on private.market_observations for each row execute function private.guard_market_version_open_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_open",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_open",
+          "kind": "trigger",
+          "name": "market_version_inputs_open",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_open BEFORE INSERT ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_open",
+          "kind": "trigger",
+          "name": "market_version_inputs_open",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_open BEFORE INSERT ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+          "line": 204,
+          "anchor": "create trigger market_version_inputs_open before insert on private.market_version_inputs for each row execute function private.guard_market_version_open_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_mark_sealed",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_seals.market_version_seals_mark_sealed",
+          "kind": "trigger",
+          "name": "market_version_seals_mark_sealed",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.mark_market_version_sealed_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_mark_sealed AFTER INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_sealed_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_seals.market_version_seals_mark_sealed",
+          "kind": "trigger",
+          "name": "market_version_seals_mark_sealed",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.mark_market_version_sealed_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_mark_sealed AFTER INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.mark_market_version_sealed_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+          "line": 100,
+          "anchor": "create trigger market_version_seals_mark_sealed after insert on private.market_version_seals for each row execute function private.mark_market_version_sealed_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_seals.market_version_seals_validate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_seals.market_version_seals_validate",
+          "kind": "trigger",
+          "name": "market_version_seals_validate",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_seal_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_validate BEFORE INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_seal_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_seals.market_version_seals_validate",
+          "kind": "trigger",
+          "name": "market_version_seals_validate",
+          "table": "market_version_seals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_seal_v1()",
+          "definition": "CREATE TRIGGER market_version_seals_validate BEFORE INSERT ON private.market_version_seals FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_seal_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 133,
+          "anchor": "create trigger market_version_seals_validate before insert on private.market_version_seals for each row execute function private.guard_market_version_seal_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_states.market_version_states_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_states.market_version_states_guard",
+          "kind": "trigger",
+          "name": "market_version_states_guard",
+          "table": "market_version_states",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_state_v1()",
+          "definition": "CREATE TRIGGER market_version_states_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_version_states FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_state_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_states.market_version_states_guard",
+          "kind": "trigger",
+          "name": "market_version_states_guard",
+          "table": "market_version_states",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_state_v1()",
+          "definition": "CREATE TRIGGER market_version_states_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_version_states FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_state_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 41,
+          "anchor": "create trigger market_version_states_guard before insert or update or delete on private.market_version_states for each row execute function private.guard_market_version_state_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_open_state",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_versions.market_versions_open_state",
+          "kind": "trigger",
+          "name": "market_versions_open_state",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.open_market_version_state_v1()",
+          "definition": "CREATE TRIGGER market_versions_open_state AFTER INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.open_market_version_state_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_versions.market_versions_open_state",
+          "kind": "trigger",
+          "name": "market_versions_open_state",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.open_market_version_state_v1()",
+          "definition": "CREATE TRIGGER market_versions_open_state AFTER INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.open_market_version_state_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Gatilho da guarda correspondente da base de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+          "line": 28,
+          "anchor": "create trigger market_versions_open_state after insert on private.market_versions for each row execute function private.open_market_version_state_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_events.market_events_purge_complete",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_events.market_events_purge_complete",
+          "kind": "trigger",
+          "name": "market_events_purge_complete",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.check_market_purge_complete_v1()",
+          "definition": "CREATE CONSTRAINT TRIGGER market_events_purge_complete AFTER INSERT ON private.market_events DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.check_market_purge_complete_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_events.market_events_purge_complete",
+          "kind": "trigger",
+          "name": "market_events_purge_complete",
+          "table": "market_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.check_market_purge_complete_v1()",
+          "definition": "CREATE CONSTRAINT TRIGGER market_events_purge_complete AFTER INSERT ON private.market_events DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.check_market_purge_complete_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1a/M1b, fundação",
+      "reason": "Expurgo só se completa sem conteúdo restante.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+          "line": 187,
+          "anchor": "create constraint trigger market_events_purge_complete after insert on private.market_events deferrable initially deferred",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
     }
   ],
   "repository_items": [
@@ -328365,6 +332671,42 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Terceira rodada da revisão independente da ponte do lote 1: a mensagem mais recente substitui o cartão pendente antes de pular um cartão idêntico, e a resposta citada da comparação só diz que nenhuma proposta cabe quando todos os casos foram calculados e lidos por inteiro."
+    },
+    {
+      "path": "supabase/migrations/20261020144214_market_reference_foundation.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Fundação da base de referência de mercado (ADR 0023): publicadora, revisões de fonte, objetos lógicos, aquisições, versões, entradas, observações e eventos, fechados à API, e o bucket privado."
+    },
+    {
+      "path": "supabase/migrations/20261020144335_market_reference_foundation_hardening.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Primeira rodada da revisão independente da fundação: licença e hosts estritos, replay por fingerprint, selo canônico, valores finitos, datas ordenadas e expurgo por evento."
+    },
+    {
+      "path": "supabase/migrations/20261020144430_market_reference_foundation_integrity.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Segunda rodada: licença por elemento, texto canônico sem DateStyle, selo validado por gatilho, aquisição só sob revisão vigente e expurgo terminal e completo."
+    },
+    {
+      "path": "supabase/migrations/20261020144508_market_reference_version_state.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Terceira rodada: estado por versão (aberta, selada, expurgada) travado por todo escritor, dependências travadas em ordem e sujeitos de evento em UUID canônico."
+    },
+    {
+      "path": "supabase/migrations/20261020144550_market_reference_state_anchor.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Quarta rodada: a linha de estado vira âncora de conteúdo e qualidade, e selado ou expurgado exige selo validado ou evento de expurgo da mesma transação."
+    },
+    {
+      "path": "supabase/migrations/20261020144603_market_reference_event_order.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Quinta rodada: eventos de versão ordenados sob o lock do estado e selo que fecha a versão para conteúdo no mesmo comando."
     }
   ],
   "staging_archive": [
