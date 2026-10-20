@@ -1,7 +1,7 @@
 {
   "source": "Mensagem direta do fundador nesta tarefa, 19 de outubro de 2026, autorizando preparar em produção a ativação das fichas do lote 1",
   "author": "Carlos Eduardo Vasques Galves",
-  "scope": "Preparação em produção da ativação do método compare-financing-proposals 2026.10.19-v2 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "scope": "Preparação em produção da ativação do método compare-financing-proposals 2026.10.19-v2 (empacotamento do executor, prova de proveniência da carga, perfil de execução), e, por ato posterior, liberação da capacidade para todas as organizações. Não aprova outro método nem efeito externo.",
   "release": "compare-financing-proposals-2026.10.19-v2",
   "manifestHash": "99845f7641e498c7fb0aa6f439b0376076d849c523a5a15af8935a113be43726",
   "acts": [
@@ -12,6 +12,11 @@
     {
       "verbatim": "Autorizo preparar em produção a ativação das fichas C02, C03 e C04, mantendo as capacidades desligadas",
       "recordedAt": "2026-10-19T21:09:49.112656+00:00"
+    },
+    {
+      "verbatim": "Autorizo liberar para os clientes as capacidades das fichas C02 e C04 depois das fusões e da verificação do deploy",
+      "recordedAt": "2026-10-20T00:51:29.705068+00:00",
+      "effect": "Capacidade method.compare-financing-proposals.2026.10.19-v2 liberada com exposição universal em produção, após a fusão das PRs 917, 918 e 919 e a verificação do deploy da web e do worker (task definition 548). Perfil 5dfcce20-c137-527e-9d31-b60373e8e1d4."
     }
   ]
 }
