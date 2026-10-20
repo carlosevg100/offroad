@@ -10,6 +10,10 @@ update it, and every writer locks it before deciding.
    incomplete version.
 5. A derived seal that reaches a dependency while its revocation is in progress waits, then is refused.
 6. A REPEATABLE READ derived seal whose snapshot predates a committed revocation of its dependency fails.
+7. A derived seal that reaches a dependency while its quarantine is in progress waits, then is refused.
+8. Events are ordered as they serialize: a revocation that waits behind a transaction approving twice
+   is the latest event once both commit, so the version is no longer approved.
+9. An unsealed version purged in one transaction takes no content in a later one.
 Every row here is synthetic and lives only in the disposable database.
 """
 import os
@@ -22,7 +26,8 @@ URL = os.environ['DATABASE_URL']
 P = '3a720000'
 FOUNDER, OPERATOR = f'{P}-0000-4000-8000-000000000001', f'{P}-0000-4000-8000-000000000002'
 ACQ = f'{P}-0000-4000-c000-000000000001'
-V_RR, V_RC, V_DEP, V_DERIVED, V_STALE, V_DEP2, V_DERIVED2, V_DEP3, V_DERIVED3 = (f'{P}-0000-4000-c000-00000000001{n}' for n in range(9))
+(V_RR, V_RC, V_DEP, V_DERIVED, V_STALE, V_DEP2, V_DERIVED2, V_DEP3, V_DERIVED3, V_DEP4, V_DERIVED4, V_DEP5,
+ V_OPEN) = (f'{P}-0000-4000-c000-0000000001{n:02d}' for n in range(13))
 
 
 def psql(sql, check=True):
@@ -70,11 +75,13 @@ create function pg_temp.derived(p_version uuid,p_dep uuid) returns void language
 $$;
 -- Distinct canonical content per direct version: one logical object never holds two equal versions.
 select pg_temp.direct('{V_RR}','14.1'),pg_temp.direct('{V_RC}','14.2'),pg_temp.direct('{V_DEP}','14.3'),pg_temp.direct('{V_STALE}','14.4'),
- pg_temp.direct('{V_DEP2}','14.5'),pg_temp.direct('{V_DEP3}','14.6');
-select private.seal_market_version_v1(v) from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}']::uuid[]) v;
+ pg_temp.direct('{V_DEP2}','14.5'),pg_temp.direct('{V_DEP3}','14.6'),pg_temp.direct('{V_DEP4}','14.7'),pg_temp.direct('{V_DEP5}','14.8'),
+ pg_temp.direct('{V_OPEN}','14.9');
+select private.seal_market_version_v1(v) from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}','{V_DEP4}','{V_DEP5}']::uuid[]) v;
 insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
- select 'version',v,'approved','Synthetic approval','{OPERATOR}' from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}']) v;
-select pg_temp.derived('{V_DERIVED}','{V_DEP}'),pg_temp.derived('{V_DERIVED2}','{V_DEP2}'),pg_temp.derived('{V_DERIVED3}','{V_DEP3}');
+ select 'version',v,'approved','Synthetic approval','{OPERATOR}' from unnest(array['{V_DEP}','{V_DEP2}','{V_DEP3}','{V_DEP4}']) v;
+select pg_temp.derived('{V_DERIVED}','{V_DEP}'),pg_temp.derived('{V_DERIVED2}','{V_DEP2}'),pg_temp.derived('{V_DERIVED3}','{V_DEP3}'),
+ pg_temp.derived('{V_DERIVED4}','{V_DEP4}');
 commit;
 """
 
@@ -183,6 +190,46 @@ def main():
     finish(b, 'could not serialize access')
     if psql(f"select count(*) from private.market_version_seals where version_id in ('{V_DERIVED2}','{V_DERIVED3}');") != '0':
         raise AssertionError('derived version sealed over a revoked dependency')
+    # 7. Derived seal against a dependency quarantine in progress.
+    a = session('market_quarantine_' + uuid.uuid4().hex[:8])
+    a.stdin.write(f"set statement_timeout='15s';begin;insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                  f"values('version','{V_DEP4}','quarantined','Synthetic race quarantine','{OPERATOR}');\n")
+    barrier(a, 'QUARANTINE_HELD')
+    app = 'market_derived4_' + uuid.uuid4().hex[:8]
+    b = session(app)
+    b.stdin.write(f"set statement_timeout='15s';begin;select private.seal_market_version_v1('{V_DERIVED4}');\n"); b.stdin.flush()
+    wait_for_lock(app)
+    a.stdin.write('commit;\n'); a.stdin.close()
+    if a.wait(timeout=15) != 0:
+        raise AssertionError('quarantine failed: ' + a.stdout.read())
+    finish(b, 'market_version_dependency_invalid')
+    # 8. A revocation waiting behind two approvals is the latest event once both commit.
+    approve = (f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+               f"values('version','{V_DEP5}','approved','Synthetic race approval','{OPERATOR}');")
+    a = session('market_approve_' + uuid.uuid4().hex[:8])
+    a.stdin.write("set statement_timeout='15s';begin;" + approve + '\n')
+    barrier(a, 'FIRST_APPROVAL_HELD')
+    app = 'market_revoke2_' + uuid.uuid4().hex[:8]
+    b = session(app)
+    b.stdin.write(f"set statement_timeout='15s';begin;insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                  f"values('version','{V_DEP5}','revoked','Synthetic race revocation','{OPERATOR}');\n"); b.stdin.flush()
+    wait_for_lock(app)
+    a.stdin.write(approve + '\ncommit;\n'); a.stdin.close()
+    if a.wait(timeout=15) != 0:
+        raise AssertionError('approvals failed: ' + a.stdout.read())
+    b.stdin.write('commit;\n'); b.stdin.close()
+    if b.wait(timeout=15) != 0:
+        raise AssertionError('revocation failed: ' + b.stdout.read())
+    if psql(f"select private.market_version_quality_approved_v1('{V_DEP5}');") != 'f':
+        raise AssertionError('a revocation serialized last did not decide the quality')
+    if psql(f"select string_agg(event,',' order by version_ordinal) from private.market_events where subject_kind='version' and subject_id='{V_DEP5}';") != 'approved,approved,revoked':
+        raise AssertionError('version events are not ordered as they serialized')
+    # 9. An unsealed version purged and committed takes no content in a later transaction.
+    psql(f"begin;insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version','{V_OPEN}','purged','Synthetic race purge','{OPERATOR}');"
+         f"delete from private.market_observations where version_id='{V_OPEN}';commit;")
+    refill = subprocess.run(['psql', URL, '-v', 'ON_ERROR_STOP=1', '-At', '-q'], input=INSERT_OBS.format(v=V_OPEN), text=True, capture_output=True)
+    if refill.returncode == 0 or 'market_version_closed' not in refill.stderr:
+        raise AssertionError('content entered a purged version: ' + refill.stdout + refill.stderr)
     print('PASS: market reference version state serializes content, quality, seal and purge across sessions')
 
 

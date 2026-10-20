@@ -163,6 +163,11 @@ begin
  perform set_config('datestyle','ISO, MDY',true);
  if iso<>german or iso<>canonical then raise exception 'canonical text depends on DateStyle';end if;
  perform pg_temp.expect(format($q$insert into private.market_version_seals(version_id,observation_count,input_count) values(%L,2,1)$q$,b_ver),'22023','seal with wrong counts');
+ -- Content that follows the seal row in the same command (a data-modifying CTE) is refused.
+ perform pg_temp.expect(format($q$with s as (insert into private.market_version_seals(version_id,observation_count,input_count) values(%L,1,1) returning version_id)
+  insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) select version_id,'2026-10-17',%L,%L,1,'percent_per_year','1' from s$q$,b_ver,avail,at),'23514','observation after the seal in one command');
+ perform pg_temp.expect(format($q$with s as (insert into private.market_version_seals(version_id,observation_count,input_count) values(%L,1,1) returning version_id)
+  insert into private.market_version_inputs(version_id,acquisition_id) select version_id,%L from s$q$,b_ver,acq),'23514','input after the seal in one command');
  perform private.seal_market_version_v1(b_ver);
  perform pg_temp.expect(format($q$insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(%L,'2026-10-17',%L,%L,1,'percent_per_year','1')$q$,b_ver,avail,at),'23514','observation after seal');
  perform pg_temp.expect(format($q$insert into private.market_version_inputs(version_id,acquisition_id) values(%L,%L)$q$,b_ver,acq),'23514','input after seal');
@@ -207,6 +212,9 @@ begin
   replace(acq::text,'-','')),'22023','acquisition subject without hyphens');
  -- The state row is the anchor: content and quality events move its revisions forward.
  if (select content_revision<2 or quality_revision<>1 from private.market_version_states where version_id=b_ver) then raise exception 'version state anchor not updated';end if;
+ -- Version events carry the ordinal of the anchor they moved; acquisitions and sources carry none.
+ if (select max(version_ordinal) from private.market_events where subject_kind='version' and subject_id=b_ver::text)
+  <>(select quality_revision from private.market_version_states where version_id=b_ver) then raise exception 'event ordinal not taken from the anchor';end if;
  -- Purge: no session flag; a purge event of this transaction; purge is complete and terminal.
  perform set_config('offroad.market_purge','on',true);
  perform pg_temp.expect(format($q$delete from private.market_observations where version_id=%L$q$,b_ver),'23514','delete under the retired flag');
@@ -230,6 +238,14 @@ begin
  perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'approved','Approval after purge','3a710000-0000-4000-8000-000000000002')$q$,b_ver),'23514','approval after purge');
  -- A purge event that leaves content behind fails its check; the subtransaction leaves nothing pending.
  perform pg_temp.expect(format('select pg_temp.incomplete_purge(%L)',c_ver),'23514','purge event without removing the content');
+ -- An unsealed version purged completely takes no content again (a later transaction is covered by
+ -- scripts/ci/test-market-reference-concurrency.py).
+ insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',c_ver::text,'purged','Synthetic purge of an open version','3a710000-0000-4000-8000-000000000002');
+ delete from private.market_observations where version_id=c_ver;
+ set constraints private.market_events_purge_complete immediate;
+ set constraints private.market_events_purge_complete deferred;
+ perform pg_temp.expect(format($q$insert into private.market_observations(version_id,period_end,available_at,acquired_at,value,unit,scale) values(%L,'2026-10-18',%L,%L,1,'percent_per_year','1')$q$,c_ver,avail,at),'23514','refill of a purged unsealed version');
+ perform pg_temp.expect(format($q$select private.seal_market_version_v1(%L)$q$,c_ver),'23514','seal of a purged version');
 end $$;
 
 -- 4. Immutability of every ledger table, update, delete and truncate.
