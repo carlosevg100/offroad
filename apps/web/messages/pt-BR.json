@@ -7414,5 +7414,18 @@
       "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
       "unavailable": "Não consegui confirmar agora. Tente de novo."
     }
+  },
+  "CompanyRegistration": {
+    "title": "Companhia desta análise",
+    "lead": "Para calcular, informe uma vez a companhia sobre a qual as premissas foram confirmadas. Depois disso, o cálculo segue sozinho.",
+    "name": "Razão social",
+    "cnpj": "CNPJ",
+    "register": "Cadastrar e calcular",
+    "registering": "Cadastrando a companhia",
+    "errors": {
+      "invalidCnpj": "O CNPJ não confere com os dígitos verificadores. Confira e tente de novo.",
+      "roleExists": "Este trabalho já tem uma companhia cadastrada com outro perímetro. Ajuste na base da análise.",
+      "unavailable": "Não consegui cadastrar agora. Tente de novo."
+    }
   }
 }

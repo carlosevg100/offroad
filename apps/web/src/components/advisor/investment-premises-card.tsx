@@ -6,6 +6,7 @@ import {useRef, useState} from "react";
 import {useFormatter, useTranslations} from "next-intl";
 
 import {confirmInvestmentPremises} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
+import {CompanyRegistration} from "./company-registration";
 
 /** One premise as the proposal recorded it: its value, where it came from and the cited source. */
 type Fact = {value: unknown; origin: "document" | "informed" | "house"; source: string};
@@ -87,5 +88,6 @@ export function InvestmentPremisesCard({locale, projectId, proposal}: {locale: "
       </button>}
     {state.kind === "error" ? <p role="alert" className="investment-premises-card__error">{state.error === "company_unregistered" ? t("errors.companyUnregistered")
       : state.error === "superseded" ? t("superseded") : t("errors.unavailable")}</p> : null}
+    {state.kind === "error" && state.error === "company_unregistered" ? <CompanyRegistration locale={locale} projectId={projectId} onRegistered={confirm} /> : null}
   </section>;
 }
