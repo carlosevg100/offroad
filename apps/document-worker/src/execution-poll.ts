@@ -1,10 +1,12 @@
 import type {ExecutionQueueClaim} from "./execution-queue";
 import type {EvaluationQueueClaim} from "./evaluation-queue";
+import type {MarketAcquisitionClaim} from "./market-acquisition-queue";
 
 export type FairPollChoice<T> =
  | {kind: "execution"; claim: ExecutionQueueClaim}
  | {kind: "legacy"; job: T}
- | {kind: "evaluation"; claim: EvaluationQueueClaim};
+ | {kind: "evaluation"; claim: EvaluationQueueClaim}
+ | {kind: "market"; claim: MarketAcquisitionClaim};
 
 /**
  * Failure of an additive consumer never disables independent legacy work. Each poll starts from
@@ -13,11 +15,13 @@ export type FairPollChoice<T> =
  * still reach the caller.
  */
 export function createFairExecutionPoller<T>(legacy: () => Promise<T | null>, execution: () => Promise<ExecutionQueueClaim | null>, onExecutionFailure: () => void,
- evaluation?: {claim: () => Promise<EvaluationQueueClaim | null>; onFailure: () => void}) {
+ evaluation?: {claim: () => Promise<EvaluationQueueClaim | null>; onFailure: () => void},
+ market?: {claim: () => Promise<MarketAcquisitionClaim | null>; onFailure: () => void}) {
  const pinned = async (): Promise<FairPollChoice<T> | null> => {try{const claim=await execution();return claim?{kind:"execution",claim}:null;}catch{onExecutionFailure();return null;}};
  const old = async (): Promise<FairPollChoice<T> | null> => {const job=await legacy();return job?{kind:"legacy",job}:null;};
  const sources = [pinned, old];
  if (evaluation) sources.push(async () => {try{const claim=await evaluation.claim();return claim?{kind:"evaluation",claim}:null;}catch{evaluation.onFailure();return null;}});
+ if (market) sources.push(async () => {try{const claim=await market.claim();return claim?{kind:"market",claim}:null;}catch{market.onFailure();return null;}});
  let next = 0;
  return async (): Promise<FairPollChoice<T> | null> => {
   const first = next;

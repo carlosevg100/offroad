@@ -10,6 +10,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   // Evaluation claim, reserve, settle and commit exist (installed closed behind their switch).
   // Only required by images built after that migration; older images ignore the extra key.
   "governed-evaluation-consumer.v1",
+  // Market acquisition claim, renew, commit, fail and orphan listing (installed closed behind their switch).
+  "market-acquisition-consumer.v1",
   "explicit-resource-access.v1",
   "explicit-workspace-context.v1",
   "authenticated-document-storage.v1",

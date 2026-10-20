@@ -4,6 +4,9 @@ import {createExecutionQueue} from "./execution-queue";
 import {processPinnedExecution} from "./process-pinned-execution";
 import {createEvaluationQueue} from "./evaluation-queue";
 import {processGovernedEvaluation} from "./process-governed-evaluation";
+import {createMarketAcquisitionQueue} from "./market-acquisition-queue";
+import {createMarketObjectStore} from "./market-acquisition-storage";
+import {processMarketAcquisition, sweepMarketOrphans} from "./process-market-acquisition";
 import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
@@ -295,9 +298,15 @@ async function main(): Promise<void> {
   // Governed evaluations: claimed only while the transport switch is open, and every provider
   // call reserved, settled and committed through the database. Same loop, same cadence.
   const evaluationQueue = createEvaluationQueue(supabase, config.OFFROAD_WORKER_TOKEN);
+  // Market acquisitions: claimed only while the transport switch is open and only for sources this
+  // worker token is delegated for; bytes go to the publisher bucket at the allocated path.
+  const marketQueue = createMarketAcquisitionQueue(supabase, config.OFFROAD_WORKER_TOKEN);
+  const marketStore = createMarketObjectStore(supabase);
+  let idlePolls = 0;
   const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
     () => log("execution.poll_failed", {reason: "execution_transport_failed"}),
-    {claim: () => evaluationQueue.claim(), onFailure: () => log("evaluation.poll_failed", {reason: "evaluation_transport_failed"})});
+    {claim: () => evaluationQueue.claim(), onFailure: () => log("evaluation.poll_failed", {reason: "evaluation_transport_failed"})},
+    {claim: () => marketQueue.claim(), onFailure: () => log("market.poll_failed", {reason: "market_acquisition_transport_failed"})});
   let stopping = false;
   let current: Promise<unknown> | null = null;
   const shuttingDown = new AbortController();
@@ -404,6 +413,15 @@ async function main(): Promise<void> {
         await current; current = null;
         continue;
       }
+      if (choice?.kind === "market") {
+        const acquisition = choice.claim;
+        current = processMarketAcquisition(acquisition, marketQueue, marketStore, shuttingDown.signal)
+          .then(result => log("market.finished", {job: acquisition.jobId, status: result.status,
+            ...(result.status === "failed" ? {code: result.code} : result.status === "abandoned" ? {reason: result.reason} : {})}))
+          .catch(() => log("market.interrupted", {job: acquisition.jobId, reason: "current_acquisition_failed"}));
+        await current; current = null;
+        continue;
+      }
       if (choice?.kind === "evaluation") {
         const evaluation = choice.claim;
         current = processGovernedEvaluation(evaluation, evaluationQueue, shuttingDown.signal, {
@@ -428,6 +446,12 @@ async function main(): Promise<void> {
     }
 
     if (!job) {
+      // Every tenth idle poll, remove bytes that abandoned market attempts left behind.
+      if (++idlePolls % 10 === 0) {
+        await sweepMarketOrphans(marketQueue, marketStore)
+          .then(count => { if (count > 0) log("market.swept", {count}); })
+          .catch(() => log("market.sweep_failed", {reason: "market_acquisition_transport_failed"}));
+      }
       await sleep(config.IDLE_POLL_SECONDS * 1000, shuttingDown.signal);
       continue;
     }
