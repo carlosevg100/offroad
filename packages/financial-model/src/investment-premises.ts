@@ -40,7 +40,7 @@ export const investmentFactsSchema = z.strictObject({
 });
 export type InvestmentFacts = z.infer<typeof investmentFactsSchema>;
 export type ProposedHypothesis = {fieldPath: string; dimensions: {entityId: string; perimeter: string; periodStart: string; periodEnd: string;
-  currency: string; unit: string; scale: "1"; scenario: string; definitionVersionId: string}; value: {type: "number" | "text" | "date" | "list"; value: string | string[]}; reason: string};
+  currency: string; unit: string; scale: "1"; scenario: string; definitionVersionId: string}; value: {type: "number" | "text" | "date" | "list"; value: string | string[]} | {type: "boolean"; value: boolean}; reason: string};
 
 const addMonths = (d: string, n: number) => {const x = new Date(`${d}T00:00:00Z`); x.setUTCMonth(x.getUTCMonth() + n); return x.toISOString().slice(0, 10);};
 

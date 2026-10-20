@@ -1530,3 +1530,118 @@ export function readFinancingComparisonPacketBlocks(blocks: ReadonlyArray<{reado
   return freezeArtifactValue({framing: framing.content, cases: cases.content.rows, proposals: proposals.content.rows, debtService: service.content.rows,
     conclusion: conclusion.content, informationGaps: gaps.content.rows, exclusions: exclusions.content.items});
 }
+
+/** The capacity packet as the result protocol reads it (ficha C04). */
+export type DebtCapacityPacketLike = {
+  readonly schemaVersion: "debt-capacity-packet.v1";
+  readonly status: "framed" | "partial" | "prepared_for_human_review";
+  readonly question: string; readonly currency: string; readonly fingerprint: string; readonly financialCoreVersion: string;
+  readonly cases: ReadonlyArray<{readonly caseId: string; readonly role: string; readonly label: string; readonly changes: readonly string[]; readonly resultStatus: string;
+    readonly limits: ReadonlyArray<{readonly id: string; readonly label: string; readonly capacity: string | null; readonly status: string | null}>;
+    readonly capacity: string | null; readonly capacityStatus: string | null;
+    readonly binding: {readonly limitId: string; readonly date: string; readonly scenarioId: string} | null;
+    readonly boundedBySearchDomain: boolean | null; readonly calibrationOnly: boolean | null;
+    readonly review: {readonly amount: string; readonly fits: boolean; readonly failingLimitIds: readonly string[];
+      readonly scenarios: ReadonlyArray<{readonly scenarioId: string; readonly peakLeverage: {readonly value: string; readonly date: string};
+        readonly minimumCash: {readonly value: string; readonly date: string}; readonly minimumInterestCoverage: {readonly value: string; readonly date: string} | null}>} | null;
+    readonly plan: ReadonlyArray<{readonly date: string; readonly scheduledExistingPrincipal: string; readonly cashAfterInterest: string; readonly paysWithoutRefinancing: boolean}> | null;
+    readonly gaps: ReadonlyArray<{readonly operand: string; readonly reason: string}>}>;
+  readonly comparison: {readonly informedCaseId: string; readonly requestedFitsIn: readonly string[]; readonly largestCapacityCaseId: string | null};
+  readonly exclusions: readonly string[];
+};
+
+/** The scenario of the binding check, by its position in the review (company case first, adverse
+ * second). Without the review the packet does not say which scenario it is, so none is named. */
+function bindingScenarioOf(c: {binding: {scenarioId: string} | null; review: {scenarios: ReadonlyArray<{scenarioId: string}>} | null}): "base" | "adverse" | null {
+  const at = c.binding && c.review ? c.review.scenarios.findIndex((s) => s.scenarioId === c.binding!.scenarioId) : -1;
+  return at === 0 ? "base" : at === 1 ? "adverse" : null;
+}
+
+/** Blocks of a capacity result. Values are copied from the packet, never recomputed; the scenario
+ * of each review row is named by its position (the company's case first, then the adverse case), as
+ * the composer orders them. `private.execution_result_capacity_blocks_v1` mirrors this key for key. */
+export function debtCapacityPacketBlocks(packet: DebtCapacityPacketLike): readonly ArtifactBlockDraft[] {
+  if (packet.schemaVersion !== "debt-capacity-packet.v1") throw new Error("execution_result_unmappable");
+  const drafts: unknown[] = [
+    {blockKey: "framing", kind: "section", claims: [],
+      content: {status: packet.status, question: packet.question, currency: packet.currency, informedCaseId: packet.comparison.informedCaseId,
+        largestCapacityCaseId: packet.comparison.largestCapacityCaseId, requestedFitsIn: [...packet.comparison.requestedFitsIn]}},
+    {blockKey: "cases", kind: "table",
+      content: {rows: packet.cases.map((c) => ({id: c.caseId, role: c.role, label: c.label, changes: [...c.changes]}))},
+      claims: packet.cases.map((c) => ({claimId: c.caseId, kind: "judgment", value: c.label, unit: null, period: null, supportIds: [packet.fingerprint]}))},
+    {blockKey: "capacity", kind: "table",
+      content: {rows: packet.cases.map((c) => ({caseId: c.caseId, capacity: c.capacity, capacityStatus: c.capacityStatus, resultStatus: c.resultStatus,
+        bindingLimitId: c.binding?.limitId ?? null, bindingDate: c.binding?.date ?? null,
+        bindingScenario: bindingScenarioOf(c),
+        boundedBySearchDomain: c.boundedBySearchDomain, calibrationOnly: c.calibrationOnly}))},
+      claims: packet.cases.flatMap((c) => c.capacity === null ? [] : [{claimId: `capacity:${c.caseId}`, kind: "calculation", value: c.capacity, unit: packet.currency, period: null, supportIds: [packet.fingerprint]}])},
+    {blockKey: "limits", kind: "table", claims: [],
+      content: {rows: packet.cases.flatMap((c) => c.limits.map((l) => ({caseId: c.caseId, limitId: l.id, label: l.label, capacity: l.capacity, status: l.status})))}},
+    {blockKey: "review", kind: "table", claims: [],
+      content: {rows: packet.cases.flatMap((c) => c.review === null ? [] : c.review.scenarios.map((s, n) => ({caseId: c.caseId, scenario: n === 0 ? "base" : "adverse",
+        amount: c.review!.amount, fits: c.review!.fits, failingLimitIds: [...c.review!.failingLimitIds],
+        peakLeverage: s.peakLeverage.value, peakLeverageDate: s.peakLeverage.date, minimumCash: s.minimumCash.value, minimumCashDate: s.minimumCash.date,
+        minimumInterestCoverage: s.minimumInterestCoverage?.value ?? null, minimumInterestCoverageDate: s.minimumInterestCoverage?.date ?? null})))}},
+    {blockKey: "plan", kind: "table", claims: [],
+      content: {rows: packet.cases.flatMap((c) => c.role !== "informed" || c.plan === null ? [] : c.plan.map((p) => ({caseId: c.caseId, date: p.date,
+        scheduledExistingPrincipal: p.scheduledExistingPrincipal, cashAfterInterest: p.cashAfterInterest, paysWithoutRefinancing: p.paysWithoutRefinancing})))}},
+    {blockKey: "information-gaps", kind: "table", claims: [],
+      content: {rows: packet.cases.flatMap((c) => c.gaps.map((g) => ({caseId: c.caseId, operand: g.operand, reason: g.reason})))}},
+    {blockKey: "exclusions", kind: "section", claims: [], content: {items: [...packet.exclusions]}},
+  ];
+  const blocks = drafts.map((draft) => artifactBlockDraftSchema.parse(draft));
+  if (duplicates(blocks.map((block) => block.blockKey))) throw new Error("duplicate_block_key");
+  if (duplicates(blocks.flatMap((block) => block.claims.map((claim) => claim.claimId)))) throw new Error("duplicate_claim_id");
+  return freezeArtifactValue(blocks);
+}
+
+export type DebtCapacityResultBlocksView = {
+  readonly framing: {readonly status: "framed" | "partial" | "prepared_for_human_review"; readonly question: string; readonly currency: string; readonly informedCaseId: string;
+    readonly largestCapacityCaseId: string | null; readonly requestedFitsIn: readonly string[]};
+  readonly cases: ReadonlyArray<{readonly id: string; readonly role: string; readonly label: string; readonly changes: readonly string[]}>;
+  readonly capacity: ReadonlyArray<{readonly caseId: string; readonly capacity: string | null; readonly capacityStatus: string | null; readonly resultStatus: string;
+    readonly bindingLimitId: string | null; readonly bindingDate: string | null; readonly bindingScenario: "base" | "adverse" | null;
+    readonly boundedBySearchDomain: boolean | null; readonly calibrationOnly: boolean | null}>;
+  readonly limits: ReadonlyArray<{readonly caseId: string; readonly limitId: string; readonly label: string; readonly capacity: string | null; readonly status: string | null}>;
+  readonly review: ReadonlyArray<{readonly caseId: string; readonly scenario: "base" | "adverse"; readonly amount: string; readonly fits: boolean; readonly failingLimitIds: readonly string[];
+    readonly peakLeverage: string; readonly peakLeverageDate: string; readonly minimumCash: string; readonly minimumCashDate: string;
+    readonly minimumInterestCoverage: string | null; readonly minimumInterestCoverageDate: string | null}>;
+  readonly plan: ReadonlyArray<{readonly caseId: string; readonly date: string; readonly scheduledExistingPrincipal: string; readonly cashAfterInterest: string; readonly paysWithoutRefinancing: boolean}>;
+  readonly informationGaps: ReadonlyArray<{readonly caseId: string; readonly operand: string; readonly reason: string}>;
+  readonly exclusions: readonly string[];
+};
+const capacityBlocks = {
+  framing: z.strictObject({blockKey: z.literal("framing"), kind: z.literal("section"), claims: noClaims, content: z.strictObject({status: z.enum(["framed", "partial", "prepared_for_human_review"]),
+    question: z.string(), currency: z.string(), informedCaseId: z.string(), largestCapacityCaseId: z.string().nullable(), requestedFitsIn: z.array(z.string())})}),
+  cases: investmentCasesBlock,
+  capacity: z.strictObject({blockKey: z.literal("capacity"), kind: z.literal("table"), claims: z.array(artifactClaimSchema), content: z.strictObject({rows: z.array(z.strictObject({
+    caseId: z.string(), capacity: num.nullable(), capacityStatus: z.string().nullable(), resultStatus: z.string(), bindingLimitId: z.string().nullable(), bindingDate: z.string().nullable(),
+    bindingScenario: z.enum(["base", "adverse"]).nullable(), boundedBySearchDomain: z.boolean().nullable(), calibrationOnly: z.boolean().nullable()}))})}),
+  limits: z.strictObject({blockKey: z.literal("limits"), kind: z.literal("table"), claims: noClaims, content: z.strictObject({rows: z.array(z.strictObject({
+    caseId: z.string(), limitId: z.string(), label: z.string(), capacity: num.nullable(), status: z.string().nullable()}))})}),
+  review: z.strictObject({blockKey: z.literal("review"), kind: z.literal("table"), claims: noClaims, content: z.strictObject({rows: z.array(z.strictObject({
+    caseId: z.string(), scenario: z.enum(["base", "adverse"]), amount: num, fits: z.boolean(), failingLimitIds: z.array(z.string()), peakLeverage: num, peakLeverageDate: z.string(),
+    minimumCash: num, minimumCashDate: z.string(), minimumInterestCoverage: num.nullable(), minimumInterestCoverageDate: z.string().nullable()}))})}),
+  plan: z.strictObject({blockKey: z.literal("plan"), kind: z.literal("table"), claims: noClaims, content: z.strictObject({rows: z.array(z.strictObject({
+    caseId: z.string(), date: z.string(), scheduledExistingPrincipal: num, cashAfterInterest: num, paysWithoutRefinancing: z.boolean()}))})}),
+};
+
+/** The reader of `debtCapacityPacketBlocks`; any unknown, missing or inconsistent block gives null. */
+export function readDebtCapacityPacketBlocks(blocks: ReadonlyArray<{readonly blockKey: string; readonly kind: string; readonly content: unknown; readonly claims: unknown}>): DebtCapacityResultBlocksView | null {
+  const byKey = new Map<string, unknown>();
+  for (const block of blocks) {
+    if (byKey.has(block.blockKey)) return null;
+    byKey.set(block.blockKey, {blockKey: block.blockKey, kind: block.kind, content: block.content, claims: block.claims});
+  }
+  const parse = <T>(key: string, schema: z.ZodType<T>): T | null => {const r = schema.safeParse(byKey.get(key)); byKey.delete(key); return r.success ? r.data : null;};
+  const framing = parse("framing", capacityBlocks.framing), cases = parse("cases", capacityBlocks.cases), capacity = parse("capacity", capacityBlocks.capacity);
+  const limits = parse("limits", capacityBlocks.limits), review = parse("review", capacityBlocks.review), plan = parse("plan", capacityBlocks.plan);
+  const gaps = parse("information-gaps", investmentGapsBlock), exclusions = parse("exclusions", investmentExclusionsBlock);
+  if (!framing || !cases || !capacity || !limits || !review || !plan || !gaps || !exclusions || byKey.size > 0) return null;
+  for (const claim of capacity.claims) {
+    const row = capacity.content.rows.find((r) => `capacity:${r.caseId}` === claim.claimId);
+    if (!row || row.capacity === null || claim.value !== row.capacity) return null;
+  }
+  return freezeArtifactValue({framing: framing.content, cases: cases.content.rows, capacity: capacity.content.rows, limits: limits.content.rows, review: review.content.rows,
+    plan: plan.content.rows, informationGaps: gaps.content.rows, exclusions: exclusions.content.items});
+}

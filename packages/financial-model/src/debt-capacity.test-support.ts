@@ -160,3 +160,38 @@ export function c04DisconnectedPacketInput() {
     cases: [{id: "informed", role: "informed" as const, label: "Contraexemplo", changes: [] as string[], analysis,
       limits: [{id: "cash", label: "Caixa mínimo", ruleIds: [cashRule]}, {id: "interest", label: "Cobertura de juros", ruleIds: [coverageRule]}]}]};
 }
+
+/** The facts of ficha C04 as the conversation would state them (fictitious Aurora, R$ million),
+ * for the premises path: the same calibration the hand-built basis above adopts. */
+export function auroraCapacityFacts(): import("./debt-capacity-premises").DebtCapacityFacts {
+  const doc = <T>(value: T, source: string) => ({value, origin: "document" as const, source});
+  const informed = <T>(value: T, source: string) => ({value, origin: "informed" as const, source});
+  const houseFact = <T>(value: T, source: string) => ({value, origin: "house" as const, source});
+  const per = (f: (y: number) => Decimal | string) => years.map((y) => {const v = f(y); return typeof v === "string" ? v : s(v);});
+  const cash = (f: (y: number) => Decimal | string) => years.map((y) => new D(f(y)).toDecimalPlaces(8).toFixed());
+  const interestExisting = (y: number) => new D(debenture[y - 1]!).plus(debenture[y]!).div(2).times(new D(CDI[y]!).plus("0.029"))
+    .plus(new D(finame[y - 1]!).plus(finame[y]!).div(2).times(new D(TLP).plus("0.018"))).plus(new D(SEASONAL_LINE).times("0.5").times(new D(CDI[y]!).plus("0.02")));
+  const projectCase = (key: keyof typeof c04Schedules) => {
+    const sched = c04Schedules[key], project = (y: number) => new D(sched.projectEbitda[y] ?? "0");
+    return {capex: per((y) => sched.capex[y] ?? "0"), ebitda: per((y) => project(y)),
+      depreciation: per((y) => new D(y >= 2029 ? 6 : y === 2028 ? 3 : 0)), maintenanceCapex: per((y) => project(y).gt(0) ? new D("1.5") : new D(0)),
+      workingCapitalInvestment: per((y) => project(y).minus(project(y - 1)))};
+  };
+  return {capacityId: id(4400), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3),
+    openingDate: "2026-12-31", periodEnds: years.map((y) => `${y}-12-31`),
+    company: {openingAvailableCash: doc(OPENING_CASH, "balanço de dezembro de 2026"), ebitda: doc(per((y) => EBITDA[y]!), "projeção da companhia"),
+      leasePayments: doc(per(() => LEASE), "projeção da companhia"), depreciation: doc(per(() => DA), "projeção da companhia"),
+      maintenanceCapex: doc(per(() => MAINTENANCE), "projeção da companhia"), workingCapitalInvestment: doc(per(() => WORKING_CAPITAL), "projeção da companhia"),
+      cashTaxRate: informed(TAX, "lucro real, alíquota de 34%"), covenantEbitdaExcludesLeases: doc(true, "escritura da debênture, EBITDA sem IFRS 16")},
+    existingDebt: doc({closingDebt: per((y) => new D(debenture[y]!).plus(finame[y]!).plus(SEASONAL_LINE)), principalPaid: per((y) => new D(debenture[y - 1]!).minus(debenture[y]!).plus(finame[y - 1]!).minus(finame[y]!)),
+      cashInterest: cash(interestExisting), finalPaymentDates: ["2033-12-31"]}, "tabela de dívida"),
+    cases: [informed({id: "informed", role: "informed" as const, label: "2S27 e 1S28, como informado", changes: [], ...projectCase("informed")}, "plano da segunda linha"),
+      informed({id: "phased", role: "alternative" as const, label: "Faseado em 2028 e 2029", changes: ["Desembolso em 2028 e 2029; resultado a partir de 2030"], ...projectCase("phased")}, "alternativa discutida na conversa")],
+    structure: houseFact({label: "Cinco anos com carência até 2030", annualRate: per((y) => c04Structures.fiveYears.rate(y)),
+      amortizationShares: per((y) => c04Structures.fiveYears.amortization[y] ? fraction(c04Structures.fiveYears.amortization[y]!) : new D(0)), finalPaymentDate: "2032-12-31"}, "estrutura de referência de mercado, CDI + 2,5%"),
+    limits: [doc({id: "covenant", label: "Covenant da escritura com folga de 0,5x no base e 3,0x no adverso", kind: "maximum_net_debt_to_ebitda" as const, base: "2.5", adverse: "3"}, "escritura, limite 3,0x"),
+      houseFact({id: "market", label: "Alavancagem de 2,75x acima da qual preço e apetite pioram", kind: "maximum_net_debt_to_ebitda" as const, base: "2.75", adverse: null}, "faixa de mercado"),
+      houseFact({id: "interest", label: "Cobertura de juros mínima de 2,5x", kind: "minimum_interest_coverage" as const, base: "2.5", adverse: null}, "referência de crédito")],
+    stress: {ebitdaShock: houseFact("0.15", "caso adverso do banco, EBITDA 15% menor")},
+    requestedAmount: informed("60", "segunda linha de R$ 60 milhões"), monetaryQuantum: houseFact("0.01", "resolução de R$ 10 mil")};
+}

@@ -27,6 +27,7 @@ export const gatewayCallLogSchema = z.object({
     "extract_semantic_objects",
     "investment_fact_extraction",
     "financing_comparison_extraction",
+    "debt_capacity_extraction",
     "preview_questions",
     "preview_synthesis",
     "baseline_generalist",

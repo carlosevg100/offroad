@@ -1,0 +1,276 @@
+{
+ "schemaVersion": "debt-capacity-packet.v1",
+ "executorVersion": "2026.10.19-v1",
+ "financialCoreVersion": "2026.10.07-v29",
+ "question": "Quanto de dívida a gente aguenta tomar para a segunda linha de R$ 60 milhões?",
+ "basisFingerprint": "6312f85fc09709c91865ba3b0b15ad06dcfa04ec181159ca0b7bb2efb87baeb9",
+ "scope": {
+  "workId": "ac400000-0000-4000-9000-000000000007",
+  "purpose": "synthetic adopted financial analysis",
+  "versionId": "ac400000-0000-4000-9000-000000000500"
+ },
+ "entityId": "ac400000-0000-4000-9000-000000000001",
+ "currency": "BRL",
+ "cases": [
+  {
+   "caseId": "informed",
+   "role": "informed",
+   "label": "2S27 e 1S28, como informado",
+   "changes": [],
+   "resultStatus": "partial_composition",
+   "limits": [
+    {
+     "id": "covenant",
+     "label": "Covenant da escritura com folga de 0,5x no base e 3,0x no adverso",
+     "capacity": "54.8",
+     "status": "calibration_only"
+    },
+    {
+     "id": "market",
+     "label": "Alavancagem de 2,75x acima da qual preço e apetite pioram",
+     "capacity": "76.84",
+     "status": "calibration_only"
+    },
+    {
+     "id": "interest",
+     "label": "Cobertura de juros mínima de 2,5x",
+     "capacity": "71.97",
+     "status": "calibration_only"
+    }
+   ],
+   "capacity": "54.8",
+   "capacityStatus": "calibration_only",
+   "binding": {
+    "limitId": "covenant",
+    "date": "2028-12-31",
+    "scenarioId": "ac400000-0000-4000-9000-000000044016"
+   },
+   "bindingLimitId": "covenant",
+   "boundedBySearchDomain": false,
+   "calibrationOnly": true,
+   "review": {
+    "amount": "60",
+    "fits": false,
+    "failingLimitIds": [
+     "covenant"
+    ],
+    "scenarios": [
+     {
+      "scenarioId": "ac400000-0000-4000-9000-000000044015",
+      "peakLeverage": {
+       "value": "2.42218273118279569892",
+       "date": "2028-12-31"
+      },
+      "minimumCash": {
+       "value": "13.83275730000000000036",
+       "date": "2031-12-31"
+      },
+      "minimumInterestCoverage": {
+       "value": "2.65462454331315653143",
+       "date": "2028-12-31"
+      }
+     },
+     {
+      "scenarioId": "ac400000-0000-4000-9000-000000044016",
+      "peakLeverage": {
+       "value": "3.12010209450830140485",
+       "date": "2028-12-31"
+      },
+      "minimumCash": {
+       "value": "-22.28940269999999999949",
+       "date": "2032-12-31"
+      },
+      "minimumInterestCoverage": {
+       "value": "2.25643086181618305171",
+       "date": "2028-12-31"
+      }
+     }
+    ]
+   },
+   "plan": [
+    {
+     "date": "2027-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "17.6967201",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2028-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "20.3182335",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2029-12-31",
+     "scheduledExistingPrincipal": "22.67",
+     "cashAfterInterest": "23.5614669",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2030-12-31",
+     "scheduledExistingPrincipal": "19.32",
+     "cashAfterInterest": "27.0386868",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2031-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "30.3684",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2032-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "33.65784",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2033-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "37.07928",
+     "paysWithoutRefinancing": true
+    }
+   ],
+   "gaps": []
+  },
+  {
+   "caseId": "phased",
+   "role": "alternative",
+   "label": "Faseado em 2028 e 2029",
+   "changes": [
+    "Desembolso em 2028 e 2029; resultado a partir de 2030"
+   ],
+   "resultStatus": "partial_composition",
+   "limits": [
+    {
+     "id": "covenant",
+     "label": "Covenant da escritura com folga de 0,5x no base e 3,0x no adverso",
+     "capacity": "79.47",
+     "status": "calibration_only"
+    },
+    {
+     "id": "market",
+     "label": "Alavancagem de 2,75x acima da qual preço e apetite pioram",
+     "capacity": "108.6",
+     "status": "calibration_only"
+    },
+    {
+     "id": "interest",
+     "label": "Cobertura de juros mínima de 2,5x",
+     "capacity": "107.64",
+     "status": "calibration_only"
+    }
+   ],
+   "capacity": "79.47",
+   "capacityStatus": "calibration_only",
+   "binding": {
+    "limitId": "covenant",
+    "date": "2029-12-31",
+    "scenarioId": "ac400000-0000-4000-9000-000000044026"
+   },
+   "bindingLimitId": "covenant",
+   "boundedBySearchDomain": false,
+   "calibrationOnly": true,
+   "review": {
+    "amount": "60",
+    "fits": true,
+    "failingLimitIds": [],
+    "scenarios": [
+     {
+      "scenarioId": "ac400000-0000-4000-9000-000000044025",
+      "peakLeverage": {
+       "value": "1.87645755154639175258",
+       "date": "2029-12-31"
+      },
+      "minimumCash": {
+       "value": "13.50125730000000000036",
+       "date": "2031-12-31"
+      },
+      "minimumInterestCoverage": {
+       "value": "3.1712251733097875046",
+       "date": "2029-12-31"
+      }
+     },
+     {
+      "scenarioId": "ac400000-0000-4000-9000-000000044026",
+      "peakLeverage": {
+       "value": "2.58452120563035495716",
+       "date": "2029-12-31"
+      },
+      "minimumCash": {
+       "value": "-21.43290269999999999949",
+       "date": "2032-12-31"
+      },
+      "minimumInterestCoverage": {
+       "value": "2.69554139731331937891",
+       "date": "2029-12-31"
+      }
+     }
+    ]
+   },
+   "plan": [
+    {
+     "date": "2027-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "17.6967201",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2028-12-31",
+     "scheduledExistingPrincipal": "6.67",
+     "cashAfterInterest": "20.3182335",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2029-12-31",
+     "scheduledExistingPrincipal": "22.67",
+     "cashAfterInterest": "23.5614669",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2030-12-31",
+     "scheduledExistingPrincipal": "19.32",
+     "cashAfterInterest": "27.0386868",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2031-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "30.3684",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2032-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "33.65784",
+     "paysWithoutRefinancing": true
+    },
+    {
+     "date": "2033-12-31",
+     "scheduledExistingPrincipal": "16",
+     "cashAfterInterest": "37.07928",
+     "paysWithoutRefinancing": true
+    }
+   ],
+   "gaps": []
+  }
+ ],
+ "comparison": {
+  "informedCaseId": "informed",
+  "requestedFitsIn": [
+   "phased"
+  ],
+  "largestCapacityCaseId": "phased"
+ },
+ "status": "prepared_for_human_review",
+ "exclusions": [
+  "credit_approval",
+  "nonlinear_pricing",
+  "intraperiod_cash_certification",
+  "investment_return",
+  "method_release"
+ ],
+ "grantsExecution": false,
+ "grantsPublication": false,
+ "fingerprint": "d177609158a1c8f0a58eb53aa82c5c75267704bb9cbec4f754154307de85ef00"
+}

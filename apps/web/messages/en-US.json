@@ -2792,6 +2792,99 @@
           "intraperiod_cash_certification": "Certification of cash within each period",
           "method_release": "Method release"
         }
+      },
+      "comparison": {
+        "title": "Comparison of the offers",
+        "status": "Status",
+        "question": "Question",
+        "units": "Amounts in millions of {currency}. Cost as equivalent spread over the same index; average life in years; leverage in multiples of EBITDA. Each scenario reruns the whole company projection with each offer.",
+        "nominalMisleads": "The nominal spread ranks the offers differently from the equivalent cost: fees, IOF and schedule change the reading.",
+        "columns": {
+          "proposal": "Offer",
+          "spread": "Equivalent spread",
+          "life": "Average life",
+          "minimumCash": "Minimum cash",
+          "worstRatio": "Worst leverage",
+          "headroom": "Covenant headroom",
+          "ebitdaHeadroom": "EBITDA decline absorbed",
+          "tests": "Covenant tests per year",
+          "freeReceivables": "Free receivables after",
+          "horizonCost": "Cost over the horizon",
+          "facts": "What eliminates or conditions"
+        },
+        "facts": {
+          "cash_below_zero": "negative cash in some period",
+          "covenant_breach": "breaches the covenant",
+          "cost_not_determined": "cost not determined",
+          "collateral_above_policy": "collateral above policy",
+          "cash_below_policy_minimum": "cash below the policy minimum"
+        },
+        "conclusion": "Reading",
+        "viableEverywhere": "Viable in every scenario: {list}.",
+        "noneViableEverywhere": "No offer is viable in every scenario.",
+        "perCase": "{case}: lowest equivalent cost, {cheapest}; highest minimum cash, {safest}.",
+        "changing": "Scenarios that change the conclusion: {list}.",
+        "cases": "What each scenario changes",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "choice_of_counterparty": "Choice of counterparty",
+          "firmness_and_validity": "Firmness and validity of the offers",
+          "reciprocity": "Reciprocity with the bank",
+          "tax_law_inference": "Interpretation of tax law",
+          "method_release": "Method release"
+        },
+        "noneCompleteViableEverywhere": "No offer with a complete reading is viable in every scenario.",
+        "incomplete": "Offers without a complete reading because of gaps: {count}. The gaps are listed below.",
+        "uncomputed": "Scenarios not calculated because of gaps: {list}. The gaps are listed below."
+      },
+      "capacity": {
+        "title": "New debt capacity",
+        "status": "Status",
+        "question": "Question",
+        "units": "Amounts in millions of {currency}; leverage and coverage in multiples. Each schedule is tested against every limit, in the base and the adverse scenario.",
+        "columns": {
+          "schedule": "Schedule",
+          "capacity": "What fits",
+          "binding": "Binding limit",
+          "limit": "Limit",
+          "scenario": "Scenario",
+          "fits": "Fits?",
+          "peakLeverage": "Peak leverage",
+          "minimumCash": "Minimum cash",
+          "coverage": "Lowest interest coverage",
+          "year": "Year",
+          "scheduled": "Contracted principal of existing debt",
+          "cashAfterInterest": "Cash after interest",
+          "pays": "Pays without refinancing?"
+        },
+        "calibrationOnly": "calibration only",
+        "bounded": "bounded by the tested range",
+        "bindingWhen": "in {year}, {scenario}",
+        "scenarios": {
+          "base": "base",
+          "adverse": "adverse"
+        },
+        "byLimit": "What fits under each limit",
+        "review": "The amount asked, {amount} million, in each schedule",
+        "fits": "Fits",
+        "doesNotFit": "Does not fit: {limits}",
+        "plan": "The current plan against cash",
+        "needsRefinancing": "Needs refinancing",
+        "cases": "What each schedule changes",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "credit_approval": "Credit approval",
+          "nonlinear_pricing": "Pricing that changes with debt size",
+          "intraperiod_cash_certification": "Certification of cash within each period",
+          "investment_return": "Return of the financed investment",
+          "method_release": "Method release"
+        },
+        "pays": "Pays",
+        "bindingIn": "in {year}"
       }
     },
     "overview": "Overview",
@@ -7290,6 +7383,33 @@
     "requested": "Premises confirmed. Comparison running.",
     "openCalculation": "Open the comparison",
     "superseded": "Replaced by a more recent proposal in this conversation.",
+    "errors": {
+      "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
+      "unavailable": "I could not confirm now. Try again."
+    }
+  },
+  "CapacityPremisesCard": {
+    "title": "Premises to measure debt capacity",
+    "lead": "I measure how much new debt fits with these use schedules, this structure and these limits, each with its origin. Confirm to calculate, or correct it in the conversation and I redo it.",
+    "schedules": "Use schedules",
+    "schedule": "Total use of BRL {use} mn{informed, select, true {, the stated plan} other {}}",
+    "company": "Company",
+    "years": "{count, plural, one {# year} other {# years}} of projection, from {first} to {last}",
+    "requested": "Amount asked: BRL {value} mn",
+    "structure": "New debt: {label}, final maturity in {year}",
+    "limits": "Limits tested",
+    "houseLimit": "House premise",
+    "house": "House premises",
+    "premise": {
+      "stress": "Adverse scenario"
+    },
+    "cases": "I test each schedule against every limit, in the base and in an adverse scenario with lower EBITDA: what fits, which limit binds and when, and whether the current plan pays without refinancing.",
+    "confirm": "Confirm premises and calculate",
+    "confirming": "Recording the premises",
+    "pendingRelease": "Premises confirmed. The calculation runs once the method is released.",
+    "calculating": "Premises confirmed. Calculation in progress.",
+    "openCalculation": "Open the calculation",
+    "superseded": "Superseded by a more recent proposal in this conversation.",
     "errors": {
       "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
       "unavailable": "I could not confirm now. Try again."

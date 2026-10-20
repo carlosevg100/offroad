@@ -2499,6 +2499,36 @@
       "name": "lote1_payload_provenance",
       "version": "20261019210807",
       "statements_md5": "b0ef611fc570f50a96cf566819860357"
+    },
+    {
+      "name": "premise_proposals_capacity",
+      "version": "20261019220834",
+      "statements_md5": "f4b721cdb3838e8c644c8bc7387b1ebb"
+    },
+    {
+      "name": "capacity_result_artifacts",
+      "version": "20261019220929",
+      "statements_md5": "4301dc5ab815451ffae1126130e1c04b"
+    },
+    {
+      "name": "execution_result_reply_lote1",
+      "version": "20261019221003",
+      "statements_md5": "01285619dcb88f555709f23f96a167c8"
+    },
+    {
+      "name": "lote1_bridge_review_fixes",
+      "version": "20261019223156",
+      "statements_md5": "5e906aee603069877a481fb9c53e9897"
+    },
+    {
+      "name": "lote1_bridge_review_fixes_2",
+      "version": "20261019224827",
+      "statements_md5": "3e27428332bd5704db7e5958343f0cb0"
+    },
+    {
+      "name": "lote1_bridge_review_fixes_3",
+      "version": "20261019225748",
+      "statements_md5": "183418c39ce7e439da5dd7efb023be2a"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
