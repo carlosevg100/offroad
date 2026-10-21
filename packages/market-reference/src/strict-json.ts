@@ -2,13 +2,19 @@
  * equal keys, drops a byte order mark through `TextDecoder` and accepts a lone surrogate or NUL that
  * Postgres `text`/`jsonb` cannot hold, so the worker and the database could read different values.
  * This reader refuses all of them: UTF-8 without BOM, RFC 8259 grammar, no repeated key in an object,
- * strings made of Unicode scalar values without U+0000. Numbers keep their JSON type; a parser that
+ * strings made of Unicode scalar values without U+0000. Numbers keep their JSON type and the exact text
+ * of their token (`JsonNumber`), so a parser checks a grammar before any lossy conversion; a parser that
  * wants text must find text. */
 export class StrictJsonError extends Error {
   constructor(readonly code: string) {super(code);}
 }
 
-export type JsonValue = null | boolean | number | string | JsonValue[] | {[key: string]: JsonValue};
+/** A JSON number as written: `281.0000000000000000001` is never read as 281. */
+export class JsonNumber {
+  constructor(readonly raw: string) {}
+}
+
+export type JsonValue = null | boolean | JsonNumber | string | JsonValue[] | {[key: string]: JsonValue};
 
 const loneSurrogate = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
 
@@ -82,7 +88,7 @@ export function strictJsonParse(bytes: Uint8Array): JsonValue {
     const m = /^(?:-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)/.exec(text.slice(i));
     if (!m) return fail();
     i += m[0].length;
-    return m[0] === "true" ? true : m[0] === "false" ? false : m[0] === "null" ? null : Number(m[0]);
+    return m[0] === "true" ? true : m[0] === "false" ? false : m[0] === "null" ? null : new JsonNumber(m[0]);
   };
   const v = value();
   ws();
@@ -90,4 +96,9 @@ export function strictJsonParse(bytes: Uint8Array): JsonValue {
   return v;
 }
 
-export const isJsonObject = (v: JsonValue | undefined): v is {[key: string]: JsonValue} => typeof v === "object" && v !== null && !Array.isArray(v);
+export const isJsonObject = (v: JsonValue | undefined): v is {[key: string]: JsonValue} => typeof v === "object" && v !== null && !Array.isArray(v) && !(v instanceof JsonNumber);
+
+/** A positive integer token of one to four digits (a Copom meeting number), or null. */
+export function meetingNumber(v: JsonValue | undefined): number | null {
+  return v instanceof JsonNumber && /^[1-9][0-9]{0,3}$/.test(v.raw) ? Number(v.raw) : null;
+}

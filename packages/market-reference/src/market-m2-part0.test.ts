@@ -8,7 +8,7 @@ import {
   parseSelicTarget, selicTargetContractSha256, selicTargetUrl,
 } from "./selic-target-contract";
 import {compareDecimal, evaluateSelicTarget, type AcquiredCommunique} from "./selic-target-quality";
-import {strictJsonParse} from "./strict-json";
+import {JsonNumber, strictJsonParse} from "./strict-json";
 
 const vectors = JSON.parse(readFileSync(new URL("../vectors/market-m2-part0.json", import.meta.url), "utf8")) as {
   seriesContractSha256: string;
@@ -120,7 +120,7 @@ describe("strict JSON", () => {
   ])("refuses %s", (_, text, code) => expect(() => strictJsonParse(bytes(text))).toThrow(code));
   it("keeps a valid supplementary character and the JSON types", () => {
     const v = strictJsonParse(bytes("{\"x\":\"\\ud83d\\ude00 ok\",\"n\":1.50,\"s\":\"1.50\",\"__proto__\":null}")) as Record<string, unknown>;
-    expect([v.x, v.n, v.s, Object.keys(v)]).toEqual(["\u{1F600} ok", 1.5, "1.50", ["x", "n", "s", "__proto__"]]);
+    expect([v.x, (v.n as JsonNumber).raw, v.s, Object.keys(v)]).toEqual(["\u{1F600} ok", "1.50", "1.50", ["x", "n", "s", "__proto__"]]);
   });
 });
 

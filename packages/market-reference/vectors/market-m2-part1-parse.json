@@ -1,0 +1,661 @@
+{
+ "schemaVersion": "offroad.market-m2-parse-vectors.v1",
+ "note": "Leitura estrita e parsers da parte 1: o mesmo arquivo é lido pelo teste TypeScript e pelo teste SQL. Conteúdo em UTF-8, ou em base64 quando contentBase64 é verdadeiro. Textos sintéticos.",
+ "cases": [
+  {
+   "name": "sgs_ok",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"14.00\"},{\"data\":\"17/09/2026\",\"valor\":\"13.75\"}]",
+   "contentBase64": false,
+   "expect": {
+    "observations": [
+     {
+      "period": "2026-09-16",
+      "value": "14.00"
+     },
+     {
+      "period": "2026-09-17",
+      "value": "13.75"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sgs_html_error_page",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "<html><title>Requisição inválida!</title></html>",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_syntax"
+   }
+  },
+  {
+   "name": "sgs_bom",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "77u/W10=",
+   "contentBase64": true,
+   "expect": {
+    "error": "market_parse_json_bom"
+   }
+  },
+  {
+   "name": "sgs_not_utf8",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "W/9d",
+   "contentBase64": true,
+   "expect": {
+    "error": "market_parse_json_not_utf8"
+   }
+  },
+  {
+   "name": "sgs_duplicate_key",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"99.00\",\"valor\":\"12.25\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_duplicate_key"
+   }
+  },
+  {
+   "name": "sgs_nul",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"1\\u0000\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_nul"
+   }
+  },
+  {
+   "name": "sgs_lone_high_surrogate",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"\\ud800\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_lone_surrogate"
+   }
+  },
+  {
+   "name": "sgs_lone_low_surrogate",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"\\udc00x\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_lone_surrogate"
+   }
+  },
+  {
+   "name": "sgs_trailing_text",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[] x",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_syntax"
+   }
+  },
+  {
+   "name": "sgs_trailing_comma",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[1,]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_syntax"
+   }
+  },
+  {
+   "name": "sgs_object",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "{\"dados\":[]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_not_array"
+   }
+  },
+  {
+   "name": "sgs_empty",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_empty"
+   }
+  },
+  {
+   "name": "sgs_number_value",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":14}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_row"
+   }
+  },
+  {
+   "name": "sgs_extra_field",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"14.00\",\"fonte\":\"x\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_row"
+   }
+  },
+  {
+   "name": "sgs_leading_zero",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"012.75\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_value"
+   }
+  },
+  {
+   "name": "sgs_comma_value",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"14,00\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_value"
+   }
+  },
+  {
+   "name": "sgs_impossible_date",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"31/09/2026\",\"valor\":\"14.00\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_date"
+   }
+  },
+  {
+   "name": "sgs_outside_window",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"21/09/2026\",\"valor\":\"13.75\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_outside_window"
+   }
+  },
+  {
+   "name": "sgs_future_period",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"19/09/2026\",\"valor\":\"13.75\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_future_period"
+   }
+  },
+  {
+   "name": "sgs_repeated_day",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"16/09/2026\",\"valor\":\"14.00\"},{\"data\":\"16/09/2026\",\"valor\":\"14.00\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_duplicate_period"
+   }
+  },
+  {
+   "name": "sgs_unordered",
+   "kind": "sgs",
+   "window": {
+    "start": "2026-09-14",
+    "end": "2026-09-20"
+   },
+   "dataBase": "2026-09-18",
+   "content": "[{\"data\":\"17/09/2026\",\"valor\":\"13.75\"},{\"data\":\"16/09/2026\",\"valor\":\"14.00\"}]",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_unordered"
+   }
+  },
+  {
+   "name": "detail_ok",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"281ª reunião - Copom reduz a taxa Selic para  13,75% a.a.\",\"textoComunicado\":\"<p>Texto. O Copom decidiu reduzir a taxa básica de juros para 13,75%&nbsp;a.a. Projeções de 4,50% a.a.</p>\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_gerund_and_entities",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"<p>dar sequ&ecirc;ncia, reduzindo a taxa b&#225;sica de juros para 13,75% a.a.</p>\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_step_wording",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"Diante do elevado grau de incerteza, o Copom decidiu reduzir a taxa básica de juros em 0,25 ponto percentual, para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_hold",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom mantém a taxa Selic em 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu manter a taxa básica de juros em 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "hold",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_finados_regulatory_date",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2023-11-01\",\"titulo\":\"Copom reduz a taxa Selic para 12,25% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa básica de juros em 0,50 ponto percentual, para 12,25% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2023-11-01",
+    "decision": "cut",
+    "targetPct": "12.25",
+    "seriesChangeDate": "2023-11-02",
+    "regulatoryEffectiveFrom": "2023-11-03"
+   }
+  },
+  {
+   "name": "detail_zero_width_and_newlines",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"<div>​ O Copom decidiu reduzir a\\n taxa Selic para 13,75% a.a.</div>\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_entity_not_reread",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75&#37; a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_amp_entity_stays_literal",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75&amp;#37; a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_invalid_entities_stay_literal",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a. &#0; &#xD800; &#1114112;\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "2026-09-16",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "2026-09-17",
+    "regulatoryEffectiveFrom": "2026-09-17"
+   }
+  },
+  {
+   "name": "detail_space_before_percent",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75 % a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_meeting_with_fraction",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281.0,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_meeting_with_tiny_fraction",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281.0000000000000000001,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_meeting_exponent",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":2.81e2,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_meeting_negative",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":-281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_meeting_string",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":\"281\",\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_other_meeting",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":280,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_meeting"
+   }
+  },
+  {
+   "name": "detail_negative_rate",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para -13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_three_digit_rate",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 112,25% a.a.\",\"textoComunicado\":\"x\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_two_rates",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic de 14,00% a.a. para 13,75% a.a.\",\"textoComunicado\":\"x\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_no_verb",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom: taxa Selic em 13,75% a.a.\",\"textoComunicado\":\"x\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_verb_prefix",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduzida a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"x\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_accented_verb_prefix",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom mantémx a taxa Selic em 13,75% a.a.\",\"textoComunicado\":\"x\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_title"
+   }
+  },
+  {
+   "name": "detail_negation",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom não decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_negated_wording",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu não reduzir, mas elevar a taxa para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_other_direction",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu elevar a taxa básica de juros para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_cut_with_em",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa básica de juros em 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_sign_split_by_tag",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa básica de juros para - <b>13,75</b>% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_glued_word",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom indecidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_text"
+   }
+  },
+  {
+   "name": "detail_extra_field",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"x\",\"link\":\"y\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_fields"
+   }
+  },
+  {
+   "name": "detail_two_records",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281},{\"nro_reuniao\":281}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_shape"
+   }
+  },
+  {
+   "name": "detail_impossible_date",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-02-30\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_date"
+   }
+  },
+  {
+   "name": "detail_lone_surrogate_in_text",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"2026-09-16\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"x\\ud800\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_json_lone_surrogate"
+   }
+  }
+ ]
+}
