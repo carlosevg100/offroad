@@ -20,7 +20,8 @@ instantes, com `available_at` e `acquired_at` anteriores a esse limite. O comuni
 de valor e de vigência, não de disponibilidade: cada mudança de valor da 432 é ligada à reunião que a
 decidiu (número, data de referência com precisão de data, valor no título e no texto, hash do registro),
 e a vigência é o primeiro dia útil seguinte ao término da reunião (Resolução BCB 61, regulamento, art.
-1º, § 2º), sem inventar horário. O recorte homologado dessa regra começa na vigência da Resolução BCB 61;
+1º, § 2º), sem inventar horário. O recorte homologado dessa regra começa na vigência da Resolução BCB 61
+(14/01/2021, data de publicação e de entrada em vigor);
 períodos anteriores não recebem a regra e não entram no M2. A evidência do comunicado só vale para leitura
 com data-base posterior à sua própria aquisição. A reprodução do texto dos comunicados segue os termos do
 site do Banco Central (reprodução com integridade e citação da fonte), registrados na evidência da parte 0.
