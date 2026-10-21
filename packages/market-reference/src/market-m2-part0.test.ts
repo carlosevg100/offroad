@@ -179,6 +179,7 @@ describe("communiqué parser", () => {
     ["a confirming clause only with another rate", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para 13,50% a.a. No cenário alternativo, 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a text that raises when the title cuts", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu elevar a taxa básica de juros para 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a wording outside the grammar", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu fixar a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a negation right before the clause", {conteudo: [{...record, textoComunicado: "<p>O Copom não decidiu reduzir a taxa Selic para 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a negated decision", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu não reduzir, mas elevar a taxa para 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a sign separated by a space or a tag", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para - <b>13,75</b>% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a cut that says em", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text"],

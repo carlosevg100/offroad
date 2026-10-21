@@ -160,7 +160,7 @@ const titleVerb: Record<string, CopomDecision> = {eleva: "raise", reduz: "cut", 
  * (Selic|básica de juros)[ em N,NN ponto(s) percentual(is),] (para|em) X% a.a.", or the same after a
  * gerund that follows a comma (", elevando" / ", reduzindo"). A hold says "em" with no step; a raise
  * or cut says "para". Each of the 47 communiqués from meeting 235 to 281 has at least one. */
-const confirmingClause = /(?:(?<![\p{L}\p{N}])decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em \d,\d{2} pontos? percentua(?:l|is),)? (para|em) (\d{1,2},\d{2})% a\.a\./gu;
+const confirmingClause = /(?:(?<![\p{L}\p{N}])(?<!não )decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em \d,\d{2} pontos? percentua(?:l|is),)? (para|em) (\d{1,2},\d{2})% a\.a\./gu;
 const clauseVerb: Record<string, CopomDecision> = {elevar: "raise", elevando: "raise", reduzir: "cut", reduzindo: "cut", manter: "hold"};
 
 /** Text of the communiqué for the value check: tags removed, numeric and basic named entities

@@ -65,15 +65,17 @@ decidiu[, por unanimidade,] (elevar|reduzir|manter) a taxa (Selic|básica de jur
 ```
 
 com a direção e a taxa do título; manutenção diz `em` sem passo, alta e corte dizem `para`. Os 47
-comunicados de 235 a 281 têm ao menos uma. Sem ela (redação nova, negação, sinal separado por espaço
-ou tag, verbo ou taxa diferentes), o comunicado é recusado e a tentativa falha.
+comunicados de 235 a 281 têm ao menos uma. Quando nenhuma cláusula reconhecida concorda com o título
+(redação nova sem fragmento reconhecido, "não decidiu", sinal separado por espaço ou tag, verbo ou taxa
+diferentes), o comunicado é recusado e a tentativa falha. A garantia é sintática: contexto, negação
+anterior ao fragmento além de "não decidiu" e temporalidade da prosa não são interpretados.
 
 **Modelo de confiança.** O valor é a série 432. O título é a corroboração estruturada e independente
 que a qualidade compara com a série. O texto é evidência arquivada, com impressão digital, que confirma
 o título numa cláusula exata. O resto do texto é prosa livre (cenários, decisões anteriores, riscos) e
 não é interpretado: expressão regular não lê linguagem natural com segurança, e um texto que discorde
-de título e série concordes não torna a série errada. Uma redação nova do Banco Central falha de forma
-visível, nunca passa por interpretação.
+de título e série concordes não torna a série errada. Uma redação nova sem fragmento reconhecido falha
+de forma visível; nunca passa por interpretação.
 
 **Impressão do registro.** SHA-256 em UTF-8 de
 

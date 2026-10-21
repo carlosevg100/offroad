@@ -67,8 +67,10 @@ c8 = copy.deepcopy(base); c8['acquisitionIds']=["f0000000-0000-4000-8000-0000000
 c8['links']=[dict(base['links'][0],meeting=1000),dict(base['links'][0],meeting=99),dict(base['links'][0],meeting=281)]
 c9 = copy.deepcopy(base); c9['observations']=[ob("2026-09-16","14.00","2026-10-21T23:30:00.5-03:00"),ob("2026-09-17","13.75","2026-12-31T22:00:00.000001-03:00")]
 c10 = copy.deepcopy(base); c10['links']=[]; c10['observations']=[]
+c11 = copy.deepcopy(base); c11['links']=[dict(base['links'][0],referenceDate="1900-01-01"),dict(base['links'][0],meeting=282,referenceDate="9999-12-30")]
+c11['observations']=[dict(ob("1900-01-01","1.00"),periodStart="1900-01-01"),dict(ob("9999-12-30","2.00"),periodStart="9999-12-30")]
 cases=[("basic",base),("offset_instants_normalise",c2),("trimmed_decimals",c3),("reprocess_sorted_lists",c4),("no_links",c5),
- ("precision_limits",c6),("null_start_sorts_first",c7),("bytewise_uuid_and_numeric_meeting_order",c8),("offset_crosses_utc_date_and_year",c9),("empty_lists",c10)]
+ ("precision_limits",c6),("null_start_sorts_first",c7),("bytewise_uuid_and_numeric_meeting_order",c8),("offset_crosses_utc_date_and_year",c9),("empty_lists",c10),("date_domain_bounds",c11)]
 canon_vectors=[{"name":n,"input":x,"canonical":canon(x),"sha256":sha(canon(x))} for n,x in cases]
 assert canon_vectors[0]['canonical']==canon_vectors[1]['canonical']
 def bad(name, mut, code):
@@ -86,6 +88,11 @@ neg=[bad("exponent_value",lambda x:x['observations'][0].update(value="1e3"),"can
  bad("year_before_domain",lambda x:x['observations'][0].update(acquiredAt="1899-12-31T23:59:59Z"),"canonical_instant"),
  bad("year_zero_date",lambda x:x['observations'][0].update(periodEnd="0000-01-01"),"canonical_observation"),
  bad("date_before_domain",lambda x:x['observations'][0].update(periodEnd="1899-12-31"),"canonical_observation"),
+ bad("period_end_after_domain",lambda x:x['observations'][0].update(periodEnd="9999-12-31"),"canonical_observation"),
+ bad("period_start_before_domain",lambda x:x['observations'][0].update(periodStart="1899-12-31"),"canonical_observation"),
+ bad("period_start_after_domain",lambda x:x['observations'][0].update(periodStart="9999-12-31"),"canonical_observation"),
+ bad("link_date_before_domain",lambda x:x['links'][0].update(referenceDate="1899-12-31"),"canonical_link"),
+ bad("link_date_after_domain",lambda x:x['links'][0].update(referenceDate="9999-12-31"),"canonical_link"),
  bad("invalid_date",lambda x:x['observations'][0].update(periodEnd="2026-02-30"),"canonical_observation")]
 
 # ---- availability limits, independent via zoneinfo
