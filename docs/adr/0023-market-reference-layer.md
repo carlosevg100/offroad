@@ -160,6 +160,14 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
    que o usa; e a forma de oferecer, quando exigível, a base derivada ou o método de transformação.
    Bases abertas, bases contratadas e dados privados de tenant ficam separados estruturalmente, para
    que nenhuma obrigação de uma alcance a outra; isso não abre dado de tenant nem código.
+   (Emenda de 21/10/2026, na M2 parte 3: a base derivada da série 432 é oferecida em edições imutáveis
+   publicadas por comando de fundador, com bytes canônicos `market-odbl.v1`, licença com URI,
+   identificação da origem, atribuição, alterações em relação à edição anterior e links fixados no commit
+   para o leitor, as regras, os vetores e o banco. A leitura pública é a única projeção alcançável pelo
+   papel anônimo (`public.market_odbl_release_v1`, invoker com corpo ligado na criação e tempo limite
+   próprio); uma edição deixa de ser distribuída quando retirada ou quando uma dependência perde
+   legibilidade, sem afetar direitos já recebidos pela ODbL. Desenho em
+   `docs/build/market-reference/M2-PARTE-3.md`.)
 
 8. **Retenção com expurgo físico e prova.** Cada classe de conteúdo (bruto, normalizado, quarentena,
    temporário, derivado sujeito à licença) tem prazo pela licença. O expurgo segue os princípios já
@@ -169,6 +177,12 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
    Aprovação, supersessão, quarentena, revogação e descarte são eventos auditáveis; a versão nunca é
    alterada para marcar estado. O esquema `market` tem RLS forçada, grants mínimos e chaves
    estrangeiras compostas.
+   (Emenda de 21/10/2026, na M2 parte 3: os eventos de mercado ganham outbox própria, separada da outbox
+   de tenant: a linha nasce na transação do evento para cada consumidor registrado, é processada até o
+   recibo sem cursor global, com ordem por sujeito pela ordem de commit, orçamento de cinco tentativas e
+   efeito gravado na mesma transação da conclusão. A exceção de retenção da M2 está no banco: só licença
+   aberta sem prazo e com direito de reter valores adotados é adquirida, confirmada ou lida, e a revisão
+   que exigiria prazo é recusada enquanto houver aquisição, job vivo ou objeto alocado da fonte.)
 
 9. **Operação por fonte, com frescor e abstenção.** Cada fonte declara, versionados: calendário de
    dias úteis (feriados nacionais e de mercado), fuso `America/Sao_Paulo`, horário esperado de
@@ -220,6 +234,12 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
     para `GovernedMarketCurve` e `DecisionMarketReference` declaram unidades, convenções, versão
     metodológica, validade, instrumento, moeda, indexador e estado de direitos; nenhum dos dois concede
     acesso por si.
+
+    (Emenda de 21/10/2026, na M2 parte 3: toda leitura de versão passa por um contrato único,
+    `market_version_readable_v1`, sobre o fecho de dependências da versão, com modo `consume` (exige
+    aprovação vigente; resolvedor e publicação) e modo `reprocess` (só a religação, que repara a
+    evidência de uma versão em quarentena). Revogação de aquisição ou de fonte toma uma âncora exclusiva
+    que quem produz algo durável a partir delas toma em modo compartilhado.)
 
 11. **Direitos do documento separados da licença do conjunto.** A ODbL cobre a base, não
     automaticamente cada conteúdo individual (cláusulas 2.3 e 2.4). Para cada classe de documento

@@ -2664,8 +2664,18 @@
       "name": "market_m2_version_commit_fixes_3",
       "version": "20261021220046",
       "statements_md5": "8c552e0731b6a9680bdd26dabd765c1f"
+    },
+    {
+      "name": "market_m2_event_outbox",
+      "version": "20261021232736",
+      "statements_md5": "53def44f7adcc0451b9e2589c6e094f1"
+    },
+    {
+      "name": "market_m2_retention_odbl",
+      "version": "20261021232925",
+      "statements_md5": "33f0e10553f8d2e02a62bd10021a9040"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-21T22:01:51Z"
+  "captured_at": "2026-10-21T23:45:56Z"
 }

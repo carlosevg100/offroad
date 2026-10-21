@@ -225,6 +225,8 @@ do $$ declare t text;r text;f text;begin
  if (select prosecdef from pg_proc where oid='public.market_odbl_release_v1(integer)'::regprocedure)
  or (select prosqlbody is null from pg_proc where oid='public.market_odbl_release_v1(integer)'::regprocedure)
  or has_schema_privilege('anon','private','usage') then raise exception 'anonymous reader is not bound at creation';end if;
+ if (select proconfig from pg_proc where oid='public.market_odbl_release_v1(integer)'::regprocedure)<>array['search_path=""','statement_timeout=2s']
+ then raise exception 'anonymous reader lost its own statement timeout';end if;
 end $$;
 select 'market_retention_odbl' as test,'PASS' as result;
 rollback;

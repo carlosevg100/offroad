@@ -150,6 +150,11 @@ data regulatória fica no registro como informação. Os contratos e os vetores 
 | 2 | Agendador com delegação | Desligado |
 | 4 | Atos de produção: publicadora, revisão das fontes, delegações, prova integrada em staging, abertura da chave por último | Abre |
 
+Emenda de 21/10/2026, na parte 3: a prova HTTP da página e do arquivo ODbL com edição publicada passa a
+integrar a prova integrada em staging da parte 4, com os bytes reais, e continua condição para abrir a
+chave; na parte 3 ela é feita na pilha local da CI com dados sintéticos, porque uma edição é imutável e uma
+edição sintética ficaria em staging. Desenho da parte 3 em `M2-PARTE-3.md`.
+
 Os atos da parte 4 usam identidade de fundador ou operador; o registro da publicadora é comando de
 fundador. A chave só abre depois da outbox consumida, da página ODbL publicada e da prova integrada em
 staging.

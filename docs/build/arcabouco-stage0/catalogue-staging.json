@@ -106081,6 +106081,1519 @@
       "enabled": "O",
       "function": "private.guard_market_version_v2_v1()",
       "definition": "CREATE TRIGGER market_versions_v2_gate BEFORE INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_v2_v1()"
+    },
+    {
+      "id": "function:private.anchor_market_authority_v1()",
+      "kind": "function",
+      "name": "anchor_market_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.disable_market_event_consumer_v1(p_command uuid, p_consumer text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "disable_market_event_consumer_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_consumer text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.fan_out_market_event_v1()",
+      "kind": "function",
+      "name": "fan_out_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.grant_market_event_delegation_v1(p_command uuid, p_worker_token_id uuid, p_consumer text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "grant_market_event_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_worker_token_id uuid, p_consumer text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.guard_market_event_consumer_v1()",
+      "kind": "function",
+      "name": "guard_market_event_consumer_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_event_delegation_v1()",
+      "kind": "function",
+      "name": "guard_market_event_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_event_outbox_v1()",
+      "kind": "function",
+      "name": "guard_market_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_market_read_authority_v1(p_versions uuid[], p_acquisitions uuid[])",
+      "kind": "function",
+      "name": "lock_market_read_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_versions uuid[], p_acquisitions uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_acquisition_readable_v1(p_acquisition uuid)",
+      "kind": "function",
+      "name": "market_acquisition_readable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_acquisition uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_event_delegation_live_v1(p_worker uuid, p_consumer text)",
+      "kind": "function",
+      "name": "market_event_delegation_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker uuid, p_consumer text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_event_for_lease_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "market_event_for_lease_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_event_outbox_health_v1(p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "market_event_outbox_health_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_event_subject_key_v1(p_kind text, p_subject text)",
+      "kind": "function",
+      "name": "market_event_subject_key_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text, p_subject text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_license_retains_v1(p_license jsonb)",
+      "kind": "function",
+      "name": "market_license_retains_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_license jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_odbl_canonical_v1(p jsonb)",
+      "kind": "function",
+      "name": "market_odbl_canonical_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_odbl_release_read_v1(p_release integer)",
+      "kind": "function",
+      "name": "market_odbl_release_read_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "anon",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_release integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_odbl_string_v1(p text)",
+      "kind": "function",
+      "name": "market_odbl_string_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_require_read_committed_v1()",
+      "kind": "function",
+      "name": "market_require_read_committed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_version_closure_v1(p_version uuid)",
+      "kind": "function",
+      "name": "market_version_closure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_version_readable_v1(p_version uuid, p_mode text)",
+      "kind": "function",
+      "name": "market_version_readable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version uuid, p_mode text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.publish_market_odbl_release_v1(p_command uuid, p_code_commit text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "publish_market_odbl_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_code_commit text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.register_market_event_consumer_v1(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "register_market_event_consumer_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.retry_blocked_market_event_v1(p_command uuid, p_consumer text, p_sequence bigint, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "retry_blocked_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_consumer text, p_sequence bigint, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.revoke_market_event_delegation_v1(p_command uuid, p_delegation uuid, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "revoke_market_event_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_delegation uuid, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.withdraw_market_odbl_release_v1(p_command uuid, p_release integer, p_kind text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "withdraw_market_odbl_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_release integer, p_kind text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.worker_claim_market_event_v1(p_worker_token text, p_consumer text)",
+      "kind": "function",
+      "name": "worker_claim_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_consumer text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_complete_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_effect jsonb)",
+      "kind": "function",
+      "name": "worker_complete_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_effect jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_fail_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_code text, p_detail text)",
+      "kind": "function",
+      "name": "worker_fail_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_code text, p_detail text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_renew_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_renew_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.market_odbl_release_v1(p_release integer)",
+      "kind": "function",
+      "name": "market_odbl_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "anon",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\"",
+        "statement_timeout=2s"
+      ],
+      "signature": "p_release integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_claim_market_event_v1(p_worker_token text, p_consumer text)",
+      "kind": "function",
+      "name": "worker_claim_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_consumer text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_complete_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_effect jsonb)",
+      "kind": "function",
+      "name": "worker_complete_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_effect jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_fail_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_code text, p_detail text)",
+      "kind": "function",
+      "name": "worker_fail_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid, p_code text, p_detail text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_renew_market_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_renew_market_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.market_event_consumer_commands.market_event_consumer_commands_deny",
+      "kind": "policy",
+      "name": "market_event_consumer_commands_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_consumer_commands",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_consumer_delegations.market_event_consumer_delegations_deny",
+      "kind": "policy",
+      "name": "market_event_consumer_delegations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_consumer_delegations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_consumers.market_event_consumers_deny",
+      "kind": "policy",
+      "name": "market_event_consumers_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_consumers",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_operator_commands.market_event_operator_commands_deny",
+      "kind": "policy",
+      "name": "market_event_operator_commands_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_operator_commands",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_outbox.market_event_outbox_deny",
+      "kind": "policy",
+      "name": "market_event_outbox_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_outbox",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_receipts.market_event_receipts_deny",
+      "kind": "policy",
+      "name": "market_event_receipts_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_receipts",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_event_subject_counters.market_event_subject_counters_deny",
+      "kind": "policy",
+      "name": "market_event_subject_counters_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_event_subject_counters",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_odbl_release_dependencies.market_odbl_release_dependencies_deny",
+      "kind": "policy",
+      "name": "market_odbl_release_dependencies_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_odbl_release_dependencies",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_odbl_release_withdrawals.market_odbl_release_withdrawals_deny",
+      "kind": "policy",
+      "name": "market_odbl_release_withdrawals_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_odbl_release_withdrawals",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_odbl_releases.market_odbl_releases_deny",
+      "kind": "policy",
+      "name": "market_odbl_releases_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_odbl_releases",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.market_event_consumer_commands",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_consumer_commands",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_consumer_delegations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_consumer_delegations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_consumers",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_consumers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_operator_commands",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_operator_commands",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_outbox",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_outbox",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_event_subject_counters",
+      "rls": true,
+      "kind": "table",
+      "name": "market_event_subject_counters",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_odbl_release_dependencies",
+      "rls": true,
+      "kind": "table",
+      "name": "market_odbl_release_dependencies",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_odbl_release_withdrawals",
+      "rls": true,
+      "kind": "table",
+      "name": "market_odbl_release_withdrawals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_odbl_releases",
+      "rls": true,
+      "kind": "table",
+      "name": "market_odbl_releases",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.market_event_consumer_commands.market_event_consumer_commands_immutable",
+      "kind": "trigger",
+      "name": "market_event_consumer_commands_immutable",
+      "table": "market_event_consumer_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_event_consumer_commands_immutable BEFORE DELETE OR UPDATE ON private.market_event_consumer_commands FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_consumer_commands.market_event_consumer_commands_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_consumer_commands_truncate_guard",
+      "table": "market_event_consumer_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_consumer_commands_truncate_guard BEFORE TRUNCATE ON private.market_event_consumer_commands FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_consumer_delegations.market_event_consumer_delegations_guard",
+      "kind": "trigger",
+      "name": "market_event_consumer_delegations_guard",
+      "table": "market_event_consumer_delegations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_event_delegation_v1()",
+      "definition": "CREATE TRIGGER market_event_consumer_delegations_guard BEFORE DELETE OR UPDATE ON private.market_event_consumer_delegations FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_delegation_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_consumer_delegations.market_event_consumer_delegations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_consumer_delegations_truncate_guard",
+      "table": "market_event_consumer_delegations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_consumer_delegations_truncate_guard BEFORE TRUNCATE ON private.market_event_consumer_delegations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_consumers.market_event_consumers_guard",
+      "kind": "trigger",
+      "name": "market_event_consumers_guard",
+      "table": "market_event_consumers",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_event_consumer_v1()",
+      "definition": "CREATE TRIGGER market_event_consumers_guard BEFORE DELETE OR UPDATE ON private.market_event_consumers FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_consumer_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_consumers.market_event_consumers_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_consumers_truncate_guard",
+      "table": "market_event_consumers",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_consumers_truncate_guard BEFORE TRUNCATE ON private.market_event_consumers FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_operator_commands.market_event_operator_commands_immutable",
+      "kind": "trigger",
+      "name": "market_event_operator_commands_immutable",
+      "table": "market_event_operator_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_event_operator_commands_immutable BEFORE DELETE OR UPDATE ON private.market_event_operator_commands FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_operator_commands.market_event_operator_commands_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_operator_commands_truncate_guard",
+      "table": "market_event_operator_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_operator_commands_truncate_guard BEFORE TRUNCATE ON private.market_event_operator_commands FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_outbox.market_event_outbox_guard",
+      "kind": "trigger",
+      "name": "market_event_outbox_guard",
+      "table": "market_event_outbox",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_event_outbox_v1()",
+      "definition": "CREATE TRIGGER market_event_outbox_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_event_outbox FOR EACH ROW EXECUTE FUNCTION private.guard_market_event_outbox_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_outbox.market_event_outbox_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_outbox_truncate_guard",
+      "table": "market_event_outbox",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_outbox_truncate_guard BEFORE TRUNCATE ON private.market_event_outbox FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_receipts.market_event_receipts_immutable",
+      "kind": "trigger",
+      "name": "market_event_receipts_immutable",
+      "table": "market_event_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_event_receipts_immutable BEFORE DELETE OR UPDATE ON private.market_event_receipts FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_receipts.market_event_receipts_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_receipts_truncate_guard",
+      "table": "market_event_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_receipts_truncate_guard BEFORE TRUNCATE ON private.market_event_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_event_subject_counters.market_event_subject_counters_truncate_guard",
+      "kind": "trigger",
+      "name": "market_event_subject_counters_truncate_guard",
+      "table": "market_event_subject_counters",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_event_subject_counters_truncate_guard BEFORE TRUNCATE ON private.market_event_subject_counters FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_authority",
+      "kind": "trigger",
+      "name": "market_events_authority",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.anchor_market_authority_v1()",
+      "definition": "CREATE TRIGGER market_events_authority BEFORE INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.anchor_market_authority_v1()"
+    },
+    {
+      "id": "trigger:private.market_events.market_events_fan_out",
+      "kind": "trigger",
+      "name": "market_events_fan_out",
+      "table": "market_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.fan_out_market_event_v1()",
+      "definition": "CREATE TRIGGER market_events_fan_out AFTER INSERT ON private.market_events FOR EACH ROW EXECUTE FUNCTION private.fan_out_market_event_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_release_dependencies.market_odbl_release_dependencies_immutable",
+      "kind": "trigger",
+      "name": "market_odbl_release_dependencies_immutable",
+      "table": "market_odbl_release_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_odbl_release_dependencies_immutable BEFORE DELETE OR UPDATE ON private.market_odbl_release_dependencies FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_release_dependencies.market_odbl_release_dependencies_truncate_guard",
+      "kind": "trigger",
+      "name": "market_odbl_release_dependencies_truncate_guard",
+      "table": "market_odbl_release_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_odbl_release_dependencies_truncate_guard BEFORE TRUNCATE ON private.market_odbl_release_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_release_withdrawals.market_odbl_release_withdrawals_immutable",
+      "kind": "trigger",
+      "name": "market_odbl_release_withdrawals_immutable",
+      "table": "market_odbl_release_withdrawals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_odbl_release_withdrawals_immutable BEFORE DELETE OR UPDATE ON private.market_odbl_release_withdrawals FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_release_withdrawals.market_odbl_release_withdrawals_truncate_guard",
+      "kind": "trigger",
+      "name": "market_odbl_release_withdrawals_truncate_guard",
+      "table": "market_odbl_release_withdrawals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_odbl_release_withdrawals_truncate_guard BEFORE TRUNCATE ON private.market_odbl_release_withdrawals FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_releases.market_odbl_releases_immutable",
+      "kind": "trigger",
+      "name": "market_odbl_releases_immutable",
+      "table": "market_odbl_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_odbl_releases_immutable BEFORE DELETE OR UPDATE ON private.market_odbl_releases FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_odbl_releases.market_odbl_releases_truncate_guard",
+      "kind": "trigger",
+      "name": "market_odbl_releases_truncate_guard",
+      "table": "market_odbl_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_odbl_releases_truncate_guard BEFORE TRUNCATE ON private.market_odbl_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"
