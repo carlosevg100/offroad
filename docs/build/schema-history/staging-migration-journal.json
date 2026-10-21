@@ -2644,8 +2644,18 @@
       "name": "market_acquisition_job_review_fixes_2",
       "version": "20261020212228",
       "statements_md5": "599c5963251b82e8bb78af8707de14e9"
+    },
+    {
+      "name": "market_m2_version_commit",
+      "version": "20261021211348",
+      "statements_md5": "e33a6567ae14f5ccb85f05400ff22b1d"
+    },
+    {
+      "name": "market_m2_version_commit_fixes",
+      "version": "20261021212420",
+      "statements_md5": "262b4e2245974ba474260781b2aef4d2"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-20T21:57:17Z"
+  "captured_at": "2026-10-21T21:38:28Z"
 }

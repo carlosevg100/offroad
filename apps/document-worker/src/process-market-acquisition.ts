@@ -1,5 +1,7 @@
+import {MarketContractError, parseCommuniqueDetail, parseCommuniqueList, parseSelicTarget, saoPauloDate} from "@offroad/market-reference/m2";
 import {fetchMarketFile, MarketFetchError, type MarketFetchDeps, type MarketFetchResult} from "./market-acquisition-fetch";
-import {MarketAcquisitionTransportError, type MarketAcquisitionClaim, type MarketAcquisitionFailureCode, type MarketAcquisitionQueue} from "./market-acquisition-queue";
+import {MarketAcquisitionTransportError, type MarketAcquisitionClaim, type MarketAcquisitionFailureCode, type MarketAcquisitionQueue,
+ type MarketVersionCommit} from "./market-acquisition-queue";
 
 /**
  * The largest object this consumer stores. Storage records the MD5 of the whole object as its eTag only
@@ -15,7 +17,7 @@ export type MarketObjectStore = {
 };
 export type MarketAcquisitionDeps = {fetch?: (claim: MarketAcquisitionClaim) => Promise<MarketFetchResult>; fetchDeps?: MarketFetchDeps; renewEveryMs?: number};
 export type MarketAcquisitionResult =
- | {status: "committed"; acquisitionId: string; replayed: boolean}
+ | ({status: "committed"} & MarketVersionCommit)
  | {status: "failed"; code: MarketAcquisitionFailureCode; retryScheduled: boolean}
  | {status: "abandoned"; reason: string};
 
@@ -26,11 +28,34 @@ const commitFailure: Partial<Record<string, {code: MarketAcquisitionFailureCode;
  market_delegation_required: {code: "delegation_revoked", retryable: true},
  market_host_not_allowed: {code: "host_not_allowed", retryable: false},
  market_acquisition_invalid: {code: "verification_failed", retryable: false},
+ market_parse_failed: {code: "parse_failed", retryable: false},
+ market_contract_mismatch: {code: "verification_failed", retryable: false},
+ market_copom_meeting_disagreement: {code: "verification_failed", retryable: false},
+ market_copom_meeting_day_collision: {code: "verification_failed", retryable: false},
 };
 
 /**
- * One acquisition attempt: fetch under the source's hosts, store the bytes at the allocated path,
- * confirm with both digests. The lease is renewed while the attempt runs; any refusal of the
+ * Reads the bytes under the endpoint contract, as the database will, so a file the contract refuses
+ * fails early and definitively without being stored. The database reads them again and is the only
+ * authority over what is recorded. Returns the refusal code, or null when the bytes read.
+ */
+export function marketContentRefusal(claim: MarketAcquisitionClaim, bytes: Uint8Array, acquiredAt: Date): string | null {
+ try {
+  switch (claim.contractKind) {
+   case "sgs_daily_json": parseSelicTarget(bytes, claim.request.window, saoPauloDate(acquiredAt.getTime())); break;
+   case "copom_communique_detail": parseCommuniqueDetail(bytes, claim.request.meeting); break;
+   case "copom_communique_list": parseCommuniqueList(bytes, claim.request.size); break;
+  }
+  return null;
+ } catch (error) {
+  if (error instanceof MarketContractError) return error.code;
+  throw error;
+ }
+}
+
+/**
+ * One acquisition attempt: fetch the contract URL, read the bytes under the contract, store them at the
+ * allocated path and send them to the confirmation, where the database reads them itself. The lease is renewed while the attempt runs; any refusal of the
  * renewal stops the attempt. Bytes are removed when the attempt fails after storing them; when the
  * transport is paused or the lease is gone, the path stays allocated and the sweep removes it later.
  */
@@ -55,6 +80,8 @@ export async function processMarketAcquisition(claim: MarketAcquisitionClaim, qu
    if (error instanceof MarketFetchError) return await fail(error.code, error.retryable, error.message);
    return await fail("network", true);
   }
+  const refusal = marketContentRefusal(claim, file.bytes, file.acquiredAt);
+  if (refusal) return await fail("parse_failed", false, refusal);
   // A refused renewal ends the attempt before any byte is stored.
   if (lost) {
    const refused: MarketAcquisitionTransportError = lost;
@@ -64,8 +91,7 @@ export async function processMarketAcquisition(claim: MarketAcquisitionClaim, qu
   try { await store.upload(claim.objectPath, file.bytes, file.contentType); stored = true; }
   catch { return await fail("upload_failed", true); }
   try {
-   const answer = await queue.commit(claim, file);
-   return {status: "committed", acquisitionId: answer.acquisitionId, replayed: answer.replayed};
+   return {status: "committed", ...await queue.commit(claim, {bytes: file.bytes, contentType: file.contentType, acquiredAt: file.acquiredAt})};
   } catch (error) {
    const code = error instanceof MarketAcquisitionTransportError ? error.code : "market_acquisition_transport_failed";
    const mapped = commitFailure[code];

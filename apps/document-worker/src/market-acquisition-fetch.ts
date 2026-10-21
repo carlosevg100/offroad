@@ -36,10 +36,12 @@ const acceptedTypes: Record<MarketExtension, readonly string[]> = {
 };
 
 /**
- * Fetches one public file under the source's own hosts. Every hop is checked before any byte moves:
+ * Fetches one public file under the source's own hosts. The URL is checked before any byte moves:
  * https on port 443, no user information, a host from the list, and every DNS answer public; the
  * connection then goes to the vetted address only, so a second resolution cannot redirect it. A
- * redirect is followed manually and checked the same way. The body is streamed under the byte limit
+ * redirect is accepted only when its raw `Location` is absolute and byte-equal to the requested URL
+ * (the endpoint contract's own address); anything else is refused before it is resolved, so the
+ * stored bytes always come from the contract URL. The body is streamed under the byte limit
  * and both digests are taken from the bytes that will be stored. A response that is not used (a
  * redirect, a refused status, type or length) is destroyed, never drained.
  */
@@ -50,7 +52,7 @@ export async function fetchMarketFile(request: MarketFetchRequest, deps: MarketF
  const maxRedirects = deps.maxRedirects ?? 3;
  const signal = AbortSignal.timeout(deps.timeoutMs ?? 60_000);
  const hosts = new Set(request.allowedHosts.map((host) => host.toLowerCase()));
- let url = vetUrl(request.url, hosts, "host_not_allowed");
+ const url = vetUrl(request.url, hosts, "host_not_allowed");
  try {
   for (let hop = 0; ; hop++) {
    const {address, family} = await vetAddress(url.hostname, resolve);
@@ -59,7 +61,7 @@ export async function fetchMarketFile(request: MarketFetchRequest, deps: MarketF
    if (status >= 300 && status < 400 && response.headers.location) {
     response.destroy();
     if (hop >= maxRedirects) throw new MarketFetchError("redirect_not_allowed", false, "too many redirects");
-    url = vetUrl(new URL(response.headers.location, url).toString(), hosts, "redirect_not_allowed");
+    if (response.headers.location !== request.url) throw new MarketFetchError("redirect_not_allowed", false, "location is not the contract URL");
     continue;
    }
    if (status !== 200) {
@@ -82,7 +84,7 @@ export async function fetchMarketFile(request: MarketFetchRequest, deps: MarketF
  }
 }
 
-function vetUrl(raw: string, hosts: Set<string>, code: "host_not_allowed" | "redirect_not_allowed"): URL {
+function vetUrl(raw: string, hosts: Set<string>, code: "host_not_allowed"): URL {
  let url: URL;
  try { url = new URL(raw); } catch { throw new MarketFetchError(code, false, "invalid URL"); }
  if (url.protocol !== "https:" || url.username || url.password || (url.port !== "" && url.port !== "443") || !hosts.has(url.hostname)) {

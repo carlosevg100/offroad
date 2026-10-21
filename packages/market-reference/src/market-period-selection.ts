@@ -9,6 +9,12 @@ import {availableForDataBase, canonicalInstant, instantMicros} from "./market-av
  * strictly later `recordedAt` than the version it supersedes; it replaces the earlier parse from K on
  * and never rewrites a manifest fixed with an earlier K. A version is superseded at most once.
  *
+ * A version serves D only when its evidence was available for D: `evidenceAvailableAt` (the latest
+ * acquisition among the series and the communiqués it was evaluated with) is before the limit of D.
+ * In each chain of an acquisition, among the versions recorded by K, the most recent one available
+ * for D counts; a successor relinked with a communiqué acquired after D leaves its predecessor in
+ * place for D, as it stood on that date.
+ *
  * Between acquisitions the most recent `acquiredAt` wins per period, ties broken by the greater
  * version id (lowercase canonical UUID, compared byte by byte). A newer answer that omits a period
  * does not withdraw it: a version covers only the periods it carries. An official withdrawal exists
@@ -16,10 +22,12 @@ import {availableForDataBase, canonicalInstant, instantMicros} from "./market-av
  * acquired up to the revocation's acquisition, and a later acquisition that carries the period again
  * brings it back. Rights are a filter before the choice. Every instant is compared in microseconds,
  * the precision of the database. */
-export const marketSelectionVersion = "2026.10.21-v2";
+export const marketSelectionVersion = "2026.10.21-v3";
 
 export type SelectableVersion = {
   id: string; acquisitionId: string; acquiredAt: string; recordedAt: string;
+  /** The latest acquisition instant among the version's own acquisition and its evidence. */
+  evidenceAvailableAt: string;
   /** The version of the same acquisition this one reprocesses, or null. */
   supersedes: string | null; periods: readonly string[];
 };
@@ -41,6 +49,7 @@ function checkHistory(versions: readonly SelectableVersion[], revocations: reado
     const at = instantMicros(v.acquiredAt), known = acquiredAt.get(v.acquisitionId);
     if (known !== undefined && known !== at) throw new Error("market_acquisition_instant_changed");
     if (instantMicros(v.recordedAt) < at) throw new Error("market_version_recorded_before_acquisition");
+    if (instantMicros(v.evidenceAvailableAt) < at) throw new Error("market_version_evidence_before_acquisition");
     acquiredAt.set(v.acquisitionId, at); byId.set(v.id, v);
   }
   for (const v of versions) {
@@ -71,7 +80,14 @@ export function selectPeriods(input: {
   const superseded = new Set(known.flatMap((v) => v.supersedes === null ? [] : [v.supersedes]));
   const current = known.filter((v) => !superseded.has(v.id));
   if (new Set(current.map((v) => v.acquisitionId)).size !== current.length) throw new Error("market_acquisition_two_current_versions");
-  const eligible = current.filter((v) => availableForDataBase({acquiredAt: v.acquiredAt, availableAt: v.acquiredAt}, input.dataBase) && input.allowed(v));
+  // Per chain, the most recent version recorded by K whose evidence was available for D.
+  const usable = known.filter((v) => availableForDataBase({acquiredAt: v.acquiredAt, availableAt: v.evidenceAvailableAt}, input.dataBase) && input.allowed(v));
+  const latest = new Map<string, SelectableVersion>();
+  for (const v of usable) {
+    const cur = latest.get(v.acquisitionId);
+    if (!cur || instantMicros(v.recordedAt) > instantMicros(cur.recordedAt)) latest.set(v.acquisitionId, v);
+  }
+  const eligible = [...latest.values()];
   const revoked = input.revocations.filter((r) => instantMicros(r.recordedAt) <= k && availableForDataBase({acquiredAt: r.acquiredAt, availableAt: r.acquiredAt}, input.dataBase));
   const best = new Map<string, SelectableVersion>();
   for (const v of eligible) for (const p of v.periods) {

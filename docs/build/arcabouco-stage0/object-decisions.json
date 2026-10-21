@@ -321206,6 +321206,12 @@
           "line": 60,
           "anchor": "create or replace function private.guard_market_version_seal_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 629,
+          "anchor": "create or replace function private.guard_market_version_seal_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
@@ -325159,6 +325165,12 @@
           "line": 183,
           "anchor": "create function private.enqueue_market_acquisition_v1(p_command uuid,p_source_id text,p_url text,p_extension text,p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 829,
+          "anchor": "create or replace function private.enqueue_market_acquisition_v1(p_command uuid,p_source_id text,p_url text,p_extension text,p_reason text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
@@ -325328,6 +325340,12 @@
         {
           "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
           "line": 112,
+          "anchor": "create or replace function private.guard_market_acquisition_job_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 834,
           "anchor": "create or replace function private.guard_market_acquisition_job_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
@@ -326144,6 +326162,12 @@
           "line": 36,
           "anchor": "create or replace function private.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 860,
+          "anchor": "create or replace function private.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Worker de mercado pelo wrapper público."
@@ -326221,6 +326245,12 @@
           "line": 83,
           "anchor": "create or replace function private.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 997,
+          "anchor": "create or replace function private.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Worker de mercado pelo wrapper público."
@@ -326290,6 +326320,12 @@
         {
           "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
           "line": 273,
+          "anchor": "create or replace function private.worker_fail_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_code text,p_retryable boolean,p_detail text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 1003,
           "anchor": "create or replace function private.worker_fail_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_code text,p_retryable boolean,p_detail text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -327873,6 +327909,4166 @@
         }
       ],
       "consumer_status": "Worker de mercado pela API de Storage."
+    },
+    {
+      "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "create_market_selic_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "create_market_selic_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 759,
+          "anchor": "create function private.create_market_selic_version_v1(p_acquisition uuid,p_normalization text,p_supersedes uuid,p_observations jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.enqueue_market_contract_acquisition_v1(p_command uuid, p_contract_id text, p_request jsonb, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enqueue_market_contract_acquisition_v1(p_command uuid, p_contract_id text, p_request jsonb, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "enqueue_market_contract_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_contract_id text, p_request jsonb, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.enqueue_market_contract_acquisition_v1(p_command uuid, p_contract_id text, p_request jsonb, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "enqueue_market_contract_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_contract_id text, p_request jsonb, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 800,
+          "anchor": "create function private.enqueue_market_contract_acquisition_v1(p_command uuid,p_contract_id text,p_request jsonb,p_reason text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_market_version_evidence_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_evidence_v1()",
+          "kind": "function",
+          "name": "guard_market_version_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_evidence_v1()",
+          "kind": "function",
+          "name": "guard_market_version_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 535,
+          "anchor": "create function private.guard_market_version_evidence_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_market_version_input_v2_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_input_v2_v1()",
+          "kind": "function",
+          "name": "guard_market_version_input_v2_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_input_v2_v1()",
+          "kind": "function",
+          "name": "guard_market_version_input_v2_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 514,
+          "anchor": "create function private.guard_market_version_input_v2_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_market_version_v2_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_version_v2_v1()",
+          "kind": "function",
+          "name": "guard_market_version_v2_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_version_v2_v1()",
+          "kind": "function",
+          "name": "guard_market_version_v2_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 486,
+          "anchor": "create function private.guard_market_version_v2_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_acquisition_contract_v1(p_acquisition uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_acquisition_contract_v1(p_acquisition uuid)",
+          "kind": "function",
+          "name": "market_acquisition_contract_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_acquisition_contract_v1(p_acquisition uuid)",
+          "kind": "function",
+          "name": "market_acquisition_contract_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 478,
+          "anchor": "create function private.market_acquisition_contract_v1(p_acquisition uuid) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_br_holiday_v1(p date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_br_holiday_v1(p date)",
+          "kind": "function",
+          "name": "market_br_holiday_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_br_holiday_v1(p date)",
+          "kind": "function",
+          "name": "market_br_holiday_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 59,
+          "anchor": "create function private.market_br_holiday_v1(p date) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_canonical_v2_text_v1(p jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_canonical_v2_text_v1(p jsonb)",
+          "kind": "function",
+          "name": "market_canonical_v2_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_canonical_v2_text_v1(p jsonb)",
+          "kind": "function",
+          "name": "market_canonical_v2_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 104,
+          "anchor": "create function private.market_canonical_v2_text_v1(p jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_commit_fingerprint_v1(p_job uuid, p_lease uuid, p_content_sha256 text, p_content_type text, p_acquired_at timestamp with time zone, p_contract text, p_parser text, p_policy text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_commit_fingerprint_v1(p_job uuid, p_lease uuid, p_content_sha256 text, p_content_type text, p_acquired_at timestamp with time zone, p_contract text, p_parser text, p_policy text)",
+          "kind": "function",
+          "name": "market_commit_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_lease uuid, p_content_sha256 text, p_content_type text, p_acquired_at timestamp with time zone, p_contract text, p_parser text, p_policy text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_commit_fingerprint_v1(p_job uuid, p_lease uuid, p_content_sha256 text, p_content_type text, p_acquired_at timestamp with time zone, p_contract text, p_parser text, p_policy text)",
+          "kind": "function",
+          "name": "market_commit_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_lease uuid, p_content_sha256 text, p_content_type text, p_acquired_at timestamp with time zone, p_contract text, p_parser text, p_policy text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 904,
+          "anchor": "create function private.market_commit_fingerprint_v1(p_job uuid,p_lease uuid,p_content_sha256 text,p_content_type text,p_acquired_at timestamptz,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_communique_plain_text_v1(p_html text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_communique_plain_text_v1(p_html text)",
+          "kind": "function",
+          "name": "market_communique_plain_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_html text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_communique_plain_text_v1(p_html text)",
+          "kind": "function",
+          "name": "market_communique_plain_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_html text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 226,
+          "anchor": "create function private.market_communique_plain_text_v1(p_html text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_communique_record_sha256_v1(p_meeting integer, p_reference text, p_title text, p_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_communique_record_sha256_v1(p_meeting integer, p_reference text, p_title text, p_text text)",
+          "kind": "function",
+          "name": "market_communique_record_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_meeting integer, p_reference text, p_title text, p_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_communique_record_sha256_v1(p_meeting integer, p_reference text, p_title text, p_text text)",
+          "kind": "function",
+          "name": "market_communique_record_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_meeting integer, p_reference text, p_title text, p_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 97,
+          "anchor": "create function private.market_communique_record_sha256_v1(p_meeting integer,p_reference text,p_title text,p_text text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_contract_url_v1(p_contract text, p_request jsonb, p_today date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_contract_url_v1(p_contract text, p_request jsonb, p_today date)",
+          "kind": "function",
+          "name": "market_contract_url_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract text, p_request jsonb, p_today date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_contract_url_v1(p_contract text, p_request jsonb, p_today date)",
+          "kind": "function",
+          "name": "market_contract_url_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract text, p_request jsonb, p_today date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 390,
+          "anchor": "create function private.market_contract_url_v1(p_contract text,p_request jsonb,p_today date) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_data_base_limit_v1(p date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_data_base_limit_v1(p date)",
+          "kind": "function",
+          "name": "market_data_base_limit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_data_base_limit_v1(p date)",
+          "kind": "function",
+          "name": "market_data_base_limit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 77,
+          "anchor": "create function private.market_data_base_limit_v1(p date) returns timestamptz",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_date_from_br_v1(p text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_date_from_br_v1(p text)",
+          "kind": "function",
+          "name": "market_date_from_br_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_date_from_br_v1(p text)",
+          "kind": "function",
+          "name": "market_date_from_br_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 187,
+          "anchor": "create function private.market_date_from_br_v1(p text) returns date",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_easter_v1(p_year integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_easter_v1(p_year integer)",
+          "kind": "function",
+          "name": "market_easter_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_year integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_easter_v1(p_year integer)",
+          "kind": "function",
+          "name": "market_easter_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_year integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 51,
+          "anchor": "create function private.market_easter_v1(p_year integer) returns date",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_endpoint_contract_sha256_v1(c private.market_endpoint_contracts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_endpoint_contract_sha256_v1(c private.market_endpoint_contracts)",
+          "kind": "function",
+          "name": "market_endpoint_contract_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "c private.market_endpoint_contracts",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_endpoint_contract_sha256_v1(c private.market_endpoint_contracts)",
+          "kind": "function",
+          "name": "market_endpoint_contract_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "c private.market_endpoint_contracts",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 335,
+          "anchor": "create function private.market_endpoint_contract_sha256_v1(c private.market_endpoint_contracts) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_evaluate_selic_v1(p_version uuid, p_data_base date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_evaluate_selic_v1(p_version uuid, p_data_base date)",
+          "kind": "function",
+          "name": "market_evaluate_selic_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_data_base date",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_evaluate_selic_v1(p_version uuid, p_data_base date)",
+          "kind": "function",
+          "name": "market_evaluate_selic_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_data_base date",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 691,
+          "anchor": "create function private.market_evaluate_selic_v1(p_version uuid,p_data_base date) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_instant_text_v1(p timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_instant_text_v1(p timestamp with time zone)",
+          "kind": "function",
+          "name": "market_instant_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_instant_text_v1(p timestamp with time zone)",
+          "kind": "function",
+          "name": "market_instant_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 21,
+          "anchor": "create function private.market_instant_text_v1(p timestamptz) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_instant_v1(p text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_instant_v1(p text)",
+          "kind": "function",
+          "name": "market_instant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_instant_v1(p text)",
+          "kind": "function",
+          "name": "market_instant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 10,
+          "anchor": "create function private.market_instant_v1(p text) returns timestamptz",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_json_walk_v1(p json)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_json_walk_v1(p json)",
+          "kind": "function",
+          "name": "market_json_walk_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p json",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_json_walk_v1(p json)",
+          "kind": "function",
+          "name": "market_json_walk_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p json",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 154,
+          "anchor": "create function private.market_json_walk_v1(p json) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_next_business_day_v1(p date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_next_business_day_v1(p date)",
+          "kind": "function",
+          "name": "market_next_business_day_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_next_business_day_v1(p date)",
+          "kind": "function",
+          "name": "market_next_business_day_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 67,
+          "anchor": "create function private.market_next_business_day_v1(p date) returns date",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_parse_copom_detail_v1(p_content bytea, p_meeting integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_parse_copom_detail_v1(p_content bytea, p_meeting integer)",
+          "kind": "function",
+          "name": "market_parse_copom_detail_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_meeting integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_parse_copom_detail_v1(p_content bytea, p_meeting integer)",
+          "kind": "function",
+          "name": "market_parse_copom_detail_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_meeting integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 256,
+          "anchor": "create function private.market_parse_copom_detail_v1(p_content bytea,p_meeting integer)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_parse_copom_list_v1(p_content bytea, p_size integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_parse_copom_list_v1(p_content bytea, p_size integer)",
+          "kind": "function",
+          "name": "market_parse_copom_list_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_size integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_parse_copom_list_v1(p_content bytea, p_size integer)",
+          "kind": "function",
+          "name": "market_parse_copom_list_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_size integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 291,
+          "anchor": "create function private.market_parse_copom_list_v1(p_content bytea,p_size integer) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_parse_sgs_daily_v1(p_content bytea, p_start date, p_end date, p_data_base date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_parse_sgs_daily_v1(p_content bytea, p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_parse_sgs_daily_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_start date, p_end date, p_data_base date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_parse_sgs_daily_v1(p_content bytea, p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_parse_sgs_daily_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea, p_start date, p_end date, p_data_base date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 198,
+          "anchor": "create function private.market_parse_sgs_daily_v1(p_content bytea,p_start date,p_end date,p_data_base date)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_real_date_any_v1(p text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_real_date_any_v1(p text)",
+          "kind": "function",
+          "name": "market_real_date_any_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_real_date_any_v1(p text)",
+          "kind": "function",
+          "name": "market_real_date_any_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 27,
+          "anchor": "create function private.market_real_date_any_v1(p text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_real_date_v1(p text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_real_date_v1(p text)",
+          "kind": "function",
+          "name": "market_real_date_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_real_date_v1(p text)",
+          "kind": "function",
+          "name": "market_real_date_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 36,
+          "anchor": "create function private.market_real_date_v1(p text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_reject_change_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_reject_change_v1()",
+          "kind": "function",
+          "name": "market_reject_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_reject_change_v1()",
+          "kind": "function",
+          "name": "market_reject_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 312,
+          "anchor": "create function private.market_reject_change_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_sao_paulo_date_v1(p timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_sao_paulo_date_v1(p timestamp with time zone)",
+          "kind": "function",
+          "name": "market_sao_paulo_date_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_sao_paulo_date_v1(p timestamp with time zone)",
+          "kind": "function",
+          "name": "market_sao_paulo_date_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 82,
+          "anchor": "create function private.market_sao_paulo_date_v1(p timestamptz) returns date",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_select_evidence_v1(p_start date, p_end date, p_data_base date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_select_evidence_v1(p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_select_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_start date, p_end date, p_data_base date",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_select_evidence_v1(p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_select_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_start date, p_end date, p_data_base date",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 680,
+          "anchor": "create function private.market_select_evidence_v1(p_start date,p_end date,p_data_base date)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_series_contract_sha256_v1(p_id text, p_host text, p_path text, p_unit text, p_scale text, p_convention text, p_parser text, p_license text, p_homologated_from date, p_max_window_years integer, p_calendar text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_series_contract_sha256_v1(p_id text, p_host text, p_path text, p_unit text, p_scale text, p_convention text, p_parser text, p_license text, p_homologated_from date, p_max_window_years integer, p_calendar text)",
+          "kind": "function",
+          "name": "market_series_contract_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id text, p_host text, p_path text, p_unit text, p_scale text, p_convention text, p_parser text, p_license text, p_homologated_from date, p_max_window_years integer, p_calendar text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_series_contract_sha256_v1(p_id text, p_host text, p_path text, p_unit text, p_scale text, p_convention text, p_parser text, p_license text, p_homologated_from date, p_max_window_years integer, p_calendar text)",
+          "kind": "function",
+          "name": "market_series_contract_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id text, p_host text, p_path text, p_unit text, p_scale text, p_convention text, p_parser text, p_license text, p_homologated_from date, p_max_window_years integer, p_calendar text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 88,
+          "anchor": "create function private.market_series_contract_sha256_v1(p_id text,p_host text,p_path text,p_unit text,p_scale text,p_convention text,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_source_cites_contract_v1(p_license jsonb, c private.market_endpoint_contracts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_source_cites_contract_v1(p_license jsonb, c private.market_endpoint_contracts)",
+          "kind": "function",
+          "name": "market_source_cites_contract_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_license jsonb, c private.market_endpoint_contracts",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_source_cites_contract_v1(p_license jsonb, c private.market_endpoint_contracts)",
+          "kind": "function",
+          "name": "market_source_cites_contract_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_license jsonb, c private.market_endpoint_contracts",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 795,
+          "anchor": "create function private.market_source_cites_contract_v1(p_license jsonb,c private.market_endpoint_contracts) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_strict_json_v1(p_content bytea)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_strict_json_v1(p_content bytea)",
+          "kind": "function",
+          "name": "market_strict_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_strict_json_v1(p_content bytea)",
+          "kind": "function",
+          "name": "market_strict_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_content bytea",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 170,
+          "anchor": "create function private.market_strict_json_v1(p_content bytea) returns json",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_trim_decimal_v1(p text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_trim_decimal_v1(p text)",
+          "kind": "function",
+          "name": "market_trim_decimal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_trim_decimal_v1(p text)",
+          "kind": "function",
+          "name": "market_trim_decimal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 42,
+          "anchor": "create function private.market_trim_decimal_v1(p text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_version_canonical_v2_input_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_version_canonical_v2_input_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_canonical_v2_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_version_canonical_v2_input_v1(p_version uuid)",
+          "kind": "function",
+          "name": "market_version_canonical_v2_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 606,
+          "anchor": "create function private.market_version_canonical_v2_input_v1(p_version uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.record_market_evaluation_v1(p_version uuid, p_data_base date, p_job uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_market_evaluation_v1(p_version uuid, p_data_base date, p_job uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "record_market_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_data_base date, p_job uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_market_evaluation_v1(p_version uuid, p_data_base date, p_job uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "record_market_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid, p_data_base date, p_job uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 742,
+          "anchor": "create function private.record_market_evaluation_v1(p_version uuid,p_data_base date,p_job uuid,p_actor uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.relink_market_version_v1(p_command uuid, p_version uuid, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.relink_market_version_v1(p_command uuid, p_version uuid, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "relink_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_version uuid, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.relink_market_version_v1(p_command uuid, p_version uuid, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "relink_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_version uuid, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 1022,
+          "anchor": "create function private.relink_market_version_v1(p_command uuid,p_version uuid,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021212420_market_m2_version_commit_fixes.sql",
+          "line": 3,
+          "anchor": "create or replace function private.worker_commit_market_version_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_content bytea,p_content_type text,p_acquired_at timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_commit_market_version_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_content bytea, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 993,
+          "anchor": "create function public.worker_commit_market_version_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_content bytea,p_content_type text,p_acquired_at timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_copom_communique_acquisitions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_copom_communique_acquisitions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_copom_communique_acquisitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_copom_communique_acquisitions",
+          "rls": true,
+          "kind": "table",
+          "name": "market_copom_communique_acquisitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 430,
+          "anchor": "create table private.market_copom_communique_acquisitions(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_copom_meetings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_copom_meetings",
+          "rls": true,
+          "kind": "table",
+          "name": "market_copom_meetings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_copom_meetings",
+          "rls": true,
+          "kind": "table",
+          "name": "market_copom_meetings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 445,
+          "anchor": "create table private.market_copom_meetings(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_endpoint_contracts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_endpoint_contracts",
+          "rls": true,
+          "kind": "table",
+          "name": "market_endpoint_contracts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_endpoint_contracts",
+          "rls": true,
+          "kind": "table",
+          "name": "market_endpoint_contracts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 317,
+          "anchor": "create table private.market_endpoint_contracts(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_normalizations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_normalizations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_normalizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_normalizations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_normalizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 345,
+          "anchor": "create table private.market_normalizations(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_relink_commands",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_relink_commands",
+          "rls": true,
+          "kind": "table",
+          "name": "market_relink_commands",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_relink_commands",
+          "rls": true,
+          "kind": "table",
+          "name": "market_relink_commands",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 583,
+          "anchor": "create table private.market_relink_commands(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_version_commits",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_commits",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_commits",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_commits",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_commits",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 566,
+          "anchor": "create table private.market_version_commits(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_version_evaluations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_evaluations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_evaluations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_evaluations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_evaluations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 549,
+          "anchor": "create table private.market_version_evaluations(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.market_version_evidence",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_version_evidence",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_evidence",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_version_evidence",
+          "rls": true,
+          "kind": "table",
+          "name": "market_version_evidence",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 527,
+          "anchor": "create table private.market_version_evidence(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_immutable",
+          "kind": "trigger",
+          "name": "market_copom_communique_acquisitions_immutable",
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_copom_communique_acquisitions_immutable BEFORE DELETE OR UPDATE ON private.market_copom_communique_acquisitions FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_immutable",
+          "kind": "trigger",
+          "name": "market_copom_communique_acquisitions_immutable",
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_copom_communique_acquisitions_immutable BEFORE DELETE OR UPDATE ON private.market_copom_communique_acquisitions FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 456,
+          "anchor": "create trigger market_copom_communique_acquisitions_immutable before update or delete on private.market_copom_communique_acquisitions for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_copom_meetings.market_copom_meetings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_copom_meetings.market_copom_meetings_immutable",
+          "kind": "trigger",
+          "name": "market_copom_meetings_immutable",
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_copom_meetings_immutable BEFORE DELETE OR UPDATE ON private.market_copom_meetings FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_copom_meetings.market_copom_meetings_immutable",
+          "kind": "trigger",
+          "name": "market_copom_meetings_immutable",
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_copom_meetings_immutable BEFORE DELETE OR UPDATE ON private.market_copom_meetings FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 457,
+          "anchor": "create trigger market_copom_meetings_immutable before update or delete on private.market_copom_meetings for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_immutable",
+          "kind": "trigger",
+          "name": "market_endpoint_contracts_immutable",
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_endpoint_contracts_immutable BEFORE DELETE OR UPDATE ON private.market_endpoint_contracts FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_immutable",
+          "kind": "trigger",
+          "name": "market_endpoint_contracts_immutable",
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_endpoint_contracts_immutable BEFORE DELETE OR UPDATE ON private.market_endpoint_contracts FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 384,
+          "anchor": "create trigger market_endpoint_contracts_immutable before update or delete on private.market_endpoint_contracts for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_normalizations.market_normalizations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_normalizations.market_normalizations_immutable",
+          "kind": "trigger",
+          "name": "market_normalizations_immutable",
+          "table": "market_normalizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_normalizations_immutable BEFORE DELETE OR UPDATE ON private.market_normalizations FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_normalizations.market_normalizations_immutable",
+          "kind": "trigger",
+          "name": "market_normalizations_immutable",
+          "table": "market_normalizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_normalizations_immutable BEFORE DELETE OR UPDATE ON private.market_normalizations FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 385,
+          "anchor": "create trigger market_normalizations_immutable before update or delete on private.market_normalizations for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_relink_commands.market_relink_commands_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_relink_commands.market_relink_commands_immutable",
+          "kind": "trigger",
+          "name": "market_relink_commands_immutable",
+          "table": "market_relink_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_relink_commands_immutable BEFORE DELETE OR UPDATE ON private.market_relink_commands FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_relink_commands.market_relink_commands_immutable",
+          "kind": "trigger",
+          "name": "market_relink_commands_immutable",
+          "table": "market_relink_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_relink_commands_immutable BEFORE DELETE OR UPDATE ON private.market_relink_commands FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 591,
+          "anchor": "create trigger market_relink_commands_immutable before update or delete on private.market_relink_commands for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_commits.market_version_commits_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_commits.market_version_commits_immutable",
+          "kind": "trigger",
+          "name": "market_version_commits_immutable",
+          "table": "market_version_commits",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_commits_immutable BEFORE DELETE OR UPDATE ON private.market_version_commits FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_commits.market_version_commits_immutable",
+          "kind": "trigger",
+          "name": "market_version_commits_immutable",
+          "table": "market_version_commits",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_commits_immutable BEFORE DELETE OR UPDATE ON private.market_version_commits FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 581,
+          "anchor": "create trigger market_version_commits_immutable before update or delete on private.market_version_commits for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_evaluations.market_version_evaluations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evaluations.market_version_evaluations_immutable",
+          "kind": "trigger",
+          "name": "market_version_evaluations_immutable",
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_evaluations_immutable BEFORE DELETE OR UPDATE ON private.market_version_evaluations FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evaluations.market_version_evaluations_immutable",
+          "kind": "trigger",
+          "name": "market_version_evaluations_immutable",
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_evaluations_immutable BEFORE DELETE OR UPDATE ON private.market_version_evaluations FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 563,
+          "anchor": "create trigger market_version_evaluations_immutable before update or delete on private.market_version_evaluations for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_evidence.market_version_evidence_gate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_gate",
+          "kind": "trigger",
+          "name": "market_version_evidence_gate",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_evidence_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_gate BEFORE INSERT ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_evidence_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_gate",
+          "kind": "trigger",
+          "name": "market_version_evidence_gate",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_evidence_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_gate BEFORE INSERT ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_evidence_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 545,
+          "anchor": "create trigger market_version_evidence_gate before insert on private.market_version_evidence for each row execute function private.guard_market_version_evidence_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_evidence.market_version_evidence_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_immutable",
+          "kind": "trigger",
+          "name": "market_version_evidence_immutable",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_immutable BEFORE DELETE OR UPDATE ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_immutable",
+          "kind": "trigger",
+          "name": "market_version_evidence_immutable",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.market_reject_change_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_immutable BEFORE DELETE OR UPDATE ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 546,
+          "anchor": "create trigger market_version_evidence_immutable before update or delete on private.market_version_evidence for each row execute function private.market_reject_change_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_evidence.market_version_evidence_open",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_open",
+          "kind": "trigger",
+          "name": "market_version_evidence_open",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_open BEFORE INSERT ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_open",
+          "kind": "trigger",
+          "name": "market_version_evidence_open",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_open_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_open BEFORE INSERT ON private.market_version_evidence FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_open_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 544,
+          "anchor": "create trigger market_version_evidence_open before insert on private.market_version_evidence for each row execute function private.guard_market_version_open_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_version_inputs.market_version_inputs_v2_gate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_v2_gate",
+          "kind": "trigger",
+          "name": "market_version_inputs_v2_gate",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_input_v2_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_v2_gate BEFORE INSERT ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_input_v2_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_inputs.market_version_inputs_v2_gate",
+          "kind": "trigger",
+          "name": "market_version_inputs_v2_gate",
+          "table": "market_version_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_input_v2_v1()",
+          "definition": "CREATE TRIGGER market_version_inputs_v2_gate BEFORE INSERT ON private.market_version_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_input_v2_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 523,
+          "anchor": "create trigger market_version_inputs_v2_gate before insert on private.market_version_inputs for each row execute function private.guard_market_version_input_v2_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_versions.market_versions_v2_gate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_versions.market_versions_v2_gate",
+          "kind": "trigger",
+          "name": "market_versions_v2_gate",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_v2_v1()",
+          "definition": "CREATE TRIGGER market_versions_v2_gate BEFORE INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_v2_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_versions.market_versions_v2_gate",
+          "kind": "trigger",
+          "name": "market_versions_v2_gate",
+          "table": "market_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_version_v2_v1()",
+          "definition": "CREATE TRIGGER market_versions_v2_gate BEFORE INSERT ON private.market_versions FOR EACH ROW EXECUTE FUNCTION private.guard_market_version_v2_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 510,
+          "anchor": "create trigger market_versions_v2_gate before insert on private.market_versions for each row execute function private.guard_market_version_v2_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_deny",
+          "kind": "policy",
+          "name": "market_copom_communique_acquisitions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_deny",
+          "kind": "policy",
+          "name": "market_copom_communique_acquisitions_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_copom_meetings.market_copom_meetings_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_copom_meetings.market_copom_meetings_deny",
+          "kind": "policy",
+          "name": "market_copom_meetings_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_copom_meetings.market_copom_meetings_deny",
+          "kind": "policy",
+          "name": "market_copom_meetings_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_endpoint_contracts.market_endpoint_contracts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_endpoint_contracts.market_endpoint_contracts_deny",
+          "kind": "policy",
+          "name": "market_endpoint_contracts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_endpoint_contracts.market_endpoint_contracts_deny",
+          "kind": "policy",
+          "name": "market_endpoint_contracts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_normalizations.market_normalizations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_normalizations.market_normalizations_deny",
+          "kind": "policy",
+          "name": "market_normalizations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_normalizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_normalizations.market_normalizations_deny",
+          "kind": "policy",
+          "name": "market_normalizations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_normalizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_relink_commands.market_relink_commands_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_relink_commands.market_relink_commands_deny",
+          "kind": "policy",
+          "name": "market_relink_commands_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_relink_commands",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_relink_commands.market_relink_commands_deny",
+          "kind": "policy",
+          "name": "market_relink_commands_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_relink_commands",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_version_commits.market_version_commits_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_commits.market_version_commits_deny",
+          "kind": "policy",
+          "name": "market_version_commits_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_commits",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_commits.market_version_commits_deny",
+          "kind": "policy",
+          "name": "market_version_commits_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_commits",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_version_evaluations.market_version_evaluations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_evaluations.market_version_evaluations_deny",
+          "kind": "policy",
+          "name": "market_version_evaluations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_evaluations.market_version_evaluations_deny",
+          "kind": "policy",
+          "name": "market_version_evaluations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "policy:private.market_version_evidence.market_version_evidence_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_version_evidence.market_version_evidence_deny",
+          "kind": "policy",
+          "name": "market_version_evidence_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_evidence",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_version_evidence.market_version_evidence_deny",
+          "kind": "policy",
+          "name": "market_version_evidence_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_version_evidence",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 598,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_copom_communique_acquisitions_truncate_guard",
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_copom_communique_acquisitions_truncate_guard BEFORE TRUNCATE ON private.market_copom_communique_acquisitions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_copom_communique_acquisitions.market_copom_communique_acquisitions_truncate_guard",
+          "kind": "trigger",
+          "name": "market_copom_communique_acquisitions_truncate_guard",
+          "table": "market_copom_communique_acquisitions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_copom_communique_acquisitions_truncate_guard BEFORE TRUNCATE ON private.market_copom_communique_acquisitions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_copom_meetings.market_copom_meetings_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_copom_meetings.market_copom_meetings_truncate_guard",
+          "kind": "trigger",
+          "name": "market_copom_meetings_truncate_guard",
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_copom_meetings_truncate_guard BEFORE TRUNCATE ON private.market_copom_meetings FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_copom_meetings.market_copom_meetings_truncate_guard",
+          "kind": "trigger",
+          "name": "market_copom_meetings_truncate_guard",
+          "table": "market_copom_meetings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_copom_meetings_truncate_guard BEFORE TRUNCATE ON private.market_copom_meetings FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_truncate_guard",
+          "kind": "trigger",
+          "name": "market_endpoint_contracts_truncate_guard",
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_endpoint_contracts_truncate_guard BEFORE TRUNCATE ON private.market_endpoint_contracts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_endpoint_contracts.market_endpoint_contracts_truncate_guard",
+          "kind": "trigger",
+          "name": "market_endpoint_contracts_truncate_guard",
+          "table": "market_endpoint_contracts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_endpoint_contracts_truncate_guard BEFORE TRUNCATE ON private.market_endpoint_contracts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_normalizations.market_normalizations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_normalizations.market_normalizations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_normalizations_truncate_guard",
+          "table": "market_normalizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_normalizations_truncate_guard BEFORE TRUNCATE ON private.market_normalizations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_normalizations.market_normalizations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_normalizations_truncate_guard",
+          "table": "market_normalizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_normalizations_truncate_guard BEFORE TRUNCATE ON private.market_normalizations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_relink_commands.market_relink_commands_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_relink_commands.market_relink_commands_truncate_guard",
+          "kind": "trigger",
+          "name": "market_relink_commands_truncate_guard",
+          "table": "market_relink_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_relink_commands_truncate_guard BEFORE TRUNCATE ON private.market_relink_commands FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_relink_commands.market_relink_commands_truncate_guard",
+          "kind": "trigger",
+          "name": "market_relink_commands_truncate_guard",
+          "table": "market_relink_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_relink_commands_truncate_guard BEFORE TRUNCATE ON private.market_relink_commands FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_commits.market_version_commits_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_commits.market_version_commits_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_commits_truncate_guard",
+          "table": "market_version_commits",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_commits_truncate_guard BEFORE TRUNCATE ON private.market_version_commits FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_commits.market_version_commits_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_commits_truncate_guard",
+          "table": "market_version_commits",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_commits_truncate_guard BEFORE TRUNCATE ON private.market_version_commits FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_evaluations.market_version_evaluations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evaluations.market_version_evaluations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_evaluations_truncate_guard",
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_evaluations_truncate_guard BEFORE TRUNCATE ON private.market_version_evaluations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evaluations.market_version_evaluations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_evaluations_truncate_guard",
+          "table": "market_version_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_evaluations_truncate_guard BEFORE TRUNCATE ON private.market_version_evaluations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_version_evidence.market_version_evidence_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_evidence_truncate_guard",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_truncate_guard BEFORE TRUNCATE ON private.market_version_evidence FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_version_evidence.market_version_evidence_truncate_guard",
+          "kind": "trigger",
+          "name": "market_version_evidence_truncate_guard",
+          "table": "market_version_evidence",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_version_evidence_truncate_guard BEFORE TRUNCATE ON private.market_version_evidence FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+          "line": 600,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
     }
   ],
   "repository_items": [
@@ -335552,6 +339748,20 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Segunda rodada: Storage recheca o prazo depois das esperas e o limite de 5 MiB por tentativa entra no contrato do banco."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "M2 parte 1: contratos de endpoint, normalização da série 432, leitura estrita no banco, reuniões do Copom, versão v2 com evidência e avaliação, religação e confirmação única com os bytes."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261021212420_market_m2_version_commit_fixes.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Correção revelada pelos testes SQL: o replay da confirmação de versão só responde enquanto o token do worker que confirmou continua ativo, como no replay antigo."
     }
   ],
   "staging_archive": [

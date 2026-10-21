@@ -89,6 +89,9 @@ importers:
       '@offroad/governed-retrieval':
         specifier: workspace:*
         version: link:../../packages/governed-retrieval
+      '@offroad/market-reference':
+        specifier: workspace:*
+        version: link:../../packages/market-reference
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../../packages/model-gateway
