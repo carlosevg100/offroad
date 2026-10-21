@@ -263,6 +263,20 @@ prova em staging e produção.
   B3, como fonte. Sem contrato, o CDI não passa o gate. A primeira série de ponta a ponta passa a ser a
   Selic diária (SGS 11); o CDI fica como lacuna nomeada até haver licença da B3 (M7), e nenhum número
   de CDI é inferido da Selic. Evidência em `license-evidence.json`, bloco `seriesGate`.)
+  (Emenda de 21/10/2026, tarde, depois de três rodadas de revisão do plano do M2: a primeira série passa a
+  ser a meta Selic do Copom (SGS 432, percentual ao ano), que tem consumidor interno real no gatilho RG-01
+  do regime de precificação da casa; a SGS 11, em percentual ao dia, não tem consumidor. O M2 se encerra
+  com aquisição, versão normalizada, qualidade, frescor, resolvedor interno, outbox e esse monitor, sem
+  número entregue a tenant. Proposta, recibo de entrega, adoção tipada, execução, revogação e leitura do
+  resultado, com todos os controles e testes da decisão 10, passam para o M3 junto com as expectativas
+  Focus (`expectativas-mercado`, ODbL), primeiro objeto com consumidor de premissa. No M2, a
+  disponibilidade de cada observação é a aquisição: os comunicados do Copom trazem só a data e servem de
+  evidência de valor e vigência, não de disponibilidade. Plano em
+  `docs/build/market-reference/M2-PLANO.md`.)
+  (Emenda de 21/10/2026, retenção: no M2 a camada só enfileira, confirma e lê fontes abertas com retenção
+  sem prazo e direito de reter valores adotados, recusa no banco qualquer outra e recusa revisão de fonte
+  que passaria a exigir prazo enquanto houver conteúdo armazenado sem expurgo. O expurgo físico de objetos
+  confirmados deixa de ser condição do M2 e entra com a primeira fonte que tenha prazo.)
 - **M3 Cenários e curva soberana.** Caminho de CDI derivado do Focus e curva soberana implícita do
   Tesouro, ambos no `financial-core` com metodologia aprovada, cada um com o seu rótulo.
 - **M4 Companhias abertas.** Depois da revisão de direitos das classes de documento usadas (item 11).
