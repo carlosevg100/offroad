@@ -345,6 +345,11 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-market-acquisition-concurrency.py
+      - name: Market event outbox and ODbL edition across real sessions
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-market-outbox-concurrency.py
       - name: Capital public capture authority and lock concurrency
         if: ${{ !inputs.native_diagnostic }}
         env:
