@@ -8,6 +8,14 @@ import {publicPages, publicPath, resolvePublicPage} from "./website-routes";
 import {websiteMetadata} from "./website-metadata";
 import {PublicPageContent} from "@/components/public-content";
 import sitemap from "@/app/sitemap";
+
+const odbl = vi.hoisted(() => ({state: "missing" as "missing" | "served" | "withdrawn" | "error"}));
+vi.mock("@/lib/market/odbl-release", () => ({
+  readOdblRelease: async () => {
+    if (odbl.state === "error") throw new Error("market_odbl_reader_failed");
+    return odbl.state === "served" ? {state: "served"} : odbl.state === "withdrawn" ? {state: "withdrawn", releaseNumber: 1} : {state: "missing"};
+  },
+}));
 import robots from "@/app/robots";
 import {ProductHome} from "@/components/public-product-home";
 import {PublicWorkbench} from "@/components/public-workbench";
@@ -92,12 +100,24 @@ describe("public website boundaries", () => {
     }
   });
 
-  it("indexes only the explicit public routes and retains private-route exclusion", () => {
-    expect(sitemap()).toHaveLength(42);
+  it("indexes only the explicit public routes and retains private-route exclusion", async () => {
+    odbl.state = "missing";
+    expect(await sitemap()).toHaveLength(42);
     const rules = robots().rules as {disallow: string; allow: string[]};
     expect(rules.disallow).toBe("/");
-    for (const entry of sitemap()) expect(rules.allow).toContain(`${new URL(entry.url).pathname}$`);
+    for (const entry of await sitemap()) expect(rules.allow).toContain(`${new URL(entry.url).pathname}$`);
     expect(rules.allow).not.toContain("/pt-BR/app$");
+  });
+
+  it("lists the open-data page only while an edition is served, without a deploy", async () => {
+    odbl.state = "served";
+    const served = (await sitemap()).map(entry => new URL(entry.url).pathname);
+    expect(served).toContain("/pt-BR/dados/meta-selic");
+    expect(served).toContain("/en-US/data/selic-target");
+    for (const state of ["withdrawn", "missing", "error"] as const) {
+      odbl.state = state;
+      expect((await sitemap()).map(entry => new URL(entry.url).pathname)).not.toContain("/pt-BR/dados/meta-selic");
+    }
   });
 
   it.each(routing.locales)("renders every detail and catalog page with native %s copy", async locale => {

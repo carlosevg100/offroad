@@ -1184,6 +1184,52 @@
       "rights": "All rights reserved."
     }
   },
+  "MarketData": {
+    "eyebrow": "Open data",
+    "title": "Selic target: open derived database",
+    "intro": "Offroad publishes the Selic target series (SGS 432 of the Banco Central do Brasil) normalized, with each change linked to the Copom communiqué that explains it, under the Open Database License (ODbL) v1.0.",
+    "facts": {
+      "release": "Edition",
+      "dataBase": "Data base",
+      "publishedAt": "Published on",
+      "window": "Period covered",
+      "observations": "Observations",
+      "sha256": "File SHA-256",
+      "windowValue": "from {start} to {end}"
+    },
+    "download": "Download the database (JSON)",
+    "changes": {
+      "title": "Target changes and their communiqués",
+      "period": "Effective in the series",
+      "from": "From",
+      "to": "To",
+      "meeting": "Copom meeting",
+      "decision": "Decision",
+      "none": "No change in the period covered."
+    },
+    "decision": {
+      "raise": "Raise",
+      "cut": "Cut",
+      "hold": "Hold",
+      "unknown": "Not linked"
+    },
+    "license": {
+      "title": "License and attribution",
+      "body": "Any public use requires attribution. A database derived from this one that is used publicly must be offered under the same license.",
+      "link": "Text of the ODbL v1.0",
+      "source": "Source"
+    },
+    "rules": {
+      "title": "How the database is produced",
+      "body": "The reader, the quality rules, the test vectors and the database that produce this edition are in the public repository, pinned to the edition's commit.",
+      "parser": "Reader and rules",
+      "vectors": "Test vectors",
+      "database": "Database migrations",
+      "contracts": "Series contracts"
+    },
+    "withdrawal": "Each edition is immutable. Offroad stops distributing an edition if it is withdrawn or if a datum it depends on loses approval or rights; that does not change the rights that recipients already hold under the ODbL.",
+    "metaDescription": "Selic target series (SGS 432) normalized, with links to the Copom communiqués, under the Open Database License (ODbL) v1.0."
+  },
   "Errors": {
     "notFoundTitle": "Page not found",
     "notFoundBody": "The address does not exist or is not available in this environment.",

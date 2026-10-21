@@ -33,3 +33,18 @@ export function publicPath(locale: AppLocale, page: PublicPage) {
 export function resolvePublicPage(locale: AppLocale, segments: string[]) {
   return publicPages.find((page) => publicPath(locale, page) === `/${locale}/${segments.join("/")}`);
 }
+
+/** Open-data pages: served only while their data exists, so they stay out of the static routes and the
+ * static sitemap (ADR 0023, M2 part 3). */
+export const dataRoutes = {
+  selicTarget: ["dados/meta-selic", "data/selic-target"],
+} as const;
+export type DataPage = keyof typeof dataRoutes;
+export function isDataPage(page: string): page is DataPage {
+  return Object.hasOwn(dataRoutes, page);
+}
+export function dataPath(locale: AppLocale, page: DataPage) {
+  return `/${locale}/${dataRoutes[page][locale === "pt-BR" ? 0 : 1]}`;
+}
+/** The served download of a data page, outside the locale routes. */
+export const dataFiles = {selicTarget: "/dados/meta-selic.json"} as const satisfies Record<DataPage, string>;
