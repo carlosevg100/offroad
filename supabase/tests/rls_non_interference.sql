@@ -2185,10 +2185,20 @@ begin
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('anon', p.oid, 'execute')
+      -- The one published projection (ADR 0023, M2 part 3): the ODbL edition reader.
+      and p.oid <> 'public.market_odbl_release_v1(integer)'::regprocedure
   ) leaked;
 
   if offending is not null then
     raise exception 'anonymous role holds privileges in schema public: %', offending;
+  end if;
+  -- The exception stays exact: an invoker wrapper with a body bound at creation, reachable by anon only.
+  if not has_function_privilege('anon','public.market_odbl_release_v1(integer)','execute')
+  or has_function_privilege('authenticated','public.market_odbl_release_v1(integer)','execute')
+  or has_function_privilege('service_role','public.market_odbl_release_v1(integer)','execute')
+  or (select prosecdef or prosqlbody is null from pg_proc where oid='public.market_odbl_release_v1(integer)'::regprocedure)
+  then
+    raise exception 'market ODbL reader is not the exact published projection';
   end if;
 end;
 $$;
