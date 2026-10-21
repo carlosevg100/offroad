@@ -114,11 +114,98 @@
       "title": "Política Comercial de Market Data B3 2027 V1.1 (de 1/1/2027 a 31/12/2027)",
       "finding": "instrumento vinculado à página de políticas da B3; versão e vigência conforme a página índice e o nome do arquivo; cláusulas a fixar na conferência que antecede a ativação (M7)",
       "capture": "b3-comercial-2027-v1.1.pdf"
+    },
+    {
+      "id": "bcb-catalog-selic-11",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=name:11-taxa-de-juros---selic&rows=1",
+      "sha256": "69b4a13c4ea2ea030a3548297e8e6561c5f46746ec43e1d82cec3f07a014a357",
+      "title": "Catálogo de dados abertos do Banco Central, conjunto 11-taxa-de-juros---selic, consultado em 21/10/2026",
+      "finding": "Selic diária (SGS 11): licença odc-odbl no catálogo de dados abertos do Banco Central",
+      "capture": "bcb-catalog-11-taxa-de-juros---selic.json"
+    },
+    {
+      "id": "bcb-catalog-selic-1178",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=name:1178-taxa-de-juros---selic-anualizada-base-252&rows=1",
+      "sha256": "7843b10cec9519fd13c16d1be87dbcea1a09cba814c4893a2947c07484b2c7e4",
+      "title": "Catálogo de dados abertos do Banco Central, conjunto 1178-taxa-de-juros---selic-anualizada-base-252, consultado em 21/10/2026",
+      "finding": "Selic anualizada base 252 (SGS 1178): licença odc-odbl",
+      "capture": "bcb-catalog-1178-taxa-de-juros---selic-anualizada-base-252.json"
+    },
+    {
+      "id": "bcb-catalog-selic-4390",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=name:4390-taxa-de-juros---selic-acumulada-no-mes&rows=1",
+      "sha256": "3af5e102e9ad0bb3a2a17428276b3faa7f74b36ed98204bcd9838f9d671c9aa8",
+      "title": "Catálogo de dados abertos do Banco Central, conjunto 4390-taxa-de-juros---selic-acumulada-no-mes, consultado em 21/10/2026",
+      "finding": "Selic acumulada no mês (SGS 4390): licença odc-odbl",
+      "capture": "bcb-catalog-4390-taxa-de-juros---selic-acumulada-no-mes.json"
+    },
+    {
+      "id": "bcb-catalog-meta-selic-432",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=name:432-taxa-de-juros---meta-selic-definida-pelo-copom&rows=1",
+      "sha256": "8f3466cdf2182c35401d2cb75d2e4516c7b301d2c7f4f23e6effd2c59ea085e8",
+      "title": "Catálogo de dados abertos do Banco Central, conjunto 432-taxa-de-juros---meta-selic-definida-pelo-copom, consultado em 21/10/2026",
+      "finding": "Meta Selic definida pelo Copom (SGS 432): licença odc-odbl",
+      "capture": "bcb-catalog-432-taxa-de-juros---meta-selic-definida-pelo-copom.json"
+    },
+    {
+      "id": "bcb-catalog-cdi-absent",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=cdi&rows=50",
+      "sha256": "7a5e2bf45a45cade87f369bed0918e32d0b059d5529b4e98a5b4fdf1e8f6cb01",
+      "title": "Catálogo de dados abertos do Banco Central, busca por CDI, consultada em 21/10/2026",
+      "finding": "Nenhum conjunto de CDI no catálogo (busca por cdi: 0 resultados; buscas por taxa de juros cdi e interbancário só retornam Selic e câmbio). No SGS a série 12 (CDI diário) tem a Cetip, hoje B3, como fonte. O CDI não tem licença aberta do Banco Central e é dado da B3, só por contrato.",
+      "capture": "bcb-catalog-search-cdi.json"
     }
   ],
   "pendingBeforeM7": [
     "Capturar os dois Manuais de Envio de Relatório Periódico da B3 vinculados na página índice, que a Política Comercial manda ler em conjunto",
     "Fixar, para a modalidade de licença contratada, as cláusulas aplicáveis de cada instrumento B3, com versão, vigência original e vigência efetiva",
     "Teste de seleção do conjunto completo de instrumentos em cada lado de 1/11/2026 e 1/1/2027"
-  ]
+  ],
+  "seriesGate": {
+    "checkedAt": "2026-10-21",
+    "captureFolder": "outputs/market-reference/license-captures-2026-10-21 (privado)",
+    "open": [
+      {
+        "sgs": 11,
+        "series": "Selic diária",
+        "evidence": "bcb-catalog-selic-11"
+      },
+      {
+        "sgs": 1178,
+        "series": "Selic anualizada base 252",
+        "evidence": "bcb-catalog-selic-1178"
+      },
+      {
+        "sgs": 4390,
+        "series": "Selic acumulada no mês",
+        "evidence": "bcb-catalog-selic-4390"
+      },
+      {
+        "sgs": 432,
+        "series": "Meta Selic (Copom)",
+        "evidence": "bcb-catalog-meta-selic-432"
+      }
+    ],
+    "notOpen": [
+      {
+        "sgs": 12,
+        "series": "CDI diário",
+        "reason": "fora do catálogo aberto; fonte Cetip/B3",
+        "evidence": "bcb-catalog-cdi-absent"
+      },
+      {
+        "sgs": 4389,
+        "series": "CDI anualizado base 252",
+        "reason": "fora do catálogo aberto",
+        "evidence": "bcb-catalog-cdi-absent"
+      },
+      {
+        "sgs": 4391,
+        "series": "CDI acumulado no mês",
+        "reason": "fora do catálogo aberto",
+        "evidence": "bcb-catalog-cdi-absent"
+      }
+    ],
+    "apiLimits": "Desde 26/03/2025 as consultas JSON e CSV de séries diárias exigem filtro de datas e janela de no máximo 10 anos (nota do próprio conjunto no catálogo)."
+  }
 }
