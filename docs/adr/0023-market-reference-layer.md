@@ -258,6 +258,11 @@ prova em staging e produção.
   no catálogo e registrada em `license-evidence.json`. Uma série do Banco Central (CDI realizado) do agendamento até a
   leitura do resultado: aquisição, versão, proposta de premissa, adoção, execução, revogação e
   expurgo, com a referência conferida a cada leitura. Depois Selic, IPCA, PTAX e o Focus observado.
+  (Emenda de 21/10/2026, no gate de entrada: o catálogo aberto do Banco Central publica a Selic sob ODbL
+  (séries 11, 1178, 4390 e 432) e não publica nenhuma série de CDI; no SGS o CDI diário tem a Cetip, hoje
+  B3, como fonte. Sem contrato, o CDI não passa o gate. A primeira série de ponta a ponta passa a ser a
+  Selic diária (SGS 11); o CDI fica como lacuna nomeada até haver licença da B3 (M7), e nenhum número
+  de CDI é inferido da Selic. Evidência em `license-evidence.json`, bloco `seriesGate`.)
 - **M3 Cenários e curva soberana.** Caminho de CDI derivado do Focus e curva soberana implícita do
   Tesouro, ambos no `financial-core` com metodologia aprovada, cada um com o seu rótulo.
 - **M4 Companhias abertas.** Depois da revisão de direitos das classes de documento usadas (item 11).
