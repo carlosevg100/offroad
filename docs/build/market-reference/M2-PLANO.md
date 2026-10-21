@@ -18,9 +18,10 @@ revisão. Por isso, no M2, `available_at` de toda observação é a aquisição 
 leitura com data-base D usa o limite exclusivo do início de D+1 em `America/Sao_Paulo`, comparando
 instantes, com `available_at` e `acquired_at` anteriores a esse limite. O comunicado entra como evidência
 de valor e de vigência, não de disponibilidade: cada mudança de valor da 432 é ligada à reunião que a
-decidiu (número, data de referência com precisão de data, valor no título e no texto, hash do registro),
-e a vigência é o primeiro dia útil seguinte ao término da reunião (Resolução BCB 61, regulamento, art.
-1º, § 2º), sem inventar horário. O recorte homologado dessa regra começa na vigência da Resolução BCB 61
+decidiu (número, data de referência com precisão de data, valor no título e no texto, hash do registro).
+A série registra a nova meta no dia corrido seguinte ao término da reunião, sem inventar horário; a
+vigência regulatória (Resolução BCB 61, regulamento, art. 1º, § 2º: dia útil seguinte) fica como dado
+informativo, porque a série a contraria nas vésperas de feriado (correção da parte 0, abaixo). O recorte homologado dessa regra começa na vigência da Resolução BCB 61
 (14/01/2021, data de publicação e de entrada em vigor);
 períodos anteriores não recebem a regra e não entram no M2. A evidência do comunicado só vale para leitura
 com data-base posterior à sua própria aquisição. A reprodução do texto dos comunicados segue os termos do
@@ -89,8 +90,9 @@ para uso em base de dados.
    Toda leitura fixa um manifesto (período, versão) com hash. Testes: janelas sobrepostas confirmadas em
    ordem inversa, aquisições empatadas, reprocessamento por parser corrigido, período omitido.
 
-5. **Qualidade, frescor e direito.** Qualidade: valor entre 0 e 100; mudança de valor só no primeiro dia
-   útil seguinte a uma reunião (ordinária ou extraordinária) cujo comunicado está ligado; série sem buraco
+5. **Qualidade, frescor e direito.** Qualidade: valor entre 0 e 100; mudança de valor só no dia corrido
+   seguinte a uma reunião (ordinária ou extraordinária) cujo comunicado está ligado, com o mesmo valor e
+   a mesma direção (eleva, reduz, mantém); série sem buraco
    de dia corrido na janela; dentro do recorte homologado. Disponibilidade por aquisição não é aprovação:
    mudança sem comunicado ligado fica em quarentena. Frescor: o prazo de uso e a latência tolerada são política interna da Offroad
    registrada na revisão da fonte (o catálogo declara tempestividade "não se aplica"); o padrão é dois dias
@@ -127,6 +129,15 @@ para uso em base de dados.
    recuperadas. A unicidade fica no banco: (delegação, série, janela, ocorrência agendada) para o disparo,
    e nova coleta legítima da mesma janela é outra ocorrência explícita. Testes: dois disparos simultâneos,
    revogação concorrente, lacuna interna.
+
+## Correção da parte 0 (21/10/2026)
+
+A conferência empírica da parte 0 mudou uma regra da decisão 5. A resolução diz que a vigência da meta
+começa no dia útil seguinte ao término da reunião, mas a série 432 registra a mudança no dia corrido
+seguinte: 31 de 31 mudanças de 14/01/2021 a 21/10/2026, inclusive as reuniões de 15/06/2022 e 18/06/2025
+(véspera de Corpus Christi) e de 01/11/2023 (véspera de Finados). A regra de qualidade segue a série; a
+data regulatória fica no registro como informação. Os contratos e os vetores estão em
+`docs/build/market-reference/M2-CONTRATOS.md`.
 
 ## Sequência
 
