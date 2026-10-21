@@ -40,6 +40,7 @@ function checkHistory(versions: readonly SelectableVersion[], revocations: reado
     if (!v.periods.every((p) => date.test(p)) || new Set(v.periods).size !== v.periods.length) throw new Error("market_version_periods");
     const at = instantMicros(v.acquiredAt), known = acquiredAt.get(v.acquisitionId);
     if (known !== undefined && known !== at) throw new Error("market_acquisition_instant_changed");
+    if (instantMicros(v.recordedAt) < at) throw new Error("market_version_recorded_before_acquisition");
     acquiredAt.set(v.acquisitionId, at); byId.set(v.id, v);
   }
   for (const v of versions) {
@@ -54,7 +55,8 @@ function checkHistory(versions: readonly SelectableVersion[], revocations: reado
   const revocationIds = new Set<string>();
   for (const r of revocations) {
     if (!uuid.test(r.id) || revocationIds.has(r.id) || !sha.test(r.evidenceSha256) || !date.test(r.period)) throw new Error("market_revocation_invalid");
-    revocationIds.add(r.id); instantMicros(r.acquiredAt); instantMicros(r.recordedAt);
+    if (instantMicros(r.recordedAt) < instantMicros(r.acquiredAt)) throw new Error("market_revocation_recorded_before_acquisition");
+    revocationIds.add(r.id);
   }
 }
 

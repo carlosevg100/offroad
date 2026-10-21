@@ -40,6 +40,8 @@ describe("instants keep the database's microseconds", () => {
     expect(canonicalInstant("2026-10-21T12:04:05.000002-03:00")).toBe("2026-10-21T15:04:05.000002Z");
     expect(canonicalInstant("1999-12-31T23:59:59.999999Z")).toBe("1999-12-31T23:59:59.999999Z");
     expect(() => instantMicros("2026-02-30T00:00:00Z")).toThrow("market_instant_invalid");
+    expect(() => canonicalInstant("9999-12-31T23:59:59.123456-03:00")).toThrow("market_instant_out_of_range");
+    expect(() => canonicalInstant("1899-12-31T23:59:59Z")).toThrow("market_instant_out_of_range");
   });
 });
 
@@ -149,16 +151,16 @@ describe("communiqué parser", () => {
   const detail = (r: Record<string, unknown>) => bytes({conteudo: [r]});
   it("reads value, decision, the day the series changes and the regulatory date", () => {
     expect(parseCommuniqueDetail(detail(record), 281)).toEqual({meeting: 281, referenceDate: "2026-09-16", decision: "cut", targetPct: "13.75",
-      recordSha256: communiqueRecordSha256(record), seriesChangeDate: "2026-09-17", regulatoryEffectiveFrom: "2026-09-17", textDecision: "stated"});
+      recordSha256: communiqueRecordSha256(record), seriesChangeDate: "2026-09-17", regulatoryEffectiveFrom: "2026-09-17"});
   });
   it("separates the series day from the regulatory day on the eve of a holiday (Finados 2023)", () => {
     const c = parseCommuniqueDetail(detail({nro_reuniao: 258, dataReferencia: "2023-11-01", titulo: "258ª reunião - Copom reduz a taxa Selic para 12,25% a.a.",
       textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para 12,25% a.a.</p>"}), 258);
     expect([c.seriesChangeDate, c.regulatoryEffectiveFrom]).toEqual(["2023-11-02", "2023-11-03"]);
   });
-  it("accepts the wording with a gerund and records a text without a decision clause", () => {
-    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Comitê julgou apropriado, nesse momento, dar sequência ao ciclo, reduzindo a taxa básica de juros para 13,75% a.a.</p>"}), 281).textDecision).toBe("stated");
-    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>A taxa passa a 13,75% a.a. Cenário de 4,50% a.a.</p>"}), 281).textDecision).toBe("absent");
+  it("accepts the wording with a gerund and two agreeing clauses", () => {
+    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Comitê julgou apropriado, nesse momento, dar sequência ao ciclo, reduzindo a taxa básica de juros para 13,75% a.a.</p>"}), 281).targetPct).toBe("13.75");
+    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Copom decidiu, por unanimidade, reduzir a taxa para 13,75% a.a. [...] o Comitê decidiu reduzir a taxa para 13,75% a.a.</p>"}), 281).targetPct).toBe("13.75");
   });
   it("binds the record fingerprint to every field", () => {
     expect(communiqueRecordSha256({...record, textoComunicado: `${record.textoComunicado} `})).not.toBe(communiqueRecordSha256(record));
@@ -172,7 +174,11 @@ describe("communiqué parser", () => {
     ["a rate whose integer part has three digits", {conteudo: [{...record, titulo: "Copom reduz a taxa Selic para 112,25% a.a."}]}, "market_parse_communique_title"],
     ["a title without a decision verb", {conteudo: [{...record, titulo: "Copom: taxa Selic em 13,75% a.a."}]}, "market_parse_communique_title"],
     ["a decision clause with another rate, even if the title rate appears later", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa para 13,50% a.a. No cenário alternativo, 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
-    ["a text without a clause whose first rate is another", {conteudo: [{...record, textoComunicado: "<p>Cenário de 4,50% a.a.; meta 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a text without a decision clause", {conteudo: [{...record, textoComunicado: "<p>A taxa passa a 13,75% a.a. Cenário de 4,50% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a negative rate in the title", {conteudo: [{...record, titulo: "Copom reduz a taxa Selic para -13,75% a.a."}]}, "market_parse_communique_title"],
+    ["an earlier decision quoted beside a different current one", {conteudo: [{...record, textoComunicado: "<p>Na reunião anterior, o Copom decidiu reduzir a taxa para 13,75% a.a. Nesta reunião, o Copom decidiu reduzir a taxa para 13,50% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
+    ["a text that raises when the title cuts", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu elevar a taxa básica de juros para 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
+    ["a clause without a direction", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu fixar a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
     ["an impossible date", {conteudo: [{...record, dataReferencia: "2026-02-30"}]}, "market_parse_communique_date"],
   ])("refuses %s", (_, body, code) => expect(() => parseCommuniqueDetail(bytes(body), 281)).toThrow(code));
   it("refuses strings Postgres cannot hold the same way", () => {
@@ -194,7 +200,7 @@ describe("quality and joint eligibility of series and communiqué", () => {
   const series = (acquiredAt: string) => [["2026-09-15", "14.00"], ["2026-09-16", "14.00"], ["2026-09-17", "13.75"], ["2026-09-18", "13.75"]]
     .map(([period, value]) => ({period: period!, value: value!, acquiredAt}));
   const com = (meeting: number, referenceDate: string, decision: AcquiredCommunique["decision"], targetPct: string, acquiredAt: string): AcquiredCommunique =>
-    ({meeting, referenceDate, decision, targetPct, recordSha256: String(meeting % 10).repeat(64), seriesChangeDate: new Date(Date.parse(`${referenceDate}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10), regulatoryEffectiveFrom: "", textDecision: "stated", acquiredAt});
+    ({meeting, referenceDate, decision, targetPct, recordSha256: String(meeting % 10).repeat(64), seriesChangeDate: new Date(Date.parse(`${referenceDate}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10), regulatoryEffectiveFrom: "", acquiredAt});
   const c280 = com(280, "2026-08-05", "cut", "14.00", at("2026-09-01T10:00:00"));
   const c281 = (acquiredAt: string) => com(281, "2026-09-16", "cut", "13.75", acquiredAt);
   it("links the change when both were acquired the same day, up to the last microsecond", () => {
@@ -276,10 +282,11 @@ describe("per-period selection", () => {
     expect(m(before, "2026-10-10T12:00:00.000001Z")).not.toBe(m(before, "2026-10-10T12:00:00.000000Z"));
   });
   it.each([
-    ["a predecessor recorded later", () => [older, v(4, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-09-19T00:00:00Z", supersedes: older.id})], "market_reprocess_not_after_predecessor"],
+    ["a reprocessing recorded at the same instant as its predecessor", () => [older, v(4, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: older.recordedAt, supersedes: older.id})], "market_reprocess_not_after_predecessor"],
     ["an unknown predecessor", () => [v(4, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: id("00", 7)})], "market_reprocess_unknown_predecessor"],
     ["another acquisition", () => [older, newer, v(4, newer.acquiredAt, [], {acquisitionId: newer.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id})], "market_reprocess_other_acquisition"],
     ["a changed acquisition instant", () => [older, v(4, "2026-09-20T12:00:00.000001Z", [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id})], "market_acquisition_instant_changed"],
+    ["a version recorded before its acquisition", () => [v(1, "2026-09-20T12:00:00Z", ["2026-09-16"], {recordedAt: "2026-09-19T12:00:00Z"})], "market_version_recorded_before_acquisition"],
     ["two reprocessings of the same version", () => [older, v(4, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id}), v(5, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-11T00:00:00Z", supersedes: older.id})], "market_reprocess_forked"],
   ])("refuses a history with %s", (_, versions, code) => expect(() => run(versions())).toThrow(code));
   it("removes an officially withdrawn period without bringing back the older value, until a later acquisition carries it again", () => {
@@ -288,6 +295,7 @@ describe("per-period selection", () => {
     expect(run([older, newer, again], {revocations: [revocation()]}).find((e) => e.period === "2026-09-17")!.versionId).toBe(again.id);
     expect(() => run([older], {revocations: [revocation({evidenceSha256: ""})]})).toThrow("market_revocation_invalid");
     expect(() => run([older], {revocations: [revocation(), revocation()]})).toThrow("market_revocation_invalid");
+    expect(() => run([older], {revocations: [revocation({recordedAt: "2026-09-25T12:00:00Z"})]})).toThrow("market_revocation_recorded_before_acquisition");
   });
   it("filters by data-base and by right before choosing", () => {
     expect(run([older, newer], {dataBase: "2026-09-24"}).every((e) => e.versionId === older.id)).toBe(true);

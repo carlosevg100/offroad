@@ -2,7 +2,7 @@
 
 Estado em 21/10/2026. Especificação documental e contratos em código, sem migração e sem efeito em
 produção; o transporte continua fechado. Plano em [`M2-PLANO.md`](M2-PLANO.md); ADR 0023. Segunda
-versão, depois da primeira rodada da revisão independente (doze achados, todos tratados).
+versão, depois de duas rodadas da revisão independente.
 
 O código está em `packages/market-reference/src/`:
 
@@ -54,13 +54,15 @@ da janela pedida. Número em vez de texto, resposta vazia, dia repetido, fora de
 
 **Detalhe do comunicado.** `{"conteudo":[registro]}` com um registro e exatamente os quatro campos
 documentados; reunião igual à pedida; data real. O título tem um único verbo (`Copom eleva`, `reduz` ou
-`mantém`) e um único token de taxa: um ou dois dígitos não precedidos de dígito, vírgula ou ponto,
-`,NN`, `% a.a.` (`112,25% a.a.` não tem token). No texto sem tags e com entidades decodificadas, a
-cláusula de decisão é o primeiro trecho que começa em `decidiu`, `elevando`, `reduzindo` ou `mantendo`
-e termina na primeira taxa, sem `%` no meio. Cobre as quatro redações usadas desde 2021 (inclusive
-"reduzindo a taxa básica de juros para", da reunião 279). Cláusula com taxa diferente do título é
-contradição e é recusada; sem cláusula, a primeira taxa do texto tem de ser a do título, e o registro
-leva `textDecision: absent`.
+`mantém`) e um único token de taxa: um ou dois dígitos não precedidos de dígito, vírgula, ponto ou
+sinal, `,NN`, `% a.a.` (`112,25% a.a.` e `-13,75% a.a.` não têm token). No texto sem tags e com
+entidades decodificadas, uma cláusula de decisão é cada trecho que começa em `decidiu`, `elevando`,
+`reduzindo` ou `mantendo` e termina na primeira taxa, sem `%` no meio; sua direção é o primeiro radical
+`elev`, `reduz` ou `mant` dentro dela. Cobre as quatro redações usadas desde 2021 (inclusive
+"reduzindo a taxa básica de juros para", da reunião 279). O texto precisa ter ao menos uma cláusula, e
+toda cláusula precisa ter a taxa e a direção do título; os 47 comunicados de 235 a 281 têm uma ou duas,
+todas concordes. Texto sem cláusula, cláusula sem direção ou qualquer cláusula divergente (inclusive uma
+decisão anterior citada ao lado da atual) recusa o comunicado: ambiguidade não chega à qualidade.
 
 **Impressão do registro.** SHA-256 em UTF-8 de
 
@@ -74,8 +76,9 @@ text:<tamanho em bytes UTF-8>:<texto como recebido>
 
 ## 3. Instantes e disponibilidade
 
-Instantes seguem RFC 3339 com no máximo seis casas (sete são recusadas, nunca arredondadas) e são
-comparados em microssegundos, a precisão de `timestamptz`. No M2 toda observação e todo comunicado
+Instantes seguem RFC 3339 com no máximo seis casas (sete são recusadas, nunca arredondadas), ficam,
+já em UTC, entre 1900-01-01T00:00:00Z inclusive e 9999-12-31T00:00:00Z exclusive (o texto canônico tem
+sempre ano de quatro dígitos) e são comparados em microssegundos, a precisão de `timestamptz`. No M2 toda observação e todo comunicado
 ficam disponíveis no instante da aquisição (`observed_at_acquisition`). A leitura com data-base D usa o
 limite exclusivo L(D): o primeiro instante cuja data civil em `America/Sao_Paulo` é D+1. Um item vale
 para D se `acquired_at < L(D)` e `available_at < L(D)`. Os vetores cobrem o dia normal (03:00Z), o
@@ -111,7 +114,8 @@ Igualdade e direção são numéricas. Qualquer achado põe a versão em `quaran
 
 Dois relógios: data-base D (disponibilidade) e instante de conhecimento K (o que a Offroad tinha
 gravado), ambos em microssegundos. O histórico inteiro é conferido antes da escolha, qualquer que seja K:
-ids canônicos e únicos; o mesmo `acquired_at` para todas as versões de uma aquisição; um reprocessamento
+ids canônicos e únicos; o mesmo `acquired_at` para todas as versões de uma aquisição; `recorded_at` nunca
+anterior a `acquired_at`, em versões e retiradas; um reprocessamento
 aponta para uma versão existente da mesma aquisição, com `recorded_at` estritamente posterior, e cada
 versão é substituída no máximo uma vez (sem bifurcação e, com tempo estritamente crescente, sem ciclo);
 cada retirada tem id próprio e evidência SHA-256. Histórico quebrado é erro, nunca escolha silenciosa.
@@ -158,7 +162,7 @@ observations:
 observações por fim e depois início, com início nulo **antes** de qualquer início (`NULLS FIRST`), datas
 comparadas por bytes. Um (fim, início) repetido é recusado.
 
-**Domínios.** UUID minúsculo canônico. Instantes em UTC com seis casas e `Z`, offset normalizado.
+**Domínios.** UUID minúsculo canônico. Instantes no domínio da seção 3, em UTC com seis casas e `Z`, offset normalizado.
 Decimais até 24 dígitos inteiros e 20 fracionários, na forma de `trim_scale(x)::text`: sem zero à esquerda
 além de `0.`, sem zero final na fração, sem ponto solto, nunca `-0`, sem arredondamento. Lista vazia é
 só o cabeçalho. Objeto derivado (metodologia, dependências) não tem forma v2 e continua em v1; selos v1

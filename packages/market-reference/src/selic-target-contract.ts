@@ -145,21 +145,24 @@ export type CopomDecision = "raise" | "cut" | "hold";
  * 14/01/2021 (31 of 31, including meetings on the eve of Corpus Christi 2022 and 2025 and of
  * Finados 2023). `regulatoryEffectiveFrom` is the start of the target's validity under Resolução BCB
  * 61 (business day after the meeting, on the contract's calendar); it is informative and quality
- * never tests it. `textDecision` says whether the text has a decision clause; when it has one it
- * states the title's rate, otherwise the communiqué is refused. */
+ * never tests it. */
 export type CopomCommunique = {
   meeting: number; referenceDate: string; decision: CopomDecision; targetPct: string;
-  recordSha256: string; seriesChangeDate: string; regulatoryEffectiveFrom: string; textDecision: "stated" | "absent";
+  recordSha256: string; seriesChangeDate: string; regulatoryEffectiveFrom: string;
 };
 
-/** A rate token: one or two integer digits not preceded by a digit, comma or point, and the
- * percent-per-year suffix. `112,25% a.a.` has no token. */
-const rateToken = /(?<![\d,.])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
+/** A rate token: one or two integer digits not preceded by a digit, comma, point or sign, and the
+ * percent-per-year suffix. `112,25% a.a.` and `-13,75% a.a.` have no token. */
+const rateToken = /(?<![\d,.+\-\u2212])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
 const titleVerb: Record<string, CopomDecision> = {eleva: "raise", reduz: "cut", "mantém": "hold"};
-/** The decision clause of the communiqué text, in the wordings used since 2021: "decidiu [...] para
+/** A decision clause of the communiqué text, in the wordings used since 2021: "decidiu [...] para
  * X% a.a.", "decidiu manter [...] em X% a.a.", "decidiu realizar [...], elevando [...] para X% a.a."
- * and "reduzindo a taxa básica de juros para X% a.a." The clause ends at the first rate after the verb. */
-const decisionClause = /(?:decidiu|elevando|reduzindo|mantendo)[^%]{0,200}?(?<![\d,.])(\d{1,2},\d{2})\s*%\s*a\.a\./;
+ * and "reduzindo a taxa básica de juros para X% a.a." A clause ends at the first rate after its
+ * opening word and names its direction by the first of elev-, reduz-, mant- inside it. Every one of
+ * the 47 communiqués from meeting 235 to 281 has one or two clauses, all with the title's rate and
+ * direction. */
+const decisionClause = /(decidiu|elevando|reduzindo|mantendo)([^%]{0,200}?)(?<![\d,.+\-\u2212])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
+const clauseVerb: Record<string, CopomDecision> = {elev: "raise", reduz: "cut", mant: "hold"};
 
 /** Text of the communiqué for the value check: tags removed, numeric and basic named entities
  * decoded, whitespace collapsed. */
@@ -192,8 +195,10 @@ export function nextBusinessDay(date: string): string {
 
 /** Parses a detail response exactly: one record, the four documented fields and nothing else, the
  * requested meeting, a real reference date, a title with one decision verb and one rate token, and
- * a text whose decision clause, when present, states the same rate (a contradiction is refused);
- * without a clause, the first rate token of the text must be the title's. */
+ * a text with at least one decision clause, every clause stating the title's rate and direction. A
+ * text without a clause, a clause without a direction, or any clause that disagrees (an earlier
+ * decision quoted beside the current one included) refuses the communiqué: ambiguity never reaches
+ * quality. */
 export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): CopomCommunique {
   checkCommuniqueRequest({kind: "detail", meeting});
   const body = readJson(bytes);
@@ -207,14 +212,17 @@ export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): Copom
   const values = [...record.titulo.matchAll(rateToken)].map((m) => m[1]!);
   const verbs = [...record.titulo.matchAll(/Copom (eleva|reduz|mantém)(?![\p{L}])/gu)].map((m) => m[1]!);
   if (values.length !== 1 || verbs.length !== 1) fail("market_parse_communique_title");
-  const pct = values[0]!, plain = communiquePlainText(record.textoComunicado);
-  const clause = decisionClause.exec(plain);
-  if (clause && clause[1] !== pct) fail("market_parse_communique_text_contradicts");
-  if (!clause && [...plain.matchAll(rateToken)][0]?.[1] !== pct) fail("market_parse_communique_text");
+  const pct = values[0]!, decision = titleVerb[verbs[0]!]!, plain = communiquePlainText(record.textoComunicado);
+  const clauses = [...plain.matchAll(decisionClause)];
+  if (clauses.length === 0) fail("market_parse_communique_text");
+  for (const c of clauses) {
+    const stem = /(elev|reduz|mant)/.exec(`${c[1]}${c[2]}`)?.[1];
+    if (stem === undefined || clauseVerb[stem] !== decision || c[3] !== pct) fail("market_parse_communique_text_contradicts");
+  }
   return {
-    meeting, referenceDate: record.dataReferencia, decision: titleVerb[verbs[0]!]!, targetPct: pct.replace(",", "."),
+    meeting, referenceDate: record.dataReferencia, decision, targetPct: pct.replace(",", "."),
     recordSha256: communiqueRecordSha256(record), seriesChangeDate: nextCivilDate(record.dataReferencia),
-    regulatoryEffectiveFrom: nextBusinessDay(record.dataReferencia), textDecision: clause ? "stated" : "absent",
+    regulatoryEffectiveFrom: nextBusinessDay(record.dataReferencia),
   };
 }
 

@@ -82,6 +82,8 @@ neg=[bad("exponent_value",lambda x:x['observations'][0].update(value="1e3"),"can
  bad("no_inputs",lambda x:x.update(acquisitionIds=[]),"canonical_inputs"),
  bad("instant_without_offset",lambda x:x['observations'][0].update(acquiredAt="2026-10-21T15:04:05.123456"),"canonical_instant"),
  bad("invalid_hour",lambda x:x['observations'][0].update(acquiredAt="2026-10-21T24:00:00Z"),"canonical_instant"),
+ bad("year_beyond_domain_after_utc",lambda x:x['observations'][0].update(acquiredAt="9999-12-31T23:59:59.123456-03:00"),"canonical_instant"),
+ bad("year_before_domain",lambda x:x['observations'][0].update(acquiredAt="1899-12-31T23:59:59Z"),"canonical_instant"),
  bad("invalid_date",lambda x:x['observations'][0].update(periodEnd="2026-02-30"),"canonical_observation")]
 
 # ---- availability limits, independent via zoneinfo

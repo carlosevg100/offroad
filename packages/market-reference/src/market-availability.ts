@@ -34,8 +34,13 @@ export function dataBaseLimit(dataBase: string): string {
 
 const instantGrammar = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|([+-])(\d{2}):(\d{2}))$/;
 
+/** The instant domain shared with SQL: from 1900-01-01T00:00:00Z inclusive to 9999-12-31T00:00:00Z
+ * exclusive, in UTC after the offset, so the canonical text always has a four-digit year. */
+const instantFloor = BigInt(Date.UTC(1900, 0, 1)) * 1000n, instantCeiling = BigInt(Date.UTC(9999, 11, 31)) * 1000n;
+
 /** An instant in microseconds since the epoch, the precision of Postgres `timestamptz`. The grammar
- * is closed (RFC 3339 with at most six fractional digits); seven digits are refused, never rounded. */
+ * is closed (RFC 3339 with at most six fractional digits); seven digits are refused, never rounded,
+ * and so is an instant outside the shared domain. */
 export function instantMicros(value: string): bigint {
   const m = instantGrammar.exec(value);
   if (!m) throw new Error("market_instant_invalid");
@@ -45,7 +50,9 @@ export function instantMicros(value: string): bigint {
   if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d || h > 23 || mi > 59 || s > 59) throw new Error("market_instant_invalid");
   const offsetMinutes = m[8] === "Z" ? 0 : (m[9] === "-" ? -1 : 1) * (Number(m[10]) * 60 + Number(m[11]));
   if (m[8] !== "Z" && (Number(m[10]) > 23 || Number(m[11]) > 59)) throw new Error("market_instant_invalid");
-  return (BigInt(ms) - BigInt(offsetMinutes) * 60_000n) * 1000n + BigInt((m[7] ?? "").padEnd(6, "0"));
+  const micros = (BigInt(ms) - BigInt(offsetMinutes) * 60_000n) * 1000n + BigInt((m[7] ?? "").padEnd(6, "0"));
+  if (micros < instantFloor || micros >= instantCeiling) throw new Error("market_instant_out_of_range");
+  return micros;
 }
 
 /** The canonical UTC text of an instant: six fractional digits and `Z`. */
