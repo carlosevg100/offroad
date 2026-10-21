@@ -9659,7 +9659,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/package.json",
-              "hash": "f1fbc8114943a26ae616193c08d854b8c368185672ddabfa917c8cdecebb742f"
+              "hash": "432e010add9ed60d102a467aa395a2a67547252eb01f83588918c3f8444531d0"
             },
             {
               "path": "packages/market-reference/src/decision-reference.ts",
@@ -9670,12 +9670,40 @@ export const procedureBuildProvenance = [
               "hash": "7137dbd1cdaefc5470c041a373de55561d0259097febd270c32c685501915131"
             },
             {
+              "path": "packages/market-reference/src/m2.ts",
+              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+            },
+            {
+              "path": "packages/market-reference/src/market-availability.ts",
+              "hash": "40a5d894807f4ccfb192affc252c4c107e676f076bbc3c5ab78bebc2bd92610e"
+            },
+            {
+              "path": "packages/market-reference/src/market-canonical-v2.ts",
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
+            },
+            {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
             },
             {
+              "path": "packages/market-reference/src/market-period-selection.ts",
+              "hash": "08a10a14bc680d42e0364743bef069ce6151bb0c2b5176f1c1f39d30b3d39aa7"
+            },
+            {
               "path": "packages/market-reference/src/pricing-truth.ts",
               "hash": "875d342b2a333e969244ae348fa0bbe25bec7ebd9de83242ca956fd04a7b951f"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-contract.ts",
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-quality.ts",
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
+            },
+            {
+              "path": "packages/market-reference/src/strict-json.ts",
+              "hash": "b67938e369681f1bd7a8a9acaf432186319c7d3a0e5fe6bc926435f51bbf6554"
             },
             {
               "path": "packages/public-research/package.json",
@@ -9838,7 +9866,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "7012a805c71268483df98d21671adf883fff669baeaf371b6471f9f506164d32"
+          "hash": "78aad5b4c46d006aa60615843d772fa6402a78143ca7fe98794febfd6beb38a9"
         },
         "evidence": [
           {
@@ -9864,7 +9892,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "4a76fb6fa28da5d8cb1f23d50703993e956626f7aa1010291bcc6af001089313"
+    "manifestHash": "65f5d69776786a35b2742f47acb98fd493c6a3cf0344ea93d40b72eb24ffed2d"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17008,7 +17036,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/package.json",
-              "hash": "f1fbc8114943a26ae616193c08d854b8c368185672ddabfa917c8cdecebb742f"
+              "hash": "432e010add9ed60d102a467aa395a2a67547252eb01f83588918c3f8444531d0"
             },
             {
               "path": "packages/market-reference/src/decision-reference.ts",
@@ -17019,12 +17047,40 @@ export const procedureBuildProvenance = [
               "hash": "7137dbd1cdaefc5470c041a373de55561d0259097febd270c32c685501915131"
             },
             {
+              "path": "packages/market-reference/src/m2.ts",
+              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+            },
+            {
+              "path": "packages/market-reference/src/market-availability.ts",
+              "hash": "40a5d894807f4ccfb192affc252c4c107e676f076bbc3c5ab78bebc2bd92610e"
+            },
+            {
+              "path": "packages/market-reference/src/market-canonical-v2.ts",
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
+            },
+            {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
             },
             {
+              "path": "packages/market-reference/src/market-period-selection.ts",
+              "hash": "08a10a14bc680d42e0364743bef069ce6151bb0c2b5176f1c1f39d30b3d39aa7"
+            },
+            {
               "path": "packages/market-reference/src/pricing-truth.ts",
               "hash": "875d342b2a333e969244ae348fa0bbe25bec7ebd9de83242ca956fd04a7b951f"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-contract.ts",
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-quality.ts",
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
+            },
+            {
+              "path": "packages/market-reference/src/strict-json.ts",
+              "hash": "b67938e369681f1bd7a8a9acaf432186319c7d3a0e5fe6bc926435f51bbf6554"
             },
             {
               "path": "packages/public-research/package.json",
@@ -17187,7 +17243,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "2124836de82936a61e522149bf1218db30414a163c68d475b1ff65d4ecd78728"
+          "hash": "b9b6307528035a6af8f5bacfde689648201bd4a528375de6db0a6cb6d590ce75"
         },
         "evidence": [
           {
@@ -17213,7 +17269,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "721474ba92bf52854b3e65b3db899e11f980c3c1065258eaf749d8b153c0f078"
+    "manifestHash": "b1998f64de9f60a38f42de6ed05ae619f349ff4d8a77a8f7db00a3c11fbf87ca"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -22260,7 +22316,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/package.json",
-              "hash": "f1fbc8114943a26ae616193c08d854b8c368185672ddabfa917c8cdecebb742f"
+              "hash": "432e010add9ed60d102a467aa395a2a67547252eb01f83588918c3f8444531d0"
             },
             {
               "path": "packages/market-reference/src/decision-reference.ts",
@@ -22271,12 +22327,40 @@ export const procedureBuildProvenance = [
               "hash": "7137dbd1cdaefc5470c041a373de55561d0259097febd270c32c685501915131"
             },
             {
+              "path": "packages/market-reference/src/m2.ts",
+              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+            },
+            {
+              "path": "packages/market-reference/src/market-availability.ts",
+              "hash": "40a5d894807f4ccfb192affc252c4c107e676f076bbc3c5ab78bebc2bd92610e"
+            },
+            {
+              "path": "packages/market-reference/src/market-canonical-v2.ts",
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
+            },
+            {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
             },
             {
+              "path": "packages/market-reference/src/market-period-selection.ts",
+              "hash": "08a10a14bc680d42e0364743bef069ce6151bb0c2b5176f1c1f39d30b3d39aa7"
+            },
+            {
               "path": "packages/market-reference/src/pricing-truth.ts",
               "hash": "875d342b2a333e969244ae348fa0bbe25bec7ebd9de83242ca956fd04a7b951f"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-contract.ts",
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-quality.ts",
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
+            },
+            {
+              "path": "packages/market-reference/src/strict-json.ts",
+              "hash": "b67938e369681f1bd7a8a9acaf432186319c7d3a0e5fe6bc926435f51bbf6554"
             },
             {
               "path": "packages/public-research/package.json",
@@ -22439,7 +22523,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "ae92f046677bf5db31bfa6ac910afd9bdfd46a17777ce1d81f237276aba6e96c"
+          "hash": "808c030191d98585c1b04c558847e04716c5c70da22864752fcac3780ec42699"
         },
         "evidence": [
           {
@@ -22465,7 +22549,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "3f3241f667c385f2e5da9b11dd565fc66aaaea879ce9767e856b6f5e4a107488"
+    "manifestHash": "7c791fe22edb02d60e0c1ea584b644e7f96e66926af16f8212772aacdd2f8c75"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31286,7 +31370,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/package.json",
-              "hash": "f1fbc8114943a26ae616193c08d854b8c368185672ddabfa917c8cdecebb742f"
+              "hash": "432e010add9ed60d102a467aa395a2a67547252eb01f83588918c3f8444531d0"
             },
             {
               "path": "packages/market-reference/src/decision-reference.ts",
@@ -31297,12 +31381,40 @@ export const procedureBuildProvenance = [
               "hash": "7137dbd1cdaefc5470c041a373de55561d0259097febd270c32c685501915131"
             },
             {
+              "path": "packages/market-reference/src/m2.ts",
+              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+            },
+            {
+              "path": "packages/market-reference/src/market-availability.ts",
+              "hash": "40a5d894807f4ccfb192affc252c4c107e676f076bbc3c5ab78bebc2bd92610e"
+            },
+            {
+              "path": "packages/market-reference/src/market-canonical-v2.ts",
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
+            },
+            {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
             },
             {
+              "path": "packages/market-reference/src/market-period-selection.ts",
+              "hash": "08a10a14bc680d42e0364743bef069ce6151bb0c2b5176f1c1f39d30b3d39aa7"
+            },
+            {
               "path": "packages/market-reference/src/pricing-truth.ts",
               "hash": "875d342b2a333e969244ae348fa0bbe25bec7ebd9de83242ca956fd04a7b951f"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-contract.ts",
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-quality.ts",
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
+            },
+            {
+              "path": "packages/market-reference/src/strict-json.ts",
+              "hash": "b67938e369681f1bd7a8a9acaf432186319c7d3a0e5fe6bc926435f51bbf6554"
             },
             {
               "path": "packages/public-research/package.json",
@@ -31465,7 +31577,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "eef8e97fb9f5c9d5953b8635ea3a02f0dfe33dba1b386f230bea5a3288dfd105"
+          "hash": "c85683fa64a08d2e9567b8fe801b47108edf2d39d86200926c0a0e444c08aa8d"
         },
         "evidence": [
           {
@@ -31491,7 +31603,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "f17eb4fefc6e08c4cb5056d22d58445e425d169933dd3d99a9a23f9cd668930e"
+    "manifestHash": "36b9da4e5af5f040aafa0e98e32d1d0c086bacda49fa3c6f396e205b5d12b9ba"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -55095,7 +55207,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/package.json",
-              "hash": "f1fbc8114943a26ae616193c08d854b8c368185672ddabfa917c8cdecebb742f"
+              "hash": "432e010add9ed60d102a467aa395a2a67547252eb01f83588918c3f8444531d0"
             },
             {
               "path": "packages/market-reference/src/decision-reference.ts",
@@ -55106,12 +55218,40 @@ export const procedureBuildProvenance = [
               "hash": "7137dbd1cdaefc5470c041a373de55561d0259097febd270c32c685501915131"
             },
             {
+              "path": "packages/market-reference/src/m2.ts",
+              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+            },
+            {
+              "path": "packages/market-reference/src/market-availability.ts",
+              "hash": "40a5d894807f4ccfb192affc252c4c107e676f076bbc3c5ab78bebc2bd92610e"
+            },
+            {
+              "path": "packages/market-reference/src/market-canonical-v2.ts",
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
+            },
+            {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
             },
             {
+              "path": "packages/market-reference/src/market-period-selection.ts",
+              "hash": "08a10a14bc680d42e0364743bef069ce6151bb0c2b5176f1c1f39d30b3d39aa7"
+            },
+            {
               "path": "packages/market-reference/src/pricing-truth.ts",
               "hash": "875d342b2a333e969244ae348fa0bbe25bec7ebd9de83242ca956fd04a7b951f"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-contract.ts",
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
+            },
+            {
+              "path": "packages/market-reference/src/selic-target-quality.ts",
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
+            },
+            {
+              "path": "packages/market-reference/src/strict-json.ts",
+              "hash": "b67938e369681f1bd7a8a9acaf432186319c7d3a0e5fe6bc926435f51bbf6554"
             },
             {
               "path": "packages/public-research/package.json",
@@ -55274,7 +55414,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "79e7f4de3b475df4e78c3d858a8d483a0597a47d97a437f434e13a580c407397"
+          "hash": "f345db5c049e98c236f2d9ff046d705adf3855810e6d5b1241c49f13e3567634"
         },
         "evidence": [
           {
@@ -55300,7 +55440,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "35cc0e52409d4604747980b48a5ae118e141683cd133f2c0b3ff4722e3210e46"
+    "manifestHash": "4f316621bde8f8b59d40ead875625f4d52163a1738238ead1b01178631ef8552"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

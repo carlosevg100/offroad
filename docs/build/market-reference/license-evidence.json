@@ -154,6 +154,38 @@
       "title": "Catálogo de dados abertos do Banco Central, busca por CDI, consultada em 21/10/2026",
       "finding": "Nenhum conjunto de CDI no catálogo (busca por cdi: 0 resultados; buscas por taxa de juros cdi e interbancário só retornam Selic e câmbio). No SGS a série 12 (CDI diário) tem a Cetip, hoje B3, como fonte. O CDI não tem licença aberta do Banco Central e é dado da B3, só por contrato.",
       "capture": "bcb-catalog-search-cdi.json"
+    },
+    {
+      "id": "bcb-catalog-atas-comunicados-copom",
+      "url": "https://dadosabertos.bcb.gov.br/api/3/action/package_search?q=name:atas-comunicados-copom",
+      "sha256": "6f954c5894beabe177b88a1764b52face43381aa4f69a915ec01f11bdc264f76",
+      "title": "Catálogo de dados abertos do Banco Central, conjunto Documentos do Copom (atas e comunicados), consultado em 21/10/2026",
+      "finding": "Licença odc-odbl. Recursos: lista e detalhe de comunicados em www.bcb.gov.br/api/servico/sitebcb/copom (comunicados?quantidade=N e comunicados_detalhes?nro_reuniao=N). O comunicado é divulgado no mesmo dia da decisão; a API traz número da reunião, dataReferencia (só data), título e texto em HTML.",
+      "capture": "bcb-catalog-atas-comunicados-copom.json"
+    },
+    {
+      "id": "bcb-copom-api-openapi",
+      "url": "https://www.bcb.gov.br/conteudo/dadosabertos/BCBDeinf/copom.yaml",
+      "sha256": "b05affe16008563dc8b9dec686950832aa992f168afb4463ce2dcf4602d275fe",
+      "title": "Especificação OpenAPI 3.0.2 da API Documentos do Copom, capturada em 21/10/2026",
+      "finding": "Declara a licença ODbL e o servidor www.bcb.gov.br/api/servico/sitebcb/copom. No detalhe do comunicado, os campos são nro_reuniao, dataReferencia (data, RFC 3339), titulo e textoComunicado; nenhum horário de publicação.",
+      "capture": "bcb-copom-api-openapi.yaml"
+    },
+    {
+      "id": "bcb-site-termos-de-uso",
+      "url": "https://www.bcb.gov.br/api/paginasite/sitebcb/acessoinformacao/politicaprivacidade",
+      "sha256": "453361f72ef97e6895222d9c7ac0883734f2f7c110fcffc7757a85d34617564b",
+      "title": "Política de Privacidade e Termos de Uso do site, dos aplicativos e dos serviços digitais do BC, capturada em 21/10/2026",
+      "finding": "Seção Reprodução do Conteúdo: reprodução total ou parcial do conteúdo do site e dos serviços digitais permitida, preservada a integridade das informações e citada a fonte. Logomarcas do BC são de propriedade da instituição. Rege a guarda e a reprodução do texto dos comunicados.",
+      "capture": "bcb-site-termos-de-uso.json"
+    },
+    {
+      "id": "bcb-resolucao-bcb-61",
+      "url": "https://www.bcb.gov.br/api/conteudo/app/normativos/exibenormativo?p1=Resolu%C3%A7%C3%A3o%20BCB&p2=61",
+      "sha256": "f8b23f7728fbb05da283b8acdcc19b3e9cf3253c2faa8289d4b7195662ecf5ec",
+      "title": "Resolução BCB nº 61, de 13/01/2021 (regulamento do Copom), publicada no DOU de 14/01/2021, capturada em 21/10/2026",
+      "finding": "Entra em vigor na data de publicação (14/01/2021). Regulamento, art. 1º, § 2º: o período de vigência da meta para a Taxa Selic tem início no dia útil seguinte ao do término de cada reunião. A série SGS 432 registra a nova meta no dia corrido seguinte: conferido em 31 de 31 mudanças de 14/01/2021 a 21/10/2026, inclusive as reuniões de 15/06/2022, 01/11/2023 e 18/06/2025, vésperas de Corpus Christi e Finados.",
+      "capture": "bcb-resolucao-bcb-61.json"
     }
   ],
   "pendingBeforeM7": [
@@ -206,6 +238,17 @@
         "evidence": "bcb-catalog-cdi-absent"
       }
     ],
-    "apiLimits": "Desde 26/03/2025 as consultas JSON e CSV de séries diárias exigem filtro de datas e janela de no máximo 10 anos (nota do próprio conjunto no catálogo)."
+    "apiLimits": "Desde 26/03/2025 as consultas JSON e CSV de séries diárias exigem filtro de datas e janela de no máximo 10 anos (nota do próprio conjunto no catálogo).",
+    "m2Communiques": {
+      "checkedAt": "2026-10-21",
+      "dataset": "atas-comunicados-copom",
+      "evidence": [
+        "bcb-catalog-atas-comunicados-copom",
+        "bcb-copom-api-openapi",
+        "bcb-site-termos-de-uso",
+        "bcb-resolucao-bcb-61"
+      ],
+      "empiricalCheck": "46 comunicados de 20/01/2021 a 16/09/2026: valor do título igual ao do texto e à série 432 no dia corrido seguinte; agente de navegador recebe página HTML de erro com status 200, o agente declarado do worker recebe JSON."
+    }
   }
 }
