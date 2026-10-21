@@ -83,6 +83,9 @@ def claim(account, token):
     return json.loads(psql(f"begin;{as_account(account)}select private.worker_claim_market_acquisition_v1('{token}')::text;commit;").splitlines()[-1])
 
 
+SESSIONS = []
+
+
 def session(name, first=''):
     proc = subprocess.Popen(['psql', URL, '-v', 'ON_ERROR_STOP=1', '-At', '-q'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, text=True, bufsize=1, env={**os.environ, 'PGAPPNAME': name})
@@ -94,6 +97,7 @@ def session(name, first=''):
         for line in proc.stdout:
             proc.lines.put(line)
         proc.lines.put(None)
+    SESSIONS.append(proc)
     proc.reader = threading.Thread(target=pump, daemon=True)
     proc.reader.start()
     proc.stdin.write(f"set statement_timeout='15s';begin;{first}\n")
@@ -123,11 +127,15 @@ def wait_for_lock(name):
         time.sleep(.05)
 
 
-def finish(proc, expect_ok=True, end='commit'):
+def end(proc, end='commit'):
     try:
         proc.stdin.write(f'{end};\n'); proc.stdin.close()
-    except BrokenPipeError:
+    except (BrokenPipeError, ValueError):
         pass
+
+
+def finish(proc, expect_ok=True, end_with='commit'):
+    end(proc, end_with)
     code = proc.wait(timeout=15)
     proc.reader.join(timeout=15)
     lines = list(proc.seen)
@@ -270,7 +278,7 @@ def main():
                        f"jsonb_build_object('size',3,'mimetype','application/json','eTag','\"x\"'),'market-race');\n"); upload.stdin.flush()
     wait_for_lock('market_acq_waiting_upload')
     time.sleep(3)
-    finish(holder, end='rollback')
+    finish(holder, end_with='rollback')
     out = finish(upload, expect_ok=False)
     if 'row-level security' not in out:
         raise AssertionError('upload accepted after the lease expired during the wait: ' + out)
@@ -283,6 +291,9 @@ def main():
     barrier(first, 'F'); barrier(second, 'S')
     first.stdin.write(commit_sql(WORKER_A, c, md5, size, at) + '\n'); first.stdin.flush()
     second.stdin.write(commit_sql(WORKER_A, c, md5, size, at) + '\n'); second.stdin.flush()
+    # Either session may hold the job lock while the other waits: both are told to commit before
+    # either is awaited, so the waiting one is never the one the script blocks on.
+    end(first); end(second)
     out_first, out_second = finish(first), finish(second)
     if out_first.splitlines()[-1] != 'true' or out_second.splitlines()[-1] != 'true':
         raise AssertionError('simultaneous confirmations did not both answer committed: ' + out_first + out_second)
@@ -291,5 +302,16 @@ def main():
     print('PASS: market acquisition claims, pauses, revocations, withdrawals, deletions and lease expiry serialize across sessions')
 
 
+def cleanup():
+    # A failed race must not leave sessions holding transactions or locks for the next CI steps.
+    for proc in SESSIONS:
+        if proc.poll() is None:
+            proc.kill()
+    psql("select pg_terminate_backend(pid) from pg_stat_activity where application_name like 'market_acq_%' and pid<>pg_backend_pid();", check=False)
+
+
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    finally:
+        cleanup()
