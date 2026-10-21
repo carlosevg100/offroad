@@ -8,7 +8,7 @@ import {
   parseSelicTarget, selicTargetContractSha256, selicTargetUrl,
 } from "./selic-target-contract";
 import {compareDecimal, evaluateSelicTarget, type AcquiredCommunique} from "./selic-target-quality";
-import {strictJsonParse} from "./strict-json";
+import {JsonNumber, strictJsonParse} from "./strict-json";
 
 const vectors = JSON.parse(readFileSync(new URL("../vectors/market-m2-part0.json", import.meta.url), "utf8")) as {
   seriesContractSha256: string;
@@ -120,7 +120,7 @@ describe("strict JSON", () => {
   ])("refuses %s", (_, text, code) => expect(() => strictJsonParse(bytes(text))).toThrow(code));
   it("keeps a valid supplementary character and the JSON types", () => {
     const v = strictJsonParse(bytes("{\"x\":\"\\ud83d\\ude00 ok\",\"n\":1.50,\"s\":\"1.50\",\"__proto__\":null}")) as Record<string, unknown>;
-    expect([v.x, v.n, v.s, Object.keys(v)]).toEqual(["\u{1F600} ok", 1.5, "1.50", ["x", "n", "s", "__proto__"]]);
+    expect([v.x, (v.n as JsonNumber).raw, v.s, Object.keys(v)]).toEqual(["\u{1F600} ok", "1.50", "1.50", ["x", "n", "s", "__proto__"]]);
   });
 });
 
@@ -263,7 +263,7 @@ describe("quality and joint eligibility of series and communiqué", () => {
 describe("per-period selection", () => {
   const id = (prefix: string, n: number) => `${prefix}000000-0000-4000-8000-00000000000${n}`;
   const v = (n: number, acquiredAt: string, periods: string[], extra: Partial<SelectableVersion> = {}): SelectableVersion =>
-    ({id: id("00", n), acquisitionId: id("10", n), acquiredAt, recordedAt: acquiredAt, supersedes: null, periods, ...extra});
+    ({id: id("00", n), acquisitionId: id("10", n), acquiredAt, recordedAt: acquiredAt, evidenceAvailableAt: acquiredAt, supersedes: null, periods, ...extra});
   const run = (versions: SelectableVersion[], extra: Partial<Parameters<typeof selectPeriods>[0]> = {}) =>
     selectPeriods({versions, revocations: [], dataBase: "2026-09-30", knowledgeAt: "2026-10-21T12:00:00Z", window: {start: "2026-09-01", end: "2026-09-30"}, allowed: () => true, ...extra});
   const older = v(1, "2026-09-20T12:00:00Z", ["2026-09-16", "2026-09-17", "2026-09-18"]);
@@ -298,6 +298,7 @@ describe("per-period selection", () => {
     ["another acquisition", () => [older, newer, v(4, newer.acquiredAt, [], {acquisitionId: newer.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id})], "market_reprocess_other_acquisition"],
     ["a changed acquisition instant", () => [older, v(4, "2026-09-20T12:00:00.000001Z", [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id})], "market_acquisition_instant_changed"],
     ["a version recorded before its acquisition", () => [v(1, "2026-09-20T12:00:00Z", ["2026-09-16"], {recordedAt: "2026-09-19T12:00:00Z"})], "market_version_recorded_before_acquisition"],
+    ["evidence available before its own acquisition", () => [v(1, "2026-09-20T12:00:00Z", ["2026-09-16"], {evidenceAvailableAt: "2026-09-20T11:59:59.999999Z"})], "market_version_evidence_before_acquisition"],
     ["two reprocessings of the same version", () => [older, v(4, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T00:00:00Z", supersedes: older.id}), v(5, older.acquiredAt, [], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-11T00:00:00Z", supersedes: older.id})], "market_reprocess_forked"],
   ])("refuses a history with %s", (_, versions, code) => expect(() => run(versions())).toThrow(code));
   it("removes an officially withdrawn period without bringing back the older value, until a later acquisition carries it again", () => {
@@ -307,6 +308,25 @@ describe("per-period selection", () => {
     expect(() => run([older], {revocations: [revocation({evidenceSha256: ""})]})).toThrow("market_revocation_invalid");
     expect(() => run([older], {revocations: [revocation(), revocation()]})).toThrow("market_revocation_invalid");
     expect(() => run([older], {revocations: [revocation({recordedAt: "2026-09-25T12:00:00Z"})]})).toThrow("market_revocation_recorded_before_acquisition");
+  });
+  it("keeps, for each data-base, the most recent version of the chain whose evidence was available then", () => {
+    // Relinked on 10 October with a communiqué acquired on 5 October.
+    const relinked = v(4, older.acquiredAt, older.periods as string[], {acquisitionId: older.acquisitionId, recordedAt: "2026-10-10T12:00:00Z",
+      evidenceAvailableAt: "2026-10-05T12:00:00Z", supersedes: older.id});
+    // D before the communiqué: the predecessor stands, even with K after the relink.
+    expect(run([older, relinked]).every((e) => e.versionId === older.id)).toBe(true);
+    // D after the communiqué: the successor from its recording on; a manifest fixed before it is unchanged.
+    expect(run([older, relinked], {dataBase: "2026-10-05"}).every((e) => e.versionId === relinked.id)).toBe(true);
+    expect(run([older, relinked], {dataBase: "2026-10-05", knowledgeAt: "2026-10-10T11:59:59.999999Z"}).every((e) => e.versionId === older.id)).toBe(true);
+    // The limit of D is the first instant of D+1 in São Paulo (03:00 UTC): one microsecond decides.
+    const atLimit = {...relinked, evidenceAvailableAt: "2026-10-06T03:00:00Z"};
+    expect(run([older, atLimit], {dataBase: "2026-10-05"}).every((e) => e.versionId === older.id)).toBe(true);
+    expect(run([older, {...atLimit, evidenceAvailableAt: "2026-10-06T02:59:59.999999Z"}], {dataBase: "2026-10-05"}).every((e) => e.versionId === relinked.id)).toBe(true);
+    // A right that refuses the successor does not bring the predecessor back.
+    expect(run([older, relinked], {dataBase: "2026-10-05", allowed: (x) => x.id !== relinked.id})).toEqual([]);
+    // A root whose own evidence came after D serves no period for D.
+    const late = v(6, "2026-09-25T12:00:00Z", ["2026-09-19"], {evidenceAvailableAt: "2026-10-02T12:00:00Z"});
+    expect(run([older, late]).map((e) => e.versionId)).toEqual([older.id, older.id, older.id]);
   });
   it("filters by data-base and by right before choosing", () => {
     expect(run([older, newer], {dataBase: "2026-09-24"}).every((e) => e.versionId === older.id)).toBe(true);

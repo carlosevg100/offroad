@@ -2574,8 +2574,28 @@
       "name": "market_acquisition_job_review_fixes_2",
       "version": "20261020215639",
       "statements_md5": "599c5963251b82e8bb78af8707de14e9"
+    },
+    {
+      "name": "market_m2_version_commit",
+      "version": "20261021225124",
+      "statements_md5": "e33a6567ae14f5ccb85f05400ff22b1d"
+    },
+    {
+      "name": "market_m2_version_commit_fixes",
+      "version": "20261021225207",
+      "statements_md5": "262b4e2245974ba474260781b2aef4d2"
+    },
+    {
+      "name": "market_m2_version_commit_fixes_2",
+      "version": "20261021225245",
+      "statements_md5": "8a512c7beb1cb68eb76b2317263ad22a"
+    },
+    {
+      "name": "market_m2_version_commit_fixes_3",
+      "version": "20261021225300",
+      "statements_md5": "8c552e0731b6a9680bdd26dabd765c1f"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-20T21:57:17Z"
+  "captured_at": "2026-10-21T22:53:43Z"
 }

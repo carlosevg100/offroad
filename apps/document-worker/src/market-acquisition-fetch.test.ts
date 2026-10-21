@@ -53,17 +53,27 @@ describe("fetchMarketFile", () => {
   }
  });
 
- it("revalidates every redirect against the host list and the address check", async () => {
-  const offList = server({[base.url]: {status: 302, headers: {location: "https://evil.example/x"}}});
-  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: offList}))).code).toBe("redirect_not_allowed");
-  const downgrade = server({[base.url]: {status: 301, headers: {location: "http://api.bcb.gov.br/x"}}});
-  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: downgrade}))).code).toBe("redirect_not_allowed");
+ it("follows a redirect only to the contract URL itself, refusing any other spelling before resolving it", async () => {
+  for (const location of ["https://evil.example/x", "http://api.bcb.gov.br/dados/serie/bcdata.sgs.12/dados?formato=json", "/dados/serie/bcdata.sgs.12/dados?formato=json",
+   "https://API.BCB.GOV.BR/dados/serie/bcdata.sgs.12/dados?formato=json", "https://api.bcb.gov.br:443/dados/serie/bcdata.sgs.12/dados?formato=json",
+   "https://api.bcb.gov.br/dados/serie/bcdata.sgs.13/dados?formato=json", `${base.url}&x=1`]) {
+   const seen: {url: string; address: string}[] = [];
+   const resolved: string[] = [];
+   const resolve: ResolveHost = async (host) => { resolved.push(host); return [{address: "200.218.1.1", family: 4}]; };
+   const redirect = server({[base.url]: {status: 302, headers: {location}}}, seen);
+   expect((await failure(fetchMarketFile(base, {resolve, request: redirect}))).code).toBe("redirect_not_allowed");
+   expect(seen).toHaveLength(1);
+   expect(resolved).toEqual(["api.bcb.gov.br"]);
+  }
   const loop = server({[base.url]: {status: 302, headers: {location: base.url}}});
   expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: loop, maxRedirects: 2}))).code).toBe("redirect_not_allowed");
-  const target = "https://api.bcb.gov.br/final.json";
-  const rebinding: ResolveHost = async (host) => [{address: host === "api.bcb.gov.br" ? "200.218.1.1" : "10.0.0.1", family: 4}];
-  const relative = server({[base.url]: {status: 302, headers: {location: "/final.json"}}, [target]: {status: 200, headers: {"content-type": "application/json"}, body: json}});
-  expect((await fetchMarketFile(base, {resolve: rebinding, request: relative})).finalUrl).toBe(target);
+  let first = true;
+  const once: PinnedRequest = async (url, address) => {
+   const reply: Reply = first ? {status: 302, headers: {location: base.url}} : {status: 200, headers: {"content-type": "application/json"}, body: json};
+   first = false;
+   return server({[url.toString()]: reply})(url, address, 4, AbortSignal.timeout(1000));
+  };
+  expect((await fetchMarketFile(base, {resolve: publicDns, request: once})).finalUrl).toBe(base.url);
  });
 
  it("stops at the byte limit, declared or streamed", async () => {
@@ -101,9 +111,10 @@ describe("fetchMarketFile", () => {
   const big = Buffer.alloc(100_000, 0x20);
   const refused = server({[base.url]: {status: 200, headers: {"content-type": "application/json", "content-length": String(big.length)}, body: big}}, [], streams);
   expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: refused}))).code).toBe("too_large");
-  const redirected = server({[base.url]: {status: 302, headers: {location: "https://api.bcb.gov.br/final.json"}, body: big},
-   "https://api.bcb.gov.br/final.json": {status: 404, body: big}}, [], streams);
-  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: redirected}))).code).toBe("http_status");
+  const redirected = server({[base.url]: {status: 302, headers: {location: "https://api.bcb.gov.br/final.json"}, body: big}}, [], streams);
+  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: redirected}))).code).toBe("redirect_not_allowed");
+  const missing = server({[base.url]: {status: 404, body: big}}, [], streams);
+  expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: missing}))).code).toBe("http_status");
   const wrongType = server({[base.url]: {status: 200, headers: {"content-type": "text/html"}, body: big}}, [], streams);
   expect((await failure(fetchMarketFile(base, {resolve: publicDns, request: wrongType}))).code).toBe("content_type");
   expect(streams).toHaveLength(4);

@@ -35,7 +35,11 @@ const units = new Set(["percent_per_year", "percent_per_month", "ratio", "index_
 class CanonicalError extends Error {}
 const need = (ok: boolean, code: string) => {if (!ok) throw new CanonicalError(code);};
 /** Civil dates share the instant domain's years: 1900-01-01 to 9999-12-30, never year zero. */
-const realDate = (d: string) => date.test(d) && d >= "1900-01-01" && d <= "9999-12-30" && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+const realDate = (d: string) => {
+  if (!date.test(d) || d < "1900-01-01" || d > "9999-12-30") return false;
+  const t = Date.parse(`${d}T00:00:00Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === d;
+};
 
 /** Linear zero stripping (no backtracking on long runs of zeros). */
 export function stripLeadingZeros(digits: string): string {

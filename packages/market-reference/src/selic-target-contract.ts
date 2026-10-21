@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {brazilianNationalHolidays, businessDayCalendarVersion} from "@offroad/financial-core";
 import {nextCivilDate} from "./market-availability";
 import {seriesContractSha256} from "./market-canonical-v2";
-import {isJsonObject, strictJsonParse, StrictJsonError, type JsonValue} from "./strict-json";
+import {isJsonObject, meetingNumber, strictJsonParse, StrictJsonError, type JsonValue} from "./strict-json";
 
 /** The closed contract of the first public series of M2 (ADR 0023): the Selic target set by the
  * Copom, SGS 432, and the Copom communiqués that evidence each value. The database builds the URL
@@ -44,7 +44,14 @@ export class MarketContractError extends Error {
 const fail = (code: string): never => {throw new MarketContractError(code);};
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-const realDate = (d: string) => isoDate.test(d) && d >= "1900-01-01" && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+/** The last communiqué date whose next business day the national-holiday calendar (to 4099) covers. */
+const lastCommuniqueDate = "4098-12-31";
+/** A calendar date that exists; an impossible month or day is false, never an exception. */
+const realDate = (d: string) => {
+  if (!isoDate.test(d) || d < "1900-01-01") return false;
+  const t = Date.parse(`${d}T00:00:00Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === d;
+};
 const brDate = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
 const fromBrDate = (d: string) => /^\d{2}\/\d{2}\/\d{4}$/.test(d) ? `${d.slice(6, 10)}-${d.slice(3, 5)}-${d.slice(0, 2)}` : null;
 
@@ -117,8 +124,9 @@ const sgsValue = /^(?:0|[1-9]\d{0,2})\.\d{2}$/;
 /** Parses the SGS JSON exactly. A structural failure is a failure of the attempt (`parse_failed`),
  * never a version: anything but an array of {data, valor} with text values, an empty answer, a
  * malformed date or value, a repeated or unordered day, or a day outside the requested window. A
- * missing calendar day is not structural; quality reports it. */
-export function parseSelicTarget(bytes: Uint8Array, window: {start: string; end: string}): SelicTargetObservation[] {
+ * missing calendar day is not structural; quality reports it. With a data-base, a period after it
+ * (the confirmation's São Paulo date) is refused too. */
+export function parseSelicTarget(bytes: Uint8Array, window: {start: string; end: string}, dataBase?: string): SelicTargetObservation[] {
   checkSelicWindow(window);
   const body = readJson(bytes);
   if (!Array.isArray(body)) return fail("market_parse_not_array");
@@ -130,6 +138,7 @@ export function parseSelicTarget(bytes: Uint8Array, window: {start: string; end:
     if (period === null || !realDate(period)) return fail("market_parse_date");
     if (!sgsValue.test(r.valor)) fail("market_parse_value");
     if (period < window.start || period > window.end) fail("market_parse_outside_window");
+    if (dataBase !== undefined && period > dataBase) fail("market_parse_future_period");
     const prior = out.at(-1);
     if (prior && period <= prior.period) fail(period === prior.period ? "market_parse_duplicate_period" : "market_parse_unordered");
     out.push({period, value: r.valor});
@@ -151,16 +160,21 @@ export type CopomCommunique = {
   recordSha256: string; seriesChangeDate: string; regulatoryEffectiveFrom: string;
 };
 
+/** The whitespace set of the plain text and of the title, written out so SQL and TypeScript agree
+ * (JavaScript's \s minus U+FEFF, which is removed before). */
+const ws = "[\\t\\n\\v\\f\\r \\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]";
+
 /** A rate token: one or two integer digits not preceded by a digit, comma, point or sign, and the
  * percent-per-year suffix. `112,25% a.a.` and `-13,75% a.a.` have no token. */
-const rateToken = /(?<![\d,.+\-\u2212])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
+const rateToken = new RegExp(`(?<![0-9,.+\\u2212-])([0-9]{1,2},[0-9]{2})${ws}*%${ws}*a\\.a\\.`, "g");
 const titleVerb: Record<string, CopomDecision> = {eleva: "raise", reduz: "cut", "mantém": "hold"};
 /** The confirming clause of the communiqué text: a closed grammar built from the wordings used since
  * 2021, matched exactly on the plain text. "decidiu[, por unanimidade,] (elevar|reduzir|manter) a taxa
  * (Selic|básica de juros)[ em N,NN ponto(s) percentual(is),] (para|em) X% a.a.", or the same after a
- * gerund that follows a comma (", elevando" / ", reduzindo"). A hold says "em" with no step; a raise
+ * gerund that follows a comma (", elevando" / ", reduzindo"). "decidiu" starts the text or follows a
+ * space, and never follows "não ". Classes are ASCII, as in SQL. A hold says "em" with no step; a raise
  * or cut says "para". Each of the 47 communiqués from meeting 235 to 281 has at least one. */
-const confirmingClause = /(?:(?<![\p{L}\p{N}])(?<!não )decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em \d,\d{2} pontos? percentua(?:l|is),)? (para|em) (\d{1,2},\d{2})% a\.a\./gu;
+const confirmingClause = /(?:(?<!não )(?<![^ ])decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em [0-9],[0-9]{2} pontos? percentua(?:l|is),)? (para|em) ([0-9]{1,2},[0-9]{2})% a\.a\./g;
 const clauseVerb: Record<string, CopomDecision> = {elevar: "raise", elevando: "raise", reduzir: "cut", reduzindo: "cut", manter: "hold"};
 
 /** Replaces every `<...>` with a space in one linear pass; an unclosed `<` stays as text. */
@@ -177,14 +191,17 @@ function stripTags(html: string): string {
   return out;
 }
 
-/** Text of the communiqué for the value check: tags removed, numeric and basic named entities
- * decoded, whitespace collapsed. */
+/** Text of the communiqué for the value check, the algorithm SQL reproduces: tags to a space (an
+ * unclosed `<` stays), one pass of entities (decimal and hexadecimal Unicode scalars other than 0 and
+ * surrogates, and nbsp, lt, gt, quot, amp; anything else stays literal and nothing produced is read
+ * again), zero-width characters removed, the whitespace set collapsed and trimmed. */
 export function communiquePlainText(html: string): string {
-  return stripTags(html)
-    .replace(/&#(\d{1,7});/g, (_, n: string) => String.fromCodePoint(Math.min(Number(n), 0x10ffff)))
-    .replace(/&#x([0-9a-f]{1,6});/gi, (_, n: string) => String.fromCodePoint(Math.min(parseInt(n, 16), 0x10ffff)))
-    .replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&amp;/g, "&")
-    .replace(/[\u200b-\u200d\ufeff]/g, "").replace(/\s+/g, " ").trim();
+  const decoded = stripTags(html).replace(/&(?:#([0-9]{1,7})|#[xX]([0-9A-Fa-f]{1,6})|(nbsp|lt|gt|quot|amp));/g, (whole: string, dec?: string, hex?: string, name?: string) => {
+    if (name !== undefined) return ({nbsp: " ", lt: "<", gt: ">", quot: "\"", amp: "&"} as Record<string, string>)[name]!;
+    const n = dec !== undefined ? Number(dec) : parseInt(hex!, 16);
+    return n >= 1 && n <= 0x10ffff && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : whole;
+  });
+  return decoded.replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(new RegExp(`${ws}+`, "g"), " ").replace(new RegExp(`^${ws}+|${ws}+$`, "g"), "");
 }
 
 /** The fingerprint of a communiqué record, over the four fields exactly as received, each free text
@@ -221,12 +238,12 @@ export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): Copom
   if (!isJsonObject(body) || Object.keys(body).length !== 1 || !Array.isArray(body.conteudo) || body.conteudo.length !== 1) return fail("market_parse_communique_shape");
   const r = body.conteudo[0];
   if (!isJsonObject(r) || Object.keys(r).sort().join(",") !== "dataReferencia,nro_reuniao,textoComunicado,titulo") return fail("market_parse_communique_fields");
-  if (r.nro_reuniao !== meeting) fail("market_parse_communique_meeting");
-  if (typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia)) return fail("market_parse_communique_date");
+  if (meetingNumber(r.nro_reuniao) !== meeting) fail("market_parse_communique_meeting");
+  if (typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || r.dataReferencia > lastCommuniqueDate) return fail("market_parse_communique_date");
   if (typeof r.titulo !== "string" || typeof r.textoComunicado !== "string") return fail("market_parse_communique_fields");
   const record = {nro_reuniao: meeting, dataReferencia: r.dataReferencia, titulo: r.titulo, textoComunicado: r.textoComunicado};
   const values = [...record.titulo.matchAll(rateToken)].map((m) => m[1]!);
-  const verbs = [...record.titulo.matchAll(/Copom (eleva|reduz|mantém)(?![\p{L}])/gu)].map((m) => m[1]!);
+  const verbs = [...record.titulo.matchAll(/Copom (eleva|reduz|mantém)(?![A-Za-z\u00c0-\u024f])/g)].map((m) => m[1]!);
   if (values.length !== 1 || verbs.length !== 1) fail("market_parse_communique_title");
   const pct = values[0]!, decision = titleVerb[verbs[0]!]!, plain = communiquePlainText(record.textoComunicado);
   const confirmed = [...plain.matchAll(confirmingClause)].some((c) =>
@@ -250,10 +267,12 @@ export function parseCommuniqueList(bytes: Uint8Array, size: number): {meeting: 
   const out: {meeting: number; referenceDate: string; title: string}[] = [];
   for (const r of rows) {
     if (!isJsonObject(r) || Object.keys(r).sort().join(",") !== "dataReferencia,nro_reuniao,titulo") return fail("market_parse_communique_fields");
-    if (typeof r.nro_reuniao !== "number" || !Number.isInteger(r.nro_reuniao) || typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || typeof r.titulo !== "string") return fail("market_parse_communique_fields");
+    const meeting = meetingNumber(r.nro_reuniao);
+    if (meeting === null || typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || r.dataReferencia > lastCommuniqueDate
+      || typeof r.titulo !== "string") return fail("market_parse_communique_fields");
     const prior = out.at(-1);
-    if (prior && r.nro_reuniao >= prior.meeting) fail("market_parse_communique_order");
-    out.push({meeting: r.nro_reuniao, referenceDate: r.dataReferencia, title: r.titulo});
+    if (prior && meeting >= prior.meeting) fail("market_parse_communique_order");
+    out.push({meeting, referenceDate: r.dataReferencia, title: r.titulo});
   }
   return out;
 }

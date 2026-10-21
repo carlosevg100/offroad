@@ -30,6 +30,7 @@
     "@offroad/financial-model": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/governed-retrieval": "workspace:*",
+    "@offroad/market-reference": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@offroad/public-research": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",

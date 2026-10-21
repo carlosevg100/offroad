@@ -690,7 +690,7 @@
     },
     {
       "path": "apps/document-worker/src/runtime-schema.ts",
-      "sha256": "0821fe72431b3670234a18e54f994431f0fe54f983b438bc692294d60c3cd695",
+      "sha256": "c7b91fee8aa1bc061cd434d64c769aa52594e433fee56da55c54a7a518aaf643",
       "entrypoint": false,
       "rpcs": [
         "worker_runtime_schema_contract_v1"
@@ -2034,21 +2034,22 @@
     },
     {
       "path": "apps/document-worker/src/market-acquisition-queue.ts",
-      "sha256": "14d3a3f72f07eda47a2782d17ffd13303936aa35fbfe6ec6946e01bcdd401c98",
+      "sha256": "39d9e45df5bf5b4b82d6fe4236ccdb25bee0bf37b37846342b448f47948e3213",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_market_acquisition_v1",
-        "worker_commit_market_acquisition_v1",
+        "worker_commit_market_version_v1",
         "worker_fail_market_acquisition_v1",
         "worker_list_market_orphans_v1",
         "worker_renew_market_acquisition_v1"
       ],
       "decision": "preserve governed consumer",
-      "authority": "Platform market acquisition (ADR 0023): worker account bound to an active worker token, a founder or operator delegation of that token to the source, the transport switch, the source gate and the lease capability, all rechecked in SQL; no tenant resource is reachable.",
+      "authority": "Platform market acquisition (ADR 0023): worker account bound to an active worker token, a founder or operator delegation of that token to the source, the transport switch, the source gate and the lease capability, all rechecked in SQL; the confirmation sends the bytes, which the database checks against the stored object and reads under the endpoint contract; no tenant resource is reachable.",
       "negativeTests": [
         "apps/document-worker/src/market-acquisition-queue.test.ts",
         "apps/document-worker/src/process-market-acquisition.test.ts",
-        "supabase/tests/market_acquisition_job.sql"
+        "supabase/tests/market_acquisition_job.sql",
+        "supabase/tests/market_version_commit.sql"
       ]
     }
   ],

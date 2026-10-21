@@ -12,6 +12,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "governed-evaluation-consumer.v1",
   // Market acquisition claim, renew, commit, fail and orphan listing (installed closed behind their switch).
   "market-acquisition-consumer.v1",
+  // Market version confirmation: the worker sends the bytes and the database reads them (M2 part 1).
+  "market-version-commit.v1",
   "explicit-resource-access.v1",
   "explicit-workspace-context.v1",
   "authenticated-document-storage.v1",

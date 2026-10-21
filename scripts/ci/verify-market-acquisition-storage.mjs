@@ -1,7 +1,10 @@
 // Disposable localhost stack only. The market acquisition job end to end through the real Storage API:
 // a synthetic worker account, signed in with its own session and delegated for one synthetic source,
-// claims through the worker's own queue, stores the bytes with a single-request upload and confirms;
-// the database checks the size, type and MD5 that Storage recorded. Then the negatives through the same
+// claims through the worker's own queue, stores the bytes with a single-request upload and sends them to
+// the confirmation; the database checks them against the size, type and MD5 that Storage recorded and
+// reads them under the endpoint contract into a version. The bytes are a valid SGS 432 window padded
+// with JSON whitespace to just under the single-request limit, so the upload and the hexadecimal
+// transport of the confirmation are both proven at full size. Then the negatives through the same
 // API: an undelegated worker cannot upload to an allocated path, the delegated worker cannot download
 // market bytes or delete a confirmed object, and the bytes of a cancelled attempt are swept with the
 // batch removal route. The file never comes from the network: the fetch is replaced by fixed bytes.
@@ -33,7 +36,7 @@ const id = (group, n) => `${prefix}-0000-4000-${group}-${String(n).padStart(12, 
 const users = {founder: id('8000', 1), operator: id('8000', 2), workerA: id('8000', 3), workerB: id('8000', 4)};
 const tokens = {a: `synthetic-market-storage-token-${prefix}-a`, b: `synthetic-market-storage-token-${prefix}-b`};
 const password = 'Synthetic-Market-Storage!2026';
-const source = 'storage-proof-source';
+const source = 'bcb';
 const md5 = bytes => createHash('md5').update(bytes).digest('hex');
 
 const workerRequire = createRequire(join(root, 'apps/document-worker/package.json'));
@@ -64,14 +67,20 @@ do $$ begin
   perform private.register_market_publisher_v1('${id('a000', 1)}','Offroad, referência de mercado','${users.founder}');
  end if;
 end $$;
-select private.record_market_source_revision_v1('${id('a000', 2)}','${source}',jsonb_build_object('registryId','storage_proof','license',jsonb_build_object('kind','open',
- 'license','ODbL-1.0','attribution','Fonte sintética da prova de Storage','evidenceIds',jsonb_build_array('storage-proof'),'retainAdoptedValues',true,'storeDays',null),
- 'allowedHosts',jsonb_build_array('api.bcb.gov.br'),'calendar','calendar_days','expectedPublication',null,'maximumAgeHours',30,'enabled',true,
- 'reason','Fonte sintética da prova de Storage'),'${users.operator}');
+select private.record_market_source_revision_v1('${id('a000', 2)}','${source}',jsonb_build_object('registryId','bcb_sgs','license',jsonb_build_object('kind','open',
+ 'license','ODbL-1.0','attribution','Banco Central do Brasil','evidenceIds',jsonb_build_array('bcb-catalog-meta-selic-432','bcb-catalog-atas-comunicados-copom',
+ 'bcb-site-termos-de-uso'),'retainAdoptedValues',true,'storeDays',null),'allowedHosts',jsonb_build_array('api.bcb.gov.br','www.bcb.gov.br'),'calendar','br_business_days',
+ 'expectedPublication','09:00','maximumAgeHours',30,'enabled',true,'reason','Fonte sintética da prova de Storage'),'${users.operator}');
 select private.grant_market_acquisition_delegation_v1('${id('a000', 3)}','${id('8000', 11)}','${source}','Synthetic storage delegation A','${users.operator}');
 select private.release_market_acquisition_transport_v1('${id('a000', 4)}',true,'${users.operator}','Synthetic opening for the storage proof');
-update private.market_acquisition_jobs set available_at=clock_timestamp()+interval '1 day' where status='queued';
-select private.enqueue_market_acquisition_v1('${id('a000', 5)}','${source}','https://api.bcb.gov.br/storage-proof.json','json','Aquisição sintética da prova de Storage','${users.operator}');
+-- Jobs that earlier CI steps left open would be claimed first; they are cancelled.
+do $$ declare j uuid;begin
+ for j in select id from private.market_acquisition_jobs where status in ('queued','leased') loop
+  perform private.cancel_market_acquisition_v1(gen_random_uuid(),j,'Synthetic cleanup before the storage proof','${users.operator}');
+ end loop;
+end $$;
+select private.enqueue_market_contract_acquisition_v1('${id('a000', 5)}','bcb-sgs-432-endpoint','{"window":{"start":"2025-09-17","end":"2025-09-20"}}',
+ 'Aquisição sintética da prova de Storage','${users.operator}');
 commit;`);
 
   const session = async n => {
@@ -84,11 +93,17 @@ commit;`);
   const queueA = m.createMarketAcquisitionQueue(workerA, tokens.a), queueB = m.createMarketAcquisitionQueue(workerB, tokens.b);
   const storeA = m.createMarketObjectStore(workerA), storeB = m.createMarketObjectStore(workerB);
 
+  // Earlier CI steps leave abandoned bytes of the same source; the delegated worker sweeps them first, so
+  // the sweep below counts only the proof's own attempt.
+  for (let round = 0; round < 50 && await m.sweepMarketOrphans(queueA, storeA, 100) > 0; round++);
+  assert.equal(await m.sweepMarketOrphans(queueA, storeA, 100), 0, 'leftover orphans not drained');
+
   // 1. Positive: a single-request upload just under the attempt limit, confirmed by Storage's own MD5.
   assert.equal(await queueB.claim(), null, 'undelegated worker claimed');
   const claim = await queueA.claim();
   assert(claim, 'delegated worker could not claim');
-  const bytes = Buffer.from('[' + '1,'.repeat(2_300_000) + '1]');
+  const rows = ['17', '18', '19', '20'].map(day => `{"data":"${day}/09/2025","valor":"15.00"}`).join(',');
+  const bytes = Buffer.from('[' + rows + ' '.repeat(4_600_000) + ']');
   assert(bytes.length < 5 * 1024 * 1024 && bytes.length > 4 * 1024 * 1024, 'fixture size');
   const fetch = async () => ({finalUrl: claim.url, bytes, sha256: createHash('sha256').update(bytes).digest('hex'), md5: md5(bytes), byteSize: bytes.length,
     contentType: 'application/json', acquiredAt: new Date()});
@@ -96,6 +111,8 @@ commit;`);
   await assert.rejects(storeB.upload(claim.objectPath, Buffer.from('[0]'), 'application/json'), 'undelegated upload accepted');
   const result = await m.processMarketAcquisition(claim, queueA, storeA, new AbortController().signal, {fetch});
   assert.equal(result.status, 'committed', 'acquisition not committed: ' + JSON.stringify(result));
+  assert.equal(sql(`select count(*) from private.market_versions v join private.market_observations o on o.version_id=v.id
+   where v.id='${result.versionId}' and v.canonical_version='v2' and v.normalization_id='bcb-sgs-432';`), '4', 'version not read from the stored bytes');
   assert.equal(sql(`select count(*) from private.market_acquisitions where object_path='${claim.objectPath}' and byte_size=${bytes.length} and content_type='application/json';`), '1');
   assert.equal(sql(`select metadata->>'eTag' from storage.objects where bucket_id='market-reference' and name='${claim.objectPath}';`), `"${md5(bytes)}"`, 'Storage eTag is not the MD5');
   // No download, no deletion of a confirmed object.
@@ -105,7 +122,7 @@ commit;`);
   assert.equal(sql(`select count(*) from storage.objects where bucket_id='market-reference' and name='${claim.objectPath}';`), '1', 'confirmed object deleted');
 
   // 2. The bytes of a cancelled attempt are swept through the batch removal route.
-  sql(`select private.enqueue_market_acquisition_v1('${id('a000', 6)}','${source}','https://api.bcb.gov.br/storage-proof-2.json','json','Segunda aquisição sintética da prova','${users.operator}');`);
+  sql(`select private.enqueue_market_contract_acquisition_v1('${id('a000', 6)}','bcb-copom-comunicados-lista','{"size":5}','Segunda aquisição sintética da prova','${users.operator}');`);
   const second = await queueA.claim();
   assert(second, 'second claim');
   await storeA.upload(second.objectPath, Buffer.from('[2]'), 'application/json');
@@ -116,7 +133,7 @@ commit;`);
   assert.equal(sql(`select count(*) from storage.objects where bucket_id='market-reference' and name='${second.objectPath}';`), '0', 'orphan still stored');
 
   sql(`select private.release_market_acquisition_transport_v1('${id('a000', 8)}',false,'${users.operator}','Synthetic closing after the storage proof');`);
-  console.log('PASS: market acquisition through the real Storage API: delegated upload, MD5 confirmation, closed download and deletion, sweep');
+  console.log('PASS: market acquisition through the real Storage API: delegated upload, confirmation with the bytes read into a version, closed download and deletion, sweep');
 } finally {
   rmSync(temporary, {recursive: true, force: true});
 }

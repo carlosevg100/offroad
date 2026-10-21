@@ -3,17 +3,23 @@ import {MarketFetchError, type MarketFetchResult} from "./market-acquisition-fet
 import {MarketAcquisitionTransportError, type MarketAcquisitionClaim, type MarketAcquisitionQueue} from "./market-acquisition-queue";
 import {processMarketAcquisition, sweepMarketOrphans, type MarketObjectStore} from "./process-market-acquisition";
 
+const url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial=14/09/2026&dataFinal=15/09/2026";
 const claim: MarketAcquisitionClaim = {claimed: true, jobId: "3a750000-0000-4000-8000-000000000001", leaseId: "3a750000-0000-4000-8000-000000000002",
- capability: "a".repeat(64), attempt: 1, leaseExpiresAt: "2026-10-20T12:02:00Z", sourceId: "bcb-sgs-cdi", sourceRevision: 1,
- url: "https://api.bcb.gov.br/x", allowedHosts: ["api.bcb.gov.br"], extension: "json", bucket: "market-reference",
- objectPath: "bcb-sgs-cdi/2026/10/3a750000-0000-4000-8000-000000000003.json", maxBytes: 52_428_800};
-const file: MarketFetchResult = {finalUrl: "https://api.bcb.gov.br/x", bytes: Buffer.from("[1]"), sha256: "b".repeat(64), md5: "c".repeat(32), byteSize: 3,
+ capability: "a".repeat(64), attempt: 1, leaseExpiresAt: "2026-10-20T12:02:00Z", sourceId: "bcb", sourceRevision: 1,
+ url, allowedHosts: ["api.bcb.gov.br"], extension: "json", bucket: "market-reference",
+ objectPath: "bcb/2026/10/3a750000-0000-4000-8000-000000000003.json", maxBytes: 1_048_576,
+ contractId: "bcb-sgs-432-endpoint", contractKind: "sgs_daily_json", request: {window: {start: "2026-09-14", end: "2026-09-15"}}};
+const series = Buffer.from('[{"data":"14/09/2026","valor":"15.00"},{"data":"15/09/2026","valor":"15.00"}]');
+const file: MarketFetchResult = {finalUrl: url, bytes: series, sha256: "b".repeat(64), md5: "c".repeat(32), byteSize: series.length,
  contentType: "application/json", acquiredAt: new Date("2026-10-20T12:00:30Z")};
+const content = {bytes: file.bytes, contentType: file.contentType, acquiredAt: file.acquiredAt};
+const committed = {replayed: false, acquisitionId: "3a750000-0000-4000-8000-000000000004", versionId: "3a750000-0000-4000-8000-000000000006",
+ quality: {status: "approved" as const, evaluationId: "3a750000-0000-4000-8000-000000000007"}};
 
 function harness(overrides: Partial<MarketAcquisitionQueue> = {}, storeOverrides: Partial<MarketObjectStore> = {}) {
  const queue: MarketAcquisitionQueue = {
   claim: vi.fn(async () => null), renew: vi.fn(async () => ({leaseExpiresAt: "2026-10-20T12:04:00Z"})),
-  commit: vi.fn(async () => ({acquisitionId: "3a750000-0000-4000-8000-000000000004", replayed: false})),
+  commit: vi.fn(async () => committed),
   fail: vi.fn(async () => ({retryScheduled: true})), orphans: vi.fn(async () => []), ...overrides};
  const store: MarketObjectStore = {upload: vi.fn(async () => undefined), remove: vi.fn(async () => undefined), ...storeOverrides};
  return {queue, store};
@@ -21,13 +27,31 @@ function harness(overrides: Partial<MarketAcquisitionQueue> = {}, storeOverrides
 const signal = new AbortController().signal;
 
 describe("processMarketAcquisition", () => {
- it("stores the bytes at the allocated path and confirms both digests", async () => {
+ it("stores the bytes at the allocated path and sends them to the confirmation", async () => {
   const {queue, store} = harness();
   const result = await processMarketAcquisition(claim, queue, store, signal, {fetch: async () => file});
-  expect(result).toEqual({status: "committed", acquisitionId: "3a750000-0000-4000-8000-000000000004", replayed: false});
+  expect(result).toEqual({status: "committed", ...committed});
   expect(store.upload).toHaveBeenCalledWith(claim.objectPath, file.bytes, "application/json");
-  expect(queue.commit).toHaveBeenCalledWith(claim, file);
+  expect(queue.commit).toHaveBeenCalledWith(claim, content);
   expect(store.remove).not.toHaveBeenCalled();
+ });
+
+ it("fails definitively, storing nothing, when the bytes do not read under the contract", async () => {
+  const detail: MarketAcquisitionClaim = {...claim, contractId: "bcb-copom-comunicados-detalhe", contractKind: "copom_communique_detail", request: {meeting: 281},
+   url: "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=281", allowedHosts: ["www.bcb.gov.br"]};
+  for (const [c, bytes, refusal] of [[claim, '[{"data":"16/09/2026","valor":"15.00"}]', "market_parse_outside_window"],
+   [claim, '[{"data":"14/09/2026","valor":"15.00","valor":"15.00"}]', "market_parse_json_duplicate_key"],
+   [claim, '[{"data":"14/13/2026","valor":"15.00"}]', "market_parse_date"],
+   [detail, '{"conteudo":[{"nro_reuniao":281,"dataReferencia":"2026-13-01","titulo":"t","textoComunicado":"x"}]}', "market_parse_communique_date"],
+   [detail, '{"conteudo":[{"nro_reuniao":281,"dataReferencia":"4099-01-01","titulo":"t","textoComunicado":"x"}]}', "market_parse_communique_date"],
+   [detail, '{"conteudo":[]}', "market_parse_communique_shape"]] as const) {
+   const {queue, store} = harness();
+   const result = await processMarketAcquisition(c, queue, store, signal, {fetch: async () => ({...file, bytes: Buffer.from(bytes)})});
+   expect(result).toMatchObject({status: "failed", code: "parse_failed"});
+   expect(queue.fail).toHaveBeenCalledWith(c, "parse_failed", false, refusal);
+   expect(store.upload).not.toHaveBeenCalled();
+   expect(queue.commit).not.toHaveBeenCalled();
+  }
  });
 
  it("reports a refused fetch with its code and stores nothing", async () => {
@@ -40,7 +64,9 @@ describe("processMarketAcquisition", () => {
 
  it("removes its bytes when the confirmation refuses the object or the source", async () => {
   for (const [code, failure, retryable] of [["market_acquisition_object_mismatch", "verification_failed", true],
-   ["market_source_not_acquirable", "source_not_acquirable", false], ["market_delegation_required", "delegation_revoked", true]] as const) {
+   ["market_source_not_acquirable", "source_not_acquirable", false], ["market_delegation_required", "delegation_revoked", true],
+   ["market_parse_failed", "parse_failed", false], ["market_contract_mismatch", "verification_failed", false],
+   ["market_copom_meeting_disagreement", "verification_failed", false], ["market_copom_meeting_day_collision", "verification_failed", false]] as const) {
    const {queue, store} = harness({commit: vi.fn(async () => { throw new MarketAcquisitionTransportError(code); })});
    const result = await processMarketAcquisition(claim, queue, store, signal, {fetch: async () => file});
    expect(result).toMatchObject({status: "failed", code: failure});
@@ -75,7 +101,7 @@ describe("processMarketAcquisition", () => {
 
 describe("sweepMarketOrphans", () => {
  it("removes exactly the paths the database lists", async () => {
-  const paths = ["bcb-sgs-cdi/2026/10/3a750000-0000-4000-8000-000000000005.json"];
+  const paths = ["bcb/2026/10/3a750000-0000-4000-8000-000000000005.json"];
   const {queue, store} = harness({orphans: vi.fn(async () => paths)});
   expect(await sweepMarketOrphans(queue, store)).toBe(1);
   expect(store.remove).toHaveBeenCalledWith(paths);
