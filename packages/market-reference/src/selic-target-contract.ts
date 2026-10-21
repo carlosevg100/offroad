@@ -163,10 +163,24 @@ const titleVerb: Record<string, CopomDecision> = {eleva: "raise", reduz: "cut", 
 const confirmingClause = /(?:(?<![\p{L}\p{N}])(?<!não )decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em \d,\d{2} pontos? percentua(?:l|is),)? (para|em) (\d{1,2},\d{2})% a\.a\./gu;
 const clauseVerb: Record<string, CopomDecision> = {elevar: "raise", elevando: "raise", reduzir: "cut", reduzindo: "cut", manter: "hold"};
 
+/** Replaces every `<...>` with a space in one linear pass; an unclosed `<` stays as text. */
+function stripTags(html: string): string {
+  let out = "", i = 0;
+  while (i < html.length) {
+    const open = html.indexOf("<", i);
+    if (open < 0) {out += html.slice(i); break;}
+    const close = html.indexOf(">", open + 1);
+    if (close < 0) {out += html.slice(i); break;}
+    out += `${html.slice(i, open)} `;
+    i = close + 1;
+  }
+  return out;
+}
+
 /** Text of the communiqué for the value check: tags removed, numeric and basic named entities
  * decoded, whitespace collapsed. */
 export function communiquePlainText(html: string): string {
-  return html.replace(/<[^>]*>/g, " ")
+  return stripTags(html)
     .replace(/&#(\d{1,7});/g, (_, n: string) => String.fromCodePoint(Math.min(Number(n), 0x10ffff)))
     .replace(/&#x([0-9a-f]{1,6});/gi, (_, n: string) => String.fromCodePoint(Math.min(parseInt(n, 16), 0x10ffff)))
     .replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&amp;/g, "&")

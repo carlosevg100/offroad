@@ -4,7 +4,7 @@ import {availableForDataBase, canonicalInstant, dataBaseLimit, instantMicros} fr
 import {canonicalSha256V2, canonicalTextV2, type CanonicalV2Input} from "./market-canonical-v2";
 import {manifestSha256, selectPeriods, type PeriodRevocation, type SelectableVersion} from "./market-period-selection";
 import {
-  checkCommuniqueUrl, checkSelicTargetUrl, communiqueRecordSha256, communiqueUrl, parseCommuniqueDetail, parseCommuniqueList,
+  checkCommuniqueUrl, checkSelicTargetUrl, communiquePlainText, communiqueRecordSha256, communiqueUrl, parseCommuniqueDetail, parseCommuniqueList,
   parseSelicTarget, selicTargetContractSha256, selicTargetUrl,
 } from "./selic-target-contract";
 import {compareDecimal, evaluateSelicTarget, type AcquiredCommunique} from "./selic-target-quality";
@@ -189,6 +189,13 @@ describe("communiqué parser", () => {
     const raw = JSON.stringify({conteudo: [record]});
     expect(() => parseCommuniqueDetail(bytes(raw.replace("Texto", "Texto\\ud800")), 281)).toThrow("market_parse_json_lone_surrogate");
     expect(() => parseCommuniqueDetail(bytes(raw.replace("Texto", "Texto\\u0000")), 281)).toThrow("market_parse_json_nul");
+  });
+  it("strips tags and zeros in linear time on adversarial input", () => {
+    const start = Date.now();
+    expect(communiquePlainText("<".repeat(200_000))).toBe("<".repeat(200_000));
+    expect(compareDecimal(`${"0".repeat(100_000)}1`, `1.${"0".repeat(100_000)}`)).toBe(0);
+    expect(communiquePlainText("a<b<c>d")).toBe("a d");
+    expect(Date.now() - start).toBeLessThan(2000);
   });
   it("reads the list only to discover meetings, in decreasing order", () => {
     const list = {conteudo: [{nro_reuniao: 281, dataReferencia: "2026-09-16", titulo: "a"}, {nro_reuniao: 280, dataReferencia: "2026-08-05", titulo: "b"}]};

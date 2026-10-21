@@ -37,12 +37,24 @@ const need = (ok: boolean, code: string) => {if (!ok) throw new CanonicalError(c
 /** Civil dates share the instant domain's years: 1900-01-01 to 9999-12-30, never year zero. */
 const realDate = (d: string) => date.test(d) && d >= "1900-01-01" && d <= "9999-12-30" && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
 
+/** Linear zero stripping (no backtracking on long runs of zeros). */
+export function stripLeadingZeros(digits: string): string {
+  let i = 0;
+  while (i < digits.length - 1 && digits[i] === "0") i++;
+  return digits.slice(i);
+}
+export function stripTrailingZeros(digits: string): string {
+  let end = digits.length;
+  while (end > 0 && digits[end - 1] === "0") end--;
+  return digits.slice(0, end);
+}
+
 /** Trimmed decimal, the text `trim_scale(x)::text` gives in Postgres for the same numeric. */
 export function trimDecimal(value: string): string {
   need(decimal.test(value), "canonical_decimal");
   const negative = value.startsWith("-");
   let [int, frac = ""] = (negative ? value.slice(1) : value).split(".") as [string, string?];
-  int = int.replace(/^0+(?=\d)/, ""); frac = frac.replace(/0+$/, "");
+  int = stripLeadingZeros(int); frac = stripTrailingZeros(frac);
   const body = frac ? `${int}.${frac}` : int;
   return negative && /[1-9]/.test(body) ? `-${body}` : body;
 }

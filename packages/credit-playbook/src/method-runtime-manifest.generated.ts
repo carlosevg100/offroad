@@ -9679,7 +9679,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/market-canonical-v2.ts",
-              "hash": "2886b24d8bc8b98cb8894099af1bead1d45c1c4bd08442cc5763c2758b48386f"
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
             },
             {
               "path": "packages/market-reference/src/market-objects.ts",
@@ -9695,11 +9695,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "2026801190745f5b8ac4b24bff58d4dba27cd2c338204080407225a0c7a617b3"
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
-              "hash": "3102343ee9ec6921c4e52dff1547b9e0c6fc47154a2d2c24fbd44042cb6a3f7c"
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
             },
             {
               "path": "packages/market-reference/src/strict-json.ts",
@@ -9866,7 +9866,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "1755f0da323fb79f31199b17c8ecb6e1c44c768c25c8e3f42dc774fc440bbe9f"
+          "hash": "78aad5b4c46d006aa60615843d772fa6402a78143ca7fe98794febfd6beb38a9"
         },
         "evidence": [
           {
@@ -9892,7 +9892,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "074b851e2db48e69734b2c9e26417b16947c2ce4839c02df28a601cfc94f814b"
+    "manifestHash": "65f5d69776786a35b2742f47acb98fd493c6a3cf0344ea93d40b72eb24ffed2d"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17056,7 +17056,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/market-canonical-v2.ts",
-              "hash": "2886b24d8bc8b98cb8894099af1bead1d45c1c4bd08442cc5763c2758b48386f"
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
             },
             {
               "path": "packages/market-reference/src/market-objects.ts",
@@ -17072,11 +17072,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "2026801190745f5b8ac4b24bff58d4dba27cd2c338204080407225a0c7a617b3"
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
-              "hash": "3102343ee9ec6921c4e52dff1547b9e0c6fc47154a2d2c24fbd44042cb6a3f7c"
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
             },
             {
               "path": "packages/market-reference/src/strict-json.ts",
@@ -17243,7 +17243,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5bbd2e358611c5d5c6f1c31dd3f9e374776c738569e92520d68c7269a8fca6c1"
+          "hash": "b9b6307528035a6af8f5bacfde689648201bd4a528375de6db0a6cb6d590ce75"
         },
         "evidence": [
           {
@@ -17269,7 +17269,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "54e973add709c7da3a36d938fb86ec5f1ce9623c917706ccb64c1e2a59029bc1"
+    "manifestHash": "b1998f64de9f60a38f42de6ed05ae619f349ff4d8a77a8f7db00a3c11fbf87ca"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -22336,7 +22336,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/market-canonical-v2.ts",
-              "hash": "2886b24d8bc8b98cb8894099af1bead1d45c1c4bd08442cc5763c2758b48386f"
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
             },
             {
               "path": "packages/market-reference/src/market-objects.ts",
@@ -22352,11 +22352,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "2026801190745f5b8ac4b24bff58d4dba27cd2c338204080407225a0c7a617b3"
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
-              "hash": "3102343ee9ec6921c4e52dff1547b9e0c6fc47154a2d2c24fbd44042cb6a3f7c"
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
             },
             {
               "path": "packages/market-reference/src/strict-json.ts",
@@ -22523,7 +22523,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "f8d4d5377d3094c99598e48306fb6854b3d56ab99f90caef44e5f0c0b6fa9678"
+          "hash": "808c030191d98585c1b04c558847e04716c5c70da22864752fcac3780ec42699"
         },
         "evidence": [
           {
@@ -22549,7 +22549,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "f44b7cb8ec68cab377ea9087eb43745a1ba519217f6c3d5bbd52e56483f17a0c"
+    "manifestHash": "7c791fe22edb02d60e0c1ea584b644e7f96e66926af16f8212772aacdd2f8c75"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31390,7 +31390,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/market-canonical-v2.ts",
-              "hash": "2886b24d8bc8b98cb8894099af1bead1d45c1c4bd08442cc5763c2758b48386f"
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
             },
             {
               "path": "packages/market-reference/src/market-objects.ts",
@@ -31406,11 +31406,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "2026801190745f5b8ac4b24bff58d4dba27cd2c338204080407225a0c7a617b3"
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
-              "hash": "3102343ee9ec6921c4e52dff1547b9e0c6fc47154a2d2c24fbd44042cb6a3f7c"
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
             },
             {
               "path": "packages/market-reference/src/strict-json.ts",
@@ -31577,7 +31577,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "4b99560d2ffae9276959e6f677f443f06b9d80931f03c870ce839c977013d350"
+          "hash": "c85683fa64a08d2e9567b8fe801b47108edf2d39d86200926c0a0e444c08aa8d"
         },
         "evidence": [
           {
@@ -31603,7 +31603,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "99e9a76109b19de8e25a5245b31ecd57c5c0c24f077ee78a8923cff7f2d6277f"
+    "manifestHash": "36b9da4e5af5f040aafa0e98e32d1d0c086bacda49fa3c6f396e205b5d12b9ba"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -55227,7 +55227,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/market-canonical-v2.ts",
-              "hash": "2886b24d8bc8b98cb8894099af1bead1d45c1c4bd08442cc5763c2758b48386f"
+              "hash": "9a3d1bd61f52732a08b774f34dca624f233ca8bbfe9576d9a32524629d0cb5e2"
             },
             {
               "path": "packages/market-reference/src/market-objects.ts",
@@ -55243,11 +55243,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "2026801190745f5b8ac4b24bff58d4dba27cd2c338204080407225a0c7a617b3"
+              "hash": "8fe0292d62a870e2ac2335f471092bff44f171c27823f9d5afd30843d6f198a9"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
-              "hash": "3102343ee9ec6921c4e52dff1547b9e0c6fc47154a2d2c24fbd44042cb6a3f7c"
+              "hash": "33d9d6ab5164904974a7a37a1bc42755ba7854ee86593f4a81da080ade0f94cc"
             },
             {
               "path": "packages/market-reference/src/strict-json.ts",
@@ -55414,7 +55414,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "e66a01e696cf2a5917251b9c47cbb39efb9a2d09508a4515ea439ed8466ebe69"
+          "hash": "f345db5c049e98c236f2d9ff046d705adf3855810e6d5b1241c49f13e3567634"
         },
         "evidence": [
           {
@@ -55440,7 +55440,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "cf68a00484edf9b693edfe49f73e01de7ec30096f56750d1d6c4e38142550008"
+    "manifestHash": "4f316621bde8f8b59d40ead875625f4d52163a1738238ead1b01178631ef8552"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

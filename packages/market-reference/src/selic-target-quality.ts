@@ -1,4 +1,5 @@
 import {availableForDataBase, nextCivilDate} from "./market-availability";
+import {stripLeadingZeros, stripTrailingZeros} from "./market-canonical-v2";
 import {selicTargetHomologatedFrom, type CopomCommunique, type SelicTargetObservation} from "./selic-target-contract";
 
 /** Quality policy of SGS 432 (decision 5 of the M2 plan). Availability by acquisition is not
@@ -28,7 +29,7 @@ export function compareDecimal(a: string, b: string): number {
   const norm = (x: string) => {
     if (!/^\d+(?:\.\d+)?$/.test(x)) throw new Error("market_decimal_invalid");
     const [i, f = ""] = x.split(".") as [string, string?];
-    return [i.replace(/^0+(?=\d)/, ""), f.replace(/0+$/, "")] as const;
+    return [stripLeadingZeros(i), stripTrailingZeros(f)] as const;
   };
   const [ai, af] = norm(a), [bi, bf] = norm(b);
   if (ai.length !== bi.length) return ai.length < bi.length ? -1 : 1;
