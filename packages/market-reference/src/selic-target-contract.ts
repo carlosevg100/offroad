@@ -44,7 +44,12 @@ export class MarketContractError extends Error {
 const fail = (code: string): never => {throw new MarketContractError(code);};
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-const realDate = (d: string) => isoDate.test(d) && d >= "1900-01-01" && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+/** A calendar date that exists; an impossible month or day is false, never an exception. */
+const realDate = (d: string) => {
+  if (!isoDate.test(d) || d < "1900-01-01") return false;
+  const t = Date.parse(`${d}T00:00:00Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === d;
+};
 const brDate = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
 const fromBrDate = (d: string) => /^\d{2}\/\d{2}\/\d{4}$/.test(d) ? `${d.slice(6, 10)}-${d.slice(3, 5)}-${d.slice(0, 2)}` : null;
 

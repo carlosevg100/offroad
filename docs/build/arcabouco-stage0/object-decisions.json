@@ -328177,6 +328177,12 @@
           "line": 486,
           "anchor": "create function private.guard_market_version_v2_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021215110_market_m2_version_commit_fixes_2.sql",
+          "line": 86,
+          "anchor": "create or replace function private.guard_market_version_v2_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -329913,6 +329919,12 @@
         {
           "path": "supabase/migrations/20261021212420_market_m2_version_commit_fixes.sql",
           "line": 3,
+          "anchor": "create or replace function private.worker_commit_market_version_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_content bytea,p_content_type text,p_acquired_at timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021215110_market_m2_version_commit_fixes_2.sql",
+          "line": 4,
           "anchor": "create or replace function private.worker_commit_market_version_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_content bytea,p_content_type text,p_acquired_at timestamptz) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -339762,6 +339774,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 1, confirmação de versão",
       "reason": "Correção revelada pelos testes SQL: o replay da confirmação de versão só responde enquanto o token do worker que confirmou continua ativo, como no replay antigo."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261021215110_market_m2_version_commit_fixes_2.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Correções da revisão independente da implementação: prazo do lease lido depois da última escrita, taxa da reunião comparada por valor, versão v1 sem campos de v2."
     }
   ],
   "staging_archive": [

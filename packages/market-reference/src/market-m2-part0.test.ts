@@ -322,6 +322,8 @@ describe("per-period selection", () => {
     const atLimit = {...relinked, evidenceAvailableAt: "2026-10-06T03:00:00Z"};
     expect(run([older, atLimit], {dataBase: "2026-10-05"}).every((e) => e.versionId === older.id)).toBe(true);
     expect(run([older, {...atLimit, evidenceAvailableAt: "2026-10-06T02:59:59.999999Z"}], {dataBase: "2026-10-05"}).every((e) => e.versionId === relinked.id)).toBe(true);
+    // A right that refuses the successor does not bring the predecessor back.
+    expect(run([older, relinked], {dataBase: "2026-10-05", allowed: (x) => x.id !== relinked.id})).toEqual([]);
     // A root whose own evidence came after D serves no period for D.
     const late = v(6, "2026-09-25T12:00:00Z", ["2026-09-19"], {evidenceAvailableAt: "2026-10-02T12:00:00Z"});
     expect(run([older, late]).map((e) => e.versionId)).toEqual([older.id, older.id, older.id]);

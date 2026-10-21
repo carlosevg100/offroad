@@ -80,14 +80,15 @@ export function selectPeriods(input: {
   const superseded = new Set(known.flatMap((v) => v.supersedes === null ? [] : [v.supersedes]));
   const current = known.filter((v) => !superseded.has(v.id));
   if (new Set(current.map((v) => v.acquisitionId)).size !== current.length) throw new Error("market_acquisition_two_current_versions");
-  // Per chain, the most recent version recorded by K whose evidence was available for D.
-  const usable = known.filter((v) => availableForDataBase({acquiredAt: v.acquiredAt, availableAt: v.evidenceAvailableAt}, input.dataBase) && input.allowed(v));
+  // Per chain, the most recent version recorded by K whose evidence was available for D. The right is
+  // applied to that version only: refusing a successor never brings its predecessor back.
+  const available = known.filter((v) => availableForDataBase({acquiredAt: v.acquiredAt, availableAt: v.evidenceAvailableAt}, input.dataBase));
   const latest = new Map<string, SelectableVersion>();
-  for (const v of usable) {
+  for (const v of available) {
     const cur = latest.get(v.acquisitionId);
     if (!cur || instantMicros(v.recordedAt) > instantMicros(cur.recordedAt)) latest.set(v.acquisitionId, v);
   }
-  const eligible = [...latest.values()];
+  const eligible = [...latest.values()].filter((v) => input.allowed(v));
   const revoked = input.revocations.filter((r) => instantMicros(r.recordedAt) <= k && availableForDataBase({acquiredAt: r.acquiredAt, availableAt: r.acquiredAt}, input.dataBase));
   const best = new Map<string, SelectableVersion>();
   for (const v of eligible) for (const p of v.periods) {

@@ -93,6 +93,11 @@ commit;`);
   const queueA = m.createMarketAcquisitionQueue(workerA, tokens.a), queueB = m.createMarketAcquisitionQueue(workerB, tokens.b);
   const storeA = m.createMarketObjectStore(workerA), storeB = m.createMarketObjectStore(workerB);
 
+  // Earlier CI steps leave abandoned bytes of the same source; the delegated worker sweeps them first, so
+  // the sweep below counts only the proof's own attempt.
+  for (let round = 0; round < 50 && await m.sweepMarketOrphans(queueA, storeA, 100) > 0; round++);
+  assert.equal(await m.sweepMarketOrphans(queueA, storeA, 100), 0, 'leftover orphans not drained');
+
   // 1. Positive: a single-request upload just under the attempt limit, confirmed by Storage's own MD5.
   assert.equal(await queueB.claim(), null, 'undelegated worker claimed');
   const claim = await queueA.claim();

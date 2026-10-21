@@ -130,7 +130,11 @@ do $$ declare r jsonb;m private.market_copom_meetings;begin
   pg_temp.detail(9002,'2025-10-07','cut','14,25'))$q$,'market_copom_meeting_disagreement','repeat that disagrees with the reference');
  perform pg_temp.expect($q$select pg_temp.run('x','3a780000-0000-4000-a000-000000000205','bcb-copom-comunicados-detalhe','{"meeting":9003}',
   pg_temp.detail(9003,'2025-09-16','hold','15,00'))$q$,'market_copom_meeting_day_collision','two meetings on one day');
- if (select count(*) from private.market_copom_meetings)<>2 then raise exception 'meeting rows wrong';end if;
+ -- The same rate written with a leading zero agrees with the reference.
+ r:=pg_temp.run('d4','3a780000-0000-4000-a000-000000000206','bcb-copom-comunicados-detalhe','{"meeting":9004}',pg_temp.detail(9004,'2025-12-10','hold','5,00'));
+ r:=pg_temp.run('d5','3a780000-0000-4000-a000-000000000207','bcb-copom-comunicados-detalhe','{"meeting":9004}',pg_temp.detail(9004,'2025-12-10','hold','05,00'));
+ if (r->>'reference')::boolean then raise exception 'rate spelled differently disagreed: %',r;end if;
+ if (select count(*) from private.market_copom_meetings)<>3 then raise exception 'meeting rows wrong';end if;
  perform pg_temp.expect($q$update private.market_copom_meetings set target_pct='14.00'$q$,'*','meeting rewritten');
  if exists(select 1 from private.market_select_evidence_v1('2025-09-17','2025-10-10','2025-09-01')) then raise exception 'evidence acquired after the data-base was selected';end if;
 end $$;
@@ -190,6 +194,8 @@ do $$ declare v private.market_versions;begin
   v.logical_id,v.parser_version,v.license,v.normalization_id,v.acquisition_id,v.data_base,v.window_start,v.window_end,v.evidence_available_at),'23505','second root for an acquisition');
  perform pg_temp.expect(format($q$insert into private.market_versions(id,logical_id,parser_version,sha256,license,supersedes) values(gen_random_uuid(),%L,'x',repeat('0',64),%L,%L)$q$,
   v.logical_id,v.license,pg_temp.fact('v2')),'market_version_v2_required','v1 successor of a v2 version');
+ perform pg_temp.expect(format($q$insert into private.market_versions(id,logical_id,parser_version,sha256,license,acquisition_id) values(gen_random_uuid(),%L,'x',repeat('0',64),%L,%L)$q$,
+  v.logical_id,v.license,v.acquisition_id),'market_version_v2_invalid','v1 version naming a contract acquisition');
  insert into private.market_versions(id,logical_id,parser_version,sha256,license) values('3a780000-0000-4000-a000-000000000501',v.logical_id,'x',repeat('0',64),v.license);
  perform pg_temp.expect(format($q$insert into private.market_version_inputs(version_id,acquisition_id) values('3a780000-0000-4000-a000-000000000501',%L)$q$,v.acquisition_id),
   'market_version_v2_required','v1 version reading a contract acquisition');
