@@ -199,14 +199,3 @@ export * from "./pricing-truth";
 export * from "./decision-reference";
 
 export * from "./market-objects";
-
-export * from "./market-availability";
-
-export * from "./selic-target-contract";
-
-export * from "./selic-target-quality";
-
-export * from "./market-period-selection";
-
-export * from "./market-canonical-v2";
-export * from "./strict-json";
