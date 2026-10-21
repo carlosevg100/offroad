@@ -24,7 +24,7 @@ do $$ declare c jsonb;bytes bytea;got jsonb;err text;failures text[]:='{}';n int
    end if;
   exception when others then err:=sqlerrm;
   end;
-  if case when c->'expect' ? 'error' then err is distinct from c#>>'{expect,error}' else err is not null or got is distinct from c->'expect' end
+  if (case when c->'expect' ? 'error' then err is distinct from c#>>'{expect,error}' else err is not null or got is distinct from c->'expect' end)
   then failures:=failures||(c->>'name'||': '||coalesce(err,got::text));end if;
  end loop;
  if n<50 then raise exception 'parse vectors not loaded (%)',n;end if;
