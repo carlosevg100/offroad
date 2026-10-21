@@ -158,9 +158,10 @@ describe("communiqué parser", () => {
       textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para 12,25% a.a.</p>"}), 258);
     expect([c.seriesChangeDate, c.regulatoryEffectiveFrom]).toEqual(["2023-11-02", "2023-11-03"]);
   });
-  it("accepts the wording with a gerund and two agreeing clauses", () => {
+  it("accepts the step wording, an adverbial phrase in prose and a gerund after a comma", () => {
+    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>Diante do elevado grau de incerteza, o Copom decidiu reduzir a taxa básica de juros em 0,25 ponto percentual, para 13,75% a.a.</p>"}), 281).targetPct).toBe("13.75");
     expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Comitê julgou apropriado, nesse momento, dar sequência ao ciclo, reduzindo a taxa básica de juros para 13,75% a.a.</p>"}), 281).targetPct).toBe("13.75");
-    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Copom decidiu, por unanimidade, reduzir a taxa para 13,75% a.a. [...] o Comitê decidiu reduzir a taxa para 13,75% a.a.</p>"}), 281).targetPct).toBe("13.75");
+    expect(parseCommuniqueDetail(detail({...record, textoComunicado: "<p>O Copom decidiu, por unanimidade, reduzir a taxa Selic para 13,75% a.a. [...] o Comitê decidiu reduzir a taxa para 13,50% a.a. num cenário</p>"}), 281).targetPct).toBe("13.75");
   });
   it("binds the record fingerprint to every field", () => {
     expect(communiqueRecordSha256({...record, textoComunicado: `${record.textoComunicado} `})).not.toBe(communiqueRecordSha256(record));
@@ -173,12 +174,14 @@ describe("communiqué parser", () => {
     ["a title with two rates", {conteudo: [{...record, titulo: "Copom reduz a taxa Selic de 14,00% a.a. para 13,75% a.a."}]}, "market_parse_communique_title"],
     ["a rate whose integer part has three digits", {conteudo: [{...record, titulo: "Copom reduz a taxa Selic para 112,25% a.a."}]}, "market_parse_communique_title"],
     ["a title without a decision verb", {conteudo: [{...record, titulo: "Copom: taxa Selic em 13,75% a.a."}]}, "market_parse_communique_title"],
-    ["a decision clause with another rate, even if the title rate appears later", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa para 13,50% a.a. No cenário alternativo, 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
     ["a text without a decision clause", {conteudo: [{...record, textoComunicado: "<p>A taxa passa a 13,75% a.a. Cenário de 4,50% a.a.</p>"}]}, "market_parse_communique_text"],
     ["a negative rate in the title", {conteudo: [{...record, titulo: "Copom reduz a taxa Selic para -13,75% a.a."}]}, "market_parse_communique_title"],
-    ["an earlier decision quoted beside a different current one", {conteudo: [{...record, textoComunicado: "<p>Na reunião anterior, o Copom decidiu reduzir a taxa para 13,75% a.a. Nesta reunião, o Copom decidiu reduzir a taxa para 13,50% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
-    ["a text that raises when the title cuts", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu elevar a taxa básica de juros para 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
-    ["a clause without a direction", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu fixar a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text_contradicts"],
+    ["a confirming clause only with another rate", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para 13,50% a.a. No cenário alternativo, 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a text that raises when the title cuts", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu elevar a taxa básica de juros para 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a wording outside the grammar", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu fixar a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a negated decision", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu não reduzir, mas elevar a taxa para 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a sign separated by a space or a tag", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros para - <b>13,75</b>% a.a.</p>"}]}, "market_parse_communique_text"],
+    ["a cut that says em", {conteudo: [{...record, textoComunicado: "<p>O Copom decidiu reduzir a taxa básica de juros em 13,75% a.a.</p>"}]}, "market_parse_communique_text"],
     ["an impossible date", {conteudo: [{...record, dataReferencia: "2026-02-30"}]}, "market_parse_communique_date"],
   ])("refuses %s", (_, body, code) => expect(() => parseCommuniqueDetail(bytes(body), 281)).toThrow(code));
   it("refuses strings Postgres cannot hold the same way", () => {

@@ -44,7 +44,7 @@ export class MarketContractError extends Error {
 const fail = (code: string): never => {throw new MarketContractError(code);};
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
-const realDate = (d: string) => isoDate.test(d) && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
+const realDate = (d: string) => isoDate.test(d) && d >= "1900-01-01" && new Date(`${d}T00:00:00Z`).toISOString().slice(0, 10) === d;
 const brDate = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
 const fromBrDate = (d: string) => /^\d{2}\/\d{2}\/\d{4}$/.test(d) ? `${d.slice(6, 10)}-${d.slice(3, 5)}-${d.slice(0, 2)}` : null;
 
@@ -155,14 +155,13 @@ export type CopomCommunique = {
  * percent-per-year suffix. `112,25% a.a.` and `-13,75% a.a.` have no token. */
 const rateToken = /(?<![\d,.+\-\u2212])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
 const titleVerb: Record<string, CopomDecision> = {eleva: "raise", reduz: "cut", "mantém": "hold"};
-/** A decision clause of the communiqué text, in the wordings used since 2021: "decidiu [...] para
- * X% a.a.", "decidiu manter [...] em X% a.a.", "decidiu realizar [...], elevando [...] para X% a.a."
- * and "reduzindo a taxa básica de juros para X% a.a." A clause ends at the first rate after its
- * opening word and names its direction by the first of elev-, reduz-, mant- inside it. Every one of
- * the 47 communiqués from meeting 235 to 281 has one or two clauses, all with the title's rate and
- * direction. */
-const decisionClause = /(decidiu|elevando|reduzindo|mantendo)([^%]{0,200}?)(?<![\d,.+\-\u2212])(\d{1,2},\d{2})\s*%\s*a\.a\./g;
-const clauseVerb: Record<string, CopomDecision> = {elev: "raise", reduz: "cut", mant: "hold"};
+/** The confirming clause of the communiqué text: a closed grammar built from the wordings used since
+ * 2021, matched exactly on the plain text. "decidiu[, por unanimidade,] (elevar|reduzir|manter) a taxa
+ * (Selic|básica de juros)[ em N,NN ponto(s) percentual(is),] (para|em) X% a.a.", or the same after a
+ * gerund that follows a comma (", elevando" / ", reduzindo"). A hold says "em" with no step; a raise
+ * or cut says "para". Each of the 47 communiqués from meeting 235 to 281 has at least one. */
+const confirmingClause = /(?:(?<![\p{L}\p{N}])decidiu(?:, por unanimidade,)? (elevar|reduzir|manter)|, (elevando|reduzindo)) a taxa (?:Selic|básica de juros)( em \d,\d{2} pontos? percentua(?:l|is),)? (para|em) (\d{1,2},\d{2})% a\.a\./gu;
+const clauseVerb: Record<string, CopomDecision> = {elevar: "raise", elevando: "raise", reduzir: "cut", reduzindo: "cut", manter: "hold"};
 
 /** Text of the communiqué for the value check: tags removed, numeric and basic named entities
  * decoded, whitespace collapsed. */
@@ -171,7 +170,7 @@ export function communiquePlainText(html: string): string {
     .replace(/&#(\d{1,7});/g, (_, n: string) => String.fromCodePoint(Math.min(Number(n), 0x10ffff)))
     .replace(/&#x([0-9a-f]{1,6});/gi, (_, n: string) => String.fromCodePoint(Math.min(parseInt(n, 16), 0x10ffff)))
     .replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ").trim();
+    .replace(/[\u200b-\u200d\ufeff]/g, "").replace(/\s+/g, " ").trim();
 }
 
 /** The fingerprint of a communiqué record, over the four fields exactly as received, each free text
@@ -194,11 +193,14 @@ export function nextBusinessDay(date: string): string {
 }
 
 /** Parses a detail response exactly: one record, the four documented fields and nothing else, the
- * requested meeting, a real reference date, a title with one decision verb and one rate token, and
- * a text with at least one decision clause, every clause stating the title's rate and direction. A
- * text without a clause, a clause without a direction, or any clause that disagrees (an earlier
- * decision quoted beside the current one included) refuses the communiqué: ambiguity never reaches
- * quality. */
+ * requested meeting, a real reference date, a title with one decision verb and one rate token, and a
+ * text with at least one confirming clause that states the title's direction and rate.
+ *
+ * Trust model: the value is the SGS series; the title is an independent structured corroboration
+ * that quality compares with the series; the text is archived evidence, fingerprinted, that must
+ * confirm the title in one exact clause. The rest of the text is free prose (scenarios, earlier
+ * decisions, risks) and is not interpreted: no regular expression reads natural language safely, and
+ * a text that disagrees with a title and a series that agree does not make the series wrong. */
 export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): CopomCommunique {
   checkCommuniqueRequest({kind: "detail", meeting});
   const body = readJson(bytes);
@@ -213,12 +215,9 @@ export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): Copom
   const verbs = [...record.titulo.matchAll(/Copom (eleva|reduz|mantém)(?![\p{L}])/gu)].map((m) => m[1]!);
   if (values.length !== 1 || verbs.length !== 1) fail("market_parse_communique_title");
   const pct = values[0]!, decision = titleVerb[verbs[0]!]!, plain = communiquePlainText(record.textoComunicado);
-  const clauses = [...plain.matchAll(decisionClause)];
-  if (clauses.length === 0) fail("market_parse_communique_text");
-  for (const c of clauses) {
-    const stem = /(elev|reduz|mant)/.exec(`${c[1]}${c[2]}`)?.[1];
-    if (stem === undefined || clauseVerb[stem] !== decision || c[3] !== pct) fail("market_parse_communique_text_contradicts");
-  }
+  const confirmed = [...plain.matchAll(confirmingClause)].some((c) =>
+    clauseVerb[c[1] ?? c[2]!] === decision && c[5] === pct && (decision === "hold") === (c[4] === "em") && (decision !== "hold" || c[3] === undefined));
+  if (!confirmed) fail("market_parse_communique_text");
   return {
     meeting, referenceDate: record.dataReferencia, decision, targetPct: pct.replace(",", "."),
     recordSha256: communiqueRecordSha256(record), seriesChangeDate: nextCivilDate(record.dataReferencia),
