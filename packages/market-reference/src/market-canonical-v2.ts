@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import {canonicalInstant} from "./market-availability";
 
 /** `market-canonical.v2`: the text a version's fingerprint is taken over, for observed objects from
  * M2 on (decision 3 of the M2 plan). Version 1 stays verifiable for the seals it signed.
@@ -28,7 +29,6 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const slug = /^[a-z0-9][a-z0-9._-]{0,79}$/;
 const sha = /^[a-f0-9]{64}$/;
 const date = /^\d{4}-\d{2}-\d{2}$/;
-const instantText = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/;
 const decimal = /^-?\d{1,24}(?:\.\d{1,20})?$/;
 const units = new Set(["percent_per_year", "percent_per_month", "ratio", "index_points", "currency", "basis_points", "count"]);
 
@@ -46,15 +46,8 @@ export function trimDecimal(value: string): string {
   return negative && /[1-9]/.test(body) ? `-${body}` : body;
 }
 
-/** An instant in the canonical UTC form with microseconds. Offsets are normalised; more than six
- * fractional digits are refused rather than rounded. */
-export function canonicalInstant(value: string): string {
-  const m = instantText.exec(value);
-  need(m !== null && realDate(m[1]!), "canonical_instant");
-  const micros = (m![5] ?? "").padEnd(6, "0");
-  const ms = Date.parse(`${m![1]}T${m![2]}:${m![3]}:${m![4]}${m![6]}`);
-  need(!Number.isNaN(ms), "canonical_instant");
-  return `${new Date(ms).toISOString().slice(0, 19)}.${micros}Z`;
+function instantLine(value: string): string {
+  try {return canonicalInstant(value);} catch {throw new CanonicalError("canonical_instant");}
 }
 
 export function canonicalTextV2(input: CanonicalV2Input): string {
@@ -74,8 +67,8 @@ export function canonicalTextV2(input: CanonicalV2Input): string {
   need(new Set(links.map((l) => l.meeting)).size === links.length, "canonical_link_repeated");
   const observations = input.observations.map((o) => {
     need((o.periodStart === null || realDate(o.periodStart)) && realDate(o.periodEnd) && units.has(o.unit) && /^1(?:0{1,9})?$/.test(o.scale), "canonical_observation");
-    return {key: `${o.periodEnd}|${o.periodStart ?? ""}`, line: [o.periodStart ?? "", o.periodEnd, canonicalInstant(o.availableAt), canonicalInstant(o.acquiredAt), trimDecimal(o.value), o.unit, o.scale].join("|")};
-  }).sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+    return {end: o.periodEnd, start: o.periodStart, key: `${o.periodEnd}|${o.periodStart ?? "null"}`, line: [o.periodStart ?? "", o.periodEnd, instantLine(o.availableAt), instantLine(o.acquiredAt), trimDecimal(o.value), o.unit, o.scale].join("|")};
+  }).sort((a, b) => a.end < b.end ? -1 : a.end > b.end ? 1 : a.start === b.start ? 0 : a.start === null ? -1 : b.start === null ? 1 : a.start < b.start ? -1 : 1);
   need(new Set(observations.map((o) => o.key)).size === observations.length, "canonical_period_repeated");
   return [
     marketCanonicalV2,
@@ -97,9 +90,9 @@ export function canonicalSha256V2(input: CanonicalV2Input): string {
 
 /** The fingerprint of a series contract: its closed fields in a fixed order, so the canonical text of
  * a version names exactly the contract it was parsed under. */
-export function seriesContractSha256(contract: {id: string; host: string; path: string; unit: string; scale: string; convention: string; parser: string; licenseEvidence: string; homologatedFrom: string; maxWindowYears: number}): string {
+export function seriesContractSha256(contract: {id: string; host: string; path: string; unit: string; scale: string; convention: string; parser: string; licenseEvidence: string; homologatedFrom: string; maxWindowYears: number; calendar: string}): string {
   const text = ["market-series-contract.v1", `id:${contract.id}`, `host:${contract.host}`, `path:${contract.path}`, `unit:${contract.unit}`,
     `scale:${contract.scale}`, `convention:${contract.convention}`, `parser:${contract.parser}`, `license:${contract.licenseEvidence}`,
-    `homologated-from:${contract.homologatedFrom}`, `max-window-years:${contract.maxWindowYears}`].join("\n");
+    `homologated-from:${contract.homologatedFrom}`, `max-window-years:${contract.maxWindowYears}`, `calendar:${contract.calendar}`].join("\n");
   return createHash("sha256").update(text, "utf8").digest("hex");
 }

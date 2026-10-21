@@ -32,11 +32,34 @@ export function dataBaseLimit(dataBase: string): string {
   return new Date(hi).toISOString();
 }
 
+const instantGrammar = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?(Z|([+-])(\d{2}):(\d{2}))$/;
+
+/** An instant in microseconds since the epoch, the precision of Postgres `timestamptz`. The grammar
+ * is closed (RFC 3339 with at most six fractional digits); seven digits are refused, never rounded. */
+export function instantMicros(value: string): bigint {
+  const m = instantGrammar.exec(value);
+  if (!m) throw new Error("market_instant_invalid");
+  const [y, mo, d, h, mi, s] = m.slice(1, 7).map(Number) as [number, number, number, number, number, number];
+  const ms = Date.UTC(y, mo - 1, d, h, mi, s);
+  const check = new Date(ms);
+  if (check.getUTCFullYear() !== y || check.getUTCMonth() !== mo - 1 || check.getUTCDate() !== d || h > 23 || mi > 59 || s > 59) throw new Error("market_instant_invalid");
+  const offsetMinutes = m[8] === "Z" ? 0 : (m[9] === "-" ? -1 : 1) * (Number(m[10]) * 60 + Number(m[11]));
+  if (m[8] !== "Z" && (Number(m[10]) > 23 || Number(m[11]) > 59)) throw new Error("market_instant_invalid");
+  return (BigInt(ms) - BigInt(offsetMinutes) * 60_000n) * 1000n + BigInt((m[7] ?? "").padEnd(6, "0"));
+}
+
+/** The canonical UTC text of an instant: six fractional digits and `Z`. */
+export function canonicalInstant(value: string): string {
+  const micros = instantMicros(value);
+  const ms = micros / 1000n, rest = micros % 1000n;
+  const floorMs = rest < 0n ? ms - 1n : ms, sub = rest < 0n ? rest + 1000n : rest;
+  const iso = new Date(Number(floorMs)).toISOString();
+  return `${iso.slice(0, 23)}${sub.toString().padStart(3, "0")}Z`;
+}
+
 /** Whether something acquired (and made available) at these instants may be read with data-base D:
  * both strictly before the limit. Equal to the limit is already the next day. */
 export function availableForDataBase(item: {acquiredAt: string; availableAt: string}, dataBase: string): boolean {
-  const limit = Date.parse(dataBaseLimit(dataBase));
-  const acquired = Date.parse(item.acquiredAt), available = Date.parse(item.availableAt);
-  if (Number.isNaN(acquired) || Number.isNaN(available)) throw new Error("market_instant_invalid");
-  return acquired < limit && available < limit;
+  const limit = instantMicros(dataBaseLimit(dataBase));
+  return instantMicros(item.acquiredAt) < limit && instantMicros(item.availableAt) < limit;
 }

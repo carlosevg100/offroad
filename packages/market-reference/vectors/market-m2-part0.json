@@ -1,7 +1,7 @@
 {
  "schemaVersion": "offroad.market-m2-vectors.v1",
  "generatedBy": "independent Python implementation (zoneinfo, decimal), 21/10/2026",
- "seriesContractSha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4",
+ "seriesContractSha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee",
  "canonicalV2": [
   {
    "name": "basic",
@@ -9,12 +9,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -61,8 +61,8 @@
      }
     ]
    },
-   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4\nparser:bcb-sgs-daily-json.v1\nquality-policy:bcb-sgs-432-quality@v1\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
-   "sha256": "871a8f5f131dfedf3e779ffd8b9c6f674987646d3d1bb96f5f72fb1a5a353935"
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
+   "sha256": "15ab775a44bfb8d755a2aadaceb0530edd8219cdd5585d4b069398c4706a4061"
   },
   {
    "name": "offset_instants_normalise",
@@ -70,12 +70,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -122,8 +122,8 @@
      }
     ]
    },
-   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4\nparser:bcb-sgs-daily-json.v1\nquality-policy:bcb-sgs-432-quality@v1\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
-   "sha256": "871a8f5f131dfedf3e779ffd8b9c6f674987646d3d1bb96f5f72fb1a5a353935"
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
+   "sha256": "15ab775a44bfb8d755a2aadaceb0530edd8219cdd5585d4b069398c4706a4061"
   },
   {
    "name": "trimmed_decimals",
@@ -131,12 +131,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -192,8 +192,8 @@
      }
     ]
    },
-   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4\nparser:bcb-sgs-daily-json.v1\nquality-policy:bcb-sgs-432-quality@v1\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|0.5|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|100|percent_per_year|1\n|2026-09-19|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|0|percent_per_year|1",
-   "sha256": "77bcce0a4639358b0b43f6fba6f94d1fb95ba68778b36cd019aaac3cfa911e0e"
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|0.5|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|100|percent_per_year|1\n|2026-09-19|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|0|percent_per_year|1",
+   "sha256": "bde8f264b66ac45d6e00d4743539946b5da5b9bf98d356843ef4f16af51e57b9"
   },
   {
    "name": "reprocess_sorted_lists",
@@ -201,12 +201,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -262,8 +262,8 @@
      }
     ]
    },
-   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4\nparser:bcb-sgs-daily-json.v1\nquality-policy:bcb-sgs-432-quality@v1\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b71,a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f\nlinks:\n280|2026-08-05|cut|14|6601199ed55d7bcbe4fccc37ef3390fded4bf4dbc9b706dabf2dfcaf1a0ee82b|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a61\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-08-05|2026-10-21T15:04:05.000001Z|2026-10-21T15:04:05.000001Z|14.25|percent_per_year|1\n|2026-08-06|2026-10-21T15:04:05.100000Z|2026-10-21T15:04:05.100000Z|14|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.000000Z|2026-10-21T15:04:05.000000Z|13.75|percent_per_year|1",
-   "sha256": "6c9c14757ed9584c18c4a327f9c43039ce598b75506f6b091aaff1c48c5fbfb6"
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b71,a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f\nlinks:\n280|2026-08-05|cut|14|6601199ed55d7bcbe4fccc37ef3390fded4bf4dbc9b706dabf2dfcaf1a0ee82b|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a61\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-08-05|2026-10-21T15:04:05.000001Z|2026-10-21T15:04:05.000001Z|14.25|percent_per_year|1\n|2026-08-06|2026-10-21T15:04:05.100000Z|2026-10-21T15:04:05.100000Z|14|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.000000Z|2026-10-21T15:04:05.000000Z|13.75|percent_per_year|1",
+   "sha256": "a5c00b476dc0ed3f73a4672e9f6a735d1cd172a5c3b5f809a21f4d61ec9a8578"
   },
   {
    "name": "no_links",
@@ -271,12 +271,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -314,8 +314,285 @@
      }
     ]
    },
-   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4\nparser:bcb-sgs-daily-json.v1\nquality-policy:bcb-sgs-432-quality@v1\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
-   "sha256": "5c1803a5b98c612ed874e7c90d3c4f3e7386f729b3832189c4126465d5a3b8e8"
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
+   "sha256": "373faf8407c604b31410a24e109cae7ad0aa63c03ee7b70f7c24705d78c22b0b"
+  },
+  {
+   "name": "precision_limits",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-16",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "123456789012345678901234.12345678901234567890",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-17",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "0.00000000000000000001",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-18",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "-0.10000000000000000000",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|123456789012345678901234.1234567890123456789|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|0.00000000000000000001|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|-0.1|percent_per_year|1",
+   "sha256": "fcfdc6332847b96366b08c4e125d636396443cbb057efe72dcc8ba97a80f1636"
+  },
+  {
+   "name": "null_start_sorts_first",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-30",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "1.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-30",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "2.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": "2026-09-15",
+      "periodEnd": "2026-09-30",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "3.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-30|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|2|percent_per_year|1\n2026-09-01|2026-09-30|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|1|percent_per_year|1\n2026-09-15|2026-09-30|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|3|percent_per_year|1",
+   "sha256": "6b42f7623560a552841ceff0428fe29de04add9866395a353610cefeaad2127f"
+  },
+  {
+   "name": "bytewise_uuid_and_numeric_meeting_order",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "f0000000-0000-4000-8000-000000000000",
+     "0fffffff-ffff-4fff-bfff-ffffffffffff",
+     "a0000000-0000-4000-8000-000000000000"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 1000,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     },
+     {
+      "meeting": 99,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     },
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-16",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "14.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-17",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-18",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0fffffff-ffff-4fff-bfff-ffffffffffff,a:a0000000-0000-4000-8000-000000000000,a:f0000000-0000-4000-8000-000000000000\nsupersedes:null\nlinks:\n99|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\n1000|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|14|percent_per_year|1\n|2026-09-17|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1\n|2026-09-18|2026-10-21T15:04:05.123456Z|2026-10-21T15:04:05.123456Z|13.75|percent_per_year|1",
+   "sha256": "f7b5547961e42fbf533c612128ce50f754df6e511f54c98c86d440725b921dac"
+  },
+  {
+   "name": "offset_crosses_utc_date_and_year",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-16",
+      "availableAt": "2026-10-21T23:30:00.5-03:00",
+      "acquiredAt": "2026-10-21T23:30:00.5-03:00",
+      "value": "14.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-17",
+      "availableAt": "2026-12-31T22:00:00.000001-03:00",
+      "acquiredAt": "2026-12-31T22:00:00.000001-03:00",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\n281|2026-09-16|cut|13.75|5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0|9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60\nobservations:\n|2026-09-16|2026-10-22T02:30:00.500000Z|2026-10-22T02:30:00.500000Z|14|percent_per_year|1\n|2026-09-17|2027-01-01T01:00:00.000001Z|2027-01-01T01:00:00.000001Z|13.75|percent_per_year|1",
+   "sha256": "f0164daead91f3511e7ccd658e4e33cd5f21ebd7487b3b8591c0fa647456a942"
+  },
+  {
+   "name": "empty_lists",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [],
+    "observations": []
+   },
+   "canonical": "market-canonical.v2\nsource-revision:6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01\nseries-contract:bcb-sgs-432@eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee\nparser:bcb-sgs-daily-json.v2\nquality-policy:bcb-sgs-432-quality@v2\navailability:observed_at_acquisition\ninputs:a:0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72\nsupersedes:null\nlinks:\nobservations:",
+   "sha256": "34cea85bf37d382703c2c55aa3b48b1891018774737a5560ff28e6d4903ff29c"
   }
  ],
  "canonicalV2Refusals": [
@@ -325,12 +602,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -385,12 +662,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -445,12 +722,12 @@
     "sourceRevisionId": "6F1C2A40-8D3E-4B7A-9C11-2E5F8A9B0C01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -505,12 +782,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -574,12 +851,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
@@ -642,12 +919,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "official_publication",
     "acquisitionIds": [
@@ -702,12 +979,12 @@
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [],
@@ -755,17 +1032,137 @@
    "error": "canonical_inputs"
   },
   {
+   "name": "instant_without_offset",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-16",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456",
+      "value": "14.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-17",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-18",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "error": "canonical_instant"
+  },
+  {
+   "name": "invalid_hour",
+   "input": {
+    "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
+    "seriesContract": {
+     "id": "bcb-sgs-432",
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
+    },
+    "parser": "bcb-sgs-daily-json.v2",
+    "qualityPolicy": {
+     "id": "bcb-sgs-432-quality",
+     "version": "v2"
+    },
+    "availabilityBasis": "observed_at_acquisition",
+    "acquisitionIds": [
+     "0b7d3e52-1a4c-4e8f-b2d6-9c0a1e3f5b72"
+    ],
+    "supersedes": null,
+    "links": [
+     {
+      "meeting": 281,
+      "referenceDate": "2026-09-16",
+      "decision": "cut",
+      "targetPct": "13.75",
+      "recordSha256": "5878d831376adc98e9eaaa3f676365de389d47b62c3fb4882c6d04a9d17eb4d0",
+      "acquisitionId": "9e2b4c61-7d8a-4f3e-a5b9-1c2d3e4f5a60"
+     }
+    ],
+    "observations": [
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-16",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T24:00:00Z",
+      "value": "14.00",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-17",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     },
+     {
+      "periodStart": null,
+      "periodEnd": "2026-09-18",
+      "availableAt": "2026-10-21T15:04:05.123456Z",
+      "acquiredAt": "2026-10-21T15:04:05.123456Z",
+      "value": "13.75",
+      "unit": "percent_per_year",
+      "scale": "1"
+     }
+    ]
+   },
+   "error": "canonical_instant"
+  },
+  {
    "name": "invalid_date",
    "input": {
     "sourceRevisionId": "6f1c2a40-8d3e-4b7a-9c11-2e5f8a9b0c01",
     "seriesContract": {
      "id": "bcb-sgs-432",
-     "sha256": "11cd566edfeb865ea42a093430afeb07c23bb1979c88daa6104e96bfaeb1dba4"
+     "sha256": "eb892dc221c7b11d2ec37cf0ca8b0965584256498cd776ddc1811975a4e70aee"
     },
-    "parser": "bcb-sgs-daily-json.v1",
+    "parser": "bcb-sgs-daily-json.v2",
     "qualityPolicy": {
      "id": "bcb-sgs-432-quality",
-     "version": "v1"
+     "version": "v2"
     },
     "availabilityBasis": "observed_at_acquisition",
     "acquisitionIds": [
