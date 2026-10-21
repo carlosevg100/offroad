@@ -11,33 +11,44 @@ testes nomeados abaixo, revisão independente, prova em staging e produção, ma
 (evidência `bcb-catalog-meta-selic-432`), percentual ao ano, um valor por dia corrido. Unidade
 `percent_per_year`, convenção `meta_copom`, sem anualização nem conversão.
 
-**Prova de quando cada meta passou a valer: os comunicados do Copom.** O conjunto `atas-comunicados-copom`
-(Documentos do Copom, `odc-odbl` no mesmo catálogo, evidência a capturar na parte 0) publica cada
-comunicado com a data e a hora de divulgação. Pela Resolução BCB 61 (regulamento do Copom, art. 1º, § 2º),
-a meta decidida passa a vigorar no primeiro dia útil seguinte ao término da reunião. Cada mudança de
-valor na série 432 é ligada ao comunicado que a anunciou, e a observação guarda três instantes distintos:
-decisão (fim da reunião), divulgação do comunicado e início de vigência. A ata, publicada dias depois,
-não serve de prova. `available_at` de um valor é a divulgação do comunicado quando esse vínculo existe e
-é anterior à aquisição; sem vínculo, é a aquisição (`observed_at_acquisition`). O vínculo (identificador
-e hash do registro do comunicado) entra no fingerprint. A leitura com data-base D corta D no fim do dia
-em `America/Sao_Paulo`, compara instantes (não texto) e exige `available_at <= D` e `acquired_at <= D`.
-Reunião extraordinária segue a mesma regra; reunião sem mudança não reinicia a vigência.
+**Disponibilidade: a aquisição, até haver prova temporal oficial.** O conjunto `atas-comunicados-copom`
+(Documentos do Copom, `odc-odbl`) traz, por reunião, número, título, texto e `dataReferencia` (só data, sem
+hora). Isso não comprova o instante em que cada valor ficou público, nem a publicação original de uma
+revisão. Por isso, no M2, `available_at` de toda observação é a aquisição (`observed_at_acquisition`), e a
+leitura com data-base D usa o limite exclusivo do início de D+1 em `America/Sao_Paulo`, comparando
+instantes, com `available_at` e `acquired_at` anteriores a esse limite. O comunicado entra como evidência
+de valor e de vigência, não de disponibilidade: cada mudança de valor da 432 é ligada à reunião que a
+decidiu (número, data de referência com precisão de data, valor no título e no texto, hash do registro),
+e a vigência é o primeiro dia útil seguinte ao término da reunião (Resolução BCB 61, regulamento, art.
+1º, § 2º), sem inventar horário. O recorte homologado dessa regra começa na vigência da Resolução BCB 61;
+períodos anteriores não recebem a regra e não entram no M2. A evidência do comunicado só vale para leitura
+com data-base posterior à sua própria aquisição. A reprodução do texto dos comunicados segue os termos do
+site do Banco Central (reprodução com integridade e citação da fonte), registrados na evidência da parte 0.
 
 **Primeiro consumidor: o gatilho RG-01 do regime de precificação da casa.** A política
 `policy.pricing.regime` (`packages/credit-playbook/src/reference-data-proposals/pricing-market.ts`)
 declara o regime de afrouxamento iniciado em 19/03/2026 com o gatilho RG-01 ("o Copom inverte a direção
 do ciclo de cortes", ação: revisão obrigatória) e o monitoramento da meta Selic depois de cada reunião.
-O M2 implementa esse monitoramento: um avaliador determinístico em `packages/credit-playbook` lê a série
+A política está em estado `draft` no registro de referência; o monitor
+lê a versão declarada identificada (id e versão da política) e nunca a promove a aprovada. O evento que
+ele grava é "gatilho RG-01 disparado para o regime X", para o operador decidir a revisão. Manutenção da
+taxa, primeiro aumento depois de cortes, lacuna de dados, correção histórica e replay têm saída
+determinística e testada. O M2 implementa esse monitoramento: um avaliador determinístico em `packages/credit-playbook` lê a série
 observada pelo resolvedor interno, compara com o ciclo declarado (cortes, passo, decisões) e, quando a
 direção se inverte, registra o evento de revisão obrigatória para o operador, com a versão, o manifesto,
 o comunicado e a atribuição. A declaração histórica não muda: `referenceConditions` continua sendo o
 retrato da data em que foi declarado; o monitor só diz se o gatilho disparou. Nenhum tenant recebe
 número algum no M2.
 
-**A entrega ao tenant e a adoção tipada (decisão 10 da ADR) passam para o M3,** com o primeiro objeto que
-tem consumidor de premissa: as expectativas Focus (`expectativas-mercado`, `odc-odbl` no mesmo catálogo),
-que alimentam o caminho de juros dos cenários. A SGS 4189 também fica para o M3, com período mensal,
-evidência própria e transformação determinística.
+**O M2 muda de escopo, por emenda explícita à ADR na parte 0.** A primeira série deixa de ser a SGS 11
+(emenda de 21/10/2026, manhã) e passa a ser a 432. O M2 se encerra com aquisição, versão, qualidade,
+frescor, resolvedor interno, outbox e o monitor do RG-01, sem número entregue a tenant. O percurso
+completo de tenant (proposta, recibo de entrega, adoção tipada, execução, revogação e leitura do resultado,
+com todos os controles e testes da decisão 10) passa para o M3, com o primeiro objeto que tem consumidor de
+premissa: as expectativas Focus (`expectativas-mercado`, `odc-odbl`), que alimentam o caminho de juros dos
+cenários. A SGS 4189 também fica para o M3, com contrato próprio (período mensal, evidência e
+transformação determinística). A exceção de retenção (decisão 7 abaixo) é emenda separada, que retira da
+ADR e do handoff a condição de expurgo de confirmados para o M2.
 
 Fica registrado para o fundador: o mesmo arquivo de referência cita o CDI da série 4389, que não tem
 licença aberta, e carrega medianas de taxas indicativas da ANBIMA, cujos termos exigem autorização escrita
@@ -79,9 +90,12 @@ para uso em base de dados.
 
 5. **Qualidade, frescor e direito.** Qualidade: valor entre 0 e 100; mudança de valor só no primeiro dia
    útil seguinte a uma reunião (ordinária ou extraordinária) cujo comunicado está ligado; série sem buraco
-   de dia corrido na janela. Frescor: o prazo de uso e a latência tolerada são política interna da Offroad
+   de dia corrido na janela; dentro do recorte homologado. Disponibilidade por aquisição não é aprovação:
+   mudança sem comunicado ligado fica em quarentena. Frescor: o prazo de uso e a latência tolerada são política interna da Offroad
    registrada na revisão da fonte (o catálogo declara tempestividade "não se aplica"); o padrão é dois dias
-   úteis depois do primeiro dia útil seguinte a cada reunião do calendário publicado; passado o prazo, o
+   úteis depois do primeiro dia útil seguinte a cada reunião do calendário publicado, medido sobre o último
+   período coberto pela seleção, com recuperação depois de atraso e com reuniões extraordinárias somadas ao
+   calendário quando o comunicado aparece; passado o prazo, o
    resolvedor devolve `market_reference_stale`. Frescor é medido pelo último período coberto, não pela
    busca. Direito: licença vigente na leitura. Aprovação manual de quarentena registra a exceção e não
    altera frescor nem direito.
@@ -117,7 +131,7 @@ para uso em base de dados.
 
 | Parte | Entrega | Efeito |
 |---|---|---|
-| 0 | Contratos (série, disponibilidade com comunicado, seleção por período, canônico v2 com vetores) e evidência do conjunto de comunicados | Nenhum |
+| 0 | Emendas da ADR (série 432, encerramento do M2, percurso de tenant no M3); contratos (série 432 e comunicados com endpoint e reunião fechados, disponibilidade por aquisição com limite exclusivo de D+1 em São Paulo, vigência com precisão de data, seleção por período com teste de retirada oficial e manifestos anteriores preservados no reprocessamento, canônico v2 com vetores SQL e TypeScript); evidências do conjunto de comunicados e dos termos do site do Banco Central | Nenhum |
 | 1 | Parser da 432 e do comunicado, confirmação única com versão, qualidade, recusa da RPC antiga, capacidade nova | Transporte fechado |
 | 3 | Outbox, exceção de retenção em todos os caminhos, página pública ODbL, emendas de ADR e handoff | Transporte fechado |
 | 6 | Monitor do RG-01 com resolvedor interno e evento de revisão | Desligado até a abertura |
