@@ -2629,8 +2629,23 @@
       "name": "market_reference_event_order",
       "version": "20261020140134",
       "statements_md5": "cee8a8beed415f4517abf5a5af04ae28"
+    },
+    {
+      "name": "market_acquisition_job",
+      "version": "20261020204755",
+      "statements_md5": "2f90e3b93caa0dca3cb85767e6c60613"
+    },
+    {
+      "name": "market_acquisition_job_review_fixes",
+      "version": "20261020210311",
+      "statements_md5": "dbb73a4b722e07ba69bfdd63cb97197b"
+    },
+    {
+      "name": "market_acquisition_job_review_fixes_2",
+      "version": "20261020212228",
+      "statements_md5": "599c5963251b82e8bb78af8707de14e9"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-20T14:47:17Z"
+  "captured_at": "2026-10-20T21:57:17Z"
 }

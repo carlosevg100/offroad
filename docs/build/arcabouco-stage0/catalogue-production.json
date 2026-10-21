@@ -3466,6 +3466,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.cancel_market_acquisition_v1(p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "cancel_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.canonical_job_storage_payload_v1(p_job_id uuid)",
       "kind": "function",
       "name": "canonical_job_storage_payload_v1",
@@ -8142,6 +8160,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.enqueue_market_acquisition_v1(p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "enqueue_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.enqueue_primary_case_analysis(p_organization_id uuid, p_processing_run_id uuid, p_intake_session_id uuid)",
       "kind": "function",
       "name": "enqueue_primary_case_analysis",
@@ -9462,6 +9498,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.grant_market_acquisition_delegation_v1(p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "grant_market_acquisition_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)",
       "kind": "function",
       "name": "grant_resource_access_v1",
@@ -9992,6 +10046,42 @@
       "id": "function:private.guard_intake_session_terminal_projection()",
       "kind": "function",
       "name": "guard_intake_session_terminal_projection",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_acquisition_delegation_v1()",
+      "kind": "function",
+      "name": "guard_market_acquisition_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_acquisition_job_v1()",
+      "kind": "function",
+      "name": "guard_market_acquisition_job_v1",
       "grants": [
         [
           "postgres",
@@ -12847,6 +12937,60 @@
       "security_definer": true
     },
     {
+      "id": "function:private.market_acquisition_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "name": "market_acquisition_for_lease_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_acquisition_transport_released_v1()",
+      "kind": "function",
+      "name": "market_acquisition_transport_released_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_attempt_current_v1(p_job private.market_acquisition_jobs)",
+      "kind": "function",
+      "name": "market_attempt_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job private.market_acquisition_jobs",
+      "security_definer": true
+    },
+    {
       "id": "function:private.market_contract_in_force_v1(p jsonb, p_on date)",
       "kind": "function",
       "name": "market_contract_in_force_v1",
@@ -12862,6 +13006,42 @@
         "search_path=\"\""
       ],
       "signature": "p jsonb, p_on date",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_delegation_live_v1(p_worker uuid, p_source text)",
+      "kind": "function",
+      "name": "market_delegation_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker uuid, p_source text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_extension_content_type_v1(p_extension text, p_content_type text)",
+      "kind": "function",
+      "name": "market_extension_content_type_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_extension text, p_content_type text",
       "security_definer": false
     },
     {
@@ -12919,6 +13099,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.market_reference_bucket_safe_v1()",
+      "kind": "function",
+      "name": "market_reference_bucket_safe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.market_source_acquirable_v1(p_source_id text, p_on date)",
       "kind": "function",
       "name": "market_source_acquirable_v1",
@@ -12934,6 +13132,24 @@
         "search_path=\"\""
       ],
       "signature": "p_source_id text, p_on date",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_source_gate_v1(p_source text, p_revision integer)",
+      "kind": "function",
+      "name": "market_source_gate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_source text, p_revision integer",
       "security_definer": true
     },
     {
@@ -12953,6 +13169,42 @@
       ],
       "signature": "p_source_id text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.market_url_allowed_v1(p_url text, p_hosts text[])",
+      "kind": "function",
+      "name": "market_url_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_url text, p_hosts text[]",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_url_host_v1(p_url text)",
+      "kind": "function",
+      "name": "market_url_host_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_url text",
+      "security_definer": false
     },
     {
       "id": "function:private.market_version_canonical_v1(p_version uuid)",
@@ -13006,6 +13258,24 @@
         "search_path=\"\""
       ],
       "signature": "p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_worker_identity_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "market_worker_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": true
     },
     {
@@ -18450,6 +18720,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.release_market_acquisition_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "release_market_acquisition_transport_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
+      "security_definer": false
+    },
+    {
       "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
       "kind": "function",
       "name": "release_platform_capability_v1",
@@ -20231,6 +20519,24 @@
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.revoke_market_acquisition_delegation_v1(p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "revoke_market_acquisition_delegation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
     },
     {
       "id": "function:private.revoke_membership_resources_v1()",
@@ -24084,6 +24390,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_can_access_market_object_v1(p_bucket text, p_path text, p_mode text)",
+      "kind": "function",
+      "name": "worker_can_access_market_object_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text, p_mode text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_can_read_brand_template_v1(p_object_path text)",
       "kind": "function",
       "name": "worker_can_read_brand_template_v1",
@@ -24490,6 +24819,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_claim_market_acquisition_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": true
     },
     {
@@ -25081,6 +25433,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "name": "worker_commit_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_commit_material_production_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
       "kind": "function",
       "name": "worker_commit_material_production_body_v1",
@@ -25456,6 +25831,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean, p_retry_in_seconds integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+      "kind": "function",
+      "name": "worker_fail_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
       "security_definer": true
     },
     {
@@ -25845,6 +26243,29 @@
         "search_path=\"\""
       ],
       "signature": "p_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "worker_list_market_orphans_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
       "security_definer": true
     },
     {
@@ -31197,6 +31618,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "name": "worker_renew_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
       "security_definer": true
     },
     {
@@ -39852,6 +40296,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_claim_market_acquisition_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_claim_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_retention_action_v1(p_worker_token text)",
       "kind": "function",
       "name": "worker_claim_retention_action_v1",
@@ -40409,6 +40876,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "name": "worker_commit_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_commit_material_production_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
       "kind": "function",
       "name": "worker_commit_material_production_body_v1",
@@ -40817,6 +41307,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+      "kind": "function",
+      "name": "worker_fail_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_finalize_capital_debt_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text)",
       "kind": "function",
       "name": "worker_finalize_capital_debt_recipe_v1",
@@ -41100,6 +41613,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "worker_list_market_orphans_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
       "security_definer": false
     },
     {
@@ -45923,6 +46459,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "name": "worker_renew_market_acquisition_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
       "security_definer": false
     },
     {
@@ -54592,6 +55151,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.market_acquisition_allocations.market_acquisition_allocations_deny",
+      "kind": "policy",
+      "name": "market_acquisition_allocations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_acquisition_allocations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_acquisition_delegations.market_acquisition_delegations_deny",
+      "kind": "policy",
+      "name": "market_acquisition_delegations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_acquisition_delegations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_acquisition_job_events.market_acquisition_job_events_deny",
+      "kind": "policy",
+      "name": "market_acquisition_job_events_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_acquisition_job_events",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_acquisition_jobs.market_acquisition_jobs_deny",
+      "kind": "policy",
+      "name": "market_acquisition_jobs_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_acquisition_jobs",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.market_acquisitions.market_acquisitions_deny",
       "kind": "policy",
       "name": "market_acquisitions_deny",
@@ -62513,6 +63128,48 @@
       "schema": "storage",
       "command": "DELETE",
       "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_delete",
+      "kind": "policy",
+      "name": "market_reference_objects_delete",
+      "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'delete'::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_insert",
+      "kind": "policy",
+      "name": "market_reference_objects_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'upload'::text))"
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_select",
+      "kind": "policy",
+      "name": "market_reference_objects_select",
+      "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'metadata'::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
       "with_check": null
     },
     {
@@ -71116,6 +71773,206 @@
       "rls": true,
       "kind": "table",
       "name": "legal_holds",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_acquisition_allocations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_acquisition_allocations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_acquisition_delegations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_acquisition_delegations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_acquisition_job_events",
+      "rls": true,
+      "kind": "table",
+      "name": "market_acquisition_job_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_acquisition_jobs",
+      "rls": true,
+      "kind": "table",
+      "name": "market_acquisition_jobs",
       "grants": [
         [
           "postgres",
@@ -94840,6 +95697,86 @@
       "enabled": "O",
       "function": "private.capture_lifecycle_command_operation_v1()",
       "definition": "CREATE TRIGGER lifecycle_hold_admin_operation AFTER INSERT OR UPDATE ON private.legal_holds FOR EACH ROW EXECUTE FUNCTION private.capture_lifecycle_command_operation_v1('administration')"
+    },
+    {
+      "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_immutable",
+      "kind": "trigger",
+      "name": "market_acquisition_allocations_immutable",
+      "table": "market_acquisition_allocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_allocations_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_allocations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_allocations_truncate_guard",
+      "table": "market_acquisition_allocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_allocations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_allocations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_delegations_guard",
+      "table": "market_acquisition_delegations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_acquisition_delegation_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_delegations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_delegations FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_delegation_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_delegations_truncate_guard",
+      "table": "market_acquisition_delegations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_delegations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_delegations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_immutable",
+      "kind": "trigger",
+      "name": "market_acquisition_job_events_immutable",
+      "table": "market_acquisition_job_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_job_events_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_job_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_truncate_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_job_events_truncate_guard",
+      "table": "market_acquisition_job_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_job_events_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_job_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_jobs_guard",
+      "table": "market_acquisition_jobs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_acquisition_job_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_jobs_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_jobs FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_job_v1()"
+    },
+    {
+      "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_truncate_guard",
+      "kind": "trigger",
+      "name": "market_acquisition_jobs_truncate_guard",
+      "table": "market_acquisition_jobs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_acquisition_jobs_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_jobs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.market_acquisitions.market_acquisitions_immutable",

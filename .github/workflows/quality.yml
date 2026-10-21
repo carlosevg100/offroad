@@ -340,6 +340,11 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-market-reference-concurrency.py
+      - name: Market acquisition job across real sessions
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-market-acquisition-concurrency.py
       - name: Capital public capture authority and lock concurrency
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -589,6 +594,20 @@ jobs:
           eval "$(supabase status -o env)"
           OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
             node scripts/ci/verify-governed-evaluation.mjs
+
+      # The market acquisition job through the real Storage API: a synthetic worker account delegated for
+      # one synthetic source claims, uploads with a single request and confirms against the MD5 Storage
+      # records; an undelegated account cannot upload, downloads and deletion of a confirmed object stay
+      # closed, and a cancelled attempt's bytes are swept. Fixed bytes, no network beyond the local stack.
+      - name: Market acquisition through the real Storage API
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
+            node scripts/ci/verify-market-acquisition-storage.mjs
 
       # The dependency recompute of stage 18 (3B) runs the same way: the worker's own recompute module
       # and RPC client, signed in as a synthetic worker account bound to its token. A root capital

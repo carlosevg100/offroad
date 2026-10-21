@@ -325046,6 +325046,2833 @@
         }
       ],
       "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "function:private.cancel_market_acquisition_v1(p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.cancel_market_acquisition_v1(p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "cancel_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.cancel_market_acquisition_v1(p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "cancel_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_job_id uuid, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Comando de fundador ou operador que cancela um job na fila ou em tentativa, serializado pela linha do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 209,
+          "anchor": "create function private.cancel_market_acquisition_v1(p_command uuid,p_job_id uuid,p_reason text,p_actor_user_id uuid) returns void",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 134,
+          "anchor": "create or replace function private.cancel_market_acquisition_v1(p_command uuid,p_job_id uuid,p_reason text,p_actor_user_id uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.enqueue_market_acquisition_v1(p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enqueue_market_acquisition_v1(p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "enqueue_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.enqueue_market_acquisition_v1(p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "enqueue_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_source_id text, p_url text, p_extension text, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Comando de fundador ou operador que enfileira uma aquisição de fonte habilitada e vigente, com URL nos hosts da fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 183,
+          "anchor": "create function private.enqueue_market_acquisition_v1(p_command uuid,p_source_id text,p_url text,p_extension text,p_reason text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.grant_market_acquisition_delegation_v1(p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.grant_market_acquisition_delegation_v1(p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "grant_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.grant_market_acquisition_delegation_v1(p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "grant_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_worker_token_id uuid, p_source_id text, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Comando de fundador ou operador que delega um token de worker a uma fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 48,
+          "anchor": "create function private.grant_market_acquisition_delegation_v1(p_command uuid,p_worker_token_id uuid,p_source_id text,p_reason text,p_actor_user_id uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_acquisition_delegation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_acquisition_delegation_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_acquisition_delegation_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Delegação nasce viva e só muda uma vez, para revogada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 29,
+          "anchor": "create function private.guard_market_acquisition_delegation_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.guard_market_acquisition_job_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_acquisition_job_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_job_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_acquisition_job_v1()",
+          "kind": "function",
+          "name": "guard_market_acquisition_job_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Identidade do job imutável; estado só avança pelo protocolo de lease.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 76,
+          "anchor": "create function private.guard_market_acquisition_job_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 112,
+          "anchor": "create or replace function private.guard_market_acquisition_job_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_acquisition_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_acquisition_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "market_acquisition_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_acquisition_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "market_acquisition_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Confere conta, token, lease, capacidade e prazo sob o lock do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 243,
+          "anchor": "create function private.market_acquisition_for_lease_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns private.market_acquisition_jobs",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_acquisition_transport_released_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_acquisition_transport_released_v1()",
+          "kind": "function",
+          "name": "market_acquisition_transport_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_acquisition_transport_released_v1()",
+          "kind": "function",
+          "name": "market_acquisition_transport_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Lê a chave do transporte com lock compartilhado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 121,
+          "anchor": "create function private.market_acquisition_transport_released_v1() returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_attempt_current_v1(p_job private.market_acquisition_jobs)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_attempt_current_v1(p_job private.market_acquisition_jobs)",
+          "kind": "function",
+          "name": "market_attempt_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job private.market_acquisition_jobs",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_attempt_current_v1(p_job private.market_acquisition_jobs)",
+          "kind": "function",
+          "name": "market_attempt_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job private.market_acquisition_jobs",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Chave, trava da fonte, delegação e prazo de cada passo da tentativa.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 207,
+          "anchor": "create function private.market_attempt_current_v1(p_job private.market_acquisition_jobs) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_delegation_live_v1(p_worker uuid, p_source text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_delegation_live_v1(p_worker uuid, p_source text)",
+          "kind": "function",
+          "name": "market_delegation_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker uuid, p_source text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_delegation_live_v1(p_worker uuid, p_source text)",
+          "kind": "function",
+          "name": "market_delegation_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker uuid, p_source text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Delegação viva do worker para a fonte, travada até o fim do passo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 85,
+          "anchor": "create function private.market_delegation_live_v1(p_worker uuid,p_source text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_extension_content_type_v1(p_extension text, p_content_type text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_extension_content_type_v1(p_extension text, p_content_type text)",
+          "kind": "function",
+          "name": "market_extension_content_type_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_extension text, p_content_type text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_extension_content_type_v1(p_extension text, p_content_type text)",
+          "kind": "function",
+          "name": "market_extension_content_type_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_extension text, p_content_type text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Tipo de conteúdo armazenado por extensão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 161,
+          "anchor": "create function private.market_extension_content_type_v1(p_extension text,p_content_type text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_reference_bucket_safe_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_reference_bucket_safe_v1()",
+          "kind": "function",
+          "name": "market_reference_bucket_safe_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_reference_bucket_safe_v1()",
+          "kind": "function",
+          "name": "market_reference_bucket_safe_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Configuração esperada do bucket da publicadora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 175,
+          "anchor": "create function private.market_reference_bucket_safe_v1() returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_source_gate_v1(p_source text, p_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_source_gate_v1(p_source text, p_revision integer)",
+          "kind": "function",
+          "name": "market_source_gate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source text, p_revision integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_source_gate_v1(p_source text, p_revision integer)",
+          "kind": "function",
+          "name": "market_source_gate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source text, p_revision integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Trava compartilhada da fonte e conferência da revisão vigente e adquirível.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 95,
+          "anchor": "create function private.market_source_gate_v1(p_source text,p_revision integer) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_url_allowed_v1(p_url text, p_hosts text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_url_allowed_v1(p_url text, p_hosts text[])",
+          "kind": "function",
+          "name": "market_url_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_url text, p_hosts text[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_url_allowed_v1(p_url text, p_hosts text[])",
+          "kind": "function",
+          "name": "market_url_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_url text, p_hosts text[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "URL https com host exato da lista da fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 157,
+          "anchor": "create function private.market_url_allowed_v1(p_url text,p_hosts text[]) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_url_host_v1(p_url text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_url_host_v1(p_url text)",
+          "kind": "function",
+          "name": "market_url_host_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_url text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_url_host_v1(p_url text)",
+          "kind": "function",
+          "name": "market_url_host_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_url text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Host de uma URL https sem userinfo e só na porta 443.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 153,
+          "anchor": "create function private.market_url_host_v1(p_url text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.market_worker_identity_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_worker_identity_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "market_worker_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_worker_identity_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "market_worker_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Conta do worker vinculada a token ativo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 232,
+          "anchor": "create function private.market_worker_identity_v1(p_worker_token text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.release_market_acquisition_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.release_market_acquisition_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_market_acquisition_transport_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.release_market_acquisition_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_market_acquisition_transport_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Comando de fundador ou operador que abre ou pausa o transporte de aquisição.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 128,
+          "anchor": "create function private.release_market_acquisition_transport_v1(p_command uuid,p_released boolean,p_actor_user_id uuid,p_reason text) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.revoke_market_acquisition_delegation_v1(p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.revoke_market_acquisition_delegation_v1(p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "revoke_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.revoke_market_acquisition_delegation_v1(p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "revoke_market_acquisition_delegation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_delegation_id uuid, p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Comando de fundador ou operador que revoga uma delegação, esperando os passos em curso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 68,
+          "anchor": "create function private.revoke_market_acquisition_delegation_v1(p_command uuid,p_delegation_id uuid,p_reason text,p_actor_user_id uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Somente comandos e gatilhos da base de mercado; nenhum grant a papel da API."
+    },
+    {
+      "id": "function:private.worker_can_access_market_object_v1(p_bucket text, p_path text, p_mode text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_can_access_market_object_v1(p_bucket text, p_path text, p_mode text)",
+          "kind": "function",
+          "name": "worker_can_access_market_object_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text, p_mode text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_can_access_market_object_v1(p_bucket text, p_path text, p_mode text)",
+          "kind": "function",
+          "name": "worker_can_access_market_object_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text, p_mode text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Predicado de Storage por caminho exato: titular do lease vivo ou worker delegado para bytes abandonados; download fechado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 380,
+          "anchor": "create function private.worker_can_access_market_object_v1(p_bucket text,p_path text,p_mode text) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 311,
+          "anchor": "create or replace function private.worker_can_access_market_object_v1(p_bucket text,p_path text,p_mode text) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215639_market_acquisition_job_review_fixes_2.sql",
+          "line": 8,
+          "anchor": "create or replace function private.worker_can_access_market_object_v1(p_bucket text,p_path text,p_mode text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:private.worker_claim_market_acquisition_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_claim_market_acquisition_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_claim_market_acquisition_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Reivindicação de job de fonte delegada ao worker, com chave aberta e trava da fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 258,
+          "anchor": "create function private.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 158,
+          "anchor": "create or replace function private.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215639_market_acquisition_job_review_fixes_2.sql",
+          "line": 36,
+          "anchor": "create or replace function private.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:private.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Confirmação que lê o objeto armazenado (tamanho, tipo, MD5) e grava o recibo da publicadora; replay autenticado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 312,
+          "anchor": "create function private.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 228,
+          "anchor": "create or replace function private.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215639_market_acquisition_job_review_fixes_2.sql",
+          "line": 83,
+          "anchor": "create or replace function private.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:private.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+          "kind": "function",
+          "name": "worker_fail_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+          "kind": "function",
+          "name": "worker_fail_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Falha da tentativa com código fechado; repetição só para causas que outra tentativa pode resolver.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 349,
+          "anchor": "create function private.worker_fail_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_code text,p_retryable boolean,p_detail text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 273,
+          "anchor": "create or replace function private.worker_fail_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_code text,p_retryable boolean,p_detail text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:private.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+          "kind": "function",
+          "name": "worker_list_market_orphans_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_limit integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+          "kind": "function",
+          "name": "worker_list_market_orphans_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_limit integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Caminhos de tentativas abandonadas com bytes, para worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 292,
+          "anchor": "create function private.worker_list_market_orphans_v1(p_worker_token text,p_limit integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:private.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Renovação do lease sob chave, trava da fonte e delegação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 301,
+          "anchor": "create function private.worker_renew_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 216,
+          "anchor": "create or replace function private.worker_renew_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pelo wrapper público."
+    },
+    {
+      "id": "function:public.worker_claim_market_acquisition_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_claim_market_acquisition_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_claim_market_acquisition_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Wrapper invocador da RPC de worker de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 367,
+          "anchor": "create function public.worker_claim_market_acquisition_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/market-acquisition-queue.ts"
+    },
+    {
+      "id": "function:public.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_commit_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone)",
+          "kind": "function",
+          "name": "worker_commit_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_final_url text, p_sha256 text, p_md5 text, p_byte_size bigint, p_content_type text, p_acquired_at timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Wrapper invocador da RPC de worker de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 371,
+          "anchor": "create function public.worker_commit_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_final_url text,p_sha256 text,p_md5 text,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/market-acquisition-queue.ts"
+    },
+    {
+      "id": "function:public.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+          "kind": "function",
+          "name": "worker_fail_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_fail_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text)",
+          "kind": "function",
+          "name": "worker_fail_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_code text, p_retryable boolean, p_detail text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Wrapper invocador da RPC de worker de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 374,
+          "anchor": "create function public.worker_fail_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_code text,p_retryable boolean,p_detail text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/market-acquisition-queue.ts"
+    },
+    {
+      "id": "function:public.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+          "kind": "function",
+          "name": "worker_list_market_orphans_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_limit integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_list_market_orphans_v1(p_worker_token text, p_limit integer)",
+          "kind": "function",
+          "name": "worker_list_market_orphans_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_limit integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Wrapper invocador da RPC de worker de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 305,
+          "anchor": "create function public.worker_list_market_orphans_v1(p_worker_token text,p_limit integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/market-acquisition-queue.ts"
+    },
+    {
+      "id": "function:public.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_renew_market_acquisition_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_market_acquisition_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Wrapper invocador da RPC de worker de mercado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 369,
+          "anchor": "create function public.worker_renew_market_acquisition_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/market-acquisition-queue.ts"
+    },
+    {
+      "id": "r:private.market_acquisition_jobs",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_acquisition_jobs",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_jobs",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_acquisition_jobs",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_jobs",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Fila de aquisição da publicadora, presa à revisão da fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 13,
+          "anchor": "create table private.market_acquisition_jobs(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fechada à API; só comandos e RPCs de worker."
+    },
+    {
+      "id": "policy:private.market_acquisition_jobs.market_acquisition_jobs_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_acquisition_jobs.market_acquisition_jobs_deny",
+          "kind": "policy",
+          "name": "market_acquisition_jobs_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_acquisition_jobs.market_acquisition_jobs_deny",
+          "kind": "policy",
+          "name": "market_acquisition_jobs_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 107,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_jobs_truncate_guard",
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_jobs_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_jobs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_jobs_truncate_guard",
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_jobs_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_jobs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 109,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_jobs_guard",
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_job_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_jobs_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_jobs FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_job_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_jobs.market_acquisition_jobs_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_jobs_guard",
+          "table": "market_acquisition_jobs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_job_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_jobs_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_jobs FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_job_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Guarda do protocolo do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 97,
+          "anchor": "create trigger market_acquisition_jobs_guard before insert or update or delete on private.market_acquisition_jobs",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_acquisition_allocations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_acquisition_allocations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_allocations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_acquisition_allocations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_allocations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Um caminho exato por tentativa, com titular e capacidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 49,
+          "anchor": "create table private.market_acquisition_allocations(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fechada à API; só comandos e RPCs de worker."
+    },
+    {
+      "id": "policy:private.market_acquisition_allocations.market_acquisition_allocations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_acquisition_allocations.market_acquisition_allocations_deny",
+          "kind": "policy",
+          "name": "market_acquisition_allocations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_acquisition_allocations.market_acquisition_allocations_deny",
+          "kind": "policy",
+          "name": "market_acquisition_allocations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 107,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_allocations_truncate_guard",
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_allocations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_allocations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_allocations_truncate_guard",
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_allocations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_allocations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 109,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_immutable",
+          "kind": "trigger",
+          "name": "market_acquisition_allocations_immutable",
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_allocations_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_allocations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_allocations.market_acquisition_allocations_immutable",
+          "kind": "trigger",
+          "name": "market_acquisition_allocations_immutable",
+          "table": "market_acquisition_allocations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_allocations_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_allocations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Linha imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 102,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_acquisition_job_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_acquisition_job_events",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_job_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_acquisition_job_events",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_job_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Ledger de eventos dos jobs de aquisição.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 60,
+          "anchor": "create table private.market_acquisition_job_events(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fechada à API; só comandos e RPCs de worker."
+    },
+    {
+      "id": "policy:private.market_acquisition_job_events.market_acquisition_job_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_acquisition_job_events.market_acquisition_job_events_deny",
+          "kind": "policy",
+          "name": "market_acquisition_job_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_acquisition_job_events.market_acquisition_job_events_deny",
+          "kind": "policy",
+          "name": "market_acquisition_job_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 107,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_job_events_truncate_guard",
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_job_events_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_job_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_job_events_truncate_guard",
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_job_events_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_job_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 109,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_immutable",
+          "kind": "trigger",
+          "name": "market_acquisition_job_events_immutable",
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_job_events_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_job_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_job_events.market_acquisition_job_events_immutable",
+          "kind": "trigger",
+          "name": "market_acquisition_job_events_immutable",
+          "table": "market_acquisition_job_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_job_events_immutable BEFORE DELETE OR UPDATE ON private.market_acquisition_job_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Linha imutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 102,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl_loop"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "r:private.market_acquisition_delegations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.market_acquisition_delegations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_delegations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.market_acquisition_delegations",
+          "rls": true,
+          "kind": "table",
+          "name": "market_acquisition_delegations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Delegação revogável de token de worker por fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 12,
+          "anchor": "create table private.market_acquisition_delegations(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fechada à API; só comandos e RPCs de worker."
+    },
+    {
+      "id": "policy:private.market_acquisition_delegations.market_acquisition_delegations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.market_acquisition_delegations.market_acquisition_delegations_deny",
+          "kind": "policy",
+          "name": "market_acquisition_delegations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.market_acquisition_delegations.market_acquisition_delegations_deny",
+          "kind": "policy",
+          "name": "market_acquisition_delegations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Negação explícita.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 43,
+          "anchor": "execute 'create policy market_acquisition_delegations_deny on private.market_acquisition_delegations as restrictive for all to public using(false) with check(false)';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Nenhum acesso pela API."
+    },
+    {
+      "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_delegations_truncate_guard",
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_delegations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_delegations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_truncate_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_delegations_truncate_guard",
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_delegations_truncate_guard BEFORE TRUNCATE ON private.market_acquisition_delegations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Sem TRUNCATE.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 45,
+          "anchor": "execute 'create trigger market_acquisition_delegations_truncate_guard before truncate on private.market_acquisition_delegations for each statement execute function private.guard_platform_ledger_truncate_v1()';",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_delegations_guard",
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_delegation_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_delegations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_delegations FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_delegation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_acquisition_delegations.market_acquisition_delegations_guard",
+          "kind": "trigger",
+          "name": "market_acquisition_delegations_guard",
+          "table": "market_acquisition_delegations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_acquisition_delegation_v1()",
+          "definition": "CREATE TRIGGER market_acquisition_delegations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_acquisition_delegations FOR EACH ROW EXECUTE FUNCTION private.guard_market_acquisition_delegation_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Guarda da delegação.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+          "line": 38,
+          "anchor": "create trigger market_acquisition_delegations_guard before insert or update or delete on private.market_acquisition_delegations",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.market_reference_objects_insert",
+          "kind": "policy",
+          "name": "market_reference_objects_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'upload'::text))"
+        },
+        "staging": {
+          "id": "policy:storage.objects.market_reference_objects_insert",
+          "kind": "policy",
+          "name": "market_reference_objects_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'upload'::text))"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Acesso por caminho exato ao bucket da publicadora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 397,
+          "anchor": "create policy market_reference_objects_insert on storage.objects for insert to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pela API de Storage."
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.market_reference_objects_select",
+          "kind": "policy",
+          "name": "market_reference_objects_select",
+          "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'metadata'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.market_reference_objects_select",
+          "kind": "policy",
+          "name": "market_reference_objects_select",
+          "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'metadata'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Acesso por caminho exato ao bucket da publicadora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 399,
+          "anchor": "create policy market_reference_objects_select on storage.objects for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pela API de Storage."
+    },
+    {
+      "id": "policy:storage.objects.market_reference_objects_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.market_reference_objects_delete",
+          "kind": "policy",
+          "name": "market_reference_objects_delete",
+          "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'delete'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.market_reference_objects_delete",
+          "kind": "policy",
+          "name": "market_reference_objects_delete",
+          "qual": "((bucket_id = 'market-reference'::text) AND private.worker_can_access_market_object_v1(bucket_id, name, 'delete'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M1b, job de aquisição",
+      "reason": "Acesso por caminho exato ao bucket da publicadora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+          "line": 401,
+          "anchor": "create policy market_reference_objects_delete on storage.objects for delete to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Worker de mercado pela API de Storage."
     }
   ],
   "repository_items": [
@@ -332707,6 +335534,24 @@
       "kind": "migration",
       "decision": "preservar",
       "reason": "Quinta rodada: eventos de versão ordenados sob o lock do estado e selo que fecha a versão para conteúdo no mesmo comando."
+    },
+    {
+      "path": "supabase/migrations/20261020215437_market_acquisition_job.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Job de aquisição da base de mercado (ADR 0023, decisão 3): fila própria fora de processing_jobs, alocação por tentativa, chave fechada, Storage por caminho exato e confirmação que lê o objeto."
+    },
+    {
+      "path": "supabase/migrations/20261020215559_market_acquisition_job_review_fixes.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Primeira rodada da revisão do job: delegação revogável por token e fonte, trava da fonte em todo passo, prazo rechecado, confirmação e exclusão serializadas, replay autenticado, cancelamento em lease, delete_many e varredura de abandonados."
+    },
+    {
+      "path": "supabase/migrations/20261020215639_market_acquisition_job_review_fixes_2.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Segunda rodada: Storage recheca o prazo depois das esperas e o limite de 5 MiB por tentativa entra no contrato do banco."
     }
   ],
   "staging_archive": [
