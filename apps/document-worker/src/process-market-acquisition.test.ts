@@ -43,6 +43,7 @@ describe("processMarketAcquisition", () => {
    [claim, '[{"data":"14/09/2026","valor":"15.00","valor":"15.00"}]', "market_parse_json_duplicate_key"],
    [claim, '[{"data":"14/13/2026","valor":"15.00"}]', "market_parse_date"],
    [detail, '{"conteudo":[{"nro_reuniao":281,"dataReferencia":"2026-13-01","titulo":"t","textoComunicado":"x"}]}', "market_parse_communique_date"],
+   [detail, '{"conteudo":[{"nro_reuniao":281,"dataReferencia":"4099-01-01","titulo":"t","textoComunicado":"x"}]}', "market_parse_communique_date"],
    [detail, '{"conteudo":[]}', "market_parse_communique_shape"]] as const) {
    const {queue, store} = harness();
    const result = await processMarketAcquisition(c, queue, store, signal, {fetch: async () => ({...file, bytes: Buffer.from(bytes)})});

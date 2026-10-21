@@ -648,6 +648,40 @@
    }
   },
   {
+   "name": "detail_last_supported_date",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"4098-12-31\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "referenceDate": "4098-12-31",
+    "decision": "cut",
+    "targetPct": "13.75",
+    "seriesChangeDate": "4099-01-01",
+    "regulatoryEffectiveFrom": "4099-01-02"
+   }
+  },
+  {
+   "name": "detail_date_after_calendar",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"4099-01-01\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_date"
+   }
+  },
+  {
+   "name": "detail_date_before_1900",
+   "kind": "detail",
+   "meeting": 281,
+   "content": "{\"conteudo\":[{\"nro_reuniao\":281,\"dataReferencia\":\"1899-12-31\",\"titulo\":\"Copom reduz a taxa Selic para 13,75% a.a.\",\"textoComunicado\":\"O Copom decidiu reduzir a taxa Selic para 13,75% a.a.\"}]}",
+   "contentBase64": false,
+   "expect": {
+    "error": "market_parse_communique_date"
+   }
+  },
+  {
    "name": "detail_lone_surrogate_in_text",
    "kind": "detail",
    "meeting": 281,

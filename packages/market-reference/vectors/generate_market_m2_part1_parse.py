@@ -58,6 +58,9 @@ det("detail_glued_word",com("O Copom indecidiu reduzir a taxa Selic para 13,75% 
 det("detail_extra_field",'{"conteudo":[{"nro_reuniao":281,"dataReferencia":"2026-09-16","titulo":"Copom reduz a taxa Selic para 13,75% a.a.","textoComunicado":"x","link":"y"}]}',{"error":"market_parse_communique_fields"})
 det("detail_two_records",'{"conteudo":[{"nro_reuniao":281},{"nro_reuniao":281}]}',{"error":"market_parse_communique_shape"})
 det("detail_impossible_date",com("O Copom decidiu reduzir a taxa Selic para 13,75% a.a.",date="2026-02-30"),{"error":"market_parse_communique_date"})
+det("detail_last_supported_date",com("O Copom decidiu reduzir a taxa Selic para 13,75% a.a.",date="4098-12-31"),{"referenceDate":"4098-12-31","decision":"cut","targetPct":"13.75","seriesChangeDate":"4099-01-01","regulatoryEffectiveFrom":"4099-01-02"})
+det("detail_date_after_calendar",com("O Copom decidiu reduzir a taxa Selic para 13,75% a.a.",date="4099-01-01"),{"error":"market_parse_communique_date"})
+det("detail_date_before_1900",com("O Copom decidiu reduzir a taxa Selic para 13,75% a.a.",date="1899-12-31"),{"error":"market_parse_communique_date"})
 det("detail_lone_surrogate_in_text",com("x").replace('"x"','"x\\ud800"'),{"error":"market_parse_json_lone_surrogate"})
 out={"schemaVersion":"offroad.market-m2-parse-vectors.v1","note":"Leitura estrita e parsers da parte 1: o mesmo arquivo é lido pelo teste TypeScript e pelo teste SQL. Conteúdo em UTF-8, ou em base64 quando contentBase64 é verdadeiro. Textos sintéticos.","cases":cases}
 f=open(sys.argv[1],'w'); json.dump(out,f,ensure_ascii=False,indent=1); f.write("\n")

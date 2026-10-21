@@ -48,8 +48,8 @@ export function marketContentRefusal(claim: MarketAcquisitionClaim, bytes: Uint8
   }
   return null;
  } catch (error) {
-  if (error instanceof MarketContractError) return error.code;
-  throw error;
+  // Any other exception while reading is still a file the contract cannot read: definitive, never a stuck lease.
+  return error instanceof MarketContractError ? error.code : "market_parse_unexpected";
  }
 }
 

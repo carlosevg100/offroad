@@ -329101,6 +329101,12 @@
           "line": 256,
           "anchor": "create function private.market_parse_copom_detail_v1(p_content bytea,p_meeting integer)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021220046_market_m2_version_commit_fixes_3.sql",
+          "line": 3,
+          "anchor": "create or replace function private.market_parse_copom_detail_v1(p_content bytea,p_meeting integer)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -329154,6 +329160,12 @@
           "path": "supabase/migrations/20261021211348_market_m2_version_commit.sql",
           "line": 291,
           "anchor": "create function private.market_parse_copom_list_v1(p_content bytea,p_size integer) returns integer",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021220046_market_m2_version_commit_fixes_3.sql",
+          "line": 37,
+          "anchor": "create or replace function private.market_parse_copom_list_v1(p_content bytea,p_size integer) returns integer",
           "mechanism": "direct_ddl"
         }
       ]
@@ -339781,6 +339793,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 1, confirmação de versão",
       "reason": "Correções da revisão independente da implementação: prazo do lease lido depois da última escrita, taxa da reunião comparada por valor, versão v1 sem campos de v2."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261021220046_market_m2_version_commit_fixes_3.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 1, confirmação de versão",
+      "reason": "Segunda rodada da revisão independente: data do comunicado limitada para que o próximo dia útil caia no calendário de feriados, igual ao TypeScript."
     }
   ],
   "staging_archive": [

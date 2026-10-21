@@ -2659,8 +2659,13 @@
       "name": "market_m2_version_commit_fixes_2",
       "version": "20261021215110",
       "statements_md5": "8a512c7beb1cb68eb76b2317263ad22a"
+    },
+    {
+      "name": "market_m2_version_commit_fixes_3",
+      "version": "20261021220046",
+      "statements_md5": "8c552e0731b6a9680bdd26dabd765c1f"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-21T21:52:52Z"
+  "captured_at": "2026-10-21T22:01:51Z"
 }

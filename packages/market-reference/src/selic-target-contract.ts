@@ -44,6 +44,8 @@ export class MarketContractError extends Error {
 const fail = (code: string): never => {throw new MarketContractError(code);};
 
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+/** The last communiqué date whose next business day the national-holiday calendar (to 4099) covers. */
+const lastCommuniqueDate = "4098-12-31";
 /** A calendar date that exists; an impossible month or day is false, never an exception. */
 const realDate = (d: string) => {
   if (!isoDate.test(d) || d < "1900-01-01") return false;
@@ -237,7 +239,7 @@ export function parseCommuniqueDetail(bytes: Uint8Array, meeting: number): Copom
   const r = body.conteudo[0];
   if (!isJsonObject(r) || Object.keys(r).sort().join(",") !== "dataReferencia,nro_reuniao,textoComunicado,titulo") return fail("market_parse_communique_fields");
   if (meetingNumber(r.nro_reuniao) !== meeting) fail("market_parse_communique_meeting");
-  if (typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia)) return fail("market_parse_communique_date");
+  if (typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || r.dataReferencia > lastCommuniqueDate) return fail("market_parse_communique_date");
   if (typeof r.titulo !== "string" || typeof r.textoComunicado !== "string") return fail("market_parse_communique_fields");
   const record = {nro_reuniao: meeting, dataReferencia: r.dataReferencia, titulo: r.titulo, textoComunicado: r.textoComunicado};
   const values = [...record.titulo.matchAll(rateToken)].map((m) => m[1]!);
@@ -266,7 +268,8 @@ export function parseCommuniqueList(bytes: Uint8Array, size: number): {meeting: 
   for (const r of rows) {
     if (!isJsonObject(r) || Object.keys(r).sort().join(",") !== "dataReferencia,nro_reuniao,titulo") return fail("market_parse_communique_fields");
     const meeting = meetingNumber(r.nro_reuniao);
-    if (meeting === null || typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || typeof r.titulo !== "string") return fail("market_parse_communique_fields");
+    if (meeting === null || typeof r.dataReferencia !== "string" || !realDate(r.dataReferencia) || r.dataReferencia > lastCommuniqueDate
+      || typeof r.titulo !== "string") return fail("market_parse_communique_fields");
     const prior = out.at(-1);
     if (prior && meeting >= prior.meeting) fail("market_parse_communique_order");
     out.push({meeting, referenceDate: r.dataReferencia, title: r.titulo});

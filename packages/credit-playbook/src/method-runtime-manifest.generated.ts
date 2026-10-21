@@ -9695,7 +9695,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "aa041a96717c49bc5ee3f3cc8d226d7a01801be3a1e6d44105e016f06a079718"
+              "hash": "957efc228586558d1983653b7a7aee9876b49e2641ec324f4078b2045943ea85"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
@@ -9866,7 +9866,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "9fddc5e9632fb5d71af982506b263e5e8fd8befd2caa2be3da467f0437d6f418"
+          "hash": "924b6da2d130c9e9b3e1da3c107cefe51558355c88f627ed583d0a1c69264ac8"
         },
         "evidence": [
           {
@@ -9892,7 +9892,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "fcf89c455d6e27c2a92d2ed83a02c002f9e0169e963745dedaa92aa703591157"
+    "manifestHash": "21a0d02a600e4771d37020d2b7501c4f84d7091f94a49874923d899015940fa1"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17072,7 +17072,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "aa041a96717c49bc5ee3f3cc8d226d7a01801be3a1e6d44105e016f06a079718"
+              "hash": "957efc228586558d1983653b7a7aee9876b49e2641ec324f4078b2045943ea85"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
@@ -17243,7 +17243,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "223dd27e31779f9d82eb50d5b29c204aba98b9b2f778f24a0c179119a3568175"
+          "hash": "a1cfb80e84495757be20a19396bde557d430b0007deff8940881aaec908a356f"
         },
         "evidence": [
           {
@@ -17269,7 +17269,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "15e6ba8f735efc9b20c402bbabf8b8585fbc3bad48c69a22f374a3a4c7c72541"
+    "manifestHash": "7739a900fd8d382a57657b9c0c32db75690b0162d3f9e7495984ee812b4952b7"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -22352,7 +22352,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "aa041a96717c49bc5ee3f3cc8d226d7a01801be3a1e6d44105e016f06a079718"
+              "hash": "957efc228586558d1983653b7a7aee9876b49e2641ec324f4078b2045943ea85"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
@@ -22523,7 +22523,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "28f1618343af13b8fad1ea5eaa76727215b4c5aadc4a9461f01bf83d018479de"
+          "hash": "522bb10650d72c3babe77857ece9333fe0e291df1c50576c99ac1d3fa6759f78"
         },
         "evidence": [
           {
@@ -22549,7 +22549,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "e345a0f2de383cde28878965736e2eec1155f18a579dfd9b806f184854734b62"
+    "manifestHash": "1c1cff2bcc9a8b47c64c9e37f3169f473de1990a15738358e194cc8c402c5fdb"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31406,7 +31406,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "aa041a96717c49bc5ee3f3cc8d226d7a01801be3a1e6d44105e016f06a079718"
+              "hash": "957efc228586558d1983653b7a7aee9876b49e2641ec324f4078b2045943ea85"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
@@ -31577,7 +31577,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "e28081837063d9736ce0571e529eaf9261c6bcf9ed9b407d0cb0072a9ea3acbb"
+          "hash": "e5a3c195906191dede4e0e7bd0f078d3cf21931372c857de40dad6a41fede6fd"
         },
         "evidence": [
           {
@@ -31603,7 +31603,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "847bb1a4d849aad467e75d549e6d51e1b2089513b79494819f31aa034e99eccc"
+    "manifestHash": "f7243251c86bdb7c02f12eb45e8661c07e5a5beb65b12053e1c4e1c5834fb3cc"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -55243,7 +55243,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/selic-target-contract.ts",
-              "hash": "aa041a96717c49bc5ee3f3cc8d226d7a01801be3a1e6d44105e016f06a079718"
+              "hash": "957efc228586558d1983653b7a7aee9876b49e2641ec324f4078b2045943ea85"
             },
             {
               "path": "packages/market-reference/src/selic-target-quality.ts",
@@ -55414,7 +55414,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "8ddd1e219f828bf786de62d3f9a77e5200157c7649631066b9fd93d674c7e6d5"
+          "hash": "234d1f24cce061464c5b41d203e641012b73a6cb742e04fa33a72a4b4a4caa23"
         },
         "evidence": [
           {
@@ -55440,7 +55440,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "29edb223afc25d8f4c6b5319b6a060f83db9806dfc592297aa53f644b73a5c9a"
+    "manifestHash": "a31ef0d26ac8418f0764489878206bbef614866d191ab39988a0b7586b58da4c"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
