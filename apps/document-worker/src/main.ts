@@ -7,6 +7,7 @@ import {processGovernedEvaluation} from "./process-governed-evaluation";
 import {createMarketAcquisitionQueue} from "./market-acquisition-queue";
 import {createMarketObjectStore} from "./market-acquisition-storage";
 import {processMarketAcquisition, sweepMarketOrphans} from "./process-market-acquisition";
+import {createMarketRegimeMonitor, runMarketRg01Cycle} from "./market-regime-monitor";
 import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
@@ -302,6 +303,8 @@ async function main(): Promise<void> {
   // worker token is delegated for; bytes go to the publisher bucket at the allocated path.
   const marketQueue = createMarketAcquisitionQueue(supabase, config.OFFROAD_WORKER_TOKEN);
   const marketStore = createMarketObjectStore(supabase);
+  // The RG-01 monitor: active only while its consumer exists with a live delegation for this worker.
+  const regimeMonitor = createMarketRegimeMonitor(supabase, config.OFFROAD_WORKER_TOKEN);
   let idlePolls = 0;
   const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
     () => log("execution.poll_failed", {reason: "execution_transport_failed"}),
@@ -451,6 +454,12 @@ async function main(): Promise<void> {
         await sweepMarketOrphans(marketQueue, marketStore)
           .then(count => { if (count > 0) log("market.swept", {count}); })
           .catch(() => log("market.sweep_failed", {reason: "market_acquisition_transport_failed"}));
+      }
+      // Every twelfth idle poll, the RG-01 monitor's cycle: schedule, events, evaluation.
+      if (idlePolls % 12 === 0) {
+        await runMarketRg01Cycle(regimeMonitor, shuttingDown.signal)
+          .then(result => { if (result.status === "ran") log("market.rg01", {scheduled: result.scheduled, events: result.events, runs: result.runs.join(","), fired: result.fired}); })
+          .catch((error) => log("market.rg01_failed", {reason: (error as {code?: string}).code ?? "market_regime_monitor_transport_failed"}));
       }
       await sleep(config.IDLE_POLL_SECONDS * 1000, shuttingDown.signal);
       continue;

@@ -345,6 +345,11 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-market-acquisition-concurrency.py
+      - name: Market RG-01 monitor across real sessions
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-market-rg01-concurrency.py
       - name: Market event outbox and ODbL edition across real sessions
         if: ${{ !inputs.native_diagnostic }}
         env:

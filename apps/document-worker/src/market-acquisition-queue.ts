@@ -35,7 +35,9 @@ const orphansSchema = z.array(z.string().regex(/^[a-z0-9._-]+\/[0-9]{4}\/[0-9]{2
 
 /** What the worker reports as the attempt's failure; the database keeps the list it accepts. */
 export type MarketAcquisitionFailureCode = "host_not_allowed" | "redirect_not_allowed" | "private_address" | "http_status" | "too_large" | "content_type"
- | "timeout" | "network" | "upload_failed" | "verification_failed" | "transport_paused" | "source_not_acquirable" | "delegation_revoked" | "parse_failed";
+ | "timeout" | "network" | "upload_failed" | "verification_failed" | "transport_paused" | "source_not_acquirable" | "delegation_revoked" | "parse_failed"
+ // A communiqué that disagrees with the meeting already recorded: definitive, kept on the job, and read by the RG-01 monitor as a dispute.
+ | "meeting_disagreement";
 /** The bytes the database reads itself, with the type stored for them and the instant they were received. */
 export type MarketAcquisitionContent = {bytes: Buffer; contentType: string; acquiredAt: Date};
 

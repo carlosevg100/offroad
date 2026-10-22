@@ -14,6 +14,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "market-acquisition-consumer.v1",
   // Market version confirmation: the worker sends the bytes and the database reads them (M2 part 1).
   "market-version-commit.v1",
+  // RG-01 monitor: schedule, evaluation and the handler of its event consumer (M2 part 6).
+  "market-regime-monitor.v1",
   "explicit-resource-access.v1",
   "explicit-workspace-context.v1",
   "authenticated-document-storage.v1",
