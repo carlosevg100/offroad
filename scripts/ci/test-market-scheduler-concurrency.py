@@ -15,9 +15,10 @@
    and a valid list that names the meeting again rediscovers it.
 7. The series anchor's communiqué revoked: the series firing reports it unavailable.
 8. The series window under concurrent writes: an approved version that does not close the gap is no progress;
-   a version confirmed while the decision waits at the read locks makes it answer retry without writing; when a
+   a confirmation holds its source until it commits, so a decision meanwhile answers busy without writing; when a
    communiqué of the last version's closure is revoked the series reports it and is not replaced; a version
-   revoked during a firing waits for it.
+   revoked during a firing waits for it; a quarantine recorded while a decision reads the version is waited for,
+   and a quarantine without its own evaluation holds the window for the operator.
 9. A firing against the RG-01 monitor and against a publication: no deadlock.
 Every row here is synthetic and lives only in the disposable database. Meetings 150 to 152 and 9320 to 9323 are
 dated in 2023 and do not collide with the other market races. Runs after the RG-01 races and before the outbox
@@ -449,15 +450,14 @@ commit;
         raise AssertionError(f'an approved version that leaves the gap was not reported: {decision}')
     late_body = series_body('2023-08-10', '2023-08-12')
     late = prepared(occurrence(series_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-08-10","end":"2023-08-12"}}'), late_body)
-    b = session('market_scheduler_confirmation', "select pg_advisory_xact_lock(hashtextextended('market-authority:source:bcb',0));" + commit_sql(late, late_body))
-    barrier(b, 'B')
+    # A confirmation holds its source through the attempt's gate until it commits: the decision answers busy
+    # without writing, and only the next firing reads the confirmed version.
+    b = session('market_scheduler_confirmation', commit_sql(late, late_body)); barrier(b, 'B')
     occurrences = psql(f"select count(*) from private.market_schedule_occurrences where schedule_id='{series_schedule}';")
-    a = session('market_scheduler_decision_waits', FIRE2)
-    wait_for_lock('market_scheduler_decision_waits')
+    decision = entry(fire(TOKEN2, WORKER2), 'series_432')
+    if decision.get('status') != 'busy' or psql(f"select count(*) from private.market_schedule_occurrences where schedule_id='{series_schedule}';") != occurrences:
+        raise AssertionError(f'a decision during a confirmation did not answer busy without writing: {decision}')
     confirmed = last(finish(b))
-    decision = entry(last(finish(a)), 'series_432')
-    if decision.get('status') != 'retry' or psql(f"select count(*) from private.market_schedule_occurrences where schedule_id='{series_schedule}';") != occurrences:
-        raise AssertionError(f'a decision that read a version outside its locks did not answer retry: {decision}')
     acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":152}'), communique(152, '2023-08-05'))
     first_anchor = psql("select reference_acquisition_id from private.market_copom_meetings where meeting=151;")
     psql(revoke_event('acquisition', first_anchor, 'Revogação sintética do comunicado do fecho'))
@@ -491,9 +491,14 @@ commit;
     later = acquire(occurrence(later_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-11-10","end":"2023-11-15"}}'), series_body('2023-11-10', '2023-11-15'))
     if later['quality']['status'] != 'approved':
         raise AssertionError(f'a clean version was not approved: {later}')
-    psql(f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
-         f"values('version','{later['versionId']}','quarantined','Quarentena sintética do operador','{OPERATOR}');")
-    decision = entry(fire(), 'series_432')
+    # The operator quarantines the version while a decision reads it: the decision waits at the version's state
+    # and then holds the window for the operator, since the quarantine has no evaluation of its own.
+    b = session('market_scheduler_quarantine', f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                f"values('version','{later['versionId']}','quarantined','Quarentena sintética do operador','{OPERATOR}');"); barrier(b, 'B')
+    a = session('market_scheduler_decision_waits_quarantine', FIRE2)
+    wait_for_lock('market_scheduler_decision_waits_quarantine')
+    finish(b)
+    decision = entry(last(finish(a)), 'series_432')
     if decision.get('reason') != 'series_quality_unclassified':
         raise AssertionError(f'a quarantine without its evaluation was classified: {decision}')
     internal_schedule = series_schedule_from('2023-12-10')
