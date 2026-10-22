@@ -79,8 +79,8 @@ def acts(env, day, last):
         'request': {'window': {'start': '2021-01-14', 'end': eve}}, 'reason': f'Bootstrap: série 432 de 2021-01-14 a {eve}. {AUTH}.', 'actor': a})
     schedules('')
     if env == 'staging':
-        add('rehearsal-list-234-281', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista', 'request': {'size': 48},
-            'reason': f'Ensaio da pausa: lista das reuniões 234 a 281. {AUTH}.', 'actor': a},
+        add(f'rehearsal-list-234-{last}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista',
+            'request': {'size': last - 234 + 1}, 'reason': f'Ensaio da pausa: lista das reuniões 234 a {last}. {AUTH}.', 'actor': a},
             'staging only: the confirmed list records meeting 234, which the reconciliation then asks a detail for')
     # Pause and resumption cycles. A pause closes the transport and revokes whatever grant is live at that
     # moment (resolved at run time, so a pause in the middle of the bootstrap revokes only what exists); a
@@ -132,7 +132,17 @@ def templates(env):
 
 
 def expand(env, template, values):
-    """One concrete act from a template: every placeholder filled, the command derived from the concrete name."""
+    """One concrete act from a template: every placeholder filled, the command derived from the concrete name.
+    Values that follow from others are derived here, never taken as input: the list size from the last meeting
+    and the eve of the series window from the date, so one name can never carry two different requests."""
+    values = dict(values)
+    for derived in ('size', 'eve'):
+        if derived in values:
+            raise SystemExit(f'{derived} is derived, not an input')
+    if 'last' in values:
+        values['size'] = str(int(values['last']) - ANCHOR + 1)
+    if 'date' in values:
+        values['eve'] = (datetime.date.fromisoformat(values['date']) - datetime.timedelta(days=1)).isoformat()
     t = next(x for x in templates(env) if x['template'] == template)
     def fill(v):
         if isinstance(v, dict): return {k: fill(x) for k, x in v.items()}
