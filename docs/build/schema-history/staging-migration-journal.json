@@ -2729,8 +2729,23 @@
       "name": "market_m2_part3_fixes_11",
       "version": "20261022010206",
       "statements_md5": "c6ac283dce97362206c7b426c761a4c8"
+    },
+    {
+      "name": "market_m2_rg01_monitor",
+      "version": "20261022170128",
+      "statements_md5": "4dbb2ba721fc027c0ed8648a4ee253b8"
+    },
+    {
+      "name": "market_m2_rg01_monitor_fixes",
+      "version": "20261022170445",
+      "statements_md5": "0ca665871f2e3fe851ad97357ee47aa4"
+    },
+    {
+      "name": "market_m2_rg01_monitor_fixes_2",
+      "version": "20261022174211",
+      "statements_md5": "d9a87259b98355a4432e3e52b4f4123f"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-22T01:03:00Z"
+  "captured_at": "2026-10-22T17:43:00Z"
 }

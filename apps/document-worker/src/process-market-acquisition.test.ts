@@ -66,7 +66,7 @@ describe("processMarketAcquisition", () => {
   for (const [code, failure, retryable] of [["market_acquisition_object_mismatch", "verification_failed", true],
    ["market_source_not_acquirable", "source_not_acquirable", false], ["market_delegation_required", "delegation_revoked", true],
    ["market_parse_failed", "parse_failed", false], ["market_contract_mismatch", "verification_failed", false],
-   ["market_copom_meeting_disagreement", "verification_failed", false], ["market_copom_meeting_day_collision", "verification_failed", false]] as const) {
+   ["market_copom_meeting_disagreement", "meeting_disagreement", false], ["market_copom_meeting_day_collision", "verification_failed", false]] as const) {
    const {queue, store} = harness({commit: vi.fn(async () => { throw new MarketAcquisitionTransportError(code); })});
    const result = await processMarketAcquisition(claim, queue, store, signal, {fetch: async () => file});
    expect(result).toMatchObject({status: "failed", code: failure});

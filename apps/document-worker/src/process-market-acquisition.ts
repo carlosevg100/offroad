@@ -30,7 +30,7 @@ const commitFailure: Partial<Record<string, {code: MarketAcquisitionFailureCode;
  market_acquisition_invalid: {code: "verification_failed", retryable: false},
  market_parse_failed: {code: "parse_failed", retryable: false},
  market_contract_mismatch: {code: "verification_failed", retryable: false},
- market_copom_meeting_disagreement: {code: "verification_failed", retryable: false},
+ market_copom_meeting_disagreement: {code: "meeting_disagreement", retryable: false},
  market_copom_meeting_day_collision: {code: "verification_failed", retryable: false},
 };
 

@@ -183,6 +183,13 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
    efeito gravado na mesma transação da conclusão. A exceção de retenção da M2 está no banco: só licença
    aberta sem prazo e com direito de reter valores adotados é adquirida, confirmada ou lida, e a revisão
    que exigiria prazo é recusada enquanto houver aquisição, job vivo ou objeto alocado da fonte.)
+   (Emenda de 22/10/2026, na M2 parte 6: o primeiro consumidor da outbox é o monitor do RG-01, registrado
+   com handler `rg01`; a conclusão genérica recusa as linhas dele, que só se concluem pela entrada própria
+   do monitor, gravando um pedido de avaliação e o recibo na mesma transação. A avaliação roda no banco,
+   fora do lease do evento, sobre um snapshot de uma instrução com as dependências travadas antes, e nunca
+   escreve sobre leitura fora das travas. O resultado (disparado, aguardando confirmação, não disparado,
+   incompleto) e o frescor ficam numa avaliação imutável; o disparo abre um incidente por regime e gatilho,
+   com testemunhas e revisão do operador por revisão esperada. Nada é entregue a tenant.)
 
 9. **Operação por fonte, com frescor e abstenção.** Cada fonte declara, versionados: calendário de
    dias úteis (feriados nacionais e de mercado), fuso `America/Sao_Paulo`, horário esperado de

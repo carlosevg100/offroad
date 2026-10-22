@@ -1,0 +1,3518 @@
+{
+ "schemaVersion": "market-rg01-vectors.v1",
+ "generatedBy": "generate_market_rg01.py",
+ "policyCanonical": [
+  {
+   "name": "integers_and_text",
+   "value": {
+    "b": -125,
+    "a": 5,
+    "c": "13.75",
+    "d": [
+     0,
+     25,
+     {
+      "z": true,
+      "y": null
+     }
+    ]
+   },
+   "text": "{\"a\":5,\"b\":-125,\"c\":\"13.75\",\"d\":[0,25,{\"y\":null,\"z\":true}]}\n",
+   "sha256": "5e8a7e50b0ad0b6acde51f90a9ab76286784abe9de7031f06ab2d7e87ab9187d"
+  },
+  {
+   "name": "nested_order",
+   "value": {
+    "trigger": {
+     "scope": "todas",
+     "id": "RG-01"
+    },
+    "easingCycle": {
+     "cuts": 5,
+     "stepBps": 25
+    }
+   },
+   "text": "{\"easingCycle\":{\"cuts\":5,\"stepBps\":25},\"trigger\":{\"id\":\"RG-01\",\"scope\":\"todas\"}}\n",
+   "sha256": "d8c6f65945962a8cc7112e79dbe5513ed52d75175af28a20601c0cfe15e7df52"
+  },
+  {
+   "name": "unicode_keys",
+   "value": {
+    "é": 1,
+    "e": 2,
+    "😀": 3
+   },
+   "text": "{\"e\":2,\"é\":1,\"😀\":3}\n",
+   "sha256": "a1d92dc18134870e2617b7290908274ae5bf39f645cefa42744cf397198d022b"
+  }
+ ],
+ "policyRefusals": [
+  {
+   "name": "fraction",
+   "value": {
+    "a": 95.55
+   }
+  },
+  {
+   "name": "nested_fraction",
+   "value": {
+    "a": [
+     1,
+     {
+      "b": 0.5
+     }
+    ]
+   }
+  }
+ ],
+ "deadlines": [
+  {
+   "endDate": "2023-11-01",
+   "deadline": "2023-11-07"
+  },
+  {
+   "endDate": "2025-06-18",
+   "deadline": "2025-06-24"
+  },
+  {
+   "endDate": "2026-03-18",
+   "deadline": "2026-03-23"
+  },
+  {
+   "endDate": "2026-09-16",
+   "deadline": "2026-09-21"
+  },
+  {
+   "endDate": "2026-11-04",
+   "deadline": "2026-11-09"
+  },
+  {
+   "endDate": "2026-12-09",
+   "deadline": "2026-12-14"
+  },
+  {
+   "endDate": "2026-04-29",
+   "deadline": "2026-05-05"
+  },
+  {
+   "endDate": "2027-02-10",
+   "deadline": "2027-02-15"
+  }
+ ],
+ "evaluations": [
+  {
+   "name": "hold_after_cycle",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "hold",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "not_fired",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:not_fired\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "64667b9b3bc25e633e545327fc63be7ebf48ca6c584515ea6411e26b2f688f99"
+   }
+  },
+  {
+   "name": "first_raise",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "current",
+    "primaryWitness": "2026-11-04",
+    "witnesses": [
+     "2026-11-04"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:current\nprimary:2026-11-04\nwitness:2026-11-04\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "c30380a6704875b42c4e337c9aa382c5d0d9e4f3d248fe32df25531afae4a7b5"
+   }
+  },
+  {
+   "name": "raise_off_step",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.50"
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "current",
+    "primaryWitness": "2026-11-04",
+    "witnesses": [
+     "2026-11-04"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:current\nprimary:2026-11-04\nwitness:2026-11-04\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "c30380a6704875b42c4e337c9aa382c5d0d9e4f3d248fe32df25531afae4a7b5"
+   }
+  },
+  {
+   "name": "cut_after_raise",
+   "snapshot": {
+    "dataBase": "2026-12-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-12-09",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 286,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "current",
+    "primaryWitness": "2026-11-04",
+    "witnesses": [
+     "2026-11-04"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     },
+     {
+      "endDate": "2026-12-09",
+      "state": "corroborated",
+      "deadline": "2026-12-14",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:current\nprimary:2026-11-04\nwitness:2026-11-04\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nmeeting:2026-12-09|corroborated\nentries:fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "stateSha256": "0f0712533d5e89c93bfe47fdb01fe3f1513f0e69072a3d353c618114d0f0954c"
+   }
+  },
+  {
+   "name": "raise_awaiting_series",
+   "snapshot": {
+    "dataBase": "2026-11-04",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "91722692482875fa57a6a1d50639c0df656dbfbb6758ef0e65a4c6b706bc362a",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": null
+     }
+    ]
+   },
+   "expected": {
+    "result": "pending_confirmation",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "awaiting_series",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "series_pending:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:pending_confirmation\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|awaiting_series\ngap:series_pending:2026-11-04\nentries:91722692482875fa57a6a1d50639c0df656dbfbb6758ef0e65a4c6b706bc362a",
+    "stateSha256": "29b312e7ad9360df91a170a98d507eef207f9a75e8de2f5de69600572751d411"
+   }
+  },
+  {
+   "name": "meeting_day_missing",
+   "snapshot": {
+    "dataBase": "2026-11-04",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "91722692482875fa57a6a1d50639c0df656dbfbb6758ef0e65a4c6b706bc362a",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": null,
+      "previous": "13.75",
+      "change": null
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "missing",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_missing:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|missing\ngap:communique_missing:2026-11-04\nentries:91722692482875fa57a6a1d50639c0df656dbfbb6758ef0e65a4c6b706bc362a",
+    "stateSha256": "491cb8a790fc5e566a3ac71de64ce517a4e957594c4809ca849e77acee8a6427"
+   }
+  },
+  {
+   "name": "missing_before_deadline",
+   "snapshot": {
+    "dataBase": "2026-11-06",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "160e728f9e9755b42a7b9929acf14a321425fc9b168af500678020b15258977d",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": null,
+      "previous": "13.75",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "missing",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_missing:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|missing\ngap:communique_missing:2026-11-04\nentries:160e728f9e9755b42a7b9929acf14a321425fc9b168af500678020b15258977d",
+    "stateSha256": "8407936cd364f3405ba213cd3885fcf61db9b5bcbe4c2cb3f99fd8be7e43337c"
+   }
+  },
+  {
+   "name": "missing_after_deadline",
+   "snapshot": {
+    "dataBase": "2026-11-12",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "6270f812a7dd4dd2a6059d6ed4aa7768f96e9627d2f16f3f4acf43b64b4171a6",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": null,
+      "previous": "13.75",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "stale",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "missing",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_missing:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:stale\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|missing\ngap:communique_missing:2026-11-04\nentries:6270f812a7dd4dd2a6059d6ed4aa7768f96e9627d2f16f3f4acf43b64b4171a6",
+    "stateSha256": "7bd47cde555f41d98716c4825b52f35bbea88ea79a87144c58b67d04ddff09dc"
+   }
+  },
+  {
+   "name": "unavailable_communique",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": false,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "stale",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "unavailable",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_unavailable:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:stale\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|unavailable\ngap:communique_unavailable:2026-11-04\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "2e5a3591506e790ad2a8a402d00cabe3ebdbb88939d69be4b4423d8052f6237c"
+   }
+  },
+  {
+   "name": "disputed_meeting",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "hold",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": true
+      },
+      "previous": "13.75",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "stale",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "disputed",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "meeting_disputed:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:stale\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|disputed\ngap:meeting_disputed:2026-11-04\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "3ab7876f0ccce711b563cffed8caae7b5d891188a12168be03229995e59a5b75"
+   }
+  },
+  {
+   "name": "series_disagreement",
+   "snapshot": {
+    "dataBase": "2026-11-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "hold",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "stale",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "series_disagreement",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "series_disagreement:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:stale\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|series_disagreement\ngap:series_disagreement:2026-11-04\nentries:fe6326e504117be1d39bb9ab25fcac09e903db2d3c4e8034f5e74c2b9baf55fa",
+    "stateSha256": "1f9a145b8b6fc443abbc25515518d65b19c5af49d006d2119888c869fee78385"
+   }
+  },
+  {
+   "name": "raise_with_unrelated_gap",
+   "snapshot": {
+    "dataBase": "2026-12-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-12-09",
+      "kind": "ordinary",
+      "communique": null,
+      "previous": "14.00",
+      "change": null
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "stale",
+    "primaryWitness": "2026-11-04",
+    "witnesses": [
+     "2026-11-04"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     },
+     {
+      "endDate": "2026-12-09",
+      "state": "missing",
+      "deadline": "2026-12-14",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_missing:2026-12-09"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:stale\nprimary:2026-11-04\nwitness:2026-11-04\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nmeeting:2026-12-09|missing\ngap:communique_missing:2026-12-09\nentries:fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "stateSha256": "29519d1c85cd7c1609f52881650466e63afae7a394f233483455800ad2fd23c4"
+   }
+  },
+  {
+   "name": "calendar_missing",
+   "snapshot": {
+    "dataBase": "2027-01-05",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026,
+     2027
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "e852709eaf75fe89751f406c78d5510f50f3f8564b1bc480be0b59434e0ecf9f",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [
+     "calendar_missing:2027"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\ngap:calendar_missing:2027\nentries:e852709eaf75fe89751f406c78d5510f50f3f8564b1bc480be0b59434e0ecf9f",
+    "stateSha256": "584eb30f510ee6ebbd6c0c3fa0b0bb992f81c1f8707ed52f9621711f62f64a0a"
+   }
+  },
+  {
+   "name": "no_meetings_complete",
+   "snapshot": {
+    "dataBase": "2026-10-22",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "not_fired",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:not_fired\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nentries:b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "stateSha256": "a19c37a98339852a1f9ad48b2a1906b81a91252d8aed3c74569cdc7b53bed632"
+   }
+  },
+  {
+   "name": "absent_selection",
+   "snapshot": {
+    "dataBase": "2026-10-22",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 0,
+    "entriesSha256": "b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "not_fired",
+    "freshness": "absent",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:not_fired\nfreshness:absent\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nentries:b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "stateSha256": "22766b24f9919da244e55e84d910d3416cbfced27e1eb58b05a8d9a048faf2ad"
+   }
+  },
+  {
+   "name": "due_meeting_without_series",
+   "snapshot": {
+    "dataBase": "2026-11-12",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 0,
+    "entriesSha256": "6270f812a7dd4dd2a6059d6ed4aa7768f96e9627d2f16f3f4acf43b64b4171a6",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": null,
+      "previous": null,
+      "change": null
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "stale",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "missing",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [
+     "communique_missing:2026-11-04"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:stale\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|missing\ngap:communique_missing:2026-11-04\nentries:6270f812a7dd4dd2a6059d6ed4aa7768f96e9627d2f16f3f4acf43b64b4171a6",
+    "stateSha256": "7bd47cde555f41d98716c4825b52f35bbea88ea79a87144c58b67d04ddff09dc"
+   }
+  },
+  {
+   "name": "calendar_missing_nothing_due",
+   "snapshot": {
+    "dataBase": "2026-11-03",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [],
+    "selectionEntries": 200,
+    "entriesSha256": "2f60a2371a1591b5a62c2b6211befe7dd9c96d6238e475bb954b3c6ae5993778",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "incomplete",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [
+     "calendar_missing:2026"
+    ],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:incomplete\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\ngap:calendar_missing:2026\nentries:2f60a2371a1591b5a62c2b6211befe7dd9c96d6238e475bb954b3c6ae5993778",
+    "stateSha256": "e78b0250518016d26a32028f7d6859a6e1f4cfdd0f67222811643f22d2dabb35"
+   }
+  },
+  {
+   "name": "extraordinary_raise",
+   "snapshot": {
+    "dataBase": "2026-10-22",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-10-10",
+      "kind": "extraordinary",
+      "communique": {
+       "meeting": 900,
+       "decision": "raise",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.25"
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "current",
+    "primaryWitness": "2026-10-10",
+    "witnesses": [
+     "2026-10-10"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-10-10",
+      "state": "corroborated",
+      "deadline": "2026-10-15",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:current\nprimary:2026-10-10\nwitness:2026-10-10\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-10-10|corroborated\nentries:b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "stateSha256": "2b3edcbfe31440584413f03e00a8e7a1d2f3ea527bfcc47617476b3d64909a8c"
+   }
+  },
+  {
+   "name": "second_raise",
+   "snapshot": {
+    "dataBase": "2026-12-20",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     },
+     {
+      "endDate": "2026-11-04",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 285,
+       "decision": "raise",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "13.75",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-12-09",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 286,
+       "decision": "raise",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "14.25"
+     }
+    ]
+   },
+   "expected": {
+    "result": "fired",
+    "freshness": "current",
+    "primaryWitness": "2026-11-04",
+    "witnesses": [
+     "2026-11-04",
+     "2026-12-09"
+    ],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-11-04",
+      "state": "corroborated",
+      "deadline": "2026-11-09",
+      "relevant": true,
+      "baseline": false
+     },
+     {
+      "endDate": "2026-12-09",
+      "state": "corroborated",
+      "deadline": "2026-12-14",
+      "relevant": true,
+      "baseline": false
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:fired\nfreshness:current\nprimary:2026-11-04\nwitness:2026-11-04\nwitness:2026-12-09\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nmeeting:2026-11-04|corroborated\nmeeting:2026-12-09|corroborated\nentries:fb0a0be19962178e0266bf8477cb3dfb3e96d0733ef1e44d4c59131f080153f3",
+    "stateSha256": "fd2748bcfa0aca56e338539e2e06abb3e07d9091ac899bbe3d6e0f67f4302264"
+   }
+  },
+  {
+   "name": "baseline_contradicted",
+   "snapshot": {
+    "dataBase": "2026-10-22",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.70",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.70"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "cut",
+       "targetPct": "14.25",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.25"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "not_fired",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [
+     "baseline_cumulative",
+     "baseline_step:2026-04-29"
+    ],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:not_fired\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nbaseline:baseline_cumulative\nbaseline:baseline_step:2026-04-29\nentries:b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "stateSha256": "da65a61c35709cdfa8d916101d3a37f0b1347983d23ffe2661b7a0042c334aba"
+   }
+  },
+  {
+   "name": "baseline_hold_in_cycle",
+   "snapshot": {
+    "dataBase": "2026-10-22",
+    "declaration": {
+     "id": "decl-1",
+     "cycle": {
+      "decisions": [
+       "2026-03-18",
+       "2026-04-29",
+       "2026-06-17",
+       "2026-08-05",
+       "2026-09-16"
+      ],
+      "fromPct": "15.00",
+      "finalPct": "13.75",
+      "stepBps": 25,
+      "cuts": 5,
+      "cumulativeBps": -125
+     }
+    },
+    "calendarYearsRequired": [
+     2026
+    ],
+    "calendarYearsPresent": [
+     2026
+    ],
+    "selectionEntries": 200,
+    "entriesSha256": "b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 280,
+       "decision": "cut",
+       "targetPct": "14.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "15.00",
+      "change": "14.75"
+     },
+     {
+      "endDate": "2026-04-29",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 281,
+       "decision": "cut",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.75",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-06-17",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 282,
+       "decision": "hold",
+       "targetPct": "14.50",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.50",
+      "change": "14.50"
+     },
+     {
+      "endDate": "2026-08-05",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 283,
+       "decision": "cut",
+       "targetPct": "14.00",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.25",
+      "change": "14.00"
+     },
+     {
+      "endDate": "2026-09-16",
+      "kind": "ordinary",
+      "communique": {
+       "meeting": 284,
+       "decision": "cut",
+       "targetPct": "13.75",
+       "readable": true,
+       "disputed": false
+      },
+      "previous": "14.00",
+      "change": "13.75"
+     }
+    ]
+   },
+   "expected": {
+    "result": "not_fired",
+    "freshness": "current",
+    "primaryWitness": null,
+    "witnesses": [],
+    "meetings": [
+     {
+      "endDate": "2026-03-18",
+      "state": "corroborated",
+      "deadline": "2026-03-23",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-04-29",
+      "state": "corroborated",
+      "deadline": "2026-05-05",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-06-17",
+      "state": "corroborated",
+      "deadline": "2026-06-22",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-08-05",
+      "state": "corroborated",
+      "deadline": "2026-08-10",
+      "relevant": false,
+      "baseline": true
+     },
+     {
+      "endDate": "2026-09-16",
+      "state": "corroborated",
+      "deadline": "2026-09-21",
+      "relevant": false,
+      "baseline": true
+     }
+    ],
+    "gaps": [],
+    "baselineContradictions": [
+     "baseline_meeting:2026-06-17"
+    ],
+    "stateText": "market-rg01-state.v1\ndeclaration:decl-1\nresult:not_fired\nfreshness:current\nprimary:\nmeeting:2026-03-18|corroborated\nmeeting:2026-04-29|corroborated\nmeeting:2026-06-17|corroborated\nmeeting:2026-08-05|corroborated\nmeeting:2026-09-16|corroborated\nbaseline:baseline_meeting:2026-06-17\nentries:b5cd75d2badb0a38773cb92a9fcd6ffe210369a50dd3ee3a0e11685442ad062e",
+    "stateSha256": "8eed84f6cae6f44a4af56d3f03cd7f4a6ce93dde47f6f206ddf41f2e1d3dab2f"
+   }
+  }
+ ]
+}

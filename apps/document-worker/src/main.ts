@@ -7,6 +7,7 @@ import {processGovernedEvaluation} from "./process-governed-evaluation";
 import {createMarketAcquisitionQueue} from "./market-acquisition-queue";
 import {createMarketObjectStore} from "./market-acquisition-storage";
 import {processMarketAcquisition, sweepMarketOrphans} from "./process-market-acquisition";
+import {createMarketRegimeMonitor, MARKET_RG01_CYCLE_MS, MarketRegimeMonitorError, runMarketRg01Cycle} from "./market-regime-monitor";
 import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
@@ -302,6 +303,8 @@ async function main(): Promise<void> {
   // worker token is delegated for; bytes go to the publisher bucket at the allocated path.
   const marketQueue = createMarketAcquisitionQueue(supabase, config.OFFROAD_WORKER_TOKEN);
   const marketStore = createMarketObjectStore(supabase);
+  // The RG-01 monitor: active only while its consumer exists with a live delegation for this worker.
+  const regimeMonitor = createMarketRegimeMonitor(supabase, config.OFFROAD_WORKER_TOKEN);
   let idlePolls = 0;
   const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
     () => log("execution.poll_failed", {reason: "execution_transport_failed"}),
@@ -379,6 +382,17 @@ async function main(): Promise<void> {
         if (!await auditArchive.poll()) break;
       }
       await sleep(5000, shuttingDown.signal);
+    }
+  })();
+
+  // The RG-01 monitor runs in its own loop, so a busy job queue never delays its schedule or evaluation.
+  const regimeMonitorLoop = (async () => {
+    while (!stopping) {
+      await runMarketRg01Cycle(regimeMonitor, shuttingDown.signal)
+        .then(result => { if (result.status === "ran") log("market.rg01", {scheduled: result.scheduled, events: result.events,
+          runs: result.runs.join(","), fired: result.fired, ...(result.eventsFailed ? {eventsFailed: result.eventsFailed} : {})}); })
+        .catch((error) => log("market.rg01_failed", {reason: error instanceof MarketRegimeMonitorError ? error.code : "market_regime_monitor_transport_failed"}));
+      await sleep(MARKET_RG01_CYCLE_MS, shuttingDown.signal);
     }
   })();
 
@@ -585,7 +599,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop, retentionLoop, auditArchiveLoop]);
+    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop, retentionLoop, auditArchiveLoop, regimeMonitorLoop]);
   }
   log("worker.stopped");
 }

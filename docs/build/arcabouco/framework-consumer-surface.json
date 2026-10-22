@@ -690,7 +690,7 @@
     },
     {
       "path": "apps/document-worker/src/runtime-schema.ts",
-      "sha256": "c7b91fee8aa1bc061cd434d64c769aa52594e433fee56da55c54a7a518aaf643",
+      "sha256": "0eb1bf873ad825bed3ba71025013bbcd24423628b5a24e51ee3413a4a7a0ee0c",
       "entrypoint": false,
       "rpcs": [
         "worker_runtime_schema_contract_v1"
@@ -2034,7 +2034,7 @@
     },
     {
       "path": "apps/document-worker/src/market-acquisition-queue.ts",
-      "sha256": "39d9e45df5bf5b4b82d6fe4236ccdb25bee0bf37b37846342b448f47948e3213",
+      "sha256": "45d7ccb3c06a296037d112c4313d3231c15011d32b06db1e6ece21567c4c5fb3",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_market_acquisition_v1",
@@ -2080,6 +2080,24 @@
         "apps/web/src/lib/market/odbl-public.test.tsx",
         "supabase/tests/market_retention_odbl.sql",
         "apps/web/e2e/market-odbl.spec.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/market-regime-monitor.ts",
+      "sha256": "9e75d2a6ef2aebd24fd2e71c02cac1babf32e33453c00972b7f8a2953308d45b",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_claim_market_event_v1",
+        "worker_evaluate_rg01_v1",
+        "worker_run_rg01_event_v1",
+        "worker_schedule_rg01_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Platform RG-01 monitor (ADR 0023, M2 part 6): worker account bound to an active worker token and a live delegation of that token to the consumer registered with handler rg01; schedule and evaluation write only monitor requests and evaluations, the handler completes only that consumer's rows with its lease capability, all rechecked in SQL; no tenant resource is reachable.",
+      "negativeTests": [
+        "apps/document-worker/src/market-regime-monitor.test.ts",
+        "supabase/tests/market_rg01_monitor.sql",
+        "scripts/ci/test-market-rg01-concurrency.py"
       ]
     }
   ],
