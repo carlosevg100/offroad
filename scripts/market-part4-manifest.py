@@ -3,6 +3,7 @@
 id derived from a fixed namespace, its arguments and its reason, concrete for one operational date.
 
 Usage: market-part4-manifest.py --date AAAA-MM-DD --last-meeting N OUT.json
+       market-part4-manifest.py --expand ENV TEMPLATE key=value ...   (one concrete act, printed)
 
 The date is the São Paulo date D of the run; the series window ends on D-1 and the list covers the meetings
 from the anchor 235 to N. Every act's name carries what makes it concrete, and its command is UUID v5 of
@@ -76,42 +77,91 @@ def acts(env, day, last):
             'request': {'window': {'start': '2021-01-14', 'end': '2026-10-21'}}, 'reason': f'Prova integrada: série da conferência da parte 0. {AUTH}.', 'actor': a})
     add(f'bootstrap-series-{day.isoformat()}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-sgs-432-endpoint',
         'request': {'window': {'start': '2021-01-14', 'end': eve}}, 'reason': f'Bootstrap: série 432 de 2021-01-14 a {eve}. {AUTH}.', 'actor': a})
-    add('odbl-edition-1', 'publish_market_odbl_release_v1', {'codeCommit': '<sha of the deployed main>', 'actor': a},
-        'the commit deployed on the web and in the worker image')
     schedules('')
-    # Pause: every argument either literal or the receipt of a named grant; the jobs are every non-terminal job.
-    add('pause-transport', 'release_market_acquisition_transport_v1', {'released': False, 'actor': a, 'reason': f'Pausa da base de mercado: transporte. {AUTH}.'})
-    for key in ('event-delegation', 'acquisition-delegation'):
-        fn = 'revoke_market_event_delegation_v1' if key == 'event-delegation' else 'revoke_market_acquisition_delegation_v1'
-        add(f'pause-{key}', fn, {'delegationOfGrant': cmd(env, key), 'reason': f'Pausa da base de mercado: {key}. {AUTH}.', 'actor': a})
-    for key in SCHEDULES:
-        add(f'pause-schedule-{key}', 'revoke_market_acquisition_schedule_v1', {'scheduleOfGrant': cmd(env, f'schedule-{key}'),
-            'reason': f'Pausa da base de mercado: agenda {key}. {AUTH}.', 'actor': a})
-    add('pause-cancel-<job>', 'cancel_market_acquisition_v1', {'jobs': "every market job of source bcb with status 'queued' or 'leased'",
-        'reason': f'Pausa da base de mercado: job cancelado. {AUTH}.', 'actor': a}, 'one act per job; the act name carries the job id')
-    add('withdraw-edition-<n>', 'withdraw_market_odbl_release_v1', {'release': '<n>', 'kind': "'quality' or 'rights'",
-        'reason': f'Retirada da edição ODbL. {AUTH}.', 'actor': a}, 'only if the edition itself is wrong; a pause does not withdraw it')
-    # Resumption: new acts, never replays of the revoked grants.
-    add('resume-1-transport', 'release_market_acquisition_transport_v1', {'released': True, 'actor': a, 'reason': f'Retomada da base de mercado: transporte. {AUTH}.'})
-    grants('resume-1-')
-    add('resume-1-detail-<meeting>', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-detalhe', 'request': {'meeting': '<meeting>'},
-        'reason': f'Retomada: comunicado cancelado na pausa. {AUTH}.', 'actor': a}, 'one act per meeting whose detail was cancelled and has no reference')
-    add('resume-1-odbl-edition-<n>', 'publish_market_odbl_release_v1', {'codeCommit': '<sha of the deployed main>', 'actor': a}, 'only if an edition was withdrawn')
-    schedules('resume-1-')
+    if env == 'staging':
+        add('rehearsal-list-234-281', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista', 'request': {'size': 48},
+            'reason': f'Ensaio da pausa: lista das reuniões 234 a 281. {AUTH}.', 'actor': a},
+            'staging only: the confirmed list records meeting 234, which the reconciliation then asks a detail for')
+    # Pause and resumption cycles: pause-<k> revokes what the grants of cycle k-1 created (cycle 0 is the
+    # opening), resume-<k> grants anew. Acts whose subject is only known at run time (one cancellation per job,
+    # one detail per meeting, one edition) are templates without a command; `expand` makes them concrete.
+    for k in range(1, CYCLES + 1):
+        prior = '' if k == 1 else f'resume-{k - 1}-'
+        add(f'pause-{k}-transport', 'release_market_acquisition_transport_v1', {'released': False, 'actor': a,
+            'reason': f'Pausa {k} da base de mercado: transporte. {AUTH}.'})
+        for key, fn in (('event-delegation', 'revoke_market_event_delegation_v1'), ('acquisition-delegation', 'revoke_market_acquisition_delegation_v1')):
+            add(f'pause-{k}-{key}', fn, {'delegationOfGrant': cmd(env, f'{prior}{key}'), 'reason': f'Pausa {k} da base de mercado: {key}. {AUTH}.', 'actor': a})
+        for key in SCHEDULES:
+            add(f'pause-{k}-schedule-{key}', 'revoke_market_acquisition_schedule_v1', {'scheduleOfGrant': cmd(env, f'{prior}schedule-{key}'),
+                'reason': f'Pausa {k} da base de mercado: agenda {key}. {AUTH}.', 'actor': a})
+        add(f'resume-{k}-transport', 'release_market_acquisition_transport_v1', {'released': True, 'actor': a,
+            'reason': f'Retomada {k} da base de mercado: transporte. {AUTH}.'})
+        grants(f'resume-{k}-')
+        schedules(f'resume-{k}-')
     return out
+
+
+CYCLES = 2
+
+
+def templates(env):
+    a = ENVS[env]['actor']
+    return [
+     {'template': 'pause-<k>-cancel-<job>', 'function': 'cancel_market_acquisition_v1',
+      'args': {'job': '<job>', 'reason': f'Pausa <k> da base de mercado: job cancelado. {AUTH}.', 'actor': a},
+      'expandFor': "each market job of source bcb with status 'queued' or 'leased' at pause <k>"},
+     {'template': 'resume-<k>-detail-<meeting>', 'function': 'enqueue_market_contract_acquisition_v1',
+      'args': {'contract': 'bcb-copom-comunicados-detalhe', 'request': {'meeting': '<meeting>'}, 'reason': f'Retomada <k>: comunicado cancelado na pausa. {AUTH}.', 'actor': a},
+      'expandFor': 'each meeting whose detail was cancelled at pause <k> and has no reference'},
+     {'template': 'withdraw-edition-<release>', 'function': 'withdraw_market_odbl_release_v1',
+      'args': {'release': '<release>', 'kind': '<quality|rights>', 'reason': f'Retirada da edição ODbL <release>. {AUTH}.', 'actor': a},
+      'expandFor': 'only an edition that is itself wrong'},
+     {'template': 'odbl-edition-<release>', 'function': 'publish_market_odbl_release_v1', 'args': {'codeCommit': '<commit>', 'actor': a},
+      'expandFor': 'each edition after the first, with the deployed commit'},
+    ]
+
+
+def expand(env, template, values):
+    """One concrete act from a template: every placeholder filled, the command derived from the concrete name."""
+    t = next(x for x in templates(env) if x['template'] == template)
+    def fill(v):
+        if isinstance(v, dict): return {k: fill(x) for k, x in v.items()}
+        if isinstance(v, str):
+            for key, value in values.items(): v = v.replace(f'<{key}>', value)
+            if '<' in v and '>' in v: raise SystemExit(f'unfilled placeholder in {v}')
+            return int(v) if key_is_int(v) else v
+        return v
+    name = fill(t['template'])
+    return {'act': name, 'command': cmd(env, name), 'function': t['function'], 'args': fill(t['args'])}
+
+
+def key_is_int(v):
+    return v.isdigit() and len(v) < 6
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--date', required=True)
-    p.add_argument('--last-meeting', required=True, type=int)
-    p.add_argument('out')
+    p.add_argument('--date')
+    p.add_argument('--last-meeting', type=int)
+    p.add_argument('--expand', nargs='+', metavar=('ENV TEMPLATE', 'KEY=VALUE'))
+    p.add_argument('out', nargs='?')
     args = p.parse_args()
+    if args.expand:
+        env, template, *pairs = args.expand
+        print(json.dumps(expand(env, template, dict(x.split('=', 1) for x in pairs)), ensure_ascii=False))
+        return
+    if not (args.date and args.last_meeting and args.out):
+        raise SystemExit('--date, --last-meeting and OUT are required')
     day = datetime.date.fromisoformat(args.date)
     if args.last_meeting < ANCHOR:
         raise SystemExit('the last meeting precedes the anchor')
     doc = {'schemaVersion': 'offroad.market-part4-manifest.v2', 'namespace': str(NS), 'authorization': AUTH, 'operationalDate': day.isoformat(),
-           'lastMeeting': args.last_meeting, 'environments': {env: {**ENVS[env], 'acts': acts(env, day, args.last_meeting)} for env in ENVS}}
+           'lastMeeting': args.last_meeting,
+           'environments': {env: {**ENVS[env], 'acts': acts(env, day, args.last_meeting), 'templates': templates(env)} for env in ENVS}}
+    for env in ENVS:
+        for act in doc['environments'][env]['acts']:
+            if '<' in json.dumps(act):
+                raise SystemExit(f'placeholder in a concrete act: {act["act"]}')
     with open(args.out, 'w') as fh:
         json.dump(doc, fh, ensure_ascii=False, indent=1)
         fh.write('\n')

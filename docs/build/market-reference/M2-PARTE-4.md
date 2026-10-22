@@ -16,6 +16,9 @@ horários e operação contínua.
 Mudanças da v3 (revisão 2): manifesto concreto por data operacional e última reunião, com atos de pausa e de
 retomada completos; pausa cancela também os jobs `leased`; retomada readquire os detalhes cancelados; prova com
 executor só de mercado.
+Mudanças da v4 (revisão 3): ciclos de pausa e retomada numerados, cada pausa revogando as concessões do ciclo
+anterior; atos dinâmicos como modelos sem comando, concretizados por expansão; encerramento do executor
+gracioso e limitado.
 
 ## 1. Ordem: transporte antes do bootstrap, agendas por último
 
@@ -40,10 +43,15 @@ comando UUID v5 no namespace `9ddec42e-8e97-5b84-93d3-9c8bd5b7e8b3` (`uuid5(NAME
 'https://offroad.capital/market/m2-part4')`, nome `<ambiente>:<ato>`). O nome do ato carrega o que o torna
 concreto (`bootstrap-series-<D>`, `bootstrap-list-235-<N>`, `bootstrap-detail-<n>`), de modo que outro dia ou
 outra última reunião geram outro comando, nunca replay com argumento diferente; se D ou N mudarem até a execução,
-gera-se um manifesto novo e os anteriores ficam. Atos cujo argumento vem de um recibo anterior (a delegação ou a
-agenda que a pausa revoga) nomeiam o comando da concessão; os cancelamentos são um ato por job
-(`pause-cancel-<job>`). Repetir um ato é replay do mesmo comando; uma retomada usa atos novos (`resume-1-…`),
-porque replay de concessão revogada não a reativa. Nenhum segredo entra no manifesto.
+gera-se um manifesto novo e os anteriores ficam. O manifesto separa atos concretos (sem nenhum marcador; o
+gerador recusa marcador num ato concreto) de modelos sem comando, cujo sujeito só se conhece na execução:
+cancelamento por job (`pause-<k>-cancel-<job>`), detalhe readquirido por reunião (`resume-<k>-detail-<meeting>`),
+edição publicada e edição retirada. `--expand AMBIENTE MODELO chave=valor …` concretiza um modelo: preenche
+todos os marcadores, recusa marcador sobrando e deriva o comando do nome concreto; cada ato expandido executado
+entra no registro da execução. Pausas e retomadas são ciclos numerados: `pause-<k>` revoga as concessões do ciclo
+anterior (`resume-<k-1>`, ou as da abertura quando k é 1), por referência ao comando dessas concessões, e
+`resume-<k>` concede de novo com comandos próprios, porque replay de concessão revogada não a reativa e replay
+de transporte fechado não o fecha de novo. Nenhum segredo entra no manifesto.
 
 Produção: ator é o principal fundador (`b60448ce-965a-4303-ae39-50447450c2aa`), atos pela conexão
 administrativa do projeto, cada motivo cita a autorização; worker é o token do ECS (`655b20e1-…`, conta
@@ -102,7 +110,9 @@ staging:
    varredura de órfãos, agendador e monitor RG-01) e nenhum outro consumidor: o token de worker é reconhecido
    por consumidores genéricos que não exigem delegação de mercado, então o processo completo não é usado.
    Recusa começar se o host não for o do projeto nomeado (`MARKET_PROOF_PROJECT_REF`) e para sozinho no prazo
-   (`MARKET_PROOF_MINUTES`). Roda com `env -i` e apenas `PATH`, `HOME`, `SUPABASE_URL` e
+   (`MARKET_PROOF_MINUTES`), com encerramento gracioso: o prazo é armado antes de qualquer chamada remota;
+   depois dele nenhum job é reivindicado e nenhum laço começa outro ciclo; a aquisição já reivindicada termina ou
+   falha sob o próprio lease e os próprios limites, como na imagem; os timers são limpos e o processo sai. Roda com `env -i` e apenas `PATH`, `HOME`, `SUPABASE_URL` e
    `SUPABASE_PUBLISHABLE_KEY` de staging, credenciais sintéticas e as duas variáveis da prova; nenhuma credencial
    de AWS, de modelo ou de produção.
 3. Atos A a F do manifesto em staging (publicadora, fonte, calendário com os mesmos bytes, consumidor,
@@ -125,8 +135,9 @@ staging:
    de lista de 48 (reuniões 234 a 281) faz a reconciliação criar o detalhe da 234, que não tem referência;
    pausa (seção 6) com esse detalhe `queued` ou `leased`; confere-se que o disparo bloqueia, que nada é reivindicado, que não resta job
    `queued` nem `leased` e que a reconciliação passa a mostrar `detail_cancelled`; retomada com os atos
-   `resume-1-…`, inclusive a nova aquisição do detalhe cancelado, até a reconciliação ficar vazia; nova pausa
-   final; token sintético revogado. Os dados ficam em staging como evidência.
+   `resume-1-…`, inclusive a nova aquisição do detalhe cancelado, até a reconciliação ficar vazia; pausa final
+   `pause-2-…` com os cancelamentos expandidos; antes de revogar o token sintético, conferência de transporte
+   fechado, nenhuma delegação ou agenda ativa e nenhum job não terminal. Os dados ficam em staging como evidência.
 
 ## 5. Produção
 

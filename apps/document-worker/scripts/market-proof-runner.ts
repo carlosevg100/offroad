@@ -3,7 +3,9 @@
  * It runs the same modules the image runs (the acquisition consumer with its fetch, Storage and confirmation,
  * the orphan sweep, the scheduler and the RG-01 monitor) and nothing else: no document jobs, executions,
  * evaluations, outboxes of tenants, recomputes or retention. It refuses to start against any project but the
- * one named in MARKET_PROOF_PROJECT_REF, and stops after MARKET_PROOF_MINUTES.
+ * one named in MARKET_PROOF_PROJECT_REF. The stop is graceful and bounded: the deadline is armed before any remote
+ * call; after it no job is claimed and no loop starts another cycle; an acquisition already claimed finishes
+ * or fails under its own lease and timeouts, as in the image; then the timers are cleared and the process exits.
  *
  * Environment: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, WORKER_ACCOUNT_EMAIL, WORKER_ACCOUNT_PASSWORD,
  * OFFROAD_WORKER_TOKEN, MARKET_PROOF_PROJECT_REF, MARKET_PROOF_MINUTES (default 30).
@@ -38,17 +40,27 @@ async function main(): Promise<void> {
   if (new URL(url).hostname !== `${project}.supabase.co`) throw new Error("the Supabase URL is not the named project");
   const minutes = Number(process.env.MARKET_PROOF_MINUTES ?? "30");
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 240) throw new Error("MARKET_PROOF_MINUTES out of range");
+  const stop = new AbortController();
+  const deadline = setTimeout(() => stop.abort(), minutes * 60_000);
+  const onSignal = () => stop.abort();
+  process.on("SIGINT", onSignal);
+  process.on("SIGTERM", onSignal);
+  try { await run(url, project, minutes, stop.signal); }
+  finally {
+    clearTimeout(deadline);
+    process.off("SIGINT", onSignal);
+    process.off("SIGTERM", onSignal);
+  }
+}
+
+async function run(url: string, project: string, minutes: number, signal: AbortSignal): Promise<void> {
   const token = required("OFFROAD_WORKER_TOKEN");
   const supabase = createClient(url, required("SUPABASE_PUBLISHABLE_KEY"), {auth: {persistSession: false, autoRefreshToken: true}});
   const {error} = await supabase.auth.signInWithPassword({email: required("WORKER_ACCOUNT_EMAIL"), password: required("WORKER_ACCOUNT_PASSWORD")});
   if (error) throw new Error("the proof worker could not sign in");
   const contract = await assertWorkerRuntimeSchema(supabase);
   log("proof.started", {project, minutes, schemaVersion: contract.schemaVersion});
-
-  const stop = new AbortController();
-  setTimeout(() => stop.abort(), minutes * 60_000);
-  process.on("SIGINT", () => stop.abort());
-  process.on("SIGTERM", () => stop.abort());
+  const stop = {signal};
 
   const queue = createMarketAcquisitionQueue(supabase, token);
   const store = createMarketObjectStore(supabase);
@@ -89,7 +101,10 @@ async function main(): Promise<void> {
     await sleep(5000, stop.signal);
   }
   await Promise.all([schedulerLoop, monitorLoop]);
+  supabase.auth.stopAutoRefresh();
   log("proof.stopped");
 }
 
-main().catch((error) => { log("proof.failed", {message: (error as Error).message}); process.exitCode = 1; });
+main()
+  .then(() => process.exit(0))
+  .catch((error) => { log("proof.failed", {message: (error as Error).message}); process.exit(1); });
