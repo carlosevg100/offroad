@@ -863,7 +863,21 @@
       "reason": "Ensaio da pausa: lista das reuniões 234 a 281. Autorização do fundador de 22/10/2026 (M2 parte 4).",
       "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
      },
-     "note": "staging only: the confirmed list records meeting 234, which the reconciliation then asks a detail for"
+     "note": "staging only: the confirmed list records meeting 234"
+    },
+    {
+     "act": "rehearsal-detail-234",
+     "command": "ec214edf-2446-5c6b-8084-579df6f9ab8a",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 234
+      },
+      "reason": "Ensaio da pausa: comunicado da reunião 234, cancelado pela pausa. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "staging only: enqueued with the runner stopped, so the pause finds it queued"
     },
     {
      "act": "pause-1-transport",
@@ -1069,6 +1083,78 @@
     {
      "act": "resume-3-schedule-copom",
      "command": "416f1912-9e5a-576b-854c-c87920820c8c",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "copom_communiques",
+      "params": {
+       "size": 20
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária dos comunicados do Copom. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "pause-4-transport",
+     "command": "cc19dab6-01f8-5858-b796-1c8e391aaf13",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": false,
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+      "reason": "Pausa 4 da base de mercado: transporte. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    },
+    {
+     "act": "resume-4-transport",
+     "command": "149c820e-7d4d-5b00-b04e-fb256a6444f7",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": true,
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+      "reason": "Retomada 4 da base de mercado: transporte. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    },
+    {
+     "act": "resume-4-event-delegation",
+     "command": "b76d07a3-1a88-548d-90fd-9403a45e1a8c",
+     "function": "grant_market_event_delegation_v1",
+     "args": {
+      "token": "c9783ba9-8f6e-55ea-8b8b-8de075cb8258",
+      "consumer": "rg01-monitor",
+      "reason": "Delegação do worker ao monitor RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "resume-4-acquisition-delegation",
+     "command": "25fda28f-0fd9-50e4-94b4-7ace43f15ef2",
+     "function": "grant_market_acquisition_delegation_v1",
+     "args": {
+      "token": "c9783ba9-8f6e-55ea-8b8b-8de075cb8258",
+      "source": "bcb",
+      "reason": "Delegação de aquisição do worker para a fonte bcb. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "resume-4-schedule-series-432",
+     "command": "098c8a30-2fee-556d-a4ef-d2a824d68b77",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "series_432",
+      "params": {
+       "coverageStart": "2021-01-14"
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária da série 432. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "resume-4-schedule-copom",
+     "command": "38f5a76c-f963-5efd-852c-72a8f82c077d",
      "function": "grant_market_acquisition_schedule_v1",
      "args": {
       "kind": "copom_communiques",
@@ -2232,6 +2318,78 @@
       "reason": "Agenda diária dos comunicados do Copom. Autorização do fundador de 22/10/2026 (M2 parte 4).",
       "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
      }
+    },
+    {
+     "act": "pause-4-transport",
+     "command": "81947e08-c87c-5239-8cf4-e7257ace4022",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": false,
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa",
+      "reason": "Pausa 4 da base de mercado: transporte. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    },
+    {
+     "act": "resume-4-transport",
+     "command": "141d5bf4-e03e-51d1-94fb-fd3e4026284c",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": true,
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa",
+      "reason": "Retomada 4 da base de mercado: transporte. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    },
+    {
+     "act": "resume-4-event-delegation",
+     "command": "2697cbb3-fd45-56fd-b219-d59c54c247b6",
+     "function": "grant_market_event_delegation_v1",
+     "args": {
+      "token": "655b20e1-3bac-4ad5-a8be-77f5b7687fa0",
+      "consumer": "rg01-monitor",
+      "reason": "Delegação do worker ao monitor RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "resume-4-acquisition-delegation",
+     "command": "5dfcdc4e-ed8b-5d14-8384-bd4f63cd812e",
+     "function": "grant_market_acquisition_delegation_v1",
+     "args": {
+      "token": "655b20e1-3bac-4ad5-a8be-77f5b7687fa0",
+      "source": "bcb",
+      "reason": "Delegação de aquisição do worker para a fonte bcb. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "resume-4-schedule-series-432",
+     "command": "765d6fae-733f-5425-95f6-461a695cb83c",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "series_432",
+      "params": {
+       "coverageStart": "2021-01-14"
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária da série 432. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "resume-4-schedule-copom",
+     "command": "441cb56d-e190-5248-ab1f-13ba6e6f8a90",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "copom_communiques",
+      "params": {
+       "size": 20
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária dos comunicados do Copom. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
     }
    ],
    "templates": [
@@ -2338,6 +2496,62 @@
      "expandFor": "only an edition that is itself wrong; kind is quality or rights"
     }
    ]
+  },
+  "staging-supplement-2026-10-23": {
+   "project": "gjkkjtbfnssdsbmlhmwk",
+   "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+   "token": "766a8aff-c864-57c5-bbce-bbd134e66109",
+   "account": "a38dd0fd-804e-5849-b0a0-dffbe4d4e1f7",
+   "acts": [
+    {
+     "act": "acquisition-delegation",
+     "command": "bbe57383-2446-5b30-9c76-faf413182d7c",
+     "function": "grant_market_acquisition_delegation_v1",
+     "args": {
+      "token": "766a8aff-c864-57c5-bbce-bbd134e66109",
+      "source": "bcb",
+      "reason": "Execução suplementar de staging em 2026-10-23: delegação de aquisição. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "transport-open",
+     "command": "3ed07294-4b01-5e2b-b0b4-c288eaa2f230",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": true,
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+      "reason": "Execução suplementar de staging em 2026-10-23: transporte. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    },
+    {
+     "act": "bootstrap-series-2026-10-23",
+     "command": "1296d2f3-c1c8-5779-83cb-812bbc9049e6",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-sgs-432-endpoint",
+      "request": {
+       "window": {
+        "start": "2021-01-14",
+        "end": "2026-10-22"
+       }
+      },
+      "reason": "Execução suplementar: série 432 de 2021-01-14 a 2026-10-22. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "close-transport",
+     "command": "7024b1ae-561d-526b-8274-f1a2a229b0cf",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": false,
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+      "reason": "Execução suplementar de staging em 2026-10-23: fechamento. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     }
+    }
+   ],
+   "note": "only when the production bootstrap runs on another day than the proof; the delegation is revoked and the token revoked at the end"
   }
  }
 }

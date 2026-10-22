@@ -18,10 +18,11 @@ retomada completos; pausa cancela também os jobs `leased`; retomada readquire o
 executor só de mercado.
 Mudanças da v4 (revisão 3): ciclos de pausa e retomada numerados; atos dinâmicos como modelos sem comando,
 concretizados por expansão; encerramento do executor gracioso e limitado.
-Mudanças da v5 (revisões 4 e 5): a pausa revoga o que estiver vivo, resolvido na execução; a retomada readquire
-lista, detalhes e série cancelados com comandos próprios e com as barreiras do bootstrap; ensaio de pausa no meio
-do bootstrap; vigia de saída do executor; primeira edição pelo modelo de edição; o expansor deriva o tamanho da
-lista e a véspera da série; o ensaio da lista acompanha a última reunião.
+Mudanças da v5 (revisões 4 a 6): a pausa revoga o que estiver vivo, resolvido na execução; a retomada readquire
+lista, detalhes e série cancelados com comandos próprios e com as barreiras do bootstrap; ensaios determinísticos
+de pausa durante a lista, durante a série e com um detalhe pendente; vigia de saída do executor; primeira edição
+pelo modelo de edição; o expansor deriva o tamanho da lista e a véspera da série; execução suplementar de staging
+com identidade própria quando a produção ocorre em outro dia.
 
 ## 1. Ordem: transporte antes do bootstrap, agendas por último
 
@@ -134,8 +135,12 @@ staging:
    de 21/10; a versão sai aprovada com 2.107 observações, 31 vínculos e âncora 235. A lista do bootstrap tem
    outro tamanho que a do corpus (47 e 60): compara-se o conteúdo das reuniões 235–281, não o hash. Diferença
    de hash de um detalhe é investigada antes de seguir.
-5. Bootstrap da seção 3 com D igual ao dia da prova. Se o bootstrap de produção ocorrer em outro dia, a série
-   2021-01-14 até D−1 é adquirida de novo em staging no dia de produção, para comparar o hash de pedidos iguais.
+5. Bootstrap da seção 3 com D igual ao dia da prova. Se o bootstrap de produção ocorrer em outro dia, roda antes
+   dele a execução suplementar de staging do manifesto daquele dia (`staging-supplement-<D>`): conta e token
+   sintéticos novos, delegação e transporte com comandos próprios, a mesma série de produção, e no fim transporte
+   fechado, delegação revogada (modelo `pause-<k>-revoke-acquisition-delegation-<id>` com `k=supplement-<D>`) e
+   token revogado. A revogação da prova original fica como está; a comparação de pedidos iguais é exigida de novo
+   antes da liberação.
 6. Monitor (aceite H): consumidor sem linha `pending`, `leased` ou `blocked`; todos os pedidos de avaliação
    satisfeitos; a última avaliação posterior à última confirmação; declaração ativa, reuniões 277–281 como
    cortes de 25 pontos de 15,00% a 13,75%, nenhuma alta: resultado `not_fired`, frescor `current` enquanto
@@ -143,19 +148,21 @@ staging:
 7. Edição ODbL em staging com o commit do main; web local (`NEXT_PUBLIC_SUPABASE_URL` e
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` de staging no build) e aceite I da seção 5.
 8. Agendas em staging e aceite J com o worker local até estabilizar.
-9. Ensaios da reversão (seção 6), todos em staging:
-   - Durante o bootstrap, antes das agendas: `pause-1` com a série do bootstrap `queued` ou `leased`. Confere-se
-     o cancelamento, nenhum job não terminal e que só as delegações vivas foram revogadas (não há agenda).
-     Retomada: `resume-1` (transporte, delegações) e `resume-1-series-<D>`; a barreira 3 da seção 3 é cumprida de
-     novo, e depois monitor, edição e agendas seguem a ordem.
-   - Depois das agendas, com aquisição em andamento: a lista `rehearsal-list-234-<N>` (reuniões 234 a N, pelo
-     enfileirador manual) grava a reunião 234, que não tem referência; confere-se que ela está listada e que a
-     reconciliação criou o detalhe; `pause-2` com esse detalhe `queued` ou `leased`. Confere-se que o disparo
-     bloqueia, que nada é reivindicado, que não resta job `queued` nem `leased` e que a reconciliação passa a
-     mostrar `detail_cancelled`. Retomada `resume-2-…`, inclusive `resume-2-detail-234`, até a reconciliação ficar
-     vazia.
-   - Pausa final `pause-3`; antes de revogar o token sintético, conferência de transporte fechado, nenhuma
+9. Ensaios da reversão, todos em staging e determinísticos: cada pausa acontece com o executor parado e o job
+   ensaiado ainda `queued`; o executor volta só na retomada.
+   - Durante a lista: o bootstrap começa pela lista com o executor parado; `pause-1` a cancela. Retomada `resume-1`
+     (transporte, delegações) e `resume-1-list-235-<N>`; o bootstrap segue pelas barreiras: lista, detalhes.
+   - Durante a série: com o executor parado, a série do bootstrap é enfileirada; `pause-2` a cancela. Retomada
+     `resume-2` e `resume-2-series-<D>`; barreira 3, e depois monitor, edição e agendas na ordem.
+   - Com um detalhe pendente, depois das agendas: com o executor rodando, `rehearsal-list-234-<N>` é confirmada e
+     grava a reunião 234; com o executor parado, `rehearsal-detail-234` é enfileirado e `pause-3` o cancela.
+     Retomada `resume-3`, `resume-3-detail-234` confirmado e agendas `resume-3-…`; o disparo seguinte tem
+     `details`, `inFlight` e `blocked` vazios.
+   - Pausa final `pause-4`; antes de revogar o token sintético, conferência de transporte fechado, nenhuma
      delegação ou agenda ativa e nenhum job não terminal. Os dados ficam em staging como evidência.
+   Cada pausa se comprova por transporte fechado, delegações e agendas revogadas, jobs cancelados e nenhuma
+   reivindicação. O bloqueio `detail_cancelled` só é emitido por uma agenda ativa; ele está provado no teste
+   transacional da parte 2 (`market_scheduler.sql`, seção 6) e não é observado no ensaio.
 
 ## 5. Produção
 

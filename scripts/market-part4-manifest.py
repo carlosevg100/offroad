@@ -81,7 +81,10 @@ def acts(env, day, last):
     if env == 'staging':
         add(f'rehearsal-list-234-{last}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista',
             'request': {'size': last - 234 + 1}, 'reason': f'Ensaio da pausa: lista das reuniões 234 a {last}. {AUTH}.', 'actor': a},
-            'staging only: the confirmed list records meeting 234, which the reconciliation then asks a detail for')
+            'staging only: the confirmed list records meeting 234')
+        add('rehearsal-detail-234', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-detalhe', 'request': {'meeting': 234},
+            'reason': f'Ensaio da pausa: comunicado da reunião 234, cancelado pela pausa. {AUTH}.', 'actor': a},
+            'staging only: enqueued with the runner stopped, so the pause finds it queued')
     # Pause and resumption cycles. A pause closes the transport and revokes whatever grant is live at that
     # moment (resolved at run time, so a pause in the middle of the bootstrap revokes only what exists); a
     # resumption grants anew with its own commands and acquires again whatever the pause cancelled.
@@ -95,7 +98,28 @@ def acts(env, day, last):
     return out
 
 
-CYCLES = 3
+CYCLES = 4
+
+
+def supplement(day, last):
+    """A staging run on the production day D, when it differs from the proof's: its own worker identity and
+    commands, the same series request as production, and its own closing."""
+    env = f'staging-supplement-{day.isoformat()}'
+    base = ENVS['staging']; a = base['actor']
+    t = str(uuid.uuid5(NS, f'{env}:worker-token')); account = str(uuid.uuid5(NS, f'{env}:worker-account'))
+    eve = (day - datetime.timedelta(days=1)).isoformat(); out = []
+    def add(act, fn, args):
+        out.append({'act': act, 'command': cmd(env, act), 'function': fn, 'args': args})
+    add('acquisition-delegation', 'grant_market_acquisition_delegation_v1', {'token': t, 'source': 'bcb',
+        'reason': f'Execução suplementar de staging em {day.isoformat()}: delegação de aquisição. {AUTH}.', 'actor': a})
+    add('transport-open', 'release_market_acquisition_transport_v1', {'released': True, 'actor': a,
+        'reason': f'Execução suplementar de staging em {day.isoformat()}: transporte. {AUTH}.'})
+    add(f'bootstrap-series-{day.isoformat()}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-sgs-432-endpoint',
+        'request': {'window': {'start': '2021-01-14', 'end': eve}}, 'reason': f'Execução suplementar: série 432 de 2021-01-14 a {eve}. {AUTH}.', 'actor': a})
+    add('close-transport', 'release_market_acquisition_transport_v1', {'released': False, 'actor': a,
+        'reason': f'Execução suplementar de staging em {day.isoformat()}: fechamento. {AUTH}.'})
+    return env, {'project': base['project'], 'actor': a, 'token': t, 'account': account, 'acts': out,
+                 'note': 'only when the production bootstrap runs on another day than the proof; the delegation is revoked and the token revoked at the end'}
 
 
 def templates(env):
@@ -178,7 +202,9 @@ def main():
     doc = {'schemaVersion': 'offroad.market-part4-manifest.v2', 'namespace': str(NS), 'authorization': AUTH, 'operationalDate': day.isoformat(),
            'lastMeeting': args.last_meeting,
            'environments': {env: {**ENVS[env], 'acts': acts(env, day, args.last_meeting), 'templates': templates(env)} for env in ENVS}}
-    for env in ENVS:
+    senv, sdoc = supplement(day, args.last_meeting)
+    doc['environments'][senv] = sdoc
+    for env in doc['environments']:
         for act in doc['environments'][env]['acts']:
             if '<' in json.dumps(act):
                 raise SystemExit(f'placeholder in a concrete act: {act["act"]}')
