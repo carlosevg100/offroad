@@ -109475,6 +109475,88 @@
       "enabled": "O",
       "function": "private.guard_platform_ledger_truncate_v1()",
       "definition": "CREATE TRIGGER market_schedule_occurrences_truncate_guard BEFORE TRUNCATE ON private.market_schedule_occurrences FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "function:private.fire_market_schedules_at_v1(p_worker uuid, p_account uuid, p_k timestamp with time zone)",
+      "kind": "function",
+      "name": "fire_market_schedules_at_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker uuid, p_account uuid, p_k timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_schedule_occurrence_v1()",
+      "kind": "function",
+      "name": "guard_market_schedule_occurrence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_series_quality_class_v1(p_findings jsonb)",
+      "kind": "function",
+      "name": "market_series_quality_class_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_findings jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_series_window_v1(p_homologated date, p_gap date, p_today date)",
+      "kind": "function",
+      "name": "market_series_window_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_homologated date, p_gap date, p_today date",
+      "security_definer": false
+    },
+    {
+      "id": "trigger:private.market_schedule_occurrences.market_schedule_occurrences_integrity",
+      "kind": "trigger",
+      "name": "market_schedule_occurrences_integrity",
+      "table": "market_schedule_occurrences",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_schedule_occurrence_v1()",
+      "definition": "CREATE TRIGGER market_schedule_occurrences_integrity BEFORE INSERT ON private.market_schedule_occurrences FOR EACH ROW EXECUTE FUNCTION private.guard_market_schedule_occurrence_v1()"
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"

@@ -340852,6 +340852,12 @@
           "line": 285,
           "anchor": "create function private.enqueue_market_schedule_job_v1(p_schedule uuid,p_key text,p_contract text,p_request jsonb,p_worker uuid,p_account uuid,p_actor uuid) returns uuid",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 103,
+          "anchor": "create or replace function private.enqueue_market_schedule_job_v1(p_schedule uuid,p_key text,p_contract text,p_request jsonb,p_worker uuid,p_account uuid,p_actor uuid) returns uuid",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -340906,6 +340912,12 @@
           "line": 408,
           "anchor": "create function private.fire_market_communique_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 223,
+          "anchor": "create or replace function private.fire_market_communique_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -340959,6 +340971,12 @@
           "path": "supabase/migrations/20261022193741_market_m2_scheduler.sql",
           "line": 335,
           "anchor": "create function private.fire_market_series_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 142,
+          "anchor": "create or replace function private.fire_market_series_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -341122,6 +341140,12 @@
           "line": 77,
           "anchor": "create function private.market_parse_copom_list_meetings_v1(p_content bytea,p_size integer)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 11,
+          "anchor": "create or replace function private.market_parse_copom_list_meetings_v1(p_content bytea,p_size integer)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -341175,6 +341199,12 @@
           "path": "supabase/migrations/20261022193741_market_m2_scheduler.sql",
           "line": 265,
           "anchor": "create function private.market_schedule_blocker_v1(sc private.market_acquisition_schedules,p_worker uuid,p_today date) returns text",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 83,
+          "anchor": "create or replace function private.market_schedule_blocker_v1(sc private.market_acquisition_schedules,p_worker uuid,p_today date) returns text",
           "mechanism": "direct_ddl"
         }
       ]
@@ -341349,6 +341379,12 @@
           "path": "supabase/migrations/20261022193741_market_m2_scheduler.sql",
           "line": 446,
           "anchor": "create function private.worker_fire_market_schedules_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 289,
+          "anchor": "create or replace function private.worker_fire_market_schedules_v1(p_worker_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -342142,6 +342178,260 @@
         }
       ],
       "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "function:private.fire_market_schedules_at_v1(p_worker uuid, p_account uuid, p_k timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.fire_market_schedules_at_v1(p_worker uuid, p_account uuid, p_k timestamp with time zone)",
+          "kind": "function",
+          "name": "fire_market_schedules_at_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker uuid, p_account uuid, p_k timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.fire_market_schedules_at_v1(p_worker uuid, p_account uuid, p_k timestamp with time zone)",
+          "kind": "function",
+          "name": "fire_market_schedules_at_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker uuid, p_account uuid, p_k timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação (agendas concedidas e revogadas por comando, ocorrências imutáveis com a identidade do replay, descoberta da lista do Copom com conflito de data, reconciliação dos detalhes, janela da série com âncora e recuperação pelo desfecho da última ocorrência, disparo do worker sob a porta e as travas da agenda e da fonte); nada dispara até os atos da parte 4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 265,
+          "anchor": "create function private.fire_market_schedules_at_v1(p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_market_schedule_occurrence_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_market_schedule_occurrence_v1()",
+          "kind": "function",
+          "name": "guard_market_schedule_occurrence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_market_schedule_occurrence_v1()",
+          "kind": "function",
+          "name": "guard_market_schedule_occurrence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação (agendas concedidas e revogadas por comando, ocorrências imutáveis com a identidade do replay, descoberta da lista do Copom com conflito de data, reconciliação dos detalhes, janela da série com âncora e recuperação pelo desfecho da última ocorrência, disparo do worker sob a porta e as travas da agenda e da fonte); nada dispara até os atos da parte 4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 35,
+          "anchor": "create function private.guard_market_schedule_occurrence_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_series_quality_class_v1(p_findings jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_series_quality_class_v1(p_findings jsonb)",
+          "kind": "function",
+          "name": "market_series_quality_class_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_findings jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_series_quality_class_v1(p_findings jsonb)",
+          "kind": "function",
+          "name": "market_series_quality_class_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_findings jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação (agendas concedidas e revogadas por comando, ocorrências imutáveis com a identidade do replay, descoberta da lista do Copom com conflito de data, reconciliação dos detalhes, janela da série com âncora e recuperação pelo desfecho da última ocorrência, disparo do worker sob a porta e as travas da agenda e da fonte); nada dispara até os atos da parte 4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 68,
+          "anchor": "create function private.market_series_quality_class_v1(p_findings jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_series_window_v1(p_homologated date, p_gap date, p_today date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_series_window_v1(p_homologated date, p_gap date, p_today date)",
+          "kind": "function",
+          "name": "market_series_window_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_homologated date, p_gap date, p_today date",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_series_window_v1(p_homologated date, p_gap date, p_today date)",
+          "kind": "function",
+          "name": "market_series_window_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_homologated date, p_gap date, p_today date",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação (agendas concedidas e revogadas por comando, ocorrências imutáveis com a identidade do replay, descoberta da lista do Copom com conflito de data, reconciliação dos detalhes, janela da série com âncora e recuperação pelo desfecho da última ocorrência, disparo do worker sob a porta e as travas da agenda e da fonte); nada dispara até os atos da parte 4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022202317_market_m2_scheduler_fixes_2.sql",
+          "line": 4,
+          "anchor": "create or replace function private.market_series_window_v1(p_homologated date,p_gap date,p_today date) returns table(window_start date,window_end date)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_schedule_occurrences.market_schedule_occurrences_integrity",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_schedule_occurrences.market_schedule_occurrences_integrity",
+          "kind": "trigger",
+          "name": "market_schedule_occurrences_integrity",
+          "table": "market_schedule_occurrences",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_schedule_occurrence_v1()",
+          "definition": "CREATE TRIGGER market_schedule_occurrences_integrity BEFORE INSERT ON private.market_schedule_occurrences FOR EACH ROW EXECUTE FUNCTION private.guard_market_schedule_occurrence_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_schedule_occurrences.market_schedule_occurrences_integrity",
+          "kind": "trigger",
+          "name": "market_schedule_occurrences_integrity",
+          "table": "market_schedule_occurrences",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_market_schedule_occurrence_v1()",
+          "definition": "CREATE TRIGGER market_schedule_occurrences_integrity BEFORE INSERT ON private.market_schedule_occurrences FOR EACH ROW EXECUTE FUNCTION private.guard_market_schedule_occurrence_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação (agendas concedidas e revogadas por comando, ocorrências imutáveis com a identidade do replay, descoberta da lista do Copom com conflito de data, reconciliação dos detalhes, janela da série com âncora e recuperação pelo desfecho da última ocorrência, disparo do worker sob a porta e as travas da agenda e da fonte); nada dispara até os atos da parte 4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+          "line": 57,
+          "anchor": "create trigger market_schedule_occurrences_integrity before insert on private.market_schedule_occurrences",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -349988,7 +350278,21 @@
       "path": "supabase/migrations/20261022193741_market_m2_scheduler.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 2, agendador",
-      "reason": "M2 parte 2: agendador com delegação."
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022202317_market_m2_scheduler_fixes_2.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
     }
   ],
   "staging_archive": [

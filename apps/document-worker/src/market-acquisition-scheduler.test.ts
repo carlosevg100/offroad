@@ -9,7 +9,7 @@ function client(answer: {data?: unknown; error?: {message: string; code?: string
   return {abortSignal: async () => ({data: answer.data ?? null, error: answer.error ?? null})};
  }} as unknown as SupabaseClient;
 }
-const communiques = {kind: "copom_communiques", status: "fired", list: "fired",
+const communiques = {kind: "copom_communiques", status: "fired", list: "fired", listJobId: "3a820000-0000-4000-8000-000000000003",
  details: [{meeting: 270, jobId: "3a820000-0000-4000-8000-000000000001"}], inFlight: [271],
  blocked: [{meeting: 268, reason: "meeting_disputed"}, {meeting: 269, reason: "listing_unavailable"}]};
 const series = {kind: "series_432", status: "fired", jobId: "3a820000-0000-4000-8000-000000000002", windowStart: "2021-01-14", windowEnd: "2026-10-21"};
@@ -28,6 +28,8 @@ describe("market scheduler client", () => {
   const r = await runMarketSchedulerCycle(createMarketScheduler(client({data: {schedules: [
    {kind: "series_432", status: "blocked", reason: "anchor_missing", windowStart: "2021-01-14"},
    {kind: "copom_communiques", status: "busy"}]}}), "t"));
+  expect((await runMarketSchedulerCycle(createMarketScheduler(client({data: {schedules: [{kind: "series_432", status: "already_fired",
+   jobId: "3a820000-0000-4000-8000-000000000004"}]}}), "t"))).statuses).toEqual(["series_432:already_fired"]);
   expect(r).toEqual({fired: 0, details: 0, blocked: ["series_432:anchor_missing"], statuses: ["series_432:blocked", "copom_communiques:busy"]});
   expect((await runMarketSchedulerCycle(createMarketScheduler(client({data: {schedules: [{kind: "series_432", status: "in_flight", windowStart: "2021-01-14"}]}}), "t"))).statuses)
    .toEqual(["series_432:in_flight"]);
@@ -35,7 +37,8 @@ describe("market scheduler client", () => {
 
  it("refuses answers outside the contract", async () => {
   for (const bad of [{schedules: [{...series, jobId: "job"}]}, {schedules: [{...communiques, extra: 1}]}, {schedules: [{kind: "other", status: "busy"}]},
-   {schedules: [{...communiques, blocked: [{meeting: 1, reason: "anything"}]}]}, {schedules: [{kind: "series_432", status: "blocked", reason: "Texto livre"}]}, {}]) {
+   {schedules: [{...communiques, blocked: [{meeting: 1, reason: "anything"}]}]}, {schedules: [{kind: "series_432", status: "blocked", reason: "Texto livre"}]},
+   {schedules: [{kind: "series_432", status: "blocked", reason: "arbitrary_remote_text"}]}, {schedules: [{...communiques, listJobId: undefined}]}, {}]) {
    await expect(createMarketScheduler(client({data: bad}), "t").fire()).rejects.toThrow();
   }
  });

@@ -6,16 +6,21 @@ import {executionTransportTimeoutMs} from "./execution-queue";
 export const MARKET_SCHEDULER_CYCLE_MS = 60_000;
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+/** Every reason the database names for a blocked schedule; anything else is refused, never logged. */
+export const marketScheduleBlockReasons = ["grantor_inactive", "delegation_missing", "transport_paused", "publisher_missing", "source_not_acquirable",
+ "contract_source_mismatch", "host_not_allowed", "contract_evidence_missing", "anchor_missing", "communique_unavailable", "series_cancelled",
+ "series_quality_unclassified", "series_disagreement", "missing_communiques", "no_progress", "series_budget"] as const;
 const blockedDetail = z.object({meeting: z.number().int().positive(),
- reason: z.enum(["listing_unavailable", "meeting_disputed", "detail_cancelled", "detail_failures"])}).strict();
+ reason: z.enum(["listing_unavailable", "meeting_disputed", "detail_cancelled", "detail_failures", "communique_unavailable"])}).strict();
 const entrySchema = z.discriminatedUnion("status", [
- z.object({kind: z.enum(["series_432", "copom_communiques"]), status: z.enum(["busy", "revoked", "not_due", "already_fired", "covered", "retry"])}).strict(),
+ z.object({kind: z.enum(["series_432", "copom_communiques"]), status: z.enum(["busy", "revoked", "not_due", "covered", "retry"])}).strict(),
+ z.object({kind: z.literal("series_432"), status: z.literal("already_fired"), jobId: z.uuid()}).strict(),
  z.object({kind: z.literal("series_432"), status: z.literal("in_flight"), windowStart: day}).strict(),
- z.object({kind: z.enum(["series_432", "copom_communiques"]), status: z.literal("blocked"), reason: z.string().regex(/^[a-z_]{3,40}$/),
+ z.object({kind: z.enum(["series_432", "copom_communiques"]), status: z.literal("blocked"), reason: z.enum(marketScheduleBlockReasons),
   windowStart: day.optional(), meeting: z.number().int().positive().optional(), periods: z.array(day).max(10_000).optional()}).strict(),
  z.object({kind: z.literal("series_432"), status: z.literal("fired"), jobId: z.uuid(), windowStart: day, windowEnd: day}).strict(),
 ]);
-const communiqueSchema = z.object({kind: z.literal("copom_communiques"), status: z.literal("fired"), list: z.enum(["fired", "already_fired"]),
+const communiqueSchema = z.object({kind: z.literal("copom_communiques"), status: z.literal("fired"), list: z.enum(["fired", "already_fired"]), listJobId: z.uuid(),
  details: z.array(z.object({meeting: z.number().int().positive(), jobId: z.uuid()}).strict()).max(10),
  inFlight: z.array(z.number().int().positive()).max(50), blocked: z.array(blockedDetail).max(50)}).strict();
 const fireSchema = z.object({schedules: z.array(z.union([communiqueSchema, entrySchema])).max(10)}).strict();

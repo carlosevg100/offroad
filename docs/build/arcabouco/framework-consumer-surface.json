@@ -2102,7 +2102,7 @@
     },
     {
       "path": "apps/document-worker/src/market-acquisition-scheduler.ts",
-      "sha256": "d44b341ca132e02d588a98694c12d75f013c2752f698326a84ff173aafaa5dc0",
+      "sha256": "cc0d0a08f834b9f6be25efefcab345580f918a006855ba94e208d143878ff500",
       "entrypoint": false,
       "rpcs": [
         "worker_fire_market_schedules_v1"
