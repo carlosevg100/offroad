@@ -82,18 +82,12 @@ def acts(env, day, last):
         add('rehearsal-list-234-281', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista', 'request': {'size': 48},
             'reason': f'Ensaio da pausa: lista das reuniões 234 a 281. {AUTH}.', 'actor': a},
             'staging only: the confirmed list records meeting 234, which the reconciliation then asks a detail for')
-    # Pause and resumption cycles: pause-<k> revokes what the grants of cycle k-1 created (cycle 0 is the
-    # opening), resume-<k> grants anew. Acts whose subject is only known at run time (one cancellation per job,
-    # one detail per meeting, one edition) are templates without a command; `expand` makes them concrete.
+    # Pause and resumption cycles. A pause closes the transport and revokes whatever grant is live at that
+    # moment (resolved at run time, so a pause in the middle of the bootstrap revokes only what exists); a
+    # resumption grants anew with its own commands and acquires again whatever the pause cancelled.
     for k in range(1, CYCLES + 1):
-        prior = '' if k == 1 else f'resume-{k - 1}-'
         add(f'pause-{k}-transport', 'release_market_acquisition_transport_v1', {'released': False, 'actor': a,
             'reason': f'Pausa {k} da base de mercado: transporte. {AUTH}.'})
-        for key, fn in (('event-delegation', 'revoke_market_event_delegation_v1'), ('acquisition-delegation', 'revoke_market_acquisition_delegation_v1')):
-            add(f'pause-{k}-{key}', fn, {'delegationOfGrant': cmd(env, f'{prior}{key}'), 'reason': f'Pausa {k} da base de mercado: {key}. {AUTH}.', 'actor': a})
-        for key in SCHEDULES:
-            add(f'pause-{k}-schedule-{key}', 'revoke_market_acquisition_schedule_v1', {'scheduleOfGrant': cmd(env, f'{prior}schedule-{key}'),
-                'reason': f'Pausa {k} da base de mercado: agenda {key}. {AUTH}.', 'actor': a})
         add(f'resume-{k}-transport', 'release_market_acquisition_transport_v1', {'released': True, 'actor': a,
             'reason': f'Retomada {k} da base de mercado: transporte. {AUTH}.'})
         grants(f'resume-{k}-')
@@ -101,23 +95,39 @@ def acts(env, day, last):
     return out
 
 
-CYCLES = 2
+CYCLES = 3
 
 
 def templates(env):
-    a = ENVS[env]['actor']
+    a = ENVS[env]['actor']; t = ENVS[env]['token']
     return [
+     {'template': 'pause-<k>-revoke-acquisition-delegation-<id>', 'function': 'revoke_market_acquisition_delegation_v1',
+      'args': {'delegation': '<id>', 'reason': f'Pausa <k> da base de mercado: delegação de aquisição. {AUTH}.', 'actor': a},
+      'expandFor': 'the live acquisition delegation of the worker token for source bcb at pause <k>, if any'},
+     {'template': 'pause-<k>-revoke-event-delegation-<id>', 'function': 'revoke_market_event_delegation_v1',
+      'args': {'delegation': '<id>', 'reason': f'Pausa <k> da base de mercado: delegação de evento. {AUTH}.', 'actor': a},
+      'expandFor': 'the live event delegation of the worker token for rg01-monitor at pause <k>, if any'},
+     {'template': 'pause-<k>-revoke-schedule-<id>', 'function': 'revoke_market_acquisition_schedule_v1',
+      'args': {'schedule': '<id>', 'reason': f'Pausa <k> da base de mercado: agenda. {AUTH}.', 'actor': a},
+      'expandFor': 'each live schedule at pause <k>'},
      {'template': 'pause-<k>-cancel-<job>', 'function': 'cancel_market_acquisition_v1',
       'args': {'job': '<job>', 'reason': f'Pausa <k> da base de mercado: job cancelado. {AUTH}.', 'actor': a},
       'expandFor': "each market job of source bcb with status 'queued' or 'leased' at pause <k>"},
+     {'template': 'resume-<k>-list-235-<last>', 'function': 'enqueue_market_contract_acquisition_v1',
+      'args': {'contract': 'bcb-copom-comunicados-lista', 'request': {'size': '<size>'}, 'reason': f'Retomada <k>: lista do bootstrap cancelada na pausa. {AUTH}.', 'actor': a},
+      'expandFor': 'the bootstrap list, when the pause cancelled it before it was confirmed'},
      {'template': 'resume-<k>-detail-<meeting>', 'function': 'enqueue_market_contract_acquisition_v1',
       'args': {'contract': 'bcb-copom-comunicados-detalhe', 'request': {'meeting': '<meeting>'}, 'reason': f'Retomada <k>: comunicado cancelado na pausa. {AUTH}.', 'actor': a},
       'expandFor': 'each meeting whose detail was cancelled at pause <k> and has no reference'},
-     {'template': 'withdraw-edition-<release>', 'function': 'withdraw_market_odbl_release_v1',
-      'args': {'release': '<release>', 'kind': '<quality|rights>', 'reason': f'Retirada da edição ODbL <release>. {AUTH}.', 'actor': a},
-      'expandFor': 'only an edition that is itself wrong'},
+     {'template': 'resume-<k>-series-<date>', 'function': 'enqueue_market_contract_acquisition_v1',
+      'args': {'contract': 'bcb-sgs-432-endpoint', 'request': {'window': {'start': '2021-01-14', 'end': '<eve>'}},
+               'reason': f'Retomada <k>: série do bootstrap cancelada na pausa. {AUTH}.', 'actor': a},
+      'expandFor': 'the bootstrap series, when the pause cancelled it before it was confirmed; <date> is the day of the resumption'},
      {'template': 'odbl-edition-<release>', 'function': 'publish_market_odbl_release_v1', 'args': {'codeCommit': '<commit>', 'actor': a},
-      'expandFor': 'each edition after the first, with the deployed commit'},
+      'expandFor': 'every edition, the first included (step I: release=1), with the commit deployed on the web and in the worker'},
+     {'template': 'withdraw-edition-<release>', 'function': 'withdraw_market_odbl_release_v1',
+      'args': {'release': '<release>', 'kind': '<kind>', 'reason': f'Retirada da edição ODbL <release>. {AUTH}.', 'actor': a},
+      'expandFor': 'only an edition that is itself wrong; kind is quality or rights'},
     ]
 
 

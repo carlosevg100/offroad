@@ -6,6 +6,9 @@
  * one named in MARKET_PROOF_PROJECT_REF. The stop is graceful and bounded: the deadline is armed before any remote
  * call; after it no job is claimed and no loop starts another cycle; an acquisition already claimed finishes
  * or fails under its own lease and timeouts, as in the image; then the timers are cleared and the process exits.
+ * A watchdog armed with the deadline ends the process two minutes after it whatever is still pending (sign-in,
+ * the schema contract, an upload, a renewal): the attempt then expires with its lease and its bytes go to the
+ * orphan sweep, which is the same outcome as a worker that dies.
  *
  * Environment: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, WORKER_ACCOUNT_EMAIL, WORKER_ACCOUNT_PASSWORD,
  * OFFROAD_WORKER_TOKEN, MARKET_PROOF_PROJECT_REF, MARKET_PROOF_MINUTES (default 30).
@@ -28,6 +31,8 @@ function required(name: string): string {
   return value;
 }
 
+const GRACE_MS = 2 * 60_000;
+
 const sleep = (ms: number, signal: AbortSignal) => new Promise<void>((resolve) => {
   const timer = setTimeout(resolve, ms);
   signal.addEventListener("abort", () => { clearTimeout(timer); resolve(); }, {once: true});
@@ -42,12 +47,14 @@ async function main(): Promise<void> {
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 240) throw new Error("MARKET_PROOF_MINUTES out of range");
   const stop = new AbortController();
   const deadline = setTimeout(() => stop.abort(), minutes * 60_000);
+  const watchdog = setTimeout(() => { log("proof.forced_exit"); process.exit(2); }, minutes * 60_000 + GRACE_MS);
   const onSignal = () => stop.abort();
   process.on("SIGINT", onSignal);
   process.on("SIGTERM", onSignal);
   try { await run(url, project, minutes, stop.signal); }
   finally {
     clearTimeout(deadline);
+    clearTimeout(watchdog);
     process.off("SIGINT", onSignal);
     process.off("SIGTERM", onSignal);
   }
