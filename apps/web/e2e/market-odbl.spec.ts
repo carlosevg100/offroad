@@ -1,4 +1,4 @@
-import {execFileSync} from "node:child_process";
+import {execFileSync, spawn} from "node:child_process";
 import {createHash} from "node:crypto";
 import {expect, test} from "@playwright/test";
 
@@ -113,4 +113,30 @@ test("the ODbL edition appears with its first publication and leaves with its wi
   expect((await request.get("/dados/meta-selic.json")).status()).toBe(410);
   expect((await request.get("/pt-BR/dados/meta-selic")).status()).toBe(404);
   expect(await (await request.get("/sitemap.xml")).text()).not.toContain("/dados/meta-selic");
+});
+
+test("the anonymous reader is cancelled by its own two-second limit, below the role's", async ({request}) => {
+  const api = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  test.skip(!api || !key, "needs the local Data API");
+  sql("select 1;");
+  // A session holds the editions table, so the reader waits on its lock until a statement limit cancels it.
+  const blocker = spawn("psql", [databaseUrl, "-At", "-v", "ON_ERROR_STOP=1", "-q"], {stdio: ["pipe", "pipe", "pipe"], env: {...process.env, PGAPPNAME: "market_odbl_e2e_blocker"}});
+  try {
+    blocker.stdin.write("begin;\nlock table private.market_odbl_releases in access exclusive mode;\n\\echo LOCKED\nselect pg_sleep(20);\n");
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("blocker did not take the lock")), 10_000);
+      blocker.stdout.on("data", (chunk: Buffer) => { if (chunk.toString().includes("LOCKED")) { clearTimeout(timer); resolve(); } });
+    });
+    const started = Date.now();
+    const rpc = await request.post(`${api}/rest/v1/rpc/market_odbl_release_v1`, {headers: {apikey: key!, authorization: `Bearer ${key}`}, data: {p_release: 1}, timeout: 15_000});
+    const elapsed = Date.now() - started;
+    expect(rpc.status()).toBeGreaterThanOrEqual(500);
+    expect((await rpc.json() as {code?: string}).code).toBe("57014");
+    // The function's own limit (2 s) cancels it before the anonymous role's (3 s).
+    expect(elapsed).toBeGreaterThanOrEqual(1_800);
+    expect(elapsed).toBeLessThan(2_900);
+  } finally {
+    blocker.kill();
+    sql("select pg_terminate_backend(pid) from pg_stat_activity where application_name='market_odbl_e2e_blocker';");
+  }
 });

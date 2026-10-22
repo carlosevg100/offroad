@@ -332144,6 +332144,12 @@
           "line": 5,
           "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+          "line": 8,
+          "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -332532,6 +332538,12 @@
         {
           "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
           "line": 81,
+          "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022002449_market_m2_part3_fixes_5.sql",
+          "line": 2,
           "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
         }
@@ -333256,6 +333268,12 @@
         {
           "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
           "line": 202,
+          "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+          "line": 35,
           "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344484,6 +344502,27 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3",
       "reason": "arquivo canônico da edição ODbL servido byte a byte com o digest, sem cookie; 404 sem edição, 410 retirada"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022002334_market_m2_part3_fixes_4.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022002449_market_m2_part3_fixes_5.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
     }
   ],
   "staging_archive": [

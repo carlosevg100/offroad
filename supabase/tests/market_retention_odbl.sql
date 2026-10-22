@@ -162,10 +162,12 @@ do $$ declare r jsonb;e private.market_odbl_releases;p jsonb;begin
  or p#>>'{rules,codeCommit}'<>repeat('a',40) or p->>'release'<>'1' or p#>>'{series,logicalId}'<>'market:bcb:sgs:102a1aa7f870cb05'
  then raise exception 'edition metadata wrong';end if;
  if exists(select 1 from jsonb_array_elements(p->'observations') x where x->>'normalization' is distinct from 'bcb-sgs-432')
- or encode(extensions.digest(convert_to(p#>>'{series,contractText}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,contractSha256}'
- or encode(extensions.digest(convert_to(p#>>'{series,qualityPolicy,text}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,qualityPolicy,sha256}'
- or p#>>'{series,qualityPolicy,text}' is distinct from private.market_quality_policy_text_v1('bcb-sgs-432-quality','v2')
- or p#>>'{series,qualityPolicy,text}' not like 'market-quality-policy.v1%' then raise exception 'edition snapshots wrong: %',p->'series';end if;
+ or jsonb_array_length(p#>'{series,normalizations}') is distinct from 1 or p#>>'{series,normalizations,0,id}' is distinct from 'bcb-sgs-432'
+ or encode(extensions.digest(convert_to(p#>>'{series,normalizations,0,contractText}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,normalizations,0,contractSha256}'
+ or p#>>'{series,normalizations,0,contractSha256}' is distinct from (select normalization_sha256 from private.market_normalizations where id='bcb-sgs-432')
+ or encode(extensions.digest(convert_to(p#>>'{series,normalizations,0,qualityPolicy,text}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,normalizations,0,qualityPolicy,sha256}'
+ or p#>>'{series,normalizations,0,qualityPolicy,text}' is distinct from private.market_quality_policy_text_v1('bcb-sgs-432-quality','v2')
+ or p#>>'{series,normalizations,0,qualityPolicy,text}' not like 'market-quality-policy.v1%' then raise exception 'edition snapshots wrong: %',p->'series';end if;
  if (select count(*) from private.market_odbl_release_dependencies where release_id=e.id)<>1 then raise exception 'dependencies wrong';end if;
  r:=private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000203',repeat('a',40),'3a7b0000-0000-4000-8000-000000000001');
  if (r->>'replayed')::boolean is not true or (r->>'releaseNumber')::int<>1 then raise exception 'publication did not replay';end if;
@@ -205,6 +207,33 @@ do $$ declare r jsonb;begin
 end $$;
 reset role;
 
+-- 5b. A newer normalization describes the edition only once observations use it: unused, the edition
+-- carries the one in use; mixed, it carries both, each referenced by its observations.
+insert into private.market_normalizations(id,endpoint_contract_id,ordinal,parser,logical_id,family,logical_keys,unit,scale,convention,calendar,quality_policy_id,quality_policy_version,normalization_sha256)
+values('bcb-sgs-432-test-p2','bcb-sgs-432-endpoint',2,'bcb-sgs-daily-json.v2','market:bcb:sgs:102a1aa7f870cb05','sgs','{"code":"432"}','percent_per_year','1','meta_copom',
+ 'financial-core.brazilian-national-holidays@2026.10.19-v1','bcb-sgs-432-quality','v2',
+ private.market_series_contract_sha256_v1('bcb-sgs-432-test-p2','api.bcb.gov.br','/dados/serie/bcdata.sgs.432/dados','percent_per_year','1','meta_copom',
+  'bcb-sgs-daily-json.v2','bcb-catalog-meta-selic-432','2021-01-14',10,'financial-core.brazilian-national-holidays@2026.10.19-v1'));
+do $$ declare r jsonb;p jsonb;begin
+ r:=private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000351',repeat('c',40),'3a7b0000-0000-4000-8000-000000000001');
+ select payload_text::jsonb into p from private.market_odbl_releases where release_number=(r->>'releaseNumber')::int;
+ if (select jsonb_agg(x->>'id') from jsonb_array_elements(p#>'{series,normalizations}') x) is distinct from '["bcb-sgs-432"]'::jsonb
+ then raise exception 'unused normalization described: %',p#>'{series,normalizations}';end if;
+ r:=pg_temp.run('s3','3a7b0000-0000-4000-a000-000000000352','bcb-sgs-432-endpoint','{"window":{"start":"2025-10-11","end":"2025-10-20"}}',
+  pg_temp.sgs('2025-10-11','2025-10-20','2025-10-21','14.50','14.50'));
+ if r->'quality'->>'status' is distinct from 'approved' or (select normalization_id from private.market_versions where id=(r->>'versionId')::uuid) is distinct from 'bcb-sgs-432-test-p2'
+ then raise exception 'series under the new normalization wrong: %',r;end if;
+ r:=private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000353',repeat('c',40),'3a7b0000-0000-4000-8000-000000000001');
+ select payload_text::jsonb into p from private.market_odbl_releases where release_number=(r->>'releaseNumber')::int;
+ if (select jsonb_agg(x->>'id') from jsonb_array_elements(p#>'{series,normalizations}') x) is distinct from '["bcb-sgs-432","bcb-sgs-432-test-p2"]'::jsonb
+ or (select count(*) from jsonb_array_elements(p->'observations') x where x->>'normalization'='bcb-sgs-432-test-p2') is distinct from 10::bigint
+ or (select count(*) from jsonb_array_elements(p->'observations') x where x->>'normalization'='bcb-sgs-432') is distinct from 24::bigint
+ or exists(select 1 from jsonb_array_elements(p#>'{series,normalizations}') d
+  where encode(extensions.digest(convert_to(d->>'contractText','UTF8'),'sha256'),'hex') is distinct from d->>'contractSha256')
+ or (p#>>'{alterations,rulesChanged}')::boolean is not true or jsonb_array_length(p#>'{alterations,added}') is distinct from 10
+ then raise exception 'mixed edition wrong: %',p#>'{series,normalizations}';end if;
+end $$;
+
 -- 6. Revoking a communiqué used as evidence withdraws every edition and version that depends on it, and
 -- relink refuses to build on it.
 do $$ declare r jsonb;begin
@@ -219,12 +248,12 @@ do $$ declare r jsonb;begin
  -- A revoked source withdraws its acquisitions.
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação sintética da fonte','3a7b0000-0000-4000-8000-000000000002');
  if private.market_acquisition_readable_v1((select acquisition_id from private.market_versions where id=pg_temp.fact('v1')::uuid)) then raise exception 'acquisition of a revoked source readable';end if;
- -- Writers keep the readers' order: a version revoked first makes a later acquisition revocation refuse.
+ -- Writers keep the readers' order: after the source anchor, an acquisition anchor (lower in byte order) refuses.
  perform pg_temp.expect(format($q$do $x$ begin
   insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Revogação sintética da versão','3a7b0000-0000-4000-8000-000000000002');
   insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
   select 'acquisition',reference_acquisition_id::text,'revoked','Revogação sintética fora de ordem','3a7b0000-0000-4000-8000-000000000002' from private.market_copom_meetings where meeting=9001;
- end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','acquisition revoked after a version in one transaction');
+ end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','acquisition anchor taken after a source anchor in one transaction');
 end $$;
 
 -- 7. A revision that would not retain is refused while anything of the source is stored, and a source
