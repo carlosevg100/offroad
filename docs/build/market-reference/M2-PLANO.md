@@ -174,3 +174,9 @@ três disparos automáticos por início de janela. Desenho em `M2-PARTE-2.md`.
 Os atos da parte 4 usam identidade de fundador ou operador; o registro da publicadora é comando de
 fundador. A chave só abre depois da outbox consumida, da página ODbL publicada e da prova integrada em
 staging.
+
+Emenda de 22/10/2026, na parte 4: a abertura tem duas chaves. O transporte abre antes do bootstrap, depois da
+prova integrada em staging e da liberação final do fundador, porque o worker é o único caminho de aquisição e a
+primeira edição exige versão aprovada; serve primeiro ao bootstrap enumerado (lista, comunicados desde a âncora
+e série desde o recorte homologado). A chave que abre por último é a das agendas, depois do bootstrap aprovado,
+da outbox do monitor consumida e da página ODbL publicada. Roteiro em `M2-PARTE-4.md`.

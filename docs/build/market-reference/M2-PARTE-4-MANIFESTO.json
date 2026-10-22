@@ -1,0 +1,1789 @@
+{
+ "schemaVersion": "offroad.market-part4-manifest.v1",
+ "namespace": "9ddec42e-8e97-5b84-93d3-9c8bd5b7e8b3",
+ "authorization": "Autorização do fundador de 22/10/2026 (M2 parte 4)",
+ "environments": {
+  "staging": {
+   "project": "gjkkjtbfnssdsbmlhmwk",
+   "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+   "token": "c9783ba9-8f6e-55ea-8b8b-8de075cb8258",
+   "account": "f46fa371-581e-560e-ba68-347b19a3c9f3",
+   "acts": [
+    {
+     "act": "publisher",
+     "command": "fc5002ff-f4c0-511b-8729-de731b1be309",
+     "function": "register_market_publisher_v1",
+     "args": {
+      "name": "Offroad, referência de mercado",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "source-revision-1",
+     "command": "08ae00c6-d0af-57dd-95ca-75b5da111b3b",
+     "function": "record_market_source_revision_v1",
+     "args": {
+      "source": "bcb",
+      "definition": {
+       "registryId": "bcb_sgs",
+       "license": {
+        "kind": "open",
+        "license": "ODbL-1.0",
+        "attribution": "Banco Central do Brasil",
+        "evidenceIds": [
+         "bcb-catalog-meta-selic-432",
+         "bcb-catalog-atas-comunicados-copom",
+         "bcb-site-termos-de-uso"
+        ],
+        "retainAdoptedValues": true,
+        "storeDays": null
+       },
+       "allowedHosts": [
+        "api.bcb.gov.br",
+        "www.bcb.gov.br"
+       ],
+       "calendar": "br_business_days",
+       "expectedPublication": "09:00",
+       "maximumAgeHours": 30,
+       "enabled": true,
+       "reason": "Revisão 1 da fonte bcb, licença aberta ODbL do catálogo de dados abertos do Banco Central. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+      },
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "calendar-2026",
+     "command": "6eb09f23-e84d-5681-814c-26ee5a444c5c",
+     "function": "record_market_copom_calendar_v1",
+     "args": {
+      "year": 2026,
+      "meetings": [
+       {
+        "ordinal": 1,
+        "firstDay": "2026-01-27",
+        "secondDay": "2026-01-28"
+       },
+       {
+        "ordinal": 2,
+        "firstDay": "2026-03-17",
+        "secondDay": "2026-03-18"
+       },
+       {
+        "ordinal": 3,
+        "firstDay": "2026-04-28",
+        "secondDay": "2026-04-29"
+       },
+       {
+        "ordinal": 4,
+        "firstDay": "2026-06-16",
+        "secondDay": "2026-06-17"
+       },
+       {
+        "ordinal": 5,
+        "firstDay": "2026-08-04",
+        "secondDay": "2026-08-05"
+       },
+       {
+        "ordinal": 6,
+        "firstDay": "2026-09-15",
+        "secondDay": "2026-09-16"
+       },
+       {
+        "ordinal": 7,
+        "firstDay": "2026-11-03",
+        "secondDay": "2026-11-04"
+       },
+       {
+        "ordinal": 8,
+        "firstDay": "2026-12-08",
+        "secondDay": "2026-12-09"
+       }
+      ],
+      "evidenceUrl": "https://www.bcb.gov.br/api/conteudo/app/normativos/exibeoutrasnormas?p1=COMUNICADO&p2=43383",
+      "evidenceSha256": "13a3738730bacd2938c3761d788733e6c281298242fd6f17a2813997cb0064c5",
+      "mediaType": "application/json",
+      "reason": "Calendário de 2026, Comunicado BCB nº 43.383. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "consumer-rg01-monitor",
+     "command": "5f06dce6-6f0d-53be-a9bc-c043e2b88e60",
+     "function": "register_market_event_consumer_v2",
+     "args": {
+      "consumer": "rg01-monitor",
+      "events": [
+       "approved",
+       "quarantined",
+       "superseded",
+       "revoked",
+       "purged",
+       "released"
+      ],
+      "subjectKinds": [
+       "acquisition",
+       "source",
+       "version"
+      ],
+      "handler": "rg01",
+      "reason": "Consumidor do monitor do gatilho RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "event-delegation",
+     "command": "ff0e45c4-b696-5e72-924b-73c72a3b79b9",
+     "function": "grant_market_event_delegation_v1",
+     "args": {
+      "token": "c9783ba9-8f6e-55ea-8b8b-8de075cb8258",
+      "consumer": "rg01-monitor",
+      "reason": "Delegação do worker ao monitor RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "acquisition-delegation",
+     "command": "dc7f1985-c565-57cd-8d98-2e78f223275f",
+     "function": "grant_market_acquisition_delegation_v1",
+     "args": {
+      "token": "c9783ba9-8f6e-55ea-8b8b-8de075cb8258",
+      "source": "bcb",
+      "reason": "Delegação de aquisição do worker para a fonte bcb. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "transport-open",
+     "command": "79f09638-b8ab-5f83-80ad-a69e0b9b9104",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": true,
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f",
+      "reason": "Abertura do transporte para o bootstrap enumerado. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     },
+     "note": "production: only after the founder's final release"
+    },
+    {
+     "act": "bootstrap-list",
+     "command": "cfd3b13f-0bf4-5ca9-9267-ae58d6b58f67",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-lista",
+      "request": {
+       "size": 47
+      },
+      "reason": "Bootstrap: lista dos comunicados desde a reunião 235. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "size = latest meeting - 235 + 1 on the execution day"
+    },
+    {
+     "act": "bootstrap-detail-235",
+     "command": "d1585afe-161b-5e13-89cb-acb6f708bf27",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 235
+      },
+      "reason": "Bootstrap: comunicado da reunião 235. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-236",
+     "command": "b3502342-abcc-5fe5-8795-0f9c76a5c972",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 236
+      },
+      "reason": "Bootstrap: comunicado da reunião 236. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-237",
+     "command": "041db187-b061-5654-b89e-43d0eb3e7f1d",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 237
+      },
+      "reason": "Bootstrap: comunicado da reunião 237. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-238",
+     "command": "3bf2aec5-8918-5232-8bde-4633a9f8769d",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 238
+      },
+      "reason": "Bootstrap: comunicado da reunião 238. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-239",
+     "command": "b10e98e6-5609-5dc0-a38f-a7f66ed62087",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 239
+      },
+      "reason": "Bootstrap: comunicado da reunião 239. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-240",
+     "command": "6a571972-ec14-513e-9f05-de76f1db7973",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 240
+      },
+      "reason": "Bootstrap: comunicado da reunião 240. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-241",
+     "command": "710eceed-e102-5714-bd78-36d8ed344eae",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 241
+      },
+      "reason": "Bootstrap: comunicado da reunião 241. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-242",
+     "command": "19fa1424-2189-5be7-a116-f77ef545daa5",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 242
+      },
+      "reason": "Bootstrap: comunicado da reunião 242. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-243",
+     "command": "dd45d11a-290a-5c49-b42f-5fbe7d87c1dc",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 243
+      },
+      "reason": "Bootstrap: comunicado da reunião 243. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-244",
+     "command": "366b5d96-07e3-5db3-acd1-a7f3407d6dcf",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 244
+      },
+      "reason": "Bootstrap: comunicado da reunião 244. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-245",
+     "command": "3729461c-2189-5fc9-8401-bcd3a5b5a49b",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 245
+      },
+      "reason": "Bootstrap: comunicado da reunião 245. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-246",
+     "command": "47743c86-3304-5479-a66e-234710a0b27d",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 246
+      },
+      "reason": "Bootstrap: comunicado da reunião 246. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-247",
+     "command": "c44c9945-f4d3-5482-8c66-f745a7080b83",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 247
+      },
+      "reason": "Bootstrap: comunicado da reunião 247. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-248",
+     "command": "109c98d4-c4d1-53cb-814b-1c6dd8db8789",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 248
+      },
+      "reason": "Bootstrap: comunicado da reunião 248. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-249",
+     "command": "c05ac87f-ac07-545c-a847-489267b2fbd9",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 249
+      },
+      "reason": "Bootstrap: comunicado da reunião 249. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-250",
+     "command": "85bf7193-c517-5344-a39c-1b600b9b7236",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 250
+      },
+      "reason": "Bootstrap: comunicado da reunião 250. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-251",
+     "command": "36897ece-f587-5cb7-9430-3b7c38e1c702",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 251
+      },
+      "reason": "Bootstrap: comunicado da reunião 251. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-252",
+     "command": "c6561465-9abb-5183-be23-cd6000ae9e67",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 252
+      },
+      "reason": "Bootstrap: comunicado da reunião 252. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-253",
+     "command": "185ab696-c330-59f0-9140-ec1d69522328",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 253
+      },
+      "reason": "Bootstrap: comunicado da reunião 253. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-254",
+     "command": "297cbbf9-3c12-579a-ad37-d865e767d2df",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 254
+      },
+      "reason": "Bootstrap: comunicado da reunião 254. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-255",
+     "command": "9a994f3f-0603-5b1d-8e71-19311291f5b0",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 255
+      },
+      "reason": "Bootstrap: comunicado da reunião 255. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-256",
+     "command": "a2079f3f-3868-5cfb-9787-8958a795de82",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 256
+      },
+      "reason": "Bootstrap: comunicado da reunião 256. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-257",
+     "command": "b728fdee-0580-596c-aed9-e9b1d1ca7e1a",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 257
+      },
+      "reason": "Bootstrap: comunicado da reunião 257. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-258",
+     "command": "115398b1-906f-5aa6-a10a-40917dfee9a5",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 258
+      },
+      "reason": "Bootstrap: comunicado da reunião 258. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-259",
+     "command": "08627da5-9003-5132-aec3-401fe2852441",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 259
+      },
+      "reason": "Bootstrap: comunicado da reunião 259. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-260",
+     "command": "d387a3f9-86c5-5230-ae02-961fd7cb2114",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 260
+      },
+      "reason": "Bootstrap: comunicado da reunião 260. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-261",
+     "command": "fa8860ca-c62d-5e74-b03f-0ff54ed316a7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 261
+      },
+      "reason": "Bootstrap: comunicado da reunião 261. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-262",
+     "command": "c10548fd-a813-570a-8653-7a61ec3a8c7e",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 262
+      },
+      "reason": "Bootstrap: comunicado da reunião 262. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-263",
+     "command": "32210397-06b0-5869-a27c-4e35db3822fe",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 263
+      },
+      "reason": "Bootstrap: comunicado da reunião 263. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-264",
+     "command": "952b1064-8102-57a8-ade9-4fa1b89463d9",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 264
+      },
+      "reason": "Bootstrap: comunicado da reunião 264. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-265",
+     "command": "a8162e99-2d25-5ac8-ac20-2eb0284dd7ec",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 265
+      },
+      "reason": "Bootstrap: comunicado da reunião 265. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-266",
+     "command": "7e474a1e-e8e8-593f-a662-44bc683d9ab4",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 266
+      },
+      "reason": "Bootstrap: comunicado da reunião 266. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-267",
+     "command": "41e95ea4-6eb3-5e98-a404-cc9b0ddc13f3",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 267
+      },
+      "reason": "Bootstrap: comunicado da reunião 267. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-268",
+     "command": "bb3af3d8-6b65-531b-b249-d79ff6897927",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 268
+      },
+      "reason": "Bootstrap: comunicado da reunião 268. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-269",
+     "command": "82d52a9f-5c50-5f1a-940a-2aa689a3d181",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 269
+      },
+      "reason": "Bootstrap: comunicado da reunião 269. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-270",
+     "command": "1a2650f7-e82c-5d65-973b-7385310dac0e",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 270
+      },
+      "reason": "Bootstrap: comunicado da reunião 270. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-271",
+     "command": "a9763ae9-8b5b-5bc8-b3dd-3da5f3b83bdd",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 271
+      },
+      "reason": "Bootstrap: comunicado da reunião 271. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-272",
+     "command": "e8c736b5-b0fb-5337-b1fb-5954a438d8b5",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 272
+      },
+      "reason": "Bootstrap: comunicado da reunião 272. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-273",
+     "command": "763d7155-8585-5a69-9d1b-419cdf4ec2bb",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 273
+      },
+      "reason": "Bootstrap: comunicado da reunião 273. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-274",
+     "command": "cd516068-be9a-5ca3-a098-2f3a910acdce",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 274
+      },
+      "reason": "Bootstrap: comunicado da reunião 274. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-275",
+     "command": "abf8aa59-f31a-53a3-a292-d63f78413ef7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 275
+      },
+      "reason": "Bootstrap: comunicado da reunião 275. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-276",
+     "command": "75ef23b4-20d4-5b5b-adc0-225b8a52fb33",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 276
+      },
+      "reason": "Bootstrap: comunicado da reunião 276. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-277",
+     "command": "44e8deb6-e074-52f7-998c-d18fb8506e36",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 277
+      },
+      "reason": "Bootstrap: comunicado da reunião 277. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-278",
+     "command": "baba1736-c141-5860-b502-f940797a81c6",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 278
+      },
+      "reason": "Bootstrap: comunicado da reunião 278. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-279",
+     "command": "f9322144-0818-5702-bd5a-5eeeeaebcfe1",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 279
+      },
+      "reason": "Bootstrap: comunicado da reunião 279. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-280",
+     "command": "c7f7ccaa-cecf-599d-ba25-76b1f220b727",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 280
+      },
+      "reason": "Bootstrap: comunicado da reunião 280. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-detail-281",
+     "command": "a7761fe6-acfa-507d-ad3f-87274b56e146",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 281
+      },
+      "reason": "Bootstrap: comunicado da reunião 281. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "corpus-series",
+     "command": "8a0b4ed2-0fde-545a-b602-e9953d1d355a",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-sgs-432-endpoint",
+      "request": {
+       "window": {
+        "start": "2021-01-14",
+        "end": "2026-10-21"
+       }
+      },
+      "reason": "Prova integrada: série da conferência da parte 0. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "bootstrap-series-<D>",
+     "command": "080e7148-826d-5859-8d05-f3b007e83828",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-sgs-432-endpoint",
+      "request": {
+       "window": {
+        "start": "2021-01-14",
+        "end": "<D-1>"
+       }
+      },
+      "reason": "Bootstrap: série 432 desde o recorte homologado até a véspera de <D>. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "command derived with the execution date D in the act name"
+    },
+    {
+     "act": "odbl-edition-1",
+     "command": "0c6ccbc8-0d94-5247-9fbb-d0fdbffaf718",
+     "function": "publish_market_odbl_release_v1",
+     "args": {
+      "codeCommit": "<deployed main sha>",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "schedule-series-432",
+     "command": "df90925a-d16a-59ee-9117-e003c1c3b0d8",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "series_432",
+      "params": {
+       "coverageStart": "2021-01-14"
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária da série 432. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "schedule-copom",
+     "command": "4dd54acf-7311-5360-b8b6-dc965bc07542",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "copom_communiques",
+      "params": {
+       "size": 20
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária dos comunicados do Copom. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     }
+    },
+    {
+     "act": "pause-transport",
+     "command": "74917444-2680-50ce-bb45-25c880d46c6d",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-transport). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-acquisition-delegation",
+     "command": "e68ca5b2-de4a-5b1f-be54-310338b0b96c",
+     "function": "revoke_market_acquisition_delegation_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-acquisition-delegation). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-event-delegation",
+     "command": "428a6672-d1e7-5fec-a92c-1821d93d8678",
+     "function": "revoke_market_event_delegation_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-event-delegation). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-schedules",
+     "command": "82d70144-9e51-55f7-8ba3-32b534f51b83",
+     "function": "revoke_market_acquisition_schedule_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-schedules). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "e26ced3a-3663-58e1-a174-a2a3f565e61f"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    }
+   ]
+  },
+  "production": {
+   "project": "ifnogpksgdadruooqydi",
+   "actor": "b60448ce-965a-4303-ae39-50447450c2aa",
+   "token": "655b20e1-3bac-4ad5-a8be-77f5b7687fa0",
+   "account": "5ed2e540-b8f0-40a2-88a5-c3daf7a7cba5",
+   "acts": [
+    {
+     "act": "publisher",
+     "command": "faf88406-5b67-5978-8baa-5787a2ff13a2",
+     "function": "register_market_publisher_v1",
+     "args": {
+      "name": "Offroad, referência de mercado",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "source-revision-1",
+     "command": "9fa8d039-11fd-509a-a13b-36e6faac5349",
+     "function": "record_market_source_revision_v1",
+     "args": {
+      "source": "bcb",
+      "definition": {
+       "registryId": "bcb_sgs",
+       "license": {
+        "kind": "open",
+        "license": "ODbL-1.0",
+        "attribution": "Banco Central do Brasil",
+        "evidenceIds": [
+         "bcb-catalog-meta-selic-432",
+         "bcb-catalog-atas-comunicados-copom",
+         "bcb-site-termos-de-uso"
+        ],
+        "retainAdoptedValues": true,
+        "storeDays": null
+       },
+       "allowedHosts": [
+        "api.bcb.gov.br",
+        "www.bcb.gov.br"
+       ],
+       "calendar": "br_business_days",
+       "expectedPublication": "09:00",
+       "maximumAgeHours": 30,
+       "enabled": true,
+       "reason": "Revisão 1 da fonte bcb, licença aberta ODbL do catálogo de dados abertos do Banco Central. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+      },
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "calendar-2026",
+     "command": "358dd96b-d68f-50e1-a317-20d0ad3b047b",
+     "function": "record_market_copom_calendar_v1",
+     "args": {
+      "year": 2026,
+      "meetings": [
+       {
+        "ordinal": 1,
+        "firstDay": "2026-01-27",
+        "secondDay": "2026-01-28"
+       },
+       {
+        "ordinal": 2,
+        "firstDay": "2026-03-17",
+        "secondDay": "2026-03-18"
+       },
+       {
+        "ordinal": 3,
+        "firstDay": "2026-04-28",
+        "secondDay": "2026-04-29"
+       },
+       {
+        "ordinal": 4,
+        "firstDay": "2026-06-16",
+        "secondDay": "2026-06-17"
+       },
+       {
+        "ordinal": 5,
+        "firstDay": "2026-08-04",
+        "secondDay": "2026-08-05"
+       },
+       {
+        "ordinal": 6,
+        "firstDay": "2026-09-15",
+        "secondDay": "2026-09-16"
+       },
+       {
+        "ordinal": 7,
+        "firstDay": "2026-11-03",
+        "secondDay": "2026-11-04"
+       },
+       {
+        "ordinal": 8,
+        "firstDay": "2026-12-08",
+        "secondDay": "2026-12-09"
+       }
+      ],
+      "evidenceUrl": "https://www.bcb.gov.br/api/conteudo/app/normativos/exibeoutrasnormas?p1=COMUNICADO&p2=43383",
+      "evidenceSha256": "13a3738730bacd2938c3761d788733e6c281298242fd6f17a2813997cb0064c5",
+      "mediaType": "application/json",
+      "reason": "Calendário de 2026, Comunicado BCB nº 43.383. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "consumer-rg01-monitor",
+     "command": "8e852d04-318d-5a1c-b097-bc93829b1dfb",
+     "function": "register_market_event_consumer_v2",
+     "args": {
+      "consumer": "rg01-monitor",
+      "events": [
+       "approved",
+       "quarantined",
+       "superseded",
+       "revoked",
+       "purged",
+       "released"
+      ],
+      "subjectKinds": [
+       "acquisition",
+       "source",
+       "version"
+      ],
+      "handler": "rg01",
+      "reason": "Consumidor do monitor do gatilho RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "event-delegation",
+     "command": "e7982f7f-2d23-5cc5-9b05-685768bf9f86",
+     "function": "grant_market_event_delegation_v1",
+     "args": {
+      "token": "655b20e1-3bac-4ad5-a8be-77f5b7687fa0",
+      "consumer": "rg01-monitor",
+      "reason": "Delegação do worker ao monitor RG-01. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "acquisition-delegation",
+     "command": "0d2f2d45-9346-5a7f-92a9-90a9c9b0e7db",
+     "function": "grant_market_acquisition_delegation_v1",
+     "args": {
+      "token": "655b20e1-3bac-4ad5-a8be-77f5b7687fa0",
+      "source": "bcb",
+      "reason": "Delegação de aquisição do worker para a fonte bcb. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "transport-open",
+     "command": "20020121-54c5-53e7-b70f-aff2113a0154",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "released": true,
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa",
+      "reason": "Abertura do transporte para o bootstrap enumerado. Autorização do fundador de 22/10/2026 (M2 parte 4)."
+     },
+     "note": "production: only after the founder's final release"
+    },
+    {
+     "act": "bootstrap-list",
+     "command": "4b0a8c6b-a682-5ed2-bf6e-36f8af8c83fc",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-lista",
+      "request": {
+       "size": 47
+      },
+      "reason": "Bootstrap: lista dos comunicados desde a reunião 235. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "size = latest meeting - 235 + 1 on the execution day"
+    },
+    {
+     "act": "bootstrap-detail-235",
+     "command": "037e0048-e24b-546d-a25f-c620b4bad965",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 235
+      },
+      "reason": "Bootstrap: comunicado da reunião 235. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-236",
+     "command": "501e7ab0-41bb-5ee6-9de5-ec010e2a88e2",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 236
+      },
+      "reason": "Bootstrap: comunicado da reunião 236. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-237",
+     "command": "93cc2e0d-314e-56c6-b3bd-df8593389601",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 237
+      },
+      "reason": "Bootstrap: comunicado da reunião 237. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-238",
+     "command": "26a2f824-9a27-55ab-b5f0-afe3cb617ac0",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 238
+      },
+      "reason": "Bootstrap: comunicado da reunião 238. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-239",
+     "command": "35eccf5c-f4fb-5826-a9a2-6e3ed94d89f3",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 239
+      },
+      "reason": "Bootstrap: comunicado da reunião 239. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-240",
+     "command": "4bcf3132-abae-580a-ac09-f6d17812b203",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 240
+      },
+      "reason": "Bootstrap: comunicado da reunião 240. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-241",
+     "command": "50572fac-babc-5edb-9063-f79ba802f8fb",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 241
+      },
+      "reason": "Bootstrap: comunicado da reunião 241. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-242",
+     "command": "fc2a2680-6b22-5c4d-947a-4b40b68c55a7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 242
+      },
+      "reason": "Bootstrap: comunicado da reunião 242. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-243",
+     "command": "a3434e66-063e-5215-8338-74024f95354f",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 243
+      },
+      "reason": "Bootstrap: comunicado da reunião 243. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-244",
+     "command": "e0c14415-991b-5781-a916-f71d7d117314",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 244
+      },
+      "reason": "Bootstrap: comunicado da reunião 244. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-245",
+     "command": "e8d857fc-b851-5516-bb73-3ea519297d4e",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 245
+      },
+      "reason": "Bootstrap: comunicado da reunião 245. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-246",
+     "command": "e783324d-01dd-5c27-adfd-57d05fcb6e64",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 246
+      },
+      "reason": "Bootstrap: comunicado da reunião 246. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-247",
+     "command": "5072117a-08f7-5a64-b9da-39241381e61a",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 247
+      },
+      "reason": "Bootstrap: comunicado da reunião 247. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-248",
+     "command": "fb47dfae-0d87-5949-8448-4708c98cf2da",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 248
+      },
+      "reason": "Bootstrap: comunicado da reunião 248. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-249",
+     "command": "682c96ee-dc21-52ff-a142-58e64e715879",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 249
+      },
+      "reason": "Bootstrap: comunicado da reunião 249. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-250",
+     "command": "e10a81e3-1d52-50a1-a250-a879a10b01fb",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 250
+      },
+      "reason": "Bootstrap: comunicado da reunião 250. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-251",
+     "command": "0be8befb-0534-55a3-8b58-caeefbfa1143",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 251
+      },
+      "reason": "Bootstrap: comunicado da reunião 251. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-252",
+     "command": "26fd6631-5a17-5eac-955b-2615644212bf",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 252
+      },
+      "reason": "Bootstrap: comunicado da reunião 252. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-253",
+     "command": "43ea5d2c-d9ad-5498-9b35-bd4917761eb0",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 253
+      },
+      "reason": "Bootstrap: comunicado da reunião 253. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-254",
+     "command": "61753e4d-b1ae-5767-b877-de570b94eaa5",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 254
+      },
+      "reason": "Bootstrap: comunicado da reunião 254. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-255",
+     "command": "0b0ec827-538a-58be-92c9-8d1c1b706ce6",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 255
+      },
+      "reason": "Bootstrap: comunicado da reunião 255. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-256",
+     "command": "de24b47e-ec3b-55d6-a4d8-ed175a2395d7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 256
+      },
+      "reason": "Bootstrap: comunicado da reunião 256. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-257",
+     "command": "95a4e1ec-914a-55d9-860b-9f3fd918cdf8",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 257
+      },
+      "reason": "Bootstrap: comunicado da reunião 257. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-258",
+     "command": "4f5a6eae-1e49-571c-919b-788192a05e62",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 258
+      },
+      "reason": "Bootstrap: comunicado da reunião 258. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-259",
+     "command": "e23938ac-9d21-5684-a1c7-9eddf2a41760",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 259
+      },
+      "reason": "Bootstrap: comunicado da reunião 259. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-260",
+     "command": "6032b37c-26ef-50d6-bdae-919f0bf8a4c7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 260
+      },
+      "reason": "Bootstrap: comunicado da reunião 260. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-261",
+     "command": "1f86f296-7c41-5c05-a3e5-d9059e5efd81",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 261
+      },
+      "reason": "Bootstrap: comunicado da reunião 261. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-262",
+     "command": "1a38f3e7-7ee0-5458-be63-4e264167e139",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 262
+      },
+      "reason": "Bootstrap: comunicado da reunião 262. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-263",
+     "command": "b85c54ef-990d-544f-8f31-4289b00aa8b1",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 263
+      },
+      "reason": "Bootstrap: comunicado da reunião 263. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-264",
+     "command": "3e874474-087c-5cb2-b4ad-5bab835f2459",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 264
+      },
+      "reason": "Bootstrap: comunicado da reunião 264. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-265",
+     "command": "7e3c22c7-f27e-5bf2-82bb-c08fefbf9715",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 265
+      },
+      "reason": "Bootstrap: comunicado da reunião 265. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-266",
+     "command": "1fd182e4-6cb4-5f7c-9e4d-4d2fc71bd336",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 266
+      },
+      "reason": "Bootstrap: comunicado da reunião 266. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-267",
+     "command": "5cff1b7a-d632-5ff6-9280-7706789acd73",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 267
+      },
+      "reason": "Bootstrap: comunicado da reunião 267. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-268",
+     "command": "0cb59fe3-0076-5099-839f-339b59d35d8b",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 268
+      },
+      "reason": "Bootstrap: comunicado da reunião 268. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-269",
+     "command": "b62514e1-c182-583d-8d2e-f28c96b02787",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 269
+      },
+      "reason": "Bootstrap: comunicado da reunião 269. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-270",
+     "command": "6ce1a094-7bfd-5201-8a32-b6c6c9ee2de7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 270
+      },
+      "reason": "Bootstrap: comunicado da reunião 270. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-271",
+     "command": "29fe290b-43ba-5d07-8cc7-5bc707c17b3a",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 271
+      },
+      "reason": "Bootstrap: comunicado da reunião 271. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-272",
+     "command": "b492cdd3-348f-5c8c-a89b-3af416dd4a17",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 272
+      },
+      "reason": "Bootstrap: comunicado da reunião 272. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-273",
+     "command": "11ad1468-3e06-5988-baa3-b1ffbee6bd64",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 273
+      },
+      "reason": "Bootstrap: comunicado da reunião 273. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-274",
+     "command": "eaec4c14-44e5-56f8-a624-f3bb4f796dd7",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 274
+      },
+      "reason": "Bootstrap: comunicado da reunião 274. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-275",
+     "command": "05559ff2-b02c-5f63-a762-70bbfc146713",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 275
+      },
+      "reason": "Bootstrap: comunicado da reunião 275. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-276",
+     "command": "dfaa4a5f-a433-546f-8010-050400d87176",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 276
+      },
+      "reason": "Bootstrap: comunicado da reunião 276. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-277",
+     "command": "e5f314b1-b848-59cc-a422-25ada6229611",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 277
+      },
+      "reason": "Bootstrap: comunicado da reunião 277. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-278",
+     "command": "f648e30c-892f-59a8-b0e8-b59121069700",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 278
+      },
+      "reason": "Bootstrap: comunicado da reunião 278. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-279",
+     "command": "11de0c38-4698-50c6-bf5f-ab7104fd17a1",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 279
+      },
+      "reason": "Bootstrap: comunicado da reunião 279. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-280",
+     "command": "9cb8f310-1063-53c4-9384-2ad0ce1ec419",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 280
+      },
+      "reason": "Bootstrap: comunicado da reunião 280. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-detail-281",
+     "command": "93e1ea4b-09ec-57cc-bd67-c938d457a350",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-copom-comunicados-detalhe",
+      "request": {
+       "meeting": 281
+      },
+      "reason": "Bootstrap: comunicado da reunião 281. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "bootstrap-series-<D>",
+     "command": "093f705c-467c-509e-8a90-703779228832",
+     "function": "enqueue_market_contract_acquisition_v1",
+     "args": {
+      "contract": "bcb-sgs-432-endpoint",
+      "request": {
+       "window": {
+        "start": "2021-01-14",
+        "end": "<D-1>"
+       }
+      },
+      "reason": "Bootstrap: série 432 desde o recorte homologado até a véspera de <D>. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "command derived with the execution date D in the act name"
+    },
+    {
+     "act": "odbl-edition-1",
+     "command": "3cd87b64-9884-57e9-ad4e-a12385e9e2df",
+     "function": "publish_market_odbl_release_v1",
+     "args": {
+      "codeCommit": "<deployed main sha>",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "schedule-series-432",
+     "command": "e5e418ed-af41-55cd-8bd7-d3590da1537f",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "series_432",
+      "params": {
+       "coverageStart": "2021-01-14"
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária da série 432. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "schedule-copom",
+     "command": "5974064b-486e-5f3e-b45c-4ff2299ccf64",
+     "function": "grant_market_acquisition_schedule_v1",
+     "args": {
+      "kind": "copom_communiques",
+      "params": {
+       "size": 20
+      },
+      "localTime": "09:00",
+      "businessDaysOnly": false,
+      "reason": "Agenda diária dos comunicados do Copom. Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     }
+    },
+    {
+     "act": "pause-transport",
+     "command": "cb6ee1e8-7959-5d8b-b2f8-690b5ceb5cc2",
+     "function": "release_market_acquisition_transport_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-transport). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-acquisition-delegation",
+     "command": "914323e3-08aa-5a68-9fb0-45aa6e66267c",
+     "function": "revoke_market_acquisition_delegation_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-acquisition-delegation). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-event-delegation",
+     "command": "7cb3f475-d1f5-511c-bc17-d7cf04f33ada",
+     "function": "revoke_market_event_delegation_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-event-delegation). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    },
+    {
+     "act": "pause-schedules",
+     "command": "88f96ea3-6437-5ea2-b852-2b243ef925b2",
+     "function": "revoke_market_acquisition_schedule_v1",
+     "args": {
+      "reason": "Pausa da base de mercado (pause-schedules). Autorização do fundador de 22/10/2026 (M2 parte 4).",
+      "actor": "b60448ce-965a-4303-ae39-50447450c2aa"
+     },
+     "note": "reversal; resumption uses new acts with a resume-<n> suffix"
+    }
+   ]
+  }
+ }
+}
