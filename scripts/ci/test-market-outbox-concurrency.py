@@ -21,6 +21,8 @@ disposable CI database.
    unreadable in both modes, and a revoked source withdraws its acquisitions.
 11. A revoker that calls a command another session waits on at the door is refused at once; no deadlock.
 12. A delete of observations waits at the statement door while a revoker purges the version; no deadlock.
+13. Storage authorization enters the door before any job or source lock.
+14. A worker claim waits at the door holding nothing while a revoker's cancellation is refused at once.
 Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
@@ -464,6 +466,38 @@ def main():
         raise AssertionError('a delete waiting at the door did not pass cleanly after the purge: ' + out)
     if psql(f"select count(*) from private.market_observations where version_id='{q4['versionId']}';") != '0':
         raise AssertionError('the purge did not remove the observations')
+    # 13. Storage authorization enters the door first: a worker session that authorized an object holds the
+    # authority shared, a revoker waits at the door, and the worker's own later revocation is refused at once.
+    st = session('market_outbox_storage_authorized', as_account(WORKER_A))
+    st.stdin.write("select private.worker_can_access_market_object_v1('market-reference','bcb/none.json','upload');\n")
+    barrier(st, 'ST13')
+    rv = session('market_outbox_revoker_after_storage')
+    barrier(rv, 'RV13')
+    rv.stdin.write(revoke_sql('acquisition', q5['acquisitionId'], 'Revogação sintética depois da autorização') + "\n"); rv.stdin.flush()
+    wait_for_lock('market_outbox_revoker_after_storage')
+    st.stdin.write(revoke_sql('acquisition', q5['acquisitionId'], 'Revogação na sessão que autorizou') + "\n")
+    out = finish(st, expect_ok=False, end_with='rollback')
+    if 'market_authority_order' not in out or 'deadlock' in out:
+        raise AssertionError('a session that authorized Storage was not refused at the door: ' + out)
+    finish(rv, end_with='rollback')
+    # 14. A revoker holds the authority; a worker claim waits at the door holding no job or source lock; the
+    # revoker's cancellation of a queued job is refused at once, and the claim then proceeds.
+    psql(f"update private.market_acquisition_jobs set available_at=clock_timestamp()+interval '1 day' where status='queued' and source_id='bcb';")
+    job = psql(f"select private.enqueue_market_contract_acquisition_v1('{command()}','bcb-copom-comunicados-lista','{{\"size\":5}}','Pedido sintético da corrida 14','{OPERATOR}')->>'jobId';")
+    rv = session('market_outbox_revoker_before_claim')
+    rv.stdin.write(revoke_sql('acquisition', q5['acquisitionId'], 'Revogação sintética antes do pedido') + "\n")
+    barrier(rv, 'RV14')
+    cl = session('market_outbox_claim_at_door', as_account(WORKER_A))
+    barrier(cl, 'CL14')
+    cl.stdin.write(f"select private.worker_claim_market_acquisition_v1('{TOKEN_A}')->>'jobId';\n"); cl.stdin.flush()
+    wait_for_lock('market_outbox_claim_at_door')
+    rv.stdin.write(f"select private.cancel_market_acquisition_v1('{command()}','{job}','Cancelamento recusado','{OPERATOR}');\n")
+    out = finish(rv, expect_ok=False, end_with='rollback')
+    if 'market_authority_order' not in out or 'deadlock' in out:
+        raise AssertionError('a cancellation in a revoking transaction was not refused at the door: ' + out)
+    out = finish(cl)
+    if out.splitlines()[-1] != job:
+        raise AssertionError('the claim waiting at the door did not take the queued job: ' + out)
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
     # A revoked source withdraws every acquisition it holds.
     if psql(f"select private.market_acquisition_readable_v1('{q5['acquisitionId']}')::text;") != 'true':

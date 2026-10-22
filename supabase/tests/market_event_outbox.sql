@@ -230,6 +230,30 @@ do $$ declare t text;r text;f text;begin
   then raise exception '% executes %',r,f;end if;
  end loop;
  if position('market-event-outbox.v1' in public.worker_runtime_schema_contract_v1()::text)=0 then raise exception 'runtime contract does not announce the outbox';end if;
+ -- Every market command and the Storage and orphan helpers enter the authority door as their first
+ -- statement, and observation statements enter it before any row is locked.
+ for f in select p.oid::regprocedure::text from pg_proc p where p.pronamespace='private'::regnamespace and p.proname in (
+   'cancel_market_acquisition_v1','enqueue_market_contract_acquisition_v1','enqueue_market_acquisition_v1',
+   'grant_market_acquisition_delegation_v1','revoke_market_acquisition_delegation_v1','grant_market_event_delegation_v1','revoke_market_event_delegation_v1',
+   'register_market_publisher_v1','release_market_acquisition_transport_v1','record_market_source_revision_v1',
+   'publish_market_odbl_release_v1','withdraw_market_odbl_release_v1','relink_market_version_v1',
+   'register_market_event_consumer_v1','disable_market_event_consumer_v1','update_market_event_consumer_filter_v1','retry_blocked_market_event_v1',
+   'worker_claim_market_acquisition_v1','worker_renew_market_acquisition_v1','worker_commit_market_acquisition_v1','worker_fail_market_acquisition_v1',
+   'worker_commit_market_version_v1','worker_can_access_market_object_v1','worker_list_market_orphans_v1',
+   'worker_claim_market_event_v1','worker_renew_market_event_v1','worker_complete_market_event_v1','worker_fail_market_event_v1')
+   and p.prosrc !~ '^\s*(declare\s.*?)?\mbegin\M\s+perform private\.market_require_read_committed_v1\(\);' loop
+  raise exception 'market command does not enter the door first: %',f;
+ end loop;
+ if (select count(*) from pg_proc p where p.pronamespace='private'::regnamespace and p.proname in ('cancel_market_acquisition_v1','enqueue_market_contract_acquisition_v1',
+   'enqueue_market_acquisition_v1','grant_market_acquisition_delegation_v1','revoke_market_acquisition_delegation_v1','grant_market_event_delegation_v1',
+   'revoke_market_event_delegation_v1','register_market_publisher_v1','release_market_acquisition_transport_v1','record_market_source_revision_v1',
+   'publish_market_odbl_release_v1','withdraw_market_odbl_release_v1','relink_market_version_v1','register_market_event_consumer_v1','disable_market_event_consumer_v1',
+   'update_market_event_consumer_filter_v1','retry_blocked_market_event_v1','worker_claim_market_acquisition_v1','worker_renew_market_acquisition_v1',
+   'worker_commit_market_acquisition_v1','worker_fail_market_acquisition_v1','worker_commit_market_version_v1','worker_can_access_market_object_v1',
+   'worker_list_market_orphans_v1','worker_claim_market_event_v1','worker_renew_market_event_v1','worker_complete_market_event_v1','worker_fail_market_event_v1'))<>28
+ then raise exception 'market command set changed: review the door';end if;
+ if not exists(select 1 from pg_trigger where tgname='market_observations_door' and tgrelid='private.market_observations'::regclass and (tgtype&1)=0)
+ then raise exception 'observation statements do not enter the door';end if;
 end $$;
 select 'market_event_outbox' as test,'PASS' as result;
 rollback;
