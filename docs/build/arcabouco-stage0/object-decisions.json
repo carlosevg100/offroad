@@ -344731,6 +344731,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Quem detém a autoridade de mercado exclusiva só revoga e lê; todo comando de mercado é recusado na porta antes de tomar trava de comando, job ou fonte."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022005350_market_m2_part3_fixes_10.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta de autoridade como primeira instrução de cada comando de mercado (22 funções, corpo inalterado, conferido na própria migração)."
     }
   ],
   "staging_archive": [

@@ -19,6 +19,7 @@ disposable CI database.
    read lock with no event, revoking an acquisition is refused; a revoking transaction runs no market command.
 10. Revocation effects across committed sessions: the revoked communique and its dependent version are
    unreadable in both modes, and a revoked source withdraws its acquisitions.
+11. A revoker that calls a command another session waits on at the door is refused at once; no deadlock.
 Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
@@ -423,6 +424,28 @@ def main():
                f"select private.publish_market_odbl_release_v1('{command()}',repeat('f',40),'{FOUNDER}');commit;", check=False)
     if 'market_authority_order' not in out:
         raise AssertionError('a market command ran in a revoking transaction: ' + out)
+    # 11. A revoker holds the authority exclusively; a publication with command C waits at the door holding
+    # nothing; the revoker then calls the same command C, and an enqueue on the same source: both are refused
+    # at the door at once, the revoker rolls back, and the publication proceeds. No deadlock.
+    same = command()
+    rv = session('market_outbox_revoker_holding')
+    rv.stdin.write(revoke_sql('acquisition', q5['acquisitionId'], 'Revogação sintética que segura a autoridade') + "\n")
+    barrier(rv, 'RV11')
+    pw = session('market_outbox_publish_at_door')
+    barrier(pw, 'PW11')
+    pw.stdin.write(f"select private.publish_market_odbl_release_v1('{same}',repeat('a',40),'{FOUNDER}')->>'releaseNumber';\n"); pw.stdin.flush()
+    wait_for_lock('market_outbox_publish_at_door')
+    rv.stdin.write(f"select private.publish_market_odbl_release_v1('{same}',repeat('a',40),'{FOUNDER}');\n")
+    out = finish(rv, expect_ok=False, end_with='rollback')
+    if 'market_authority_order' not in out or 'deadlock' in out:
+        raise AssertionError('the revoker was not refused at the door by the same command: ' + out)
+    out = finish(pw, expect_ok=False)
+    if 'deadlock' in out or not (out.splitlines()[-1].isdigit() or 'market_odbl_nothing_to_publish' in out):
+        raise AssertionError('the publication waiting at the door did not proceed: ' + out)
+    out = psql(f"begin;{revoke_sql('acquisition', q5['acquisitionId'], 'Revogação sintética seguida de pedido')}"
+               f"select private.enqueue_market_contract_acquisition_v1('{command()}','bcb-copom-comunicados-lista','{{\"size\":5}}','Pedido recusado','{OPERATOR}');commit;", check=False)
+    if 'market_authority_order' not in out:
+        raise AssertionError('an enqueue ran in a revoking transaction: ' + out)
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
     # A revoked source withdraws every acquisition it holds.
     if psql(f"select private.market_acquisition_readable_v1('{q5['acquisitionId']}')::text;") != 'true':
