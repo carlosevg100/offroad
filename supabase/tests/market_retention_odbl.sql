@@ -2,6 +2,9 @@
 -- revocation), relink under it, the ODbL edition (canonical bytes, selection, replay, alterations,
 -- withdrawal) and its one anonymous reader. Synthetic, dated in 2025, rolls back.
 begin;
+-- This transaction reads and then revokes, as an operator's combined write would: it takes the market
+-- authority exclusively first, so its whole set is held before any read.
+select private.begin_market_authority_write_v1();
 set local statement_timeout='60s';
 select set_config('request.jwt.claims','{}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -235,10 +238,7 @@ do $$ declare r jsonb;p jsonb;begin
 end $$;
 
 -- 6. Revoking a communiqué used as evidence withdraws every edition and version that depends on it, and
--- relink refuses to build on it. A revocation must precede every market read lock of its transaction;
--- everything above ran in this one test transaction, so the mark is cleared here to stand for the
--- operator's own transaction.
-select set_config('offroad.market_read_locked','',true);
+-- relink refuses to build on it.
 do $$ declare r jsonb;begin
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',pg_temp.fact('d2'),'revoked','Revogação sintética do comunicado','3a7b0000-0000-4000-8000-000000000002');
  if private.market_acquisition_readable_v1(pg_temp.fact('d2')::uuid) or private.market_version_readable_v1(pg_temp.fact('v2')::uuid,'consume')
@@ -251,19 +251,9 @@ do $$ declare r jsonb;begin
  -- A revoked source withdraws its acquisitions.
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação sintética da fonte','3a7b0000-0000-4000-8000-000000000002');
  if private.market_acquisition_readable_v1((select acquisition_id from private.market_versions where id=pg_temp.fact('v1')::uuid)) then raise exception 'acquisition of a revoked source readable';end if;
- -- Writers keep the readers' order: after the source anchor, an acquisition anchor (lower in byte order) refuses.
- perform pg_temp.expect(format($q$do $x$ begin
-  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Revogação sintética da versão','3a7b0000-0000-4000-8000-000000000002');
-  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
-  select 'acquisition',reference_acquisition_id::text,'revoked','Revogação sintética fora de ordem','3a7b0000-0000-4000-8000-000000000002' from private.market_copom_meetings where meeting=9001;
- end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','acquisition anchor taken after a source anchor in one transaction');
- -- A read lock taken first (here the readers' helper over a version) refuses any later revocation, and a
- -- refused savepoint leaves no mark behind.
- perform pg_temp.expect(format($q$do $x$ begin
-  perform private.lock_market_read_authority_v1(array[%L::uuid],'{}');
-  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação depois de leitura','3a7b0000-0000-4000-8000-000000000002');
- end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','revocation after a read lock in one transaction');
- if coalesce(current_setting('offroad.market_read_locked',true),'')='on' then raise exception 'a rolled back savepoint left the read mark';end if;
+ -- The refusals of a revocation after a read without the exclusive authority run across sessions in the
+ -- outbox race script; this transaction holds it exclusively throughout.
+ if private.market_authority_mode_v1() is distinct from 'exclusive' then raise exception 'authority not held exclusively';end if;
 end $$;
 
 -- 7. A revision that would not retain is refused while anything of the source is stored, and a source
@@ -286,7 +276,7 @@ do $$ declare t text;r text;f text;begin
   if not (select relrowsecurity and relforcerowsecurity from pg_class where oid=('private.'||t)::regclass) then raise exception 'RLS not forced on %',t;end if;
  end loop;
  for f,r in select p.oid::regprocedure::text,x.r from pg_proc p join pg_namespace n on n.oid=p.pronamespace,unnest(array['anon','authenticated','service_role']) x(r)
-  where n.nspname in ('private','public') and p.proname ~ '^(market_odbl_|market_version_readable_|market_acquisition_readable_|market_license_retains_|market_version_closure_|lock_market_read_authority_|anchor_market_authority_|publish_market_odbl_|withdraw_market_odbl_|market_evidence_set_|market_quality_policy_text_|create_market_selic_version_|relink_market_version_)' loop
+  where n.nspname in ('private','public') and p.proname ~ '^(market_odbl_|market_version_readable_|market_acquisition_readable_|market_license_retains_|market_version_closure_|lock_market_read_authority_|anchor_market_authority_|publish_market_odbl_|withdraw_market_odbl_|market_evidence_set_|market_quality_policy_text_|create_market_selic_version_|relink_market_version_|market_authority_|begin_market_authority_)' loop
   if has_function_privilege(r,f,'execute') and not (r='anon' and f in ('market_odbl_release_v1(integer)','private.market_odbl_release_read_v1(integer)'))
   then raise exception '% executes %',r,f;end if;
  end loop;

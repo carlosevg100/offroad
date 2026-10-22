@@ -336764,6 +336764,168 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.begin_market_authority_write_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.begin_market_authority_write_v1()",
+          "kind": "function",
+          "name": "begin_market_authority_write_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.begin_market_authority_write_v1()",
+          "kind": "function",
+          "name": "begin_market_authority_write_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "line": 19,
+          "anchor": "create function private.begin_market_authority_write_v1() returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_authority_mode_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_authority_mode_v1()",
+          "kind": "function",
+          "name": "market_authority_mode_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_authority_mode_v1()",
+          "kind": "function",
+          "name": "market_authority_mode_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "line": 7,
+          "anchor": "create function private.market_authority_mode_v1() returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_authority_read_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_authority_read_v1()",
+          "kind": "function",
+          "name": "market_authority_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_authority_read_v1()",
+          "kind": "function",
+          "name": "market_authority_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "line": 13,
+          "anchor": "create function private.market_authority_read_v1() returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -344555,6 +344717,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Regra única de quem revoga: revogação de aquisição ou fonte antes de qualquer trava de leitura de mercado da transação, marcada nos próprios helpers de trava."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Autoridade de mercado como trava de transação do servidor no lugar de marca alterável pelo chamador."
     }
   ],
   "staging_archive": [

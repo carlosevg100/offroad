@@ -106486,6 +106486,60 @@
       ],
       "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid",
       "security_definer": false
+    },
+    {
+      "id": "function:private.begin_market_authority_write_v1()",
+      "kind": "function",
+      "name": "begin_market_authority_write_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_authority_mode_v1()",
+      "kind": "function",
+      "name": "market_authority_mode_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_authority_read_v1()",
+      "kind": "function",
+      "name": "market_authority_read_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"

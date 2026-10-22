@@ -2,6 +2,8 @@
 -- per-subject order, lease, effect and completion in one transaction with an immutable receipt, retry
 -- budget and block, delegation fencing, disabling, isolation and closed surfaces. Synthetic, rolls back.
 begin;
+-- Source purge events below are revocation-class: this transaction takes the market authority first.
+select private.begin_market_authority_write_v1();
 set local statement_timeout='60s';
 select set_config('request.jwt.claims','{}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -243,5 +245,27 @@ do $$ begin
   raise exception 'repeatable read accepted';
  exception when sqlstate '25001' then null;
  end;
+end $$;
+rollback;
+
+-- 10. The authority door: a transaction that entered it to read cannot then take it to write; one that
+-- took it to write may read.
+begin;
+select set_config('request.jwt.claims','{}',true);
+do $$ begin
+ perform private.market_authority_read_v1();
+ if private.market_authority_mode_v1() is distinct from 'shared' then raise exception 'reader did not enter shared';end if;
+ begin
+  perform private.begin_market_authority_write_v1();
+  raise exception 'write after read accepted';
+ exception when sqlstate '55000' then null;
+ end;
+end $$;
+rollback;
+begin;
+do $$ begin
+ perform private.begin_market_authority_write_v1();
+ perform private.market_require_read_committed_v1();
+ if private.market_authority_mode_v1() is distinct from 'exclusive' then raise exception 'writer lost its exclusive authority';end if;
 end $$;
 rollback;
