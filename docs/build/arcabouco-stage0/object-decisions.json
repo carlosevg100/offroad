@@ -332150,6 +332150,12 @@
           "line": 8,
           "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+          "line": 31,
+          "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -332544,6 +332550,12 @@
         {
           "path": "supabase/migrations/20261022002449_market_m2_part3_fixes_5.sql",
           "line": 2,
+          "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+          "line": 17,
           "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
         }
@@ -344536,6 +344548,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Manifesto da publicação ODbL como valor materializado, verificável estaticamente, no lugar de tabela temporária."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Regra única de quem revoga: revogação de aquisição ou fonte antes de qualquer trava de leitura de mercado da transação, marcada nos próprios helpers de trava."
     }
   ],
   "staging_archive": [

@@ -235,7 +235,10 @@ do $$ declare r jsonb;p jsonb;begin
 end $$;
 
 -- 6. Revoking a communiqué used as evidence withdraws every edition and version that depends on it, and
--- relink refuses to build on it.
+-- relink refuses to build on it. A revocation must precede every market read lock of its transaction;
+-- everything above ran in this one test transaction, so the mark is cleared here to stand for the
+-- operator's own transaction.
+select set_config('offroad.market_read_locked','',true);
 do $$ declare r jsonb;begin
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',pg_temp.fact('d2'),'revoked','Revogação sintética do comunicado','3a7b0000-0000-4000-8000-000000000002');
  if private.market_acquisition_readable_v1(pg_temp.fact('d2')::uuid) or private.market_version_readable_v1(pg_temp.fact('v2')::uuid,'consume')
@@ -254,6 +257,13 @@ do $$ declare r jsonb;begin
   insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
   select 'acquisition',reference_acquisition_id::text,'revoked','Revogação sintética fora de ordem','3a7b0000-0000-4000-8000-000000000002' from private.market_copom_meetings where meeting=9001;
  end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','acquisition anchor taken after a source anchor in one transaction');
+ -- A read lock taken first (here the readers' helper over a version) refuses any later revocation, and a
+ -- refused savepoint leaves no mark behind.
+ perform pg_temp.expect(format($q$do $x$ begin
+  perform private.lock_market_read_authority_v1(array[%L::uuid],'{}');
+  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação depois de leitura','3a7b0000-0000-4000-8000-000000000002');
+ end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','revocation after a read lock in one transaction');
+ if coalesce(current_setting('offroad.market_read_locked',true),'')='on' then raise exception 'a rolled back savepoint left the read mark';end if;
 end $$;
 
 -- 7. A revision that would not retain is refused while anything of the source is stored, and a source

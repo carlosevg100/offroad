@@ -2704,8 +2704,13 @@
       "name": "market_m2_part3_fixes_6",
       "version": "20261022002830",
       "statements_md5": "639d2942ed6c95ede74b9ec3bdba8a88"
+    },
+    {
+      "name": "market_m2_part3_fixes_7",
+      "version": "20261022003230",
+      "statements_md5": "2880fa334b25cd68b25e5bce9cbd4377"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-22T00:29:00Z"
+  "captured_at": "2026-10-22T00:33:00Z"
 }

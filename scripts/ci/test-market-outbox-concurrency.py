@@ -15,7 +15,8 @@ disposable CI database.
 7. Two version events of one series: the second waits on the series counter and takes the next ordinal.
 8. Disabling against a completion in flight, both orders: no deadlock; the completion that held its lease
    keeps its receipt, and the one that waited is refused.
-9. A transaction that touched a version existing before it cannot then revoke an acquisition.
+9. A revocation must precede every market read lock of its transaction: after an event on a version or a
+   read lock with no event, revoking an acquisition is refused.
 Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
@@ -407,6 +408,11 @@ def main():
                f"{revoke_sql('acquisition', s3['acquisitionId'], 'Revogação sintética depois da versão')}commit;", check=False)
     if 'market_authority_order' not in out:
         raise AssertionError('an acquisition revocation after an event on an existing version was accepted: ' + out)
+    # A read lock with no event (what a relink that finds nothing to change leaves held) also comes first.
+    out = psql(f"begin;select private.lock_market_read_authority_v1(array['{s['versionId']}'::uuid],'{{}}');"
+               f"{revoke_sql('acquisition', s3['acquisitionId'], 'Revogação sintética depois de leitura')}commit;", check=False)
+    if 'market_authority_order' not in out:
+        raise AssertionError('an acquisition revocation after a read lock was accepted: ' + out)
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
     print('PASS: market outbox registration, per-subject and per-series order, claims, publications, relink and disabling serialize across sessions')
 
