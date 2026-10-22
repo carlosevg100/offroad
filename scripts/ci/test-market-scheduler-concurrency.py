@@ -312,6 +312,13 @@ commit;
     first = copom(last(finish(a)))
     if first.get('list') != 'fired':
         raise AssertionError(f'the first firing did not fire the list: {first}')
+    # The same token in two workers: the second waits on the token's row, then finds the list already fired.
+    a = session('market_scheduler_same_token_a', FIRE); barrier(a, 'A')
+    b = session('market_scheduler_same_token_b', FIRE)
+    wait_for_lock('market_scheduler_same_token_b')
+    finish(a)
+    if copom(last(finish(b))).get('list') != 'already_fired':
+        raise AssertionError('a second worker with the same token fired the list again')
     replay = copom(fire())
     if replay.get('list') != 'already_fired' or replay.get('listJobId') != first.get('listJobId') or psql(
             f"select count(*) from private.market_schedule_occurrences where schedule_id='{schedule}' and occurrence_key like 'list:%';") != '1':
@@ -362,6 +369,8 @@ commit;
                 f"revoked_reason='Revogação sintética do concedente' where user_id='{state['grantor']}';",
                 next_grantor, blocked_with('grantor_inactive'))
     schedule = schedule_holder['id']
+    both_orders('grantor_account', lambda: f"update auth.users set banned_until=clock_timestamp()+interval '1 day' where id='{OPERATOR}';",
+                lambda: psql(f"update auth.users set banned_until=null where id='{OPERATOR}';"), blocked_with('grantor_inactive'))
     both_orders('account', lambda: f"update auth.users set banned_until=clock_timestamp()+interval '1 day' where id='{WORKER}';",
                 lambda: psql(f"update auth.users set banned_until=null where id='{WORKER}';"), refused_with('worker_account_binding_required'))
     tokens = iter([(TOKEN3, TOKEN3_ID, WORKER3), (TOKEN4, TOKEN4_ID, WORKER4)])
@@ -464,20 +473,66 @@ commit;
     if decision.get('reason') != 'communique_unavailable' or decision.get('meeting') != 151:
         raise AssertionError(f'a revoked version replaced its unavailable communiqué: {decision}')
 
+    # 8b. The quality decision of the last version survives what happens to it later.
+    def series_schedule_from(start):
+        psql(f"select private.revoke_market_acquisition_schedule_v1('{command()}',id,'Troca sintética da agenda','{OPERATOR}') "
+             f"from private.market_acquisition_schedules where kind='series_432' and revoked_at is null;")
+        return grant('series_432', json.dumps({'coverageStart': start}))
+    divergent_schedule = series_schedule_from('2023-10-10')
+    divergent = acquire(occurrence(divergent_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-10-10","end":"2023-10-15"}}'),
+                        series_body('2023-10-10', '2023-10-15').replace(b'13.75', b'13.50'))
+    if divergent['quality']['status'] != 'quarantined' or entry(fire(), 'series_432').get('reason') != 'series_disagreement':
+        raise AssertionError(f'a divergent version was not held for the operator: {divergent}')
+    psql(revoke_event('version', divergent['versionId'], 'Revogação sintética da versão divergente'))
+    decision = entry(fire(), 'series_432')
+    if decision.get('reason') != 'series_disagreement':
+        raise AssertionError(f'revoking a divergent quarantine released the window: {decision}')
+    later_schedule = series_schedule_from('2023-11-10')
+    later = acquire(occurrence(later_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-11-10","end":"2023-11-15"}}'), series_body('2023-11-10', '2023-11-15'))
+    if later['quality']['status'] != 'approved':
+        raise AssertionError(f'a clean version was not approved: {later}')
+    psql(f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+         f"values('version','{later['versionId']}','quarantined','Quarentena sintética do operador','{OPERATOR}');")
+    decision = entry(fire(), 'series_432')
+    if decision.get('reason') != 'series_quality_unclassified':
+        raise AssertionError(f'a quarantine without its evaluation was classified: {decision}')
+    internal_schedule = series_schedule_from('2023-12-10')
+    internal = acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":153}'), communique(153, '2023-12-12'))
+    gapped = acquire(occurrence(internal_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-12-10","end":"2023-12-20"}}'),
+                     series_body('2023-12-10', '2023-12-20', skip='2023-12-15'))
+    if gapped['quality']['status'] != 'quarantined':
+        raise AssertionError(f'a gapped version was approved: {gapped}')
+    psql(revoke_event('acquisition', internal['acquisitionId'], 'Revogação sintética do comunicado interno'))
+    occurrences = psql(f"select count(*) from private.market_schedule_occurrences where schedule_id='{internal_schedule}';")
+    decision = entry(fire(), 'series_432')
+    if decision.get('reason') != 'communique_unavailable' or decision.get('meeting') != 153 or psql(
+            f"select count(*) from private.market_schedule_occurrences where schedule_id='{internal_schedule}';") != occurrences:
+        raise AssertionError(f'a revoked internal communiqué was replaced: {decision}')
+
     # 9. A firing against the RG-01 monitor and against a publication, which waits for the source: no deadlock.
+    declaration = psql("select id from private.market_regime_declarations where active order by id limit 1;")
+    if not declaration:
+        raise AssertionError('no active RG-01 declaration to run against the firing')
+    psql(f"insert into private.market_rg01_requests(regime_id,trigger_id,key) select regime_id,trigger_id,'hour:2099-03-01T01' "
+         f"from private.market_regime_declarations where id='{declaration}';")
     a = session('market_scheduler_fire_monitor', FIRE); barrier(a, 'A')
-    b = session('market_scheduler_monitor', "select private.run_market_rg01_v1(id) from private.market_regime_declarations where active;")
-    out = finish(a) + finish(b, expect_ok=False, end_with='rollback')
-    if 'deadlock' in out:
-        raise AssertionError('the firing and the monitor deadlocked: ' + out)
-    a = session('market_scheduler_fire_publication', FIRE); barrier(a, 'A')
-    b = session('market_scheduler_publication', f"select private.publish_market_odbl_release_v1('{command()}',repeat('a',40),'{FOUNDER}');")
-    deadline = time.monotonic() + 3
-    while time.monotonic() < deadline and not waiting('market_scheduler_publication') and b.poll() is None:
+    b = session('market_scheduler_monitor', f"select private.run_market_rg01_v1('{declaration}')::text;")
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline and not waiting('market_scheduler_monitor') and b.lines.empty():
         time.sleep(.05)
-    out = finish(a) + finish(b, expect_ok=False, end_with='rollback')
-    if 'deadlock' in out:
-        raise AssertionError('the firing and the publication deadlocked: ' + out)
+    first_out = finish(a)
+    run = last(finish(b))
+    if 'deadlock' in first_out or run.get('status') != 'evaluated':
+        raise AssertionError(f'the monitor did not evaluate beside the firing: {run}')
+    a = session('market_scheduler_fire_publication', FIRE); barrier(a, 'A')
+    if entry(last(''.join(a.seen) or '{"schedules":[]}'), 'series_432') is None:
+        raise AssertionError('no schedule held the source during the publication race')
+    b = session('market_scheduler_publication', f"select private.publish_market_odbl_release_v1('{command()}',repeat('a',40),'{FOUNDER}')::text;")
+    wait_for_lock('market_scheduler_publication')
+    finish(a)
+    published = finish(b, end_with='rollback')
+    if 'deadlock' in published or 'releaseNumber' not in published:
+        raise AssertionError('the publication did not complete after the firing: ' + published)
 
     psql(f"""do $$ declare j uuid;s uuid;begin
  for j in select o.job_id from private.market_schedule_occurrences o join private.market_acquisition_jobs q on q.id=o.job_id

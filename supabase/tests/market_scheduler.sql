@@ -217,7 +217,7 @@ do $$ declare c jsonb;r jsonb;job uuid;n integer;begin
  end loop;
  r:=pg_temp.fire();
  if jsonb_array_length(pg_temp.of(r,'copom_communiques')->'details') is distinct from 0
- or not (pg_temp.of(r,'copom_communiques')->'blocked') @> '[{"meeting":9302,"reason":"detail_failures"},{"meeting":9303,"reason":"meeting_disputed"}]'
+ or ((pg_temp.of(r,'copom_communiques')->'blocked') @> '[{"meeting":9302,"reason":"detail_failures"},{"meeting":9303,"reason":"meeting_disputed"}]') is not true
  then raise exception 'detail blocks: %',r;end if;
 end $$;
 -- 6. Ten blocked meetings do not take the batch: ten cancelled details are reported and the eleventh is created.
@@ -303,7 +303,7 @@ do $$ declare r jsonb;begin
   pg_temp.points(jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(22),'YYYY-MM-DD'),'14.90')))||jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(14),'YYYY-MM-DD'),'14.75'))));
  if r#>>'{quality,status}' is distinct from 'quarantined' then raise exception 'undocumented change approved';end if;
  r:=pg_temp.series(1);
- if r->>'reason' is distinct from 'missing_communiques' or not (r->'periods') ? to_char(pg_temp.d(22),'YYYY-MM-DD') then raise exception 'documentary gap: %',r;end if;
+ if r->>'reason' is distinct from 'missing_communiques' or ((r->'periods') ? to_char(pg_temp.d(22),'YYYY-MM-DD')) is not true then raise exception 'documentary gap: %',r;end if;
  r:=pg_temp.series(2);
  if r->>'reason' is distinct from 'missing_communiques' then raise exception 'a later horizon released the window: %',r;end if;
  perform pg_temp.commit(pg_temp.received(pg_temp.claim(pg_temp.manual('3a810000-0000-4000-a000-000000000202','copom_communiques','bcb-copom-comunicados-detalhe','{"meeting":9297}'))),
@@ -320,21 +320,18 @@ end $$;
 do $$ declare r jsonb;s uuid;j1 uuid;j2 uuid;begin
  perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000309');
  s:=pg_temp.grant_series('3a810000-0000-4000-a000-000000000310',pg_temp.d(26));
+ -- Two earlier automatic occurrences of the same start, through the common enqueue, both failed.
+ j1:=private.enqueue_market_schedule_job_v1(s,'series:2000-01-01','bcb-sgs-432-endpoint',pg_temp.window(pg_temp.d(26),pg_temp.d(1)),
+  '3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004',null);
+ j2:=private.enqueue_market_schedule_job_v1(s,'series:2000-01-02','bcb-sgs-432-endpoint',pg_temp.window(pg_temp.d(26),pg_temp.d(2)),
+  '3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004',null);
+ perform pg_temp.fail(pg_temp.claim(j1),'http_status');
+ perform pg_temp.fail(pg_temp.claim(j2),'http_status');
  r:=pg_temp.series();
+ if r->>'status' is distinct from 'fired' then raise exception 'third automatic occurrence: %',r;end if;
  perform pg_temp.fail(pg_temp.claim((r->>'jobId')::uuid),'http_status');
- j1:=(private.enqueue_market_contract_acquisition_v1('3a810000-0000-4000-a000-000000000311','bcb-sgs-432-endpoint',pg_temp.window(pg_temp.d(26),pg_temp.d(1)),
-  'Job sintético do orçamento','3a810000-0000-4000-8000-000000000002')->>'jobId')::uuid;
- j2:=(private.enqueue_market_contract_acquisition_v1('3a810000-0000-4000-a000-000000000312','bcb-sgs-432-endpoint',pg_temp.window(pg_temp.d(26),pg_temp.d(2)),
-  'Job sintético do orçamento','3a810000-0000-4000-8000-000000000002')->>'jobId')::uuid;
- -- Two earlier automatic occurrences of the same start, coherent with their jobs, recorded before the last one.
- insert into private.market_schedule_occurrences(id,schedule_id,occurrence_key,contract_id,request,request_sha256,window_start,job_id,worker_token_id,account_user_id,created_at)
- select gen_random_uuid(),s,'series:2000-01-0'||v.n,'bcb-sgs-432-endpoint',q.request,encode(extensions.digest(convert_to(q.request::text,'UTF8'),'sha256'),'hex'),pg_temp.d(26),v.j,
-  '3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004',clock_timestamp()-interval '2 days'
- from (values (1,j1),(2,j2)) v(n,j) join private.market_acquisition_jobs q on q.id=v.j;
  r:=pg_temp.series(1);
  if r->>'reason' is distinct from 'series_budget' then raise exception 'budget: %',r;end if;
- perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000323',j1,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
- perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000324',j2,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
  j1:=pg_temp.manual('3a810000-0000-4000-a000-000000000212','series_432','bcb-sgs-432-endpoint',pg_temp.window(pg_temp.d(26),pg_temp.d(1)));
  perform pg_temp.fail(pg_temp.claim(j1),'http_status');
  r:=pg_temp.series(1);
@@ -383,7 +380,7 @@ do $$ declare r jsonb;begin
 end $$;
 -- 13. Shared checks through the manual occurrence; integrity of occurrences; nothing stays when the
 -- occurrence fails after its job.
-do $$ declare r jsonb;s uuid;n integer;begin
+do $$ declare r jsonb;s uuid;n integer;j uuid;begin
  s:=pg_temp.schedule('copom_communiques');
  perform pg_temp.expect(format($q$select private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000204',%L,'bcb-sgs-432-endpoint','{"window":{"start":"2026-01-01","end":"2026-01-02"}}','3a810000-0000-4000-8000-000000000002')$q$,s),
   'market_schedule_contract','contract outside the schedule');
@@ -405,6 +402,22 @@ do $$ declare r jsonb;s uuid;n integer;begin
  perform pg_temp.expect(format($q$insert into private.market_schedule_occurrences(id,schedule_id,occurrence_key,contract_id,request,request_sha256,window_start,meeting,job_id,worker_token_id,account_user_id)
   select gen_random_uuid(),%L,'detail:9399:1','bcb-copom-comunicados-detalhe','{"meeting":9398}',repeat('0',64),null,9399,id,'3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004'
   from private.market_acquisition_jobs limit 1$q$,s),'market_schedule_occurrence_invalid','incoherent occurrence');
+ -- A job of another command is not the job of a schedule's key.
+ j:=(private.enqueue_market_contract_acquisition_v1('3a810000-0000-4000-a000-000000000213','bcb-copom-comunicados-lista','{"size":20}','Job sintético sem agenda',
+  '3a810000-0000-4000-8000-000000000002')->>'jobId')::uuid;
+ perform pg_temp.expect(format($q$insert into private.market_schedule_occurrences(id,schedule_id,occurrence_key,contract_id,request,request_sha256,job_id,worker_token_id,account_user_id)
+  values(gen_random_uuid(),%L,'list:2000-01-01','bcb-copom-comunicados-lista','{"size":20}',encode(extensions.digest(convert_to('{"size": 20}','UTF8'),'sha256'),'hex'),%L,
+  '3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004')$q$,s,j),'market_schedule_occurrence_invalid','job of another command');
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000330',j,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+ -- The job of the key's own command, with a list larger than the schedule granted.
+ insert into private.market_acquisition_jobs(id,command_id,requested_by,reason,source_id,source_revision,url,extension,contract_id,request)
+ values(gen_random_uuid(),extensions.uuid_generate_v5('6f0d1c7a-2b4e-5d3f-8a91-4c2e7b5d9e10','market-schedule:'||s||':list:2000-01-02'),'3a810000-0000-4000-8000-000000000002',
+  'Job sintético fora da agenda','bcb',(private.market_source_in_force_v1('bcb')).revision,private.market_contract_url_v1('bcb-copom-comunicados-lista','{"size":30}',null),
+  'json','bcb-copom-comunicados-lista','{"size":30}') returning id into j;
+ perform pg_temp.expect(format($q$insert into private.market_schedule_occurrences(id,schedule_id,occurrence_key,contract_id,request,request_sha256,job_id,worker_token_id,account_user_id)
+  values(gen_random_uuid(),%L,'list:2000-01-02','bcb-copom-comunicados-lista','{"size":30}',encode(extensions.digest(convert_to('{"size": 30}','UTF8'),'sha256'),'hex'),%L,
+  '3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004')$q$,s,j),'market_schedule_occurrence_invalid','list larger than granted');
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000331',j,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
 end $$;
 -- 14. Revocation with receipts; an inactive grantor blocks the schedule.
 do $$ declare r jsonb;s uuid;begin

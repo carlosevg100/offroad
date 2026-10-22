@@ -340978,6 +340978,12 @@
           "line": 142,
           "anchor": "create or replace function private.fire_market_series_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022204022_market_m2_scheduler_fixes_3.sql",
+          "line": 34,
+          "anchor": "create or replace function private.fire_market_series_schedule_v1(sc private.market_acquisition_schedules,p_worker uuid,p_account uuid,p_k timestamptz) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -342283,6 +342289,12 @@
           "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
           "line": 35,
           "anchor": "create function private.guard_market_schedule_occurrence_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022204022_market_m2_scheduler_fixes_3.sql",
+          "line": 8,
+          "anchor": "create or replace function private.guard_market_schedule_occurrence_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
       ]
@@ -350278,21 +350290,28 @@
       "path": "supabase/migrations/20261022193741_market_m2_scheduler.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 2, agendador",
-      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pela decisão de qualidade da última versão e pelo fecho da versão aprovada, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
     },
     {
       "kind": "migration",
       "path": "supabase/migrations/20261022200900_market_m2_scheduler_fixes.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 2, agendador",
-      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pela decisão de qualidade da última versão e pelo fecho da versão aprovada, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
     },
     {
       "kind": "migration",
       "path": "supabase/migrations/20261022202317_market_m2_scheduler_fixes_2.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 2, agendador",
-      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pelo evento de qualidade vigente e pelo fecho da versão, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pela decisão de qualidade da última versão e pelo fecho da versão aprovada, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022204022_market_m2_scheduler_fixes_3.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 2, agendador",
+      "reason": "M2 parte 2: agendador com delegação e suas correções (limite de data da lista, integridade das ocorrências, travas do concedente, pedido manual dentro da agenda, recuperação pela decisão de qualidade da última versão e pelo fecho da versão aprovada, comunicado indisponível na reconciliação, recibo do replay, janela igual ao limite do contrato)."
     }
   ],
   "staging_archive": [
