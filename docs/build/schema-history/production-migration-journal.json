@@ -2594,8 +2594,73 @@
       "name": "market_m2_version_commit_fixes_3",
       "version": "20261021225300",
       "statements_md5": "8c552e0731b6a9680bdd26dabd765c1f"
+    },
+    {
+      "name": "market_m2_event_outbox",
+      "version": "20261022013141",
+      "statements_md5": "53def44f7adcc0451b9e2589c6e094f1"
+    },
+    {
+      "name": "market_m2_retention_odbl",
+      "version": "20261022013317",
+      "statements_md5": "33f0e10553f8d2e02a62bd10021a9040"
+    },
+    {
+      "name": "market_m2_part3_fixes",
+      "version": "20261022013445",
+      "statements_md5": "64b8f953fd7f18810e6a7a58530a6127"
+    },
+    {
+      "name": "market_m2_part3_fixes_2",
+      "version": "20261022013456",
+      "statements_md5": "2bf106f13b6c232efbcd210553b2d03f"
+    },
+    {
+      "name": "market_m2_part3_fixes_3",
+      "version": "20261022013544",
+      "statements_md5": "5b6638952d91b7e4424ba1da27397d1d"
+    },
+    {
+      "name": "market_m2_part3_fixes_4",
+      "version": "20261022013555",
+      "statements_md5": "79808c83aa727d04df0cac51a572dec6"
+    },
+    {
+      "name": "market_m2_part3_fixes_5",
+      "version": "20261022013600",
+      "statements_md5": "453f4b49f56332c4086e1db4148e117e"
+    },
+    {
+      "name": "market_m2_part3_fixes_6",
+      "version": "20261022013644",
+      "statements_md5": "639d2942ed6c95ede74b9ec3bdba8a88"
+    },
+    {
+      "name": "market_m2_part3_fixes_7",
+      "version": "20261022013711",
+      "statements_md5": "2880fa334b25cd68b25e5bce9cbd4377"
+    },
+    {
+      "name": "market_m2_part3_fixes_8",
+      "version": "20261022013724",
+      "statements_md5": "beefb5f62120887d2795dff422df980f"
+    },
+    {
+      "name": "market_m2_part3_fixes_9",
+      "version": "20261022013731",
+      "statements_md5": "10abffbdf9b3de0cb17ed4d3c36f6477"
+    },
+    {
+      "name": "market_m2_part3_fixes_10",
+      "version": "20261022013745",
+      "statements_md5": "c1ed08cbba90a7708e0f8d311b881ae6"
+    },
+    {
+      "name": "market_m2_part3_fixes_11",
+      "version": "20261022013753",
+      "statements_md5": "c6ac283dce97362206c7b426c761a4c8"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-21T22:53:43Z"
+  "captured_at": "2026-10-22T01:38:00Z"
 }

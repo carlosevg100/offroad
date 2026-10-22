@@ -321733,7 +321733,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 13,
           "anchor": "create or replace function private.market_source_acquirable_v1(p_source_id text,p_on date) returns boolean",
           "mechanism": "direct_ddl"
@@ -322093,7 +322093,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 22,
           "anchor": "create or replace function private.record_market_source_revision_v1(p_command uuid,p_source_id text,p_definition jsonb,p_actor uuid) returns integer",
           "mechanism": "direct_ddl"
@@ -327938,7 +327938,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 96,
           "anchor": "drop function private.create_market_selic_version_v1(uuid,text,uuid,jsonb,date,date,date,uuid,uuid);",
           "mechanism": "direct_ddl"
@@ -329852,13 +329852,13 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 131,
           "anchor": "create or replace function private.relink_market_version_v1(p_command uuid,p_version uuid,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 138,
           "anchor": "create or replace function private.relink_market_version_v1(p_command uuid,p_version uuid,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -332134,25 +332134,25 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 58,
           "anchor": "create function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022000542_market_m2_part3_fixes_2.sql",
+          "path": "supabase/migrations/20261022013456_market_m2_part3_fixes_2.sql",
           "line": 5,
           "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+          "path": "supabase/migrations/20261022013544_market_m2_part3_fixes_3.sql",
           "line": 8,
           "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+          "path": "supabase/migrations/20261022013711_market_m2_part3_fixes_7.sql",
           "line": 31,
           "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -332206,7 +332206,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 213,
           "anchor": "create function private.disable_market_event_consumer_v1(p_command uuid,p_consumer text,p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -332260,7 +332260,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 172,
           "anchor": "create function private.fan_out_market_event_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -332314,7 +332314,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 237,
           "anchor": "create function private.grant_market_event_delegation_v1(p_command uuid,p_worker_token_id uuid,p_consumer text,p_reason text,p_actor_user_id uuid) returns uuid",
           "mechanism": "direct_ddl"
@@ -332368,13 +332368,13 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 145,
           "anchor": "create function private.guard_market_event_consumer_v1() returns trigger",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 32,
           "anchor": "create or replace function private.guard_market_event_consumer_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -332428,7 +332428,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 154,
           "anchor": "create function private.guard_market_event_delegation_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -332482,7 +332482,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 123,
           "anchor": "create function private.guard_market_event_outbox_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -332536,25 +332536,25 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 116,
           "anchor": "create function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 81,
           "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022002449_market_m2_part3_fixes_5.sql",
+          "path": "supabase/migrations/20261022013600_market_m2_part3_fixes_5.sql",
           "line": 2,
           "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+          "path": "supabase/migrations/20261022013711_market_m2_part3_fixes_7.sql",
           "line": 17,
           "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
@@ -332608,7 +332608,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 88,
           "anchor": "create function private.market_acquisition_readable_v1(p_acquisition uuid) returns boolean",
           "mechanism": "direct_ddl"
@@ -332662,7 +332662,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 274,
           "anchor": "create function private.market_event_delegation_live_v1(p_worker uuid,p_consumer text) returns boolean",
           "mechanism": "direct_ddl"
@@ -332716,13 +332716,13 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 317,
           "anchor": "create function private.market_event_for_lease_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns private.market_event_outbox",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 9,
           "anchor": "create or replace function private.market_event_for_lease_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns private.market_event_outbox",
           "mechanism": "direct_ddl"
@@ -332776,7 +332776,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 405,
           "anchor": "create function private.market_event_outbox_health_v1(p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -332830,7 +332830,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 166,
           "anchor": "create function private.market_event_subject_key_v1(p_kind text,p_subject text) returns text",
           "mechanism": "direct_ddl"
@@ -332884,7 +332884,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 7,
           "anchor": "create function private.market_license_retains_v1(p_license jsonb) returns boolean",
           "mechanism": "direct_ddl"
@@ -332938,7 +332938,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 191,
           "anchor": "create function private.market_odbl_canonical_v1(p jsonb) returns text",
           "mechanism": "direct_ddl"
@@ -333002,7 +333002,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 377,
           "anchor": "create function private.market_odbl_release_read_v1(p_release integer) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333056,7 +333056,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 181,
           "anchor": "create function private.market_odbl_string_v1(p text) returns text",
           "mechanism": "direct_ddl"
@@ -333110,7 +333110,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 7,
           "anchor": "create function private.market_require_read_committed_v1() returns void",
           "mechanism": "direct_ddl"
@@ -333164,7 +333164,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 71,
           "anchor": "create function private.market_version_closure_v1(p_version uuid)",
           "mechanism": "direct_ddl"
@@ -333218,7 +333218,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 101,
           "anchor": "create function private.market_version_readable_v1(p_version uuid,p_mode text) returns boolean",
           "mechanism": "direct_ddl"
@@ -333272,25 +333272,25 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 251,
           "anchor": "create function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 202,
           "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+          "path": "supabase/migrations/20261022013544_market_m2_part3_fixes_3.sql",
           "line": 35,
           "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261022002830_market_m2_part3_fixes_6.sql",
+          "path": "supabase/migrations/20261022013644_market_m2_part3_fixes_6.sql",
           "line": 3,
           "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333344,7 +333344,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 191,
           "anchor": "create function private.register_market_event_consumer_v1(p_command uuid,p_consumer text,p_events text[],p_subject_kinds text[],p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333398,7 +333398,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 385,
           "anchor": "create function private.retry_blocked_market_event_v1(p_command uuid,p_consumer text,p_sequence bigint,p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333452,7 +333452,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 257,
           "anchor": "create function private.revoke_market_event_delegation_v1(p_command uuid,p_delegation uuid,p_reason text,p_actor_user_id uuid) returns uuid",
           "mechanism": "direct_ddl"
@@ -333506,7 +333506,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 354,
           "anchor": "create function private.withdraw_market_odbl_release_v1(p_command uuid,p_release integer,p_kind text,p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333570,7 +333570,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 285,
           "anchor": "create function private.worker_claim_market_event_v1(p_worker_token text,p_consumer text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333634,7 +333634,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 345,
           "anchor": "create function private.worker_complete_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid,p_effect jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333698,7 +333698,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 370,
           "anchor": "create function private.worker_fail_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid,p_code text,p_detail text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333762,7 +333762,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 333,
           "anchor": "create function private.worker_renew_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333828,7 +333828,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 393,
           "anchor": "create function public.market_odbl_release_v1(p_release integer default null) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333892,7 +333892,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 417,
           "anchor": "create function public.worker_claim_market_event_v1(p_worker_token text,p_consumer text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -333956,7 +333956,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 421,
           "anchor": "create function public.worker_complete_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid,p_effect jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -334020,7 +334020,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 423,
           "anchor": "create function public.worker_fail_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid,p_code text,p_detail text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -334084,7 +334084,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 419,
           "anchor": "create function public.worker_renew_market_event_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -334202,7 +334202,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 27,
           "anchor": "create table private.market_event_consumer_commands(",
           "mechanism": "direct_ddl"
@@ -334320,7 +334320,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 92,
           "anchor": "create table private.market_event_consumer_delegations(",
           "mechanism": "direct_ddl"
@@ -334438,7 +334438,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 14,
           "anchor": "create table private.market_event_consumers(",
           "mechanism": "direct_ddl"
@@ -334556,7 +334556,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 110,
           "anchor": "create table private.market_event_operator_commands(",
           "mechanism": "direct_ddl"
@@ -334674,7 +334674,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 48,
           "anchor": "create table private.market_event_outbox(",
           "mechanism": "direct_ddl"
@@ -334792,7 +334792,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 76,
           "anchor": "create table private.market_event_receipts(",
           "mechanism": "direct_ddl"
@@ -334910,7 +334910,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 41,
           "anchor": "create table private.market_event_subject_counters(",
           "mechanism": "direct_ddl"
@@ -335028,7 +335028,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 226,
           "anchor": "create table private.market_odbl_release_dependencies(",
           "mechanism": "direct_ddl"
@@ -335146,7 +335146,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 234,
           "anchor": "create table private.market_odbl_release_withdrawals(",
           "mechanism": "direct_ddl"
@@ -335264,7 +335264,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 208,
           "anchor": "create table private.market_odbl_releases(",
           "mechanism": "direct_ddl"
@@ -335302,7 +335302,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 142,
           "anchor": "create trigger market_event_consumer_commands_immutable before update or delete on private.market_event_consumer_commands for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335340,7 +335340,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 161,
           "anchor": "create trigger market_event_consumer_delegations_guard before update or delete on private.market_event_consumer_delegations for each row execute function private.guard_market_event_delegation_v1();",
           "mechanism": "direct_ddl"
@@ -335378,7 +335378,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 152,
           "anchor": "create trigger market_event_consumers_guard before update or delete on private.market_event_consumers for each row execute function private.guard_market_event_consumer_v1();",
           "mechanism": "direct_ddl"
@@ -335416,7 +335416,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 143,
           "anchor": "create trigger market_event_operator_commands_immutable before update or delete on private.market_event_operator_commands for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335454,7 +335454,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 140,
           "anchor": "create trigger market_event_outbox_guard before insert or update or delete on private.market_event_outbox for each row execute function private.guard_market_event_outbox_v1();",
           "mechanism": "direct_ddl"
@@ -335492,7 +335492,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 141,
           "anchor": "create trigger market_event_receipts_immutable before update or delete on private.market_event_receipts for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335530,7 +335530,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 66,
           "anchor": "create trigger market_events_authority before insert on private.market_events for each row execute function private.anchor_market_authority_v1();",
           "mechanism": "direct_ddl"
@@ -335568,7 +335568,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 187,
           "anchor": "create trigger market_events_fan_out after insert on private.market_events for each row execute function private.fan_out_market_event_v1();",
           "mechanism": "direct_ddl"
@@ -335606,7 +335606,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 244,
           "anchor": "create trigger market_odbl_release_dependencies_immutable before update or delete on private.market_odbl_release_dependencies for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335644,7 +335644,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 245,
           "anchor": "create trigger market_odbl_release_withdrawals_immutable before update or delete on private.market_odbl_release_withdrawals for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335682,7 +335682,7 @@
       "reason": "M2 parte 3: outbox própria de mercado (fan-out na transação do evento, ordem por sujeito, recibo imutável), exceção de retenção e contrato único de leitura em todos os caminhos, e a edição ODbL da base derivada com seu único leitor anônimo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 243,
           "anchor": "create trigger market_odbl_releases_immutable before update or delete on private.market_odbl_releases for each row execute function private.market_reject_change_v1();",
           "mechanism": "direct_ddl"
@@ -335728,7 +335728,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -335775,7 +335775,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -335822,7 +335822,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -335869,7 +335869,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -335916,7 +335916,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -335963,7 +335963,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -336010,7 +336010,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 431,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -336057,7 +336057,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 403,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -336104,7 +336104,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 403,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -336151,7 +336151,7 @@
       "reason": "Negação explícita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 403,
           "anchor": "  execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
           "mechanism": "dynamic_ddl"
@@ -336190,7 +336190,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336229,7 +336229,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336268,7 +336268,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336307,7 +336307,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336346,7 +336346,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336385,7 +336385,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336424,7 +336424,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+          "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
           "line": 433,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336463,7 +336463,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 405,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336502,7 +336502,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 405,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336541,7 +336541,7 @@
       "reason": "Sem TRUNCATE.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+          "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
           "line": 405,
           "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
           "mechanism": "dynamic_ddl"
@@ -336596,7 +336596,7 @@
       "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 97,
           "anchor": "create function private.create_market_selic_version_v1(p_acquisition uuid,p_normalization text,p_supersedes uuid,p_observations jsonb,",
           "mechanism": "direct_ddl"
@@ -336650,7 +336650,7 @@
       "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 130,
           "anchor": "create function private.market_evidence_set_v1(p_start date,p_end date,p_data_base date) returns jsonb",
           "mechanism": "direct_ddl"
@@ -336704,7 +336704,7 @@
       "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 189,
           "anchor": "create function private.market_quality_policy_text_v1(p_id text,p_version text) returns text",
           "mechanism": "direct_ddl"
@@ -336758,7 +336758,7 @@
       "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
           "line": 42,
           "anchor": "create function private.update_market_event_consumer_filter_v1(p_command uuid,p_consumer text,p_events text[],p_subject_kinds text[],p_reason text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -336812,7 +336812,7 @@
       "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
       "sources": [
         {
-          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "path": "supabase/migrations/20261022013724_market_m2_part3_fixes_8.sql",
           "line": 19,
           "anchor": "create function private.begin_market_authority_write_v1() returns void",
           "mechanism": "direct_ddl"
@@ -336866,7 +336866,7 @@
       "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
       "sources": [
         {
-          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "path": "supabase/migrations/20261022013724_market_m2_part3_fixes_8.sql",
           "line": 7,
           "anchor": "create function private.market_authority_mode_v1() returns text",
           "mechanism": "direct_ddl"
@@ -336920,7 +336920,7 @@
       "reason": "Porta única de autoridade de mercado: trava de transação do servidor, compartilhada por todo comando e leitura de mercado, exclusiva para quem revoga aquisição ou fonte.",
       "sources": [
         {
-          "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+          "path": "supabase/migrations/20261022013724_market_m2_part3_fixes_8.sql",
           "line": 13,
           "anchor": "create function private.market_authority_read_v1() returns void",
           "mechanism": "direct_ddl"
@@ -336974,7 +336974,7 @@
       "reason": "Porta de autoridade de mercado na entrada de cada instrução que exclui ou altera observações, antes de qualquer linha travada.",
       "sources": [
         {
-          "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+          "path": "supabase/migrations/20261022013753_market_m2_part3_fixes_11.sql",
           "line": 22,
           "anchor": "create function private.enter_market_authority_for_content_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -337012,7 +337012,7 @@
       "reason": "Porta de autoridade de mercado na entrada de cada instrução que exclui ou altera observações, antes de qualquer linha travada.",
       "sources": [
         {
-          "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+          "path": "supabase/migrations/20261022013753_market_m2_part3_fixes_11.sql",
           "line": 29,
           "anchor": "create trigger market_observations_door before update or delete on private.market_observations",
           "mechanism": "direct_ddl"
@@ -344728,28 +344728,28 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
+      "path": "supabase/migrations/20261022013141_market_m2_event_outbox.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, outbox, retenção e ODbL",
       "reason": "M2 parte 3: outbox de eventos de mercado, consumidores e delegações."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
+      "path": "supabase/migrations/20261022013317_market_m2_retention_odbl.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, outbox, retenção e ODbL",
       "reason": "M2 parte 3: retenção e contrato único de leitura, âncoras de autoridade, religação sob leitura, edição ODbL e seu leitor anônimo."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+      "path": "supabase/migrations/20261022013445_market_m2_part3_fixes.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da revisão independente da implementação da M2 parte 3."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022000542_market_m2_part3_fixes_2.sql",
+      "path": "supabase/migrations/20261022013456_market_m2_part3_fixes_2.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da revisão independente da implementação da M2 parte 3."
@@ -344777,63 +344777,63 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022002108_market_m2_part3_fixes_3.sql",
+      "path": "supabase/migrations/20261022013544_market_m2_part3_fixes_3.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022002334_market_m2_part3_fixes_4.sql",
+      "path": "supabase/migrations/20261022013555_market_m2_part3_fixes_4.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022002449_market_m2_part3_fixes_5.sql",
+      "path": "supabase/migrations/20261022013600_market_m2_part3_fixes_5.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022002830_market_m2_part3_fixes_6.sql",
+      "path": "supabase/migrations/20261022013644_market_m2_part3_fixes_6.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Manifesto da publicação ODbL como valor materializado, verificável estaticamente, no lugar de tabela temporária."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022003230_market_m2_part3_fixes_7.sql",
+      "path": "supabase/migrations/20261022013711_market_m2_part3_fixes_7.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Regra única de quem revoga: revogação de aquisição ou fonte antes de qualquer trava de leitura de mercado da transação, marcada nos próprios helpers de trava."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022004034_market_m2_part3_fixes_8.sql",
+      "path": "supabase/migrations/20261022013724_market_m2_part3_fixes_8.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Autoridade de mercado como trava de transação do servidor no lugar de marca alterável pelo chamador."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022004655_market_m2_part3_fixes_9.sql",
+      "path": "supabase/migrations/20261022013731_market_m2_part3_fixes_9.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Quem detém a autoridade de mercado exclusiva só revoga e lê; todo comando de mercado é recusado na porta antes de tomar trava de comando, job ou fonte."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022005350_market_m2_part3_fixes_10.sql",
+      "path": "supabase/migrations/20261022013745_market_m2_part3_fixes_10.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Porta de autoridade como primeira instrução de cada comando de mercado (22 funções, corpo inalterado, conferido na própria migração)."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+      "path": "supabase/migrations/20261022013753_market_m2_part3_fixes_11.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Porta de autoridade na autorização de Storage, na listagem de órfãos e nas instruções sobre observações."
