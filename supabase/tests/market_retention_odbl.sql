@@ -2,9 +2,6 @@
 -- revocation), relink under it, the ODbL edition (canonical bytes, selection, replay, alterations,
 -- withdrawal) and its one anonymous reader. Synthetic, dated in 2025, rolls back.
 begin;
--- This transaction reads and then revokes, as an operator's combined write would: it takes the market
--- authority exclusively first, so its whole set is held before any read.
-select private.begin_market_authority_write_v1();
 set local statement_timeout='60s';
 select set_config('request.jwt.claims','{}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -237,23 +234,14 @@ do $$ declare r jsonb;p jsonb;begin
  then raise exception 'mixed edition wrong: %',p#>'{series,normalizations}';end if;
 end $$;
 
--- 6. Revoking a communiqué used as evidence withdraws every edition and version that depends on it, and
--- relink refuses to build on it.
-do $$ declare r jsonb;begin
- insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',pg_temp.fact('d2'),'revoked','Revogação sintética do comunicado','3a7b0000-0000-4000-8000-000000000002');
- if private.market_acquisition_readable_v1(pg_temp.fact('d2')::uuid) or private.market_version_readable_v1(pg_temp.fact('v2')::uuid,'consume')
- or private.market_version_readable_v1(pg_temp.fact('v2')::uuid,'reprocess') then raise exception 'revoked evidence still readable';end if;
- if private.market_odbl_release_read_v1(1)->>'state'<>'withdrawn' then raise exception 'edition served after its evidence was revoked';end if;
- perform pg_temp.expect(format($q$select private.relink_market_version_v1('3a7b0000-0000-4000-a000-000000000401',%L,'3a7b0000-0000-4000-8000-000000000002')$q$,pg_temp.fact('v1')),
-  'market_version_not_readable','relink onto revoked evidence');
- perform pg_temp.expect($q$select private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000402',repeat('c',40),'3a7b0000-0000-4000-8000-000000000001')$q$,
-  'market_odbl_nothing_to_publish','publication over revoked evidence');
- -- A revoked source withdraws its acquisitions.
- insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação sintética da fonte','3a7b0000-0000-4000-8000-000000000002');
- if private.market_acquisition_readable_v1((select acquisition_id from private.market_versions where id=pg_temp.fact('v1')::uuid)) then raise exception 'acquisition of a revoked source readable';end if;
- -- The refusals of a revocation after a read without the exclusive authority run across sessions in the
- -- outbox race script; this transaction holds it exclusively throughout.
- if private.market_authority_mode_v1() is distinct from 'exclusive' then raise exception 'authority not held exclusively';end if;
+-- 6. A transaction that entered the market authority to read cannot revoke: revocation runs alone, in its
+-- own transaction, and its effects (readability, editions withdrawn, relink and publication refused) are
+-- proven across committed sessions in the outbox race script.
+do $$ begin
+ if private.market_authority_mode_v1() is distinct from 'shared' then raise exception 'reads did not enter the authority door';end if;
+ perform pg_temp.expect(format($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('acquisition',%L,'revoked','Revogação depois de leitura','3a7b0000-0000-4000-8000-000000000002')$q$,pg_temp.fact('d2')),
+  'market_authority_order','revocation in a transaction that read');
+ perform pg_temp.expect($q$insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','no-such-source','revoked','Órfã','3a7b0000-0000-4000-8000-000000000002')$q$,'23503','orphan source event');
 end $$;
 
 -- 7. A revision that would not retain is refused while anything of the source is stored, and a source

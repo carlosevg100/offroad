@@ -16,7 +16,9 @@ disposable CI database.
 8. Disabling against a completion in flight, both orders: no deadlock; the completion that held its lease
    keeps its receipt, and the one that waited is refused.
 9. A revocation must precede every market read lock of its transaction: after an event on a version or a
-   read lock with no event, revoking an acquisition is refused.
+   read lock with no event, revoking an acquisition is refused; a revoking transaction runs no market command.
+10. Revocation effects across committed sessions: the revoked communique and its dependent version are
+   unreadable in both modes, and a revoked source withdraws its acquisitions.
 Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
@@ -300,6 +302,9 @@ def main():
         raise AssertionError('the publication that held the anchor did not include the version')
     if psql(f"select private.market_odbl_release_read_v1({number})->>'state';") != 'withdrawn':
         raise AssertionError('an edition whose evidence was revoked is still served')
+    if psql(f"select private.market_acquisition_readable_v1('{d2['acquisitionId']}')::text||':'||private.market_version_readable_v1('{s['versionId']}','consume')::text"
+            f"||':'||private.market_version_readable_v1('{s['versionId']}','reprocess')::text;") != 'false:false:false':
+        raise AssertionError('a revoked communique or the version that depends on it is still readable')
     # Reverse: a revocation holds the anchor; the publication waits and leaves the dependent version out.
     d3 = acquire('bcb-copom-comunicados-detalhe', '{"meeting":9203}', communique(9203, '2024-06-18', 'hold', '10,50'))
     s3 = acquire('bcb-sgs-432-endpoint', '{"window":{"start":"2024-06-19","end":"2024-07-02"}}', series('2024-06-19', 14, '2024-07-03', '10.50', '10.50'))
@@ -413,7 +418,18 @@ def main():
                f"{revoke_sql('acquisition', s3['acquisitionId'], 'Revogação sintética depois de leitura')}commit;", check=False)
     if 'market_authority_order' not in out:
         raise AssertionError('an acquisition revocation after a read lock was accepted: ' + out)
+    # A revoking transaction holds the authority exclusively and runs no market command.
+    out = psql(f"begin;{revoke_sql('acquisition', s3['acquisitionId'], 'Revogação sintética seguida de comando')}"
+               f"select private.publish_market_odbl_release_v1('{command()}',repeat('f',40),'{FOUNDER}');commit;", check=False)
+    if 'market_authority_order' not in out:
+        raise AssertionError('a market command ran in a revoking transaction: ' + out)
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
+    # A revoked source withdraws every acquisition it holds.
+    if psql(f"select private.market_acquisition_readable_v1('{q5['acquisitionId']}')::text;") != 'true':
+        raise AssertionError('the acquisition used to prove source revocation was already unreadable')
+    psql(revoke_sql('source', 'bcb', 'Revogação sintética da fonte ao fim das corridas'))
+    if psql(f"select private.market_acquisition_readable_v1('{q5['acquisitionId']}')::text;") != 'false':
+        raise AssertionError('an acquisition of a revoked source is still readable')
     print('PASS: market outbox registration, per-subject and per-series order, claims, publications, relink and disabling serialize across sessions')
 
 

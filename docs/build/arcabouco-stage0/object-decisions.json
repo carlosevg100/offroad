@@ -344724,6 +344724,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Autoridade de mercado como trava de transação do servidor no lugar de marca alterável pelo chamador."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022004655_market_m2_part3_fixes_9.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Quem detém a autoridade de mercado exclusiva só revoga e lê; todo comando de mercado é recusado na porta antes de tomar trava de comando, job ou fonte."
     }
   ],
   "staging_archive": [

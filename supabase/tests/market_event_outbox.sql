@@ -2,8 +2,6 @@
 -- per-subject order, lease, effect and completion in one transaction with an immutable receipt, retry
 -- budget and block, delegation fencing, disabling, isolation and closed surfaces. Synthetic, rolls back.
 begin;
--- Source purge events below are revocation-class: this transaction takes the market authority first.
-select private.begin_market_authority_write_v1();
 set local statement_timeout='60s';
 select set_config('request.jwt.claims','{}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -90,7 +88,7 @@ do $$ declare s1 bigint;s2 bigint;s3 bigint;n integer;begin
  s1:=pg_temp.event('released');s2:=pg_temp.event('released');
  if (pg_temp.row_of(s1)).subject_key<>'source:bcb' or (pg_temp.row_of(s1)).subject_ordinal<>1 or (pg_temp.row_of(s2)).subject_ordinal<>2
  or (pg_temp.row_of(s1)).status<>'pending' then raise exception 'fan-out rows wrong';end if;
- s3:=pg_temp.event('purged');
+ s3:=pg_temp.event('superseded');
  if exists(select 1 from private.market_event_outbox where event_sequence=s3) then raise exception 'event outside the filter fanned out';end if;
  select count(*) into n from private.market_event_outbox;
  begin perform pg_temp.event('released');raise exception 'rollback';exception when raise_exception then null;end;
@@ -174,25 +172,25 @@ end $$;
 
 -- 6b. The filter changes only by a founder command with a receipt; events after it follow the new set.
 do $$ declare s bigint;r jsonb;begin
- perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000451','rg-01-test',array['purged'],array['source'],'Troca sintética','3a790000-0000-4000-8000-000000000002')$q$,
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000451','rg-01-test',array['superseded'],array['source'],'Troca sintética','3a790000-0000-4000-8000-000000000002')$q$,
   'platform_principal_required','operator changes a filter');
- r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['purged','approved','purged'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
+ r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['superseded','approved','superseded'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
  if r->>'consumerId' is distinct from 'rg-01-test' or (r->>'replayed')::boolean then raise exception 'filter change answer wrong: %',r;end if;
- if (select events from private.market_event_consumers where id='rg-01-test') is distinct from array['approved','purged']
+ if (select events from private.market_event_consumers where id='rg-01-test') is distinct from array['approved','superseded']
  or (select subject_kinds from private.market_event_consumers where id='rg-01-test') is distinct from array['source']
  or not exists(select 1 from private.market_event_consumer_commands where command_id='3a790000-0000-4000-a000-000000000452' and action='update_filter')
  then raise exception 'filter change not recorded';end if;
- r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['purged','approved','purged'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
+ r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['superseded','approved','superseded'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
  if (r->>'replayed')::boolean is not true then raise exception 'filter change did not replay';end if;
  perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['released'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001')$q$,
   'platform_method_request_reused','filter change command reused');
  perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000453','rg-01-test',array['created'],array['source'],'Evento desconhecido','3a790000-0000-4000-8000-000000000001')$q$,
   '23514','unknown event in the new filter');
- perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000454','nobody',array['purged'],array['source'],'Consumidor inexistente','3a790000-0000-4000-8000-000000000001')$q$,
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000454','nobody',array['superseded'],array['source'],'Consumidor inexistente','3a790000-0000-4000-8000-000000000001')$q$,
   'market_event_consumer_not_enabled','filter change of a missing consumer');
  s:=pg_temp.event('released');
  if exists(select 1 from private.market_event_outbox where event_sequence=s) then raise exception 'event outside the new filter fanned out';end if;
- s:=pg_temp.event('purged');
+ s:=pg_temp.event('superseded');
  if not exists(select 1 from private.market_event_outbox where event_sequence=s and consumer_id='rg-01-test') then raise exception 'event in the new filter did not fan out';end if;
 end $$;
 
@@ -205,7 +203,7 @@ do $$ declare s bigint;r jsonb;begin
   'market_event_consumer_not_enabled','filter change of a disabled consumer');
  if (r->>'cancelled')::int<1 or exists(select 1 from private.market_event_outbox where consumer_id='rg-01-test' and status in ('pending','leased','blocked'))
  then raise exception 'disabling did not cancel the open rows: %',r;end if;
- s:=pg_temp.event('purged');
+ s:=pg_temp.event('superseded');
  if exists(select 1 from private.market_event_outbox where event_sequence=s) then raise exception 'disabled consumer received an event';end if;
  if (pg_temp.claim('after')->>'claimed')::boolean then raise exception 'claimed from a disabled consumer';end if;
 end $$;
@@ -249,7 +247,7 @@ end $$;
 rollback;
 
 -- 10. The authority door: a transaction that entered it to read cannot then take it to write; one that
--- took it to write may read.
+-- holds it to write may read but runs no market command.
 begin;
 select set_config('request.jwt.claims','{}',true);
 do $$ begin
@@ -265,7 +263,12 @@ rollback;
 begin;
 do $$ begin
  perform private.begin_market_authority_write_v1();
- perform private.market_require_read_committed_v1();
+ perform private.market_authority_read_v1();
  if private.market_authority_mode_v1() is distinct from 'exclusive' then raise exception 'writer lost its exclusive authority';end if;
+ begin
+  perform private.market_require_read_committed_v1();
+  raise exception 'market command accepted under the exclusive authority';
+ exception when sqlstate '55000' then null;
+ end;
 end $$;
 rollback;
