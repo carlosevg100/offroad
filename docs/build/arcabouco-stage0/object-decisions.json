@@ -336926,6 +336926,98 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.enter_market_authority_for_content_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enter_market_authority_for_content_v1()",
+          "kind": "function",
+          "name": "enter_market_authority_for_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.enter_market_authority_for_content_v1()",
+          "kind": "function",
+          "name": "enter_market_authority_for_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta de autoridade de mercado na entrada de cada instrução que exclui ou altera observações, antes de qualquer linha travada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+          "line": 22,
+          "anchor": "create function private.enter_market_authority_for_content_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_door",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.market_observations.market_observations_door",
+          "kind": "trigger",
+          "name": "market_observations_door",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.enter_market_authority_for_content_v1()",
+          "definition": "CREATE TRIGGER market_observations_door BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.enter_market_authority_for_content_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.market_observations.market_observations_door",
+          "kind": "trigger",
+          "name": "market_observations_door",
+          "table": "market_observations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.enter_market_authority_for_content_v1()",
+          "definition": "CREATE TRIGGER market_observations_door BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.enter_market_authority_for_content_v1()"
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta de autoridade de mercado na entrada de cada instrução que exclui ou altera observações, antes de qualquer linha travada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+          "line": 29,
+          "anchor": "create trigger market_observations_door before update or delete on private.market_observations",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -344738,6 +344830,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Porta de autoridade como primeira instrução de cada comando de mercado (22 funções, corpo inalterado, conferido na própria migração)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022010206_market_m2_part3_fixes_11.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Porta de autoridade na autorização de Storage, na listagem de órfãos e nas instruções sobre observações."
     }
   ],
   "staging_archive": [

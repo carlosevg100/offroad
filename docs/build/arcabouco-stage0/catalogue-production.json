@@ -106540,6 +106540,34 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.enter_market_authority_for_content_v1()",
+      "kind": "function",
+      "name": "enter_market_authority_for_content_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "trigger:private.market_observations.market_observations_door",
+      "kind": "trigger",
+      "name": "market_observations_door",
+      "table": "market_observations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.enter_market_authority_for_content_v1()",
+      "definition": "CREATE TRIGGER market_observations_door BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.enter_market_authority_for_content_v1()"
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"

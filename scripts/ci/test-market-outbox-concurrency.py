@@ -20,6 +20,7 @@ disposable CI database.
 10. Revocation effects across committed sessions: the revoked communique and its dependent version are
    unreadable in both modes, and a revoked source withdraws its acquisitions.
 11. A revoker that calls a command another session waits on at the door is refused at once; no deadlock.
+12. A delete of observations waits at the statement door while a revoker purges the version; no deadlock.
 Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
@@ -446,6 +447,23 @@ def main():
                f"select private.enqueue_market_contract_acquisition_v1('{command()}','bcb-copom-comunicados-lista','{{\"size\":5}}','Pedido recusado','{OPERATOR}');commit;", check=False)
     if 'market_authority_order' not in out:
         raise AssertionError('an enqueue ran in a revoking transaction: ' + out)
+    # 12. A revoker purges a version while another session deletes its observations: the delete waits at the
+    # statement door before locking any row, the purge completes, and the delete then finds nothing.
+    rv = session('market_outbox_revoker_purging')
+    rv.stdin.write(revoke_sql('acquisition', q4['acquisitionId'], 'Revogação sintética antes do expurgo') + "\n")
+    barrier(rv, 'RV12')
+    dl = session('market_outbox_delete_at_door')
+    barrier(dl, 'DL12')
+    dl.stdin.write(f"delete from private.market_observations where version_id='{q4['versionId']}';\n"); dl.stdin.flush()
+    wait_for_lock('market_outbox_delete_at_door')
+    rv.stdin.write(f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version','{q4['versionId']}','purged',"
+                   f"'Expurgo sintético','{OPERATOR}');delete from private.market_observations where version_id='{q4['versionId']}';\n")
+    finish(rv)
+    out = finish(dl, expect_ok=False)
+    if 'deadlock' in out or 'ERROR' in out:
+        raise AssertionError('a delete waiting at the door did not pass cleanly after the purge: ' + out)
+    if psql(f"select count(*) from private.market_observations where version_id='{q4['versionId']}';") != '0':
+        raise AssertionError('the purge did not remove the observations')
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
     # A revoked source withdraws every acquisition it holds.
     if psql(f"select private.market_acquisition_readable_v1('{q5['acquisitionId']}')::text;") != 'true':
