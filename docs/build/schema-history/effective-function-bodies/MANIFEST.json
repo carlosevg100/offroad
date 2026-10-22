@@ -610,7 +610,7 @@
     {
       "signature": "public.worker_runtime_schema_contract_v1()",
       "file": "public.worker_runtime_schema_contract_v1().sql",
-      "sha256": "a41d61a6d4aa599329087b6ab464e1463c3536664667d0c090c04c26bf07d5c6"
+      "sha256": "269b124078625a41ad3130ac29a0efdc396af48e076afccaa69a5e2a94a32ce6"
     }
   ],
   "missing": [],

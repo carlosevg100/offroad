@@ -25,12 +25,14 @@ mercado como primeira instrução, em modo compartilhado (nunca exclusivo).
 
 ## 1. Calendário do Copom
 
-`private.market_copom_calendar_revisions(year, revision, meetings, evidence_url, evidence_sha256,
-evidence_object_path, recorded_by, command_id, recorded_at)`: reuniões ordinárias do ano (ordinal, primeiro
-e segundo dia), por comando de operador com recibo
-(`record_market_copom_calendar_v1(command, year, meetings, evidence_url, evidence_bytes, reason, actor)`).
-A página capturada vai para o bucket privado `market-reference` (`evidence/copom-calendar/<ano>/<revisão>.html`,
-até 1 MiB) com o hash no registro. Vale a revisão mais alta do ano. O monitor exige calendário para todo
+`private.market_copom_calendar_revisions(year, revision, meetings, evidence_url, evidence_sha256, reason,
+command_id, fingerprint, recorded_by, recorded_at)`: reuniões ordinárias do ano (ordinal, primeiro e segundo
+dia), por comando de operador com recibo
+(`record_market_copom_calendar_v1(command, year, meetings, evidence_url, evidence_bytes, media_type, reason, actor)`).
+A página capturada fica no próprio banco, em `private.market_copom_calendar_evidence` (até 1 MiB, HTML ou
+PDF, chave igual ao SHA-256 dos bytes, conferido por restrição), e o registro aponta para ela pelo hash.
+(Emenda da implementação, 22/10/2026: a evidência não vai ao Storage; guardar os bytes numa tabela imutável
+dispensa um segundo caminho de escrita e de retenção para um documento de poucos quilobytes por ano.) Vale a revisão mais alta do ano. O monitor exige calendário para todo
 ano do início do ciclo declarado até D; ano sem calendário é lacuna `calendar_missing(ano)`. O calendário de
 2026 é registrado na parte 4.
 

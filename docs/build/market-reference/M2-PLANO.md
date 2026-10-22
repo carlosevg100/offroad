@@ -155,6 +155,12 @@ integrar a prova integrada em staging da parte 4, com os bytes reais, e continua
 chave; na parte 3 ela é feita na pilha local da CI com dados sintéticos, porque uma edição é imutável e uma
 edição sintética ficaria em staging. Desenho da parte 3 em `M2-PARTE-3.md`.
 
+Emenda de 22/10/2026, na parte 6: o monitor do RG-01 fica no banco (calendário por comando, declaração do
+regime fixada pela migração, seleção única da série compartilhada com a publicação, snapshot de uma
+instrução, avaliador com vetores independentes, incidente com testemunhas e revisão do operador) e o worker
+só pede, avalia e entrega os eventos do consumidor com handler `rg01`. Fica desligado até a parte 4, que
+registra o calendário de 2026, o consumidor `rg01-monitor` e a delegação do worker. Desenho em `M2-PARTE-6.md`.
+
 Os atos da parte 4 usam identidade de fundador ou operador; o registro da publicadora é comando de
 fundador. A chave só abre depois da outbox consumida, da página ODbL publicada e da prova integrada em
 staging.

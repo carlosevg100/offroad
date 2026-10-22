@@ -107730,6 +107730,1290 @@
       "enabled": "O",
       "function": "private.enter_market_authority_for_content_v1()",
       "definition": "CREATE TRIGGER market_observations_door BEFORE DELETE OR UPDATE ON private.market_observations FOR EACH STATEMENT EXECUTE FUNCTION private.enter_market_authority_for_content_v1()"
+    },
+    {
+      "id": "function:private.dispose_market_regime_incident_v1(p_command uuid, p_regime text, p_trigger text, p_expected_revision integer, p_disposition text, p_reason text, p_actor uuid)",
+      "kind": "function",
+      "name": "dispose_market_regime_incident_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_regime text, p_trigger text, p_expected_revision integer, p_disposition text, p_reason text, p_actor uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.guard_market_regime_declaration_v1()",
+      "kind": "function",
+      "name": "guard_market_regime_declaration_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_regime_incident_v1()",
+      "kind": "function",
+      "name": "guard_market_regime_incident_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_market_rg01_request_v1()",
+      "kind": "function",
+      "name": "guard_market_rg01_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_business_day_after_v1(p date, p_n integer)",
+      "kind": "function",
+      "name": "market_business_day_after_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p date, p_n integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_evaluate_rg01_v1(s jsonb)",
+      "kind": "function",
+      "name": "market_evaluate_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "s jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_freshness_deadline_v1(p date)",
+      "kind": "function",
+      "name": "market_freshness_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p date",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_manifest_sha256_v1(p_logical text, p_data_base date, p_knowledge timestamp with time zone, p_start date, p_end date, p_entries text[])",
+      "kind": "function",
+      "name": "market_manifest_sha256_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_logical text, p_data_base date, p_knowledge timestamp with time zone, p_start date, p_end date, p_entries text[]",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_policy_canonical_v1(p jsonb)",
+      "kind": "function",
+      "name": "market_policy_canonical_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_regime_incident_v1(p_regime text, p_trigger text, p_actor uuid)",
+      "kind": "function",
+      "name": "market_regime_incident_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_regime text, p_trigger text, p_actor uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.market_rg01_snapshot_v1(p_declaration uuid, p_data_base date, p_knowledge timestamp with time zone)",
+      "kind": "function",
+      "name": "market_rg01_snapshot_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_declaration uuid, p_data_base date, p_knowledge timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_rg01_worker_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "market_rg01_worker_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_selic_candidates_v1(p_data_base date, p_knowledge timestamp with time zone, OUT versions uuid[], OUT acquisitions uuid[])",
+      "kind": "function",
+      "name": "market_selic_candidates_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_data_base date, p_knowledge timestamp with time zone, OUT versions uuid[], OUT acquisitions uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_selic_selection_v1(p_data_base date, p_knowledge timestamp with time zone)",
+      "kind": "function",
+      "name": "market_selic_selection_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_data_base date, p_knowledge timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_market_copom_calendar_v1(p_command uuid, p_year integer, p_meetings jsonb, p_evidence_url text, p_evidence bytea, p_media_type text, p_reason text, p_actor uuid)",
+      "kind": "function",
+      "name": "record_market_copom_calendar_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_year integer, p_meetings jsonb, p_evidence_url text, p_evidence bytea, p_media_type text, p_reason text, p_actor uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.register_market_event_consumer_v2(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_handler text, p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "register_market_event_consumer_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_handler text, p_reason text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.run_market_rg01_v1(p_declaration uuid)",
+      "kind": "function",
+      "name": "run_market_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_declaration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_evaluate_rg01_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_evaluate_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_run_rg01_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_run_rg01_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_schedule_rg01_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_schedule_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_evaluate_rg01_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_evaluate_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_run_rg01_event_v1(p_consumer text, p_sequence bigint, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_run_rg01_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_consumer text, p_sequence bigint, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_schedule_rg01_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_schedule_rg01_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.market_copom_calendar_evidence.market_copom_calendar_evidence_deny",
+      "kind": "policy",
+      "name": "market_copom_calendar_evidence_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_copom_calendar_evidence",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_copom_calendar_revisions.market_copom_calendar_revisions_deny",
+      "kind": "policy",
+      "name": "market_copom_calendar_revisions_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_copom_calendar_revisions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_declarations.market_regime_declarations_deny",
+      "kind": "policy",
+      "name": "market_regime_declarations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_declarations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_dispositions.market_regime_dispositions_deny",
+      "kind": "policy",
+      "name": "market_regime_dispositions_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_dispositions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_evaluations.market_regime_evaluations_deny",
+      "kind": "policy",
+      "name": "market_regime_evaluations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_evaluations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_incidents.market_regime_incidents_deny",
+      "kind": "policy",
+      "name": "market_regime_incidents_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_incidents",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_witness_support.market_regime_witness_support_deny",
+      "kind": "policy",
+      "name": "market_regime_witness_support_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_witness_support",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_regime_witnesses.market_regime_witnesses_deny",
+      "kind": "policy",
+      "name": "market_regime_witnesses_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_regime_witnesses",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_rg01_requests.market_rg01_requests_deny",
+      "kind": "policy",
+      "name": "market_rg01_requests_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_rg01_requests",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.market_rg01_runs.market_rg01_runs_deny",
+      "kind": "policy",
+      "name": "market_rg01_runs_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "market_rg01_runs",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.market_copom_calendar_evidence",
+      "rls": true,
+      "kind": "table",
+      "name": "market_copom_calendar_evidence",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_copom_calendar_revisions",
+      "rls": true,
+      "kind": "table",
+      "name": "market_copom_calendar_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_declarations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_declarations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_dispositions",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_dispositions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_evaluations",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_evaluations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_incidents",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_incidents",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_witness_support",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_witness_support",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_regime_witnesses",
+      "rls": true,
+      "kind": "table",
+      "name": "market_regime_witnesses",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_rg01_requests",
+      "rls": true,
+      "kind": "table",
+      "name": "market_rg01_requests",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.market_rg01_runs",
+      "rls": true,
+      "kind": "table",
+      "name": "market_rg01_runs",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.market_copom_calendar_evidence.market_copom_calendar_evidence_immutable",
+      "kind": "trigger",
+      "name": "market_copom_calendar_evidence_immutable",
+      "table": "market_copom_calendar_evidence",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_copom_calendar_evidence_immutable BEFORE DELETE OR UPDATE ON private.market_copom_calendar_evidence FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_copom_calendar_evidence.market_copom_calendar_evidence_truncate_guard",
+      "kind": "trigger",
+      "name": "market_copom_calendar_evidence_truncate_guard",
+      "table": "market_copom_calendar_evidence",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_copom_calendar_evidence_truncate_guard BEFORE TRUNCATE ON private.market_copom_calendar_evidence FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_copom_calendar_revisions.market_copom_calendar_revisions_immutable",
+      "kind": "trigger",
+      "name": "market_copom_calendar_revisions_immutable",
+      "table": "market_copom_calendar_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_copom_calendar_revisions_immutable BEFORE DELETE OR UPDATE ON private.market_copom_calendar_revisions FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_copom_calendar_revisions.market_copom_calendar_revisions_truncate_guard",
+      "kind": "trigger",
+      "name": "market_copom_calendar_revisions_truncate_guard",
+      "table": "market_copom_calendar_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_copom_calendar_revisions_truncate_guard BEFORE TRUNCATE ON private.market_copom_calendar_revisions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_declarations.market_regime_declarations_guard",
+      "kind": "trigger",
+      "name": "market_regime_declarations_guard",
+      "table": "market_regime_declarations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_regime_declaration_v1()",
+      "definition": "CREATE TRIGGER market_regime_declarations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.market_regime_declarations FOR EACH ROW EXECUTE FUNCTION private.guard_market_regime_declaration_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_declarations.market_regime_declarations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_declarations_truncate_guard",
+      "table": "market_regime_declarations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_declarations_truncate_guard BEFORE TRUNCATE ON private.market_regime_declarations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_dispositions.market_regime_dispositions_immutable",
+      "kind": "trigger",
+      "name": "market_regime_dispositions_immutable",
+      "table": "market_regime_dispositions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_regime_dispositions_immutable BEFORE DELETE OR UPDATE ON private.market_regime_dispositions FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_dispositions.market_regime_dispositions_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_dispositions_truncate_guard",
+      "table": "market_regime_dispositions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_dispositions_truncate_guard BEFORE TRUNCATE ON private.market_regime_dispositions FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_evaluations.market_regime_evaluations_immutable",
+      "kind": "trigger",
+      "name": "market_regime_evaluations_immutable",
+      "table": "market_regime_evaluations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_regime_evaluations_immutable BEFORE DELETE OR UPDATE ON private.market_regime_evaluations FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_evaluations.market_regime_evaluations_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_evaluations_truncate_guard",
+      "table": "market_regime_evaluations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_evaluations_truncate_guard BEFORE TRUNCATE ON private.market_regime_evaluations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_incidents.market_regime_incidents_guard",
+      "kind": "trigger",
+      "name": "market_regime_incidents_guard",
+      "table": "market_regime_incidents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_regime_incident_v1()",
+      "definition": "CREATE TRIGGER market_regime_incidents_guard BEFORE DELETE OR UPDATE ON private.market_regime_incidents FOR EACH ROW EXECUTE FUNCTION private.guard_market_regime_incident_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_incidents.market_regime_incidents_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_incidents_truncate_guard",
+      "table": "market_regime_incidents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_incidents_truncate_guard BEFORE TRUNCATE ON private.market_regime_incidents FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_witness_support.market_regime_witness_support_immutable",
+      "kind": "trigger",
+      "name": "market_regime_witness_support_immutable",
+      "table": "market_regime_witness_support",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_regime_witness_support_immutable BEFORE DELETE OR UPDATE ON private.market_regime_witness_support FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_witness_support.market_regime_witness_support_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_witness_support_truncate_guard",
+      "table": "market_regime_witness_support",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_witness_support_truncate_guard BEFORE TRUNCATE ON private.market_regime_witness_support FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_witnesses.market_regime_witnesses_immutable",
+      "kind": "trigger",
+      "name": "market_regime_witnesses_immutable",
+      "table": "market_regime_witnesses",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_regime_witnesses_immutable BEFORE DELETE OR UPDATE ON private.market_regime_witnesses FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_regime_witnesses.market_regime_witnesses_truncate_guard",
+      "kind": "trigger",
+      "name": "market_regime_witnesses_truncate_guard",
+      "table": "market_regime_witnesses",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_regime_witnesses_truncate_guard BEFORE TRUNCATE ON private.market_regime_witnesses FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_rg01_requests.market_rg01_requests_guard",
+      "kind": "trigger",
+      "name": "market_rg01_requests_guard",
+      "table": "market_rg01_requests",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_market_rg01_request_v1()",
+      "definition": "CREATE TRIGGER market_rg01_requests_guard BEFORE DELETE OR UPDATE ON private.market_rg01_requests FOR EACH ROW EXECUTE FUNCTION private.guard_market_rg01_request_v1()"
+    },
+    {
+      "id": "trigger:private.market_rg01_requests.market_rg01_requests_truncate_guard",
+      "kind": "trigger",
+      "name": "market_rg01_requests_truncate_guard",
+      "table": "market_rg01_requests",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_rg01_requests_truncate_guard BEFORE TRUNCATE ON private.market_rg01_requests FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.market_rg01_runs.market_rg01_runs_immutable",
+      "kind": "trigger",
+      "name": "market_rg01_runs_immutable",
+      "table": "market_rg01_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.market_reject_change_v1()",
+      "definition": "CREATE TRIGGER market_rg01_runs_immutable BEFORE DELETE OR UPDATE ON private.market_rg01_runs FOR EACH ROW EXECUTE FUNCTION private.market_reject_change_v1()"
+    },
+    {
+      "id": "trigger:private.market_rg01_runs.market_rg01_runs_truncate_guard",
+      "kind": "trigger",
+      "name": "market_rg01_runs_truncate_guard",
+      "table": "market_rg01_runs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER market_rg01_runs_truncate_guard BEFORE TRUNCATE ON private.market_rg01_runs FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"
