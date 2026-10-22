@@ -137,7 +137,9 @@ staging:
    de hash de um detalhe é investigada antes de seguir.
 5. Bootstrap da seção 3 com D igual ao dia da prova. Se o bootstrap de produção ocorrer em outro dia, roda antes
    dele a execução suplementar de staging do manifesto daquele dia (`staging-supplement-<D>`): conta e token
-   sintéticos novos, delegação e transporte com comandos próprios, a mesma série de produção, e no fim transporte
+   sintéticos novos, delegação e transporte com comandos próprios; se houve reunião depois da prova, a lista do
+   recorte e os detalhes das reuniões novas antes da série (`--proof-last-meeting`); a mesma série de produção; no
+   fim transporte
    fechado, delegação revogada (modelo `pause-<k>-revoke-acquisition-delegation-<id>` com `k=supplement-<D>`) e
    token revogado. A revogação da prova original fica como está; a comparação de pedidos iguais é exigida de novo
    antes da liberação.
@@ -154,8 +156,10 @@ staging:
      (transporte, delegações) e `resume-1-list-235-<N>`; o bootstrap segue pelas barreiras: lista, detalhes.
    - Durante a série: com o executor parado, a série do bootstrap é enfileirada; `pause-2` a cancela. Retomada
      `resume-2` e `resume-2-series-<D>`; barreira 3, e depois monitor, edição e agendas na ordem.
-   - Com um detalhe pendente, depois das agendas: com o executor rodando, `rehearsal-list-234-<N>` é confirmada e
-     grava a reunião 234; com o executor parado, `rehearsal-detail-234` é enfileirado e `pause-3` o cancela.
+   - Com um detalhe pendente, depois das agendas: `rehearsal-list-234-<N>` é confirmada pelo executor só de
+     aquisição (`MARKET_PROOF_COMPONENTS=acquisition`, sem agendador nem monitor) e grava a reunião 234; com o
+     executor parado, confere-se que a 234 não tem comunicado de referência nem outro job de detalhe vivo;
+     `rehearsal-detail-234` é enfileirado e `pause-3` o cancela.
      Retomada `resume-3`, `resume-3-detail-234` confirmado e agendas `resume-3-…`; o disparo seguinte tem
      `details`, `inFlight` e `blocked` vazios.
    - Pausa final `pause-4`; antes de revogar o token sintético, conferência de transporte fechado, nenhuma

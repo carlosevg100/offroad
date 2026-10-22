@@ -11,7 +11,9 @@
  * orphan sweep, which is the same outcome as a worker that dies.
  *
  * Environment: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, WORKER_ACCOUNT_EMAIL, WORKER_ACCOUNT_PASSWORD,
- * OFFROAD_WORKER_TOKEN, MARKET_PROOF_PROJECT_REF, MARKET_PROOF_MINUTES (default 30).
+ * OFFROAD_WORKER_TOKEN, MARKET_PROOF_PROJECT_REF, MARKET_PROOF_MINUTES (default 30), MARKET_PROOF_COMPONENTS:
+ * `all` (default) or `acquisition`, which runs only the acquisition consumer, so a rehearsal can confirm a list
+ * without the scheduler discovering its meetings.
  */
 import {createClient} from "@supabase/supabase-js";
 
@@ -66,16 +68,19 @@ async function run(url: string, project: string, minutes: number, signal: AbortS
   const {error} = await supabase.auth.signInWithPassword({email: required("WORKER_ACCOUNT_EMAIL"), password: required("WORKER_ACCOUNT_PASSWORD")});
   if (error) throw new Error("the proof worker could not sign in");
   const contract = await assertWorkerRuntimeSchema(supabase);
-  log("proof.started", {project, minutes, schemaVersion: contract.schemaVersion});
+  log("proof.started", {project, minutes, schemaVersion: contract.schemaVersion, components: process.env.MARKET_PROOF_COMPONENTS ?? "all"});
   const stop = {signal};
 
   const queue = createMarketAcquisitionQueue(supabase, token);
   const store = createMarketObjectStore(supabase);
   const scheduler = createMarketScheduler(supabase, token);
+  const components = process.env.MARKET_PROOF_COMPONENTS ?? "all";
+  if (components !== "all" && components !== "acquisition") throw new Error("MARKET_PROOF_COMPONENTS must be all or acquisition");
+  const loops = components === "all";
   const monitor = createMarketRegimeMonitor(supabase, token);
 
   const schedulerLoop = (async () => {
-    while (!stop.signal.aborted) {
+    while (loops && !stop.signal.aborted) {
       await runMarketSchedulerCycle(scheduler)
         .then((r) => { if (r.statuses.length > 0) log("market.scheduler", {fired: r.fired, details: r.details, statuses: r.statuses.join(","), blocked: r.blocked.join(",")}); })
         .catch((e) => log("market.scheduler_failed", {reason: e instanceof MarketSchedulerError ? e.code : "market_scheduler_transport_failed"}));
@@ -83,7 +88,7 @@ async function run(url: string, project: string, minutes: number, signal: AbortS
     }
   })();
   const monitorLoop = (async () => {
-    while (!stop.signal.aborted) {
+    while (loops && !stop.signal.aborted) {
       await runMarketRg01Cycle(monitor, stop.signal)
         .then((r) => { if (r.status === "ran") log("market.rg01", {scheduled: r.scheduled, events: r.events, runs: r.runs.join(","), fired: r.fired}); })
         .catch((e) => log("market.rg01_failed", {reason: e instanceof MarketRegimeMonitorError ? e.code : "market_regime_monitor_transport_failed"}));

@@ -2,7 +2,7 @@
 """The M2 part 4 manifest (ADR 0023): every act of the production opening, per environment, with its command
 id derived from a fixed namespace, its arguments and its reason, concrete for one operational date.
 
-Usage: market-part4-manifest.py --date AAAA-MM-DD --last-meeting N OUT.json
+Usage: market-part4-manifest.py --date AAAA-MM-DD --last-meeting N [--proof-last-meeting P] OUT.json
        market-part4-manifest.py --expand ENV TEMPLATE key=value ...   (one concrete act, printed)
 
 The date is the São Paulo date D of the run; the series window ends on D-1 and the list covers the meetings
@@ -101,7 +101,7 @@ def acts(env, day, last):
 CYCLES = 4
 
 
-def supplement(day, last):
+def supplement(day, last, proof_last):
     """A staging run on the production day D, when it differs from the proof's: its own worker identity and
     commands, the same series request as production, and its own closing."""
     env = f'staging-supplement-{day.isoformat()}'
@@ -114,6 +114,13 @@ def supplement(day, last):
         'reason': f'Execução suplementar de staging em {day.isoformat()}: delegação de aquisição. {AUTH}.', 'actor': a})
     add('transport-open', 'release_market_acquisition_transport_v1', {'released': True, 'actor': a,
         'reason': f'Execução suplementar de staging em {day.isoformat()}: transporte. {AUTH}.'})
+    if last != proof_last:
+        # Meetings after the proof's: the same list as production, then their details, before the series.
+        add(f'bootstrap-list-{ANCHOR}-{last}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-lista',
+            'request': {'size': last - ANCHOR + 1}, 'reason': f'Execução suplementar: lista das reuniões {ANCHOR} a {last}. {AUTH}.', 'actor': a})
+        for n in range(proof_last + 1, last + 1):
+            add(f'bootstrap-detail-{n}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-copom-comunicados-detalhe', 'request': {'meeting': n},
+                'reason': f'Execução suplementar: comunicado da reunião {n}. {AUTH}.', 'actor': a})
     add(f'bootstrap-series-{day.isoformat()}', 'enqueue_market_contract_acquisition_v1', {'contract': 'bcb-sgs-432-endpoint',
         'request': {'window': {'start': '2021-01-14', 'end': eve}}, 'reason': f'Execução suplementar: série 432 de 2021-01-14 a {eve}. {AUTH}.', 'actor': a})
     add('close-transport', 'release_market_acquisition_transport_v1', {'released': False, 'actor': a,
@@ -187,6 +194,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--date')
     p.add_argument('--last-meeting', type=int)
+    p.add_argument('--proof-last-meeting', type=int, help='the last meeting of the staging proof, when the supplement runs later')
     p.add_argument('--expand', nargs='+', metavar=('ENV TEMPLATE', 'KEY=VALUE'))
     p.add_argument('out', nargs='?')
     args = p.parse_args()
@@ -202,7 +210,7 @@ def main():
     doc = {'schemaVersion': 'offroad.market-part4-manifest.v2', 'namespace': str(NS), 'authorization': AUTH, 'operationalDate': day.isoformat(),
            'lastMeeting': args.last_meeting,
            'environments': {env: {**ENVS[env], 'acts': acts(env, day, args.last_meeting), 'templates': templates(env)} for env in ENVS}}
-    senv, sdoc = supplement(day, args.last_meeting)
+    senv, sdoc = supplement(day, args.last_meeting, args.proof_last_meeting or args.last_meeting)
     doc['environments'][senv] = sdoc
     for env in doc['environments']:
         for act in doc['environments'][env]['acts']:
