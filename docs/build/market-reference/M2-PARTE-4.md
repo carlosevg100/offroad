@@ -121,9 +121,9 @@ staging:
 7. Edição ODbL em staging com o commit do main; web local (`NEXT_PUBLIC_SUPABASE_URL` e
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` de staging no build) e aceite I da seção 5.
 8. Agendas em staging e aceite J com o worker local até estabilizar.
-9. Ensaio da reversão com aquisição em andamento: com uma lista nova que nomeie uma reunião sem detalhe ainda
-   confirmado (ou, sem reunião nova, o detalhe de uma reunião cuja referência ainda não existe em staging),
-   pausa no meio (seção 6); confere-se que o disparo bloqueia, que nada é reivindicado, que não resta job
+9. Ensaio da reversão com aquisição em andamento (atos `rehearsal-…`, só em staging): uma ocorrência manual
+   de lista de 48 (reuniões 234 a 281) faz a reconciliação criar o detalhe da 234, que não tem referência;
+   pausa (seção 6) com esse detalhe `queued` ou `leased`; confere-se que o disparo bloqueia, que nada é reivindicado, que não resta job
    `queued` nem `leased` e que a reconciliação passa a mostrar `detail_cancelled`; retomada com os atos
    `resume-1-…`, inclusive a nova aquisição do detalhe cancelado, até a reconciliação ficar vazia; nova pausa
    final; token sintético revogado. Os dados ficam em staging como evidência.
