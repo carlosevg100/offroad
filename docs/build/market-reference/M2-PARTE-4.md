@@ -16,9 +16,12 @@ horários e operação contínua.
 Mudanças da v3 (revisão 2): manifesto concreto por data operacional e última reunião, com atos de pausa e de
 retomada completos; pausa cancela também os jobs `leased`; retomada readquire os detalhes cancelados; prova com
 executor só de mercado.
-Mudanças da v4 (revisão 3): ciclos de pausa e retomada numerados, cada pausa revogando as concessões do ciclo
-anterior; atos dinâmicos como modelos sem comando, concretizados por expansão; encerramento do executor
-gracioso e limitado.
+Mudanças da v4 (revisão 3): ciclos de pausa e retomada numerados; atos dinâmicos como modelos sem comando,
+concretizados por expansão; encerramento do executor gracioso e limitado.
+Mudanças da v5 (revisões 4 e 5): a pausa revoga o que estiver vivo, resolvido na execução; a retomada readquire
+lista, detalhes e série cancelados com comandos próprios e com as barreiras do bootstrap; ensaio de pausa no meio
+do bootstrap; vigia de saída do executor; primeira edição pelo modelo de edição; o expansor deriva o tamanho da
+lista e a véspera da série; o ensaio da lista acompanha a última reunião.
 
 ## 1. Ordem: transporte antes do bootstrap, agendas por último
 
@@ -41,17 +44,24 @@ Todos os atos estão no manifesto concreto `parte-4/manifesto-<D>.json`, gerado 
 `scripts/market-part4-manifest.py --date D --last-meeting N`: ambiente, ator, função, argumentos, motivo e
 comando UUID v5 no namespace `9ddec42e-8e97-5b84-93d3-9c8bd5b7e8b3` (`uuid5(NAMESPACE_URL,
 'https://offroad.capital/market/m2-part4')`, nome `<ambiente>:<ato>`). O nome do ato carrega o que o torna
-concreto (`bootstrap-series-<D>`, `bootstrap-list-235-<N>`, `bootstrap-detail-<n>`), de modo que outro dia ou
-outra última reunião geram outro comando, nunca replay com argumento diferente; se D ou N mudarem até a execução,
-gera-se um manifesto novo e os anteriores ficam. O manifesto separa atos concretos (sem nenhum marcador; o
-gerador recusa marcador num ato concreto) de modelos sem comando, cujo sujeito só se conhece na execução:
-cancelamento por job (`pause-<k>-cancel-<job>`), detalhe readquirido por reunião (`resume-<k>-detail-<meeting>`),
-edição publicada e edição retirada. `--expand AMBIENTE MODELO chave=valor …` concretiza um modelo: preenche
-todos os marcadores, recusa marcador sobrando e deriva o comando do nome concreto; cada ato expandido executado
-entra no registro da execução. Pausas e retomadas são ciclos numerados: `pause-<k>` revoga as concessões do ciclo
-anterior (`resume-<k-1>`, ou as da abertura quando k é 1), por referência ao comando dessas concessões, e
-`resume-<k>` concede de novo com comandos próprios, porque replay de concessão revogada não a reativa e replay
-de transporte fechado não o fecha de novo. Nenhum segredo entra no manifesto.
+concreto (`bootstrap-series-<D>`, `bootstrap-list-235-<N>`, `bootstrap-detail-<n>`, `rehearsal-list-234-<N>`), de
+modo que outro dia ou outra última reunião geram outro comando, nunca replay com argumento diferente; se D ou N
+mudarem até a execução, gera-se um manifesto novo e os anteriores ficam.
+
+O manifesto separa atos concretos (sem nenhum marcador; o gerador recusa marcador num ato concreto) de modelos
+sem comando, cujo sujeito só se conhece na execução: revogação da delegação ou da agenda viva
+(`pause-<k>-revoke-…-<id>`), cancelamento por job (`pause-<k>-cancel-<job>`), lista, detalhe e série readquiridos
+(`resume-<k>-list-235-<last>`, `resume-<k>-detail-<meeting>`, `resume-<k>-series-<date>`), edição publicada
+(`odbl-edition-<release>`, inclusive a primeira) e edição retirada. `--expand AMBIENTE MODELO chave=valor …`
+concretiza um modelo: preenche os marcadores, deriva o que segue de outro valor (o tamanho da lista da última
+reunião, a véspera da série da data) e recusa recebê-lo como entrada, recusa marcador sobrando e deriva o comando
+do nome concreto, de modo que um nome nunca carrega dois pedidos. Cada ato expandido executado entra no registro
+da execução.
+
+Pausas e retomadas são ciclos numerados (três no manifesto): `pause-<k>` fecha o transporte e revoga cada
+delegação e agenda viva naquele momento, resolvida na execução, de modo que uma pausa no meio do bootstrap revoga
+só o que existe; `resume-<k>` concede de novo com comandos próprios, porque replay de concessão revogada não a
+reativa e replay de transporte fechado não o fecha de novo. Nenhum segredo entra no manifesto.
 
 Produção: ator é o principal fundador (`b60448ce-965a-4303-ae39-50447450c2aa`), atos pela conexão
 administrativa do projeto, cada motivo cita a autorização; worker é o token do ECS (`655b20e1-…`, conta
@@ -109,12 +119,14 @@ staging:
    main, roda os mesmos módulos da imagem para mercado (consumidor de aquisição com busca, Storage e confirmação,
    varredura de órfãos, agendador e monitor RG-01) e nenhum outro consumidor: o token de worker é reconhecido
    por consumidores genéricos que não exigem delegação de mercado, então o processo completo não é usado.
-   Recusa começar se o host não for o do projeto nomeado (`MARKET_PROOF_PROJECT_REF`) e para sozinho no prazo
-   (`MARKET_PROOF_MINUTES`), com encerramento gracioso: o prazo é armado antes de qualquer chamada remota;
-   depois dele nenhum job é reivindicado e nenhum laço começa outro ciclo; a aquisição já reivindicada termina ou
-   falha sob o próprio lease e os próprios limites, como na imagem; os timers são limpos e o processo sai. Roda com `env -i` e apenas `PATH`, `HOME`, `SUPABASE_URL` e
-   `SUPABASE_PUBLISHABLE_KEY` de staging, credenciais sintéticas e as duas variáveis da prova; nenhuma credencial
-   de AWS, de modelo ou de produção.
+   Recusa começar se o host não for o do projeto nomeado (`MARKET_PROOF_PROJECT_REF`). Prazo
+   (`MARKET_PROOF_MINUTES`) armado antes de qualquer chamada remota; depois dele nenhum job é reivindicado e
+   nenhum laço começa outro ciclo; a aquisição já reivindicada termina ou falha sob o próprio lease e os próprios
+   limites, como na imagem; os timers são limpos e o processo sai. Um vigia armado junto com o prazo encerra o
+   processo dois minutos depois dele, com o que estiver pendente (autenticação, contrato de esquema, upload,
+   renovação): a tentativa expira com o lease e os bytes vão para a varredura, o mesmo desfecho de um worker que
+   cai. Roda com `env -i` e apenas `PATH`, `HOME`, `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` de staging,
+   credenciais sintéticas e as duas variáveis da prova; nenhuma credencial de AWS, de modelo ou de produção.
 3. Atos A a F do manifesto em staging (publicadora, fonte, calendário com os mesmos bytes, consumidor,
    delegações, transporte), com a conferência pré-abertura da seção 1.
 4. Reprodução do corpus: além do bootstrap da seção 3, o pedido `corpus-series` (2021-01-14 a 2026-10-21).
@@ -131,13 +143,19 @@ staging:
 7. Edição ODbL em staging com o commit do main; web local (`NEXT_PUBLIC_SUPABASE_URL` e
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` de staging no build) e aceite I da seção 5.
 8. Agendas em staging e aceite J com o worker local até estabilizar.
-9. Ensaio da reversão com aquisição em andamento (atos `rehearsal-…`, só em staging): uma ocorrência manual
-   de lista de 48 (reuniões 234 a 281) faz a reconciliação criar o detalhe da 234, que não tem referência;
-   pausa (seção 6) com esse detalhe `queued` ou `leased`; confere-se que o disparo bloqueia, que nada é reivindicado, que não resta job
-   `queued` nem `leased` e que a reconciliação passa a mostrar `detail_cancelled`; retomada com os atos
-   `resume-1-…`, inclusive a nova aquisição do detalhe cancelado, até a reconciliação ficar vazia; pausa final
-   `pause-2-…` com os cancelamentos expandidos; antes de revogar o token sintético, conferência de transporte
-   fechado, nenhuma delegação ou agenda ativa e nenhum job não terminal. Os dados ficam em staging como evidência.
+9. Ensaios da reversão (seção 6), todos em staging:
+   - Durante o bootstrap, antes das agendas: `pause-1` com a série do bootstrap `queued` ou `leased`. Confere-se
+     o cancelamento, nenhum job não terminal e que só as delegações vivas foram revogadas (não há agenda).
+     Retomada: `resume-1` (transporte, delegações) e `resume-1-series-<D>`; a barreira 3 da seção 3 é cumprida de
+     novo, e depois monitor, edição e agendas seguem a ordem.
+   - Depois das agendas, com aquisição em andamento: a lista `rehearsal-list-234-<N>` (reuniões 234 a N, pelo
+     enfileirador manual) grava a reunião 234, que não tem referência; confere-se que ela está listada e que a
+     reconciliação criou o detalhe; `pause-2` com esse detalhe `queued` ou `leased`. Confere-se que o disparo
+     bloqueia, que nada é reivindicado, que não resta job `queued` nem `leased` e que a reconciliação passa a
+     mostrar `detail_cancelled`. Retomada `resume-2-…`, inclusive `resume-2-detail-234`, até a reconciliação ficar
+     vazia.
+   - Pausa final `pause-3`; antes de revogar o token sintético, conferência de transporte fechado, nenhuma
+     delegação ou agenda ativa e nenhum job não terminal. Os dados ficam em staging como evidência.
 
 ## 5. Produção
 
@@ -156,7 +174,8 @@ Depois da liberação:
 - F. Conferência pré-abertura (seção 1) e transporte aberto.
 - G. Bootstrap da seção 3; hashes iguais aos de staging para os mesmos pedidos no mesmo D.
 - H. Monitor, com o aceite do passo 6 da seção 4.
-- I. Primeira edição ODbL com o SHA do main implantado (o mesmo no Vercel de produção e na imagem do worker).
+- I. Primeira edição ODbL, expandida do modelo `odbl-edition-<release>` com `release=1` e o SHA do main
+  implantado (o mesmo no Vercel de produção e na imagem do worker).
   Aceite em `https://offroad.capital`: `/dados/meta-selic.json` com 200, `application/json; charset=utf-8`,
   `no-store`, `nosniff`, CSP, sem `Set-Cookie`, `x-offroad-release` 1 e `x-offroad-sha256` igual ao SHA-256 do
   corpo e ao do banco; `/pt-BR/dados/meta-selic` com 200, atribuição e licença; os links públicos de parser,
@@ -167,18 +186,21 @@ Depois da liberação:
 
 ## 6. Reversão e retomada
 
-Pausa: transporte fechado; delegação de aquisição e delegação de evento revogadas (o consumidor fica
-registrado: desabilitá-lo é definitivo e impediria recriar `rg01-monitor`); as duas agendas revogadas, uma por
+Pausa (`pause-<k>`): transporte fechado; cada delegação de aquisição e de evento viva revogada (o consumidor fica
+registrado: desabilitá-lo é definitivo e impediria recriar `rg01-monitor`); cada agenda viva revogada, uma por
 ato; todo job de mercado da fonte `bcb` em `queued` ou `leased` cancelado, um ato por job (um lease vencido
 continua `leased` e seria reivindicado de novo na retomada). Uma requisição já iniciada termina sem conseguir
 confirmar; objetos alocados sem confirmação ficam para a varredura, que depende do transporte aberto e roda na
 retomada. A pausa não retira a edição; retirada (`withdraw_market_odbl_release_v1`, rota 410) só se a própria
 edição estiver errada. O token do ECS nunca é revogado.
 
-Retomada: conferência de que não há job não terminal; atos novos `resume-1-…` (transporte, delegações); nova
-aquisição explícita de cada detalhe cancelado na pausa cuja reunião ainda não tem referência, porque a
-reconciliação trata detalhe cancelado como decisão de operador (`detail_cancelled`) em qualquer agenda; espera
-das confirmações; nova edição se houve retirada; agendas novas por último. Nenhum passo apaga recibo.
+Retomada (`resume-<k>`): conferência de que não há job não terminal; transporte e delegações com comandos novos;
+nova aquisição explícita do que a pausa cancelou, na ordem e com as barreiras da seção 3: a lista do bootstrap se
+ainda não estava confirmada, cada detalhe cuja reunião ainda não tem referência (a reconciliação trata detalhe
+cancelado como decisão de operador, `detail_cancelled`, em qualquer agenda) e a série do bootstrap se ainda não
+estava confirmada (repetir o comando original devolveria o job cancelado); espera das confirmações; monitor; nova
+edição se houve retirada; agendas novas por último, só se a abertura já tinha chegado a J. Nenhum passo apaga
+recibo.
 
 ## 7. Operação contínua
 
