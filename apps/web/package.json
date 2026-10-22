@@ -38,7 +38,7 @@
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "@offroad/work-plan": "workspace:*",
-    "@sentry/nextjs": "10.75.0",
+    "@sentry/nextjs": "10.75.2",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",
     "lucide-react": "^1.47.0",
