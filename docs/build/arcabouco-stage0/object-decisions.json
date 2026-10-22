@@ -333276,6 +333276,12 @@
           "line": 35,
           "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022002830_market_m2_part3_fixes_6.sql",
+          "line": 3,
+          "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -344523,6 +344529,13 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, correções da revisão",
       "reason": "Correções da segunda revisão independente da M2 parte 3: definições por normalização usada na edição e protocolo único de âncoras para quem revoga."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022002830_market_m2_part3_fixes_6.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Manifesto da publicação ODbL como valor materializado, verificável estaticamente, no lugar de tabela temporária."
     }
   ],
   "staging_archive": [
