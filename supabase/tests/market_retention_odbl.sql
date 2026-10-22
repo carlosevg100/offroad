@@ -124,6 +124,23 @@ do $$ declare r jsonb;begin
  insert into facts values('v2',r->>'versionId');
 end $$;
 
+-- 3a. A change of the assembled manifest without its communiqué refuses the edition. The link is removed
+-- with its triggers disabled inside a subtransaction that the refusal rolls back.
+do $$ begin
+ begin
+  alter table private.market_version_evidence disable trigger user;
+  delete from private.market_version_evidence where version_id=pg_temp.fact('v2')::uuid and meeting=9002;
+  if not found then raise exception 'evidence link to remove not found';end if;
+  alter table private.market_version_evidence enable trigger user;
+  perform private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000200',repeat('a',40),'3a7b0000-0000-4000-8000-000000000001');
+  raise exception 'edition published a change without its communique';
+ exception when others then
+  if sqlerrm<>'market_odbl_change_without_communique' then raise;end if;
+ end;
+ if not exists(select 1 from private.market_version_evidence where version_id=pg_temp.fact('v2')::uuid and meeting=9002) or exists(select 1 from private.market_odbl_releases)
+ then raise exception 'refused edition left state behind';end if;
+end $$;
+
 -- 3. The first edition: founder only, canonical bytes, selection of approved chains only, replay.
 do $$ declare r jsonb;e private.market_odbl_releases;p jsonb;begin
  perform pg_temp.expect($q$select private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000201',repeat('a',40),'3a7b0000-0000-4000-8000-000000000002')$q$,
@@ -144,6 +161,11 @@ do $$ declare r jsonb;e private.market_odbl_releases;p jsonb;begin
  if p#>>'{license,uri}'<>'https://opendatacommons.org/licenses/odbl/1-0/' or p#>>'{source,attribution}'<>'Banco Central do Brasil' or p#>>'{alterations,previous}' is not null
  or p#>>'{rules,codeCommit}'<>repeat('a',40) or p->>'release'<>'1' or p#>>'{series,logicalId}'<>'market:bcb:sgs:102a1aa7f870cb05'
  then raise exception 'edition metadata wrong';end if;
+ if exists(select 1 from jsonb_array_elements(p->'observations') x where x->>'normalization' is distinct from 'bcb-sgs-432')
+ or encode(extensions.digest(convert_to(p#>>'{series,contractText}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,contractSha256}'
+ or encode(extensions.digest(convert_to(p#>>'{series,qualityPolicy,text}','UTF8'),'sha256'),'hex') is distinct from p#>>'{series,qualityPolicy,sha256}'
+ or p#>>'{series,qualityPolicy,text}' is distinct from private.market_quality_policy_text_v1('bcb-sgs-432-quality','v2')
+ or p#>>'{series,qualityPolicy,text}' not like 'market-quality-policy.v1%' then raise exception 'edition snapshots wrong: %',p->'series';end if;
  if (select count(*) from private.market_odbl_release_dependencies where release_id=e.id)<>1 then raise exception 'dependencies wrong';end if;
  r:=private.publish_market_odbl_release_v1('3a7b0000-0000-4000-a000-000000000203',repeat('a',40),'3a7b0000-0000-4000-8000-000000000001');
  if (r->>'replayed')::boolean is not true or (r->>'releaseNumber')::int<>1 then raise exception 'publication did not replay';end if;
@@ -171,11 +193,12 @@ end $$;
 set local role anon;
 do $$ declare r jsonb;begin
  r:=public.market_odbl_release_v1(1);
- if r->>'state'<>'served' or r->>'sha256'<>pg_temp.fact('sha1') or right(r->>'payload',1)<>chr(10) then raise exception 'edition 1 not served to anon';end if;
+ if r is null or r->>'state' is distinct from 'served' or r->>'sha256' is distinct from pg_temp.fact('sha1') or right(r->>'payload',1) is distinct from chr(10)
+ then raise exception 'edition 1 not served to anon: %',r;end if;
  r:=public.market_odbl_release_v1(2);
- if r->>'state'<>'withdrawn' or r ? 'payload' then raise exception 'withdrawn edition served: %',r;end if;
+ if r is null or r->>'state' is distinct from 'withdrawn' or r ? 'payload' then raise exception 'withdrawn edition served: %',r;end if;
  r:=public.market_odbl_release_v1();
- if (r->>'releaseNumber')::int<>2 or r->>'state'<>'withdrawn' then raise exception 'latest fell back to an older edition: %',r;end if;
+ if r is null or (r->>'releaseNumber')::int is distinct from 2 or r->>'state' is distinct from 'withdrawn' then raise exception 'latest fell back to an older edition: %',r;end if;
  if public.market_odbl_release_v1(3) is not null or public.market_odbl_release_v1(0) is not null or public.market_odbl_release_v1(-5) is not null then raise exception 'missing edition answered';end if;
  perform pg_temp.expect($q$select count(*) from private.market_odbl_releases$q$,'42501','anon reads the releases table');
  perform pg_temp.expect($q$select private.publish_market_odbl_release_v1(gen_random_uuid(),repeat('a',40),'3a7b0000-0000-4000-8000-000000000001')$q$,'42501','anon publishes');
@@ -196,6 +219,12 @@ do $$ declare r jsonb;begin
  -- A revoked source withdraws its acquisitions.
  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','revoked','Revogação sintética da fonte','3a7b0000-0000-4000-8000-000000000002');
  if private.market_acquisition_readable_v1((select acquisition_id from private.market_versions where id=pg_temp.fact('v1')::uuid)) then raise exception 'acquisition of a revoked source readable';end if;
+ -- Writers keep the readers' order: a version revoked first makes a later acquisition revocation refuse.
+ perform pg_temp.expect(format($q$do $x$ begin
+  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('version',%L,'revoked','Revogação sintética da versão','3a7b0000-0000-4000-8000-000000000002');
+  insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id)
+  select 'acquisition',reference_acquisition_id::text,'revoked','Revogação sintética fora de ordem','3a7b0000-0000-4000-8000-000000000002' from private.market_copom_meetings where meeting=9001;
+ end $x$ $q$,pg_temp.fact('v1')),'market_authority_order','acquisition revoked after a version in one transaction');
 end $$;
 
 -- 7. A revision that would not retain is refused while anything of the source is stored, and a source
@@ -218,7 +247,7 @@ do $$ declare t text;r text;f text;begin
   if not (select relrowsecurity and relforcerowsecurity from pg_class where oid=('private.'||t)::regclass) then raise exception 'RLS not forced on %',t;end if;
  end loop;
  for f,r in select p.oid::regprocedure::text,x.r from pg_proc p join pg_namespace n on n.oid=p.pronamespace,unnest(array['anon','authenticated','service_role']) x(r)
-  where n.nspname in ('private','public') and p.proname ~ '^(market_odbl_|market_version_readable_|market_acquisition_readable_|market_license_retains_|market_version_closure_|lock_market_read_authority_|anchor_market_authority_|publish_market_odbl_|withdraw_market_odbl_)' loop
+  where n.nspname in ('private','public') and p.proname ~ '^(market_odbl_|market_version_readable_|market_acquisition_readable_|market_license_retains_|market_version_closure_|lock_market_read_authority_|anchor_market_authority_|publish_market_odbl_|withdraw_market_odbl_|market_evidence_set_|market_quality_policy_text_|create_market_selic_version_|relink_market_version_)' loop
   if has_function_privilege(r,f,'execute') and not (r='anon' and f in ('market_odbl_release_v1(integer)','private.market_odbl_release_read_v1(integer)'))
   then raise exception '% executes %',r,f;end if;
  end loop;

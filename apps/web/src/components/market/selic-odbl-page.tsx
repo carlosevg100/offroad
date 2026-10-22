@@ -45,8 +45,8 @@ export async function SelicOdblPage({locale}: {locale: AppLocale}) {
             <th scope="col">{t("changes.meeting")}</th><th scope="col">{t("changes.decision")}</th></tr></thead>
           <tbody>{payload.changes.map((c) => <tr key={c.period}>
             <td>{day(c.period)}</td><td>{rate(c.from)}</td><td>{rate(c.to)}</td>
-            <td>{c.meeting && c.referenceDate ? `${c.meeting}ª (${day(c.referenceDate)})` : "-"}</td>
-            <td>{t(`decision.${c.decision && decisions.has(c.decision) ? c.decision : "unknown"}`)}</td>
+            <td>{t("changes.meetingValue", {meeting: c.meeting, date: day(c.referenceDate)})}</td>
+            <td>{t(`decision.${decisions.has(c.decision) ? c.decision : "unknown"}`)}</td>
           </tr>)}</tbody>
         </table></div>}
       </section>

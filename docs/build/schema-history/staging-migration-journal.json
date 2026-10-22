@@ -2674,8 +2674,18 @@
       "name": "market_m2_retention_odbl",
       "version": "20261021232925",
       "statements_md5": "33f0e10553f8d2e02a62bd10021a9040"
+    },
+    {
+      "name": "market_m2_part3_fixes",
+      "version": "20261021235857",
+      "statements_md5": "64b8f953fd7f18810e6a7a58530a6127"
+    },
+    {
+      "name": "market_m2_part3_fixes_2",
+      "version": "20261022000542",
+      "statements_md5": "2bf106f13b6c232efbcd210553b2d03f"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-21T23:45:56Z"
+  "captured_at": "2026-10-22T00:06:00Z"
 }

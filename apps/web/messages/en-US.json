@@ -1199,6 +1199,7 @@
     },
     "download": "Download the database (JSON)",
     "changes": {
+      "meetingValue": "Meeting {meeting} ({date})",
       "title": "Target changes and their communiqués",
       "period": "Effective in the series",
       "from": "From",

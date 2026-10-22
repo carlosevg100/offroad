@@ -1199,6 +1199,7 @@
     },
     "download": "Baixar a base (JSON)",
     "changes": {
+      "meetingValue": "{meeting}ª reunião ({date})",
       "title": "Mudanças da meta e seus comunicados",
       "period": "Vigência na série",
       "from": "De",

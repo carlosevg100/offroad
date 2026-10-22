@@ -2054,7 +2054,7 @@
     },
     {
       "path": "apps/web/src/lib/market/odbl-release.ts",
-      "sha256": "d83d0dec0bdb9464e64c66e20125043ecf8d76855871fbe70a7bd4a291f3b7a5",
+      "sha256": "059f9eea815c8838a3a43ab2b480ddee7f8bc05e66273a847d8083f0805c7e70",
       "entrypoint": false,
       "rpcs": [
         "market_odbl_release_v1"

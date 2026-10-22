@@ -170,14 +170,40 @@ do $$ declare c jsonb;d uuid;s bigint;begin
  perform private.grant_market_event_delegation_v1('3a790000-0000-4000-a000-000000000402','3a790000-0000-4000-8000-000000000011','rg-01-test','Segunda delegação sintética','3a790000-0000-4000-8000-000000000002');
 end $$;
 
+-- 6b. The filter changes only by a founder command with a receipt; events after it follow the new set.
+do $$ declare s bigint;r jsonb;begin
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000451','rg-01-test',array['purged'],array['source'],'Troca sintética','3a790000-0000-4000-8000-000000000002')$q$,
+  'platform_principal_required','operator changes a filter');
+ r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['purged','approved','purged'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
+ if r->>'consumerId' is distinct from 'rg-01-test' or (r->>'replayed')::boolean then raise exception 'filter change answer wrong: %',r;end if;
+ if (select events from private.market_event_consumers where id='rg-01-test') is distinct from array['approved','purged']
+ or (select subject_kinds from private.market_event_consumers where id='rg-01-test') is distinct from array['source']
+ or not exists(select 1 from private.market_event_consumer_commands where command_id='3a790000-0000-4000-a000-000000000452' and action='update_filter')
+ then raise exception 'filter change not recorded';end if;
+ r:=private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['purged','approved','purged'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001');
+ if (r->>'replayed')::boolean is not true then raise exception 'filter change did not replay';end if;
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000452','rg-01-test',array['released'],array['source'],'Troca sintética do filtro','3a790000-0000-4000-8000-000000000001')$q$,
+  'platform_method_request_reused','filter change command reused');
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000453','rg-01-test',array['created'],array['source'],'Evento desconhecido','3a790000-0000-4000-8000-000000000001')$q$,
+  '23514','unknown event in the new filter');
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000454','nobody',array['purged'],array['source'],'Consumidor inexistente','3a790000-0000-4000-8000-000000000001')$q$,
+  'market_event_consumer_not_enabled','filter change of a missing consumer');
+ s:=pg_temp.event('released');
+ if exists(select 1 from private.market_event_outbox where event_sequence=s) then raise exception 'event outside the new filter fanned out';end if;
+ s:=pg_temp.event('purged');
+ if not exists(select 1 from private.market_event_outbox where event_sequence=s and consumer_id='rg-01-test') then raise exception 'event in the new filter did not fan out';end if;
+end $$;
+
 -- 7. Disabling cancels the open rows; later events do not fan out; claims stop.
 do $$ declare s bigint;r jsonb;begin
  perform pg_temp.expect($q$select private.disable_market_event_consumer_v1('3a790000-0000-4000-a000-000000000501','rg-01-test','Desligamento sintético','3a790000-0000-4000-8000-000000000002')$q$,
   'platform_principal_required','operator disables a consumer');
  r:=private.disable_market_event_consumer_v1('3a790000-0000-4000-a000-000000000502','rg-01-test','Desligamento sintético do teste','3a790000-0000-4000-8000-000000000001');
+ perform pg_temp.expect($q$select private.update_market_event_consumer_filter_v1('3a790000-0000-4000-a000-000000000503','rg-01-test',array['released'],array['source'],'Troca após desligar','3a790000-0000-4000-8000-000000000001')$q$,
+  'market_event_consumer_not_enabled','filter change of a disabled consumer');
  if (r->>'cancelled')::int<1 or exists(select 1 from private.market_event_outbox where consumer_id='rg-01-test' and status in ('pending','leased','blocked'))
  then raise exception 'disabling did not cancel the open rows: %',r;end if;
- s:=pg_temp.event('released');
+ s:=pg_temp.event('purged');
  if exists(select 1 from private.market_event_outbox where event_sequence=s) then raise exception 'disabled consumer received an event';end if;
  if (pg_temp.claim('after')->>'claimed')::boolean then raise exception 'claimed from a disabled consumer';end if;
 end $$;

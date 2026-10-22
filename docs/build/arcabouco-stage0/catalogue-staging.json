@@ -104677,7 +104677,7 @@
       "security_definer": true
     },
     {
-      "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
+      "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb)",
       "kind": "function",
       "name": "create_market_selic_version_v1",
       "grants": [
@@ -104691,7 +104691,7 @@
       "settings": [
         "search_path=\"\""
       ],
-      "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid",
+      "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb",
       "security_definer": true
     },
     {
@@ -107594,6 +107594,60 @@
       "enabled": "O",
       "function": "private.guard_platform_ledger_truncate_v1()",
       "definition": "CREATE TRIGGER market_odbl_releases_truncate_guard BEFORE TRUNCATE ON private.market_odbl_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "function:private.market_evidence_set_v1(p_start date, p_end date, p_data_base date)",
+      "kind": "function",
+      "name": "market_evidence_set_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_start date, p_end date, p_data_base date",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.market_quality_policy_text_v1(p_id text, p_version text)",
+      "kind": "function",
+      "name": "market_quality_policy_text_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id text, p_version text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.update_market_event_consumer_filter_v1(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "update_market_event_consumer_filter_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid",
+      "security_definer": false
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"

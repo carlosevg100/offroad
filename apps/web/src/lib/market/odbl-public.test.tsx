@@ -26,7 +26,7 @@ const payloadText = `${JSON.stringify({
     recordSha256: "b".repeat(64), referenceDate: "2025-10-07", targetPct: "14.5", to: "14.5"}],
   database: "Offroad", format: "offroad.market-odbl.v1",
   license: {appliesTo: "Esta base derivada, inteira.", name: "Open Database License (ODbL) v1.0", uri: "https://opendatacommons.org/licenses/odbl/1-0/"},
-  observations: [{acquisitionId: "a", period: "2025-10-08", value: "14.5", versionId: "v"}], publishedAt: "2026-10-22T12:00:00.000000Z",
+  observations: [{acquisitionId: "a", normalization: "bcb-sgs-432", period: "2025-10-08", value: "14.5", versionId: "v"}], publishedAt: "2026-10-22T12:00:00.000000Z",
   reading: {dataBase: "2026-10-22", knowledgeAt: "2026-10-22T12:00:00.000000Z", window: {end: "2026-10-22", start: "2021-01-14"}}, release: "1",
   rules: {codeCommit: "c".repeat(40), contracts: "https://github.com/x/c", database: "https://github.com/x/d", parserAndRules: "https://github.com/x/p", vectors: "https://github.com/x/v"},
   series: {}, source: {attribution: "Banco Central do Brasil", evidenceIds: [], name: "Banco Central do Brasil, SGS 432", sourceLicense: "ODbL-1.0", sourceRevision: "1"},
@@ -74,5 +74,16 @@ describe("the ODbL page", () => {
     await expect(SelicOdblPage({locale: "pt-BR"})).rejects.toThrow("NEXT_NOT_FOUND");
     state.release = {state: "withdrawn", releaseNumber: 2};
     await expect(SelicOdblPage({locale: "pt-BR"})).rejects.toThrow("NEXT_NOT_FOUND");
+  });
+});
+
+describe("the ODbL page metadata", () => {
+  it.each([
+    ["pt-BR", () => import("@/app/[locale]/dados/meta-selic/page")],
+    ["en-US", () => import("@/app/[locale]/data/selic-target/page")],
+  ] as const)("asks to be indexed in %s, overriding the locale default", async (locale, load) => {
+    const {generateMetadata} = await load();
+    const metadata = await generateMetadata({params: Promise.resolve({locale})});
+    expect(metadata.robots).toEqual({index: true, follow: true, googleBot: {index: true, follow: true}});
   });
 });

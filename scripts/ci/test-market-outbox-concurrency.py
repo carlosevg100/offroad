@@ -9,7 +9,13 @@ disposable CI database.
 3. Two delegated workers claim at once: two rows of different subjects, never the same row twice.
 4. A revocation of a communiqué waits for a publication holding its anchor, and the edition then reads as
    withdrawn; a publication that starts while the revocation holds the anchor waits and leaves that version out.
-Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9203 and
+5. Two publications at once: the second waits for the first and takes the next edition number.
+6. Relink against the revocation of the communiqué it would link, both orders: a relink that waits refuses;
+   a revocation that waits makes the relinked version unreadable.
+7. Two version events of one series: the second waits on the series counter and takes the next ordinal.
+8. Disabling against a completion in flight, both orders: no deadlock; the completion that held its lease
+   keeps its receipt, and the one that waited is refused.
+Every row here is synthetic, dated in 2024, and lives only in the disposable database; meetings 9201 to 9205 and
 their dates do not collide with the acquisition races.
 """
 import json
@@ -137,6 +143,9 @@ select private.record_market_source_revision_v1('{P}-0000-4000-a000-000000000011
 select private.record_market_source_revision_v1('{P}-0000-4000-a000-000000000012','bcb-outbox-race',jsonb_build_object('registryId','bcb_sgs','license',jsonb_build_object('kind','open',
  'license','ODbL-1.0','attribution','Banco Central do Brasil','evidenceIds',jsonb_build_array('bcb-catalog-meta-selic-432'),'retainAdoptedValues',true,'storeDays',null),
  'allowedHosts',jsonb_build_array('api.bcb.gov.br'),'calendar','br_business_days','expectedPublication','09:00','maximumAgeHours',30,'enabled',false,'reason','Segunda fonte sintética da corrida'),'{OPERATOR}');
+select private.record_market_source_revision_v1('{P}-0000-4000-a000-000000000013','bcb-outbox-race-2',jsonb_build_object('registryId','bcb_sgs','license',jsonb_build_object('kind','open',
+ 'license','ODbL-1.0','attribution','Banco Central do Brasil','evidenceIds',jsonb_build_array('bcb-catalog-meta-selic-432'),'retainAdoptedValues',true,'storeDays',null),
+ 'allowedHosts',jsonb_build_array('api.bcb.gov.br'),'calendar','br_business_days','expectedPublication','09:00','maximumAgeHours',30,'enabled',false,'reason','Terceira fonte sintética da corrida'),'{OPERATOR}');
 select private.release_market_acquisition_transport_v1('{P}-0000-4000-a000-000000000021',true,'{OPERATOR}','Synthetic opening for the outbox races');
 select private.grant_market_acquisition_delegation_v1('{P}-0000-4000-a000-000000000022','{TOKEN_A_ID}','bcb','Synthetic delegation for the outbox races','{OPERATOR}');
 commit;
@@ -175,8 +184,30 @@ def series(start, days, change, before, after):
     return json.dumps(rows).encode()
 
 
+def claim(token, account, consumer):
+    return json.loads(psql(f"begin;{as_account(account)}select private.worker_claim_market_event_v1('{token}','{consumer}')::text;commit;").splitlines()[-1])
+
+
+def complete_sql(consumer, c):
+    return (f"select private.worker_complete_market_event_v1('{consumer}',{c['eventSequence']},'{c['capability']}','{c['leaseId']}','{{\"ok\":true}}')->>'replayed';")
+
+
+def relink_sql(version):
+    return f"select private.relink_market_version_v1('{command()}','{version}','{OPERATOR}')->>'versionId';"
+
+
+def revoke_sql(kind, subject, reason):
+    return (f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+            f"values('{kind}','{subject}','revoked','{reason}','{OPERATOR}');")
+
+
 def main():
     psql(SETUP)
+    # Two series confirmed before their communiqués exist: both quarantined, to be relinked in race 6.
+    q4 = acquire('bcb-sgs-432-endpoint', '{"window":{"start":"2024-08-07","end":"2024-08-20"}}', series('2024-08-07', 14, '2024-08-21', '10.50', '10.50'))
+    q5 = acquire('bcb-sgs-432-endpoint', '{"window":{"start":"2024-09-18","end":"2024-09-30"}}', series('2024-09-18', 13, '2024-10-01', '10.50', '10.50'))
+    if q4.get('quality', {}).get('status') != 'quarantined' or q5.get('quality', {}).get('status') != 'quarantined':
+        raise AssertionError(f'series without communiques were not quarantined: {q4} {q5}')
     # 1. Registration against events in flight, both orders.
     e = session('market_outbox_event_first')
     e.stdin.write(event() + "\nselect max(sequence) from private.market_events where reason='Evento sintético da corrida';\n")
@@ -237,6 +268,20 @@ def main():
     s = acquire('bcb-sgs-432-endpoint', '{"window":{"start":"2024-03-20","end":"2024-05-20"}}', series('2024-03-20', 62, '2024-05-08', '10.75', '10.50'))
     if s.get('quality', {}).get('status') != 'approved':
         raise AssertionError(f'race series not approved: {s}')
+    # 5. Two publications at once: the second waits on the publication lock and takes the next number.
+    p1 = session('market_outbox_publish_first')
+    p1.stdin.write(f"select private.publish_market_odbl_release_v1('{command()}',repeat('d',40),'{FOUNDER}')->>'releaseNumber';\n")
+    barrier(p1, 'PP1')
+    p2 = session('market_outbox_publish_second')
+    barrier(p2, 'PP2')
+    p2.stdin.write(f"select private.publish_market_odbl_release_v1('{command()}',repeat('e',40),'{FOUNDER}')->>'releaseNumber';\n")
+    p2.stdin.flush()
+    wait_for_lock('market_outbox_publish_second')
+    n1 = int(finish(p1).splitlines()[-1]); n2 = int(finish(p2).splitlines()[-1])
+    if n2 != n1 + 1:
+        raise AssertionError(f'concurrent publications did not take consecutive numbers: {n1} {n2}')
+    if psql(f"select (payload_text::jsonb#>>'{{alterations,previous,release}}') from private.market_odbl_releases where release_number={n2};") != str(n1):
+        raise AssertionError('the second publication did not record the first as its previous edition')
     p = session('market_outbox_publish')
     p.stdin.write(f"select private.publish_market_odbl_release_v1('{command()}',repeat('d',40),'{FOUNDER}')->>'releaseNumber';\n")
     barrier(p, 'P')
@@ -275,8 +320,88 @@ def main():
             raise AssertionError('a publication that waited for a revocation included the revoked dependency')
     elif 'market_odbl_nothing_to_publish' not in out:
         raise AssertionError('publication after a concurrent revocation failed unexpectedly: ' + out)
+    # 6. Relink against the revocation of the communiqué it would link. A revocation holds the anchor: the
+    # relink materialized the evidence, waits for it, and then refuses it.
+    d4 = acquire('bcb-copom-comunicados-detalhe', '{"meeting":9204}', communique(9204, '2024-08-06', 'hold', '10,50'))
+    rv = session('market_outbox_revoke_before_relink')
+    rv.stdin.write(revoke_sql('acquisition', d4['acquisitionId'], 'Revogação sintética antes do relink') + "\n")
+    barrier(rv, 'RV4')
+    rl = session('market_outbox_relink_waiting')
+    barrier(rl, 'RL4')
+    rl.stdin.write(relink_sql(q4['versionId']) + "\n"); rl.stdin.flush()
+    wait_for_lock('market_outbox_relink_waiting')
+    finish(rv)
+    out = finish(rl, expect_ok=False)
+    if 'market_version_not_readable' not in out:
+        raise AssertionError('a relink that waited for the revocation of its evidence did not refuse: ' + out)
+    # A relink holds the anchor: the revocation waits and then makes the relinked version unreadable.
+    d5 = acquire('bcb-copom-comunicados-detalhe', '{"meeting":9205}', communique(9205, '2024-09-17', 'hold', '10,50'))
+    rl = session('market_outbox_relink_first')
+    rl.stdin.write(relink_sql(q5['versionId']) + "\n")
+    barrier(rl, 'RL5')
+    rv = session('market_outbox_revoke_after_relink')
+    barrier(rv, 'RV5')
+    rv.stdin.write(revoke_sql('acquisition', d5['acquisitionId'], 'Revogação sintética depois do relink') + "\n"); rv.stdin.flush()
+    wait_for_lock('market_outbox_revoke_after_relink')
+    relinked = finish(rl).splitlines()[-1]
+    finish(rv)
+    if psql(f"select (select count(*) from private.market_version_evidence where version_id='{relinked}' and meeting=9205)::text||':'||"
+            f"private.market_version_readable_v1('{relinked}','consume')::text;") != '1:false':
+        raise AssertionError('the relinked version did not link the communique or stayed readable after its revocation')
+    # 7. Two version events of one series: the second waits on the series counter.
+    psql(f"select private.register_market_event_consumer_v1('{command()}','race-consumer-3',array['revoked'],array['version'],'Consumidor sintético de versões','{FOUNDER}');")
+    v1 = session('market_outbox_series_1')
+    v1.stdin.write(revoke_sql('version', q4['versionId'], 'Revogação sintética da versão 4') + "\nselect max(sequence) from private.market_events;\n")
+    barrier(v1, 'V1')
+    v2 = session('market_outbox_series_2')
+    barrier(v2, 'V2')
+    v2.stdin.write(revoke_sql('version', q5['versionId'], 'Revogação sintética da versão 5') + "\nselect max(sequence) from private.market_events where reason like 'Revogação sintética da versão%';\n")
+    v2.stdin.flush()
+    wait_for_lock('market_outbox_series_2')
+    a_seq = finish(v1).splitlines()[-1]
+    b_seq = finish(v2).splitlines()[-1]
+    keys = psql(f"select string_agg(subject_key||'#'||subject_ordinal,',' order by event_sequence) from private.market_event_outbox "
+                f"where consumer_id='race-consumer-3' and event_sequence in ({a_seq},{b_seq});").split(',')
+    if len(keys) != 2 or not keys[0].startswith('series:') or keys[0].split('#')[0] != keys[1].split('#')[0] \
+            or int(keys[1].split('#')[1]) != int(keys[0].split('#')[1]) + 1:
+        raise AssertionError(f'version events of one series out of order: {keys}')
+    # 8. Disabling against a completion in flight. The completion holds its lease: disabling waits, the
+    # receipt stands, and nothing deadlocks.
+    psql(event('bcb-outbox-race-2'))
+    c = claim(TOKEN_A, WORKER_A, 'race-consumer')
+    if not c.get('claimed'):
+        raise AssertionError(f'no row to complete: {c}')
+    cp = session('market_outbox_complete_first', as_account(WORKER_A))
+    cp.stdin.write(complete_sql('race-consumer', c) + "\n")
+    barrier(cp, 'C1')
+    ds = session('market_outbox_disable_waiting')
+    barrier(ds, 'D1')
+    ds.stdin.write(f"select private.disable_market_event_consumer_v1('{command()}','race-consumer','Desligamento sintético da corrida','{FOUNDER}')->>'cancelled';\n")
+    ds.stdin.flush()
+    wait_for_lock('market_outbox_disable_waiting')
+    finish(cp); finish(ds)
+    if psql(f"select count(*) from private.market_event_receipts where consumer_id='race-consumer' and event_sequence={c['eventSequence']};") != '1':
+        raise AssertionError('the completion that held its lease lost its receipt')
+    # Disabling holds the consumer: the completion waits and is refused, with no receipt.
+    psql(f"select private.grant_market_event_delegation_v1('{command()}','{TOKEN_A_ID}','race-consumer-2','Delegação sintética do segundo consumidor','{OPERATOR}');")
+    c = claim(TOKEN_A, WORKER_A, 'race-consumer-2')
+    if not c.get('claimed'):
+        raise AssertionError(f'no row of the second consumer to complete: {c}')
+    ds = session('market_outbox_disable_first')
+    ds.stdin.write(f"select private.disable_market_event_consumer_v1('{command()}','race-consumer-2','Desligamento sintético do segundo consumidor','{FOUNDER}');\n")
+    barrier(ds, 'D2')
+    cp = session('market_outbox_complete_waiting', as_account(WORKER_A))
+    barrier(cp, 'C2')
+    cp.stdin.write(complete_sql('race-consumer-2', c) + "\n"); cp.stdin.flush()
+    wait_for_lock('market_outbox_complete_waiting')
+    finish(ds)
+    out = finish(cp, expect_ok=False)
+    if 'market_event_delegation_required' not in out or 'deadlock' in out:
+        raise AssertionError('a completion that waited for disabling was not refused cleanly: ' + out)
+    if psql(f"select count(*) from private.market_event_receipts where consumer_id='race-consumer-2' and event_sequence={c['eventSequence']};") != '0':
+        raise AssertionError('a refused completion left a receipt')
     psql(f"select private.release_market_acquisition_transport_v1('{command()}',false,'{OPERATOR}','Synthetic closing after the outbox races');")
-    print('PASS: market outbox registration, per-subject order, claims and ODbL publication against revocation serialize across sessions')
+    print('PASS: market outbox registration, per-subject and per-series order, claims, publications, relink and disabling serialize across sessions')
 
 
 def cleanup():

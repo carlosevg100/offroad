@@ -47,9 +47,10 @@ export async function readOdblRelease(rpc: OdblRpc | null = publicOdblRpc()): Pr
   throw new Error("market_odbl_reader_shape");
 }
 
-const observation = z.object({period: z.string(), value: z.string(), versionId: z.string(), acquisitionId: z.string()}).strict();
-const change = z.object({period: z.string(), from: z.string(), to: z.string(), meeting: z.string().nullable(), referenceDate: z.string().nullable(),
-  decision: z.string().nullable(), targetPct: z.string().nullable(), recordSha256: z.string().nullable()}).strict();
+const observation = z.object({period: z.string(), value: z.string(), versionId: z.string(), acquisitionId: z.string(), normalization: z.string()}).strict();
+// Publication refuses a change without its communiqué, so every change carries the meeting.
+const change = z.object({period: z.string(), from: z.string(), to: z.string(), meeting: z.string(), referenceDate: z.string(),
+  decision: z.string(), targetPct: z.string(), recordSha256: z.string()}).strict();
 
 /** The fields the page shows, read from the canonical payload. */
 export const odblPayloadSchema = z.object({

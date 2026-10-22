@@ -327925,53 +327925,22 @@
     {
       "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
-          "kind": "function",
-          "name": "create_market_selic_version_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid)",
-          "kind": "function",
-          "name": "create_market_selic_version_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid",
-          "security_definer": true
-        }
-      },
+      "catalogues": {},
       "owner": "Claude, base de referência de mercado (ADR 0023)",
-      "decision": "preservar",
-      "stage": "base de mercado M2 parte 1, confirmação de versão",
-      "reason": "Confirmação única da M2 parte 1: o banco lê os bytes adquiridos sob o contrato do endpoint, mantém uma reunião do Copom por linha de autoridade e cria, sela e avalia a versão v2 da série 432 com a evidência disponível para a data-base.",
+      "decision": "apagar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Retirada pela migração market_m2_part3_fixes: substituída pela assinatura com p_evidence jsonb, para que relink e criação de versão usem o mesmo conjunto de evidência travado e validado.",
       "sources": [
         {
           "path": "supabase/migrations/20261021225124_market_m2_version_commit.sql",
           "line": 759,
           "anchor": "create function private.create_market_selic_version_v1(p_acquisition uuid,p_normalization text,p_supersedes uuid,p_observations jsonb,",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 96,
+          "anchor": "drop function private.create_market_selic_version_v1(uuid,text,uuid,jsonb,date,date,date,uuid,uuid);",
           "mechanism": "direct_ddl"
         }
       ]
@@ -329885,6 +329854,12 @@
         {
           "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
           "line": 131,
+          "anchor": "create or replace function private.relink_market_version_v1(p_command uuid,p_version uuid,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 138,
           "anchor": "create or replace function private.relink_market_version_v1(p_command uuid,p_version uuid,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -332163,6 +332138,12 @@
           "line": 58,
           "anchor": "create function private.anchor_market_authority_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261022000542_market_m2_part3_fixes_2.sql",
+          "line": 5,
+          "anchor": "create or replace function private.anchor_market_authority_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -332379,6 +332360,12 @@
           "line": 145,
           "anchor": "create function private.guard_market_event_consumer_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 32,
+          "anchor": "create or replace function private.guard_market_event_consumer_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -332541,6 +332528,12 @@
           "line": 116,
           "anchor": "create function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 81,
+          "anchor": "create or replace function private.lock_market_read_authority_v1(p_versions uuid[],p_acquisitions uuid[]) returns void",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -332702,6 +332695,12 @@
           "path": "supabase/migrations/20261021232736_market_m2_event_outbox.sql",
           "line": 317,
           "anchor": "create function private.market_event_for_lease_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns private.market_event_outbox",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 9,
+          "anchor": "create or replace function private.market_event_for_lease_v1(p_consumer text,p_sequence bigint,p_capability text,p_lease uuid) returns private.market_event_outbox",
           "mechanism": "direct_ddl"
         }
       ]
@@ -333252,6 +333251,12 @@
           "path": "supabase/migrations/20261021232925_market_m2_retention_odbl.sql",
           "line": 251,
           "anchor": "create function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 202,
+          "anchor": "create or replace function private.publish_market_odbl_release_v1(p_command uuid,p_code_commit text,p_actor_user_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -336507,6 +336512,222 @@
         }
       ],
       "consumer_status": "Gatilho do ledger."
+    },
+    {
+      "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb)",
+          "kind": "function",
+          "name": "create_market_selic_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.create_market_selic_version_v1(p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb)",
+          "kind": "function",
+          "name": "create_market_selic_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_acquisition uuid, p_normalization text, p_supersedes uuid, p_observations jsonb, p_data_base date, p_window_start date, p_window_end date, p_job uuid, p_actor uuid, p_evidence jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 97,
+          "anchor": "create function private.create_market_selic_version_v1(p_acquisition uuid,p_normalization text,p_supersedes uuid,p_observations jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_evidence_set_v1(p_start date, p_end date, p_data_base date)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_evidence_set_v1(p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_evidence_set_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_start date, p_end date, p_data_base date",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.market_evidence_set_v1(p_start date, p_end date, p_data_base date)",
+          "kind": "function",
+          "name": "market_evidence_set_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_start date, p_end date, p_data_base date",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 130,
+          "anchor": "create function private.market_evidence_set_v1(p_start date,p_end date,p_data_base date) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.market_quality_policy_text_v1(p_id text, p_version text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.market_quality_policy_text_v1(p_id text, p_version text)",
+          "kind": "function",
+          "name": "market_quality_policy_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id text, p_version text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.market_quality_policy_text_v1(p_id text, p_version text)",
+          "kind": "function",
+          "name": "market_quality_policy_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id text, p_version text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 189,
+          "anchor": "create function private.market_quality_policy_text_v1(p_id text,p_version text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.update_market_event_consumer_filter_v1(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.update_market_event_consumer_filter_v1(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "update_market_event_consumer_filter_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.update_market_event_consumer_filter_v1(p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "update_market_event_consumer_filter_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_consumer text, p_events text[], p_subject_kinds text[], p_reason text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, base de referência de mercado (ADR 0023)",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da M2 parte 3: uma ordem de travas na fila de eventos e na autoridade, troca governada do filtro de consumidor, evidência materializada uma vez no relink e na criação de versão, e publicação ODbL sobre a ponta da cadeia com contrato e política como dado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+          "line": 42,
+          "anchor": "create function private.update_market_event_consumer_filter_v1(p_command uuid,p_consumer text,p_events text[],p_subject_kinds text[],p_reason text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -344228,6 +344449,41 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 3, outbox, retenção e ODbL",
       "reason": "M2 parte 3: retenção e contrato único de leitura, âncoras de autoridade, religação sob leitura, edição ODbL e seu leitor anônimo."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261021235857_market_m2_part3_fixes.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da implementação da M2 parte 3."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261022000542_market_m2_part3_fixes_2.sql",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3, correções da revisão",
+      "reason": "Correções da revisão independente da implementação da M2 parte 3."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/dados/meta-selic/page.tsx",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3",
+      "reason": "página pública da edição ODbL da meta Selic em pt-BR; existe só com edição servida, lida pelo leitor anônimo vinculado"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/data/selic-target/page.tsx",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3",
+      "reason": "página pública da edição ODbL da meta Selic em en-US; existe só com edição servida, lida pelo leitor anônimo vinculado"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/dados/meta-selic.json/route.ts",
+      "decision": "preservar",
+      "stage": "base de mercado M2 parte 3",
+      "reason": "arquivo canônico da edição ODbL servido byte a byte com o digest, sem cookie; 404 sem edição, 410 retirada"
     }
   ],
   "staging_archive": [
