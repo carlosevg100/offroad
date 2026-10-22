@@ -13,6 +13,9 @@ plano; barreiras do bootstrap e regras de parada; lista do bootstrap do tamanho 
 worker local; manifesto de pedidos idênticos por data operacional; aceite do monitor com resultado esperado;
 prova completa da edição; reversão por pausa e retomada ensaiadas; manifesto de comandos; significado dos
 horários e operação contínua.
+Mudanças da v3 (revisão 2): manifesto concreto por data operacional e última reunião, com atos de pausa e de
+retomada completos; pausa cancela também os jobs `leased`; retomada readquire os detalhes cancelados; prova com
+executor só de mercado.
 
 ## 1. Ordem: transporte antes do bootstrap, agendas por último
 
@@ -31,11 +34,16 @@ parte.
 
 ## 2. Definições e manifesto
 
-Todos os atos estão em `M2-PARTE-4-MANIFESTO.json`, gerado por `scripts/market-part4-manifest.py`: ambiente,
-ator, função, argumentos, motivo e comando UUID v5 no namespace `9ddec42e-8e97-5b84-93d3-9c8bd5b7e8b3`
-(`uuid5(NAMESPACE_URL, 'https://offroad.capital/market/m2-part4')`, nome `<ambiente>:<ato>`). Repetir um ato é
-replay do mesmo comando; uma retomada usa atos novos (`resume-<n>`), porque replay de concessão revogada não a
-reativa. Nenhum segredo entra no manifesto.
+Todos os atos estão no manifesto concreto `parte-4/manifesto-<D>.json`, gerado por
+`scripts/market-part4-manifest.py --date D --last-meeting N`: ambiente, ator, função, argumentos, motivo e
+comando UUID v5 no namespace `9ddec42e-8e97-5b84-93d3-9c8bd5b7e8b3` (`uuid5(NAMESPACE_URL,
+'https://offroad.capital/market/m2-part4')`, nome `<ambiente>:<ato>`). O nome do ato carrega o que o torna
+concreto (`bootstrap-series-<D>`, `bootstrap-list-235-<N>`, `bootstrap-detail-<n>`), de modo que outro dia ou
+outra última reunião geram outro comando, nunca replay com argumento diferente; se D ou N mudarem até a execução,
+gera-se um manifesto novo e os anteriores ficam. Atos cujo argumento vem de um recibo anterior (a delegação ou a
+agenda que a pausa revoga) nomeiam o comando da concessão; os cancelamentos são um ato por job
+(`pause-cancel-<job>`). Repetir um ato é replay do mesmo comando; uma retomada usa atos novos (`resume-1-…`),
+porque replay de concessão revogada não a reativa. Nenhum segredo entra no manifesto.
 
 Produção: ator é o principal fundador (`b60448ce-965a-4303-ae39-50447450c2aa`), atos pela conexão
 administrativa do projeto, cada motivo cita a autorização; worker é o token do ECS (`655b20e1-…`, conta
@@ -89,11 +97,14 @@ staging:
 1. Identidades sintéticas em staging, criadas pelo conector administrativo e rotuladas: principal fundador
    (`e26ced3a-…`), conta de worker (`f46fa371-…`) com senha gerada na sessão, token (`c9783ba9-…`) vinculado a
    ela. Senha e texto do token ficam só no ambiente do processo local e são descartados no fim.
-2. Worker local isolado: `env -i` com apenas `PATH`, `HOME`, `NODE_ENV`, `SUPABASE_URL` e
-   `SUPABASE_PUBLISHABLE_KEY` de staging, `WORKER_ACCOUNT_EMAIL`, `WORKER_ACCOUNT_PASSWORD` e
-   `OFFROAD_WORKER_TOKEN` sintéticos; nenhuma credencial de AWS, de modelo ou de produção. Antes de autenticar,
-   confere-se que o host é o de staging. O token não tem concessão fora do mercado; ao fim, confere-se que ele
-   não reivindicou nada além de jobs de mercado.
+2. Executor só de mercado: `apps/document-worker/scripts/market-proof-runner.ts`, empacotado do commit do
+   main, roda os mesmos módulos da imagem para mercado (consumidor de aquisição com busca, Storage e confirmação,
+   varredura de órfãos, agendador e monitor RG-01) e nenhum outro consumidor: o token de worker é reconhecido
+   por consumidores genéricos que não exigem delegação de mercado, então o processo completo não é usado.
+   Recusa começar se o host não for o do projeto nomeado (`MARKET_PROOF_PROJECT_REF`) e para sozinho no prazo
+   (`MARKET_PROOF_MINUTES`). Roda com `env -i` e apenas `PATH`, `HOME`, `SUPABASE_URL` e
+   `SUPABASE_PUBLISHABLE_KEY` de staging, credenciais sintéticas e as duas variáveis da prova; nenhuma credencial
+   de AWS, de modelo ou de produção.
 3. Atos A a F do manifesto em staging (publicadora, fonte, calendário com os mesmos bytes, consumidor,
    delegações, transporte), com a conferência pré-abertura da seção 1.
 4. Reprodução do corpus: além do bootstrap da seção 3, o pedido `corpus-series` (2021-01-14 a 2026-10-21).
@@ -110,9 +121,12 @@ staging:
 7. Edição ODbL em staging com o commit do main; web local (`NEXT_PUBLIC_SUPABASE_URL` e
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` de staging no build) e aceite I da seção 5.
 8. Agendas em staging e aceite J com o worker local até estabilizar.
-9. Ensaio da reversão: pausa (transporte fechado, delegações de aquisição e de evento revogadas, agendas
-   revogadas, jobs `queued` cancelados); confere-se que o disparo bloqueia e que nada é reivindicado; retomada
-   com atos novos; nova pausa final; token sintético revogado. Os dados ficam em staging como evidência.
+9. Ensaio da reversão com aquisição em andamento: com uma lista nova que nomeie uma reunião sem detalhe ainda
+   confirmado (ou, sem reunião nova, o detalhe de uma reunião cuja referência ainda não existe em staging),
+   pausa no meio (seção 6); confere-se que o disparo bloqueia, que nada é reivindicado, que não resta job
+   `queued` nem `leased` e que a reconciliação passa a mostrar `detail_cancelled`; retomada com os atos
+   `resume-1-…`, inclusive a nova aquisição do detalhe cancelado, até a reconciliação ficar vazia; nova pausa
+   final; token sintético revogado. Os dados ficam em staging como evidência.
 
 ## 5. Produção
 
@@ -143,10 +157,17 @@ Depois da liberação:
 ## 6. Reversão e retomada
 
 Pausa: transporte fechado; delegação de aquisição e delegação de evento revogadas (o consumidor fica
-registrado: desabilitá-lo é definitivo e impediria recriar `rg01-monitor`); agendas revogadas; jobs `queued`
-cancelados. Uma requisição já iniciada termina sem conseguir confirmar; objetos alocados sem confirmação ficam
-para a varredura, que depende do transporte aberto e roda na retomada. Edição: `withdraw_market_odbl_release_v1`
-(rota 410). O token do ECS nunca é revogado. Retomada: atos novos `resume-<n>`. Nenhum passo apaga recibo.
+registrado: desabilitá-lo é definitivo e impediria recriar `rg01-monitor`); as duas agendas revogadas, uma por
+ato; todo job de mercado da fonte `bcb` em `queued` ou `leased` cancelado, um ato por job (um lease vencido
+continua `leased` e seria reivindicado de novo na retomada). Uma requisição já iniciada termina sem conseguir
+confirmar; objetos alocados sem confirmação ficam para a varredura, que depende do transporte aberto e roda na
+retomada. A pausa não retira a edição; retirada (`withdraw_market_odbl_release_v1`, rota 410) só se a própria
+edição estiver errada. O token do ECS nunca é revogado.
+
+Retomada: conferência de que não há job não terminal; atos novos `resume-1-…` (transporte, delegações); nova
+aquisição explícita de cada detalhe cancelado na pausa cuja reunião ainda não tem referência, porque a
+reconciliação trata detalhe cancelado como decisão de operador (`detail_cancelled`) em qualquer agenda; espera
+das confirmações; nova edição se houve retirada; agendas novas por último. Nenhum passo apaga recibo.
 
 ## 7. Operação contínua
 
