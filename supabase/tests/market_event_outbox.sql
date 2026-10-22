@@ -242,7 +242,8 @@ do $$ declare t text;r text;f text;begin
    'worker_commit_market_version_v1','worker_can_access_market_object_v1','worker_list_market_orphans_v1',
    'worker_claim_market_event_v1','worker_renew_market_event_v1','worker_complete_market_event_v1','worker_fail_market_event_v1',
    'record_market_copom_calendar_v1','register_market_event_consumer_v2','run_market_rg01_v1','worker_run_rg01_event_v1','worker_schedule_rg01_v1',
-   'worker_evaluate_rg01_v1','dispose_market_regime_incident_v1')
+   'worker_evaluate_rg01_v1','dispose_market_regime_incident_v1',
+   'grant_market_acquisition_schedule_v1','revoke_market_acquisition_schedule_v1','record_market_schedule_occurrence_v1','worker_fire_market_schedules_v1')
    and p.prosrc !~ '^\s*(declare\s.*?)?\mbegin\M\s+perform private\.market_require_read_committed_v1\(\);' loop
   raise exception 'market command does not enter the door first: %',f;
  end loop;
@@ -254,7 +255,8 @@ do $$ declare t text;r text;f text;begin
    'worker_commit_market_acquisition_v1','worker_fail_market_acquisition_v1','worker_commit_market_version_v1','worker_can_access_market_object_v1',
    'worker_list_market_orphans_v1','worker_claim_market_event_v1','worker_renew_market_event_v1','worker_complete_market_event_v1','worker_fail_market_event_v1',
    'record_market_copom_calendar_v1','register_market_event_consumer_v2','run_market_rg01_v1','worker_run_rg01_event_v1','worker_schedule_rg01_v1',
-   'worker_evaluate_rg01_v1','dispose_market_regime_incident_v1'))<>35
+   'worker_evaluate_rg01_v1','dispose_market_regime_incident_v1',
+   'grant_market_acquisition_schedule_v1','revoke_market_acquisition_schedule_v1','record_market_schedule_occurrence_v1','worker_fire_market_schedules_v1'))<>39
  then raise exception 'market command set changed: review the door';end if;
  if not exists(select 1 from pg_trigger where tgname='market_observations_door' and tgrelid='private.market_observations'::regclass and (tgtype&1)=0)
  then raise exception 'observation statements do not enter the door';end if;

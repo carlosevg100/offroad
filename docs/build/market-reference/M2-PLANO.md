@@ -161,6 +161,16 @@ instrução, avaliador com vetores independentes, incidente com testemunhas e re
 só pede, avalia e entrega os eventos do consumidor com handler `rg01`. Fica desligado até a parte 4, que
 registra o calendário de 2026, o consumidor `rg01-monitor` e a delegação do worker. Desenho em `M2-PARTE-6.md`.
 
+Emenda de 22/10/2026, na parte 2: a decisão 9 passa a ser cumprida sem cron no banco. A agenda é concedida
+e revogada por comando de fundador ou operador com recibo, uma ativa por tipo (série 432; lista e detalhes
+dos comunicados do Copom); o worker chama a entrada de disparo num laço próprio e o banco decide, sob a porta
+de autoridade, a trava da agenda e a da fonte, o que enfileirar pelo caminho de aquisição existente. A
+delegação usada é a de aquisição do token do worker para a fonte; o concedente precisa seguir principal
+vigente. A unicidade é a ocorrência por agenda e chave (`series:<dia>`, `list:<dia>`, `detail:<reunião>:<n>`,
+`manual:<comando>`), e o comando do job deriva dela. A janela da série nasce na primeira lacuna da seleção
+única, exige comunicado de âncora legível e é recuperada pelo desfecho da última ocorrência, com orçamento de
+três disparos automáticos por início de janela. Desenho em `M2-PARTE-2.md`.
+
 Os atos da parte 4 usam identidade de fundador ou operador; o registro da publicadora é comando de
 fundador. A chave só abre depois da outbox consumida, da página ODbL publicada e da prova integrada em
 staging.

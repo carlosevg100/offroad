@@ -8,6 +8,7 @@ import {createMarketAcquisitionQueue} from "./market-acquisition-queue";
 import {createMarketObjectStore} from "./market-acquisition-storage";
 import {processMarketAcquisition, sweepMarketOrphans} from "./process-market-acquisition";
 import {createMarketRegimeMonitor, MARKET_RG01_CYCLE_MS, MarketRegimeMonitorError, runMarketRg01Cycle} from "./market-regime-monitor";
+import {createMarketScheduler, MARKET_SCHEDULER_CYCLE_MS, MarketSchedulerError, runMarketSchedulerCycle} from "./market-acquisition-scheduler";
 import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
@@ -305,6 +306,7 @@ async function main(): Promise<void> {
   const marketStore = createMarketObjectStore(supabase);
   // The RG-01 monitor: active only while its consumer exists with a live delegation for this worker.
   const regimeMonitor = createMarketRegimeMonitor(supabase, config.OFFROAD_WORKER_TOKEN);
+  const scheduler = createMarketScheduler(supabase, config.OFFROAD_WORKER_TOKEN);
   let idlePolls = 0;
   const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
     () => log("execution.poll_failed", {reason: "execution_transport_failed"}),
@@ -393,6 +395,17 @@ async function main(): Promise<void> {
           runs: result.runs.join(","), fired: result.fired, ...(result.eventsFailed ? {eventsFailed: result.eventsFailed} : {})}); })
         .catch((error) => log("market.rg01_failed", {reason: error instanceof MarketRegimeMonitorError ? error.code : "market_regime_monitor_transport_failed"}));
       await sleep(MARKET_RG01_CYCLE_MS, shuttingDown.signal);
+    }
+  })();
+
+  // The market scheduler fires the granted schedules in its own loop; the jobs it creates follow the acquisition path.
+  const schedulerLoop = (async () => {
+    while (!stopping) {
+      await runMarketSchedulerCycle(scheduler)
+        .then(result => { if (result.statuses.length > 0) log("market.scheduler", {fired: result.fired, details: result.details,
+          statuses: result.statuses.join(","), ...(result.blocked.length > 0 ? {blocked: result.blocked.slice(0, 20).join(",")} : {})}); })
+        .catch((error) => log("market.scheduler_failed", {reason: error instanceof MarketSchedulerError ? error.code : "market_scheduler_transport_failed"}));
+      await sleep(MARKET_SCHEDULER_CYCLE_MS, shuttingDown.signal);
     }
   })();
 
@@ -599,7 +612,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop, retentionLoop, auditArchiveLoop, regimeMonitorLoop]);
+    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop, retentionLoop, auditArchiveLoop, regimeMonitorLoop, schedulerLoop]);
   }
   log("worker.stopped");
 }
