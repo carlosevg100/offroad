@@ -2084,7 +2084,7 @@
     },
     {
       "path": "apps/document-worker/src/market-regime-monitor.ts",
-      "sha256": "5df72a2e064221cf9752baba878bfd6f121b11eb81bbeb2ef05e68ae8f5d173d",
+      "sha256": "9e75d2a6ef2aebd24fd2e71c02cac1babf32e33453c00972b7f8a2953308d45b",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_market_event_v1",

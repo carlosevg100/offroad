@@ -141,16 +141,17 @@ export function evaluateRg01(snapshot: Rg01Snapshot) {
   }));
   const relevant = rows.filter((r) => r.relevant);
   const missingYears = snapshot.calendarYearsRequired.filter((y) => !snapshot.calendarYearsPresent.includes(y));
-  let gaps = [...missingYears.map((y) => `calendar_missing:${y}`), ...(snapshot.selectionEntries === 0 ? ["series_absent"] : []),
+  let gaps = [...missingYears.map((y) => `calendar_missing:${y}`),
     ...relevant.filter((r) => r.state !== "corroborated").map((r) => `${gapCode[r.state as Exclude<Rg01MeetingState, "corroborated">]}:${r.endDate}`)];
   const witnesses = relevant.filter((r) => r.decision === "raise" && r.state === "corroborated").map((r) => r.endDate);
   let result: Rg01Result;
   if (witnesses.length > 0) result = "fired";
   else if (relevant.some((r) => r.decision === "raise" && r.state === "awaiting_series")) result = "pending_confirmation";
-  else if (missingYears.length === 0 && snapshot.selectionEntries > 0 && relevant.every((r) => r.state === "corroborated")) result = "not_fired";
+  else if (missingYears.length === 0 && relevant.every((r) => r.state === "corroborated")) result = "not_fired";
   else result = "incomplete";
-  const freshness = snapshot.selectionEntries === 0 ? "absent"
-    : missingYears.length > 0 || relevant.some((r) => r.deadline < D && r.state !== "corroborated") ? "stale" : "current";
+  // Decision 5, in this order: a relevant meeting past its deadline and not corroborated; no observation; current.
+  const freshness = relevant.some((r) => r.deadline < D && r.state !== "corroborated") ? "stale"
+    : snapshot.selectionEntries === 0 ? "absent" : "current";
   // The declared baseline against the evidence; informative only.
   let contra: string[] = [];
   const base = new Map(rows.filter((r) => r.baseline).map((r) => [r.endDate, r]));

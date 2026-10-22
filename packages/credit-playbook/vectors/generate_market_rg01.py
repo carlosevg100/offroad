@@ -88,15 +88,16 @@ def evaluate(snap):
                      "relevant": last_declared < m["endDate"] <= D, "m": m})
     relevant = [r for r in rows if r["relevant"]]
     missing_years = [y for y in snap["calendarYearsRequired"] if y not in snap["calendarYearsPresent"]]
-    gaps = ["calendar_missing:%d" % y for y in missing_years] + (["series_absent"] if snap["selectionEntries"] == 0 else [])
+    gaps = ["calendar_missing:%d" % y for y in missing_years]
     gaps += ["%s:%s" % (GAP[r["state"]], r["endDate"]) for r in relevant if r["state"] != "corroborated"]
     witnesses = [r["endDate"] for r in relevant if r["decision"] == "raise" and r["state"] == "corroborated"]
     if witnesses: result = "fired"
     elif any(r["decision"] == "raise" and r["state"] == "awaiting_series" for r in relevant): result = "pending_confirmation"
-    elif not missing_years and snap["selectionEntries"] > 0 and all(r["state"] == "corroborated" for r in relevant): result = "not_fired"
+    elif not missing_years and all(r["state"] == "corroborated" for r in relevant): result = "not_fired"
     else: result = "incomplete"
-    if snap["selectionEntries"] == 0: fresh = "absent"
-    elif missing_years or any(r["deadline"] < D and r["state"] != "corroborated" for r in relevant): fresh = "stale"
+    # Decision 5, in this order: a relevant meeting past its deadline and not corroborated; no observation; current.
+    if any(r["deadline"] < D and r["state"] != "corroborated" for r in relevant): fresh = "stale"
+    elif snap["selectionEntries"] == 0: fresh = "absent"
     else: fresh = "current"
     # Baseline.
     contra = []
@@ -163,6 +164,8 @@ cases = [
   ("calendar_missing", snap("2027-01-05", [], years=(2026,), required=(2026, 2027))),
   ("no_meetings_complete", snap("2026-10-22", [])),
   ("absent_selection", snap("2026-10-22", [], entries=0)),
+  ("due_meeting_without_series", snap("2026-11-12", [{"endDate": NOV, "kind": "ordinary", "communique": None, "previous": None, "change": None}], entries=0)),
+  ("calendar_missing_nothing_due", snap("2026-11-03", [], years=(), required=(2026,))),
   ("extraordinary_raise", snap("2026-10-22", [{"endDate": "2026-10-10", "kind": "extraordinary", "communique": comm("raise", "14.25", meeting=900), "previous": "13.75", "change": "14.25"}])),
   ("second_raise", snap("2026-12-20", [{"endDate": NOV, "kind": "ordinary", "communique": comm("raise", "14.00", meeting=285), "previous": "13.75", "change": "14.00"},
                                        {"endDate": DEC, "kind": "ordinary", "communique": comm("raise", "14.25", meeting=286), "previous": "14.00", "change": "14.25"}])),

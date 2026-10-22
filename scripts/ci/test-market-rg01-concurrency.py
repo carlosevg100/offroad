@@ -3,10 +3,13 @@
 
 1. Two evaluations of one regime at once: the second answers busy at once and writes nothing; after the
    first commits, with no request left, a run is idle.
-2. A confirmation that commits between the evaluation's discovery of its candidates and its snapshot: the
-   evaluation waits at the source's read lock, then sees a version outside the set it locked and answers
-   retry without writing; the next run evaluates with that version among its dependencies.
-3. Two schedules of the same hour at once: the second waits on the first's request and adds nothing.
+2. A version recorded before K whose transaction commits between the evaluation's discovery of its candidates
+   and its snapshot: the evaluation waits at the source's read lock, sees a version outside the set it locked
+   and answers retry without writing; the next run reads it. A version confirmed after K stays for the next run.
+3. A request recorded after the snapshot stays pending.
+4. A version revoked during an evaluation waits for it, and the next evaluation leaves it out.
+5. An acquisition revoked during an evaluation waits at the door, without deadlock, and is left out next.
+6. Two schedules of the same hour at once: the second waits on the first's request and adds nothing.
 Every row here is synthetic and lives only in the disposable database. Dates are relative to the day of the
 run and meetings 9301 to 9307 do not collide with the other market races. Runs before the outbox races, which
 revoke the source at their end; the monitor's consumer is disabled when the races finish.
@@ -221,39 +224,106 @@ commit;
     if json.loads(psql(run_sql()).splitlines()[-1]).get('status') != 'idle':
         raise AssertionError('a run with no request was not idle')
 
-    # 2. Retry: a confirmation holds the source while the evaluation waits at its read lock, then commits.
+    # 2. Retry: a version recorded before K but not yet committed, whose transaction holds the source, is
+    # invisible when the evaluation discovers its candidates; it commits while the evaluation waits at the read
+    # lock, the snapshot sees it outside the locked set, and the evaluation answers retry without writing.
     evaluations = psql(f"select count(*) from private.market_regime_evaluations where declaration_id='{DECLARATION}';")
     late_start = today - datetime.timedelta(days=5)
     late_body = series(late_start, end, points)
     late = claim_job('bcb-sgs-432-endpoint', json.dumps({'window': {'start': late_start.isoformat(), 'end': end.isoformat()}}))
     store(late, late_body)
-    b = session('market_rg01_confirmation', "select pg_advisory_xact_lock(hashtextextended('market-authority:source:bcb',0));"); barrier(b, 'B')
+    b = session('market_rg01_confirmation', "select pg_advisory_xact_lock(hashtextextended('market-authority:source:bcb',0));" + commit_sql(late, late_body))
+    barrier(b, 'B')
     psql(request_sql('hour:2099-01-02T02'))
     a = session('market_rg01_retry', run_sql())
     wait_for_lock('market_rg01_retry')
-    b.stdin.write(commit_sql(late, late_body) + "\n")
     confirmed = json.loads(finish(b).splitlines()[-1])
     out = finish(a)
     if json.loads(out.splitlines()[-1]).get('status') != 'retry':
         raise AssertionError('an evaluation that read a version outside its locks did not answer retry: ' + out)
     if psql(f"select count(*) from private.market_regime_evaluations where declaration_id='{DECLARATION}';") != evaluations:
         raise AssertionError('a retry wrote an evaluation')
-    if psql(f"select count(*) from private.market_rg01_requests where key='hour:2099-01-02T02' and satisfied_by is null;") != '1':
+    if psql("select count(*) from private.market_rg01_requests where key='hour:2099-01-02T02' and satisfied_by is null;") != '1':
         raise AssertionError('a retry acknowledged its request')
     out = json.loads(psql(run_sql()).splitlines()[-1])
     if out.get('status') != 'evaluated' or psql(f"select (snapshot->'dependencies'->'versions') ? '{confirmed['versionId']}' from private.market_regime_evaluations "
                                                  f"where id='{out['evaluationId']}';") != 't':
         raise AssertionError(f'the next evaluation did not read the confirmed version: {out}')
 
-    # 3. Two schedules of the same hour: the second waits on the first's request and adds nothing for it.
+    # 2b. A version confirmed after K, while the evaluation waits at the read lock, stays for the next one.
+    after_start = today - datetime.timedelta(days=4)
+    after_body = series(after_start, end, points)
+    after = claim_job('bcb-sgs-432-endpoint', json.dumps({'window': {'start': after_start.isoformat(), 'end': end.isoformat()}}))
+    store(after, after_body)
+    b = session('market_rg01_after_k', "select pg_advisory_xact_lock(hashtextextended('market-authority:source:bcb',0));"); barrier(b, 'B')
+    psql(request_sql('hour:2099-01-02T03'))
+    a = session('market_rg01_before_confirmation', run_sql())
+    wait_for_lock('market_rg01_before_confirmation')
+    b.stdin.write(commit_sql(after, after_body) + "\n")
+    later = json.loads(finish(b).splitlines()[-1])
+    out = json.loads(finish(a).splitlines()[-1])
+    if out.get('status') != 'evaluated' or psql(f"select (snapshot->'dependencies'->'versions') ? '{later['versionId']}' from private.market_regime_evaluations "
+                                                 f"where id='{out['evaluationId']}';") != 'f':
+        raise AssertionError(f'a version confirmed after K entered the evaluation: {out}')
+    psql(request_sql('hour:2099-01-02T04'))
+    out = json.loads(psql(run_sql()).splitlines()[-1])
+    if out.get('status') != 'evaluated' or psql(f"select (snapshot->'dependencies'->'versions') ? '{later['versionId']}' from private.market_regime_evaluations "
+                                                 f"where id='{out['evaluationId']}';") != 't':
+        raise AssertionError(f'the next evaluation did not read the version confirmed after K: {out}')
+
+    # 3. A request recorded after the snapshot, while the evaluation's transaction is open, stays pending.
+    psql(request_sql('hour:2099-01-02T05'))
+    a = session('market_rg01_snapshot_first', run_sql()); barrier(a, 'A')
+    psql(request_sql('hour:2099-01-02T06'))
+    finish(a)
+    if psql("select string_agg(key||':'||(satisfied_by is not null)::text,',' order by key) from private.market_rg01_requests "
+            "where key in ('hour:2099-01-02T05','hour:2099-01-02T06');") != 'hour:2099-01-02T05:true,hour:2099-01-02T06:false':
+        raise AssertionError('a request recorded after the snapshot was acknowledged, or the one it saw was not')
+    psql(f"select private.run_market_rg01_v1('{DECLARATION}');")
+
+    # 4. A version revoked during an evaluation waits for it; the next evaluation leaves the version out.
+    psql(request_sql('hour:2099-01-02T07'))
+    a = session('market_rg01_reading', run_sql()); barrier(a, 'A')
+    b = session('market_rg01_version_revoker', f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                f"values('version','{later['versionId']}','revoked','Revogação sintética durante a avaliação','{OPERATOR}');")
+    wait_for_lock('market_rg01_version_revoker')
+    finish(a); finish(b)
+    psql(request_sql('hour:2099-01-02T08'))
+    out = json.loads(psql(run_sql()).splitlines()[-1])
+    if out.get('status') != 'evaluated' or psql(f"select (snapshot->'dependencies'->'versions') ? '{later['versionId']}' from private.market_regime_evaluations "
+                                                 f"where id='{out['evaluationId']}';") != 'f':
+        raise AssertionError(f'a revoked version was still read: {out}')
+
+    # 5. An acquisition revoked during an evaluation waits at the door; the next evaluation leaves it out.
+    psql(request_sql('hour:2099-01-02T09'))
+    a = session('market_rg01_reading_2', run_sql()); barrier(a, 'A')
+    b = session('market_rg01_acquisition_revoker', f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
+                f"values('acquisition','{confirmed['acquisitionId']}','revoked','Revogação sintética durante a avaliação','{OPERATOR}');")
+    wait_for_lock('market_rg01_acquisition_revoker')
+    finish(a); out_b = finish(b)
+    if 'deadlock' in out_b:
+        raise AssertionError('acquisition revocation deadlocked: ' + out_b)
+    psql(request_sql('hour:2099-01-02T10'))
+    out = json.loads(psql(run_sql()).splitlines()[-1])
+    if out.get('status') != 'evaluated' or psql(f"select (snapshot->'dependencies'->'acquisitions') ? '{confirmed['acquisitionId']}' from private.market_regime_evaluations "
+                                                 f"where id='{out['evaluationId']}';") != 'f':
+        raise AssertionError(f'a revoked acquisition was still read: {out}')
+
+    # 6. Two schedules at once: within one hour the second waits on the first's request and adds nothing for it.
+    hour = "select to_char(clock_timestamp() at time zone 'America/Sao_Paulo','YYYY-MM-DD\"T\"HH24');"
+    before = psql(hour)
     schedule = f"{as_account(WORKER)}select private.worker_schedule_rg01_v1('{TOKEN}')::text;"
     a = session('market_rg01_schedule_a', schedule); barrier(a, 'A')
     b = session('market_rg01_schedule_b', schedule)
-    wait_for_lock('market_rg01_schedule_b')
+    same_hour = psql(hour) == before
+    if same_hour:
+        wait_for_lock('market_rg01_schedule_b')
     first_schedule = json.loads(finish(a).splitlines()[-1])
     second_schedule = json.loads(finish(b).splitlines()[-1])
-    if not first_schedule.get('active') or first_schedule.get('scheduled', 0) < 1 or second_schedule.get('scheduled') != 0:
+    if not first_schedule.get('active') or first_schedule.get('scheduled', 0) < 1 or not second_schedule.get('active'):
         raise AssertionError(f'concurrent schedules: {first_schedule} {second_schedule}')
+    if same_hour and psql(hour) == before and second_schedule.get('scheduled') != 0:
+        raise AssertionError(f'the second schedule of the same hour added requests: {second_schedule}')
 
     psql(f"select private.disable_market_event_consumer_v1('{command()}','rg01-race','Fim das corridas do monitor','{FOUNDER}');")
     print('PASS: RG-01 evaluations serialize per regime, refuse a reading outside their locks and schedule each hour once')

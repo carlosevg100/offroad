@@ -179,7 +179,8 @@ do $$ declare r jsonb;m jsonb:='[{"ordinal":1,"firstDay":"2099-01-27","secondDay
  if (select count(*) from private.market_copom_calendar_evidence where sha256=encode(extensions.digest(ev,'sha256'),'hex'))<>1 then raise exception 'evidence not kept once';end if;
 end $$;
 
--- 3. The cycle's communiqués and series, then a reading without calendars: incomplete and stale, requests
+-- 3. The cycle's communiqués and series, then a reading without calendars: incomplete, and current while no
+-- relevant meeting is due (decision 5 does not read the calendar); requests
 -- seen are acknowledged, a run without requests is idle.
 do $$ declare r jsonb;e private.market_regime_evaluations;begin
  -- The hold before the cycle anchors the first day of the series window.
@@ -189,10 +190,12 @@ do $$ declare r jsonb;e private.market_regime_evaluations;begin
  perform pg_temp.series('3a7c0000-0000-4000-a000-000000000201',pg_temp.d('e1')-3);
  perform pg_temp.request('declaration:'||pg_temp.fact('decl'));
  r:=pg_temp.evaluate();
- if r->>'status'<>'evaluated' or r->>'result'<>'incomplete' or r->>'freshness'<>'stale' or (r->>'reused')::boolean then raise exception 'reading without calendars: %',r;end if;
+ if r->>'status'<>'evaluated' or r->>'result'<>'incomplete' or r->>'freshness'<>'current' or (r->>'reused')::boolean then raise exception 'reading without calendars: %',r;end if;
  select * into e from private.market_regime_evaluations where id=(r->>'evaluationId')::uuid;
  if not (e.evaluation->'gaps') ? ('calendar_missing:'||extract(year from pg_temp.d('e1'))) or jsonb_array_length(e.evaluation->'baselineContradictions')<>0
- or (e.snapshot->>'selectionEntries')::int=0 or e.snapshot#>>'{declaration,id}'<>pg_temp.fact('decl') or e.data_base<>pg_temp.d('D')
+ or (e.snapshot->>'selectionEntries')::int=0 or jsonb_array_length(e.snapshot->'selection')<>(e.snapshot->>'selectionEntries')::int
+ or e.snapshot#>>'{declaration,id}'<>pg_temp.fact('decl') or e.data_base<>pg_temp.d('D')
+ or not (e.snapshot#>'{dependencies,acquisitions}') ? (select reference_acquisition_id::text from private.market_copom_meetings where meeting=9101)
  then raise exception 'evaluation content: %',e.evaluation;end if;
  if e.audit_sha256<>encode(extensions.digest(convert_to(e.snapshot::text,'UTF8'),'sha256'),'hex') or e.state_sha256<>e.evaluation->>'stateSha256'
  then raise exception 'evaluation digests';end if;
@@ -260,39 +263,50 @@ do $$ declare r jsonb;begin
  if r->>'reviewState'<>'dismissed' or (r->>'reviewRevision')::int<>2 then raise exception 'dismissal: %',r;end if;
 end $$;
 
--- 7. A disagreement with the meeting's reference disputes it: the witness loses its support, nothing
--- reopens, and the reading is incomplete.
+-- 7. A second raise while the first witness is still supported is a new witness: the dismissed review reopens on
+-- its own, with a new deadline, and a disposition against the revision before the reopening is refused.
+do $$ declare r jsonb;i private.market_regime_incidents;x private.market_regime_dispositions;begin
+ perform pg_temp.run('3a7c0000-0000-4000-a000-000000000107','bcb-copom-comunicados-detalhe','{"meeting":9107}',pg_temp.detail(9107,pg_temp.d('R2'),'raise','14,25'));
+ perform pg_temp.put('raise','2');
+ perform pg_temp.series('3a7c0000-0000-4000-a000-000000000203',pg_temp.d('R2')-3);
+ perform pg_temp.calendars(array[pg_temp.d('e1'),pg_temp.d('e2'),pg_temp.d('e3'),pg_temp.d('e4'),pg_temp.d('e5'),pg_temp.d('R'),pg_temp.d('R2')]);
+ perform pg_temp.request('hour:2099-01-01T04');
+ r:=pg_temp.evaluate();
+ if r->>'result'<>'fired' then raise exception 'second raise did not fire: %',r;end if;
+ i:=pg_temp.incident();
+ if i.review_state<>'open' or i.review_revision<>3 or i.review_due_on<>private.market_business_day_after_v1(pg_temp.d('D'),5) then raise exception 'review not reopened: %',row_to_json(i);end if;
+ select * into x from private.market_regime_dispositions where regime_id=pg_temp.fact('regime') and revision_after=3;
+ if x.actor_user_id is not null or x.command_id is not null or x.evaluation_id<>(r->>'evaluationId')::uuid or x.from_state<>'dismissed' then raise exception 'automatic reopening: %',row_to_json(x);end if;
+ if (select count(*) from private.market_regime_witnesses where regime_id=pg_temp.fact('regime'))<>2
+ or exists(select 1 from private.market_regime_witness_support s where s.regime_id=pg_temp.fact('regime') and s.support<>'supported')
+ then raise exception 'both witnesses must stay supported';end if;
+ perform pg_temp.expect(format($q$select private.dispose_market_regime_incident_v1('3a7c0000-0000-4000-a000-000000000307',%L,'RG-01',2,'review_opened','Revisão sobre a revisão anterior','3a7c0000-0000-4000-8000-000000000002')$q$,pg_temp.fact('regime')),
+  'market_regime_incident_revision_changed','disposition against the revision before the reopening');
+end $$;
+
+-- 8. A disagreement with the first meeting's reference disputes it: that witness loses its support, the second
+-- keeps the incident supported, nothing reopens, and the reading still fires on the second.
 do $$ declare c jsonb;r jsonb;e jsonb;begin
  c:=pg_temp.claim_job('3a7c0000-0000-4000-a000-000000000401','bcb-copom-comunicados-detalhe','{"meeting":9106}');
  perform pg_temp.as_account('3a7c0000-0000-4000-8000-000000000004');
  r:=private.worker_fail_market_acquisition_v1((c->>'jobId')::uuid,c->>'capability',(c->>'leaseId')::uuid,'meeting_disagreement',true,'Referência difere do registro');
  perform pg_temp.as_account(null);
  if (r->>'retryScheduled')::boolean then raise exception 'disagreement retried';end if;
- perform pg_temp.request('hour:2099-01-01T04');
- r:=pg_temp.evaluate();
- select evaluation into e from private.market_regime_evaluations where id=(r->>'evaluationId')::uuid;
- if r->>'result'<>'incomplete' or not (e->'gaps') ? ('meeting_disputed:'||pg_temp.fact('R')) or jsonb_array_length(e->'witnesses')<>0
- then raise exception 'disputed reading: %',e;end if;
- if (select support from private.market_regime_witness_support where regime_id=pg_temp.fact('regime') and meeting_end=pg_temp.d('R') order by revision desc limit 1)<>'unavailable'
- or (pg_temp.incident()).review_state<>'dismissed' then raise exception 'dispute changed the review or kept the support';end if;
-end $$;
-
--- 8. A second raise is a new witness: the dismissed review reopens on its own, with a new deadline.
-do $$ declare r jsonb;i private.market_regime_incidents;x private.market_regime_dispositions;begin
- perform pg_temp.run('3a7c0000-0000-4000-a000-000000000107','bcb-copom-comunicados-detalhe','{"meeting":9107}',pg_temp.detail(9107,pg_temp.d('R2'),'raise','14,25'));
- perform pg_temp.put('raise','2');
- perform pg_temp.series('3a7c0000-0000-4000-a000-000000000203',pg_temp.d('R2')-3);
- perform pg_temp.calendars(array[pg_temp.d('e1'),pg_temp.d('e2'),pg_temp.d('e3'),pg_temp.d('e4'),pg_temp.d('e5'),pg_temp.d('R'),pg_temp.d('R2')]);
  perform pg_temp.request('hour:2099-01-01T05');
  r:=pg_temp.evaluate();
- if r->>'result'<>'fired' then raise exception 'second raise did not fire: %',r;end if;
- i:=pg_temp.incident();
- if i.review_state<>'open' or i.review_revision<>3 then raise exception 'review not reopened: %',row_to_json(i);end if;
- select * into x from private.market_regime_dispositions where regime_id=pg_temp.fact('regime') and revision_after=3;
- if x.actor_user_id is not null or x.command_id is not null or x.evaluation_id<>(r->>'evaluationId')::uuid or x.from_state<>'dismissed' then raise exception 'automatic reopening: %',row_to_json(x);end if;
- if (select count(*) from private.market_regime_witnesses where regime_id=pg_temp.fact('regime'))<>2
+ select evaluation into e from private.market_regime_evaluations where id=(r->>'evaluationId')::uuid;
+ if r->>'result'<>'fired' or not (e->'gaps') ? ('meeting_disputed:'||pg_temp.fact('R')) or e->'witnesses'<>jsonb_build_array(pg_temp.fact('R2'))
+ then raise exception 'disputed reading: %',e;end if;
+ if (select support from private.market_regime_witness_support where regime_id=pg_temp.fact('regime') and meeting_end=pg_temp.d('R') order by revision desc limit 1)<>'unavailable'
  or (select support from private.market_regime_witness_support where regime_id=pg_temp.fact('regime') and meeting_end=pg_temp.d('R2') order by revision desc limit 1)<>'supported'
- then raise exception 'second witness';end if;
+ or (pg_temp.incident()).review_state<>'open' or (pg_temp.incident()).review_revision<>3 then raise exception 'dispute changed the review or the supports';end if;
+end $$;
+
+-- 8b. A communiqué acquired after the data-base limit is not read for that data-base, even with a later K.
+do $$ declare s jsonb;begin
+ s:=private.market_rg01_snapshot_v1(pg_temp.fact('decl')::uuid,pg_temp.d('D')-1,clock_timestamp());
+ if exists(select 1 from jsonb_array_elements(s->'meetings') m where m->'communique' is not null and m->'communique'<>'null'::jsonb)
+ then raise exception 'communiqué read before it was available: %',s->'meetings';end if;
 end $$;
 
 -- 9. The consumer's handler: founder registration, one per handler, the generic completion refused, the
@@ -321,6 +335,16 @@ do $$ declare r jsonb;c jsonb;s bigint;k text;begin
  if (r->>'completed')::boolean is not true or (r->>'replayed')::boolean or r->>'request'<>k then raise exception 'event run: %',r;end if;
  r:=private.worker_run_rg01_event_v1('rg01-monitor',s,c->>'capability',(c->>'leaseId')::uuid);
  if (r->>'replayed')::boolean is not true then raise exception 'event run did not replay';end if;
+ perform pg_temp.as_account(null);
+ -- A receipt of a generic consumer is not replayed by the monitor's entry.
+ perform private.register_market_event_consumer_v1('3a7c0000-0000-4000-a000-000000000506','generic-x',array['released'],array['source'],'Consumidor genérico sintético','3a7c0000-0000-4000-8000-000000000001');
+ perform private.grant_market_event_delegation_v1('3a7c0000-0000-4000-a000-000000000507','3a7c0000-0000-4000-8000-000000000011','generic-x','Delegação sintética genérica','3a7c0000-0000-4000-8000-000000000002');
+ insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) values('source','bcb','released','Evento sintético genérico','3a7c0000-0000-4000-8000-000000000002');
+ perform pg_temp.as_account('3a7c0000-0000-4000-8000-000000000004');
+ c:=private.worker_claim_market_event_v1('synthetic-rg01-worker-token-3a7c0000-a','generic-x');
+ perform private.worker_complete_market_event_v1('generic-x',(c->>'eventSequence')::bigint,c->>'capability',(c->>'leaseId')::uuid,'{"ok":true}');
+ perform pg_temp.expect(format($q$select private.worker_run_rg01_event_v1('generic-x',%s,%L,%L)$q$,c->>'eventSequence',c->>'capability',c->>'leaseId'),
+  'market_event_handler_mismatch','replay of a generic receipt by the monitor entry');
  perform pg_temp.as_account(null);
  if (select count(*) from private.market_rg01_requests where key=k and satisfied_by is null)<>(select count(*) from private.market_regime_declarations where active)
  or (select status from private.market_event_outbox where consumer_id='rg01-monitor' and event_sequence=s)<>'completed'
@@ -353,9 +377,12 @@ do $$ declare r jsonb;begin
  perform pg_temp.expect(format($q$select private.market_regime_incident_v1(%L,'RG-01','3a7c0000-0000-4000-8000-000000000004')$q$,pg_temp.fact('regime')),
   'platform_principal_required','incident read by a non-principal');
  r:=private.market_regime_incident_v1(pg_temp.fact('regime'),'RG-01','3a7c0000-0000-4000-8000-000000000002');
- if r#>>'{declaration,referenceStatus}'<>'draft' or r#>>'{incident,reviewState}'<>'open' or jsonb_array_length(r#>'{incident,dispositions}')<>3
- or jsonb_array_length(r#>'{incident,witnesses}')<>2 or r#>>'{lastEvaluation,result}'<>'fired' or jsonb_array_length(r->'pendingRequests')<>0
+ if r#>>'{declaration,referenceStatus}'<>'draft' or r#>>'{incident,reviewState}'<>'open' or r#>>'{incident,support}'<>'supported'
+ or jsonb_array_length(r#>'{incident,dispositions}')<>3 or jsonb_array_length(r#>'{incident,witnesses}')<>2 or r#>>'{lastEvaluation,result}'<>'fired'
+ or jsonb_array_length(r->'pendingRequests')<>0 or not r ? 'nextDeadline'
  or r#>>'{incident,witnesses,0,support}'<>'unavailable' or r#>>'{incident,witnesses,1,meeting,meeting}'<>'9107'
+ or r#>>'{incident,witnesses,1,series,previous}'<>'14' or r#>>'{incident,witnesses,1,series,change}'<>'14.25'
+ or r#>>'{incident,witnesses,1,series,evaluationId}'<>r#>>'{lastEvaluation,id}'
  then raise exception 'operator read: %',r;end if;
 end $$;
 

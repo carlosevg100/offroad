@@ -70,6 +70,19 @@ describe("RG-01 monitor cycle", () => {
   };
  }
 
+ it("still evaluates when claiming or handling an event fails, and reports the failure", async () => {
+  for (const failing of ["claimEvent", "runEvent"] as const) {
+   const m = fake(true, 2, [{status: "superseded"}, evaluated]);
+   m[failing] = async () => { m.log.push(`fail:${failing}`); throw new MarketRegimeMonitorError("market_event_lease_denied"); };
+   const result = await runMarketRg01Cycle(m, new AbortController().signal);
+   expect(result).toMatchObject({status: "ran", runs: ["superseded", "evaluated"], fired: 1, eventsFailed: "market_event_lease_denied"});
+   expect(m.log.at(-1)).toBe("evaluate");
+  }
+  const m = fake(true, 1);
+  m.runEvent = async () => { throw new Error("socket closed"); };
+  expect(await runMarketRg01Cycle(m, new AbortController().signal)).toMatchObject({eventsFailed: "market_regime_monitor_transport_failed"});
+ });
+
  it("does nothing more when the monitor is not active for this worker", async () => {
   const m = fake(false, 3);
   expect(await runMarketRg01Cycle(m, new AbortController().signal)).toEqual({status: "inactive"});
