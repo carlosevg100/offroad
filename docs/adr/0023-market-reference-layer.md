@@ -116,6 +116,11 @@ seleciona a política aplicável em cada lado das mudanças de vigência de 1/11
    não publica mercado; capacidade de mercado não lê nem escreve dado de tenant; aquisição fora dos
    domínios da fonte é recusada; redirecionamento é revalidado contra a lista e destinos internos ou
    privados são bloqueados.
+   (Emenda de 22/10/2026, na M2 parte 2: o enfileiramento pelo agendador não usa cron no banco. Agendas
+   concedidas por comando de fundador ou operador são disparadas pelo worker num laço próprio; o banco
+   confere concedente vigente, delegação de aquisição do token para a fonte, transporte aberto, fonte
+   adquirível, host e evidência do contrato sob a trava da fonte, e grava ocorrência e job na mesma
+   transação.)
 
 4. **Identidade em camadas e linha do tempo da informação.** Separam-se:
    - **identidade lógica** do objeto (fonte, série ou instrumento, e para cada família a granularidade

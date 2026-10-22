@@ -32,6 +32,8 @@ const commitFailure: Partial<Record<string, {code: MarketAcquisitionFailureCode;
  market_contract_mismatch: {code: "verification_failed", retryable: false},
  market_copom_meeting_disagreement: {code: "meeting_disagreement", retryable: false},
  market_copom_meeting_day_collision: {code: "verification_failed", retryable: false},
+ // A list or detail that disagrees with a readable listing or recorded meeting: definitive, for an operator to read.
+ market_copom_list_conflict: {code: "verification_failed", retryable: false},
 };
 
 /**

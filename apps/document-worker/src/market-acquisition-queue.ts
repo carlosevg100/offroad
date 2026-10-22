@@ -28,7 +28,7 @@ const renewalSchema = z.object({renewed: z.literal(true), leaseExpiresAt: timest
 /** worker_commit_market_version_v1: the receipt, and the version and its quality (series) or the meeting (communiqué detail). */
 const commitSchema = z.object({committed: z.literal(true), replayed: z.boolean(), acquisitionId: z.uuid(), versionId: z.uuid().optional(),
  quality: z.object({status: z.enum(["approved", "quarantined"]), evaluationId: z.uuid()}).strict().optional(),
- meeting: z.number().int().positive().optional(), reference: z.boolean().optional()}).strict();
+ meeting: z.number().int().positive().optional(), reference: z.boolean().optional(), listed: z.number().int().min(0).max(100).optional()}).strict();
 export type MarketVersionCommit = Omit<z.infer<typeof commitSchema>, "committed">;
 const failSchema = z.object({retryScheduled: z.boolean()}).strict();
 const orphansSchema = z.array(z.string().regex(/^[a-z0-9._-]+\/[0-9]{4}\/[0-9]{2}\/[0-9a-f-]{36}\.[a-z0-9]{2,5}$/)).max(100);
@@ -54,6 +54,7 @@ export const marketAcquisitionTransportCodes = [
  "market_acquisition_lease_denied", "market_acquisition_transport_paused", "market_source_not_acquirable", "market_delegation_required",
  "market_acquisition_object_mismatch", "market_acquisition_invalid", "market_host_not_allowed", "market_reference_bucket_unsafe",
  "worker_account_binding_required", "market_contract_mismatch", "market_copom_meeting_disagreement", "market_copom_meeting_day_collision",
+ "market_copom_list_conflict",
 ] as const;
 /** Every refusal of the database's strict reading of the bytes arrives as one code. */
 export type MarketAcquisitionTransportCode = (typeof marketAcquisitionTransportCodes)[number] | "market_parse_failed" | "market_acquisition_transport_failed";

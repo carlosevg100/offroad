@@ -16,6 +16,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "market-version-commit.v1",
   // RG-01 monitor: schedule, evaluation and the handler of its event consumer (M2 part 6).
   "market-regime-monitor.v1",
+  // Market scheduler: the firing of the granted schedules, in its own loop (M2 part 2).
+  "market-acquisition-scheduler.v1",
   "explicit-resource-access.v1",
   "explicit-workspace-context.v1",
   "authenticated-document-storage.v1",

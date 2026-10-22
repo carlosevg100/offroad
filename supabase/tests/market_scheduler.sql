@@ -1,0 +1,341 @@
+-- Market reference M2 part 2 (ADR 0023): the scheduler. Grant and revocation with receipts, the firing's
+-- blockers, the daily list that records what it discovered, the conflict between lists and details, the
+-- reconciliation of details with its named blocks, the series window, anchor and recovery by the outcome of the
+-- last occurrence, the manual occurrence through the same checks, and closed surfaces. Synthetic, dated relative
+-- to the day of the run; the next day is simulated by the series decision's own instant. Rolls back.
+begin;
+set local statement_timeout='120s';
+select set_config('request.jwt.claims','{}',true);
+select set_config('request.jwt.claim.sub','',true);
+-- 1 founder, 2 operator, 4 worker account, 5 second worker account.
+insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
+select ('3a810000-0000-4000-8000-00000000000'||n)::uuid,'authenticated','authenticated','3a810000-'||n||'@example.invalid','{}','{}',now(),now(),false,false
+from unnest(array[1,2,4,5]) n;
+insert into private.platform_principals(user_id,role,label) values
+ ('3a810000-0000-4000-8000-000000000001','founder','Synthetic scheduler founder'),
+ ('3a810000-0000-4000-8000-000000000002','operator','Synthetic scheduler operator');
+insert into private.worker_tokens(id,label,token_sha256,execution_account_user_id) values
+ ('3a810000-0000-4000-8000-000000000011','Synthetic scheduler worker',extensions.digest('synthetic-scheduler-worker-token-3a810000-a','sha256'),'3a810000-0000-4000-8000-000000000004'),
+ ('3a810000-0000-4000-8000-000000000012','Synthetic scheduler second worker',extensions.digest('synthetic-scheduler-worker-token-3a810000-b','sha256'),'3a810000-0000-4000-8000-000000000005');
+create function pg_temp.expect(p_sql text,p_state text,p_label text) returns void language plpgsql as $$
+begin
+ begin execute p_sql; exception when others then
+  if p_state='*' or sqlstate=p_state or sqlerrm=p_state then return; end if;
+  raise exception '% failed with % (%) instead of %',p_label,sqlstate,sqlerrm,p_state;
+ end;
+ raise exception '% was accepted',p_label;
+end $$;
+create function pg_temp.as_account(p_user uuid) returns void language sql as $$ select set_config('request.jwt.claim.sub',coalesce(p_user::text,''),true); $$;
+create temporary table facts(name text primary key,value text);
+create function pg_temp.fact(p_name text) returns text language sql as $$ select value from facts where name=p_name $$;
+create function pg_temp.put(p_name text,p_value text) returns void language sql as $$
+ insert into facts values(p_name,p_value) on conflict(name) do update set value=excluded.value;
+$$;
+create function pg_temp.revision(p_command text,p_evidence jsonb,p_hosts jsonb) returns integer language sql as $$
+ select private.record_market_source_revision_v1(p_command::uuid,'bcb',jsonb_build_object('registryId','bcb_sgs','license',jsonb_build_object('kind','open',
+  'license','ODbL-1.0','attribution','Banco Central do Brasil','evidenceIds',p_evidence,'retainAdoptedValues',true,'storeDays',null),
+  'allowedHosts',p_hosts,'calendar','br_business_days','expectedPublication','09:00','maximumAgeHours',30,'enabled',true,
+  'reason','Fonte sintética para o teste do agendador'),'3a810000-0000-4000-8000-000000000002');
+$$;
+select private.register_market_publisher_v1('3a810000-0000-4000-a000-000000000001','Offroad, referência de mercado','3a810000-0000-4000-8000-000000000001');
+select pg_temp.revision('3a810000-0000-4000-a000-000000000011','["bcb-catalog-meta-selic-432","bcb-catalog-atas-comunicados-copom","bcb-site-termos-de-uso"]','["api.bcb.gov.br","www.bcb.gov.br"]');
+select private.release_market_acquisition_transport_v1('3a810000-0000-4000-a000-000000000021',true,'3a810000-0000-4000-8000-000000000002','Synthetic opening for the scheduler test');
+select private.grant_market_acquisition_delegation_v1('3a810000-0000-4000-a000-000000000022','3a810000-0000-4000-8000-000000000011','bcb','Synthetic delegation of the scheduler worker','3a810000-0000-4000-8000-000000000002');
+select pg_temp.put('D',private.market_sao_paulo_date_v1(clock_timestamp())::text);
+create function pg_temp.d(p_offset integer) returns date language sql stable as $$ select pg_temp.fact('D')::date-p_offset $$;
+create function pg_temp.sgs(p_start date,p_end date,p_points jsonb,p_skip date default null) returns bytea language sql as $$
+ select convert_to(json_agg(json_build_object('data',to_char(d,'DD/MM/YYYY'),'valor',
+  (select x->>1 from jsonb_array_elements(p_points) x where (x->>0)::date<=d order by (x->>0)::date desc limit 1)) order by d)::text,'UTF8')
+ from generate_series(p_start,p_end,interval '1 day') d where p_skip is null or d::date<>p_skip;
+$$;
+create function pg_temp.detail(p_meeting integer,p_reference date,p_verb text,p_pct text) returns bytea language sql as $$
+ select convert_to(json_build_object('conteudo',json_build_array(json_build_object('nro_reuniao',p_meeting,'dataReferencia',to_char(p_reference,'YYYY-MM-DD'),
+  'titulo',case p_verb when 'hold' then 'Copom mantém a taxa Selic em '||p_pct||'% a.a.' else 'Copom reduz a taxa Selic para '||p_pct||'% a.a.' end,
+  'textoComunicado',case p_verb when 'hold' then '<p>O Copom decidiu manter a taxa Selic em '||p_pct||'% a.a.</p>'
+   else '<p>O Copom decidiu reduzir a taxa Selic em 0,25 ponto percentual, para '||p_pct||'% a.a.</p>' end)))::text,'UTF8');
+$$;
+create function pg_temp.list(p_meetings jsonb) returns bytea language sql as $$
+ select convert_to(json_build_object('conteudo',(select json_agg(json_build_object('nro_reuniao',(x->>0)::int,'dataReferencia',x->>1,'titulo',(x->>0)||'ª reunião')
+  order by (x->>0)::int desc) from jsonb_array_elements(p_meetings) x))::text,'UTF8');
+$$;
+create function pg_temp.claim(p_job uuid) returns jsonb language plpgsql as $$
+declare c jsonb;begin
+ perform pg_temp.as_account('3a810000-0000-4000-8000-000000000004');
+ c:=private.worker_claim_market_acquisition_v1('synthetic-scheduler-worker-token-3a810000-a');
+ perform pg_temp.as_account(null);
+ if (c->>'claimed')::boolean is not true or (c->>'jobId')::uuid<>p_job then raise exception 'claimed % instead of %',c,p_job;end if;
+ return c;
+end $$;
+create function pg_temp.commit(c jsonb,p_content bytea) returns jsonb language plpgsql as $$
+declare r jsonb;begin
+ insert into storage.objects(bucket_id,name,metadata,version) values('market-reference',c->>'objectPath',
+  jsonb_build_object('size',octet_length(p_content),'mimetype','application/json','eTag','"'||md5(p_content)||'"'),'market-scheduler-sql-v1');
+ perform pg_temp.as_account('3a810000-0000-4000-8000-000000000004');
+ r:=private.worker_commit_market_version_v1((c->>'jobId')::uuid,c->>'capability',(c->>'leaseId')::uuid,p_content,'application/json',clock_timestamp());
+ perform pg_temp.as_account(null);
+ return r;
+end $$;
+create function pg_temp.fail(c jsonb,p_code text) returns jsonb language plpgsql as $$
+declare r jsonb;begin
+ perform pg_temp.as_account('3a810000-0000-4000-8000-000000000004');
+ r:=private.worker_fail_market_acquisition_v1((c->>'jobId')::uuid,c->>'capability',(c->>'leaseId')::uuid,p_code,false,'Falha sintética');
+ perform pg_temp.as_account(null);
+ return r;
+end $$;
+create function pg_temp.fire(p_token text default 'synthetic-scheduler-worker-token-3a810000-a',p_account text default '3a810000-0000-4000-8000-000000000004') returns jsonb language plpgsql as $$
+declare r jsonb;begin
+ perform pg_temp.as_account(p_account::uuid);
+ r:=private.worker_fire_market_schedules_v1(p_token);
+ perform pg_temp.as_account(null);
+ return r;
+end $$;
+create function pg_temp.of(r jsonb,p_kind text) returns jsonb language sql as $$ select x from jsonb_array_elements(r->'schedules') x where x->>'kind'=p_kind $$;
+create function pg_temp.series(p_days integer default 0) returns jsonb language sql as $$
+ select private.fire_market_series_schedule_v1(s,'3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004',clock_timestamp()+make_interval(days=>p_days))
+ from private.market_acquisition_schedules s where kind='series_432' and revoked_at is null;
+$$;
+create function pg_temp.grant_series(p_command text,p_start date) returns uuid language sql as $$
+ select (private.grant_market_acquisition_schedule_v1(p_command::uuid,'series_432',jsonb_build_object('coverageStart',to_char(p_start,'YYYY-MM-DD')),'00:00',false,
+  'Agenda sintética da série','3a810000-0000-4000-8000-000000000002')->>'scheduleId')::uuid;
+$$;
+create function pg_temp.revoke_series(p_command text) returns void language sql as $$
+ select private.revoke_market_acquisition_schedule_v1(p_command::uuid,id,'Fim do cenário sintético','3a810000-0000-4000-8000-000000000002')
+ from private.market_acquisition_schedules where kind='series_432' and revoked_at is null;
+$$;
+-- The meetings: 9300 holds 15.00 (anchor), 9301 cuts to 14.75, 9302 and 9303 are listed with no usable detail.
+create function pg_temp.points(p_extra jsonb default '[]') returns jsonb language sql stable as $$
+ select jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(60),'YYYY-MM-DD'),'15.00'),jsonb_build_array(to_char(pg_temp.d(14),'YYYY-MM-DD'),'14.75'))||p_extra;
+$$;
+
+-- 1. Grant: a principal's command, validated, replayed, refused when reused or doubled.
+do $$ declare r jsonb;begin
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000101','series_432','{"coverageStart":"2020-01-01"}','00:00',false,'Agenda sintética da série','3a810000-0000-4000-8000-000000000002')$q$,
+  'market_schedule_invalid','coverage before the homologated start');
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000102','copom_communiques','{"size":5}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002')$q$,
+  'market_schedule_invalid','list too small');
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000103','copom_communiques','{"size":20,"x":1}','24:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002')$q$,
+  'market_schedule_invalid','extra key and bad hour');
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000104','copom_communiques','{"size":20}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000004')$q$,
+  'platform_principal_required','schedule by a non-principal');
+ r:=private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000105','copom_communiques','{"size":20}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002');
+ if (r->>'replayed')::boolean then raise exception 'grant replayed';end if;
+ r:=private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000105','copom_communiques','{"size":20}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002');
+ if (r->>'replayed')::boolean is not true then raise exception 'grant did not replay';end if;
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000105','copom_communiques','{"size":30}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002')$q$,
+  'platform_method_request_reused','grant command reused');
+ perform pg_temp.expect($q$select private.grant_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000106','copom_communiques','{"size":30}','00:00',false,'Agenda sintética de comunicados','3a810000-0000-4000-8000-000000000002')$q$,
+  'market_schedule_active_exists','second active schedule of a kind');
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000107',pg_temp.d(20));
+ if (select contracts from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null)<>array['bcb-copom-comunicados-lista','bcb-copom-comunicados-detalhe']
+ then raise exception 'communique schedule contracts';end if;
+ perform pg_temp.expect($q$update private.market_acquisition_schedules set local_time='01:00'$q$,'market_schedule_immutable','schedule edited');
+end $$;
+
+-- 2. Blockers: a worker without the delegation, a closed transport; nothing is written.
+do $$ declare r jsonb;begin
+ r:=pg_temp.fire('synthetic-scheduler-worker-token-3a810000-b','3a810000-0000-4000-8000-000000000005');
+ if pg_temp.of(r,'series_432')->>'reason'<>'delegation_missing' or pg_temp.of(r,'copom_communiques')->>'reason'<>'delegation_missing' then raise exception 'undelegated firing: %',r;end if;
+ perform private.release_market_acquisition_transport_v1('3a810000-0000-4000-a000-000000000023',false,'3a810000-0000-4000-8000-000000000002','Synthetic pause');
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'copom_communiques')->>'reason'<>'transport_paused' then raise exception 'paused firing: %',r;end if;
+ if exists(select 1 from private.market_schedule_occurrences) or exists(select 1 from private.market_acquisition_jobs) then raise exception 'a blocked firing wrote';end if;
+ perform private.release_market_acquisition_transport_v1('3a810000-0000-4000-a000-000000000024',true,'3a810000-0000-4000-8000-000000000002','Synthetic reopening');
+end $$;
+
+-- 3. The first firing: the series has no anchor yet; the list is enqueued once a day.
+do $$ declare r jsonb;o private.market_schedule_occurrences;j private.market_acquisition_jobs;begin
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'series_432')->>'reason'<>'anchor_missing' or pg_temp.of(r,'copom_communiques')->>'list'<>'fired' then raise exception 'first firing: %',r;end if;
+ select * into o from private.market_schedule_occurrences where occurrence_key='list:'||pg_temp.fact('D');
+ select * into j from private.market_acquisition_jobs where id=o.job_id;
+ if o.worker_token_id<>'3a810000-0000-4000-8000-000000000011' or o.account_user_id<>'3a810000-0000-4000-8000-000000000004' or o.request<>'{"size":20}'
+ or j.requested_by<>'3a810000-0000-4000-8000-000000000002' or j.command_id<>extensions.uuid_generate_v5('6f0d1c7a-2b4e-5d3f-8a91-4c2e7b5d9e10','market-schedule:'||o.schedule_id||':'||o.occurrence_key)
+ or j.status<>'queued' then raise exception 'list occurrence or job: % %',row_to_json(o),row_to_json(j);end if;
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'copom_communiques')->>'list'<>'already_fired' or (select count(*) from private.market_acquisition_jobs)<>1 then raise exception 'second firing of the day: %',r;end if;
+ perform pg_temp.put('list1',o.job_id::text);
+end $$;
+
+-- 4. The list records what it discovered; the next firing asks the details, in order, and no more than once.
+do $$ declare c jsonb;r jsonb;begin
+ c:=pg_temp.claim(pg_temp.fact('list1')::uuid);
+ r:=pg_temp.commit(c,pg_temp.list(jsonb_build_array(jsonb_build_array(9300,to_char(pg_temp.d(30),'YYYY-MM-DD')),jsonb_build_array(9301,to_char(pg_temp.d(15),'YYYY-MM-DD')),
+  jsonb_build_array(9302,to_char(pg_temp.d(3),'YYYY-MM-DD')),jsonb_build_array(9303,to_char(pg_temp.d(2),'YYYY-MM-DD')))));
+ if (r->>'listed')::int<>4 or (select count(*) from private.market_copom_listings where list_acquisition_id=(r->>'acquisitionId')::uuid)<>4 then raise exception 'list discovery: %',r;end if;
+ r:=pg_temp.fire();
+ if jsonb_array_length(pg_temp.of(r,'copom_communiques')->'details')<>4 then raise exception 'details: %',r;end if;
+ r:=pg_temp.fire();
+ if jsonb_array_length(pg_temp.of(r,'copom_communiques')->'details')<>0 or jsonb_array_length(pg_temp.of(r,'copom_communiques')->'inFlight')<>4 then raise exception 'details in flight: %',r;end if;
+end $$;
+
+-- 5. Details: two confirm; one disagrees with its listing and is refused; one is disputed. Failed attempts
+-- are asked again up to three; the disputed meeting is not.
+do $$ declare c jsonb;r jsonb;job uuid;n integer;begin
+ select job_id into job from private.market_schedule_occurrences where occurrence_key='detail:9300:1';
+ r:=pg_temp.commit(pg_temp.claim(job),pg_temp.detail(9300,pg_temp.d(30),'hold','15,00'));
+ select job_id into job from private.market_schedule_occurrences where occurrence_key='detail:9301:1';
+ r:=pg_temp.commit(pg_temp.claim(job),pg_temp.detail(9301,pg_temp.d(15),'cut','14,75'));
+ select job_id into job from private.market_schedule_occurrences where occurrence_key='detail:9302:1';
+ c:=pg_temp.claim(job);
+ perform pg_temp.expect(format('select pg_temp.commit(%L::jsonb,%L::bytea)',c,pg_temp.detail(9302,pg_temp.d(4),'hold','14,75')),'market_copom_list_conflict','detail against its listing');
+ perform pg_temp.fail(c,'verification_failed');
+ select job_id into job from private.market_schedule_occurrences where occurrence_key='detail:9303:1';
+ perform pg_temp.fail(pg_temp.claim(job),'meeting_disagreement');
+ -- The series waits off while the details are worked, so its job does not enter the queue between them.
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000300');
+ for n in 2..3 loop
+  r:=pg_temp.fire();
+  if pg_temp.of(r,'copom_communiques')->'details'->0->>'meeting'<>'9302' or jsonb_array_length(pg_temp.of(r,'copom_communiques')->'details')<>1
+  then raise exception 'retry of a failed detail: %',r;end if;
+  select job_id into job from private.market_schedule_occurrences where occurrence_key='detail:9302:'||n;
+  perform pg_temp.fail(pg_temp.claim(job),'http_status');
+ end loop;
+ r:=pg_temp.fire();
+ if jsonb_array_length(pg_temp.of(r,'copom_communiques')->'details')<>0
+ or not (pg_temp.of(r,'copom_communiques')->'blocked') @> '[{"meeting":9302,"reason":"detail_failures"},{"meeting":9303,"reason":"meeting_disputed"}]'
+ then raise exception 'detail blocks: %',r;end if;
+end $$;
+
+-- 6. A list that disagrees with a listed meeting's date is refused (serialized per meeting).
+do $$ declare r jsonb;s uuid;begin
+ select id into s from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null;
+ r:=private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000201',s,'bcb-copom-comunicados-lista','{"size":20}','3a810000-0000-4000-8000-000000000002');
+ perform pg_temp.expect(format('select pg_temp.commit(pg_temp.claim(%L),pg_temp.list(%L))',r->>'jobId',jsonb_build_array(jsonb_build_array(9301,to_char(pg_temp.d(16),'YYYY-MM-DD')))),
+  'market_copom_list_conflict','list against a recorded meeting');
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000320',(r->>'jobId')::uuid,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+end $$;
+
+-- 7. The series: a window inside the contract from the first gap, approved, then covered.
+do $$ declare r jsonb;job uuid;begin
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000299',pg_temp.d(20));
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'series_432')->>'status'<>'fired' or pg_temp.of(r,'series_432')->>'windowStart'<>to_char(pg_temp.d(20),'YYYY-MM-DD')
+ or pg_temp.of(r,'series_432')->>'windowEnd'<>to_char(pg_temp.d(1),'YYYY-MM-DD') then raise exception 'series firing: %',r;end if;
+ r:=pg_temp.commit(pg_temp.claim((pg_temp.of(r,'series_432')->>'jobId')::uuid),pg_temp.sgs(pg_temp.d(20),pg_temp.d(1),pg_temp.points()));
+ if r#>>'{quality,status}'<>'approved' then raise exception 'series not approved: %',r;end if;
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000301');
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000302',pg_temp.d(20));
+ r:=pg_temp.series();
+ if r->>'status'<>'covered' then raise exception 'coverage complete: %',r;end if;
+end $$;
+
+-- 8. Recovery by the findings of the last version: a divergence needs an operator; a calendar gap is acquired
+-- again; a documentary gap waits for the communiqué of its period and is released by it.
+do $$ declare r jsonb;begin
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000303');
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000304',pg_temp.d(21));
+ r:=pg_temp.series();
+ r:=pg_temp.commit(pg_temp.claim((r->>'jobId')::uuid),pg_temp.sgs(pg_temp.d(21),pg_temp.d(1),
+  jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(60),'YYYY-MM-DD'),'15.00'),jsonb_build_array(to_char(pg_temp.d(14),'YYYY-MM-DD'),'14.50'))));
+ if r#>>'{quality,status}'<>'quarantined' then raise exception 'divergent series approved';end if;
+ r:=pg_temp.series(1);
+ if r->>'reason'<>'series_disagreement' then raise exception 'divergence: %',r;end if;
+
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000305');
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000306',pg_temp.d(22));
+ r:=pg_temp.series();
+ r:=pg_temp.commit(pg_temp.claim((r->>'jobId')::uuid),pg_temp.sgs(pg_temp.d(22),pg_temp.d(1),pg_temp.points(),pg_temp.d(10)));
+ if r#>>'{quality,status}'<>'quarantined' then raise exception 'gapped series approved';end if;
+ r:=pg_temp.series(1);
+ if r->>'status'<>'fired' then raise exception 'calendar gap not recovered: %',r;end if;
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000321',(r->>'jobId')::uuid,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000307');
+ perform pg_temp.grant_series('3a810000-0000-4000-a000-000000000308',pg_temp.d(24));
+ r:=pg_temp.series();
+ r:=pg_temp.commit(pg_temp.claim((r->>'jobId')::uuid),pg_temp.sgs(pg_temp.d(24),pg_temp.d(1),
+  pg_temp.points(jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(22),'YYYY-MM-DD'),'14.90')))||jsonb_build_array(jsonb_build_array(to_char(pg_temp.d(14),'YYYY-MM-DD'),'14.75'))));
+ if r#>>'{quality,status}'<>'quarantined' then raise exception 'undocumented change approved';end if;
+ r:=pg_temp.series(1);
+ if r->>'reason'<>'missing_communiques' or not (r->'periods') ? to_char(pg_temp.d(22),'YYYY-MM-DD') then raise exception 'documentary gap: %',r;end if;
+ -- A communiqué of another period does not release it; the one of the pending period does.
+ r:=private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000202',(select id from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null),
+  'bcb-copom-comunicados-detalhe','{"meeting":9297}','3a810000-0000-4000-8000-000000000002');
+ perform pg_temp.commit(pg_temp.claim((r->>'jobId')::uuid),pg_temp.detail(9297,pg_temp.d(50),'hold','15,00'));
+ r:=pg_temp.series(1);
+ if r->>'reason'<>'missing_communiques' then raise exception 'unrelated communiqué released the window: %',r;end if;
+ r:=private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000203',(select id from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null),
+  'bcb-copom-comunicados-detalhe','{"meeting":9298}','3a810000-0000-4000-8000-000000000002');
+ perform pg_temp.commit(pg_temp.claim((r->>'jobId')::uuid),pg_temp.detail(9298,pg_temp.d(23),'cut','14,90'));
+ r:=pg_temp.series(1);
+ if r->>'status'<>'fired' then raise exception 'pending communiqué did not release the window: %',r;end if;
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000322',(r->>'jobId')::uuid,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+end $$;
+
+-- 9. The budget: three automatic occurrences for one window start, then an operator's manual occurrence.
+do $$ declare r jsonb;s uuid;j1 uuid;j2 uuid;begin
+ perform pg_temp.revoke_series('3a810000-0000-4000-a000-000000000309');
+ s:=pg_temp.grant_series('3a810000-0000-4000-a000-000000000310',pg_temp.d(26));
+ r:=pg_temp.series();
+ perform pg_temp.fail(pg_temp.claim((r->>'jobId')::uuid),'http_status');
+ j1:=(private.enqueue_market_contract_acquisition_v1('3a810000-0000-4000-a000-000000000311','bcb-sgs-432-endpoint',jsonb_build_object('window',jsonb_build_object('start',to_char(pg_temp.d(26),'YYYY-MM-DD'),'end',to_char(pg_temp.d(1),'YYYY-MM-DD'))),
+  'Job sintético do orçamento','3a810000-0000-4000-8000-000000000002')->>'jobId')::uuid;
+ j2:=(private.enqueue_market_contract_acquisition_v1('3a810000-0000-4000-a000-000000000312','bcb-sgs-432-endpoint',jsonb_build_object('window',jsonb_build_object('start',to_char(pg_temp.d(26),'YYYY-MM-DD'),'end',to_char(pg_temp.d(2),'YYYY-MM-DD'))),
+  'Job sintético do orçamento','3a810000-0000-4000-8000-000000000002')->>'jobId')::uuid;
+ insert into private.market_schedule_occurrences(id,schedule_id,occurrence_key,contract_id,request,request_sha256,window_start,job_id,worker_token_id,account_user_id,created_at)
+ select gen_random_uuid(),s,'series:2000-01-0'||n,'bcb-sgs-432-endpoint','{}',repeat('0',64),pg_temp.d(26),j,'3a810000-0000-4000-8000-000000000011','3a810000-0000-4000-8000-000000000004',clock_timestamp()-interval '2 days'
+ from (values (1,j1),(2,j2)) v(n,j);
+ r:=pg_temp.series(1);
+ if r->>'reason'<>'series_budget' then raise exception 'budget: %',r;end if;
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000323',j1,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+ perform private.cancel_market_acquisition_v1('3a810000-0000-4000-a000-000000000324',j2,'Cancelamento sintético','3a810000-0000-4000-8000-000000000002');
+end $$;
+
+-- 10. The manual occurrence and the firing share the checks: a revision without the communiqués' evidence or
+-- host blocks them without writing; a contract outside the schedule is refused.
+do $$ declare r jsonb;s uuid;n integer;begin
+ select id into s from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null;
+ perform pg_temp.expect(format($q$select private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000204',%L,'bcb-sgs-432-endpoint','{"window":{"start":"2026-01-01","end":"2026-01-02"}}','3a810000-0000-4000-8000-000000000002')$q$,s),
+  'market_schedule_contract','contract outside the schedule');
+ perform pg_temp.revision('3a810000-0000-4000-a000-000000000012','["bcb-catalog-meta-selic-432","bcb-site-termos-de-uso"]','["api.bcb.gov.br","www.bcb.gov.br"]');
+ select count(*) into n from private.market_schedule_occurrences;
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'copom_communiques')->>'reason'<>'contract_evidence_missing' then raise exception 'evidence block: %',r;end if;
+ perform pg_temp.expect(format($q$select private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000205',%L,'bcb-copom-comunicados-detalhe','{"meeting":9310}','3a810000-0000-4000-8000-000000000002')$q$,s),
+  'market_schedule_blocked:contract_evidence_missing','manual occurrence without evidence');
+ perform pg_temp.revision('3a810000-0000-4000-a000-000000000013','["bcb-catalog-meta-selic-432","bcb-catalog-atas-comunicados-copom","bcb-site-termos-de-uso"]','["api.bcb.gov.br"]');
+ perform pg_temp.expect(format($q$select private.record_market_schedule_occurrence_v1('3a810000-0000-4000-a000-000000000206',%L,'bcb-copom-comunicados-detalhe','{"meeting":9310}','3a810000-0000-4000-8000-000000000002')$q$,s),
+  'market_schedule_blocked:host_not_allowed','manual occurrence without the host');
+ if (select count(*) from private.market_schedule_occurrences)<>n then raise exception 'a blocked occurrence was written';end if;
+ perform pg_temp.revision('3a810000-0000-4000-a000-000000000014','["bcb-catalog-meta-selic-432","bcb-catalog-atas-comunicados-copom","bcb-site-termos-de-uso"]','["api.bcb.gov.br","www.bcb.gov.br"]');
+end $$;
+
+-- 11. Revocation and the grantor: a revoked schedule does not fire; a grantor no longer a principal blocks.
+do $$ declare r jsonb;s uuid;begin
+ select id into s from private.market_acquisition_schedules where kind='copom_communiques' and revoked_at is null;
+ r:=private.revoke_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000401',s,'Revogação sintética da agenda','3a810000-0000-4000-8000-000000000002');
+ r:=private.revoke_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000401',s,'Revogação sintética da agenda','3a810000-0000-4000-8000-000000000002');
+ if (r->>'replayed')::boolean is not true then raise exception 'revocation did not replay';end if;
+ perform pg_temp.expect(format($q$select private.revoke_market_acquisition_schedule_v1('3a810000-0000-4000-a000-000000000402',%L,'Revogação sintética da agenda','3a810000-0000-4000-8000-000000000002')$q$,s),
+  'market_schedule_revoked','second revocation');
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'copom_communiques') is not null then raise exception 'revoked schedule fired: %',r;end if;
+ update private.platform_principals set revoked_at=clock_timestamp(),revoked_by='3a810000-0000-4000-8000-000000000001',revoked_reason='Revogação sintética do operador'
+ where user_id='3a810000-0000-4000-8000-000000000002';
+ r:=pg_temp.fire();
+ if pg_temp.of(r,'series_432')->>'reason'<>'grantor_inactive' then raise exception 'inactive grantor: %',r;end if;
+end $$;
+
+-- 12. Immutability and closed surfaces.
+do $$ declare t text;f text;begin
+ perform pg_temp.expect($q$update private.market_schedule_occurrences set request='{}'$q$,'market_record_immutable','occurrence edited');
+ perform pg_temp.expect($q$delete from private.market_copom_listings$q$,'market_record_immutable','listing deleted');
+ perform pg_temp.expect($q$delete from private.market_acquisition_schedules$q$,'market_schedule_immutable','schedule deleted');
+ foreach t in array array['market_acquisition_schedules','market_schedule_occurrences','market_copom_listings'] loop
+  if not (select relrowsecurity and relforcerowsecurity from pg_class where oid=('private.'||t)::regclass) then raise exception 'row security off on %',t;end if;
+  if has_table_privilege('anon','private.'||t,'select') or has_table_privilege('authenticated','private.'||t,'select') or has_table_privilege('service_role','private.'||t,'select')
+  then raise exception 'table % readable by an API role',t;end if;
+ end loop;
+ foreach f in array array['private.grant_market_acquisition_schedule_v1(uuid,text,jsonb,text,boolean,text,uuid)','private.revoke_market_acquisition_schedule_v1(uuid,uuid,text,uuid)',
+  'private.record_market_schedule_occurrence_v1(uuid,uuid,text,jsonb,uuid)','private.enqueue_market_schedule_job_v1(uuid,text,text,jsonb,uuid,uuid,uuid)',
+  'private.fire_market_series_schedule_v1(private.market_acquisition_schedules,uuid,uuid,timestamp with time zone)',
+  'private.market_parse_copom_list_meetings_v1(bytea,integer)'] loop
+  if has_function_privilege('authenticated',f,'execute') or has_function_privilege('anon',f,'execute') or has_function_privilege('service_role',f,'execute')
+  then raise exception '% executable by an API role',f;end if;
+ end loop;
+ if not has_function_privilege('authenticated','public.worker_fire_market_schedules_v1(text)','execute') or has_function_privilege('anon','public.worker_fire_market_schedules_v1(text)','execute')
+ then raise exception 'firing grants';end if;
+ if public.worker_runtime_schema_contract_v1()::text not like '%market-acquisition-scheduler.v1%' then raise exception 'capability not announced';end if;
+end $$;
+select 'market_scheduler' as test,'PASS' as result;
+rollback;

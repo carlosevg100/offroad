@@ -690,7 +690,7 @@
     },
     {
       "path": "apps/document-worker/src/runtime-schema.ts",
-      "sha256": "0eb1bf873ad825bed3ba71025013bbcd24423628b5a24e51ee3413a4a7a0ee0c",
+      "sha256": "71951564e35cbb96821b69eda598365c47c7782200052eea936e6a33efc8ec60",
       "entrypoint": false,
       "rpcs": [
         "worker_runtime_schema_contract_v1"
@@ -2034,7 +2034,7 @@
     },
     {
       "path": "apps/document-worker/src/market-acquisition-queue.ts",
-      "sha256": "45d7ccb3c06a296037d112c4313d3231c15011d32b06db1e6ece21567c4c5fb3",
+      "sha256": "b53242fae5a1f9741270fa4d5daec0daab65664a83d6e7599c22da2169abdfc7",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_market_acquisition_v1",
@@ -2098,6 +2098,21 @@
         "apps/document-worker/src/market-regime-monitor.test.ts",
         "supabase/tests/market_rg01_monitor.sql",
         "scripts/ci/test-market-rg01-concurrency.py"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/market-acquisition-scheduler.ts",
+      "sha256": "d44b341ca132e02d588a98694c12d75f013c2752f698326a84ff173aafaa5dc0",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_fire_market_schedules_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Platform market scheduler (ADR 0023, M2 part 2): worker account bound to an active worker token with a live acquisition delegation for the schedule's source; the firing enters the authority door, writes only schedule occurrences and acquisition jobs of schedules a live founder or operator granted, with every source, host, evidence and transport check rechecked in SQL under the source lock; no tenant resource is reachable.",
+      "negativeTests": [
+        "apps/document-worker/src/market-acquisition-scheduler.test.ts",
+        "supabase/tests/market_scheduler.sql",
+        "scripts/ci/test-market-scheduler-concurrency.py"
       ]
     }
   ],
