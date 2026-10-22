@@ -20,8 +20,9 @@
    revoked during a firing waits for it; a quarantine recorded while a decision reads the version is waited for,
    and a quarantine without its own evaluation holds the window for the operator.
 9. A firing against the RG-01 monitor and against a publication: no deadlock.
-Every row here is synthetic and lives only in the disposable database. Meetings 150 to 152 and 9320 to 9323 are
-dated in 2023 and do not collide with the other market races. Runs after the RG-01 races and before the outbox
+Every row here is synthetic and lives only in the disposable database. Meetings 150 to 153 and 9320 to 9323 are
+dated between February and early September 2025: after every window of the outbox races, which are in 2024, so
+none of them anchors those versions, and before the meetings of the acquisition races. Runs after the RG-01 races and before the outbox
 races; the schedules are revoked and their queued jobs are cancelled when the races finish.
 """
 import hashlib
@@ -399,15 +400,15 @@ commit;
         next_token()
 
     # 5. Lists and details that disagree on a meeting's date: only the first confirms.
-    l1 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2023-03-22')]))
-    l2 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2023-03-21')]))
-    conflict(l1, listing([(9320, '2023-03-22')]), l2, listing([(9320, '2023-03-21')]), 'list_list')
-    d1 = prepared(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":9322}'), communique(9322, '2023-05-03'))
-    l3 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9322, '2023-05-02')]))
-    conflict(d1, communique(9322, '2023-05-03'), l3, listing([(9322, '2023-05-02')]), 'detail_list')
-    l4 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9323, '2023-06-21')]))
-    d2 = prepared(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":9323}'), communique(9323, '2023-06-20'))
-    conflict(l4, listing([(9323, '2023-06-21')]), d2, communique(9323, '2023-06-20'), 'list_detail')
+    l1 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2025-03-22')]))
+    l2 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2025-03-21')]))
+    conflict(l1, listing([(9320, '2025-03-22')]), l2, listing([(9320, '2025-03-21')]), 'list_list')
+    d1 = prepared(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":9322}'), communique(9322, '2025-05-03'))
+    l3 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9322, '2025-05-02')]))
+    conflict(d1, communique(9322, '2025-05-03'), l3, listing([(9322, '2025-05-02')]), 'detail_list')
+    l4 = prepared(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9323, '2025-06-21')]))
+    d2 = prepared(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":9323}'), communique(9323, '2025-06-20'))
+    conflict(l4, listing([(9323, '2025-06-21')]), d2, communique(9323, '2025-06-20'), 'list_detail')
 
     # 6. The list that named 9320 is revoked during a firing; a valid list rediscovers the meeting.
     acquisition = psql(f"select acquisition_id from private.market_acquisition_jobs where id='{l1['jobId']}';")
@@ -420,15 +421,15 @@ commit;
     blocked = copom(fire()).get('blocked', [])
     if {'meeting': 9320, 'reason': 'listing_unavailable'} not in blocked:
         raise AssertionError(f'a revoked listing was not reported: {blocked}')
-    acquire(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2023-03-22')]))
+    acquire(occurrence(schedule, 'bcb-copom-comunicados-lista', '{"size":20}'), listing([(9320, '2025-03-22')]))
     found = copom(fire())
     if {'meeting': 9320, 'reason': 'listing_unavailable'} in found.get('blocked', []) or (
             9320 not in found.get('inFlight', []) and 9320 not in [d['meeting'] for d in found.get('details', [])]):
         raise AssertionError(f'a valid list did not rediscover the meeting: {found}')
 
     # 7. The anchor's communiqué revoked: the series cannot reuse it and reports it unavailable.
-    anchored = acquire(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":150}'), communique(150, '2023-02-01'))
-    grant('series_432', '{"coverageStart":"2023-02-10"}')
+    anchored = acquire(occurrence(schedule, 'bcb-copom-comunicados-detalhe', '{"meeting":150}'), communique(150, '2025-02-01'))
+    grant('series_432', '{"coverageStart":"2025-02-10"}')
     psql(revoke_event('acquisition', anchored['acquisitionId'], 'Revogação sintética do comunicado de âncora'))
     series = entry(fire(), 'series_432')
     if series.get('reason') != 'communique_unavailable' or series.get('meeting') != 150:
@@ -438,18 +439,18 @@ commit;
 
     # 8. The series window under concurrent writes; only the series schedule is active.
     psql(revoke_sql(schedule))
-    acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":151}'), communique(151, '2023-08-01'))
-    series_schedule = grant('series_432', '{"coverageStart":"2023-08-10"}')
-    window = '{"window":{"start":"2023-08-10","end":"2023-08-20"}}'
-    v = acquire(occurrence(series_schedule, 'bcb-sgs-432-endpoint', window), series_body('2023-08-10', '2023-08-20', skip='2023-08-10'))
+    acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":151}'), communique(151, '2025-08-01'))
+    series_schedule = grant('series_432', '{"coverageStart":"2025-08-10"}')
+    window = '{"window":{"start":"2025-08-10","end":"2025-08-20"}}'
+    v = acquire(occurrence(series_schedule, 'bcb-sgs-432-endpoint', window), series_body('2025-08-10', '2025-08-20', skip='2025-08-10'))
     if v['quality']['status'] != 'approved':
         psql(f"insert into private.market_events(subject_kind,subject_id,event,reason,actor_user_id) "
              f"values('version','{v['versionId']}','approved','Aprovação sintética do operador','{OPERATOR}');")
     decision = entry(fire(), 'series_432')
-    if decision.get('reason') != 'no_progress' or decision.get('windowStart') != '2023-08-10':
+    if decision.get('reason') != 'no_progress' or decision.get('windowStart') != '2025-08-10':
         raise AssertionError(f'an approved version that leaves the gap was not reported: {decision}')
-    late_body = series_body('2023-08-10', '2023-08-12')
-    late = prepared(occurrence(series_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-08-10","end":"2023-08-12"}}'), late_body)
+    late_body = series_body('2025-08-10', '2025-08-12')
+    late = prepared(occurrence(series_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2025-08-10","end":"2025-08-12"}}'), late_body)
     # A confirmation holds its source through the attempt's gate until it commits: the decision answers busy
     # without writing, and only the next firing reads the confirmed version.
     b = session('market_scheduler_confirmation', commit_sql(late, late_body)); barrier(b, 'B')
@@ -458,7 +459,7 @@ commit;
     if decision.get('status') != 'busy' or psql(f"select count(*) from private.market_schedule_occurrences where schedule_id='{series_schedule}';") != occurrences:
         raise AssertionError(f'a decision during a confirmation did not answer busy without writing: {decision}')
     confirmed = last(finish(b))
-    acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":152}'), communique(152, '2023-08-05'))
+    acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":152}'), communique(152, '2025-08-05'))
     first_anchor = psql("select reference_acquisition_id from private.market_copom_meetings where meeting=151;")
     psql(revoke_event('acquisition', first_anchor, 'Revogação sintética do comunicado do fecho'))
     a = session('market_scheduler_closure_reading', FIRE); barrier(a, 'A')
@@ -478,17 +479,17 @@ commit;
         psql(f"select private.revoke_market_acquisition_schedule_v1('{command()}',id,'Troca sintética da agenda','{OPERATOR}') "
              f"from private.market_acquisition_schedules where kind='series_432' and revoked_at is null;")
         return grant('series_432', json.dumps({'coverageStart': start}))
-    divergent_schedule = series_schedule_from('2023-10-10')
-    divergent = acquire(occurrence(divergent_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-10-10","end":"2023-10-15"}}'),
-                        series_body('2023-10-10', '2023-10-15').replace(b'13.75', b'13.50'))
+    divergent_schedule = series_schedule_from('2025-08-25')
+    divergent = acquire(occurrence(divergent_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2025-08-25","end":"2025-08-30"}}'),
+                        series_body('2025-08-25', '2025-08-30').replace(b'13.75', b'13.50'))
     if divergent['quality']['status'] != 'quarantined' or entry(fire(), 'series_432').get('reason') != 'series_disagreement':
         raise AssertionError(f'a divergent version was not held for the operator: {divergent}')
     psql(revoke_event('version', divergent['versionId'], 'Revogação sintética da versão divergente'))
     decision = entry(fire(), 'series_432')
     if decision.get('reason') != 'series_disagreement':
         raise AssertionError(f'revoking a divergent quarantine released the window: {decision}')
-    later_schedule = series_schedule_from('2023-11-10')
-    later = acquire(occurrence(later_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-11-10","end":"2023-11-15"}}'), series_body('2023-11-10', '2023-11-15'))
+    later_schedule = series_schedule_from('2025-09-01')
+    later = acquire(occurrence(later_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2025-09-01","end":"2025-09-06"}}'), series_body('2025-09-01', '2025-09-06'))
     if later['quality']['status'] != 'approved':
         raise AssertionError(f'a clean version was not approved: {later}')
     # The operator quarantines the version while a decision reads it: the decision waits at the version's state
@@ -501,10 +502,10 @@ commit;
     decision = entry(last(finish(a)), 'series_432')
     if decision.get('reason') != 'series_quality_unclassified':
         raise AssertionError(f'a quarantine without its evaluation was classified: {decision}')
-    internal_schedule = series_schedule_from('2023-12-10')
-    internal = acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":153}'), communique(153, '2023-12-12'))
-    gapped = acquire(occurrence(internal_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2023-12-10","end":"2023-12-20"}}'),
-                     series_body('2023-12-10', '2023-12-20', skip='2023-12-15'))
+    internal_schedule = series_schedule_from('2025-09-08')
+    internal = acquire(enqueue('bcb-copom-comunicados-detalhe', '{"meeting":153}'), communique(153, '2025-09-09'))
+    gapped = acquire(occurrence(internal_schedule, 'bcb-sgs-432-endpoint', '{"window":{"start":"2025-09-08","end":"2025-09-14"}}'),
+                     series_body('2025-09-08', '2025-09-14', skip='2025-09-11'))
     if gapped['quality']['status'] != 'quarantined':
         raise AssertionError(f'a gapped version was approved: {gapped}')
     psql(revoke_event('acquisition', internal['acquisitionId'], 'Revogação sintética do comunicado interno'))
