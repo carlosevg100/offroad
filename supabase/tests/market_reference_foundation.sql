@@ -277,9 +277,12 @@ begin
  foreach r in array array['anon','authenticated','service_role'] loop
   if has_sequence_privilege(r,'private.market_events_sequence_seq','usage,select,update') then raise exception '% reaches the event sequence',r;end if;
   for f in select p.oid::regprocedure::text from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname ~ '^(market_|register_market_|record_market_|seal_market_|guard_market_|mark_market_|lock_market_|open_market_)' loop
-   if has_function_privilege(r,f,'execute') then raise exception '% executes %',r,f;end if;
+   -- The ODbL edition reader is the one private function anon executes (through its public wrapper).
+   if has_function_privilege(r,f,'execute') and not (r='anon' and f='private.market_odbl_release_read_v1(integer)') then raise exception '% executes %',r,f;end if;
   end loop;
  end loop;
+ if not has_function_privilege('anon','private.market_odbl_release_read_v1(integer)','execute')
+ or has_function_privilege('authenticated','private.market_odbl_release_read_v1(integer)','execute') then raise exception 'ODbL reader grant is not exact';end if;
  if not exists(select 1 from storage.buckets where id='market-reference' and not public and file_size_limit=52428800
   and allowed_mime_types=array['application/zip','text/csv','application/json','application/xml','text/xml','application/pdf','text/plain','text/html']::text[])
  then raise exception 'market bucket configuration changed';end if;

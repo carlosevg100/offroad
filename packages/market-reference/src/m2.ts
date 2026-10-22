@@ -7,3 +7,4 @@ export * from "./selic-target-quality";
 export * from "./market-period-selection";
 export * from "./market-canonical-v2";
 export * from "./strict-json";
+export * from "./market-odbl";

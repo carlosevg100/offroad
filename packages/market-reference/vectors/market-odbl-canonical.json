@@ -1,0 +1,111 @@
+{
+ "schemaVersion": "offroad.market-odbl-vectors.v1",
+ "generatedBy": "independent Python implementation of market-odbl.v1",
+ "cases": [
+  {
+   "name": "empty_object",
+   "input": {},
+   "canonical": "{}",
+   "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+  },
+  {
+   "name": "empty_array",
+   "input": [],
+   "canonical": "[]",
+   "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  {
+   "name": "key_order_by_code_point",
+   "input": {
+    "b": "1",
+    "a": "2",
+    "B": "3",
+    "é": "4",
+    "z": "5",
+    "aa": "6"
+   },
+   "canonical": "{\"B\":\"3\",\"a\":\"2\",\"aa\":\"6\",\"b\":\"1\",\"z\":\"5\",\"é\":\"4\"}",
+   "sha256": "0067f8194476f7e3673e518cfcf9b3281f5293602410196e62559e0ed2ecdbaf"
+  },
+  {
+   "name": "nested_arrays_keep_order",
+   "input": {
+    "x": [
+     "3",
+     "1",
+     "2",
+     [],
+     {}
+    ],
+    "y": [
+     true,
+     false,
+     null
+    ]
+   },
+   "canonical": "{\"x\":[\"3\",\"1\",\"2\",[],{}],\"y\":[true,false,null]}",
+   "sha256": "a3db9f4f17f7f8b27c28d19f9b8f695a851b2df632b5c2c51d529d8185f5de62"
+  },
+  {
+   "name": "escapes",
+   "input": {
+    "q": "a\"b",
+    "b": "a\\b",
+    "c": "\n\t\u0001\u001f",
+    "d": "/é€😀"
+   },
+   "canonical": "{\"b\":\"a\\\\b\",\"c\":\"\\u000a\\u0009\\u0001\\u001f\",\"d\":\"/é€😀\",\"q\":\"a\\\"b\"}",
+   "sha256": "975af4a906713f868f25512a6cb9d822139fe663696ffde5371b12a12c562190"
+  },
+  {
+   "name": "unicode_keys",
+   "input": {
+    "ç": "1",
+    "c": "2",
+    "😀": "3",
+    "é": "4",
+    "ﬀ": "5",
+    "￿": "6"
+   },
+   "canonical": "{\"c\":\"2\",\"ç\":\"1\",\"é\":\"4\",\"ﬀ\":\"5\",\"￿\":\"6\",\"😀\":\"3\"}",
+   "sha256": "569613617625a8a08ac2017cdc11314bf6041eb52bf638764f9415eaff5b1560"
+  },
+  {
+   "name": "realistic",
+   "input": {
+    "format": "offroad.market-odbl.v1",
+    "release": "1",
+    "observations": [
+     {
+      "period": "2025-09-17",
+      "value": "15",
+      "versionId": "00000000-0000-4000-8000-000000000001",
+      "acquisitionId": "00000000-0000-4000-8000-000000000002"
+     }
+    ],
+    "alterations": {
+     "previous": null
+    }
+   },
+   "canonical": "{\"alterations\":{\"previous\":null},\"format\":\"offroad.market-odbl.v1\",\"observations\":[{\"acquisitionId\":\"00000000-0000-4000-8000-000000000002\",\"period\":\"2025-09-17\",\"value\":\"15\",\"versionId\":\"00000000-0000-4000-8000-000000000001\"}],\"release\":\"1\"}",
+   "sha256": "f346e34afa4e4ffdc0cefec08b5759494880679ac812780988103de81e1ccd29"
+  }
+ ],
+ "refusals": [
+  {
+   "name": "number",
+   "input": {
+    "a": 1
+   }
+  },
+  {
+   "name": "nested_number",
+   "input": {
+    "a": [
+     "1",
+     2.5
+    ]
+   }
+  }
+ ]
+}

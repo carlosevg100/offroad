@@ -3,14 +3,14 @@ import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 import type {ReactNode} from "react";
 import type {AppLocale} from "@/i18n/routing";
-import {publicPath, type PublicPage} from "@/lib/website-routes";
+import {dataPath, isDataPage, publicPath, type DataPage, type PublicPage} from "@/lib/website-routes";
 import {websiteCopy} from "./public-content";
 import {ProductHome} from "./public-product-home";
 import {PublicHeroMotion} from "./public-hero-motion";
 import styles from "./public-site.module.css";
 import hero from "./public-hero.module.css";
 
-export async function PublicShell({locale, page, children}: {locale: AppLocale; page: PublicPage; children: ReactNode}) {
+export async function PublicShell({locale, page, children}: {locale: AppLocale; page: PublicPage | DataPage; children: ReactNode}) {
   const t = await getTranslations({locale, namespace: "Website"});
   const dark = page === "home";
   const otherLocale = locale === "pt-BR" ? "en-US" : "pt-BR";
@@ -20,7 +20,7 @@ export async function PublicShell({locale, page, children}: {locale: AppLocale; 
     <header key={page} className={`${styles.header} ${dark ? styles.headerDark : ""}`}>
       <Link href={publicPath(locale, "home")} aria-label={`Offroad: ${t("nav.home")}`} className={styles.logo}><Image src={`/brand/offroad-lockup${dark ? "-inverted" : ""}.png`} width={1600} height={482} alt="Offroad" priority /></Link>
       <nav className={styles.desktopNav} aria-label={t("nav.menu")}>{nav}</nav>
-      <div className={styles.headerActions}><Link href={publicPath(otherLocale, page)} hrefLang={otherLocale} aria-label={t("nav.language")}>{locale === "pt-BR" ? "EN" : "PT"}</Link><Link className={styles.login} href={`/${locale}/login`}>{t("nav.login")}</Link>{dark && <Link className={styles.headerDemo} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link>}</div>
+      <div className={styles.headerActions}><Link href={isDataPage(page) ? dataPath(otherLocale, page) : publicPath(otherLocale, page)} hrefLang={otherLocale} aria-label={t("nav.language")}>{locale === "pt-BR" ? "EN" : "PT"}</Link><Link className={styles.login} href={`/${locale}/login`}>{t("nav.login")}</Link>{dark && <Link className={styles.headerDemo} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link>}</div>
       <details className={styles.mobileNav}><summary>{t("nav.menu")}</summary><nav aria-label={t("nav.menu")}>{nav}<Link href={publicPath(locale, "demo")}>{t("nav.demo")}</Link><Link href={`/${locale}/login`}>{t("nav.login")}</Link></nav></details>
     </header>
     <main id="content">{children}</main>

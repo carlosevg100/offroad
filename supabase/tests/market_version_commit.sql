@@ -226,7 +226,7 @@ do $$ declare t text;r text;begin
  end loop;
  foreach r in array array['anon','authenticated','service_role'] loop
   if has_function_privilege(r,'private.relink_market_version_v1(uuid,uuid,uuid)','execute') then raise exception '% relinks',r;end if;
-  if has_function_privilege(r,'private.create_market_selic_version_v1(uuid,text,uuid,jsonb,date,date,date,uuid,uuid)','execute') then raise exception '% creates versions',r;end if;
+  if has_function_privilege(r,'private.create_market_selic_version_v1(uuid,text,uuid,jsonb,date,date,date,uuid,uuid,jsonb)','execute') then raise exception '% creates versions',r;end if;
  end loop;
 end $$;
 rollback;

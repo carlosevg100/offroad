@@ -9671,7 +9671,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/m2.ts",
-              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+              "hash": "751b4fea28a05bb14051afe508d8e8bf0c8bd7887c32d718b5b7399140fdcdb9"
             },
             {
               "path": "packages/market-reference/src/market-availability.ts",
@@ -9684,6 +9684,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
+            },
+            {
+              "path": "packages/market-reference/src/market-odbl.ts",
+              "hash": "b346f3ce55d5276015e1bd1a4016aa9783df7b41ed8c850fbb3e091ac2d0e8e7"
             },
             {
               "path": "packages/market-reference/src/market-period-selection.ts",
@@ -9866,7 +9870,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "924b6da2d130c9e9b3e1da3c107cefe51558355c88f627ed583d0a1c69264ac8"
+          "hash": "1888bbf06ca12dc4b89772872716180e1685e1dba1498031d44b0e6f214a0ceb"
         },
         "evidence": [
           {
@@ -9892,7 +9896,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "21a0d02a600e4771d37020d2b7501c4f84d7091f94a49874923d899015940fa1"
+    "manifestHash": "95855ff3c69c160da02c0841ac2ea59cc2d3047a78d0764441d1cb82e67aec88"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17048,7 +17052,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/m2.ts",
-              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+              "hash": "751b4fea28a05bb14051afe508d8e8bf0c8bd7887c32d718b5b7399140fdcdb9"
             },
             {
               "path": "packages/market-reference/src/market-availability.ts",
@@ -17061,6 +17065,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
+            },
+            {
+              "path": "packages/market-reference/src/market-odbl.ts",
+              "hash": "b346f3ce55d5276015e1bd1a4016aa9783df7b41ed8c850fbb3e091ac2d0e8e7"
             },
             {
               "path": "packages/market-reference/src/market-period-selection.ts",
@@ -17243,7 +17251,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "a1cfb80e84495757be20a19396bde557d430b0007deff8940881aaec908a356f"
+          "hash": "53542f7cbaa0ef7b0086669286d816aeb1bf223c5b8582739c600644d1f4c721"
         },
         "evidence": [
           {
@@ -17269,7 +17277,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "7739a900fd8d382a57657b9c0c32db75690b0162d3f9e7495984ee812b4952b7"
+    "manifestHash": "2697287dd308b81481cc340a7407539d060123836449e8cfd386f2cb6fc474c6"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -22328,7 +22336,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/m2.ts",
-              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+              "hash": "751b4fea28a05bb14051afe508d8e8bf0c8bd7887c32d718b5b7399140fdcdb9"
             },
             {
               "path": "packages/market-reference/src/market-availability.ts",
@@ -22341,6 +22349,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
+            },
+            {
+              "path": "packages/market-reference/src/market-odbl.ts",
+              "hash": "b346f3ce55d5276015e1bd1a4016aa9783df7b41ed8c850fbb3e091ac2d0e8e7"
             },
             {
               "path": "packages/market-reference/src/market-period-selection.ts",
@@ -22523,7 +22535,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "522bb10650d72c3babe77857ece9333fe0e291df1c50576c99ac1d3fa6759f78"
+          "hash": "9d5b6599f1ab9bbf92ddc10e2e20c5df5251d2ab2dbe8d3f4925bd9aaf8a623b"
         },
         "evidence": [
           {
@@ -22549,7 +22561,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "1c1cff2bcc9a8b47c64c9e37f3169f473de1990a15738358e194cc8c402c5fdb"
+    "manifestHash": "b7e69f42b5266a646ec4db172701aa7d2956e3400c44e0683b5ea989a814461f"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31382,7 +31394,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/m2.ts",
-              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+              "hash": "751b4fea28a05bb14051afe508d8e8bf0c8bd7887c32d718b5b7399140fdcdb9"
             },
             {
               "path": "packages/market-reference/src/market-availability.ts",
@@ -31395,6 +31407,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
+            },
+            {
+              "path": "packages/market-reference/src/market-odbl.ts",
+              "hash": "b346f3ce55d5276015e1bd1a4016aa9783df7b41ed8c850fbb3e091ac2d0e8e7"
             },
             {
               "path": "packages/market-reference/src/market-period-selection.ts",
@@ -31577,7 +31593,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "e5a3c195906191dede4e0e7bd0f078d3cf21931372c857de40dad6a41fede6fd"
+          "hash": "7b291b0fa546d65379225b443af653dcab83562ef0f7bb284846d090e57b983a"
         },
         "evidence": [
           {
@@ -31603,7 +31619,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "f7243251c86bdb7c02f12eb45e8661c07e5a5beb65b12053e1c4e1c5834fb3cc"
+    "manifestHash": "17a88f121f5d3604ddb8339fb90158df3352092cec18bd14653dae6989136b46"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -55219,7 +55235,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/m2.ts",
-              "hash": "5cffa2004178edf64b41cf6516e74a655e33baaa2a7fcbfbc6f5c2bcf9dc8695"
+              "hash": "751b4fea28a05bb14051afe508d8e8bf0c8bd7887c32d718b5b7399140fdcdb9"
             },
             {
               "path": "packages/market-reference/src/market-availability.ts",
@@ -55232,6 +55248,10 @@ export const procedureBuildProvenance = [
             {
               "path": "packages/market-reference/src/market-objects.ts",
               "hash": "562d3230032adfd4c7e11eb24e20a1cbfdfd9dabcde7c3485481975d9df8bdfe"
+            },
+            {
+              "path": "packages/market-reference/src/market-odbl.ts",
+              "hash": "b346f3ce55d5276015e1bd1a4016aa9783df7b41ed8c850fbb3e091ac2d0e8e7"
             },
             {
               "path": "packages/market-reference/src/market-period-selection.ts",
@@ -55414,7 +55434,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "234d1f24cce061464c5b41d203e641012b73a6cb742e04fa33a72a4b4a4caa23"
+          "hash": "7c3d0aa4781e8bbd6ea702cd555d4c4640ce6c3256f9e84fbdbcc919aac06181"
         },
         "evidence": [
           {
@@ -55440,7 +55460,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "a31ef0d26ac8418f0764489878206bbef614866d191ab39988a0b7586b58da4c"
+    "manifestHash": "f7646bea6e8e3d6f31f80e0915b5be2d0b554fd4d8e871149307ac856069121b"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

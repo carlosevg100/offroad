@@ -2051,6 +2051,36 @@
         "supabase/tests/market_acquisition_job.sql",
         "supabase/tests/market_version_commit.sql"
       ]
+    },
+    {
+      "path": "apps/web/src/lib/market/odbl-release.ts",
+      "sha256": "059f9eea815c8838a3a43ab2b480ddee7f8bc05e66273a847d8083f0805c7e70",
+      "entrypoint": false,
+      "rpcs": [
+        "market_odbl_release_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "The one published projection (ADR 0023, M2 part 3): a stateless client calls public.market_odbl_release_v1 as anon, an invoker wrapper bound at creation whose private reader returns only an ODbL edition whose every dependency is still readable in mode consume; no session, cookie or tenant resource is involved.",
+      "negativeTests": [
+        "apps/web/src/lib/market/odbl-release.test.ts",
+        "apps/web/src/lib/market/odbl-public.test.tsx",
+        "supabase/tests/market_retention_odbl.sql",
+        "apps/web/e2e/market-odbl.spec.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/dados/meta-selic.json/route.ts",
+      "sha256": "ea63a9851eacfeb420d93ee7c09e185244a6f21e3d49342037b581d36c68c95e",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "The one published projection (ADR 0023, M2 part 3): a stateless client calls public.market_odbl_release_v1 as anon, an invoker wrapper bound at creation whose private reader returns only an ODbL edition whose every dependency is still readable in mode consume; no session, cookie or tenant resource is involved.",
+      "negativeTests": [
+        "apps/web/src/lib/market/odbl-release.test.ts",
+        "apps/web/src/lib/market/odbl-public.test.tsx",
+        "supabase/tests/market_retention_odbl.sql",
+        "apps/web/e2e/market-odbl.spec.ts"
+      ]
     }
   ],
   "isolatedTechnicalModules": [
