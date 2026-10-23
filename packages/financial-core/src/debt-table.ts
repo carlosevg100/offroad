@@ -19,8 +19,11 @@ export type DebtTableInstrument = {
   amortization: readonly {date: string; amount: string}[];
   guarantee: {description: string; encumbranceAmount: string | null; usesBasketOf: readonly string[]};
   covenant: string | null;
-  /** Acceleration of this instrument on default of another debt above the threshold. */
-  crossDefault: {threshold: string | null; acceleration: "automatic" | "non_automatic"; scope: string} | null;
+  /** Acceleration of this instrument on default of other debt above the threshold. The scope says which
+   * debt counts (any financial debt of the borrower, or only debt with the named creditors); the basis says
+   * whether the clause measures the amount in default or the outstanding principal of that debt. */
+  crossDefault: {threshold: string | null; acceleration: "automatic" | "non_automatic"; scope: string;
+    scopeKind: "any_financial_debt" | "named_creditors"; creditors: readonly string[]; thresholdBasis: "amount_in_default" | "outstanding_principal"} | null;
   prepayment: string | null;
   /** Aggregate basket this instrument's negative pledge allows for new security, if any. */
   negativePledgeBasket: string | null;
@@ -41,6 +44,8 @@ export type DebtTableInput = {
   leverage: readonly {viewId: string; label: string; ebitda: string; ebitdaDeduction: string}[];
   /** Whether an external register of all financial-institution operations has been reconciled. */
   completeness: {status: "proven" | "unproven"; evidence: string};
+  /** Whether each off-balance category was examined; examined with no item is a confirmed absence. */
+  categoryCoverage: Record<DebtTableObligationKind, "examined" | "not_examined">;
 };
 
 function date(value: string) {
@@ -102,6 +107,9 @@ export function buildDebtTable(input: DebtTableInput) {
     if (i.crossDefault) {
       text(i.crossDefault.scope, "debt_table_cross_default_scope_required");
       if (!["automatic", "non_automatic"].includes(i.crossDefault.acceleration)) throw new Error("debt_table_cross_default_acceleration");
+      if (!["any_financial_debt", "named_creditors"].includes(i.crossDefault.scopeKind)) throw new Error("debt_table_cross_default_scope_kind");
+      if ((i.crossDefault.scopeKind === "named_creditors") !== (i.crossDefault.creditors.length > 0)) throw new Error("debt_table_cross_default_creditors");
+      if (!["amount_in_default", "outstanding_principal"].includes(i.crossDefault.thresholdBasis)) throw new Error("debt_table_cross_default_basis");
       if (i.crossDefault.threshold !== null) amount(i.crossDefault.threshold);
     }
     return {i, principal, accrued, cost, schedule, scheduled};
@@ -183,11 +191,18 @@ export function buildDebtTable(input: DebtTableInput) {
     const occupied = sum(users.map(u => amount(u.i.guarantee.encumbranceAmount!)));
     return {holderId: r.i.id, basket: out(limit), occupied: out(occupied), remaining: out(limit.minus(occupied)), exceeded: occupied.gt(limit), usedBy: users.map(u => u.i.id)};
   });
+  // Potential exposure, not a default: each other debt in the clause's scope is read under the explicit
+  // hypothesis that its whole outstanding amount (principal of an instrument, drawn amount of a line) is
+  // the amount the clause measures. Drawn credit lines are debt and count.
+  const exposures = [...rows.map(o => ({id: o.i.id, creditor: o.i.creditor, outstanding: o.principal})),
+    ...lines.filter(l => l.drawnValue.gt(0)).map(l => ({id: l.id, creditor: l.creditor, outstanding: l.drawnValue}))];
   const crossDefault = rows.filter(r => r.i.crossDefault?.threshold != null).map(r => {
-    const threshold = amount(r.i.crossDefault!.threshold!);
-    return {instrumentId: r.i.id, threshold: out(threshold), acceleration: r.i.crossDefault!.acceleration, scope: r.i.crossDefault!.scope,
-      /** Other instruments whose default, at their outstanding principal, exceeds this threshold. */
-      triggeredBy: rows.filter(o => o.i.id !== r.i.id && o.principal.gt(threshold)).map(o => o.i.id)};
+    const c = r.i.crossDefault!, threshold = amount(c.threshold!);
+    const inScope = exposures.filter(o => o.id !== r.i.id && (c.scopeKind === "any_financial_debt" || c.creditors.includes(o.creditor)));
+    return {instrumentId: r.i.id, threshold: out(threshold), acceleration: c.acceleration, scope: c.scope, scopeKind: c.scopeKind, thresholdBasis: c.thresholdBasis,
+      hypothesis: "whole_outstanding_in_default" as const,
+      /** Debt in scope whose whole outstanding amount, if in default, would exceed the threshold. */
+      potentiallyTriggeredBy: inScope.filter(o => o.outstanding.gt(threshold)).map(o => o.id)};
   }).sort((a, b) => new Money(a.threshold).cmp(b.threshold) || (a.instrumentId < b.instrumentId ? -1 : 1));
 
   const leverage = input.leverage.map(l => {
@@ -200,6 +215,14 @@ export function buildDebtTable(input: DebtTableInput) {
       denominator: out(denominator), ratio: net === null || !denominator.gt(0) ? null : out(net.div(denominator))};
   });
   if (input.completeness.status !== "proven" && input.completeness.status !== "unproven") throw new Error("debt_table_completeness_status");
+  const coverage = (["lease", "supplier_finance", "guarantee_given"] as const).map(kind => {
+    const v = input.categoryCoverage?.[kind];
+    if (v !== "examined" && v !== "not_examined") throw new Error("debt_table_category_coverage_required");
+    const items = obligations.filter(o => o.kind === kind).length;
+    if (v === "not_examined" && items) throw new Error("debt_table_category_items_without_examination");
+    if (v === "not_examined") gaps.push({item: kind, reason: "category_not_examined"});
+    return {kind, status: v === "not_examined" ? "not_examined" as const : items ? "present" as const : "confirmed_absent" as const};
+  });
   text(input.completeness.evidence, "debt_table_completeness_evidence_required");
 
   return {
@@ -233,6 +256,7 @@ export function buildDebtTable(input: DebtTableInput) {
     leverage,
     completeness: {status: input.completeness.status, evidence: input.completeness.evidence,
       request: input.completeness.status === "proven" ? null : "external_register_of_financial_institution_operations"},
+    categoryCoverage: coverage,
     gaps,
   };
 }

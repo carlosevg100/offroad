@@ -20,8 +20,8 @@ export const debtTableRunIds = {
 } as const;
 const question = "Monta a tabela de dívida com tudo que temos.";
 type Basis = ReturnType<typeof auroraDebtTableBasis>;
-function packetInput(edit: (f: Basis) => void = () => undefined): DebtTablePacketInput {
-  const f = auroraDebtTableBasis(); edit(f);
+function packetInput(edit: (f: Basis) => void = () => undefined, options: Parameters<typeof auroraDebtTableBasis>[0] = {}): DebtTablePacketInput {
+  const f = auroraDebtTableBasis(options); edit(f);
   return {schemaVersion: "debt-table-packet-input.v1", question, analysis: f.seal()} as DebtTablePacketInput;
 }
 const setValue = (f: Basis, suffix: string, value: string) => {
@@ -59,9 +59,11 @@ function goldCases(): Case[] {
       (p) => ({average: r(new D(p.result.table!.profile.averageNominalCost!).mul(100).toFixed(), 2), rows: p.result.table!.rows.map((x) => r(new D(x.nominalRate!).mul(100).toFixed(), 2))})),
     reuse("basket-occupied-by-the-bradesco-security", {holder: "debenture-1", basket: 15, occupied: 12, remaining: 3},
       (p) => {const b = p.result.table!.negativePledgeBaskets[0]!; return {holder: b.holderId, basket: r(b.basket), occupied: r(b.occupied), remaining: r(b.remaining)};}),
-    reuse("cross-default-chain-from-the-lowest-threshold", {lowest: ["ccb-bradesco", 5], chain: [["ccb-bradesco", 5, ["debenture-1", "finame"]], ["debenture-1", 10, ["ccb-bradesco", "finame"]]]},
+    reuse("cross-default-chain-from-the-lowest-threshold", {lowest: ["ccb-bradesco", 5], chain: [["ccb-bradesco", 5, "amount_in_default", ["debenture-1", "finame"]], ["debenture-1", 10, "amount_in_default", ["ccb-bradesco", "finame"]]]},
       (p) => ({lowest: [p.result.table!.crossDefault.lowestThreshold!.instrumentId, r(p.result.table!.crossDefault.lowestThreshold!.threshold)],
-        chain: p.result.table!.crossDefault.chain.map((c) => [c.instrumentId, r(c.threshold), c.triggeredBy])})),
+        chain: p.result.table!.crossDefault.chain.map((c) => [c.instrumentId, r(c.threshold), c.thresholdBasis, c.potentiallyTriggeredBy])})),
+    observe("cross-default-scoped-to-named-creditors", packetInput(() => undefined, {debentureCrossDefaultCreditors: ["BNDES"]}),
+      ["finame"], (p) => p.result.table!.crossDefault.chain.find((c) => c.instrumentId === "debenture-1")!.potentiallyTriggeredBy),
     reuse("leverage-in-the-bank-and-indenture-definitions", {bank: [109, 54, 2.02], indenture: [95, 51, 1.86]},
       (p) => Object.fromEntries(p.result.table!.leverage.map((l) => [l.viewId === "mercado" ? "bank" : "indenture", [r(l.netDebt), r(l.denominator), r(l.ratio, 2)]]))),
     reuse("completeness-asks-for-the-external-register", {status: "unproven", request: true}, (p) => ({status: p.result.table!.completeness.status, request: p.readings!.completenessRequest})),

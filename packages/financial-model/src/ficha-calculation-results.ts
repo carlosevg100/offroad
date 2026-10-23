@@ -168,7 +168,8 @@ export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common,
   exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});
 
 const nullableDecimal = decimal.nullable(), component = z.enum(["principal", "accrued_interest", "unamortized_cost", "drawn_credit_lines", "lease", "supplier_finance", "guarantee_given"]);
-const crossDefaultTerm = z.strictObject({threshold: decimal.nullable(), acceleration: z.enum(["automatic", "non_automatic"]), scope: text});
+const crossDefaultTerm = z.strictObject({threshold: decimal.nullable(), acceleration: z.enum(["automatic", "non_automatic"]), scope: text,
+  scopeKind: z.enum(["any_financial_debt", "named_creditors"]), creditors: z.array(text).max(12), thresholdBasis: z.enum(["amount_in_default", "outstanding_principal"])});
 export const debtTableOutputSchema = z.strictObject({schemaVersion: z.literal("debt-table.v1"), version, referenceDate: date, currency: z.string().regex(/^[A-Z]{3}$/),
   rows: z.array(z.strictObject({id: version, label: text, creditor: text, borrower: text, principal: decimal, accountingBalance: decimal, indexer: version,
     spread: nullableDecimal, nominalRate: nullableDecimal, finalPayment: date, scheduleMatchesPrincipal: z.boolean(), guarantee: text, covenant: text.nullable(),
@@ -185,9 +186,12 @@ export const debtTableOutputSchema = z.strictObject({schemaVersion: z.literal("d
     largestCreditor: z.strictObject({creditor: text, principal: decimal, share: nullableDecimal}).nullable(), averageNominalCost: nullableDecimal}),
   negativePledgeBaskets: z.array(z.strictObject({holderId: version, basket: decimal, occupied: decimal, remaining: decimal, exceeded: z.boolean(), usedBy: z.array(version).max(32)})).max(32),
   crossDefault: z.strictObject({chain: z.array(z.strictObject({instrumentId: version, threshold: decimal, acceleration: z.enum(["automatic", "non_automatic"]), scope: text,
-    triggeredBy: z.array(version).max(32)})).max(32), lowestThreshold: z.strictObject({instrumentId: version, threshold: decimal}).nullable()}),
+    scopeKind: z.enum(["any_financial_debt", "named_creditors"]), thresholdBasis: z.enum(["amount_in_default", "outstanding_principal"]),
+    hypothesis: z.literal("whole_outstanding_in_default"), potentiallyTriggeredBy: z.array(version).max(64)})).max(32),
+    lowestThreshold: z.strictObject({instrumentId: version, threshold: decimal}).nullable()}),
   leverage: z.array(z.strictObject({viewId: version, label: text, netDebt: nullableDecimal, ebitda: decimal, ebitdaDeduction: decimal, denominator: decimal, ratio: nullableDecimal})).max(8),
   completeness: z.strictObject({status: z.enum(["proven", "unproven"]), evidence: text, request: z.literal("external_register_of_financial_institution_operations").nullable()}),
+  categoryCoverage: z.array(z.strictObject({kind: z.enum(["lease", "supplier_finance", "guarantee_given"]), status: z.enum(["present", "confirmed_absent", "not_examined"])})).length(3),
   gaps: z.array(z.strictObject({item: text, reason: text})).max(64)});
 export const adoptedDebtTableOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-debt-table.v1"),
   analysisId: z.uuid(), perimeter: text, referenceDate: date, table: debtTableOutputSchema.nullable(),

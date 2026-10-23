@@ -26,7 +26,9 @@ export const debtTablePacketOutputSchema = z.strictObject({
   readings: z.strictObject({
     reconciled: z.boolean().nullable(),
     viewCount: z.number().int().min(0).max(8),
-    limitsKeptOutOfDebt: z.boolean(),
+    /** Unused credit limits, shown apart: no definition ever counts them as debt. */
+    unusedLimits: z.string(),
+    categoriesNotExamined: z.array(z.enum(["lease", "supplier_finance", "guarantee_given"])).max(3),
     outsideEveryView: z.array(key).max(64),
     basketsExceeded: z.array(key).max(32),
     lowestCrossDefault: z.strictObject({instrumentId: key, threshold: z.string()}).nullable(),
@@ -53,7 +55,8 @@ export function prepareDebtTablePacket(raw: unknown): DebtTablePacket {
   const readings = t ? {
     reconciled: t.reconciliation.status === "not_reported" ? null : t.reconciliation.status === "exact",
     viewCount: t.views.length,
-    limitsKeptOutOfDebt: t.creditLines.every((l) => l.drawn === "0") || t.views.every((v) => v.components.includes("drawn_credit_lines")),
+    unusedLimits: t.unusedLimits,
+    categoriesNotExamined: t.categoryCoverage.filter((c) => c.status === "not_examined").map((c) => c.kind),
     outsideEveryView: t.outsideEveryView.map((o) => o.id),
     basketsExceeded: t.negativePledgeBaskets.filter((b) => b.exceeded).map((b) => b.holderId),
     lowestCrossDefault: t.crossDefault.lowestThreshold,

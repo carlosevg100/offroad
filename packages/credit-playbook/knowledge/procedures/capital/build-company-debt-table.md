@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: debt-table-packet.v1
 unit_test_files: [packages/financial-model/src/debt-table-packet.test.ts, packages/financial-model/src/debt-table-runs.test.ts, packages/financial-model/src/adopted-debt-table.test.ts, packages/financial-core/src/debt-table.test.ts]
-gold_case_ids: [principal-and-accounting-balance-reconcile-exactly, credit-line-is-a-limit-not-debt, four-definitions-with-the-bridge, bank-guarantee-stays-outside-every-balance, schedule-by-year-independent-oracle, tenor-due-in-twelve-months-and-concentration, average-nominal-cost-under-the-adopted-curve, basket-occupied-by-the-bradesco-security, cross-default-chain-from-the-lowest-threshold, leverage-in-the-bank-and-indenture-definitions, completeness-asks-for-the-external-register, drawn-line-counts-in-the-contractual-view, schedule-short-of-principal-is-a-gap, absent-cash-is-a-gap-not-a-default]
+gold_case_ids: [principal-and-accounting-balance-reconcile-exactly, credit-line-is-a-limit-not-debt, four-definitions-with-the-bridge, bank-guarantee-stays-outside-every-balance, schedule-by-year-independent-oracle, tenor-due-in-twelve-months-and-concentration, average-nominal-cost-under-the-adopted-curve, basket-occupied-by-the-bradesco-security, cross-default-chain-from-the-lowest-threshold, cross-default-scoped-to-named-creditors, leverage-in-the-bank-and-indenture-definitions, completeness-asks-for-the-external-register, drawn-line-counts-in-the-contractual-view, schedule-short-of-principal-is-a-gap, absent-cash-is-a-gap-not-a-default]
 adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, leverage-names-unknown-view, duplicate-item, payment-on-the-reference-date, drawn-above-limit, basket-of-an-unknown-instrument, view-repeats-a-component, term-read-in-another-scenario]
 e2e_scenario_ids: [domain:principal-and-accounting-balance-reconcile-exactly]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -77,7 +77,8 @@ Pacote da tabela de dívida: linhas por operação com principal, saldo contábi
 - Concentração: maior credor sobre o principal total.
 - Custo nominal de cada operação = (1 + índice adotado) × (1 + spread) − 1; custo médio ponderado pelo principal; sem índice adotado, o custo médio fica como lacuna.
 - Cesta de garantia: soma das garantias que a usam contra o valor permitido.
-- Cross-default: uma operação dispara o limiar de outra quando o seu principal excede esse limiar.
+- Cross-default: cada cláusula declara o escopo (qualquer dívida financeira ou só a dívida com credores nomeados) e a base do limiar (valor em atraso ou saldo devedor). A cadeia é exposição potencial, sob a hipótese explícita de que todo o saldo de uma dívida do escopo esteja em atraso: entra na cadeia a dívida do escopo, inclusive linha sacada, cujo saldo excede o limiar. Não afirma inadimplemento atual.
+- Cobertura: arrendamentos, fornecedores convênio e fianças prestadas são declarados examinados ou não examinados; examinado sem item é ausência confirmada; não examinado vira lacuna e o pacote não fica pronto.
 - Alavancagem = (total da definição − caixa disponível) / (EBITDA da definição − o que ela desconta).
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
@@ -101,6 +102,7 @@ Pacote da tabela de dívida: linhas por operação com principal, saldo contábi
 
 # Stop conditions
 - Termo sem contribuição adotada fica como lacuna declarada; a tabela não é montada com valor presumido.
+- Categoria fora do saldo não examinada (risco sacado, fianças, arrendamentos) impede apresentar a tabela como completa.
 - Cronograma que não soma o principal é marcado na linha e no pacote.
 - O pacote não mede covenant na data de apuração, não aprova crédito e não publica nem altera a base.
 
@@ -126,7 +128,7 @@ Pacote da tabela de dívida: linhas por operação com principal, saldo contábi
 - packages/financial-core/src/debt-table.test.ts: núcleo contra o oráculo da ficha.
 - packages/financial-model/src/adopted-debt-table.test.ts e packages/financial-model/src/debt-table-packet.test.ts: leitor adotado e pacote.
 ## Gold
-- principal-and-accounting-balance-reconcile-exactly, credit-line-is-a-limit-not-debt, four-definitions-with-the-bridge, bank-guarantee-stays-outside-every-balance, schedule-by-year-independent-oracle, tenor-due-in-twelve-months-and-concentration, average-nominal-cost-under-the-adopted-curve, basket-occupied-by-the-bradesco-security, cross-default-chain-from-the-lowest-threshold, leverage-in-the-bank-and-indenture-definitions, completeness-asks-for-the-external-register, drawn-line-counts-in-the-contractual-view, schedule-short-of-principal-is-a-gap, absent-cash-is-a-gap-not-a-default.
+- principal-and-accounting-balance-reconcile-exactly, credit-line-is-a-limit-not-debt, four-definitions-with-the-bridge, bank-guarantee-stays-outside-every-balance, schedule-by-year-independent-oracle, tenor-due-in-twelve-months-and-concentration, average-nominal-cost-under-the-adopted-curve, basket-occupied-by-the-bradesco-security, cross-default-chain-from-the-lowest-threshold, cross-default-scoped-to-named-creditors, leverage-in-the-bank-and-indenture-definitions, completeness-asks-for-the-external-register, drawn-line-counts-in-the-contractual-view, schedule-short-of-principal-is-a-gap, absent-cash-is-a-gap-not-a-default.
 ## Adversarial
 - Base adulterada, resultado livre no pedido, concessão fabricada no resultado, alavancagem em definição inexistente, item duplicado, pagamento na data de referência, linha sacada acima do limite, cesta de operação inexistente, definição com componente repetido e termo lido em outro cenário são recusados.
 ## Aceitação
@@ -198,7 +200,7 @@ O contrato mede principal; a nota explicativa mede saldo contábil com juros acr
 Bancos e agências somam arrendamentos e risco sacado, porque são obrigações financeiras com data. A escritura costuma excluí-los. Fiança prestada não é dívida da companhia, mas ocupa limite no banco e aparece no Registrato.
 
 ## Garantias e cross-default
-A cesta de garantia permitida da escritura limita a próxima operação com garantia. O limiar de cross-default mais baixo define quanto uma linha nova pode causar se atrasar: é isso que liga a tabela à decisão de dimensionar uma linha.
+A cesta de garantia permitida da escritura limita a próxima operação com garantia. O limiar de cross-default mais baixo define quanto uma linha nova pode causar se atrasar: é isso que liga a tabela à decisão de dimensionar uma linha. A cadeia é exposição potencial, não inadimplemento: depende do escopo de cada cláusula e de o limiar medir o valor em atraso ou o saldo devedor.
 
 # Composição tipada
 ```offroad-procedure
@@ -299,7 +301,7 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
       "kind": "rule",
       "title": "Montar a tabela de dívida por operação e por definição",
       "authority": "house",
-      "statement": "Montar a dívida por operação com a cláusula vigente, conciliar com a nota explicativa, separar limite de dívida, medir cada definição adotada com a ponte, ler perfil, custo, cesta de garantia, cross-default e alavancagem por definição e pedir a prova de completude, sem medir covenant, sem opinar sobre a estrutura, sem aprovar crédito e sem adotar ou publicar por cálculo.",
+      "statement": "Montar a dívida por operação com a cláusula vigente, conciliar com a nota explicativa, separar limite de dívida, medir cada definição adotada com a ponte, ler perfil, custo, cesta de garantia, cross-default como exposição potencial sob escopo e base declarados e alavancagem por definição, declarar a cobertura das categorias fora do saldo e pedir a prova de completude, sem medir covenant, sem opinar sobre a estrutura, sem aprovar crédito e sem adotar ou publicar por cálculo.",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareDebtTablePacket",
@@ -1449,6 +1451,189 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                     ]
                                   }
                                 },
+                                "crossDefaultScopeKind": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "crossDefaultCreditors": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "crossDefaultThresholdBasis": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
                                 "prepayment": {
                                   "required": true,
                                   "value": {
@@ -2518,6 +2703,173 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                 "type": "null"
                               }
                             ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "categoryCoverage": {
+                    "required": true,
+                    "value": {
+                      "type": "object",
+                      "fields": {
+                        "lease": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "decisionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "definitionVersionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "definitionKind": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "reported",
+                                    "managerial",
+                                    "contractual"
+                                  ]
+                                }
+                              },
+                              "missingReason": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "supplier_finance": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "decisionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "definitionVersionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "definitionKind": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "reported",
+                                    "managerial",
+                                    "contractual"
+                                  ]
+                                }
+                              },
+                              "missingReason": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "guarantee_given": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "decisionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "definitionVersionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "definitionKind": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "reported",
+                                    "managerial",
+                                    "contractual"
+                                  ]
+                                }
+                              },
+                              "missingReason": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
                           }
                         }
                       }
@@ -4417,6 +4769,35 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                                 "value": {
                                                   "type": "string"
                                                 }
+                                              },
+                                              "scopeKind": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "enum",
+                                                  "values": [
+                                                    "any_financial_debt",
+                                                    "named_creditors"
+                                                  ]
+                                                }
+                                              },
+                                              "creditors": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              },
+                                              "thresholdBasis": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "enum",
+                                                  "values": [
+                                                    "amount_in_default",
+                                                    "outstanding_principal"
+                                                  ]
+                                                }
                                               }
                                             }
                                           },
@@ -4932,7 +5313,36 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                               "type": "string"
                                             }
                                           },
-                                          "triggeredBy": {
+                                          "scopeKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "any_financial_debt",
+                                                "named_creditors"
+                                              ]
+                                            }
+                                          },
+                                          "thresholdBasis": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "amount_in_default",
+                                                "outstanding_principal"
+                                              ]
+                                            }
+                                          },
+                                          "hypothesis": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "whole_outstanding_in_default"
+                                              ]
+                                            }
+                                          },
+                                          "potentiallyTriggeredBy": {
                                             "required": true,
                                             "value": {
                                               "type": "array",
@@ -5086,6 +5496,39 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                 }
                               }
                             },
+                            "categoryCoverage": {
+                              "required": true,
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "kind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "lease",
+                                          "supplier_finance",
+                                          "guarantee_given"
+                                        ]
+                                      }
+                                    },
+                                    "status": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "present",
+                                          "confirmed_absent",
+                                          "not_examined"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
                             "gaps": {
                               "required": true,
                               "value": {
@@ -5164,10 +5607,24 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                           "type": "integer"
                         }
                       },
-                      "limitsKeptOutOfDebt": {
+                      "unusedLimits": {
                         "required": true,
                         "value": {
-                          "type": "boolean"
+                          "type": "string"
+                        }
+                      },
+                      "categoriesNotExamined": {
+                        "required": true,
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "enum",
+                            "values": [
+                              "lease",
+                              "supplier_finance",
+                              "guarantee_given"
+                            ]
+                          }
                         }
                       },
                       "outsideEveryView": {

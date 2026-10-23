@@ -19,7 +19,7 @@ describe("recorded debt table evaluations", () => {
     expect(records.get(debtTableRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "principal-and-accounting-balance-reconcile-exactly", "credit-line-is-a-limit-not-debt", "four-definitions-with-the-bridge",
       "bank-guarantee-stays-outside-every-balance", "schedule-by-year-independent-oracle", "tenor-due-in-twelve-months-and-concentration",
-      "average-nominal-cost-under-the-adopted-curve", "basket-occupied-by-the-bradesco-security", "cross-default-chain-from-the-lowest-threshold",
+      "average-nominal-cost-under-the-adopted-curve", "basket-occupied-by-the-bradesco-security", "cross-default-chain-from-the-lowest-threshold", "cross-default-scoped-to-named-creditors",
       "leverage-in-the-bank-and-indenture-definitions", "completeness-asks-for-the-external-register", "drawn-line-counts-in-the-contractual-view",
       "schedule-short-of-principal-is-a-gap", "absent-cash-is-a-gap-not-a-default"]);
     expect(records.get(debtTableRunIds.adversarial)!.cases).toHaveLength(10);

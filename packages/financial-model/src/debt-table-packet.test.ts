@@ -8,7 +8,7 @@ describe("debt table packet", () => {
   it("orders what the table establishes for the answer", () => {
     const p = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question, analysis: auroraDebtTableBasis().seal()});
     expect(p.status).toBe("prepared_for_human_review");
-    expect(p.readings).toEqual({reconciled: true, viewCount: 4, limitsKeptOutOfDebt: true, outsideEveryView: ["fianca"], basketsExceeded: [],
+    expect(p.readings).toEqual({reconciled: true, viewCount: 4, unusedLimits: "10", categoriesNotExamined: [], outsideEveryView: ["fianca"], basketsExceeded: [],
       lowestCrossDefault: {instrumentId: "ccb-bradesco", threshold: "5"}, leverageDefinitions: 2, completenessRequest: true});
     expect(p.result.table!.profile.largestCreditor!.creditor).toBe("Debenturistas");
     expect(p.grantsExecution).toBe(false);
@@ -19,6 +19,12 @@ describe("debt table packet", () => {
       .toBe(prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question, analysis: a}).fingerprint);
     expect(calculateDebtTableEvidence(a).status).toBe("partial_composition");
     expect(fichaCalculationExecutorContracts().map((c) => c.name)).toContain("debt-table-evidence");
+  });
+  it("does not divide by a zero or negative EBITDA", () => {
+    const f = auroraDebtTableBasis();
+    for (const e of f.entries) if (e.fieldPath.endsWith("leverage.escritura.ebitdaDeduction")) e.value = {type: "number", value: "54"};
+    const p = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question, analysis: f.seal()});
+    expect(p.result.table!.leverage.find((l) => l.viewId === "escritura")!.ratio).toBeNull();
   });
   it("frames the question without a table when a term is missing", () => {
     const f = auroraDebtTableBasis();

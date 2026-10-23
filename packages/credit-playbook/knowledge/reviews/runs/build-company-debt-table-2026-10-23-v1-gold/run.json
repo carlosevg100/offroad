@@ -16,9 +16,9 @@
     "exportName": "buildDebtTableRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:29:17.237Z",
-    "finishedAt": "2026-10-23T16:29:17.312Z",
-    "commit": "9ce3f6bdb8bd275b77626c8e63fbfb67d3b20964"
+    "startedAt": "2026-10-23T16:51:12.492Z",
+    "finishedAt": "2026-10-23T16:51:12.584Z",
+    "commit": "a567bc37f37fd5b8a86b3600f40f8963517bd9db"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,116 +26,124 @@
       "id": "principal-and-accounting-balance-reconcile-exactly",
       "expectation": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
       "observed": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "credit-line-is-a-limit-not-debt",
       "expectation": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
       "observed": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "four-definitions-with-the-bridge",
       "expectation": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
       "observed": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "bank-guarantee-stays-outside-every-balance",
       "expectation": "[[\"fianca\",5]]",
       "observed": "[[\"fianca\",5]]",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "schedule-by-year-independent-oracle",
       "expectation": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
       "observed": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "tenor-due-in-twelve-months-and-concentration",
       "expectation": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
       "observed": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "average-nominal-cost-under-the-adopted-curve",
       "expectation": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
       "observed": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "basket-occupied-by-the-bradesco-security",
       "expectation": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
       "observed": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "cross-default-chain-from-the-lowest-threshold",
-      "expectation": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,[\"ccb-bradesco\",\"finame\"]]]}",
-      "observed": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,[\"ccb-bradesco\",\"finame\"]]]}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "expectation": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
+      "observed": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "passed": true
+    },
+    {
+      "id": "cross-default-scoped-to-named-creditors",
+      "expectation": "[\"finame\"]",
+      "observed": "[\"finame\"]",
+      "inputFingerprint": "645dea2cf38b7066849796010246b2e3b5b65dc1028f891c25af81ba6be629dc",
+      "outputFingerprint": "80d481530cc3604b62cf472847681bd8322de5b0f5b4b6ab481833a0462d90f4",
       "passed": true
     },
     {
       "id": "leverage-in-the-bank-and-indenture-definitions",
       "expectation": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
       "observed": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "completeness-asks-for-the-external-register",
       "expectation": "{\"status\":\"unproven\",\"request\":true}",
       "observed": "{\"status\":\"unproven\",\"request\":true}",
-      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
-      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
+      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
       "passed": true
     },
     {
       "id": "drawn-line-counts-in-the-contractual-view",
       "expectation": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
       "observed": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
-      "inputFingerprint": "c3c6003f0b9cdd5e8a90c70d9f1a994f336dd07479584437ea0ea80705c24a8a",
-      "outputFingerprint": "91ebf53dd4cbf38eeee34974be048699a064331e913aa50757a8daa597746658",
+      "inputFingerprint": "3c0c6efa4c05426ea61720f09450366fed84fbc7d661460a711fa65179d02bab",
+      "outputFingerprint": "91f44ca3a8dd8a1941f08aadecabf728756be08e3cf61f0afe264591d30cac0a",
       "passed": true
     },
     {
       "id": "schedule-short-of-principal-is-a-gap",
       "expectation": "{\"status\":\"partial\",\"matches\":false}",
       "observed": "{\"status\":\"partial\",\"matches\":false}",
-      "inputFingerprint": "5314aae09bb3b03a663c3022e6db9079ebeeef884fbe590f650752310e016dae",
-      "outputFingerprint": "ca5741b0468ea3b00560ca0ef99d7bf2fe9cba194c1fc6076696f6e055ce4379",
+      "inputFingerprint": "49dc7447d8d327f6526ea941b3f8ffa2717d4e26718fe237074c6bf40bbd3974",
+      "outputFingerprint": "d7c16ff22fe1f6f98aae8486f4d15bdf44de60534f4d2d7130cfe8ef2f67772f",
       "passed": true
     },
     {
       "id": "absent-cash-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
-      "inputFingerprint": "817fbd4a4f9000525a028d8ebc8a0e262191a21c35bc9b756aca5eff2d255ede",
-      "outputFingerprint": "6126de725ca51f822649351ec68e340fc7d91fe6b4b9b1f84fdc27df187386fa",
+      "inputFingerprint": "4ad7f5816ddf441e48be40de4836fe431e6367ca933951ca0310d4960c1ef17e",
+      "outputFingerprint": "bbb7ff5571898ac8e312523e36f7428629f3644d01af39e19158c6950b2f5dae",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "626c425156816231afea60c4279c1544270d38e0043d1311eb583300d955cf4e",
+  "evidenceFingerprint": "3206c65221423f9be6778c4da09007fdcfa19fe8b37eeddb110fa35a739c8563",
   "notes": "Synthetic deterministic execution calibrated on ficha C10. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

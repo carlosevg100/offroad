@@ -14,18 +14,18 @@ export const auroraDebtTable: DebtTableInput = {
       amortization: [{date: "2026-12-15", amount: "15"}, {date: "2027-06-15", amount: "15"}, {date: "2027-12-15", amount: "15"}, {date: "2028-06-15", amount: "15"}],
       guarantee: {description: "Quirografária", encumbranceAmount: null, usesBasketOf: []},
       covenant: "Dívida líquida / EBITDA até 3,0x, anual em dezembro, sem IFRS 16 (1º aditamento)",
-      crossDefault: {threshold: "10", acceleration: "non_automatic", scope: "Inadimplemento de outra dívida"},
+      crossDefault: {threshold: "10", acceleration: "non_automatic", scope: "Inadimplemento de outra dívida", scopeKind: "any_financial_debt", creditors: [], thresholdBasis: "amount_in_default"},
       prepayment: "Resgate facultativo total, prêmio de 0,30% ao ano sobre o prazo remanescente", negativePledgeBasket: "15"},
     {id: "ccb-bradesco", label: "CCB", creditor: "Bradesco", borrower: "Aurora Alimentos S.A.",
       principal: "40", accruedInterest: "0.8", unamortizedCost: "0", indexer: "CDI", spread: "0.026",
       amortization: [{date: "2027-09-15", amount: "40"}],
       guarantee: {description: "Cessão fiduciária de contratos de dois clientes; reforço em 5 dias úteis abaixo de 80%", encumbranceAmount: "12", usesBasketOf: ["debenture-1"]},
-      covenant: null, crossDefault: {threshold: "5", acceleration: "non_automatic", scope: "Inadimplemento de qualquer dívida"},
+      covenant: null, crossDefault: {threshold: "5", acceleration: "non_automatic", scope: "Inadimplemento de qualquer dívida", scopeKind: "any_financial_debt", creditors: [], thresholdBasis: "amount_in_default"},
       prepayment: "Aviso de 30 dias e tarifa de 1%", negativePledgeBasket: null},
     {id: "finame", label: "Finame", creditor: "BNDES", borrower: "Aurora Alimentos S.A.",
       principal: "30", accruedInterest: "0.1", unamortizedCost: "0", indexer: "TLP", spread: "0.018", amortization: finame,
       guarantee: {description: "Alienação fiduciária dos equipamentos", encumbranceAmount: null, usesBasketOf: []},
-      covenant: null, crossDefault: {threshold: null, acceleration: "non_automatic", scope: "Obrigações com o BNDES ou o agente"},
+      covenant: null, crossDefault: {threshold: null, acceleration: "non_automatic", scope: "Obrigações com o BNDES ou o agente", scopeKind: "named_creditors", creditors: ["BNDES"], thresholdBasis: "amount_in_default"},
       prepayment: "Liquidação antecipada mediante comunicação", negativePledgeBasket: null},
   ],
   creditLines: [{id: "conta-garantida", label: "Conta garantida", creditor: "Itaú", limit: "10", drawn: "0"}],
@@ -46,6 +46,7 @@ export const auroraDebtTable: DebtTableInput = {
   leverage: [{viewId: "mercado", label: "Banco", ebitda: "54", ebitdaDeduction: "0"},
     {viewId: "escritura", label: "Escritura", ebitda: "54", ebitdaDeduction: "3"}],
   completeness: {status: "unproven", evidence: "Registrato não recebido"},
+  categoryCoverage: {lease: "examined", supplier_finance: "examined", guarantee_given: "examined"},
 };
 const n = (v: string | null | undefined) => Number(v);
 
@@ -75,7 +76,8 @@ describe("debt table", () => {
   it("reads basket, cross-default and leverage by definition", () => {
     expect(t.negativePledgeBaskets).toEqual([{holderId: "debenture-1", basket: "15", occupied: "12", remaining: "3", exceeded: false, usedBy: ["ccb-bradesco"]}]);
     expect(t.crossDefault.lowestThreshold).toEqual({instrumentId: "ccb-bradesco", threshold: "5"});
-    expect(t.crossDefault.chain.map(c => [c.instrumentId, c.triggeredBy])).toEqual([["ccb-bradesco", ["debenture-1", "finame"]], ["debenture-1", ["ccb-bradesco", "finame"]]]);
+    expect(t.crossDefault.chain.map(c => [c.instrumentId, c.potentiallyTriggeredBy])).toEqual([["ccb-bradesco", ["debenture-1", "finame"]], ["debenture-1", ["ccb-bradesco", "finame"]]]);
+    expect(t.categoryCoverage.map(c => c.status)).toEqual(["present", "present", "present"]);
     expect(n(t.leverage[0]!.ratio).toFixed(2)).toBe("2.02");
     expect(n(t.leverage[1]!.ratio).toFixed(2)).toBe("1.86");
     expect(t.completeness.request).toBe("external_register_of_financial_institution_operations");
@@ -95,6 +97,20 @@ describe("debt table", () => {
     expect(() => buildDebtTable(early)).toThrow("debt_table_payment_not_after_reference");
     expect(() => buildDebtTable({...auroraDebtTable, creditLines: [{id: "x", label: "x", creditor: "x", limit: "1", drawn: "2"}]})).toThrow("debt_table_drawn_above_limit");
     expect(() => buildDebtTable({...auroraDebtTable, views: [{id: "a", label: "a", components: ["principal", "principal"]}]})).toThrow("debt_table_view_components");
+    // A clause scoped to named creditors only counts their debt; a drawn line counts as debt in scope.
+    const scoped = structuredClone(auroraDebtTable) as typeof short;
+    scoped.instruments[0] = {...scoped.instruments[0]!, crossDefault: {...scoped.instruments[0]!.crossDefault!, scopeKind: "named_creditors", creditors: ["BNDES"]}};
+    expect(buildDebtTable(scoped).crossDefault.chain.find(c => c.instrumentId === "debenture-1")!.potentiallyTriggeredBy).toEqual(["finame"]);
+    const drawn = buildDebtTable({...auroraDebtTable, creditLines: [{id: "conta-garantida", label: "Conta garantida", creditor: "Itaú", limit: "10", drawn: "7"}]});
+    expect(drawn.crossDefault.chain.find(c => c.instrumentId === "ccb-bradesco")!.potentiallyTriggeredBy).toEqual(["debenture-1", "finame", "conta-garantida"]);
+    const unexamined = buildDebtTable({...auroraDebtTable, otherObligations: auroraDebtTable.otherObligations.filter(o => o.kind !== "supplier_finance"),
+      categoryCoverage: {lease: "examined", supplier_finance: "not_examined", guarantee_given: "examined"}});
+    expect(unexamined.gaps).toEqual([{item: "supplier_finance", reason: "category_not_examined"}]);
+    expect(buildDebtTable({...auroraDebtTable, otherObligations: [], categoryCoverage: {lease: "examined", supplier_finance: "examined", guarantee_given: "examined"}})
+      .categoryCoverage.map(c => c.status)).toEqual(["confirmed_absent", "confirmed_absent", "confirmed_absent"]);
+    expect(() => buildDebtTable({...auroraDebtTable, categoryCoverage: {lease: "examined", supplier_finance: "not_examined", guarantee_given: "examined"}})).toThrow("debt_table_category_items_without_examination");
+    const negative = buildDebtTable({...auroraDebtTable, leverage: [{viewId: "escritura", label: "Negativo", ebitda: "2", ebitdaDeduction: "3"}]});
+    expect(negative.leverage[0]!.ratio).toBeNull();
     const flat = buildDebtTable({...auroraDebtTable, leverage: [{viewId: "escritura", label: "Zero", ebitda: "3", ebitdaDeduction: "3"}]});
     expect(flat.leverage[0]!.ratio).toBeNull();
   });

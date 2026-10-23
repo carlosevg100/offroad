@@ -11,6 +11,7 @@ const instrumentTerms = z.strictObject({
   indexer: selection, spread: selection, paymentDates: selection, paymentAmounts: selection,
   guarantee: selection, encumbranceAmount: selection.nullable(), usesBasketOf: selection.nullable(),
   covenant: selection, crossDefaultAcceleration: selection, crossDefaultThreshold: selection.nullable(), crossDefaultScope: selection.nullable(),
+  crossDefaultScopeKind: selection.nullable(), crossDefaultCreditors: selection.nullable(), crossDefaultThresholdBasis: selection.nullable(),
   prepayment: selection, negativePledgeBasket: selection.nullable(),
 });
 export const adoptedDebtTableInputSchema = adoptedAnalysisContextSchema.safeExtend({
@@ -23,6 +24,8 @@ export const adoptedDebtTableInputSchema = adoptedAnalysisContextSchema.safeExte
   views: z.array(z.strictObject({id: key, label, components: selection})).min(1).max(6),
   leverage: z.array(z.strictObject({viewId: key, label, ebitda: selection, ebitdaDeduction: selection})).max(4),
   completenessStatus: selection, completenessEvidence: selection,
+  /** Whether leases, supplier finance and guarantees given were examined; examined with no item is a confirmed absence. */
+  categoryCoverage: z.strictObject({lease: selection, supplier_finance: selection, guarantee_given: selection}),
 }).refine(i => i.endDate > i.openingDate, "Invalid horizon")
   .refine(i => new Set([...i.instruments.map(x => x.id), ...i.creditLines.map(x => x.id), ...i.otherObligations.map(x => x.id)]).size
     === i.instruments.length + i.creditLines.length + i.otherObligations.length, "Duplicate item")
@@ -62,8 +65,12 @@ export function calculateAdoptedDebtTable(raw: unknown) {
     const scope = optional(t.crossDefaultScope, p + "crossDefaultScope", "text", "text", words);
     const acceleration = read(t.crossDefaultAcceleration, p + "crossDefaultAcceleration", "convention", "text", z.enum(["automatic", "non_automatic", "none"]));
     const basket = optional(t.negativePledgeBasket, p + "negativePledgeBasket", "currency", "number", unsigned);
-    if (acceleration === "none" && (t.crossDefaultThreshold || t.crossDefaultScope)) throw new Error("debt_table_cross_default_without_clause");
-    if (acceleration !== null && acceleration !== "none" && !t.crossDefaultScope) throw new Error("debt_table_cross_default_scope_required");
+    const clauseTerms = [t.crossDefaultThreshold, t.crossDefaultScope, t.crossDefaultScopeKind, t.crossDefaultCreditors, t.crossDefaultThresholdBasis];
+    if (acceleration === "none" && clauseTerms.some(Boolean)) throw new Error("debt_table_cross_default_without_clause");
+    if (acceleration !== null && acceleration !== "none" && (!t.crossDefaultScope || !t.crossDefaultScopeKind || !t.crossDefaultThresholdBasis)) throw new Error("debt_table_cross_default_scope_required");
+    const scopeKind = optional(t.crossDefaultScopeKind, p + "crossDefaultScopeKind", "convention", "text", z.enum(["any_financial_debt", "named_creditors"]));
+    const creditors = optional(t.crossDefaultCreditors, p + "crossDefaultCreditors", "text", "list", z.array(words).min(1).max(12));
+    const basis = optional(t.crossDefaultThresholdBasis, p + "crossDefaultThresholdBasis", "convention", "text", z.enum(["amount_in_default", "outstanding_principal"]));
     const row = {
       id, label: need(read(t.label, p + "label", "text", "text", words)), creditor: need(read(t.creditor, p + "creditor", "text", "text", words)),
       borrower: need(read(t.borrower, p + "borrower", "text", "text", words)),
@@ -77,7 +84,8 @@ export function calculateAdoptedDebtTable(raw: unknown) {
         encumbranceAmount: encumbrance.absent ? null : need(encumbrance.value), usesBasketOf: basketOf.absent ? [] : need(basketOf.value)},
       covenant: need(read(t.covenant, p + "covenant", "text", "text", words)),
       crossDefault: acceleration === null ? need(null) : acceleration === "none" ? null
-        : {threshold: threshold.absent ? null : need(threshold.value), acceleration, scope: need(scope.value)},
+        : {threshold: threshold.absent ? null : need(threshold.value), acceleration, scope: need(scope.value), scopeKind: need(scopeKind.value),
+          creditors: creditors.absent ? [] : need(creditors.value), thresholdBasis: need(basis.value)},
       prepayment: need(read(t.prepayment, p + "prepayment", "text", "text", words)),
       negativePledgeBasket: basket.absent ? null : need(basket.value),
     };
@@ -111,9 +119,11 @@ export function calculateAdoptedDebtTable(raw: unknown) {
   const status = need(read(input.completenessStatus, "completenessStatus", "convention", "text", z.enum(["proven", "unproven"])));
   const evidence = need(read(input.completenessEvidence, "completenessEvidence", "text", "text", words));
 
+  const coverageOf = (k: "lease" | "supplier_finance" | "guarantee_given") => need(read(input.categoryCoverage[k], `categoryCoverage.${k}`, "convention", "text", z.enum(["examined", "not_examined"])));
+  const categoryCoverage = {lease: coverageOf("lease"), supplier_finance: coverageOf("supplier_finance"), guarantee_given: coverageOf("guarantee_given")};
   const kernelInput: DebtTableInput | null = complete ? {referenceDate: input.openingDate, currency: input.currency, instruments, creditLines,
     otherObligations, reportedAccountingBalance: reported, views, availableCash: cash, indexRates, leverage,
-    completeness: {status, evidence}} : null;
+    completeness: {status, evidence}, categoryCoverage} : null;
   const table = kernelInput ? buildDebtTable(kernelInput) : null;
   const payload = {schemaVersion: "adopted-debt-table.v1" as const, financialCoreVersion, scope: input.scope, analysisId: input.analysisId,
     entityId: input.entityId, perimeter: input.perimeter, currency: input.currency, referenceDate: input.openingDate,
