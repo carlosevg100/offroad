@@ -86,3 +86,5 @@ export * from "./investment-decision-composer";
 export * from "./investment-premises";
 export * from "./adopted-debt-table";
 export * from "./debt-table-packet";
+export * from "./adopted-covenant-headroom";
+export * from "./covenant-headroom-packet";

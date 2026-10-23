@@ -58,3 +58,4 @@ export {financingComparisonPacketExecutorContracts} from "./financing-comparison
 export {relativeDebtCostPacketExecutorContracts} from "./relative-debt-cost-contracts";
 export {debtCapacityPacketExecutorContracts} from "./debt-capacity-contracts";
 export {debtTablePacketExecutorContracts} from "./debt-table-contracts";
+export {covenantHeadroomPacketExecutorContracts} from "./covenant-headroom-contracts";

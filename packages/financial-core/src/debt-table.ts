@@ -197,7 +197,7 @@ export function buildDebtTable(input: DebtTableInput) {
     const ebitda = amount(l.ebitda, true), deduction = amount(l.ebitdaDeduction, true), denominator = ebitda.minus(deduction);
     const net = cash === null ? null : view.total.minus(cash);
     return {viewId: l.viewId, label: l.label, netDebt: net === null ? null : out(net), ebitda: out(ebitda), ebitdaDeduction: out(deduction),
-      denominator: out(denominator), ratio: net === null || !denominator.isPositive() ? null : out(net.div(denominator))};
+      denominator: out(denominator), ratio: net === null || !denominator.gt(0) ? null : out(net.div(denominator))};
   });
   if (input.completeness.status !== "proven" && input.completeness.status !== "unproven") throw new Error("debt_table_completeness_status");
   text(input.completeness.evidence, "debt_table_completeness_evidence_required");

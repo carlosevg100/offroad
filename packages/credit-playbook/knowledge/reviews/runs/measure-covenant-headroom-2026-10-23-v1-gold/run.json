@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "measure-covenant-headroom-2026-10-23-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "measure-covenant-headroom",
+    "version": "2026.10.23-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareCovenantHeadroomPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/covenant-headroom-runs.test-support.ts",
+    "exportName": "buildCovenantHeadroomRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-23T16:38:29.231Z",
+    "finishedAt": "2026-10-23T16:38:29.291Z",
+    "commit": "850a9c354d86a2545cf84e1136e36b2b21a892ad"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "december-by-the-indenture-definition",
+      "expectation": "{\"netDebt\":113.2,\"ebitda\":51.5,\"ratio\":2.2}",
+      "observed": "{\"netDebt\":113.2,\"ebitda\":51.5,\"ratio\":2.2}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "headroom-in-ebitda-and-net-debt-to-the-covenant",
+      "expectation": "{\"ebitda\":13.76,\"netDebt\":41.29}",
+      "observed": "{\"ebitda\":13.76,\"netDebt\":41.29}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "reverse-test-on-the-unrealized-second-half",
+      "expectation": "{\"covenant\":52.9,\"policy\":23.9}",
+      "observed": "{\"covenant\":52.9,\"policy\":23.9}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "board-policy-binds-first",
+      "expectation": "{\"tightest\":\"politica\",\"headroom\":6.22,\"policyBindsFirst\":true}",
+      "observed": "{\"tightest\":\"politica\",\"headroom\":6.22,\"policyBindsFirst\":true}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "adverse-case-in-december",
+      "expectation": "2.32",
+      "observed": "2.32",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "a-larger-season-in-december",
+      "expectation": "{\"ratio\":2.3,\"policyHeadroom\":4.2}",
+      "observed": "{\"ratio\":2.3,\"policyHeadroom\":4.2}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "season-weighs-half-a-turn-at-the-test-date",
+      "expectation": "0.5",
+      "observed": "0.5",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "december-2027-base-and-adverse",
+      "expectation": "{\"base\":1.85,\"adverse\":2.37,\"policyHeadroom\":2.33,\"worst\":[\"dez27-adverso\",\"politica\"]}",
+      "observed": "{\"base\":1.85,\"adverse\":2.37,\"policyHeadroom\":2.33,\"worst\":[\"dez27-adverso\",\"politica\"]}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "managerial-june-reading-is-a-contrast",
+      "expectation": "{\"ratio\":1.73,\"role\":\"contrast\"}",
+      "observed": "{\"ratio\":1.73,\"role\":\"contrast\"}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "original-indenture-limit-is-superseded",
+      "expectation": "{\"headroom\":10.33,\"role\":\"contrast\"}",
+      "observed": "{\"headroom\":10.33,\"role\":\"contrast\"}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "breach-is-not-automatic-and-the-chain-is-named",
+      "expectation": "{\"acceleration\":\"non_automatic\",\"process\":true,\"crossDefault\":true}",
+      "observed": "{\"acceleration\":\"non_automatic\",\"process\":true,\"crossDefault\":true}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "unwritten-policy-definition-is-a-question",
+      "expectation": "{\"open\":[\"politica\"],\"status\":\"partial\"}",
+      "observed": "{\"open\":[\"politica\"],\"status\":\"partial\"}",
+      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
+      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "passed": true
+    },
+    {
+      "id": "turn-two-policy-on-managerial-ebitda",
+      "expectation": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"status\":\"prepared_for_human_review\"}",
+      "observed": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"status\":\"prepared_for_human_review\"}",
+      "inputFingerprint": "41a3b01f1c0b3b8664875367c7541926542af8314cb39df180454288a91db621",
+      "outputFingerprint": "e0bcf0bab667bdb0314045f3977d0699584199f0c5f22696529df599ab8f61a8",
+      "passed": true
+    },
+    {
+      "id": "absent-cash-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"gap\":true}",
+      "inputFingerprint": "5d1ea61efca62aeb2dbbf7cc47462da8287074ca6b86f3df450dc9859229bde7",
+      "outputFingerprint": "62f3eab325f9058bfd4f7a9093a150ca7251894e449f3a9105cd76cf10a76a64",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "22a85d4636d04860285ea86ceba629300014fe755c2bff3a8573363efa4eb02c",
+  "notes": "Synthetic deterministic execution calibrated on ficha C12. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

@@ -14,6 +14,8 @@ export const compiledMethodAdapters = [
     exports: {calculate: "prepareDebtCapacityPacket", input: "debtCapacityPacketInputSchema", output: "debtCapacityPacketOutputSchema"}},
   {methodId: "build-company-debt-table", executorKey: "@offroad/financial-model#prepareDebtTablePacket", executorVersion: "2026.10.23-v1",
     exports: {calculate: "prepareDebtTablePacket", input: "debtTablePacketInputSchema", output: "debtTablePacketOutputSchema"}},
+  {methodId: "measure-covenant-headroom", executorKey: "@offroad/financial-model#prepareCovenantHeadroomPacket", executorVersion: "2026.10.23-v1",
+    exports: {calculate: "prepareCovenantHeadroomPacket", input: "covenantHeadroomPacketInputSchema", output: "covenantHeadroomPacketOutputSchema"}},
 ] as const;
 export type CompiledMethodAdapter = (typeof compiledMethodAdapters)[number];
 export const compiledMethodIds: readonly string[] = compiledMethodAdapters.map(a => a.methodId);

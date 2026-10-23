@@ -173,7 +173,7 @@ export const debtTableOutputSchema = z.strictObject({schemaVersion: z.literal("d
   rows: z.array(z.strictObject({id: version, label: text, creditor: text, borrower: text, principal: decimal, accountingBalance: decimal, indexer: version,
     spread: nullableDecimal, nominalRate: nullableDecimal, finalPayment: date, scheduleMatchesPrincipal: z.boolean(), guarantee: text, covenant: text.nullable(),
     crossDefault: crossDefaultTerm.nullable(), prepayment: text.nullable()})).min(1).max(32),
-  reconciliation: z.strictObject({...numbers(["principal", "accruedInterest", "unamortizedCost", "accounting"]), reported: nullableDecimal, difference: nullableDecimal,
+  reconciliation: z.strictObject({principal: decimal, accruedInterest: decimal, unamortizedCost: decimal, accounting: decimal, reported: nullableDecimal, difference: nullableDecimal,
     status: z.enum(["exact", "difference", "not_reported"])}),
   creditLines: z.array(z.strictObject({id: version, label: text, creditor: text, limit: decimal, drawn: decimal, unused: decimal})).max(32),
   views: z.array(z.strictObject({id: version, label: text, components: z.array(component).min(1).max(7), total: decimal,
@@ -193,3 +193,20 @@ export const adoptedDebtTableOutputSchema = z.strictObject({...common, schemaVer
   analysisId: z.uuid(), perimeter: text, referenceDate: date, table: debtTableOutputSchema.nullable(),
   exclusions: z.array(z.enum(["contract_extraction", "covenant_measurement", "credit_approval", "structure_opinion", "method_release"])).length(5)
     .refine(v => v.join("|") === "contract_extraction|covenant_measurement|credit_approval|structure_opinion|method_release", "Exact exclusion ledger required")});
+
+const covenantTest = z.strictObject({limitId: version, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, breached: z.boolean(),
+  ebitdaHeadroom: decimal, netDebtHeadroom: decimal, unrealizedEbitdaLossToLimit: decimal.nullable()});
+export const covenantHeadroomOutputSchema = z.strictObject({schemaVersion: z.literal("covenant-headroom.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/), readingDate: date,
+  limits: z.array(z.strictObject({id: version, label: text, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, source: text})).min(1).max(8),
+  measurements: z.array(z.strictObject({id: version, label: text, date, scenario: text, role: z.enum(["test", "contrast"]), debt: decimal, cash: decimal, netDebt: decimal,
+    reportedEbitda: decimal, adjustments: z.array(z.strictObject({label: text, amount: decimal})).max(16), ebitda: decimal, ratio: decimal.nullable(),
+    unrealizedEbitda: decimal.nullable(), tests: z.array(covenantTest).max(8), tightestLimitId: version.nullable()})).min(1).max(24),
+  effects: z.array(z.strictObject({id: version, label: text, measurementId: version, withoutEffectMeasurementId: version, ratioEffect: decimal.nullable(), netDebtEffect: decimal})).max(8),
+  worst: z.strictObject({measurementId: version, limitId: version, ebitdaHeadroom: decimal}).nullable(), anyBreach: z.boolean()});
+export const adoptedCovenantHeadroomOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-covenant-headroom.v1"),
+  analysisId: z.uuid(), perimeter: text, readingDate: date, headroom: covenantHeadroomOutputSchema.nullable(),
+  definitions: z.array(z.strictObject({limitId: version, definition: text.nullable()})).max(8),
+  openQuestions: z.array(z.strictObject({limitId: version, question: z.literal("ebitda_definition_not_written")})).max(8),
+  consequence: z.strictObject({acceleration: z.enum(["automatic", "non_automatic"]).nullable(), process: text.nullable(), crossDefault: text.nullable()}),
+  exclusions: z.array(z.enum(["projection", "contract_extraction", "waiver_negotiation", "credit_approval", "method_release"])).length(5)
+    .refine(v => v.join("|") === "projection|contract_extraction|waiver_negotiation|credit_approval|method_release", "Exact exclusion ledger required")});

@@ -44,3 +44,4 @@ export * from "./deal-arithmetic";
 
 export * from "./relative-debt-cost";
 export * from "./debt-table";
+export * from "./covenant-headroom";

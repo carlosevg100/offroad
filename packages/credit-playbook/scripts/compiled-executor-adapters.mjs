@@ -38,6 +38,12 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareDebtTablePacket', input: 'debtTablePacketInputSchema', output: 'debtTablePacketOutputSchema'}),
     entry: 'export {prepareDebtTablePacket, debtTablePacketInputSchema, debtTablePacketOutputSchema} from "../../packages/financial-model/src/debt-table-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'measure-covenant-headroom',
+    executorKey: '@offroad/financial-model#prepareCovenantHeadroomPacket', executorVersion: '2026.10.23-v1',
+    exports: Object.freeze({calculate: 'prepareCovenantHeadroomPacket', input: 'covenantHeadroomPacketInputSchema', output: 'covenantHeadroomPacketOutputSchema'}),
+    entry: 'export {prepareCovenantHeadroomPacket, covenantHeadroomPacketInputSchema, covenantHeadroomPacketOutputSchema} from "../../packages/financial-model/src/covenant-headroom-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */

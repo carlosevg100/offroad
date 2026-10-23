@@ -95,5 +95,7 @@ describe("debt table", () => {
     expect(() => buildDebtTable(early)).toThrow("debt_table_payment_not_after_reference");
     expect(() => buildDebtTable({...auroraDebtTable, creditLines: [{id: "x", label: "x", creditor: "x", limit: "1", drawn: "2"}]})).toThrow("debt_table_drawn_above_limit");
     expect(() => buildDebtTable({...auroraDebtTable, views: [{id: "a", label: "a", components: ["principal", "principal"]}]})).toThrow("debt_table_view_components");
+    const flat = buildDebtTable({...auroraDebtTable, leverage: [{viewId: "escritura", label: "Zero", ebitda: "3", ebitdaDeduction: "3"}]});
+    expect(flat.leverage[0]!.ratio).toBeNull();
   });
 });
