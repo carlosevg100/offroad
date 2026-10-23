@@ -2764,8 +2764,13 @@
       "name": "market_m2_scheduler_fixes_3",
       "version": "20261022204022",
       "statements_md5": "d0f5c7652dc7d1df59fc72d36756a95c"
+    },
+    {
+      "name": "market_m2_calendar_json_evidence",
+      "version": "20261022232059",
+      "statements_md5": "96752f3f440cd1d076c4c9ccfe524f4b"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-22T20:41:00Z"
+  "captured_at": "2026-10-22T23:21:00Z"
 }

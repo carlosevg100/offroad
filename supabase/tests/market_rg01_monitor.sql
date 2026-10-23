@@ -177,6 +177,12 @@ do $$ declare r jsonb;m jsonb:='[{"ordinal":1,"firstDay":"2099-01-27","secondDay
  r:=private.record_market_copom_calendar_v1('3a7c0000-0000-4000-a000-000000000038',2099,m,'https://www.bcb.gov.br/x',ev,'text/html','Calendário sintético revisto','3a7c0000-0000-4000-8000-000000000002');
  if (r->>'revision')::int<>2 then raise exception 'second calendar revision: %',r;end if;
  if (select count(*) from private.market_copom_calendar_evidence where sha256=encode(extensions.digest(ev,'sha256'),'hex'))<>1 then raise exception 'evidence not kept once';end if;
+ -- The normative act as the site's API serves it: JSON with its own media type; any other type is refused.
+ r:=private.record_market_copom_calendar_v1('3a7c0000-0000-4000-a000-000000000039',2099,m,'https://www.bcb.gov.br/api/conteudo/app/normativos/x',
+  convert_to('{"conteudo":[{"Titulo":"Comunicado sintético"}]}','UTF8'),'application/json','Calendário sintético por normativo','3a7c0000-0000-4000-8000-000000000002');
+ if (r->>'revision')::int is distinct from 3 then raise exception 'calendar evidenced by JSON: %',r;end if;
+ perform pg_temp.expect(format($q$select private.record_market_copom_calendar_v1('3a7c0000-0000-4000-a000-00000000003a',2099,%L,'https://www.bcb.gov.br/x',%L,'text/plain','Calendário sintético','3a7c0000-0000-4000-8000-000000000002')$q$,
+  m,convert_to('calendário 2099 em texto','UTF8')),'23514','evidence of another media type');
 end $$;
 
 -- 3. The cycle's communiqués and series, then a reading without calendars: incomplete, and current while no
