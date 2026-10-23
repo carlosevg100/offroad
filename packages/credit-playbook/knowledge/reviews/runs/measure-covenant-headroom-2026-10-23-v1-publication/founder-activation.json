@@ -1,0 +1,13 @@
+{
+  "source": "Mensagem direta do fundador nesta tarefa, 23 de outubro de 2026, autorizando publicar e preparar em produção a ativação das fichas do lote 2",
+  "author": "Carlos Eduardo Vasques Galves",
+  "scope": "Preparação em produção da ativação do método measure-covenant-headroom 2026.10.23-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "release": "measure-covenant-headroom-2026.10.23-v1",
+  "manifestHash": "729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67",
+  "acts": [
+    {
+      "verbatim": "Aprovo o conteúdo profissional do lote 2 (C10, C12, C18) e autorizo publicar os métodos, capturar os executores, registrar os perfis, aplicar as migrações do roteador e da ponte e construir a ponte da conversa, com as capacidades desligadas até a liberação final.",
+      "recordedAt": "2026-10-23T19:55:45Z"
+    }
+  ]
+}

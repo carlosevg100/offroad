@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "build-company-debt-table-2026.10.23-v1",
+    "artifactHash": "724f06e9a55f057e1118df20bee643d94d7bb3e602e96715f5f9feb31cff39ae",
+    "profileFingerprint": "5f093e34a7e2ec3227e730515a20ee1df40b107127ad75488e459b4416289a54"
+  },
+  "subjectCommit": "f817357c45e51a430e1461592c86823b8f56f2e7",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-23T20:53:35Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "3602b80383f4497d73ba67b1f567ab99f088a1b9929d9112874b01a30ea67379",
+    "manifestFileHash": "e22d9789fef4710b763bbbdb2ad797116c0353d1aef1162dc2950b3e5fe2d5cf",
+    "canonicalProfileTextSha256": "4ab1a55f9bb69862b7cac54e41dce38db1d5738990f8a9d3c0f7d0aa12097753",
+    "canonicalProfileTextBytes": 1428,
+    "reviewedWorktreeHead": "f817357c45e51a430e1461592c86823b8f56f2e7",
+    "originMainHead": "f1584f64cc9b027e339be193f91db217bc01afe0",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit f1584f64cc9b027e339be193f91db217bc01afe0 como ancestral de HEAD; origin/main aponta para esse sourceCommit.",
+      "SHA-256 dos 19131274 bytes do snapshot: 08a963e3ae878b705cd95724bf45987368ede0655c982d6b63de9d3dc3af7f04, igual a snapshotHash; sourceCommit interno também confere.",
+      "Conferidos por git cat-file --batch os 362 executorSources, 9 compiler.sources, 5 evidence e 2 parseOnlySources: todos os hashes correspondem aos bytes no sourceCommit e ao conteúdo pinned do snapshot.",
+      "Manifesto no sourceCommit: SHA-256 e22d9789fef4710b763bbbdb2ad797116c0353d1aef1162dc2950b3e5fe2d5cf, igual a manifestFileHash; bytes atuais e manifesto instalado são idênticos. deriveExecutionProfile validou manifestHash e hashes internos.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs foi executado, mas terminou com EPERM ao escrever THIRD_PARTY_NOTICES.md no ambiente somente leitura. A função original rebuildReleasedExecutor foi então executada duas vezes em memória, sem alterações no script.",
+      "As duas reconstruções produziram 1561692 bytes idênticos entre si e ao artefato instalado, com SHA-256 724f06e9a55f057e1118df20bee643d94d7bb3e602e96715f5f9feb31cff39ae. validateCompiledExecutorRelease também passou.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada para a release, com methodId build-company-debt-table, methodVersion 2026.10.23-v1, manifestHash e artifactHash corretos.",
+      "deriveExecutionProfile e executionCanonicalText, carregados das fontes atuais, produziram texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote2-2026-10-23/perfil/profile-build-company-debt-table.txt: 1428 bytes, SHA-256 4ab1a55f9bb69862b7cac54e41dce38db1d5738990f8a9d3c0f7d0aa12097753.",
+      "Fingerprint recalculado sobre o perfil sem seu campo fingerprint: 5f093e34a7e2ec3227e730515a20ee1df40b107127ad75488e459b4416289a54, igual ao perfil e ao lock.",
+      "Política confirmada: grantsExecution=false, maxModelCalls=0, maxCostMinorUnits=0, maxCostMicrousd=0, allowedTools=[], tools=[], maximumEffect=none e allowedEffects=[read_only]. Um único executor @offroad/financial-model#prepareDebtTablePacket, versão 2026.10.23-v1, componente debt-table.packet.",
+      "Em apps/document-worker, npx vitest run src/released-lote2-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts terminou com EPERM ao criar diretório temporário: quatro suítes falharam antes de executar testes.",
+      "O mesmo comando Vitest com --pool=vmThreads --no-cache passou: 4 arquivos, 22 testes aprovados, duração 4.35s. Conferidos os testes de fila: transporte RPC simulado, sem acesso a banco.",
+      "Leitura integral de supabase/migrations/20261023204746_lote2_payload_provenance.sql: linha 18 recusa método nulo; linhas 36 a 38 vinculam build-company-debt-table a 2026.10.23-v1, manifestHash 3602b80383f4497d73ba67b1f567ab99f088a1b9929d9112874b01a30ea67379 e debt-table-packet-input.v1, usando IS DISTINCT FROM.",
+      "Diff e comparação programática com 20261019210807_lote1_payload_provenance.sql: removidos somente comentários, três inclusões na lista de métodos e três novos ramos, o SQL restante é idêntico. Capital, investimento, lote 1 e verificações compartilhadas preservam seu comportamento.",
+      "Blobs e SHA-256 do adaptador obtidos de HEAD; último commit e blob do serializador obtidos com git log e git rev-parse. Arquivos atuais correspondem a HEAD. git status --short permaneceu vazio; nenhum arquivo rastreado foi alterado e nenhum banco foi acessado.",
+      "Objeto JSON final validado com adapterReviewSchema.parse em um comando node executado em packages/credit-playbook, carregando o schema TypeScript por esbuild em memória."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico revisado, sem achados. Origem, pins, artefato, perfil canônico, política e migração conferem. O ambiente somente leitura bloqueou a escrita do build padrão e os temporários do Vitest padrão; a reconstrução original em memória foi determinística e os 22 testes passaram com vmThreads e cache desativado. A migração foi revisada estaticamente, sem acesso a banco. Esta revisão não concede autorização de execução."
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "measure-covenant-headroom-2026.10.23-v1",
+    "artifactHash": "d638f7cfd5267c46fe85784b294300c4c70a540d3a9f38f90a97ae439bc854ab",
+    "profileFingerprint": "49db4d10c9cdbdfd145d2bf16fbd686e2e96a5441646370d933e1889006f34ab"
+  },
+  "subjectCommit": "f817357c45e51a430e1461592c86823b8f56f2e7",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-23T20:57:36.867Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67",
+    "manifestFileHash": "875cd13cefdcc8055bbcd304007119730903369b60ac0c5e58007cbc9b2f487a",
+    "canonicalProfileTextSha256": "ae963f09298ea639b3dc3bacf2508124e6be71de182ff462ed719158f3e61e53",
+    "canonicalProfileTextBytes": 1435,
+    "reviewedWorktreeHead": "f817357c45e51a430e1461592c86823b8f56f2e7",
+    "originMainHead": "f1584f64cc9b027e339be193f91db217bc01afe0",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit f1584f64cc9b027e339be193f91db217bc01afe0 como ancestral de HEAD f817357c45e51a430e1461592c86823b8f56f2e7.",
+      "SHA-256 dos bytes do snapshot: 7eb7babaf24c0c0521bffa8f8626cd2c5e0297263a4bb3b7ec1eb42451e09965. O sourceCommit interno coincide com o lock.",
+      "Conferidos individualmente com git show no sourceCommit e com os bytes do snapshot: 361 executorSources, 9 pins do compilador, 5 de evidências e 2 parseOnlySources.",
+      "Manifesto recuperado do sourceCommit: SHA-256 875cd13cefdcc8055bbcd304007119730903369b60ac0c5e58007cbc9b2f487a, idêntico ao lock, snapshot e arquivo atual. deriveExecutionProfile validou o manifestHash recalculado.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs passou. Duas reconstruções adicionais com rebuildReleasedExecutor produziram bytes idênticos ao artefato instalado: 1551726 bytes, SHA-256 d638f7cfd5267c46fe85784b294300c4c70a540d3a9f38f90a97ae439bc854ab.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada para a release, com methodId measure-covenant-headroom, methodVersion 2026.10.23-v1, manifestHash e artifactHash esperados. Manifesto instalado idêntico ao original.",
+      "deriveExecutionProfile e executionCanonicalText produziram texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote2-2026-10-23/perfil/profile-measure-covenant-headroom.txt: 1435 bytes, SHA-256 ae963f09298ea639b3dc3bacf2508124e6be71de182ff462ed719158f3e61e53.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: 49db4d10c9cdbdfd145d2bf16fbd686e2e96a5441646370d933e1889006f34ab, igual ao lock.",
+      "Política confirmada no manifesto e perfil: grantsExecution false, custo zero, zero chamadas de modelo, nenhuma ferramenta, allowedEffects [read_only], exatamente um executor @offroad/financial-model#prepareCovenantHeadroomPacket versão 2026.10.23-v1, componente covenant.packet; duração máxima 31000 ms.",
+      "Em apps/document-worker, npx vitest run src/released-lote2-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts: 4 arquivos e 22 testes aprovados em 3.11 s. Transporte testado com RPC simulado, sem banco.",
+      "Leitura estática de supabase/migrations/20261023204746_lote2_payload_provenance.sql confirmou vínculo por IS DISTINCT FROM com measure-covenant-headroom, versão 2026.10.23-v1, manifestHash 729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67 e schema covenant-headroom-packet-input.v1. Método nulo retorna false.",
+      "Comparação com 20261019210807_lote1_payload_provenance.sql: retirar somente as três alternativas do lote 2 e suas entradas na lista restaura o corpo SQL anterior byte a byte. Predicados e validação de capital, investimento e lote 1 preservados em comportamento. Nenhum SQL executado.",
+      "Blobs, SHA-256 do adaptador, último commit e blob do serializador, HEAD e origin/main obtidos diretamente com Git. git status --short vazio; git diff e git diff --cached sem alterações. Nenhum banco acessado. JSON validado com adapterReviewSchema em packages/credit-playbook."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo desta revisão técnica independente: lock, proveniência, reconstrução determinística, perfil canônico, política e identidade do executor conferem; os 22 testes passaram. A migração foi revisada estaticamente e preserva o comportamento de capital, investimento e lote 1. Nenhum banco foi acessado e nenhum arquivo rastreado foi alterado. Este parecer não comprova registro ou ativação em banco, implantação ou autorização de execução."
+}
