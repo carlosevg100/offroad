@@ -24,6 +24,14 @@ de pausa durante a lista, durante a série e com um detalhe pendente; vigia de s
 pelo modelo de edição; o expansor deriva o tamanho da lista e a véspera da série; execução suplementar de staging
 com identidade própria quando a produção ocorre em outro dia.
 
+Vigência temporal: este roteiro vale para a data operacional D de 23/10/2026 a 03/11/2026, com a reunião 281 como
+a última (N = 281). Nesse intervalo nenhuma reunião do calendário termina (a próxima é 03–04/11), a série até D−1
+não pode conter mudança nova e o aceite do monitor é determinado: `not_fired` com frescor `current`. Se a
+execução de produção cair fora desse intervalo, o roteiro recebe emenda com o resultado esperado do monitor para
+as reuniões novas (inclusive `pending_confirmation`, `incomplete` ou `fired` com incidente e prazo, conforme a
+evidência) e passa de novo pela revisão independente antes da liberação final. A execução suplementar com reuniões
+novas (seção 4) só serve a essa emenda.
+
 ## 1. Ordem: transporte antes do bootstrap, agendas por último
 
 Em produção o único caminho de aquisição é o worker, que só reivindica job com o transporte aberto; a primeira
