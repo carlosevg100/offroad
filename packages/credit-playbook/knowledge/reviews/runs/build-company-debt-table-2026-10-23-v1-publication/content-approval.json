@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-23T19:55:45Z",
+  "manifestHash": "3602b80383f4497d73ba67b1f567ab99f088a1b9929d9112874b01a30ea67379",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 23/10/2026 para o procedimento Montar a tabela de dívida da companhia, versão 2026.10.23-v1 (ficha C10). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-publication/founder-instruction.json; SHA-256 df2777470f9cb7ee5041075dfd624190a5d5d3959daedd3191099a3e0e8a9ded. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}
