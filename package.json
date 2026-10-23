@@ -15,7 +15,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
-    "next": "16.3.8",
+    "next": "16.4.1",
     "turbo": "2.11.2",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
@@ -28,7 +28,8 @@
       "@vitest/mocker": "4.1.11",
       "brace-expansion@1.1.18": "1.1.20",
       "brace-expansion@5.0.9": "5.0.11",
-      "source-map-js": "1.2.2"
+      "source-map-js": "1.2.2",
+      "dompurify": "3.4.17"
     }
   }
 }

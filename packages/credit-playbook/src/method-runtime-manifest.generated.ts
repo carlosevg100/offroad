@@ -116,14 +116,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -9867,14 +9867,14 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "pnpm-lock.yaml",
-              "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+              "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
             },
             {
               "path": "tsconfig.base.json",
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "3352550d527fba4caa494a90bdefc65981db019f9417691fc97625f271558ad3"
+          "hash": "9cd00ab758192438ece99f822a0aa7ae4b739fd5ee29bc7372eaa0c646334075"
         },
         "evidence": [
           {
@@ -9900,7 +9900,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "35e9f5c602dff5e102a57c5a8495d0cddfaff053072e32e3be5f0ee1e71becaa"
+    "manifestHash": "af0c649c60f487e8874c99ac6b0692758872e344500e671d80cc2386d9a88088"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -9946,14 +9946,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -17252,14 +17252,14 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "pnpm-lock.yaml",
-              "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+              "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
             },
             {
               "path": "tsconfig.base.json",
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "48a8c521640189dd1b313d5dbed668b516b5ed04bbf0518bb956ac4fae513924"
+          "hash": "71d8d10071e3a66690f42a5866b7ea7d07ddef20248aeff5708feb166f19d20c"
         },
         "evidence": [
           {
@@ -17285,7 +17285,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "3327046a8e14c1f36df353fd417617713b100d27dd5adec928762b3a9e215635"
+    "manifestHash": "b0bbb2d4e1a00d72a6bfb4564727d8b62d23fd071cf8a83d8a1d2a5911b6a2bc"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17331,14 +17331,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -22540,14 +22540,14 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "pnpm-lock.yaml",
-              "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+              "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
             },
             {
               "path": "tsconfig.base.json",
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "e1936cc1a00b98f29e2ae391f50a7f506c351c1674c98b88fa30ccb8bc6b6b66"
+          "hash": "b7b624da79b54ca62363737158b49015085bbebb4ea1e881b4b54d4087d76ea9"
         },
         "evidence": [
           {
@@ -22573,7 +22573,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "fcb36e59ceae87a1c49e0a7601ad05d199273cc76fec1406c76fdb80a65f3c46"
+    "manifestHash": "5a119b63522e959c3335b0127352b38937e8365af9963dca4877e945f2bcd5ef"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -22619,14 +22619,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -31602,14 +31602,14 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "pnpm-lock.yaml",
-              "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+              "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
             },
             {
               "path": "tsconfig.base.json",
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "59b97449cb781d705378663bede3e2518d29c95f152c717e9af30615de3bb07e"
+          "hash": "3d5ba8f8bf15ff5b17d32dbe2fd2517afa2d8635d0f7aaef16d00561ac8e8b4a"
         },
         "evidence": [
           {
@@ -31635,7 +31635,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "a4894821b1b154d8bfbfe58f530f8be098dbe5c426b1b3cbdf71e64392e4e756"
+    "manifestHash": "fc31437941a837d49fbb223c9eaf6d9916fbdabee9279b16edc530bd09436265"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31681,14 +31681,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -55447,14 +55447,14 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "pnpm-lock.yaml",
-              "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+              "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
             },
             {
               "path": "tsconfig.base.json",
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5a9098fbac633af022671de3dc52d3b909df5db991a98a01ad73bf6cd9e058b0"
+          "hash": "dd6e0a64c47a610a42131b4e94ce8f1f12cf070eb12bd2a33698b15e501d6bca"
         },
         "evidence": [
           {
@@ -55480,7 +55480,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "f6933c0581bb648d428e321e73812a3b6f71c3154ba55a3aafc547782e70cfc5"
+    "manifestHash": "7c357b60a195f6182917b35a52e2253159a4c874e2815b4eabd107191e57b490"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55526,14 +55526,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "79f3b7b8dc8c260b8fc57e5819f0348874f03e81d6cdf16d0ee226738c75a0d8",
     "compositionStatus": "legacy_contract",
@@ -55544,7 +55544,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55552,7 +55552,7 @@ export const procedureBuildProvenance = [
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "1f160cf98ef9da9b82f4d33c7da4f42d78f7c3394abd1f3c978ab4815f71a112"
+    "manifestHash": "4132b9bd90e1862d416ca700cb8a8818ec34ee047506429848e79bf2bc14a7e0"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55598,14 +55598,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "6364b4ea243d5c168f8b8c54e0ca8cad9c272e9950cd5855a66a81989770330d",
     "compositionStatus": "legacy_contract",
@@ -55616,7 +55616,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55624,7 +55624,7 @@ export const procedureBuildProvenance = [
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "44f95a86012cd386b28c7648f3c309312806d246e3cbe1239e52fd5ba3b5a301"
+    "manifestHash": "d682f161a871e70ab094f2378bbdacb077c85a10d9455c1d2a2abefdb3d0b7cd"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55670,14 +55670,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "6e661629c022155da1631be5ef572337cadd32cfc1d67b50ec3be749ae06df7c",
     "compositionStatus": "legacy_contract",
@@ -55688,7 +55688,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55696,7 +55696,7 @@ export const procedureBuildProvenance = [
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "ffb70d04aed673c035d9731243a24c446742fca6788cf3e7fa80eaf596070661"
+    "manifestHash": "224adafdfca1ae8d5ba52a5d788508f256378187f885444aeb4cec4f4be074f1"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55742,14 +55742,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "59239ddb82f3ec8ef19b7d3efce99226f0cac024a9695ea13e9f3c54911691d6",
     "compositionStatus": "legacy_contract",
@@ -55760,7 +55760,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55768,7 +55768,7 @@ export const procedureBuildProvenance = [
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "751c653d783ca837248ad3cc01cbedaca3ff28130e1c65eb63e27a6164becf6b"
+    "manifestHash": "72d940aa4879c0c4282efe4ca8af9898d04cbfda84b64304f316da7dffa744ee"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55814,14 +55814,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "b7d5d41121e051a3147a3ffc3858187b385d2edb5e0ef97d118a0b42db35fd6b",
     "compositionStatus": "legacy_contract",
@@ -55832,7 +55832,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55840,7 +55840,7 @@ export const procedureBuildProvenance = [
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "4735cdd1e4a411878640af3495cec548a4be1ab920f6b1b7accd914af08b2761"
+    "manifestHash": "d76bc5cd97e5f87577c7d448b044425f3c83daa61f99113132b40cefb91abcdd"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -55886,14 +55886,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "495babe03478b0f2d1ebe7eed8091b9b78dd530eeb57e997d89fda025745a28d",
     "compositionStatus": "legacy_contract",
@@ -55904,7 +55904,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -55912,7 +55912,7 @@ export const procedureBuildProvenance = [
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "22a370aa0d83f73b653060d9ab8e1c16bec7b45095ef90bbb3719f977f414a22"
+    "manifestHash": "20140ac49244ae51cd4223b443a7a8af1d62186bf20e0dcd47ae77935bb94c86"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -56042,14 +56042,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "18e19567239919fcf991c4462a77dc997d923ab0b72704f42ea35f01928dbf4a",
     "compositionStatus": "legacy_contract",
@@ -56060,7 +56060,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -56068,7 +56068,7 @@ export const procedureBuildProvenance = [
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "30a12caf6d7914bf1b8373126588907b903cc6ea46bd571ce6571549e6a65d9c"
+    "manifestHash": "97a724840fbf4d0a08875c365d8da776d5d786e614b358be9531938f3ed7eafb"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -56114,14 +56114,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "0c32ca0c53b50e0f9cd811c43dbcb0ed3791b21039a662e123f0c9e530c0a225",
     "compositionStatus": "legacy_contract",
@@ -56132,7 +56132,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -56140,7 +56140,7 @@ export const procedureBuildProvenance = [
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "e70712806487c03efb6a83bfb853debcec7517091d190e999ee83e2ab73c56f4"
+    "manifestHash": "cd8c3ff69772dd8936b25a9c66e6d949158e9323e8a36b39507b9457f802f532"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -56186,14 +56186,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "d5c086654076080458f702b19105765e1a5052b5945a38a94ac674bbe82fac07",
     "compositionStatus": "legacy_contract",
@@ -56204,7 +56204,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -56212,7 +56212,7 @@ export const procedureBuildProvenance = [
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "01f458e844b5990b2953a1e18be23eeeea60309d2483fc2f926941af403d0bf8"
+    "manifestHash": "0beedcf4a53c8ed253751c453bdc47736e55be735a86226656f02900d5f3a970"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -56258,14 +56258,14 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "pnpm-lock.yaml",
-          "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+          "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
         },
         {
           "path": "tsconfig.base.json",
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d7cd2247b6bd4e64f773a0a7fa2f3503ebcf943bd570228fc9822d6102ff772d"
+      "hash": "4770130c10e34d4c149ba4419cfd0d3f9705839b074a611f414ae8ce3fb8fb5c"
     },
     "adapterHash": "188b796cf9665f6b08d8e5e81d6634b2ecd11bf37452a79f0bdf2904dd2ff66d",
     "compositionStatus": "legacy_contract",
@@ -56276,7 +56276,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c"
+      "sourceClosureHash": "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7"
     },
     "evidence": [
       {
@@ -56284,12 +56284,12 @@ export const procedureBuildProvenance = [
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "4f14607570a099c9e040fd6773d5fa97d2bf35e942a1a7d8dbd33c857e7c5540"
+    "manifestHash": "164273e714848f74c71f4b5a29cb1ae6bf333621e849d2289c06848dc3c8bf79"
   }
 ] as const;
 
 export const procedureExecutorSourceClosures = {
-  "2d9dbf844ee562e894aaf637feb02793bf58c8335edc91a95f1eae7e9e461f0c": [
+  "8a39c5c6ea4cca15b412767f5a4c4783fb1f175bcb6986059edffd30972b7cd7": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "0f5f1ce7ae6f0ebb97b751c230cd6a3799abb49b5620c73454a78e90d09e7dc1"
@@ -57040,7 +57040,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "pnpm-lock.yaml",
-      "hash": "08ed88f978a62e5fda636c3bf12a65fd7444b17ffca7bd93c95d6b08c1b4f15e"
+      "hash": "7dc647655f0c4fd3a926a50c808cecb956ce9f6bac3d9c71e4fb3eccaf8ed936"
     },
     {
       "path": "tsconfig.base.json",
