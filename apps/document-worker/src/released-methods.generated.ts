@@ -41,5 +41,26 @@ export const releasedMethodArtifacts = [
     "methodVersion": "2026.10.19-v2",
     "manifestHash": "13574b282016b8122f07ab4164fa4c68e5af4b3eb26078189e9e72fe668484c5",
     "artifactHash": "50753a36864a3a04f31e93225b01eaa8babc0f5c7378e3a77319591d4da19600"
+  },
+  {
+    "platformReleaseId": "build-company-debt-table-2026.10.23-v1",
+    "methodId": "build-company-debt-table",
+    "methodVersion": "2026.10.23-v1",
+    "manifestHash": "3602b80383f4497d73ba67b1f567ab99f088a1b9929d9112874b01a30ea67379",
+    "artifactHash": "724f06e9a55f057e1118df20bee643d94d7bb3e602e96715f5f9feb31cff39ae"
+  },
+  {
+    "platformReleaseId": "measure-covenant-headroom-2026.10.23-v1",
+    "methodId": "measure-covenant-headroom",
+    "methodVersion": "2026.10.23-v1",
+    "manifestHash": "729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67",
+    "artifactHash": "d638f7cfd5267c46fe85784b294300c4c70a540d3a9f38f90a97ae439bc854ab"
+  },
+  {
+    "platformReleaseId": "project-weekly-cash-2026.10.23-v1",
+    "methodId": "project-weekly-cash",
+    "methodVersion": "2026.10.23-v1",
+    "manifestHash": "b7e135f7e60457bfd79f19817a064f1d69bf7301c1f7efcefed736e771362fb1",
+    "artifactHash": "14b5f154b813dc13c490a6348a3b2ca4c2dd644f44c516d70f526fcdd2465869"
   }
 ] as const;

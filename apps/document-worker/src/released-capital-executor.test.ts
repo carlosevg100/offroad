@@ -27,7 +27,7 @@ describe("installed published capital executor", () => {
   // Startup verification hashes, parses and requires every packaged bundle (about 120 ms each when idle).
   // The budget scales with the release count so a full parallel run does not trip the 5 s default.
   it("verifies every published artifact at startup without executing a customer job", {timeout: 10_000 * releasedMethodArtifacts.length}, () => {
-    expect(verifyInstalledMethodArtifacts()).toBe(6);
+    expect(verifyInstalledMethodArtifacts()).toBe(9);
     const entry = releasedMethodArtifacts.find(r => r.methodId === identity.methodId)!;
     expect(createHash("sha256").update(readFileSync(new URL(`../released-methods/${entry.artifactHash}.cjs`, import.meta.url))).digest("hex")).toBe(entry.artifactHash);
   });

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "project-weekly-cash-2026.10.23-v1",
+    "artifactHash": "14b5f154b813dc13c490a6348a3b2ca4c2dd644f44c516d70f526fcdd2465869",
+    "profileFingerprint": "9b68585f9020cc7ef23ddffedc465fabb2f86cfeadae66c1e892897d071992ce"
+  },
+  "subjectCommit": "f817357c45e51a430e1461592c86823b8f56f2e7",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-23T20:54:00Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "b7e135f7e60457bfd79f19817a064f1d69bf7301c1f7efcefed736e771362fb1",
+    "manifestFileHash": "cbc0b06230fc4194bf3cd3b5d73a4eb6096f1ffe5161a7add473c35ad691cb55",
+    "canonicalProfileTextSha256": "d8ae4ee8c41757bdda1674da9cd9d436ae6dc97ef01e857d47c44fcb20c7b968",
+    "canonicalProfileTextBytes": 1420,
+    "reviewedWorktreeHead": "f817357c45e51a430e1461592c86823b8f56f2e7",
+    "originMainHead": "f1584f64cc9b027e339be193f91db217bc01afe0",
+    "checksPerformed": [
+      "Schema adapterReviewSchema lido primeiro. Blobs, SHA-256 do adaptador e último commit do serializador obtidos do Git em HEAD; arquivos locais correspondem aos blobs. Worktree limpo antes e depois; nenhum banco acessado.",
+      "git merge-base --is-ancestor confirmou sourceCommit f1584f64cc9b027e339be193f91db217bc01afe0 como ancestral de HEAD. Todos os 361 executorSources, 9 pins do compilador, 5 de evidência e 2 parseOnlySources conferem com bytes no commit e no snapshot.",
+      "SHA-256 dos bytes do snapshot: 302f47820983710f4bdf9dd7e75e94e8725c61ea9b3208462d40429f0e078e0b. Manifesto no sourceCommit, snapshot e worktree idênticos; manifestFileHash recalculado corresponde ao lock.",
+      "rebuildReleasedExecutor executado duas vezes em memória: bytes idênticos entre si e ao CJS instalado, 1555721 bytes, SHA-256 14b5f154b813dc13c490a6348a3b2ca4c2dd644f44c516d70f526fcdd2465869.",
+      "O comando node packages/credit-playbook/scripts/build-released-executors.mjs encontrou EPERM ao escrever THIRD_PARTY_NOTICES.md no ambiente somente leitura. buildReleasedExecutors foi então executado integralmente com escritas substituídas por comparação em memória: todas as 19 saídas coincidem com os arquivos instalados.",
+      "apps/document-worker/src/released-methods.generated.ts coincide integralmente com o índice derivado dos locks e registra project-weekly-cash-2026.10.23-v1 com methodId, methodVersion, manifestHash e artifactHash corretos.",
+      "deriveExecutionProfile aplicado ao manifesto e executionCanonicalText ao perfil: igualdade byte a byte com /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote2-2026-10-23/perfil/profile-project-weekly-cash.txt. SHA-256 d8ae4ee8c41757bdda1674da9cd9d436ae6dc97ef01e857d47c44fcb20c7b968; 1420 bytes UTF-8.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: 9b68585f9020cc7ef23ddffedc465fabb2f86cfeadae66c1e892897d071992ce, igual ao lock. grantsExecution=false, maxModelCalls=0, maxCostMicrousd=0, tools=[], allowedEffects=[read_only]; manifesto também tem custo zero, nenhum tool e maximumEffect=none.",
+      "Exatamente um executor no manifesto: @offroad/financial-model#prepareWeeklyCashPacket, versão 2026.10.23-v1; componente selecionado weekly-cash.packet; duração máxima 31000 ms.",
+      "Em apps/document-worker, npx vitest run src/released-lote2-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts encontrou EPERM criando cache temporário: 4 suítes sem testes executados. Reexecução com --pool=threads --no-cache --experimental.fsModuleCache=false: 4 arquivos e 22 testes aprovados, exit 0, 2.98 s.",
+      "20261023204746_lote2_payload_provenance.sql: linha 18 recusa methodId nulo; linhas 42 a 44 vinculam project-weekly-cash à versão 2026.10.23-v1, manifestHash b7e135f7e60457bfd79f19817a064f1d69bf7301c1f7efcefed736e771362fb1 e schema weekly-cash-packet-input.v1.",
+      "Comparação integral com 20261019210807_lote1_payload_provenance.sql: removidos somente comentários e as três adições do lote 2, o código restante é idêntico. Capital, investimento, lote 1, limites, verificações de proveniência e privilégios preservados. Verificação estática, sem executar SQL.",
+      "JSON final validado com adapterReviewSchema.parse em um comando node executado em packages/credit-playbook, carregando o schema TypeScript por esbuild em memória."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado tecnicamente no escopo revisado. Identidades, fontes fixadas, reconstrução determinística, perfil canônico, política e vinculação SQL conferem. Os 22 testes passaram sem cache em disco. O comando original de build foi bloqueado pela restrição de escrita; a execução integral em memória confirmou todas as saídas instaladas. A revisão não acessou banco, não comprova registro ou implantação e não concede autorização de execução."
+}
