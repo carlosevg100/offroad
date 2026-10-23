@@ -5,35 +5,35 @@
   "id": "build-company-debt-table",
   "version": "2026.10.23-v1"
  },
- "commit": "163f25366828305d951de721a1df9a1041b0d1ad",
+ "commit": "56abea8ce7e15152866b30e972b99a1c0f996b16",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/build-company-debt-table.md",
-   "sha256": "0973f66502defbfe8fb61b9e7ee60b5d0c36a6804ac07141104a310c28e5a95f"
+   "sha256": "d98d373e23e1a62dbd63b3d008c42a8c8a6c16e79bcfe351b51af0794e1f48a8"
   },
   {
    "path": "packages/financial-model/src/debt-table-packet.ts",
-   "sha256": "770ce0a8828f0fb341656a2e5d5938ab005de1e5eed552a620386486c1ab137b"
+   "sha256": "b9407aba355791787c840fa07fd942b8171ce0c52a78647a31955d9f79a78c2f"
   },
   {
    "path": "packages/financial-model/src/adopted-debt-table.ts",
-   "sha256": "a5baa1589c71ad15ea46d96054b84558dea5f9cf9b80e5cbe82b6ccd5f8715c9"
+   "sha256": "03ed8b87a1277048a95c89bc24629a57da2aabd03f576ed299f0c1fb73ecd6b8"
   },
   {
    "path": "packages/financial-core/src/debt-table.ts",
-   "sha256": "e6bbc13b13c96a17ac52a145e78ef97f84016ee5a30ea02508a6f51275542e78"
-  },
-  {
-   "path": "packages/financial-model/src/ficha-calculation-results.ts",
-   "sha256": "b3c7de89056308e93dceb9cf2d26207a6c80a3970ca0a477ddd43e445f80ad7e"
+   "sha256": "2ed956b890954c66a5d22eac0f2717a4583fa594b0e17cecc862d7263f91a38a"
   },
   {
    "path": "packages/financial-model/src/debt-table-runs.test-support.ts",
-   "sha256": "0d780715185ae0f8b766ddf0cbb1745645168fc331133dcfd068a77dc9d87329"
+   "sha256": "0a2a1421d74d4fcecab6a6b19f9a6a9dc5668e0ec77fcdd2607f7a2281f11642"
   },
   {
    "path": "packages/financial-model/src/debt-table.test-support.ts",
-   "sha256": "07ddc318f908c9f30a5b2f35fbd307538b9c943ea2abb3108267e0e715bb37a6"
+   "sha256": "6996e87679e701c211a2d2d93d9d6473da5abc0383fb1c010c1080f693e28cb6"
+  },
+  {
+   "path": "packages/financial-model/src/ficha-calculation-results.ts",
+   "sha256": "0e8da19397df4fb67c9d8f3d300b0d17f619604a54c8cabdf4b5412c4ee477a5"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
