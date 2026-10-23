@@ -1,8 +1,8 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeWeeklyCashHypotheses, type WeeklyCashFacts} from "@offroad/financial-model";
-import {buildWeeklyCashPremiseProposal, completeWeeklyCashFacts, shouldProposeWeeklyCashPremises, type WeeklyCashExtraction} from "./weekly-cash-premises-proposal";
+import {buildWeeklyCashPremiseProposal, completeWeeklyCashFacts, shouldProposeWeeklyCashPremises, type WeeklyCashExtraction, proposeWeeklyCashPremisesForTurn} from "./weekly-cash-premises-proposal";
 import {itemKeys} from "./lote2-premises";
-import {comparableHypotheses, financialModelFixture, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
+import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 let aurora: () => WeeklyCashFacts;
 beforeAll(async () => {aurora = (await financialModelFixture<{auroraWeeklyCashFacts: () => WeeklyCashFacts}>("weekly-cash.test-support.ts")).auroraWeeklyCashFacts;});
@@ -15,7 +15,7 @@ const extracted = (x: {origin: string; source: string}) => ({origin: x.origin ==
 const variants: Record<string, string> = {"safra-30": "safra", "safra-adiada": "safra"};
 function auroraExtraction(f: WeeklyCashFacts): WeeklyCashExtraction {
   const streamLabel = (id: string) => f.streams.find((s) => s.value.id === id)!.value.label;
-  return {
+  return {turnIntent: "answers_pending" as const,
     openingDate: informed(f.openingDate, "saldo de 14/set"),
     openingCash: f.openingCash as WeeklyCashExtraction["openingCash"], minimumCash: f.minimumCash as WeeklyCashExtraction["minimumCash"],
     calendarEnd: none, projectionClosing: f.projectionClosing as WeeklyCashExtraction["projectionClosing"],
@@ -50,17 +50,14 @@ describe("weekly cash premises proposed from a turn", () => {
     for (const m of ["O que é fluxo de caixa?", "O que significa capital de giro?", "Qual o prazo da debênture?", "Como estamos contra os covenants?", "Quanto de dívida cabe para o capex?"])
       for (const docs of [false, true]) expect(shouldProposeWeeklyCashPremises(m, docs), m).toBe(false);
   });
-  it("continues the question when the next message answers with cash data", () => {
+  it("treats any statement after the question as a continuation candidate, refusing only questions, explanations and another method", () => {
     const earlier = ["Como fica o caixa até dezembro e o que vence?"];
-    expect(shouldProposeWeeklyCashPremises("O saldo hoje é R$ 41 milhões e o caixa mínimo R$ 15 milhões", false, earlier)).toBe(true);
-    expect(shouldProposeWeeklyCashPremises("A folha é R$ 3 milhões, certo?", false, earlier)).toBe(true);
-    for (const m of ["O 13º está incluído na folha.", "Não pagamos IR por estimativa.", "A folha de R$ 3 milhões vence amanhã."]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Obrigado", "O 13º está incluído?", "Vou confirmar a folha de R$ 3 milhões amanhã.", "Monte uma matriz de riscos com o caixa de R$ 41 milhões."])
-      expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
-    // A promise to answer later refuses even when it names the work itself.
-    for (const thread of [earlier, []]) expect(shouldProposeWeeklyCashPremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, thread)).toBe(false);
-    expect(shouldProposeWeeklyCashPremises("Quanto é a folha?", false, earlier)).toBe(false);
-    expect(shouldProposeWeeklyCashPremises("Mando o fluxo em 2 dias", false, earlier)).toBe(false);
+    for (const m of ["O saldo hoje é R$ 41 milhões e o caixa mínimo R$ 15 milhões", "A folha é R$ 3 milhões, certo?", "O 13º está incluído na folha.", "Não pagamos IR por estimativa.",
+      "A folha de R$ 3 milhões vence amanhã.", "Obrigado", "Vou confirmar a folha de R$ 3 milhões amanhã.", "Mando o fluxo em 2 dias", "Ainda não tenho o fluxo de dezembro."])
+      expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
+    for (const m of ["O 13º está incluído?", "Quanto é a folha?", "Explica o IOF"]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
+    // Its own objective is a direct cue, which the extraction's turnIntent does not gate.
+    expect(shouldProposeWeeklyCashPremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, [])).toBe(true);
     expect(shouldProposeWeeklyCashPremises("O saldo é R$ 41 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
     expect(shouldProposeWeeklyCashPremises("O saldo é R$ 41 milhões", false, [...earlier, "Monta a tabela de dívida com tudo que temos."])).toBe(false);
   });
@@ -156,5 +153,17 @@ describe("weekly cash premises proposed from a turn", () => {
     const changed = complete({...auroraExtraction(f), minimumCash: informed("16", "caixa mínimo revisto")}, f);
     expect(buildWeeklyCashPremiseProposal(changed.facts).fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "project-weekly-cash", methodVersion: "2026.10.23-v1"});
+  });
+  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+    const earlier = ["Como fica o caixa até dezembro e o que vence?"];
+    for (const intent of nonAnswering) {
+      const r = await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), intent, "Mando o fluxo em 2 dias", earlier);
+      expect(r, intent).toEqual({extracted: true, status: null, events: ["weekly_cash_premises.not_answering"]});
+    }
+    expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Mando o fluxo em 2 dias", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["weekly_cash_premises.proposed"]});
+    for (const intent of nonAnswering)
+      expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), intent, "Como fica o caixa até dezembro e o que vence?", []), intent).toMatchObject({status: "proposed"});
+    // A question never reaches the extraction.
+    expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });
 });

@@ -2,18 +2,15 @@ import {z} from "zod";
 import {proposeWeeklyCashHypotheses, weeklyCashFactsSchema, type WeeklyCashFacts} from "@offroad/financial-model";
 import {citedSource, extractedAmount, extractedMoney, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn,
   sameLabel, sourced, stated, type Lote2Completion, summaryRow, type Lote2Summary} from "./lote2-premises";
-import {proposesPremisesOfKind} from "./premise-cue";
+import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const weeklyCashPremiseMethod = {methodId: "project-weekly-cash", methodVersion: "2026.10.23-v1"} as const;
-const weeklyCashData = /\b(caixa|saldo|folha|13o?|decimo|fgts|inss|impostos?|irpj|csll|fornecedor\w*|recebiment\w*|clientes?|safra|linha|conta garantida|antecipa\w*|parcela\w*|juros|vencimento\w*|vence\w*|semana\w*|minimo|iof|r\$|milh\w*)/;
-/** Qualitative answers to the gaps this extraction asks for, which carry no number. */
-const weeklyCashGaps = /\b(incluid\w*|nao se aplica|nao (tem|ha|pagamos)|nenhum|nenhuma|examinad\w*|plano|alternativa|variante|adiad\w*)\b/;
 
-/** Weekly cash to a date: the turn may propose the projection's premises. An answer with cash data
- * and a quantity continues the latest such question among the recent messages. */
+/** Weekly cash to a date: the turn may propose the projection's premises. A statement after the latest such
+ * question among the recent messages is a continuation candidate; the extraction's `turnIntent` decides it. */
 export function shouldProposeWeeklyCashPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  return proposesPremisesOfKind("weekly_cash", weeklyCashData, message, hasAttachments, earlierUserMessages, weeklyCashGaps);
+  return premiseEntry("weekly_cash", message, hasAttachments, earlierUserMessages) !== null;
 }
 
 export const weeklyCashSituation = "seasonal-working-capital";
@@ -23,6 +20,7 @@ const item = {label: itemLabel, origin: extractedOrigin, source: itemSource};
 
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const weeklyCashExtractionSchema = z.strictObject({
+  turnIntent: z.enum(turnIntents),
   /** The date of the opening balance; the weeks run Monday to Sunday from its week. */
   openingDate: sourced(z.iso.date()),
   openingCash: sourced(extractedMoney), minimumCash: sourced(extractedMoney),
@@ -62,12 +60,13 @@ export const weeklyCashExtractionContract = {
     "variantOf é o rótulo do fluxo base que este fluxo substitui quando é uma variante discutida (por exemplo a safra de R$ 30 milhões no lugar da de R$ 25 milhões, ou a safra adiada); null quando o fluxo é do plano.",
     "cases só quando a conversa os descreve: o plano informado e cada alternativa, com os rótulos dos fluxos de cada um. coverage diz, para cada obrigação, se está incluída, não se aplica ou não foi examinada, quando dito.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
+    turnIntentInstruction,
   ].join("\n"),
   schema: weeklyCashExtractionSchema,
-  schemaName: "weekly_cash_extraction_v1",
+  schemaName: "weekly_cash_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 16_000,
-  cacheKey: "weekly-cash-extraction-2026.10.23-v1",
+  cacheKey: "weekly-cash-extraction-2026.10.23-v2",
 };
 
 const dayMs = 86400000;
@@ -200,8 +199,9 @@ export async function proposeWeeklyCashPremisesForTurn(input: {
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }) {
-  if (!input.projectId || !shouldProposeWeeklyCashPremises(input.message, input.hasAttachments, input.recentUserMessages)) return null;
+  const entry = input.projectId ? premiseEntry("weekly_cash", input.message, input.hasAttachments, input.recentUserMessages) : null;
+  if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "weekly_cash_premises", idName: "weekly-cash", schema: weeklyCashExtractionSchema,
     complete: (extraction, id) => completeWeeklyCashFacts({extraction, ids: {weeklyCashId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildWeeklyCashPremiseProposal}, {...input, projectId: input.projectId});
+    build: buildWeeklyCashPremiseProposal}, {...input, entry, projectId: input.projectId});
 }

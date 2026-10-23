@@ -64,12 +64,12 @@ export type Lote2TurnPremises = {
 
 /** One turn's premise step for a lote 2 method. It never fails the turn: any error is logged and the
  * turn continues as a plain reply. The analysis identity is stable per work. */
-export async function proposeLote2PremisesForTurn<E, F>(spec: {
+export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}, F>(spec: {
   logPrefix: string; idName: string; schema: z.ZodType<E>;
   complete: (extraction: E, id: string) => Lote2Completion<F>;
   build: (facts: F, situationId: string) => Lote2Proposal;
 }, input: {
-  projectId: string; message: string; recentUserMessages: string[];
+  entry: "cue" | "continuation"; projectId: string; message: string; recentUserMessages: string[];
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }): Promise<Lote2TurnPremises | null> {
@@ -77,6 +77,12 @@ export async function proposeLote2PremisesForTurn<E, F>(spec: {
     const documentFields = await input.loadEvidence();
     const extraction = spec.schema.parse(await input.extract(JSON.stringify({
       latestUserMessage: input.message, earlierUserMessages: input.recentUserMessages.slice(-6), documentFields})));
+    // A continuation proposes only when the turn answers what is pending; a direct request always does.
+    const intent = (extraction as {turnIntent: string}).turnIntent;
+    if (input.entry === "continuation" && intent !== "answers_pending") {
+      input.log(`${spec.logPrefix}.not_answering`, {turnIntent: intent});
+      return null;
+    }
     const completed = spec.complete(extraction, uuidV5(`offroad:${spec.idName}:${input.projectId}`));
     if (completed.status === "missing") {
       input.log(`${spec.logPrefix}.missing`, {missing: completed.missing});

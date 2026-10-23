@@ -1,8 +1,9 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
+import {nonAnswering, turnWithIntent} from "./lote2-premises.test-support";
 import {composeBoundDebtCapacity, prepareDebtCapacityPacket} from "@offroad/financial-model";
-import {buildDebtCapacityPremiseProposal, completeDebtCapacityFacts, shouldProposeDebtCapacityPremises, type DebtCapacityExtraction} from "./debt-capacity-premises-proposal";
+import {buildDebtCapacityPremiseProposal, completeDebtCapacityFacts, shouldProposeDebtCapacityPremises, type DebtCapacityExtraction, proposeDebtCapacityPremisesForTurn} from "./debt-capacity-premises-proposal";
 
 const M = (v: string | number) => new Decimal(v).times(1e6).toDecimalPlaces(2).toFixed();
 const none = {value: null, origin: null, source: null};
@@ -20,7 +21,7 @@ const project = (ebitda: Record<number, number>, capex: Record<number, number>) 
 
 /** Turn of ficha C04: the projection, the debt table, the indenture and the second line of R$ 60 mi, in reais. */
 function c04Extraction(): DebtCapacityExtraction {
-  return {needSituation: informed("capex-infrastructure" as const, "segunda linha de produção"),
+  return {turnIntent: "answers_pending" as const,needSituation: informed("capex-infrastructure" as const, "segunda linha de produção"),
     projection: doc(years.map((y) => ({yearEnd: `${y}-12-31`, ebitda: M(EBITDA[y]!), leasePayments: M(3), depreciation: M(12), maintenanceCapex: M(8), workingCapitalInvestment: M(2.5)})), "projeção 2027-2033"),
     openingCash: doc(M(15.3), "balanço de dezembro de 2026"), cashTaxRate: informed(0.34, "lucro real"), covenantEbitdaExcludesLeases: doc(true, "escritura, EBITDA sem IFRS 16"),
     covenantLimit: doc(3, "escritura da debênture"), minimumCash: none,
@@ -115,16 +116,15 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
   it("continues a capacity question when the next message answers with figures", () => {
     const earlier = ["Quanto de dívida cabe para a segunda linha?"];
     expect(shouldProposeDebtCapacityPremises("A alíquota é 34%, covenant 3x e três parcelas a partir de 2030", false, earlier)).toBe(true);
-    expect(shouldProposeDebtCapacityPremises("Obrigado, vou pensar", false, earlier)).toBe(false);
     // The use of the funds is a qualitative gap, answered without a number.
     expect(shouldProposeDebtCapacityPremises("É para o capex da segunda linha.", false, earlier)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("É para o capex da segunda linha?", false, earlier)).toBe(false);
-    expect(shouldProposeDebtCapacityPremises("Vou confirmar o EBITDA de R$ 60 milhões amanhã.", false, earlier)).toBe(false);
-    expect(shouldProposeDebtCapacityPremises("Monte uma matriz de riscos com o covenant de 3x.", false, earlier)).toBe(false);
+    // Remarks, deferrals and requests are continuation candidates; the extraction's turnIntent decides them.
+    for (const m of ["Obrigado, vou pensar", "Obrigado, falamos em 2 dias", "Vou enviar a projeção em 2 dias", "Vou confirmar o EBITDA de R$ 60 milhões amanhã.", "Monte uma matriz de riscos com o covenant de 3x."])
+      expect(shouldProposeDebtCapacityPremises(m, false, earlier), m).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Projeto de expansão com capex de R$ 60 milhões.", false, earlier)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("A alíquota é 34%", false, ["Qual o prazo da debênture?"])).toBe(false);
     expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", false, earlier)).toBe(false);
-    expect(shouldProposeDebtCapacityPremises("Obrigado, falamos em 2 dias", false, earlier)).toBe(false);
     const thread = [...earlier, "A alíquota é 34%", "O covenant é 3x"];
     expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, thread)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Covenant de três vezes o EBITDA", false, earlier)).toBe(true);
@@ -139,7 +139,19 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
       "O EBITDA é quarenta milhões", "O spread é de 250 bps", "O caixa mínimo é R$ 15 milhões, conforme detalha a projeção"])
       for (const docs of [false, true]) expect(shouldProposeDebtCapacityPremises(m, docs, earlier), m).toBe(true);
     for (const m of ["E qual o EBITDA de 2029?", "E, qual o EBITDA de 2029", "Pode explicar a alíquota de 34%?", "Pode explicar o CDI em uma frase?", "Me explica o covenant de 3x",
-      "O CDI de 12% faz sentido?", "Resuma o CDI em 1 frase", "Vou enviar a projeção em 2 dias"])
+      "O CDI de 12% faz sentido?", "Resuma o CDI em 1 frase"])
       for (const docs of [false, true]) expect(shouldProposeDebtCapacityPremises(m, docs, earlier), m).toBe(false);
+  });
+  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+    const earlier = ["Quanto de dívida cabe para a segunda linha?"];
+    for (const intent of nonAnswering) {
+      const r = await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), intent, "Vou enviar a projeção em 2 dias", earlier);
+      expect(r, intent).toEqual({extracted: true, status: null, events: ["capacity_premises.not_answering"]});
+    }
+    expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), "answers_pending", "Vou enviar a projeção em 2 dias", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["capacity_premises.proposed"]});
+    for (const intent of nonAnswering)
+      expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), intent, "Quanto de dívida cabe para a segunda linha?", []), intent).toMatchObject({status: "proposed"});
+    // A question never reaches the extraction.
+    expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });
 });

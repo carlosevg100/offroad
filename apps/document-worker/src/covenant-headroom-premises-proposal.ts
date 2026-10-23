@@ -2,19 +2,16 @@ import {z} from "zod";
 import {covenantHeadroomFactsSchema, proposeCovenantHeadroomHypotheses, type CovenantHeadroomFacts} from "@offroad/financial-model";
 import {citedSource, extractedAmount, extractedMoney, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn,
   sameLabel, sourced, stated, type Lote2Completion, summaryRow, type Lote2Summary} from "./lote2-premises";
-import {foldCue, proposesPremisesOfKind} from "./premise-cue";
+import {foldCue, premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const covenantHeadroomPremiseMethod = {methodId: "measure-covenant-headroom", methodVersion: "2026.10.23-v1"} as const;
-const covenantData = /\b(covenants?|ebitda|divida liquida|divida bruta|caixa|limite|escritura|aditamento|ata|politica|conselho|apuracao|teste|arrendamento\w*|ifrs|ajuste\w*|safra|vezes|r\$|milh\w*)/;
-/** Qualitative answers to the gaps this extraction asks for, which carry no number. */
-const covenantGaps = /\b(definicao|cvm|automatic\w*|assembleia|cross|vencimento antecipado|superad\w*|vigente|em vigor|nao (tem|ha|diz|escreve|define)|nenhum|nenhuma)\b/;
 
-/** Headroom under a covenant: the turn may propose the measurement's premises. An answer with
- * covenant data and a quantity continues the latest such question among the recent messages. A
+/** Headroom under a covenant: the turn may propose the measurement's premises. A statement after the latest such
+ * question among the recent messages is a continuation candidate; the extraction's `turnIntent` decides it. A
  * conceptual question ("o que é covenant?") routes elsewhere and proposes nothing. */
 export function shouldProposeCovenantHeadroomPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  return proposesPremisesOfKind("covenant_headroom", covenantData, message, hasAttachments, earlierUserMessages, covenantGaps);
+  return premiseEntry("covenant_headroom", message, hasAttachments, earlierUserMessages) !== null;
 }
 
 export const covenantSituation = "near-covenant";
@@ -23,6 +20,7 @@ const item = {label: itemLabel, origin: extractedOrigin, source: itemSource};
 
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const covenantHeadroomExtractionSchema = z.strictObject({
+  turnIntent: z.enum(turnIntents),
   /** The date the question is read at: measurements after it are projected. */
   readingDate: sourced(z.iso.date()),
   /** The label of the test measurement the person asked about, when the question names one. */
@@ -60,12 +58,13 @@ export const covenantHeadroomExtractionContract = {
     "effects só quando a conversa compara duas apurações da mesma data (por exemplo com e sem a safra): rótulo do efeito, a apuração com o efeito e a sem.",
     "consequence: vencimento antecipado automático ou não automático, o processo de declaração e o cross-default com outras dívidas, como escritos.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
+    turnIntentInstruction,
   ].join("\n"),
   schema: covenantHeadroomExtractionSchema,
-  schemaName: "covenant_headroom_extraction_v1",
+  schemaName: "covenant_headroom_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "covenant-headroom-extraction-2026.10.23-v1",
+  cacheKey: "covenant-headroom-extraction-2026.10.23-v2",
 };
 
 const scenarioKey = (label: string) => foldCue(label).replace(/[^a-z0-9_]+/g, "-").replace(/^[-_]+|-+$/g, "").slice(0, 60) || "base";
@@ -169,8 +168,9 @@ export async function proposeCovenantHeadroomPremisesForTurn(input: {
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }) {
-  if (!input.projectId || !shouldProposeCovenantHeadroomPremises(input.message, input.hasAttachments, input.recentUserMessages)) return null;
+  const entry = input.projectId ? premiseEntry("covenant_headroom", input.message, input.hasAttachments, input.recentUserMessages) : null;
+  if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "covenant_premises", idName: "covenant-headroom", schema: covenantHeadroomExtractionSchema,
     complete: (extraction, id) => completeCovenantHeadroomFacts({extraction, ids: {headroomId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildCovenantHeadroomPremiseProposal}, {...input, projectId: input.projectId});
+    build: buildCovenantHeadroomPremiseProposal}, {...input, entry, projectId: input.projectId});
 }

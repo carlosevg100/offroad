@@ -19,3 +19,16 @@ export function comparableHypotheses(hypotheses: readonly Comparable[], rename: 
 
 export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise"];
 export const summaryOrigins = ["document", "informed", "house", "estimate"];
+
+type TurnInput = {message: string; hasAttachments: boolean; recentUserMessages: string[]; projectId: string | null;
+  loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>; log: (event: string, detail: Record<string, unknown>) => void};
+/** Runs one turn's premise step with a mocked extraction and reports whether a card was proposed and what was logged. */
+export async function turnWithIntent(propose: (input: TurnInput) => Promise<{proposal: unknown; forAdvisor: {status: string}} | null>, extraction: object,
+  turnIntent: string, message: string, earlier: string[]) {
+  const events: string[] = [];
+  let extracted = false;
+  const result = await propose({message, hasAttachments: false, recentUserMessages: earlier, projectId: "a0000000-0000-4000-8000-000000000001",
+    loadEvidence: async () => [], extract: async () => {extracted = true; return {...extraction, turnIntent};}, log: (event) => {events.push(event);}});
+  return {extracted, status: result?.forAdvisor.status ?? null, events};
+}
+export const nonAnswering = ["defers", "other_request", "unrelated"] as const;

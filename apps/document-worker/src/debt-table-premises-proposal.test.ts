@@ -1,8 +1,8 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {debtTableFactsSchema, proposeDebtTableHypotheses, type DebtTableFacts} from "@offroad/financial-model";
-import {buildDebtTablePremiseProposal, completeDebtTableFacts, shouldProposeDebtTablePremises, type DebtTableExtraction} from "./debt-table-premises-proposal";
+import {buildDebtTablePremiseProposal, completeDebtTableFacts, shouldProposeDebtTablePremises, type DebtTableExtraction, proposeDebtTablePremisesForTurn} from "./debt-table-premises-proposal";
 import {itemKeys} from "./lote2-premises";
-import {comparableHypotheses, financialModelFixture, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
+import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 let aurora: () => DebtTableFacts;
 beforeAll(async () => {aurora = (await financialModelFixture<{auroraDebtTableFacts: () => DebtTableFacts}>("debt-table.test-support.ts")).auroraDebtTableFacts;});
@@ -15,7 +15,7 @@ const extracted = (x: {origin: string; source: string}) => ({origin: x.origin ==
 /** The turn of ficha C10 as the extraction would read it from the contracts, the notes and the conversation. */
 function auroraExtraction(f: DebtTableFacts): DebtTableExtraction {
   const labelOf = (id: string) => f.instruments.find((x) => x.value.id === id)!.value.label;
-  return {
+  return {turnIntent: "answers_pending" as const,
     needSituation: informed("near-covenant" as const, "teste do covenant de dezembro"), referenceDate: doc(f.referenceDate, "balancete de 30/jun"),
     instruments: f.instruments.map((x) => {const i = x.value; return {label: i.label, ...extracted(x), creditor: i.creditor, borrower: i.borrower,
       principal: i.principal, accruedInterest: i.accruedInterest, unamortizedCost: i.unamortizedCost, indexer: i.indexer, spread: Number(i.spread),
@@ -56,23 +56,19 @@ describe("debt table premises proposed from a turn", () => {
     for (const m of ["O que é uma tabela de dívida?", "O que significa endividamento?", "Qual o prazo da debênture?", "Quanto de dívida cabe para o capex?", "Como estamos contra os covenants?"])
       for (const docs of [false, true]) expect(shouldProposeDebtTablePremises(m, docs), m).toBe(false);
   });
-  it("continues the request when the next message answers with debt data", () => {
+  it("treats any statement after the request as a continuation candidate, refusing only questions, explanations and another method", () => {
     const earlier = ["Monta a tabela de dívida com tudo que temos."];
-    // A qualitative gap is answered without a number.
-    for (const m of ["É para refinanciamento.", "Não recebemos o Registrato.", "A CCB não tem covenant financeiro."]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Obrigado, vou pensar", "Pode explicar o que é refinanciamento?", "É para refinanciamento?", "Mando os contratos depois"]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(false);
-    expect(shouldProposeDebtTablePremises("É para refinanciamento.", false, ["Qual o prazo da debênture?"])).toBe(false);
-    // A request for other work is not an answer, and a deferral is not one even with a number.
-    expect(shouldProposeDebtTablePremises("Revise o contrato e o cronograma da dívida.", false, earlier)).toBe(false);
-    expect(shouldProposeDebtTablePremises("Vou confirmar o saldo de R$ 40 milhões amanhã.", false, earlier)).toBe(false);
-    expect(shouldProposeDebtTablePremises("A CCB do Bradesco tem saldo de R$ 40 milhões a CDI + 2,6%", false, earlier)).toBe(true);
-    expect(shouldProposeDebtTablePremises("Te mando o Registrato em 2 dias", false, earlier)).toBe(false);
+    // Whether these answer, defer or ask for other work is the extraction's turnIntent to decide.
+    for (const m of ["É para refinanciamento.", "Não recebemos o Registrato.", "A CCB não tem covenant financeiro.", "A CCB do Bradesco tem saldo de R$ 40 milhões a CDI + 2,6%",
+      "A CCB de R$ 40 milhões vence amanhã.", "Montante de R$ 40 milhões.", "Vou te confirmar o saldo da CCB amanhã.", "Enviamos os contratos amanhã.", "Confirmo que a CCB vence amanhã.",
+      "Lista de valores: CCB R$ 40 milhões, Finame R$ 30 milhões.", "Revise o contrato e o cronograma da dívida.", "Te mando o Registrato em 2 dias", "Obrigado, vou pensar",
+      "Escreva um resumo da CCB.", "Quero que você mapeie os credores.", "ok, agora, monte o cronograma."])
+      expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(true);
+    for (const m of ["Pode explicar o que é refinanciamento?", "É para refinanciamento?", "Qual o saldo da CCB?"]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(false);
+    // Another premise method's objective is that method's, never this one's continuation.
     expect(shouldProposeDebtTablePremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, earlier)).toBe(false);
-    // A due date of the fact is an answer, and a noun that looks like a verb is not a request.
-    for (const m of ["A CCB de R$ 40 milhões vence amanhã.", "Montante de R$ 40 milhões."]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(true);
-    expect(shouldProposeDebtTablePremises("Qual o saldo da CCB?", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("A CCB tem saldo de R$ 40 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
-    // The latest premise question decides which step an answer continues.
+    // The latest premise question decides which step a statement continues.
     expect(shouldProposeDebtTablePremises("A CCB tem saldo de R$ 40 milhões", false, [...earlier, "Como estamos contra os covenants?"])).toBe(false);
   });
   it("completes the Aurora facts and proposes the hypotheses the fixture proposes", () => {
@@ -129,5 +125,17 @@ describe("debt table premises proposed from a turn", () => {
     expect(proposal.fingerprint).toMatch(/^[0-9a-f]{64}$/);
     expect(buildDebtTablePremiseProposal(c.facts, "refinancing").fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "build-company-debt-table", methodVersion: "2026.10.23-v1"});
+  });
+  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+    const earlier = ["Monta a tabela de dívida com tudo que temos."];
+    for (const intent of nonAnswering) {
+      const r = await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), intent, "Vou te confirmar o saldo da CCB amanhã.", earlier);
+      expect(r, intent).toEqual({extracted: true, status: null, events: ["debt_table_premises.not_answering"]});
+    }
+    expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Vou te confirmar o saldo da CCB amanhã.", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["debt_table_premises.proposed"]});
+    for (const intent of nonAnswering)
+      expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), intent, "Monta a tabela de dívida com tudo que temos.", []), intent).toMatchObject({status: "proposed"});
+    // A question never reaches the extraction.
+    expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });
 });

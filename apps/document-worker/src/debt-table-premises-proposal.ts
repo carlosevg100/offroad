@@ -2,18 +2,15 @@ import {z} from "zod";
 import {debtTableFactsSchema, proposeDebtTableHypotheses, type DebtTableFacts} from "@offroad/financial-model";
 import {citedSource, extractedAmount, extractedMoney, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn,
   sameLabel, sourced, stated, type Lote2Completion, type Sourced, summaryRow, type Lote2Summary} from "./lote2-premises";
-import {proposesPremisesOfKind} from "./premise-cue";
+import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const debtTablePremiseMethod = {methodId: "build-company-debt-table", methodVersion: "2026.10.23-v1"} as const;
-const debtTableData = /\b(contratos?|ccb|debentures?|finame|bndes|cra|cri|nota comercial|emprestimo\w*|financiamento\w*|saldo|principal|juros|cdi|ipca|tlp|selic|spread|parcela\w*|amortiza\w*|vencimento\w*|garantia\w*|aval|fianca\w*|cessao|alienacao|cross|conta garantida|linha\w*|limite|arrendamento\w*|risco sacado|registrato|scr|r\$|milh\w*)/;
-/** Qualitative answers to the gaps this extraction asks for, which carry no number. */
-const debtTableGaps = /\b(refinanc\w*|reestrutura\w*|covenant|registrato|scr|quirografari\w*|aval|nao (tem|ha|recebe\w*|enviamos|existe)|nenhum|nenhuma|examinad\w*)\b/;
 
-/** A table of the company's debt: the turn may propose the table's premises. An answer with debt
- * data and a quantity continues the latest such request among the recent messages. */
+/** A table of the company's debt: the turn may propose the table's premises. A statement after the latest such
+ * request among the recent messages is a continuation candidate; the extraction's `turnIntent` decides it. */
 export function shouldProposeDebtTablePremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  return proposesPremisesOfKind("debt_table", debtTableData, message, hasAttachments, earlierUserMessages, debtTableGaps);
+  return premiseEntry("debt_table", message, hasAttachments, earlierUserMessages) !== null;
 }
 
 /** Why the table is needed decides what the reading leads with. */
@@ -26,6 +23,7 @@ const item = {label: itemLabel, origin: extractedOrigin, source: itemSource};
 
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const debtTableExtractionSchema = z.strictObject({
+  turnIntent: z.enum(turnIntents),
   needSituation: sourced(z.enum(debtTableSituations)),
   /** The date the table is read at: the balances and the remaining payments are as of it. */
   referenceDate: sourced(z.iso.date()),
@@ -79,12 +77,13 @@ export const debtTableExtractionContract = {
     "views são definições de dívida escritas (por exemplo a da escritura e a contábil), com os componentes que somam. leverage é a alavancagem de uma definição: rótulo da definição em viewLabel, EBITDA e a dedução que a definição manda fazer. lastTwelveMonthsEbitda é o EBITDA dos últimos doze meses, quando dito.",
     "externalRegister é received quando o Registrato ou o SCR foi enviado, not_received quando foi dito que não foi. categoryCoverage diz se arrendamentos, risco sacado e fianças foram examinados, quando dito.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
+    turnIntentInstruction,
   ].join("\n"),
   schema: debtTableExtractionSchema,
-  schemaName: "debt_table_extraction_v1",
+  schemaName: "debt_table_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 16_000,
-  cacheKey: "debt-table-extraction-2026.10.23-v1",
+  cacheKey: "debt-table-extraction-2026.10.23-v2",
 };
 
 /** The definitions a bank or an agency reads that the company's documents do not write. */
@@ -209,8 +208,9 @@ export async function proposeDebtTablePremisesForTurn(input: {
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }) {
-  if (!input.projectId || !shouldProposeDebtTablePremises(input.message, input.hasAttachments, input.recentUserMessages)) return null;
+  const entry = input.projectId ? premiseEntry("debt_table", input.message, input.hasAttachments, input.recentUserMessages) : null;
+  if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "debt_table_premises", idName: "debt-table", schema: debtTableExtractionSchema,
     complete: (extraction, id) => completeDebtTableFacts({extraction, ids: {tableId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildDebtTablePremiseProposal}, {...input, projectId: input.projectId});
+    build: buildDebtTablePremiseProposal}, {...input, entry, projectId: input.projectId});
 }

@@ -1,8 +1,8 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeCovenantHeadroomHypotheses, type CovenantHeadroomFacts} from "@offroad/financial-model";
-import {buildCovenantHeadroomPremiseProposal, completeCovenantHeadroomFacts, shouldProposeCovenantHeadroomPremises, type CovenantHeadroomExtraction} from "./covenant-headroom-premises-proposal";
+import {buildCovenantHeadroomPremiseProposal, completeCovenantHeadroomFacts, shouldProposeCovenantHeadroomPremises, type CovenantHeadroomExtraction, proposeCovenantHeadroomPremisesForTurn} from "./covenant-headroom-premises-proposal";
 import {itemKeys} from "./lote2-premises";
-import {comparableHypotheses, financialModelFixture, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
+import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 type Fixture = (options?: {policyDefinition?: string | null; policyOnManagerial?: boolean}) => CovenantHeadroomFacts;
 let aurora: Fixture;
@@ -15,7 +15,7 @@ const extracted = (x: {origin: string; source: string}) => ({origin: x.origin ==
 function auroraExtraction(f: CovenantHeadroomFacts): CovenantHeadroomExtraction {
   const limitLabel = (id: string) => f.limits.find((l) => l.term.value.id === id)!.term.value.label;
   const measurementLabel = (id: string) => f.measurements.find((m) => m.value.id === id)!.value.label;
-  return {
+  return {turnIntent: "answers_pending" as const,
     readingDate: informed(f.readingDate, "data da pergunta"),
     headlineMeasurement: {...informed(measurementLabel(f.headline.value), f.headline.source)},
     limits: f.limits.map((l) => ({label: l.term.value.label, ...extracted(l.term), kind: l.term.value.kind, status: l.term.value.status,
@@ -50,18 +50,14 @@ describe("covenant headroom premises proposed from a turn", () => {
     for (const m of ["O que é covenant?", "O que significa covenant financeiro?", "Qual o prazo da debênture?", "Monta a tabela de dívida com tudo que temos.", "Prepara a minuta do waiver do covenant."])
       for (const docs of [false, true]) expect(shouldProposeCovenantHeadroomPremises(m, docs), m).toBe(false);
   });
-  it("continues the question when the next message answers with covenant data", () => {
+  it("treats any statement after the question as a continuation candidate, refusing only questions, explanations and another method", () => {
     const earlier = ["Qual a folga do covenant da debênture em dezembro?"];
-    expect(shouldProposeCovenantHeadroomPremises("O limite é 3x e o EBITDA de dezembro é R$ 54,5 milhões", false, earlier)).toBe(true);
-    expect(shouldProposeCovenantHeadroomPremises("O limite é 3x, certo?", false, earlier)).toBe(true);
-    for (const m of ["A ata não define o EBITDA da política.", "O vencimento antecipado não é automático, depende de assembleia."]) expect(shouldProposeCovenantHeadroomPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Me explica a definição de EBITDA", "A definição é a da CVM?", "Monte uma matriz de riscos com os covenants da escritura.",
-      "Atualize a matriz de riscos com os covenants da escritura.", "Verifique os covenants do contrato.", "Vou confirmar o caixa semanal de R$ 40 milhões amanhã."])
+    for (const m of ["O limite é 3x e o EBITDA de dezembro é R$ 54,5 milhões", "O limite é 3x, certo?", "A ata não define o EBITDA da política.", "O covenant é 3x o EBITDA.",
+      "O vencimento antecipado não é automático, depende de assembleia.", "Análise da escritura: o limite é 3x.", "Monte uma matriz de riscos com os covenants da escritura.",
+      "Atualize a matriz de riscos com os covenants da escritura.", "Verifique os covenants do contrato.", "Mando a ata em 2 dias"])
+      for (const docs of [false, true]) expect(shouldProposeCovenantHeadroomPremises(m, docs, earlier), m).toBe(true);
+    for (const m of ["Me explica a definição de EBITDA", "A definição é a da CVM?", "Qual é o limite da escritura?", "Vou confirmar o caixa semanal de R$ 40 milhões amanhã."])
       for (const docs of [false, true]) expect(shouldProposeCovenantHeadroomPremises(m, docs, earlier), m).toBe(false);
-    // A plain answer the router reads as a risk matrix ("covenant") still answers.
-    expect(shouldProposeCovenantHeadroomPremises("O covenant é 3x o EBITDA.", false, earlier)).toBe(true);
-    expect(shouldProposeCovenantHeadroomPremises("Qual é o limite da escritura?", false, earlier)).toBe(false);
-    expect(shouldProposeCovenantHeadroomPremises("Mando a ata em 2 dias", false, earlier)).toBe(false);
     expect(shouldProposeCovenantHeadroomPremises("O limite é 3x", false, ["Qual o prazo da debênture?"])).toBe(false);
     expect(shouldProposeCovenantHeadroomPremises("O limite é 3x", false, [...earlier, "Quanto de dívida cabe para o capex?"])).toBe(false);
   });
@@ -113,5 +109,17 @@ describe("covenant headroom premises proposed from a turn", () => {
     const changed = complete({...auroraExtraction(f), readingDate: informed("2026-09-16", "data da pergunta")}, f);
     expect(buildCovenantHeadroomPremiseProposal(changed.facts).fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "measure-covenant-headroom", methodVersion: "2026.10.23-v1"});
+  });
+  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+    const earlier = ["Qual a folga do covenant da debênture em dezembro?"];
+    for (const intent of nonAnswering) {
+      const r = await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), intent, "Análise da escritura: o limite é 3x.", earlier);
+      expect(r, intent).toEqual({extracted: true, status: null, events: ["covenant_premises.not_answering"]});
+    }
+    expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Análise da escritura: o limite é 3x.", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["covenant_premises.proposed"]});
+    for (const intent of nonAnswering)
+      expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), intent, "Qual a folga do covenant da debênture em dezembro?", []), intent).toMatchObject({status: "proposed"});
+    // A question never reaches the extraction.
+    expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });
 });
