@@ -5,16 +5,24 @@ const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
 
 export type WeeklyCashCategory = "debt" | "statutory" | "operating" | "action";
 /** A stream of dated cash events of one kind: the dates and amounts as the contract, the law or the plan state them. */
+export const weeklyCashObligations = ["payroll", "thirteenth_salary", "payroll_charges", "sales_taxes", "income_taxes", "debt_service"] as const;
+export type WeeklyCashObligation = typeof weeklyCashObligations[number];
 export type WeeklyCashStream = {id: string; label: string; category: WeeklyCashCategory; direction: "inflow" | "outflow";
+  /** The legal or contractual obligation the stream pays, when it is one of those the answer cannot leave out. */
+  obligation: WeeklyCashObligation | null;
   dates: readonly string[]; amounts: readonly string[]};
 export type WeeklyCashAction = {
-  id: string; label: string; streamId: string;
+  id: string; label: string;
+  /** The single draw the action adds; when it replaces a stream (a larger line instead of a smaller one),
+   * the cost is on the increment only and the replaced stream must not be in the action's case. */
+  streamId: string; replacesStreamId: string | null;
   /** What the money costs while in use: rate per period (annual or monthly, compounded), tax and fee on the amount. */
   amount: string; days: number; rate: string; ratePeriod: "annual" | "monthly";
   iofDaily: string; iofDailyCapDays: number; iofAdditional: string; upfrontFee: string;
   /** Whether it is still open on the covenant test date: it adds the same amount to debt and to cash. */
   repaymentDate: string;
 };
+export type WeeklyCashCoverage = Record<WeeklyCashObligation, "included" | "not_applicable" | "not_examined">;
 export type WeeklyCashInput = {
   currency: string; firstMonday: string; weeks: number; openingCash: string; minimumCash: string;
   streams: readonly WeeklyCashStream[];
@@ -25,6 +33,8 @@ export type WeeklyCashInput = {
   /** Debt and statutory outflows are listed up to this date, as the calendar of what falls due. */
   calendarEnd: string;
   covenantTestDate: string | null;
+  /** Whether each obligation the answer cannot leave out is in the streams, does not apply, or was not examined. */
+  coverage: WeeklyCashCoverage;
 };
 
 function day(value: string) {
@@ -60,6 +70,7 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     if (!s.id.trim() || streams.has(s.id)) throw new Error("weekly_cash_duplicate_stream");
     text(s.label, "weekly_cash_label_required");
     if (!["debt", "statutory", "operating", "action"].includes(s.category) || !["inflow", "outflow"].includes(s.direction)) throw new Error("weekly_cash_stream_kind");
+    if (s.obligation !== null && (!weeklyCashObligations.includes(s.obligation) || s.direction !== "outflow")) throw new Error("weekly_cash_stream_obligation");
     if (!s.dates.length || s.dates.length !== s.amounts.length || s.dates.length > 2000) throw new Error("weekly_cash_stream_series");
     const events = s.dates.map((d, n) => {
       day(d); if (d < input.firstMonday || d > horizonEnd) throw new Error("weekly_cash_event_outside_horizon");
@@ -79,18 +90,19 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     const rows = weekStarts.map(start => {
       const end = add(start, 7);
       let inflow = new Exact(0), outflow = new Exact(0);
-      const outs: {label: string; amount: Decimal}[] = [];
+      const outs: {label: string; category: WeeklyCashCategory; amount: Decimal}[] = [];
       for (const u of used) {
         let sum = new Exact(0);
         for (const e of u.events) if (e.date >= start && e.date < end) sum = sum.plus(e.amount);
         if (sum.isZero()) continue;
         if (u.s.direction === "inflow") inflow = inflow.plus(sum);
-        else {outflow = outflow.plus(sum); outs.push({label: u.s.label, amount: sum});}
+        else {outflow = outflow.plus(sum); outs.push({label: u.s.label, category: u.s.category, amount: sum});}
       }
       balance = balance.plus(inflow).minus(outflow);
       outs.sort((a, b) => b.amount.cmp(a.amount) || (a.label < b.label ? -1 : 1));
       return {weekStart: start, inflows: out(inflow), outflows: out(outflow), closing: out(balance), belowMinimum: balance.lt(minimum),
-        largestOutflows: outs.slice(0, 3).map(o => ({label: o.label, amount: out(o.amount)}))};
+        largestOutflows: outs.slice(0, 3).map(o => ({label: o.label, amount: out(o.amount)})),
+        outflowsByStream: outs.map(o => ({label: o.label, category: o.category, amount: out(o.amount)}))};
     });
     const tightest = rows.reduce((m, r) => new Exact(r.closing).lt(m.closing) ? r : m);
     return {id: c.id, label: c.label, role: c.role, rows, minimum: {weekStart: tightest.weekStart, closing: tightest.closing},
@@ -102,23 +114,38 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     && input.cases.find(c => c.role === "informed")!.streamIds.includes(u.s.id))
     .flatMap(u => u.events.filter(e => e.date <= input.calendarEnd).map(e => ({date: e.date, label: u.s.label, category: u.s.category, amount: out(e.amount)})))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.label < b.label ? -1 : 1));
+  const actionStreamIds = new Set(input.actions.map(a => a.streamId));
   const actions = input.actions.map(a => {
     text(a.label, "weekly_cash_label_required");
     const stream = streams.get(a.streamId);
     if (!stream || stream.s.category !== "action" || stream.s.direction !== "inflow") throw new Error("weekly_cash_action_stream");
+    // One draw per action: what is open on the test date is then a date and an amount, not an order of events.
+    if (stream.events.length !== 1) throw new Error("weekly_cash_action_single_draw");
     if (!Number.isInteger(a.days) || a.days < 1 || a.days > 3660 || !Number.isInteger(a.iofDailyCapDays) || a.iofDailyCapDays < 0) throw new Error("weekly_cash_action_days");
     if (!["annual", "monthly"].includes(a.ratePeriod)) throw new Error("weekly_cash_action_rate_period");
     day(a.repaymentDate);
+    const draw = stream.events[0]!;
+    // Time in use is from the draw to the repayment, and a repayment inside the horizon would be a cash flow the case does not carry.
+    if ((day(a.repaymentDate).getTime() - day(draw.date).getTime()) / 86400000 !== a.days) throw new Error("weekly_cash_action_days_mismatch");
+    if (a.repaymentDate <= horizonEnd) throw new Error("weekly_cash_action_repaid_inside_horizon");
+    const replaced = a.replacesStreamId === null ? null : streams.get(a.replacesStreamId);
+    if (a.replacesStreamId !== null && (!replaced || replaced.events.length !== 1 || replaced.s.direction !== "inflow" || replaced.events[0]!.date !== draw.date)) throw new Error("weekly_cash_action_replacement");
+    const increment = replaced ? draw.amount.minus(replaced.events[0]!.amount) : draw.amount;
+    if (!increment.gt(0) || !amount(a.amount).eq(increment)) throw new Error("weekly_cash_action_amount_mismatch");
+    const holding = input.cases.filter(c => c.streamIds.includes(a.streamId));
+    if (replaced && holding.some(c => c.streamIds.includes(a.replacesStreamId!))) throw new Error("weekly_cash_action_replacement");
     const value = amount(a.amount), rate = amount(a.rate), period = a.ratePeriod === "annual" ? 365 : 30;
     const interest = value.mul(new Exact(1).plus(rate).pow(new Exact(a.days).div(period)).minus(1));
     const iof = value.mul(amount(a.iofDaily)).mul(Math.min(a.days, a.iofDailyCapDays)).plus(value.mul(amount(a.iofAdditional)));
     const fee = value.mul(amount(a.upfrontFee));
-    const cases = input.cases.filter(c => c.streamIds.includes(a.streamId)).map(c => c.id);
-    const openAtTest = input.covenantTestDate === null ? null : stream.events[0]!.date <= input.covenantTestDate && a.repaymentDate > input.covenantTestDate;
-    return {id: a.id, label: a.label, cases, amount: out(value), days: a.days, interest: out(interest), iof: out(iof), fee: out(fee),
+    const cases = holding.map(c => c.id);
+    /** A case proves this action alone covers only when no other action is in it. */
+    const isolatedCases = holding.filter(c => c.streamIds.filter(id => actionStreamIds.has(id)).length === 1).map(c => c.id);
+    const openAtTest = input.covenantTestDate === null ? null : draw.date <= input.covenantTestDate && a.repaymentDate > input.covenantTestDate;
+    return {id: a.id, label: a.label, cases, isolatedCases, amount: out(value), days: a.days, interest: out(interest), iof: out(iof), fee: out(fee),
       cost: out(interest.plus(iof).plus(fee)), openAtCovenantTest: openAtTest,
-      /** A draw open on the test date adds the same amount to gross debt and to cash: net debt does not move that day. */
-      covenantEffect: openAtTest ? {grossDebt: out(value), cash: out(value), netDebt: "0"} : null};
+      /** A draw open on the test date adds its whole amount to gross debt and to cash: net debt does not move that day. */
+      covenantEffect: openAtTest ? {grossDebt: out(draw.amount), cash: out(draw.amount), netDebt: "0"} : null};
   }).sort((a, b) => new Exact(a.cost).cmp(b.cost) || (a.id < b.id ? -1 : 1));
   const reconciliation = input.projectionClosing === null ? null : (() => {
     day(input.projectionClosing.date);
@@ -126,7 +153,17 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     const projected = amount(input.projectionClosing.balance, true);
     return {date: horizonEnd, weekly: informed.closing, projection: out(projected), difference: out(new Exact(informed.closing).minus(projected))};
   })();
+  const informedStreams = new Set(input.cases.find(c => c.role === "informed")!.streamIds);
+  const coverage = weeklyCashObligations.map(o => {
+    const v = input.coverage?.[o];
+    if (v !== "included" && v !== "not_applicable" && v !== "not_examined") throw new Error("weekly_cash_coverage_required");
+    const present = [...streams.values()].some(u => u.s.obligation === o && informedStreams.has(u.s.id));
+    if (v === "included" && !present) throw new Error("weekly_cash_obligation_declared_without_stream");
+    if (v !== "included" && present) throw new Error("weekly_cash_obligation_stream_without_declaration");
+    return {obligation: o, status: v};
+  });
   return {schemaVersion: "weekly-cash.v1" as const, version: weeklyCashVersion, currency: input.currency, firstMonday: input.firstMonday, horizonEnd,
-    openingCash: out(opening), minimumCash: out(minimum), cases, calendar, actions, reconciliation};
+    openingCash: out(opening), minimumCash: out(minimum), cases, calendar, actions, reconciliation, coverage,
+    gaps: coverage.filter(c => c.status === "not_examined").map(c => ({item: c.obligation, reason: "obligation_not_examined"}))};
 }
 export type WeeklyCash = ReturnType<typeof buildWeeklyCash>;

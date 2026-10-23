@@ -28,6 +28,30 @@ describe("weekly cash", () => {
   it("costs each action for the time it is in use and flags the draw open at the covenant test", () => {
     expect(w.actions.map(a => [a.id, n(a.cost, 2)])).toEqual([["conta-garantida", "0.12"], ["antecipacao", "0.25"], ["linha-25", "0.87"]]);
     expect(w.actions[0]!.covenantEffect).toEqual({grossDebt: "8", cash: "8", netDebt: "0"});
+    expect(w.actions.map(a => a.isolatedCases)).toEqual([["conta-garantida"], ["antecipacao"], ["linha-25"]]);
+    // The larger line is costed on its increment over the line it replaces, for its whole time in use.
+    expect(w.actions.find(a => a.id === "linha-25")!.covenantEffect).toEqual({grossDebt: "25", cash: "25", netDebt: "0"});
+  });
+  it("declares the obligations the answer cannot leave out", () => {
+    expect(w.coverage.every(c => c.status === "included")).toBe(true);
+    expect(w.gaps).toEqual([]);
+    const s = auroraWeeklyCash.streams.map(x => x.id === "decimo-1" || x.id === "decimo-2" ? {...x, obligation: null} : x);
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, streams: s})).toThrow("weekly_cash_obligation_declared_without_stream");
+    const gap = buildWeeklyCash({...auroraWeeklyCash, streams: s, coverage: {...auroraWeeklyCash.coverage, thirteenth_salary: "not_examined"}});
+    expect(gap.gaps).toEqual([{item: "thirteenth_salary", reason: "obligation_not_examined"}]);
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, coverage: {...auroraWeeklyCash.coverage, payroll: "not_applicable"}})).toThrow("weekly_cash_obligation_stream_without_declaration");
+  });
+  it("keeps every action coherent with its draw and its case", () => {
+    const two = auroraWeeklyCash.streams.map(x => x.id === "conta-garantida" ? {...x, dates: ["2026-12-14", "2026-12-21"], amounts: ["4", "4"]} : x);
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, streams: two})).toThrow("weekly_cash_action_single_draw");
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, days: 30}]})).toThrow("weekly_cash_action_days_mismatch");
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, amount: "5"}]})).toThrow("weekly_cash_action_amount_mismatch");
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[2]!, replacesStreamId: null}]})).toThrow("weekly_cash_action_amount_mismatch");
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, repaymentDate: "2026-12-28", days: 14}]})).toThrow("weekly_cash_action_repaid_inside_horizon");
+    // A case with two actions does not prove either one covers alone.
+    const both = buildWeeklyCash({...auroraWeeklyCash, cases: [...auroraWeeklyCash.cases.filter(c => c.id !== "conta-garantida" && c.id !== "antecipacao"),
+      {id: "ambas", label: "Saque e antecipação", role: "alternative", streamIds: [...auroraWeeklyCash.cases[0]!.streamIds, "conta-garantida", "antecipacao"]}]});
+    expect(both.actions.filter(a => a.id !== "linha-25").map(a => a.isolatedCases)).toEqual([[], []]);
   });
   it("refuses malformed weeks", () => {
     expect(() => buildWeeklyCash({...auroraWeeklyCash, firstMonday: "2026-09-15"})).toThrow("weekly_cash_week_must_start_monday");

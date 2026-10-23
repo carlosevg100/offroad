@@ -16,9 +16,9 @@
     "exportName": "buildCovenantHeadroomRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:38:29.231Z",
-    "finishedAt": "2026-10-23T16:38:29.291Z",
-    "commit": "850a9c354d86a2545cf84e1136e36b2b21a892ad"
+    "startedAt": "2026-10-23T17:06:38.323Z",
+    "finishedAt": "2026-10-23T17:06:38.394Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,116 +26,116 @@
       "id": "december-by-the-indenture-definition",
       "expectation": "{\"netDebt\":113.2,\"ebitda\":51.5,\"ratio\":2.2}",
       "observed": "{\"netDebt\":113.2,\"ebitda\":51.5,\"ratio\":2.2}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "headroom-in-ebitda-and-net-debt-to-the-covenant",
       "expectation": "{\"ebitda\":13.76,\"netDebt\":41.29}",
       "observed": "{\"ebitda\":13.76,\"netDebt\":41.29}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "reverse-test-on-the-unrealized-second-half",
       "expectation": "{\"covenant\":52.9,\"policy\":23.9}",
       "observed": "{\"covenant\":52.9,\"policy\":23.9}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "board-policy-binds-first",
       "expectation": "{\"tightest\":\"politica\",\"headroom\":6.22,\"policyBindsFirst\":true}",
       "observed": "{\"tightest\":\"politica\",\"headroom\":6.22,\"policyBindsFirst\":true}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "adverse-case-in-december",
       "expectation": "2.32",
       "observed": "2.32",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "a-larger-season-in-december",
       "expectation": "{\"ratio\":2.3,\"policyHeadroom\":4.2}",
       "observed": "{\"ratio\":2.3,\"policyHeadroom\":4.2}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "season-weighs-half-a-turn-at-the-test-date",
       "expectation": "0.5",
       "observed": "0.5",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "december-2027-base-and-adverse",
       "expectation": "{\"base\":1.85,\"adverse\":2.37,\"policyHeadroom\":2.33,\"worst\":[\"dez27-adverso\",\"politica\"]}",
       "observed": "{\"base\":1.85,\"adverse\":2.37,\"policyHeadroom\":2.33,\"worst\":[\"dez27-adverso\",\"politica\"]}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "managerial-june-reading-is-a-contrast",
       "expectation": "{\"ratio\":1.73,\"role\":\"contrast\"}",
       "observed": "{\"ratio\":1.73,\"role\":\"contrast\"}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "original-indenture-limit-is-superseded",
       "expectation": "{\"headroom\":10.33,\"role\":\"contrast\"}",
       "observed": "{\"headroom\":10.33,\"role\":\"contrast\"}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "breach-is-not-automatic-and-the-chain-is-named",
       "expectation": "{\"acceleration\":\"non_automatic\",\"process\":true,\"crossDefault\":true}",
       "observed": "{\"acceleration\":\"non_automatic\",\"process\":true,\"crossDefault\":true}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "unwritten-policy-definition-is-a-question",
       "expectation": "{\"open\":[\"politica\"],\"status\":\"partial\"}",
       "observed": "{\"open\":[\"politica\"],\"status\":\"partial\"}",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "turn-two-policy-on-managerial-ebitda",
-      "expectation": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"status\":\"prepared_for_human_review\"}",
-      "observed": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"status\":\"prepared_for_human_review\"}",
-      "inputFingerprint": "41a3b01f1c0b3b8664875367c7541926542af8314cb39df180454288a91db621",
-      "outputFingerprint": "e0bcf0bab667bdb0314045f3977d0699584199f0c5f22696529df599ab8f61a8",
+      "expectation": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"policyBindsFirst\":true,\"status\":\"prepared_for_human_review\"}",
+      "observed": "{\"ratio\":2.04,\"policyHeadroom\":10.2,\"policyBindsFirst\":true,\"status\":\"prepared_for_human_review\"}",
+      "inputFingerprint": "fcbf38fecd778c5d6ccd5e56584edc48b696bb89cfe288ca4e369e635e470a5b",
+      "outputFingerprint": "2da2b534e254ff170c76e0a370592f8f5f81fb9b5a51e05731c52f1c219123d4",
       "passed": true
     },
     {
       "id": "absent-cash-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"framed\",\"gap\":true}",
       "observed": "{\"status\":\"framed\",\"gap\":true}",
-      "inputFingerprint": "5d1ea61efca62aeb2dbbf7cc47462da8287074ca6b86f3df450dc9859229bde7",
-      "outputFingerprint": "62f3eab325f9058bfd4f7a9093a150ca7251894e449f3a9105cd76cf10a76a64",
+      "inputFingerprint": "8f1ad7cef9b7d8547a62d1db248b53bed8f5804581ab0cb85a4139c409246ce8",
+      "outputFingerprint": "fb58618dfed53a37cd51f87f5e6244c404fc25e35b4a678e5a8a3a70853c925e",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "22a85d4636d04860285ea86ceba629300014fe755c2bff3a8573363efa4eb02c",
+  "evidenceFingerprint": "8483251e1163b50e6d0f71527f314569a8d68593d08da60a311eca0776d6e4f8",
   "notes": "Synthetic deterministic execution calibrated on ficha C12. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
-import {buildWeeklyCash, financialCoreVersion, type WeeklyCashInput} from "@offroad/financial-core";
+import {buildWeeklyCash, financialCoreVersion, weeklyCashObligations, type WeeklyCashInput} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, analysisAmount, createAnalysisBinding} from "./adopted-analysis-binding";
 
@@ -13,10 +13,12 @@ const unsigned = z.string().regex(/^\d{1,24}(?:\.\d{1,20})?$/), ratio = z.string
 export const adoptedWeeklyCashInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: z.string().trim().min(1).max(160),
   openingCash: selection, minimumCash: selection, projectionClosing: selection.nullable(), calendarEnd: selection, covenantTestDate: selection.nullable(),
-  streams: z.array(z.strictObject({id: key, label: selection, category: selection, direction: selection, dates: selection, amounts: selection})).min(1).max(40),
+  streams: z.array(z.strictObject({id: key, label: selection, category: selection, direction: selection, obligation: selection.nullable(), dates: selection, amounts: selection})).min(1).max(40),
   cases: z.array(z.strictObject({id: key, label, role: z.enum(["informed", "alternative"]), streamIds: z.array(key).min(1).max(40)})).min(1).max(8),
-  actions: z.array(z.strictObject({id: key, label: selection, streamId: key, amount: selection, days: selection, rate: selection, ratePeriod: selection,
+  actions: z.array(z.strictObject({id: key, label: selection, streamId: key, replacesStreamId: key.nullable(), amount: selection, days: selection, rate: selection, ratePeriod: selection,
     iofDaily: selection, iofDailyCapDays: selection, iofAdditional: selection, upfrontFee: selection, repaymentDate: selection})).max(4),
+  /** Whether each obligation the answer cannot leave out is in the streams, does not apply, or was not examined. */
+  coverage: z.strictObject(Object.fromEntries(weeklyCashObligations.map(o => [o, selection])) as Record<typeof weeklyCashObligations[number], typeof selection>),
 }).refine(i => i.endDate > i.openingDate, "Invalid horizon")
   .refine(i => new Set(i.streams.map(s => s.id)).size === i.streams.length, "Duplicate stream")
   .refine(i => i.cases.every(c => c.streamIds.every(id => i.streams.some(s => s.id === id))), "A case names a stream the analysis does not carry")
@@ -39,12 +41,13 @@ export function calculateAdoptedWeeklyCash(raw: unknown) {
     return {id: s.id, label: need(read(s.label, p + "label", "text", "text", words)),
       category: need(read(s.category, p + "category", "convention", "text", z.enum(["debt", "statutory", "operating", "action"]))),
       direction: need(read(s.direction, p + "direction", "convention", "text", z.enum(["inflow", "outflow"]))),
+      obligation: s.obligation === null ? null : need(read(s.obligation, p + "obligation", "convention", "text", z.enum(weeklyCashObligations))),
       dates: need(read(s.dates, p + "dates", "date", "list", z.array(z.iso.date()).min(1).max(2000))),
       amounts: need(read(s.amounts, p + "amounts", "currency", "list", z.array(unsigned).min(1).max(2000)))};
   });
   const actions = input.actions.map(a => {
     const p = `action.${a.id}.`;
-    return {id: a.id, label: need(read(a.label, p + "label", "text", "text", words)), streamId: a.streamId,
+    return {id: a.id, label: need(read(a.label, p + "label", "text", "text", words)), streamId: a.streamId, replacesStreamId: a.replacesStreamId,
       amount: need(read(a.amount, p + "amount", "currency", "number", unsigned)),
       days: need(read(a.days, p + "days", "days", "number", z.string().regex(/^\d{1,4}$/))),
       rate: need(read(a.rate, p + "rate", "ratio", "number", ratio)),
@@ -60,7 +63,8 @@ export function calculateAdoptedWeeklyCash(raw: unknown) {
   const closing = input.projectionClosing ? read(input.projectionClosing, "projectionClosing", "currency", "number", analysisAmount) : null;
   const calendarEnd = need(read(input.calendarEnd, "calendarEnd", "date", "date", z.iso.date()));
   const testDate = input.covenantTestDate ? read(input.covenantTestDate, "covenantTestDate", "date", "date", z.iso.date()) : null;
-  const kernelInput: WeeklyCashInput | null = complete ? {currency: input.currency, firstMonday: input.openingDate, weeks: days / 7, openingCash: opening, minimumCash: minimum,
+  const coverage = Object.fromEntries(weeklyCashObligations.map(o => [o, need(read(input.coverage[o], `coverage.${o}`, "convention", "text", z.enum(["included", "not_applicable", "not_examined"])))])) as WeeklyCashInput["coverage"];
+  const kernelInput: WeeklyCashInput | null = complete ? {coverage, currency: input.currency, firstMonday: input.openingDate, weeks: days / 7, openingCash: opening, minimumCash: minimum,
     streams, cases: input.cases, actions: actions.map(a => ({...a, days: Number(a.days), iofDailyCapDays: Number(a.iofDailyCapDays)})),
     projectionClosing: closing === null ? null : {date: input.endDate, balance: closing}, calendarEnd, covenantTestDate: testDate} : null;
   const weekly = kernelInput ? buildWeeklyCash(kernelInput) : null;

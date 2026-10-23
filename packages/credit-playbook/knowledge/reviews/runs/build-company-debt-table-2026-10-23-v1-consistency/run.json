@@ -16,9 +16,9 @@
     "exportName": "buildDebtTableRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:51:12.492Z",
-    "finishedAt": "2026-10-23T16:51:12.584Z",
-    "commit": "a567bc37f37fd5b8a86b3600f40f8963517bd9db"
+    "startedAt": "2026-10-23T17:06:36.814Z",
+    "finishedAt": "2026-10-23T17:06:36.906Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "3c0c6efa4c05426ea61720f09450366fed84fbc7d661460a711fa65179d02bab",
-      "outputFingerprint": "91f44ca3a8dd8a1941f08aadecabf728756be08e3cf61f0afe264591d30cac0a",
+      "outputFingerprint": "1be28bf2e7cf04b3b33076f58abf4a99d516673cd686669f1452a96eb8aa9ab5",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "3c0c6efa4c05426ea61720f09450366fed84fbc7d661460a711fa65179d02bab",
-      "outputFingerprint": "91f44ca3a8dd8a1941f08aadecabf728756be08e3cf61f0afe264591d30cac0a",
+      "outputFingerprint": "1be28bf2e7cf04b3b33076f58abf4a99d516673cd686669f1452a96eb8aa9ab5",
       "passed": true
     },
     {
@@ -67,11 +67,11 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "3c0c6efa4c05426ea61720f09450366fed84fbc7d661460a711fa65179d02bab",
-      "outputFingerprint": "91f44ca3a8dd8a1941f08aadecabf728756be08e3cf61f0afe264591d30cac0a",
+      "outputFingerprint": "1be28bf2e7cf04b3b33076f58abf4a99d516673cd686669f1452a96eb8aa9ab5",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "6c23c795bef1064b45d7db4d4c148eb765bb4981dacdb86579953286d2d74801",
+  "evidenceFingerprint": "0a7272861c04affaf0997298f6b31fe9e96440d9a231e9024364dd5c3a477577",
   "notes": "Synthetic deterministic execution calibrated on ficha C10. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

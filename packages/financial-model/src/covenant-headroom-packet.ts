@@ -1,10 +1,12 @@
 import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {z} from "zod";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {adoptedCovenantHeadroomInputSchema, calculateAdoptedCovenantHeadroom} from "./adopted-covenant-headroom";
 import {adoptedCovenantHeadroomOutputSchema} from "./ficha-calculation-results";
 
 export const covenantHeadroomPacketVersion = "2026.10.23-v1";
+const Exact = Decimal.clone({precision: 60});
 const text = z.string().trim().min(1).max(2000), key = z.string().trim().min(1).max(160);
 const hash = z.string().regex(/^[a-f0-9]{64}$/), decimal = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/);
 
@@ -59,7 +61,15 @@ export function prepareCovenantHeadroomPacket(raw: unknown): CovenantHeadroomPac
     return {headline: {measurementId: m.id, date: m.date, ratio: m.ratio, tightestLimitId: m.tightestLimitId,
       byLimit: m.tests.map((t) => ({limitId: t.limitId, kind: t.kind, ebitdaHeadroom: t.ebitdaHeadroom, netDebtHeadroom: t.netDebtHeadroom,
         unrealizedEbitdaLossToLimit: t.unrealizedEbitdaLossToLimit, breached: t.breached}))},
-      policyBindsFirst: tightest?.kind === "board_policy", worst: h.worst, anyBreach: h.anyBreach,
+      // Whether the board's policy binds before the contract on the headline date, across every test of that date
+      // (the policy may be measured on its own definition in a measurement of its own).
+      policyBindsFirst: (() => {
+        const sameDate = h.measurements.filter((x) => x.role === "test" && x.date === m.date).flatMap((x) => x.tests);
+        const least = (kind: string) => sameDate.filter((t) => t.kind === kind).reduce<Decimal | null>((v, t) => v === null || new Exact(t.ebitdaHeadroom).lt(v) ? new Exact(t.ebitdaHeadroom) : v, null);
+        const policy = least("board_policy"), contract = least("contractual");
+        return policy !== null && contract !== null && policy.lt(contract);
+      })(),
+      worst: h.worst, anyBreach: h.anyBreach,
       contrasts: h.measurements.filter((x) => x.role === "contrast").map((x) => x.id),
       openQuestions: result.openQuestions.map((q) => q.limitId)};
   })() : null;

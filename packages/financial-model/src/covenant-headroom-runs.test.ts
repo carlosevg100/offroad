@@ -21,7 +21,7 @@ describe("recorded covenant headroom evaluations", () => {
       "board-policy-binds-first", "adverse-case-in-december", "a-larger-season-in-december", "season-weighs-half-a-turn-at-the-test-date",
       "december-2027-base-and-adverse", "managerial-june-reading-is-a-contrast", "original-indenture-limit-is-superseded",
       "breach-is-not-automatic-and-the-chain-is-named", "unwritten-policy-definition-is-a-question", "turn-two-policy-on-managerial-ebitda", "absent-cash-is-a-gap-not-a-default"]);
-    expect(records.get(covenantHeadroomRunIds.adversarial)!.cases).toHaveLength(10);
+    expect(records.get(covenantHeadroomRunIds.adversarial)!.cases).toHaveLength(13);
     expect(records.get(covenantHeadroomRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

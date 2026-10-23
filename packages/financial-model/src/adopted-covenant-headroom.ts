@@ -11,7 +11,7 @@ const ratio = z.string().regex(/^\d{1,4}(?:\.\d{1,20})?$/);
 
 export const adoptedCovenantHeadroomInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: z.string().trim().min(1).max(160), readingDate: z.iso.date(),
-  limits: z.array(z.strictObject({id: key, kind: selection, label: selection, maximumRatio: selection, source: selection,
+  limits: z.array(z.strictObject({id: key, kind: selection, status: selection, testDates: selection, label: selection, maximumRatio: selection, source: selection,
     /** The EBITDA definition the limit is measured on; for a board policy it is often unwritten, and then it is a question. */
     definition: selection})).min(1).max(6),
   measurements: z.array(z.strictObject({id: key, label, role: z.enum(["test", "contrast"]), limitIds: z.array(key).max(6),
@@ -45,6 +45,8 @@ export function calculateAdoptedCovenantHeadroom(raw: unknown) {
     // A limit whose definition is not written still binds; how it is measured is asked, never assumed.
     if (definition === null) openQuestions.push({limitId: l.id, question: "ebitda_definition_not_written"});
     return {id: l.id, kind: need(read(l.kind, p + "kind", sc, "convention", "text", z.enum(["contractual", "board_policy"]))),
+      status: need(read(l.status, p + "status", sc, "convention", "text", z.enum(["in_force", "superseded"]))),
+      testDates: need(read(l.testDates, p + "testDates", sc, "date", "list", z.array(z.iso.date()).max(24))),
       label: need(read(l.label, p + "label", sc, "text", "text", words)), maximumRatio: need(read(l.maximumRatio, p + "maximumRatio", sc, "ratio", "number", ratio)),
       source: need(read(l.source, p + "source", sc, "text", "text", words)), definition};
   });

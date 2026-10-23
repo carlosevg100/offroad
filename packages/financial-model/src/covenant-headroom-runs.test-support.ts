@@ -62,8 +62,9 @@ function goldCases(): Case[] {
       (p) => ({acceleration: p.result.consequence.acceleration, process: !!p.result.consequence.process, crossDefault: !!p.result.consequence.crossDefault})),
     reuse("unwritten-policy-definition-is-a-question", {open: ["politica"], status: "partial"}, (p) => ({open: p.readings!.openQuestions, status: p.status})),
     observe("turn-two-policy-on-managerial-ebitda", packetInput({policyDefinition: "EBITDA gerencial: CVM 156 com ajustes da gestão, sem descontar arrendamentos", policyOnManagerial: true}),
-      {ratio: 2.04, policyHeadroom: 10.2, status: "prepared_for_human_review"},
-      (p) => ({ratio: r(at(p, "dez26-politica-gerencial").ratio), policyHeadroom: r(test(p, "dez26-politica-gerencial", "politica").ebitdaHeadroom, 1), status: p.status})),
+      {ratio: 2.04, policyHeadroom: 10.2, policyBindsFirst: true, status: "prepared_for_human_review"},
+      (p) => ({ratio: r(at(p, "dez26-politica-gerencial").ratio), policyHeadroom: r(test(p, "dez26-politica-gerencial", "politica").ebitdaHeadroom, 1),
+        policyBindsFirst: p.readings!.policyBindsFirst, status: p.status})),
     (() => {
       const i = packetInput({policyDefinition: "EBITDA da escritura"});
       const cash = i.analysis.measurements[0]!.cash as {decisionId: string | null; missingReason: string | null};
@@ -85,6 +86,9 @@ function adversarialCases(): Case[] {
     ["test-without-limit", () => {const i = packetInput(); i.analysis.measurements[1] = {...i.analysis.measurements[1]!, limitIds: []}; return i;}, "covenant_test_without_limit"],
     ["unrealized-after-the-test-date", () => ({...packetInput(), analysis: {...packetInput().analysis, readingDate: "2027-01-10"}}), "covenant_unrealized_after_test_date"],
     ["duplicate-measurement", () => {const i = packetInput(); i.analysis.measurements[1] = {...i.analysis.measurements[1]!, id: "dez26-base"}; return i;}, "Duplicate measurement"],
+    ["managerial-june-promoted-to-a-test", () => {const i = packetInput(); i.analysis.measurements = i.analysis.measurements.map((m) => m.id === "junho-gerencial" ? {...m, role: "test" as const, limitIds: ["aditamento"]} : m); return i;}, "covenant_test_off_the_test_date"],
+    ["superseded-limit-promoted-to-a-test", () => {const i = packetInput(); i.analysis.measurements = i.analysis.measurements.map((m) => m.id === "dez26-escritura-original" ? {...m, role: "test" as const} : m); return i;}, "covenant_superseded_limit_in_test"],
+    ["policy-dropped-from-every-test", () => {const i = packetInput(); i.analysis.measurements = i.analysis.measurements.map((m) => ({...m, limitIds: m.limitIds.filter((id) => id !== "politica")})); return i;}, "covenant_limit_in_force_not_tested"],
     ["figure-read-in-another-scenario", () => packetInput({}, (f) => {f.entries.find((x) => x.fieldPath.endsWith("measurement.dez27-adverso.cash"))!.dimensions.scenario = "base_2028";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

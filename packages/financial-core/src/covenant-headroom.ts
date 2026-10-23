@@ -3,7 +3,10 @@ import Decimal from "decimal.js";
 export const covenantHeadroomVersion = "2026.10.23-v1";
 const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
 
-export type CovenantLimit = {id: string; label: string; kind: "contractual" | "board_policy"; maximumRatio: string; source: string};
+/** A limit in force is tested on its own dates; a superseded limit (an indenture read without its amendment)
+ * may only be shown as a contrast. */
+export type CovenantLimit = {id: string; label: string; kind: "contractual" | "board_policy"; status: "in_force" | "superseded";
+  maximumRatio: string; source: string; testDates: readonly string[]};
 /** One test of net debt over EBITDA at one date, in one scenario, under one written definition. */
 export type CovenantMeasurement = {
   id: string; label: string; date: string; scenario: string;
@@ -50,6 +53,9 @@ export function measureCovenantHeadroom(input: CovenantHeadroomInput) {
   for (const l of input.limits) {
     if (!l.id.trim() || limits.has(l.id)) throw new Error("covenant_duplicate_limit");
     if (!["contractual", "board_policy"].includes(l.kind)) throw new Error("covenant_limit_kind");
+    if (!["in_force", "superseded"].includes(l.status)) throw new Error("covenant_limit_status");
+    if (l.testDates.length > 24 || (l.status === "in_force" && !l.testDates.length)) throw new Error("covenant_limit_test_dates");
+    l.testDates.forEach(date);
     text(l.label, "covenant_label_required"); text(l.source, "covenant_source_required");
     const max = amount(l.maximumRatio, false); if (!max.gt(0)) throw new Error("covenant_limit_not_positive");
     limits.set(l.id, {...l, max});
@@ -62,6 +68,9 @@ export function measureCovenantHeadroom(input: CovenantHeadroomInput) {
     if (m.adjustments.length > 16) throw new Error("covenant_adjustment_count");
     if (m.role === "test" && !m.limitIds.length) throw new Error("covenant_test_without_limit");
     if (new Set(m.limitIds).size !== m.limitIds.length || m.limitIds.some(id => !limits.has(id))) throw new Error("covenant_unknown_limit");
+    // A test is a test only of a limit in force, on a date the limit is tested; anything else is a contrast.
+    if (m.role === "test" && m.limitIds.some(id => limits.get(id)!.status !== "in_force")) throw new Error("covenant_superseded_limit_in_test");
+    if (m.role === "test" && m.limitIds.some(id => !limits.get(id)!.testDates.includes(m.date))) throw new Error("covenant_test_off_the_test_date");
     const debt = amount(m.debt, false), cash = amount(m.cash), reported = amount(m.reportedEbitda);
     const adjustments = m.adjustments.map(a => ({label: text(a.label, "covenant_label_required"), amount: amount(a.amount)}));
     const ebitda = adjustments.reduce((s, a) => s.plus(a.amount), reported), net = debt.minus(cash);
@@ -81,6 +90,7 @@ export function measureCovenantHeadroom(input: CovenantHeadroomInput) {
       reportedEbitda: out(reported), adjustments: adjustments.map(a => ({label: a.label, amount: out(a.amount)})), ebitda: out(ebitda),
       ratio: ratio === null ? null : out(ratio), unrealizedEbitda: unrealized === null ? null : out(unrealized), tests, tightestLimitId: tightest};
   });
+  for (const l of limits.values()) if (l.status === "in_force" && !input.measurements.some(m => m.role === "test" && m.limitIds.includes(l.id))) throw new Error("covenant_limit_in_force_not_tested");
   const effects = input.effects.map(e => {
     text(e.label, "covenant_label_required");
     const a = measurements.find(m => m.id === e.measurementId), b = measurements.find(m => m.id === e.withoutEffectMeasurementId);
@@ -94,7 +104,7 @@ export function measureCovenantHeadroom(input: CovenantHeadroomInput) {
   const worst = tested.flatMap(m => m.tests.map(t => ({measurementId: m.id, ...t})))
     .reduce<null | {measurementId: string; limitId: string; ebitdaHeadroom: string}>((w, t) => w === null || new Exact(t.ebitdaHeadroom).lt(w.ebitdaHeadroom) ? t : w, null);
   return {schemaVersion: "covenant-headroom.v1" as const, version: covenantHeadroomVersion, currency: input.currency, readingDate: input.readingDate,
-    limits: [...limits.values()].map(({max: _, ...l}) => l), measurements, effects,
+    limits: [...limits.values()].map(({max: _, testDates, ...l}) => ({...l, testDates: [...testDates]})), measurements, effects,
     worst: worst === null ? null : {measurementId: worst.measurementId, limitId: worst.limitId, ebitdaHeadroom: worst.ebitdaHeadroom},
     anyBreach: tested.some(m => m.tests.some(t => t.breached))};
 }

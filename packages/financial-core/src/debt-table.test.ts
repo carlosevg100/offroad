@@ -76,7 +76,7 @@ describe("debt table", () => {
   it("reads basket, cross-default and leverage by definition", () => {
     expect(t.negativePledgeBaskets).toEqual([{holderId: "debenture-1", basket: "15", occupied: "12", remaining: "3", exceeded: false, usedBy: ["ccb-bradesco"]}]);
     expect(t.crossDefault.lowestThreshold).toEqual({instrumentId: "ccb-bradesco", threshold: "5"});
-    expect(t.crossDefault.chain.map(c => [c.instrumentId, c.potentiallyTriggeredBy])).toEqual([["ccb-bradesco", ["debenture-1", "finame"]], ["debenture-1", ["ccb-bradesco", "finame"]]]);
+    expect(t.crossDefault.chain.map(c => [c.instrumentId, c.potentiallyTriggeredBy])).toEqual([["ccb-bradesco", ["debenture-1", "finame", "risco-sacado"]], ["debenture-1", ["ccb-bradesco", "finame"]]]);
     expect(t.categoryCoverage.map(c => c.status)).toEqual(["present", "present", "present"]);
     expect(n(t.leverage[0]!.ratio).toFixed(2)).toBe("2.02");
     expect(n(t.leverage[1]!.ratio).toFixed(2)).toBe("1.86");
@@ -102,7 +102,13 @@ describe("debt table", () => {
     scoped.instruments[0] = {...scoped.instruments[0]!, crossDefault: {...scoped.instruments[0]!.crossDefault!, scopeKind: "named_creditors", creditors: ["BNDES"]}};
     expect(buildDebtTable(scoped).crossDefault.chain.find(c => c.instrumentId === "debenture-1")!.potentiallyTriggeredBy).toEqual(["finame"]);
     const drawn = buildDebtTable({...auroraDebtTable, creditLines: [{id: "conta-garantida", label: "Conta garantida", creditor: "Itaú", limit: "10", drawn: "7"}]});
-    expect(drawn.crossDefault.chain.find(c => c.instrumentId === "ccb-bradesco")!.potentiallyTriggeredBy).toEqual(["debenture-1", "finame", "conta-garantida"]);
+    expect(drawn.crossDefault.chain.find(c => c.instrumentId === "ccb-bradesco")!.potentiallyTriggeredBy).toEqual(["debenture-1", "finame", "conta-garantida", "risco-sacado"]);
+    // Scoped to named creditors, supplier finance with no identified bank leaves the chain incomplete.
+    const unknownBank = structuredClone(auroraDebtTable) as typeof short;
+    unknownBank.instruments[1] = {...unknownBank.instruments[1]!, crossDefault: {...unknownBank.instruments[1]!.crossDefault!, scopeKind: "named_creditors", creditors: ["Itaú"]}};
+    const u = buildDebtTable(unknownBank);
+    expect(u.crossDefault.chain.find(c => c.instrumentId === "ccb-bradesco")).toMatchObject({potentiallyTriggeredBy: [], complete: false, unresolved: ["risco-sacado"]});
+    expect(u.gaps).toEqual([{item: "ccb-bradesco", reason: "cross_default_scope_unresolved"}]);
     const unexamined = buildDebtTable({...auroraDebtTable, otherObligations: auroraDebtTable.otherObligations.filter(o => o.kind !== "supplier_finance"),
       categoryCoverage: {lease: "examined", supplier_finance: "not_examined", guarantee_given: "examined"}});
     expect(unexamined.gaps).toEqual([{item: "supplier_finance", reason: "category_not_examined"}]);

@@ -16,9 +16,9 @@
     "exportName": "buildCovenantHeadroomRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:38:29.231Z",
-    "finishedAt": "2026-10-23T16:38:29.291Z",
-    "commit": "850a9c354d86a2545cf84e1136e36b2b21a892ad"
+    "startedAt": "2026-10-23T17:06:38.323Z",
+    "finishedAt": "2026-10-23T17:06:38.394Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,52 +26,52 @@
       "id": "fixture-1-repeat-1",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "fixture-1-repeat-2",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "fixture-1-repeat-3",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "faafb2640add59cb790788261fafff2d25f0effaa2b4800e19c50b7da21ff93e",
-      "outputFingerprint": "cbe58905e3875bc02a5bdaa4ac0a6425971013bb818708bb786602752a526a3d",
+      "inputFingerprint": "dc4d993a78e2b0eab37d1d0bec4207084bf93d24e8966a0015e03d31f7aafb4b",
+      "outputFingerprint": "7f6353962e3c4a9b28542e1ec4ac02a519923c33d9b895889172df6a5aa54d9f",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-1",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "8ce76d4476cb3a72a3bdda9a721b252a6b70017ea97e9197534722e4c8906ecb",
-      "outputFingerprint": "441a3e53d285aea07a17dd4bf2c78dd641a399f271da1ed074096caa9c9cdf28",
+      "inputFingerprint": "b6cef8d9e5bb3638128cddea47275147bb8d14aa47f7a5e1f429ca4659d2c274",
+      "outputFingerprint": "c56d50991eb0e4b76278494ec7cd77ddb22baae90e4a5beae315e4187441d7c1",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-2",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "8ce76d4476cb3a72a3bdda9a721b252a6b70017ea97e9197534722e4c8906ecb",
-      "outputFingerprint": "441a3e53d285aea07a17dd4bf2c78dd641a399f271da1ed074096caa9c9cdf28",
+      "inputFingerprint": "b6cef8d9e5bb3638128cddea47275147bb8d14aa47f7a5e1f429ca4659d2c274",
+      "outputFingerprint": "c56d50991eb0e4b76278494ec7cd77ddb22baae90e4a5beae315e4187441d7c1",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-3",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "8ce76d4476cb3a72a3bdda9a721b252a6b70017ea97e9197534722e4c8906ecb",
-      "outputFingerprint": "441a3e53d285aea07a17dd4bf2c78dd641a399f271da1ed074096caa9c9cdf28",
+      "inputFingerprint": "b6cef8d9e5bb3638128cddea47275147bb8d14aa47f7a5e1f429ca4659d2c274",
+      "outputFingerprint": "c56d50991eb0e4b76278494ec7cd77ddb22baae90e4a5beae315e4187441d7c1",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "64169f053c03a20aec2e49811ea553d54b823b8913524af0cc87bcfcfb901f49",
+  "evidenceFingerprint": "813b2b9b41052fd35ceeb10ba79461c31719ed0c8d661421f8186e62155749fb",
   "notes": "Synthetic deterministic execution calibrated on ficha C12. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

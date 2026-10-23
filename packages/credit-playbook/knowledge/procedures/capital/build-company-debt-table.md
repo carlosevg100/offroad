@@ -77,7 +77,7 @@ Pacote da tabela de dívida: linhas por operação com principal, saldo contábi
 - Concentração: maior credor sobre o principal total.
 - Custo nominal de cada operação = (1 + índice adotado) × (1 + spread) − 1; custo médio ponderado pelo principal; sem índice adotado, o custo médio fica como lacuna.
 - Cesta de garantia: soma das garantias que a usam contra o valor permitido.
-- Cross-default: cada cláusula declara o escopo (qualquer dívida financeira ou só a dívida com credores nomeados) e a base do limiar (valor em atraso ou saldo devedor). A cadeia é exposição potencial, sob a hipótese explícita de que todo o saldo de uma dívida do escopo esteja em atraso: entra na cadeia a dívida do escopo, inclusive linha sacada, cujo saldo excede o limiar. Não afirma inadimplemento atual.
+- Cross-default: cada cláusula declara o escopo (qualquer dívida financeira ou só a dívida com credores nomeados) e a base do limiar (valor em atraso ou saldo devedor). A cadeia é exposição potencial, sob a hipótese explícita de que todo o saldo de uma dívida do escopo esteja em atraso: entra na cadeia a dívida do escopo, inclusive linha sacada e fornecedores convênio, cujo saldo excede o limiar. Com escopo restrito a credores nomeados e dívida sem credor identificado, a cadeia fica incompleta e a lacuna é declarada. Não afirma inadimplemento atual.
 - Cobertura: arrendamentos, fornecedores convênio e fianças prestadas são declarados examinados ou não examinados; examinado sem item é ausência confirmada; não examinado vira lacuna e o pacote não fica pronto.
 - Alavancagem = (total da definição − caixa disponível) / (EBITDA da definição − o que ela desconta).
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
@@ -5343,6 +5343,21 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
                                             }
                                           },
                                           "potentiallyTriggeredBy": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          },
+                                          "complete": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "unresolved": {
                                             "required": true,
                                             "value": {
                                               "type": "array",

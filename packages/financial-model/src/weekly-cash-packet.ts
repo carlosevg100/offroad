@@ -26,7 +26,10 @@ export const weeklyCashPacketOutputSchema = z.strictObject({
   readings: z.strictObject({
     tightestWeek: z.strictObject({weekStart: z.iso.date(), closing: decimal, belowMinimum: z.boolean()}),
     weeksBelowMinimum: z.array(z.iso.date()).max(104), shortfallToMinimum: decimal,
-    causes: z.array(z.strictObject({label: text, amount: decimal})).max(3),
+    /** Dated obligations (debt service and legal payments) that fall in the weeks under the minimum, or in the
+     * tightest week when none is, by stream, largest first; recurring operating outflows stay in each week's largest. */
+    causes: z.array(z.strictObject({label: text, amount: decimal})).max(24),
+    obligationsNotExamined: z.array(key).max(6),
     closingHidesTheWeek: z.boolean(),
     /** The cheapest action whose case keeps every week at or above the minimum; null when none does. */
     cheapestCoveringAction: z.strictObject({id: key, cost: decimal, openAtCovenantTest: z.boolean().nullable()}).nullable(),
@@ -53,19 +56,25 @@ export function prepareWeeklyCashPacket(raw: unknown): WeeklyCashPacket {
   const readings = w ? (() => {
     const informed = w.cases.find((c) => c.role === "informed")!;
     const tight = informed.rows.find((r) => r.weekStart === informed.minimum.weekStart)!;
+    // Only a case with this action alone proves it covers.
     const covers = (caseIds: string[]) => caseIds.some((id) => w.cases.find((c) => c.id === id)!.weeksBelowMinimum.length === 0);
-    const byCost = w.actions.map((a) => ({id: a.id, cost: a.cost, covers: covers(a.cases)}));
-    const cheapest = w.actions.find((a) => covers(a.cases)) ?? null;
+    const byCost = w.actions.map((a) => ({id: a.id, cost: a.cost, covers: covers(a.isolatedCases)}));
+    const cheapest = w.actions.find((a) => covers(a.isolatedCases)) ?? null;
+    const pressed = informed.weeksBelowMinimum.length ? informed.rows.filter((r) => r.belowMinimum) : [tight];
+    const sums = new Map<string, Decimal>();
+    for (const r of pressed) for (const o of r.outflowsByStream) if (o.category === "debt" || o.category === "statutory") sums.set(o.label, (sums.get(o.label) ?? new Exact(0)).plus(o.amount));
+    const causes = [...sums.entries()].sort((a, b) => b[1].cmp(a[1]) || (a[0] < b[0] ? -1 : 1)).slice(0, 24).map(([label, v]) => ({label, amount: v.toFixed()}));
     const actionCases = new Set(w.actions.flatMap((a) => a.cases));
     return {tightestWeek: {weekStart: tight.weekStart, closing: tight.closing, belowMinimum: tight.belowMinimum},
-      weeksBelowMinimum: informed.weeksBelowMinimum, shortfallToMinimum: informed.shortfallToMinimum, causes: tight.largestOutflows,
+      weeksBelowMinimum: informed.weeksBelowMinimum, shortfallToMinimum: informed.shortfallToMinimum, causes,
+      obligationsNotExamined: w.coverage.filter((c) => c.status === "not_examined").map((c) => c.obligation),
       closingHidesTheWeek: informed.weeksBelowMinimum.length > 0 && new Exact(informed.closing).gte(w.minimumCash),
       cheapestCoveringAction: cheapest === null ? null : {id: cheapest.id, cost: cheapest.cost, openAtCovenantTest: cheapest.openAtCovenantTest},
       actionsByCost: byCost,
       sensitivities: w.cases.filter((c) => c.role === "alternative" && !actionCases.has(c.id))
         .map((c) => ({caseId: c.id, minimum: c.minimum.closing, weekStart: c.minimum.weekStart, weeksBelowMinimum: c.weeksBelowMinimum.length}))};
   })() : null;
-  const gaps = result.gaps;
+  const gaps = [...result.gaps, ...(w?.gaps ?? []).map((g) => ({operand: `weekly_cash.${input.analysis.analysisId}.coverage.${g.item}`, reason: g.reason}))];
   const status = !w ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "weekly-cash-packet.v1" as const, executorVersion: weeklyCashPacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, currency: result.currency,

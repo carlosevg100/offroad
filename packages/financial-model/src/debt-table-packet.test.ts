@@ -20,9 +20,9 @@ describe("debt table packet", () => {
     expect(calculateDebtTableEvidence(a).status).toBe("partial_composition");
     expect(fichaCalculationExecutorContracts().map((c) => c.name)).toContain("debt-table-evidence");
   });
-  it("does not divide by a zero or negative EBITDA", () => {
+  it.each(["54", "60"])("does not divide by a zero or negative EBITDA (deduction %s on 54)", (deduction) => {
     const f = auroraDebtTableBasis();
-    for (const e of f.entries) if (e.fieldPath.endsWith("leverage.escritura.ebitdaDeduction")) e.value = {type: "number", value: "54"};
+    for (const e of f.entries) if (e.fieldPath.endsWith("leverage.escritura.ebitdaDeduction")) e.value = {type: "number", value: deduction};
     const p = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question, analysis: f.seal()});
     expect(p.result.table!.leverage.find((l) => l.viewId === "escritura")!.ratio).toBeNull();
   });

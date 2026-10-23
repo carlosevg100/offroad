@@ -16,9 +16,9 @@
     "exportName": "buildDebtTableRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:51:12.492Z",
-    "finishedAt": "2026-10-23T16:51:12.584Z",
-    "commit": "a567bc37f37fd5b8a86b3600f40f8963517bd9db"
+    "startedAt": "2026-10-23T17:06:36.814Z",
+    "finishedAt": "2026-10-23T17:06:36.906Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
       "observed": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
       "observed": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
       "observed": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "[[\"fianca\",5]]",
       "observed": "[[\"fianca\",5]]",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
       "observed": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -67,7 +67,7 @@
       "expectation": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
       "observed": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -75,7 +75,7 @@
       "expectation": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
       "observed": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -83,15 +83,15 @@
       "expectation": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
       "observed": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
       "id": "cross-default-chain-from-the-lowest-threshold",
-      "expectation": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
-      "observed": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
+      "expectation": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\",\"risco-sacado\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
+      "observed": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,\"amount_in_default\",[\"debenture-1\",\"finame\",\"risco-sacado\"]],[\"debenture-1\",10,\"amount_in_default\",[\"ccb-bradesco\",\"finame\"]]]}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -99,7 +99,7 @@
       "expectation": "[\"finame\"]",
       "observed": "[\"finame\"]",
       "inputFingerprint": "645dea2cf38b7066849796010246b2e3b5b65dc1028f891c25af81ba6be629dc",
-      "outputFingerprint": "80d481530cc3604b62cf472847681bd8322de5b0f5b4b6ab481833a0462d90f4",
+      "outputFingerprint": "a8215b73a8e0b9e2cdef5fe83d47dd26cf63a4cee38b8fe73601ee4dd2be6524",
       "passed": true
     },
     {
@@ -107,7 +107,7 @@
       "expectation": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
       "observed": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "expectation": "{\"status\":\"unproven\",\"request\":true}",
       "observed": "{\"status\":\"unproven\",\"request\":true}",
       "inputFingerprint": "fef253b6e88689bd7479ada79271f8b0223c62f751c5e1cf938ecbbb4ac36fbb",
-      "outputFingerprint": "e1cbeb1934a993edc1965efd6f45d5b0b677ce891118f48166a26db6b326a2d8",
+      "outputFingerprint": "eadb79d3e3fbd9fc475565a72c0a757e0a2d9c402b9b572209357b96c58a7c3e",
       "passed": true
     },
     {
@@ -123,7 +123,7 @@
       "expectation": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
       "observed": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
       "inputFingerprint": "3c0c6efa4c05426ea61720f09450366fed84fbc7d661460a711fa65179d02bab",
-      "outputFingerprint": "91f44ca3a8dd8a1941f08aadecabf728756be08e3cf61f0afe264591d30cac0a",
+      "outputFingerprint": "1be28bf2e7cf04b3b33076f58abf4a99d516673cd686669f1452a96eb8aa9ab5",
       "passed": true
     },
     {
@@ -131,7 +131,7 @@
       "expectation": "{\"status\":\"partial\",\"matches\":false}",
       "observed": "{\"status\":\"partial\",\"matches\":false}",
       "inputFingerprint": "49dc7447d8d327f6526ea941b3f8ffa2717d4e26718fe237074c6bf40bbd3974",
-      "outputFingerprint": "d7c16ff22fe1f6f98aae8486f4d15bdf44de60534f4d2d7130cfe8ef2f67772f",
+      "outputFingerprint": "aeffcde412866a625a4ccbea9e7bd14efe4d486d692851870fba50e386395380",
       "passed": true
     },
     {
@@ -139,11 +139,11 @@
       "expectation": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
       "inputFingerprint": "4ad7f5816ddf441e48be40de4836fe431e6367ca933951ca0310d4960c1ef17e",
-      "outputFingerprint": "bbb7ff5571898ac8e312523e36f7428629f3644d01af39e19158c6950b2f5dae",
+      "outputFingerprint": "a4badf156fd58bee410c4fd474ce2426a4a85f438403ff9fd1e29a6904a5eeb0",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "3206c65221423f9be6778c4da09007fdcfa19fe8b37eeddb110fa35a739c8563",
+  "evidenceFingerprint": "7ad9ca67499a796c1b48975bcfdedbf0e8b3330e62d6a9cfb1d44f1bee0ea408",
   "notes": "Synthetic deterministic execution calibrated on ficha C10. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

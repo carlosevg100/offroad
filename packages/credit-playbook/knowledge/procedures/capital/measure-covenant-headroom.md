@@ -17,7 +17,7 @@ persistence_mode: derived_on_demand
 persistence_target: covenant-headroom-packet.v1
 unit_test_files: [packages/financial-model/src/covenant-headroom-packet.test.ts, packages/financial-model/src/covenant-headroom-runs.test.ts, packages/financial-core/src/covenant-headroom.test.ts]
 gold_case_ids: [december-by-the-indenture-definition, headroom-in-ebitda-and-net-debt-to-the-covenant, reverse-test-on-the-unrealized-second-half, board-policy-binds-first, adverse-case-in-december, a-larger-season-in-december, season-weighs-half-a-turn-at-the-test-date, december-2027-base-and-adverse, managerial-june-reading-is-a-contrast, original-indenture-limit-is-superseded, breach-is-not-automatic-and-the-chain-is-named, unwritten-policy-definition-is-a-question, turn-two-policy-on-managerial-ebitda, absent-cash-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, headline-is-a-contrast, measurement-names-unknown-limit, effect-across-dates, test-without-limit, unrealized-after-the-test-date, duplicate-measurement, figure-read-in-another-scenario]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, headline-is-a-contrast, measurement-names-unknown-limit, effect-across-dates, test-without-limit, unrealized-after-the-test-date, duplicate-measurement, managerial-june-promoted-to-a-test, superseded-limit-promoted-to-a-test, policy-dropped-from-every-test, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:december-by-the-indenture-definition]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -74,6 +74,8 @@ Pacote de covenant: para cada apuração (data e cenário) o índice pela defini
 - Teste reverso = folga em EBITDA / EBITDA ainda não realizado na data da leitura.
 - O limite que aperta primeiro é o de menor folga em EBITDA; o pior ponto é o de menor folga entre todas as apurações de teste.
 - Efeito na data = índice com o efeito − índice sem o efeito, na mesma data.
+- Enquadramento: cada limite é declarado em vigor ou superado, com as datas em que é testado. Apuração de teste só existe para limite em vigor e numa data de teste dele; limite superado (escritura sem aditamento) só aparece como contraste; todo limite em vigor é testado ao menos uma vez, de modo que a política não some da resposta.
+- A política aperta primeiro quando, na data da apuração principal, a menor folga da política é menor que a menor folga contratual, inclusive quando a política é medida numa apuração própria pela sua definição.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
 # Julgamentos permitidos
@@ -121,7 +123,7 @@ Pacote de covenant: para cada apuração (data e cenário) o índice pela defini
 ## Gold
 - december-by-the-indenture-definition, headroom-in-ebitda-and-net-debt-to-the-covenant, reverse-test-on-the-unrealized-second-half, board-policy-binds-first, adverse-case-in-december, a-larger-season-in-december, season-weighs-half-a-turn-at-the-test-date, december-2027-base-and-adverse, managerial-june-reading-is-a-contrast, original-indenture-limit-is-superseded, breach-is-not-automatic-and-the-chain-is-named, unwritten-policy-definition-is-a-question, turn-two-policy-on-managerial-ebitda, absent-cash-is-a-gap-not-a-default.
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, apuração principal que é contraste, limite inexistente, efeito entre datas diferentes, teste sem limite, EBITDA não realizado depois da data, apuração duplicada e número lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, apuração principal que é contraste, limite inexistente, efeito entre datas diferentes, teste sem limite, EBITDA não realizado depois da data, apuração duplicada, leitura gerencial de junho promovida a teste, limite superado promovido a teste, política retirada de todos os testes e número lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C12 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -519,6 +521,112 @@ Quando a apuração cai no pico do giro, a linha sazonal em aberto pesa no índi
                             }
                           },
                           "kind": {
+                            "required": true,
+                            "value": {
+                              "type": "object",
+                              "fields": {
+                                "decisionId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "definitionVersionId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "definitionKind": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "reported",
+                                      "managerial",
+                                      "contractual"
+                                    ]
+                                  }
+                                },
+                                "missingReason": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "status": {
+                            "required": true,
+                            "value": {
+                              "type": "object",
+                              "fields": {
+                                "decisionId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "definitionVersionId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "definitionKind": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "reported",
+                                      "managerial",
+                                      "contractual"
+                                    ]
+                                  }
+                                },
+                                "missingReason": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "testDates": {
                             "required": true,
                             "value": {
                               "type": "object",
@@ -3204,6 +3312,16 @@ Quando a apuração cai no pico do giro, a linha sazonal em aberto pesa no índi
                                         ]
                                       }
                                     },
+                                    "status": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "in_force",
+                                          "superseded"
+                                        ]
+                                      }
+                                    },
                                     "maximumRatio": {
                                       "required": true,
                                       "value": {
@@ -3214,6 +3332,15 @@ Quando a apuração cai no pico do giro, a linha sazonal em aberto pesa no índi
                                       "required": true,
                                       "value": {
                                         "type": "string"
+                                      }
+                                    },
+                                    "testDates": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "date"
+                                        }
                                       }
                                     }
                                   }

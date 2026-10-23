@@ -10,9 +10,9 @@ const m = (id: string, date: string, scenario: string, cash: string, reported: s
 export const auroraCovenants: CovenantHeadroomInput = {
   currency: "BRL", readingDate: "2026-09-15",
   limits: [
-    {id: "aditamento", label: "Dívida líquida / EBITDA até 3,0x (1º aditamento)", kind: "contractual", maximumRatio: "3", source: "1º aditamento cl. 2"},
-    {id: "politica", label: "Política do conselho: até 2,5x", kind: "board_policy", maximumRatio: "2.5", source: "Ata do conselho de março"},
-    {id: "original", label: "Escritura original sem o aditamento: 2,75x (superada)", kind: "contractual", maximumRatio: "2.75", source: "Escritura cl. 7.1"},
+    {id: "aditamento", label: "Dívida líquida / EBITDA até 3,0x (1º aditamento)", kind: "contractual", status: "in_force", maximumRatio: "3", source: "1º aditamento cl. 3", testDates: ["2026-12-31", "2027-12-31"]},
+    {id: "politica", label: "Política do conselho: até 2,5x", kind: "board_policy", status: "in_force", maximumRatio: "2.5", source: "Ata do conselho de março", testDates: ["2026-12-31", "2027-12-31"]},
+    {id: "original", label: "Escritura original sem o aditamento: 2,75x (superada)", kind: "contractual", status: "superseded", maximumRatio: "2.75", source: "Escritura cl. 7.1", testDates: []},
   ],
   measurements: [
     m("dez26-base", "2026-12-31", "base", "15.457201858477745", "54.5", {unrealizedEbitda: "26"}),
@@ -59,6 +59,10 @@ describe("covenant headroom", () => {
     expect(() => measureCovenantHeadroom({...auroraCovenants, measurements: [{...auroraCovenants.measurements[0]!, limitIds: ["inexistente"]}]})).toThrow("covenant_unknown_limit");
     expect(() => measureCovenantHeadroom({...auroraCovenants, measurements: [{...auroraCovenants.measurements[0]!, limitIds: []}]})).toThrow("covenant_test_without_limit");
     expect(() => measureCovenantHeadroom({...auroraCovenants, readingDate: "2027-01-10"})).toThrow("covenant_unrealized_after_test_date");
+    const swap = (id: string, patch: object) => ({...auroraCovenants, measurements: auroraCovenants.measurements.map(x => x.id === id ? {...x, ...patch} : x)});
+    expect(() => measureCovenantHeadroom(swap("junho-gerencial", {role: "test", limitIds: ["aditamento"]}))).toThrow("covenant_test_off_the_test_date");
+    expect(() => measureCovenantHeadroom(swap("dez26-escritura-original", {role: "test"}))).toThrow("covenant_superseded_limit_in_test");
+    expect(() => measureCovenantHeadroom({...auroraCovenants, measurements: auroraCovenants.measurements.map(x => ({...x, limitIds: x.limitIds.filter(id => id !== "politica")}))})).toThrow("covenant_limit_in_force_not_tested");
     expect(() => measureCovenantHeadroom({...auroraCovenants, limits: [{...auroraCovenants.limits[0]!, maximumRatio: "0"}, ...auroraCovenants.limits.slice(1)]})).toThrow("covenant_limit_not_positive");
     const zero = measureCovenantHeadroom({...auroraCovenants, measurements: [{...auroraCovenants.measurements[0]!, reportedEbitda: "3"}], effects: []});
     expect(zero.measurements[0]!.ratio).toBeNull();

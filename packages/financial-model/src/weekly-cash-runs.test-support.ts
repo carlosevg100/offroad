@@ -20,9 +20,9 @@ export const weeklyCashRunIds = {
 } as const;
 const question = "Como fica o caixa até dezembro e o que vence?";
 type Basis = ReturnType<typeof auroraWeeklyCashBasis>;
-const packetInput = (edit: (f: Basis) => void = () => undefined): WeeklyCashPacketInput => {
+const packetInput = (edit: (f: Basis) => void = () => undefined, after: (i: WeeklyCashPacketInput) => void = () => undefined): WeeklyCashPacketInput => {
   const f = auroraWeeklyCashBasis(); edit(f);
-  return {schemaVersion: "weekly-cash-packet-input.v1", question, analysis: f.seal()} as WeeklyCashPacketInput;
+  const i = {schemaVersion: "weekly-cash-packet-input.v1", question, analysis: f.seal()} as WeeklyCashPacketInput; after(i); return i;
 };
 function observe(id: string, input: WeeklyCashPacketInput, expected: unknown, select: (p: Packet) => unknown): Case {
   const result = prepareWeeklyCashPacket(input), observed = JSON.stringify(select(result)), expectation = JSON.stringify(expected);
@@ -41,8 +41,9 @@ function goldCases(): Case[] {
     reuse("tightest-week-is-the-week-of-21-december", {week: "2026-12-21", closing: 7.5, withinTolerance: true},
       (p) => ({week: p.readings!.tightestWeek.weekStart, closing: r(p.readings!.tightestWeek.closing), withinTolerance: new D(p.readings!.tightestWeek.closing).minus("7.5").abs().lte(2)})),
     reuse("two-weeks-under-the-minimum", ["2026-12-14", "2026-12-21"], (p) => p.readings!.weeksBelowMinimum),
-    reuse("causes-named-in-the-week-of-14-december", ["Debênture 2021, amortização", "Fornecedores de insumos", "Debênture 2021, juros semestrais"],
-      (p) => at(p, "linha-17").rows.find((x) => x.weekStart === "2026-12-14")!.largestOutflows.map((o) => o.label)),
+    reuse("causes-named-across-the-weeks-under-the-minimum", [["Debênture 2021, amortização", 15], ["Debênture 2021, juros semestrais", 5.1], ["Impostos sobre vendas (saldo a pagar)", 2.4],
+      ["13º salário, 2ª parcela e encargos", 2.1], ["CCB Bradesco, juros trimestrais", 1.7], ["Finame (principal e juros)", 0.8], ["INSS", 0.5]],
+      (p) => p.readings!.causes.map((c) => [c.label, r(c.amount)])),
     reuse("december-closing-reconciles-with-the-projection", {weekly: 16.1, projection: 16, near: true},
       (p) => ({weekly: r(p.result.weekly!.reconciliation!.weekly), projection: r(p.result.weekly!.reconciliation!.projection), near: new D(p.result.weekly!.reconciliation!.difference).abs().lt("0.5")})),
     reuse("closing-hides-the-week", true, (p) => p.readings!.closingHidesTheWeek),
@@ -52,6 +53,11 @@ function goldCases(): Case[] {
         thirteenth: p.result.weekly!.calendar.filter((x) => x.label.startsWith("13º")).map((x) => [x.date, r(x.amount)])})),
     reuse("actions-costed-for-the-time-in-use", [["conta-garantida", 0.12], ["antecipacao", 0.25], ["linha-25", 0.87]],
       (p) => p.readings!.actionsByCost.map((a) => [a.id, r(a.cost, 2)])),
+    observe("two-actions-in-one-case-prove-neither-covers-alone", packetInput((f) => undefined, (i) => {
+      i.analysis.cases = [...i.analysis.cases.filter((c) => c.id !== "conta-garantida" && c.id !== "antecipacao"),
+        {id: "ambas", label: "Saque e antecipação", role: "alternative", streamIds: [...i.analysis.cases[0]!.streamIds, "conta-garantida", "antecipacao"]}];
+    }), {cheapest: "linha-25", covers: [["conta-garantida", false], ["antecipacao", false], ["linha-25", true]]},
+      (p) => ({cheapest: p.readings!.cheapestCoveringAction!.id, covers: p.readings!.actionsByCost.map((a) => [a.id, a.covers])})),
     reuse("cheapest-covering-action-is-the-existing-overdraft", {id: "conta-garantida", worst: 15.5}, (p) => ({id: p.readings!.cheapestCoveringAction!.id, worst: r(at(p, "conta-garantida").minimum.closing)})),
     reuse("overdraft-open-at-the-covenant-test-nets-to-zero", {open: true, effect: {grossDebt: "8", cash: "8", netDebt: "0"}},
       (p) => ({open: p.readings!.cheapestCoveringAction!.openAtCovenantTest, effect: p.result.weekly!.actions[0]!.covenantEffect})),
@@ -78,6 +84,10 @@ function adversarialCases(): Case[] {
     ["event-outside-the-horizon", () => packetInput((f) => {const e = f.entries.find((x) => x.fieldPath.endsWith("stream.ccb-juros.dates"))!; e.value = {type: "list", value: ["2026-09-15", "2027-03-15"]};}), "weekly_cash_event_outside_horizon"],
     ["dates-and-amounts-of-different-length", () => packetInput((f) => {const e = f.entries.find((x) => x.fieldPath.endsWith("stream.ccb-juros.amounts"))!; e.value = {type: "list", value: ["1.7"]};}), "weekly_cash_stream_series"],
     ["action-on-an-operating-stream", () => {const i = packetInput(); i.analysis.actions[0] = {...i.analysis.actions[0]!, streamId: "folha"}; return i;}, "weekly_cash_action_stream"],
+    ["action-with-two-draws", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("stream.conta-garantida.dates"))!.value = {type: "list", value: ["2026-12-14", "2026-12-21"]};
+      f.entries.find((x) => x.fieldPath.endsWith("stream.conta-garantida.amounts"))!.value = {type: "list", value: ["4", "4"]};}), "weekly_cash_action_single_draw"],
+    ["action-days-off-its-dates", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("action.conta-garantida.days"))!.value = {type: "number", value: "30"};}), "weekly_cash_action_days_mismatch"],
+    ["obligation-declared-without-its-stream", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("coverage.thirteenth_salary"))!.value = {type: "text", value: "not_applicable"};}), "weekly_cash_obligation_stream_without_declaration"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("stream.folha.amounts"))!.dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

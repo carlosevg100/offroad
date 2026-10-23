@@ -16,9 +16,9 @@
     "exportName": "buildDebtTableRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T16:51:12.492Z",
-    "finishedAt": "2026-10-23T16:51:12.584Z",
-    "commit": "a567bc37f37fd5b8a86b3600f40f8963517bd9db"
+    "startedAt": "2026-10-23T17:06:36.814Z",
+    "finishedAt": "2026-10-23T17:06:36.906Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
   },
   "modelCalls": 0,
   "cases": [

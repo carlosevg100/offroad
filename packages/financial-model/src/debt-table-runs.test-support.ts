@@ -59,7 +59,7 @@ function goldCases(): Case[] {
       (p) => ({average: r(new D(p.result.table!.profile.averageNominalCost!).mul(100).toFixed(), 2), rows: p.result.table!.rows.map((x) => r(new D(x.nominalRate!).mul(100).toFixed(), 2))})),
     reuse("basket-occupied-by-the-bradesco-security", {holder: "debenture-1", basket: 15, occupied: 12, remaining: 3},
       (p) => {const b = p.result.table!.negativePledgeBaskets[0]!; return {holder: b.holderId, basket: r(b.basket), occupied: r(b.occupied), remaining: r(b.remaining)};}),
-    reuse("cross-default-chain-from-the-lowest-threshold", {lowest: ["ccb-bradesco", 5], chain: [["ccb-bradesco", 5, "amount_in_default", ["debenture-1", "finame"]], ["debenture-1", 10, "amount_in_default", ["ccb-bradesco", "finame"]]]},
+    reuse("cross-default-chain-from-the-lowest-threshold", {lowest: ["ccb-bradesco", 5], chain: [["ccb-bradesco", 5, "amount_in_default", ["debenture-1", "finame", "risco-sacado"]], ["debenture-1", 10, "amount_in_default", ["ccb-bradesco", "finame"]]]},
       (p) => ({lowest: [p.result.table!.crossDefault.lowestThreshold!.instrumentId, r(p.result.table!.crossDefault.lowestThreshold!.threshold)],
         chain: p.result.table!.crossDefault.chain.map((c) => [c.instrumentId, r(c.threshold), c.thresholdBasis, c.potentiallyTriggeredBy])})),
     observe("cross-default-scoped-to-named-creditors", packetInput(() => undefined, {debentureCrossDefaultCreditors: ["BNDES"]}),

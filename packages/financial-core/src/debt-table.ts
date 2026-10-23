@@ -194,15 +194,20 @@ export function buildDebtTable(input: DebtTableInput) {
   // Potential exposure, not a default: each other debt in the clause's scope is read under the explicit
   // hypothesis that its whole outstanding amount (principal of an instrument, drawn amount of a line) is
   // the amount the clause measures. Drawn credit lines are debt and count.
-  const exposures = [...rows.map(o => ({id: o.i.id, creditor: o.i.creditor, outstanding: o.principal})),
-    ...lines.filter(l => l.drawnValue.gt(0)).map(l => ({id: l.id, creditor: l.creditor, outstanding: l.drawnValue}))];
+  // Supplier finance is financial debt to the bank that pays the supplier; its bank may be unidentified.
+  const exposures: {id: string; creditor: string | null; outstanding: Decimal}[] = [...rows.map(o => ({id: o.i.id, creditor: o.i.creditor, outstanding: o.principal})),
+    ...lines.filter(l => l.drawnValue.gt(0)).map(l => ({id: l.id, creditor: l.creditor, outstanding: l.drawnValue})),
+    ...obligations.filter(o => o.kind === "supplier_finance").map(o => ({id: o.id, creditor: o.creditor, outstanding: o.value}))];
   const crossDefault = rows.filter(r => r.i.crossDefault?.threshold != null).map(r => {
     const c = r.i.crossDefault!, threshold = amount(c.threshold!);
-    const inScope = exposures.filter(o => o.id !== r.i.id && (c.scopeKind === "any_financial_debt" || c.creditors.includes(o.creditor)));
+    const inScope = exposures.filter(o => o.id !== r.i.id && (c.scopeKind === "any_financial_debt" || (o.creditor !== null && c.creditors.includes(o.creditor))));
+    // A clause scoped to named creditors cannot be read against debt whose creditor is not identified.
+    const unresolved = c.scopeKind === "named_creditors" ? exposures.filter(o => o.creditor === null && o.outstanding.gt(threshold)).map(o => o.id) : [];
+    if (unresolved.length) gaps.push({item: r.i.id, reason: "cross_default_scope_unresolved"});
     return {instrumentId: r.i.id, threshold: out(threshold), acceleration: c.acceleration, scope: c.scope, scopeKind: c.scopeKind, thresholdBasis: c.thresholdBasis,
       hypothesis: "whole_outstanding_in_default" as const,
       /** Debt in scope whose whole outstanding amount, if in default, would exceed the threshold. */
-      potentiallyTriggeredBy: inScope.filter(o => o.outstanding.gt(threshold)).map(o => o.id)};
+      potentiallyTriggeredBy: inScope.filter(o => o.outstanding.gt(threshold)).map(o => o.id), complete: !unresolved.length, unresolved};
   }).sort((a, b) => new Money(a.threshold).cmp(b.threshold) || (a.instrumentId < b.instrumentId ? -1 : 1));
 
   const leverage = input.leverage.map(l => {
