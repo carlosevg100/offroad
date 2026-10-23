@@ -350315,7 +350315,7 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261022232059_market_m2_calendar_json_evidence.sql",
+      "path": "supabase/migrations/20261023022616_market_m2_calendar_json_evidence.sql",
       "decision": "preservar",
       "stage": "base de mercado M2 parte 4, atos de produção",
       "reason": "M2 parte 4: a evidência do calendário do Copom admite o JSON do normativo do Banco Central, único meio em que o Comunicado nº 43.383 é publicado."

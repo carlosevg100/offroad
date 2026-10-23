@@ -85,7 +85,7 @@ fonte; não governam o frescor do RG-01, que segue a decisão 5 (reuniões e pra
 Calendário de 2026: Comunicado BCB nº 43.383, de 24/06/2025, que o site só publica pela API de normativos
 (a página é um aplicativo sem o texto e não há PDF). Bytes da resposta como recebidos, `application/json`,
 SHA-256 `13a3738730bacd2938c3761d788733e6c281298242fd6f17a2813997cb0064c5`, cópia privada em
-`outputs/market-reference/parte-4/`. A migração `20261022232059_market_m2_calendar_json_evidence` admite
+`outputs/market-reference/parte-4/`. A migração `20261023022616_market_m2_calendar_json_evidence` admite
 `application/json` na evidência do calendário (antes só HTML e PDF), com teste no `market_rg01_monitor.sql`.
 Reuniões: 27–28/01, 17–18/03, 28–29/04, 16–17/06, 04–05/08, 15–16/09, 03–04/11, 08–09/12.
 
