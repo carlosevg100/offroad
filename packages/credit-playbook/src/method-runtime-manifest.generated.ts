@@ -22820,11 +22820,11 @@ export const procedureBuildProvenance = [
     "procedure": {
       "id": "build-company-debt-table",
       "version": "2026.10.23-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/build-company-debt-table.md",
-      "hash": "69f81cd9e5d84debc503e5e425c808c8882ead5b5f19019ff18b203d4e9438e1"
+      "hash": "31c1c209ced85ae4ee981495d7bc52f6ac96f2e3edc2ca2b6645c587a5da6677"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -28478,7 +28478,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/build-company-debt-table-2026-10-23-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/build-company-debt-table-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -28489,7 +28491,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.23-v1"
           }
         },
-        "componentHash": "e38e7eb9d8bd120fa0816a9ecd7515980c85612b3b74aae73e3a15aaa9fbaa67",
+        "componentHash": "6affd9ba85dd729e04c6b21147dae0b27b835a20761c680f7319eb22e4b0dbf1",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareDebtTablePacket",
@@ -29958,11 +29960,19 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-consistency/run.json",
             "hash": "4e332d22119c45832c8db6fd725a344bd6bd29f6826c64a002b2ddaa22da0c6e"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/build-company-debt-table-2026-10-23-v1-independent-review.json",
+            "hash": "24fa6384c9be3a18d99c0716eafc4f239497e6ee0c5202186ff7ccb5bee24a33"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/build-company-debt-table-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "12a2ab3734006285b2ac6c07321facebd8975f782493f955346018c6780a3cbc"
           }
         ]
       }
     ],
-    "manifestHash": "19500654b06fe5487f1620f6cba931d048d0bc3dd1182cfe0d2f6ad48f414f7b"
+    "manifestHash": "e0336dfa2588b13984fa637ddacdbfd64971d901d9c85c88448566adc2d51cef"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -39111,11 +39121,11 @@ export const procedureBuildProvenance = [
     "procedure": {
       "id": "measure-covenant-headroom",
       "version": "2026.10.23-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/measure-covenant-headroom.md",
-      "hash": "f867efb52a05882580a48a659ba2a9830170d1cf874b29c668142973d82b1630"
+      "hash": "c3090cf23129a085b3bab158212ec75fa5f1722320f1fbe3eac05adb7790b8c4"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -43038,7 +43048,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/measure-covenant-headroom-2026-10-23-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/measure-covenant-headroom-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -43049,7 +43061,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.23-v1"
           }
         },
-        "componentHash": "af7d79997d83086380968f8f5fe462c36ed62f44e2cd39d755ed82268180d712",
+        "componentHash": "31f61e146b3d2b5e85a02351414b63ec6e4337df09872c9763664225417957c9",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareCovenantHeadroomPacket",
@@ -44514,11 +44526,19 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-consistency/run.json",
             "hash": "8ade47799c27aabeb890dec5dea1bc068f6db80c2dc31bad08814f39ce516959"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/measure-covenant-headroom-2026-10-23-v1-independent-review.json",
+            "hash": "c24560c46adfaad2ff583ae044b845176700483245033f982529cddb106f146e"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/measure-covenant-headroom-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "ea2af9b869024cd2d5aa74be89bfbf72f85b282fa24047d4131d69d33a4f326b"
           }
         ]
       }
     ],
-    "manifestHash": "3b8a8ad52c603ce34492873983dd10730279a9394fb0308202c666f039dfceb7"
+    "manifestHash": "995aeb67e886876f6d5a82d8413b8b9376661965f4085f3045057e6cef48dcb2"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -68450,11 +68470,11 @@ export const procedureBuildProvenance = [
     "procedure": {
       "id": "project-weekly-cash",
       "version": "2026.10.23-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/project-weekly-cash.md",
-      "hash": "61dacc6122d5bac7afec67d2203b7e4c422fb19945cc08b3003a9bd52e99f8b9"
+      "hash": "9a15d2839661d38fdb4e827c8b818c1f2da1271e42c4b4319216d44c7032a59e"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -72895,7 +72915,9 @@ export const procedureBuildProvenance = [
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/project-weekly-cash-2026-10-23-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/project-weekly-cash-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -72906,7 +72928,7 @@ export const procedureBuildProvenance = [
             "version": "2026.10.23-v1"
           }
         },
-        "componentHash": "4ed25c759e83d60310d43b15ba4bce2f9bcba1ee54dd2ff87922b01e7aa9a6fc",
+        "componentHash": "8df462f03a64180560f9ef2e90f9588a47b2148684740c18c2cd44e60b7099c8",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareWeeklyCashPacket",
@@ -74371,11 +74393,19 @@ export const procedureBuildProvenance = [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-consistency/run.json",
             "hash": "a07619b9d8fdbb718723a26ddea53335ba9e6659240354d5d832d530bf3852f0"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/project-weekly-cash-2026-10-23-v1-independent-review.json",
+            "hash": "9db55acb1aa744c0583458f85669fb3909f287e2b1f555ce2d39139da4a7e1ec"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/project-weekly-cash-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "e098b74321e4393e48891af6b35cb8167e03f05328b37d8ebcfda651de0614a6"
           }
         ]
       }
     ],
-    "manifestHash": "d967b0fc6035bb8b42e89d76a96a6b363e64edf631a8db0c29e7cce416eb986b"
+    "manifestHash": "fef4c990754e39c7228fd52856ce4098ae3ff71511e9ced4bb90eb5086037fdc"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

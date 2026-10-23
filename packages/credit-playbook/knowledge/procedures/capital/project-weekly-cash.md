@@ -1,7 +1,7 @@
 ---
 id: project-weekly-cash
 version: 2026.10.23-v1
-maturity: implemented
+maturity: tested
 title_pt: Projetar o caixa semanal e o que vence
 title_en: Project Weekly Cash
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [project-weekly-cash-2026-10-23-v1-consistency]
 adversarial_run_ids: [project-weekly-cash-2026-10-23-v1-adversarial]
-review_ids: []
+review_ids: [project-weekly-cash-2026-10-23-v1-independent-review]
 gold_run_ids: [project-weekly-cash-2026-10-23-v1-gold]
 ---
 
@@ -4603,7 +4603,9 @@ Saque em aberto na data de apuração soma dívida e caixa no mesmo valor; a dí
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/project-weekly-cash-2026-10-23-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/project-weekly-cash-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

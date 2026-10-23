@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "measure-covenant-headroom-2026-10-23-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "não informado pelo ambiente",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "measure-covenant-headroom",
+    "version": "2026.10.23-v1",
+    "fingerprint": "ea2af9b869024cd2d5aa74be89bfbf72f85b282fa24047d4131d69d33a4f326b"
+  },
+  "run": {
+    "id": "c12-r2-170844",
+    "startedAt": "2026-10-23T17:08:44Z",
+    "finishedAt": "2026-10-23T17:13:45Z",
+    "commit": "ddc3671c20db40d9ad299c0aa1813c5b86bfb60e"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os oito arquivos fixados coincidem com seus SHA-256 no commit solicitado e na árvore de trabalho. Os três arquivos externos também conferem. O SHA-256 do arquivo de base corresponde ao fingerprint informado.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/measure-covenant-headroom-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "Verificação repetida ao final. O commit histórico declarado dentro da base é 3d6d4e4f; os mesmos bytes foram confirmados em ddc3671c. Os ensaios independentes carregaram os módulos TypeScript diretamente do commit, em memória."
+    },
+    {
+      "claim": "Revisitados o procedimento, pacote, leitor adotado, vinculação contextual, normalização monetária e contrato de saída. Relidos a primeira revisão e os turnos 1 e 2, números, gabarito e critérios de reprovação da referência profissional.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/measure-covenant-headroom.md; packages/financial-model/src/adopted-covenant-headroom.ts; packages/financial-core/src/covenant-headroom.ts",
+      "anchor": "Procedimento: Objetivo–Fundamentação profissional e composição tipada; C12/corpo.html",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As quatro famílias de cenários do oráculo reproduziram integralmente resultados.json. Nas 50 comparações entre os componentes, índices e folgas disponíveis na base adotada e o oráculo, a maior diferença foi 4,158126e-9.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C12/modelo_c12.py; C12/resultados.json; C32/modelo_aurora_c32.py",
+      "anchor": "medir(): base, adverso_15, safra_30 e sem_safra_na_data",
+      "result": "confirmed",
+      "note": "Diferenças compatíveis com os operandos adotados arredondados a oito casas. O oráculo foi importado e chamado sem executar os blocos que escrevem arquivos."
+    },
+    {
+      "claim": "Dez/26: dívida líquida 113,20946481; EBITDA 54,5 − 3 = 51,5; índice 2,1982420351x. Folgas até 3,0x: 13,76351173 em EBITDA e 41,29053519 em dívida líquida. Até 2,5x: 6,216214076 em EBITDA e 15,54053519 em dívida líquida.",
+      "source": "packages/financial-model/src/covenant-headroom.test-support.ts; packages/financial-core/src/covenant-headroom.ts",
+      "anchor": "dez26-base",
+      "result": "confirmed",
+      "note": "Valores monetários da calibração em R$ milhões."
+    },
+    {
+      "claim": "O teste reverso sobre 26 de EBITDA não realizado resulta em 52,9365835769% até o contrato e 23,9085156769% até a política, reproduzindo 52,9% e 23,9%.",
+      "source": "packages/financial-core/src/covenant-headroom.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C12/resultados.json",
+      "anchor": "unrealizedEbitdaLossToLimit; reverso_dez26",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Confirmados: adverso dez/26 2,319746x; safra de 30: 2,295329x e folga de 4,216214 à política; efeito sazonal 0,485437x; dez/27 base 1,853011x e adverso 2,370727x. No turno inicial, o pior ponto é dez/27 adverso, política, com folga de 2,332598.",
+      "source": "packages/financial-model/src/covenant-headroom.test-support.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C12/resultados.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Contrastes: junho gerencial 1,727273x; escritura original de 2,75x com folga de 10,332922. No turno 2, EBITDA gerencial de 55,5 produz índice de 2,039810x e folga de 10,216214076 à política, mantendo a medição contratual separada.",
+      "source": "packages/financial-model/src/covenant-headroom.test-support.ts; packages/financial-model/src/covenant-headroom-runs.test-support.ts",
+      "anchor": "junho-gerencial; dez26-escritura-original; dez26-politica-gerencial",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A comparação policyBindsFirst foi corrigida: considera a menor folga de cada categoria entre todas as apurações de teste da data principal. O turno 2 retorna true. Ensaios próprios confirmaram comparação estrita, exclusão de contrastes e outras datas e seleção do mínimo entre múltiplos testes.",
+      "source": "packages/financial-model/src/covenant-headroom-packet.ts",
+      "anchor": "Linhas 64–70",
+      "result": "confirmed",
+      "note": "Na base completa do turno 2, a menor folga contratual da data é 11,20151173, no adverso; 13,76351173 é a folga contratual principal. A política, 10,216214076, é inferior a ambas. Quando outro teste contratual foi reduzido a 5, o indicador retornou false; igualdade entre mínimos também retornou false."
+    },
+    {
+      "claim": "Vigência e datas são contribuições adotadas. Testes recusam limites superados e datas fora do calendário do limite; todo limite em vigor precisa aparecer em ao menos um teste. Os três contraexemplos da primeira revisão foram recusados e constam na corrida adversarial.",
+      "source": "packages/financial-model/src/adopted-covenant-headroom.ts; packages/financial-core/src/covenant-headroom.ts; packages/financial-model/src/covenant-headroom-runs.test-support.ts",
+      "anchor": "covenant_superseded_limit_in_test; covenant_test_off_the_test_date; covenant_limit_in_force_not_tested",
+      "result": "confirmed",
+      "note": "Reproduzidos independentemente: junho gerencial promovido a teste principal, escritura superada promovida a teste principal e política removida de todas as apurações."
+    },
+    {
+      "claim": "As âncoras documentais foram corrigidas: limite de 3,0x no primeiro aditamento, cláusula 3; assembleia e vencimento não automático na escritura, cláusula 7.2. A cadeia de cross-default do Bradesco e seu limiar de R$ 5 milhões permanecem explicitados.",
+      "source": "packages/financial-model/src/covenant-headroom.test-support.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C12/corpo.html",
+      "anchor": "Limite aditamento; consequence.process; consequence.crossDefault",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O recálculo independente com Python Decimal passou em 200 entradas geradas: 1.000 apurações, 3.000 testes por limite e 9.884 comparações decimais. Confirmados índice, ajustes, folgas, reverso, menor folga, pior ponto, rompimento e efeitos.",
+      "source": "packages/financial-core/src/covenant-headroom.ts",
+      "anchor": "Ensaios em memória; semente 23102026; precisão independente de 90 dígitos",
+      "result": "confirmed",
+      "note": "Casos explícitos adicionais: igualdade ao limite sem rompimento; EBITDA zero ou negativo com índice nulo e rompimento; contraste rompido excluído de worst/anyBreach; denominador reverso não positivo com resultado nulo; restrição temporal do reverso; calendário inválido recusado; dívida líquida negativa preservada."
+    },
+    {
+      "claim": "Passaram as três suítes solicitadas: dez testes. Reproduzidos integralmente os 14 casos gold, 13 adversariais e seis de consistência, incluindo os casos e fingerprints registrados.",
+      "source": "packages/financial-model/src/covenant-headroom-packet.test.ts; packages/financial-model/src/covenant-headroom-runs.test.ts; packages/financial-core/src/covenant-headroom.test.ts",
+      "result": "confirmed",
+      "note": "Vitest executado com --pool=threads --no-cache. As corridas também foram reexecutadas com módulos carregados do commit; todos os casos passaram e coincidiram com os registros."
+    },
+    {
+      "claim": "Ensaios próprios recusaram troca de entidade, moeda e definição, reutilização de contribuição monetária, calendário obrigatório vazio, status inválido e status livre no lugar de seleção adotada. Caixa ausente produziu framed; definição ausente da política manteve o cálculo e produziu partial com pergunta aberta.",
+      "source": "packages/financial-model/src/adopted-analysis-binding.ts; packages/financial-model/src/adopted-covenant-headroom.ts; packages/financial-model/src/covenant-headroom-packet.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O procedimento expressa a resposta profissional: contrato vigente, apuração pela definição escrita, folga em reais e no período restante, política, sazonalidade, contraste gerencial, consequência não automática, cadeia de cross-default e pergunta sobre o EBITDA da política.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/measure-covenant-headroom.md",
+      "anchor": "Sequência operacional; Red flags; Exemplo bom; Template T1; Regras R1–R3",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O executor mede contribuições adotadas; não projeta, extrai contratos ou negocia waiver. A correspondência profissional entre texto contratual e operandos depende do enquadramento e da adoção anteriores. A base comporta até 256 contribuições; o resultado não concede execução nem publicação.",
+      "source": "packages/financial-model/src/adopted-covenant-headroom.ts; packages/financial-model/src/adopted-analysis-binding.ts; packages/domain-contracts/src/contextual-adoption.ts",
+      "result": "limitation",
+      "note": "Integridade do envelope e validação contextual não comprovam autorização de acesso, veracidade documental ou aprovação profissional."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As correções da segunda rodada foram confirmadas por inspeção e execução independente. O erro determinístico de policyBindsFirst foi resolvido; as duas âncoras foram corrigidas; os três contraexemplos anteriores agora são recusados e registrados. Não encontrei divergência numérica além do arredondamento declarado nem definição aritmética implementada incorretamente no escopo revisado. A aprovação técnica limita-se aos bytes fixados e à medição sobre contribuições adotadas. Não constitui aprovação humana de conteúdo, promoção do método, comprovação de autorização, jornada pela interface ou validação de produção. Nenhum arquivo foi escrito no repositório pelo revisor."
+}

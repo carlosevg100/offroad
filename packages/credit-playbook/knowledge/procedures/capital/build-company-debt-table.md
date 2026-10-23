@@ -1,7 +1,7 @@
 ---
 id: build-company-debt-table
 version: 2026.10.23-v1
-maturity: implemented
+maturity: tested
 title_pt: Montar a tabela de dívida da companhia
 title_en: Build the Company Debt Table
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [build-company-debt-table-2026-10-23-v1-consistency]
 adversarial_run_ids: [build-company-debt-table-2026-10-23-v1-adversarial]
-review_ids: []
+review_ids: [build-company-debt-table-2026-10-23-v1-independent-review]
 gold_run_ids: [build-company-debt-table-2026-10-23-v1-gold]
 ---
 
@@ -5817,7 +5817,9 @@ A cesta de garantia permitida da escritura limita a próxima operação com gara
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/build-company-debt-table-2026-10-23-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/build-company-debt-table-2026-10-23-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/build-company-debt-table-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

@@ -1,7 +1,7 @@
 ---
 id: measure-covenant-headroom
 version: 2026.10.23-v1
-maturity: implemented
+maturity: tested
 title_pt: Medir covenants e folga na data de apuração
 title_en: Measure Covenant Headroom
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [measure-covenant-headroom-2026-10-23-v1-consistency]
 adversarial_run_ids: [measure-covenant-headroom-2026-10-23-v1-adversarial]
-review_ids: []
+review_ids: [measure-covenant-headroom-2026-10-23-v1-independent-review]
 gold_run_ids: [measure-covenant-headroom-2026-10-23-v1-gold]
 ---
 
@@ -4081,7 +4081,9 @@ Quando a apuração cai no pico do giro, a linha sazonal em aberto pesa no índi
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/measure-covenant-headroom-2026-10-23-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/measure-covenant-headroom-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]
