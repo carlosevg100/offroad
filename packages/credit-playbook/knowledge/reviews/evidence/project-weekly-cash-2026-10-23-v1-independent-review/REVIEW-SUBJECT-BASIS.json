@@ -5,15 +5,15 @@
   "id": "project-weekly-cash",
   "version": "2026.10.23-v1"
  },
- "commit": "3d6d4e4ff812accfe055f0f8f1e226cfd96fb2de",
+ "commit": "7391158da9c7fc5a49d929eb3d65fef594cb587e",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/project-weekly-cash.md",
-   "sha256": "c6a9956a1437f78ae7cddab8c3d76edfa5893e19ff9b94bd9f7663d15127216b"
+   "sha256": "61dacc6122d5bac7afec67d2203b7e4c422fb19945cc08b3003a9bd52e99f8b9"
   },
   {
    "path": "packages/financial-model/src/weekly-cash-packet.ts",
-   "sha256": "8c457c8046d2e1c810138a8259d277004ead91d9efcaa5fcfca2b4efe9550d57"
+   "sha256": "bfca12e469f14855412f8384b5000ba3e0b9c899c95f595d36d773d06aab1cb8"
   },
   {
    "path": "packages/financial-model/src/adopted-weekly-cash.ts",
@@ -21,11 +21,11 @@
   },
   {
    "path": "packages/financial-core/src/weekly-cash.ts",
-   "sha256": "82f20b30fdb1ad028930648ea0a749e6c73b0ab146a061cac8182ccb7c41c276"
+   "sha256": "e4304ee3b1500557e09c3ad2c8878f18bbf37b26b9db255bf7a37fb8c30c79bb"
   },
   {
    "path": "packages/financial-model/src/weekly-cash-runs.test-support.ts",
-   "sha256": "7e724d781784eb22bbcf1bb56dca5d7e16b07c42746d325d1e2219d5f6215498"
+   "sha256": "11a4ca019bbebdb4b0d535a9a5c145006a99662248f11feb2776f7f3460f4c7d"
   },
   {
    "path": "packages/financial-model/src/weekly-cash.test-support.ts",
@@ -37,7 +37,7 @@
   },
   {
    "path": "packages/financial-model/src/ficha-calculation-results.ts",
-   "sha256": "64465ab85d50dba934029112149c7e3f855c6485f351df9ad3bdd616eecf706f"
+   "sha256": "37f723801e420be08ebd9757129d60783763b92a82577e3bc3ab88ac1d10de7c"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
