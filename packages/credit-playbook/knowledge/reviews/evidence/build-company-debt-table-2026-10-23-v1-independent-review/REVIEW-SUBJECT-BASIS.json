@@ -1,0 +1,53 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "build-company-debt-table",
+  "version": "2026.10.23-v1"
+ },
+ "commit": "163f25366828305d951de721a1df9a1041b0d1ad",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/build-company-debt-table.md",
+   "sha256": "0973f66502defbfe8fb61b9e7ee60b5d0c36a6804ac07141104a310c28e5a95f"
+  },
+  {
+   "path": "packages/financial-model/src/debt-table-packet.ts",
+   "sha256": "770ce0a8828f0fb341656a2e5d5938ab005de1e5eed552a620386486c1ab137b"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-debt-table.ts",
+   "sha256": "a5baa1589c71ad15ea46d96054b84558dea5f9cf9b80e5cbe82b6ccd5f8715c9"
+  },
+  {
+   "path": "packages/financial-core/src/debt-table.ts",
+   "sha256": "e6bbc13b13c96a17ac52a145e78ef97f84016ee5a30ea02508a6f51275542e78"
+  },
+  {
+   "path": "packages/financial-model/src/ficha-calculation-results.ts",
+   "sha256": "b3c7de89056308e93dceb9cf2d26207a6c80a3970ca0a477ddd43e445f80ad7e"
+  },
+  {
+   "path": "packages/financial-model/src/debt-table-runs.test-support.ts",
+   "sha256": "0d780715185ae0f8b766ddf0cbb1745645168fc331133dcfd068a77dc9d87329"
+  },
+  {
+   "path": "packages/financial-model/src/debt-table.test-support.ts",
+   "sha256": "07ddc318f908c9f30a5b2f35fbd307538b9c943ea2abb3108267e0e715bb37a6"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C10/modelo_c10.py",
+   "sha256": "bc0324a1f7c77c31a9f01d4aff387b501fa5d41dd77dadf988a5dbf51f97485b"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C10/resultados.json",
+   "sha256": "217c7ae06cbc32a72e14d2351800186968e43ca309637bcdef5fab377e60d18c"
+  }
+ ]
+}
