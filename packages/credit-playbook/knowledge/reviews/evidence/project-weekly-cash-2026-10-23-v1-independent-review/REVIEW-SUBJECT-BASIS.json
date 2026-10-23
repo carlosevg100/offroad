@@ -5,39 +5,39 @@
   "id": "project-weekly-cash",
   "version": "2026.10.23-v1"
  },
- "commit": "56abea8ce7e15152866b30e972b99a1c0f996b16",
+ "commit": "3d6d4e4ff812accfe055f0f8f1e226cfd96fb2de",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/project-weekly-cash.md",
-   "sha256": "eefd62485c4dcf086c0215ac267906c543ba8c7be1ad5725938ea0166a7e96d5"
+   "sha256": "c6a9956a1437f78ae7cddab8c3d76edfa5893e19ff9b94bd9f7663d15127216b"
   },
   {
    "path": "packages/financial-model/src/weekly-cash-packet.ts",
-   "sha256": "a0ef050e0fb92e61be3fc7a8461eab5fd0a51f448ea19ad1a691525bc2caf1a4"
+   "sha256": "8c457c8046d2e1c810138a8259d277004ead91d9efcaa5fcfca2b4efe9550d57"
   },
   {
    "path": "packages/financial-model/src/adopted-weekly-cash.ts",
-   "sha256": "2a2688d6ca8c9d029619ed18c08189e599fa669f7b0c3e6146bc9f145a633835"
+   "sha256": "9df8b973f2e056ec060ed307e24babd1e33b2d43bedbb3e1869915044d9e3c0e"
   },
   {
    "path": "packages/financial-core/src/weekly-cash.ts",
-   "sha256": "acff57ea349a8f82e7677f7bf16248b6f2487ba0854ac20f039a1a44bc2105ca"
+   "sha256": "82f20b30fdb1ad028930648ea0a749e6c73b0ab146a061cac8182ccb7c41c276"
   },
   {
    "path": "packages/financial-model/src/weekly-cash-runs.test-support.ts",
-   "sha256": "8e4bf304ee75e97652e4bf2b099717a464bd3594918653442f0ed30ffddc3040"
+   "sha256": "7e724d781784eb22bbcf1bb56dca5d7e16b07c42746d325d1e2219d5f6215498"
   },
   {
    "path": "packages/financial-model/src/weekly-cash.test-support.ts",
-   "sha256": "ad301b01eedc23fa31a24671b479d6d005f800199709916157c8902bf0403819"
+   "sha256": "f24137e19999472ac497127f85ada93f98d77b60e374fc81ecea8f28fdfa3b40"
   },
   {
    "path": "packages/financial-core/src/weekly-cash.fixture.ts",
-   "sha256": "cbd1c1ca7a9674ac446ce499d79be88f8f10d42eabe89ba029aab91dcfbc055b"
+   "sha256": "acb63cb6eb1d28672b735ec9a3799df2bff3074d605f6a706a993b030ad70844"
   },
   {
    "path": "packages/financial-model/src/ficha-calculation-results.ts",
-   "sha256": "0e8da19397df4fb67c9d8f3d300b0d17f619604a54c8cabdf4b5412c4ee477a5"
+   "sha256": "64465ab85d50dba934029112149c7e3f855c6485f351df9ad3bdd616eecf706f"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",

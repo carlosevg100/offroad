@@ -5,11 +5,11 @@
   "id": "build-company-debt-table",
   "version": "2026.10.23-v1"
  },
- "commit": "56abea8ce7e15152866b30e972b99a1c0f996b16",
+ "commit": "3d6d4e4ff812accfe055f0f8f1e226cfd96fb2de",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/build-company-debt-table.md",
-   "sha256": "d98d373e23e1a62dbd63b3d008c42a8c8a6c16e79bcfe351b51af0794e1f48a8"
+   "sha256": "69f81cd9e5d84debc503e5e425c808c8882ead5b5f19019ff18b203d4e9438e1"
   },
   {
    "path": "packages/financial-model/src/debt-table-packet.ts",
@@ -21,11 +21,11 @@
   },
   {
    "path": "packages/financial-core/src/debt-table.ts",
-   "sha256": "2ed956b890954c66a5d22eac0f2717a4583fa594b0e17cecc862d7263f91a38a"
+   "sha256": "82c54c5665a5a016f7310055fcedca8bfc29f440d67d4ba93d0487952b3168c7"
   },
   {
    "path": "packages/financial-model/src/debt-table-runs.test-support.ts",
-   "sha256": "0a2a1421d74d4fcecab6a6b19f9a6a9dc5668e0ec77fcdd2607f7a2281f11642"
+   "sha256": "637c22191b2ef14e0f781d76d0b9a95955237c52f20cedf79863d2d6fa4d3b1f"
   },
   {
    "path": "packages/financial-model/src/debt-table.test-support.ts",
@@ -33,7 +33,7 @@
   },
   {
    "path": "packages/financial-model/src/ficha-calculation-results.ts",
-   "sha256": "0e8da19397df4fb67c9d8f3d300b0d17f619604a54c8cabdf4b5412c4ee477a5"
+   "sha256": "64465ab85d50dba934029112149c7e3f855c6485f351df9ad3bdd616eecf706f"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",

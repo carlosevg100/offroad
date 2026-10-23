@@ -5,35 +5,35 @@
   "id": "measure-covenant-headroom",
   "version": "2026.10.23-v1"
  },
- "commit": "56abea8ce7e15152866b30e972b99a1c0f996b16",
+ "commit": "3d6d4e4ff812accfe055f0f8f1e226cfd96fb2de",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/measure-covenant-headroom.md",
-   "sha256": "a6193c7f92e8f6d1886e5adca2c529ba3eeab6619428d210d96f3d940dff81f4"
+   "sha256": "f867efb52a05882580a48a659ba2a9830170d1cf874b29c668142973d82b1630"
   },
   {
    "path": "packages/financial-model/src/covenant-headroom-packet.ts",
-   "sha256": "314049c260a4cba789f18994ef9877df0b2e0c9bd983da3603a97054f9133b4b"
+   "sha256": "cac9636a0706f7b89fedf8ebd11f0a005fb1f8e0bc79a2b3f47e1a4a0a869d18"
   },
   {
    "path": "packages/financial-model/src/adopted-covenant-headroom.ts",
-   "sha256": "7aae80869c955831f8191925200ce11e07185c3a1385ca1a530aa5161e99906b"
+   "sha256": "4e1808652d3c9f5cda59823fe732a3f8696914d43fc4925773e89da13f7bbe22"
   },
   {
    "path": "packages/financial-core/src/covenant-headroom.ts",
-   "sha256": "b8baab592276728b4cd15ed8f75db40e06c85acce8aa5621f4360a5c57100a6f"
+   "sha256": "fa2fc54be886b578be12b4880a6fea7eda4b142b35de084ccbda8fa238abeabd"
   },
   {
    "path": "packages/financial-model/src/covenant-headroom-runs.test-support.ts",
-   "sha256": "a598f1eaa1c508c4c82a4d6882d52a855b649ee60a4cc3f362c6d8f63a0ae012"
+   "sha256": "64f99282bfbf1603e2ee0962aca273ae87f5b377c16802890a0f5f036dcdad0e"
   },
   {
    "path": "packages/financial-model/src/covenant-headroom.test-support.ts",
-   "sha256": "49f3cac0d52e8ce590c90b6ccb41265e2b6afb33045e40c75d5b381169892f77"
+   "sha256": "db7934c438e6c817195d7a806370e816d01a2e15b379e14079cd739d081450e0"
   },
   {
    "path": "packages/financial-model/src/ficha-calculation-results.ts",
-   "sha256": "0e8da19397df4fb67c9d8f3d300b0d17f619604a54c8cabdf4b5412c4ee477a5"
+   "sha256": "64465ab85d50dba934029112149c7e3f855c6485f351df9ad3bdd616eecf706f"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
