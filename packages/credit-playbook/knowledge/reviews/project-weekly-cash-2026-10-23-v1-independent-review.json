@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "project-weekly-cash-2026-10-23-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "project-weekly-cash",
+    "version": "2026.10.23-v1",
+    "fingerprint": "e098b74321e4393e48891af6b35cb8167e03f05328b37d8ebcfda651de0614a6"
+  },
+  "run": {
+    "id": "c18-r3-171851",
+    "startedAt": "2026-10-23T17:18:51Z",
+    "finishedAt": "2026-10-23T17:22:44Z",
+    "commit": "d92e6250a0d63f51fb8f67f33c46d0a7a8f4f29f"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os nove arquivos fixados conferem com os SHA-256 no commit solicitado e na árvore de trabalho. Os dois arquivos externos do oráculo também conferem. O fingerprint informado corresponde ao SHA-256 do arquivo de base.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/project-weekly-cash-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "O campo commit interno da base aponta para 7391158da9c7fc5a49d929eb3d65fef594cb587e. Verifiquei os hashes individualmente em d92e6250a0d63f51fb8f67f33c46d0a7a8f4f29f e carreguei os fontes TypeScript desse commit para execução em memória. A conferência final confirmou HEAD inalterado e árvore limpa."
+    },
+    {
+      "claim": "As duas fixtures produzem entradas idênticas e reproduzem os eventos dos sete cenários do oráculo, incluindo recebimentos, obrigações, serviço da dívida, safra e ações.",
+      "source": "packages/financial-core/src/weekly-cash.fixture.ts; packages/financial-model/src/weekly-cash-streams.test-support.ts; C18/modelo_c18.py",
+      "result": "confirmed",
+      "note": "Comparei datas, valores e rótulos normalizados por evento dentro do horizonte. Normalizei a junção da segunda parcela do 13º com encargos e os rótulos das alternativas. A maior diferença por evento foi 4,8387097e-9 milhão, decorrente da serialização da fixture com oito casas decimais."
+    },
+    {
+      "claim": "Os 112 registros semanais conferem com o Python reexecutado e com resultados.json na precisão publicada. A soma independente em Decimal dos eventos adotados reproduz exatamente os saldos do kernel.",
+      "source": "packages/financial-core/src/weekly-cash.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C18/modelo_c18.py; C18/resultados.json",
+      "result": "confirmed",
+      "note": "Mínimo/fechamento/semanas abaixo, em milhões: linha17 7,5/16,1/2; sem linha -9,5/-0,9/3; conta garantida 15,5/24,1/0; antecipação 15,5/24,1/0; linha25 15,5/24,1/0; safra30 2,5/11,1/3; safra adiada 12,0/18,4/2. Todos os mínimos ocorrem em 21/12. A maior diferença contra o saldo Python sem arredondamento foi 8,76344116e-8 milhão."
+    },
+    {
+      "claim": "O calendário e a conciliação permanecem corretos: vencimentos contratuais e 13º são preservados, e a diferença contra a projeção é calculada no fim do horizonte declarado.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/weekly-cash-runs.test-support.ts",
+      "result": "confirmed",
+      "note": "Em 15/12: CCB 1,7, debênture 15 e 5,1 e Finame 0,8. O 13º consta em 30/11 por 1,5 e 18/12 por 2,1, incluindo encargos. Em 03/01/2027, saldo semanal 16,14784955 contra projeção 16, diferença 0,14784955 milhão. Essa conciliação não constitui apuração separada do saldo em 31/12."
+    },
+    {
+      "claim": "Juros compostos, períodos anual e mensal, IOF diário limitado pelo teto, IOF adicional e comissão conferem com recálculo independente em Decimal no Python.",
+      "source": "packages/financial-core/src/weekly-cash.ts",
+      "result": "confirmed",
+      "note": "Custos em milhões: conta garantida 0,12433740627216520108; antecipação 0,25268596419060416944; incremento da linha 0,86968983897353757002. Cada componente conferiu com tolerância de 5e-21 milhão. Também testei taxa zero, teto de IOF e comissão."
+    },
+    {
+      "claim": "A omissão da ficha de qualquer fluxo de categoria action usado em um caso agora é recusada. O isolamento conta todos os fluxos dessa categoria presentes, impedindo cobertura individual sustentada por outra ação sem conferência.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/weekly-cash-runs.test-support.ts",
+      "anchor": "weekly_cash_action_stream_without_action; action-stream-without-its-costed-action",
+      "result": "confirmed",
+      "note": "Repeti pelo pacote o contraexemplo da segunda rodada: mínimo 23, caso com conta garantida e antecipação, retirada dos casos individuais e omissão somente da ficha de antecipação. O pacote recusa com weekly_cash_action_stream_without_action. Mantendo ambas as fichas, o saldo combinado é 23,48118286, mas nenhuma ação recebe cobertura individual e a recomendação é nula. A regressão adversarial registrada também passou."
+    },
+    {
+      "claim": "As saídas semanais preservam outflowsByStream.streamId e as causas são somadas por essa identidade. Fluxos distintos com o mesmo rótulo permanecem causas distintas.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/weekly-cash-packet.ts; packages/financial-model/src/ficha-calculation-results.ts",
+      "anchor": "same-label-streams-stay-distinct-causes",
+      "result": "confirmed",
+      "note": "Adotei o mesmo rótulo para amortização e juros da debênture. O pacote preservou duas causas: debenture-amortizacao por 15 e debenture-juros por 5,1. As duas identidades também permanecem separadas nas saídas da semana de 14/12. O caso gold reproduziu exatamente o registro."
+    },
+    {
+      "claim": "As correções anteriores de desembolso único, prazo, principal incremental e devolução permanecem válidas, inclusive pelo leitor adotado e pelo pacote.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/adopted-weekly-cash.ts; packages/financial-model/src/weekly-cash-packet.ts",
+      "result": "confirmed",
+      "note": "Dois desembolsos foram recusados nas duas ordens. Prazo incompatível, principal custeado divergente e devolução dentro do horizonte foram recusados. Testei substituição com data diferente, múltiplos eventos e presença simultânea do fluxo substituído. A linha de 17 para 25 continua válida, custeando o incremento de 8 por 182 dias. As fronteiras de desembolso e devolução no covenant conferem; dívida e caixa recebem 8 na conta garantida e 25 na linha maior, com efeito líquido zero."
+    },
+    {
+      "claim": "As seis obrigações de cobertura são verificadas contra o caso informado. Incluída sem fluxo é recusada; fluxo presente com declaração incompatível é recusado; não examinado gera lacuna e status parcial.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/weekly-cash-packet.ts",
+      "result": "confirmed",
+      "note": "Exercitei individualmente folha, 13º, encargos, impostos sobre vendas, impostos sobre renda e serviço da dívida. A presença apenas em alternativa não satisfaz a declaração do caso informado. A retirada do 13º com declaração não examinado propaga obligationsNotExamined e partial. As causas da calibração continuam incluindo debênture, CCB e 13º nas semanas pressionadas."
+    },
+    {
+      "claim": "As definições de semana, saldo, mínimo, desempate e maiores saídas passaram nas verificações independentes; repetição e reordenação dos pares de eventos preservaram o resultado sem alterar as entradas.",
+      "source": "packages/financial-core/src/weekly-cash.ts; packages/financial-model/src/weekly-cash-packet.ts",
+      "result": "confirmed",
+      "note": "Testei a fronteira domingo/segunda, saldo igual ao mínimo sem violação, primeira semana em empate, três maiores saídas agregadas por fluxo e corte do calendário. Ao todo, os 20 grupos adicionais de verificações independentes passaram."
+    },
+    {
+      "claim": "As corridas registradas foram reproduzidas integralmente em memória: 15 casos gold, 14 adversariais e seis de consistência, com igualdade dos casos e dos fingerprints.",
+      "source": "packages/financial-model/src/weekly-cash-runs.test-support.ts; packages/credit-playbook/knowledge/reviews/runs/project-weekly-cash-2026-10-23-v1-*/run.json",
+      "result": "confirmed",
+      "note": "Fingerprints: gold 774888dee3220bbcc2f8cb25acf4539ab39f4193a2e36ebcc23a3d0f9999e2f1; adversarial f714860fa182d8397eab2c0cc5b0d694ce8022d9115a9b03db34911a129e774f; consistência be7983578de18f98d5e856d7119fd8e81445ecb553f706ad34a23f1cba737aa2. Os registros indicam commit ddc3671; a reexecução utilizou os fontes do commit solicitado."
+    },
+    {
+      "claim": "O procedimento mantém a resposta profissional da ficha e explicita os limites do método, sem conceder execução ou publicação.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/project-weekly-cash.md; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C18/corpo.html",
+      "result": "confirmed",
+      "note": "Semana e valor, causas, calendário, comparação pelo custo no tempo de uso, covenant e sensibilidades estão contemplados. Inferência de dias úteis, liquidez intradiária e elegibilidade de cessão estão excluídas. A convenção simplificada do calendário do oráculo está declarada. A aprovação profissional permanece pendente."
+    },
+    {
+      "claim": "O sandbox recusou a criação de diretório temporário externo. Esta revisão não reexecutou as suítes completas pelo Vitest; executou os fontes e verificações em memória com Node 24.19.0 e Python.",
+      "source": "Tentativa de TemporaryDirectory em /tmp; execução em memória dos fontes de d92e6250a0d63f51fb8f67f33c46d0a7a8f4f29f",
+      "result": "limitation",
+      "note": "A tentativa retornou EPERM. Os totais verdes de financial-core 881, financial-model 545 e credit-playbook 545 são informação fornecida pelo autor, não execução independente desta revisão. A conclusão também se apoia nas 35 verificações registradas reproduzidas, nos 20 grupos adicionais e no recálculo independente dos eventos, saldos e custos."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As duas pendências técnicas da segunda rodada estão resolvidas nos bytes fixados, e os contraexemplos anteriores não voltaram a produzir cobertura ou atribuição incorretas. Não encontrei divergência numérica além da precisão declarada nem definição financeira implementada incorretamente no escopo revisado. A limitação de execução das suítes completas está registrada e foi tratada conforme a alternativa autorizada no pedido. Nenhum arquivo foi escrito dentro ou fora do repositório por esta revisão; mutações adversariais ocorreram somente em memória. Este resultado é revisão técnica independente, sem aprovação humana, aprovação profissional de conteúdo, publicação ou autorização de execução."
+}

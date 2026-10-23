@@ -166,3 +166,71 @@ export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common,
   comparisonId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), openingDate: date, endDate: date, comparison: comparison.nullable(),
   policies: z.strictObject({minimumCash: decimal.nullable(), maximumCollateralShare: decimal.nullable()}), incompleteProposalIds: z.array(z.uuid()).max(8),
   exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});
+
+const nullableDecimal = decimal.nullable(), component = z.enum(["principal", "accrued_interest", "unamortized_cost", "drawn_credit_lines", "lease", "supplier_finance", "guarantee_given"]);
+const crossDefaultTerm = z.strictObject({threshold: decimal.nullable(), acceleration: z.enum(["automatic", "non_automatic"]), scope: text,
+  scopeKind: z.enum(["any_financial_debt", "named_creditors"]), creditors: z.array(text).max(12), thresholdBasis: z.enum(["amount_in_default", "outstanding_principal"])});
+export const debtTableOutputSchema = z.strictObject({schemaVersion: z.literal("debt-table.v1"), version, referenceDate: date, currency: z.string().regex(/^[A-Z]{3}$/),
+  rows: z.array(z.strictObject({id: version, label: text, creditor: text, borrower: text, principal: decimal, accountingBalance: decimal, indexer: version,
+    spread: nullableDecimal, nominalRate: nullableDecimal, finalPayment: date, scheduleMatchesPrincipal: z.boolean(), guarantee: text, covenant: text.nullable(),
+    crossDefault: crossDefaultTerm.nullable(), prepayment: text.nullable()})).min(1).max(32),
+  reconciliation: z.strictObject({principal: decimal, accruedInterest: decimal, unamortizedCost: decimal, accounting: decimal, reported: nullableDecimal, difference: nullableDecimal,
+    status: z.enum(["exact", "difference", "not_reported"])}),
+  creditLines: z.array(z.strictObject({id: version, label: text, creditor: text, limit: decimal, drawn: decimal, unused: decimal})).max(32),
+  views: z.array(z.strictObject({id: version, label: text, components: z.array(component).min(1).max(7), total: decimal,
+    bridgeFromBase: z.array(z.strictObject({component, amount: decimal})).max(7), netDebt: nullableDecimal})).min(1).max(8),
+  outsideEveryView: z.array(z.strictObject({id: version, kind: z.enum(["lease", "supplier_finance", "guarantee_given"]), label: text, creditor: text.nullable(), amount: decimal})).max(64),
+  unusedLimits: decimal,
+  profile: z.strictObject({scheduleByYear: z.array(z.strictObject({year: z.number().int().min(1000).max(9999), principal: decimal})).max(100),
+    dueWithinTwelveMonths: decimal, dueWithinTwelveMonthsShare: nullableDecimal, twelveMonthHorizon: date, weightedAverageLifeYears: nullableDecimal,
+    largestCreditor: z.strictObject({creditor: text, principal: decimal, share: nullableDecimal}).nullable(), averageNominalCost: nullableDecimal}),
+  negativePledgeBaskets: z.array(z.strictObject({holderId: version, basket: decimal, occupied: decimal, remaining: decimal, exceeded: z.boolean(), usedBy: z.array(version).max(32)})).max(32),
+  crossDefault: z.strictObject({chain: z.array(z.strictObject({instrumentId: version, threshold: decimal, acceleration: z.enum(["automatic", "non_automatic"]), scope: text,
+    scopeKind: z.enum(["any_financial_debt", "named_creditors"]), thresholdBasis: z.enum(["amount_in_default", "outstanding_principal"]),
+    hypothesis: z.literal("whole_outstanding_in_default"), potentiallyTriggeredBy: z.array(version).max(128), complete: z.boolean(), unresolved: z.array(version).max(64)})).max(32),
+    lowestThreshold: z.strictObject({instrumentId: version, threshold: decimal}).nullable()}),
+  leverage: z.array(z.strictObject({viewId: version, label: text, netDebt: nullableDecimal, ebitda: decimal, ebitdaDeduction: decimal, denominator: decimal, ratio: nullableDecimal})).max(8),
+  completeness: z.strictObject({status: z.enum(["proven", "unproven"]), evidence: text, request: z.literal("external_register_of_financial_institution_operations").nullable()}),
+  categoryCoverage: z.array(z.strictObject({kind: z.enum(["lease", "supplier_finance", "guarantee_given"]), status: z.enum(["present", "confirmed_absent", "not_examined"])})).length(3),
+  gaps: z.array(z.strictObject({item: text, reason: text})).max(64)});
+export const adoptedDebtTableOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-debt-table.v1"),
+  analysisId: z.uuid(), perimeter: text, referenceDate: date, table: debtTableOutputSchema.nullable(),
+  exclusions: z.array(z.enum(["contract_extraction", "covenant_measurement", "credit_approval", "structure_opinion", "method_release"])).length(5)
+    .refine(v => v.join("|") === "contract_extraction|covenant_measurement|credit_approval|structure_opinion|method_release", "Exact exclusion ledger required")});
+
+const covenantTest = z.strictObject({limitId: version, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, breached: z.boolean(),
+  ebitdaHeadroom: decimal, netDebtHeadroom: decimal, unrealizedEbitdaLossToLimit: decimal.nullable()});
+export const covenantHeadroomOutputSchema = z.strictObject({schemaVersion: z.literal("covenant-headroom.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/), readingDate: date,
+  limits: z.array(z.strictObject({id: version, label: text, kind: z.enum(["contractual", "board_policy"]), status: z.enum(["in_force", "superseded"]), maximumRatio: decimal, source: text,
+    testDates: z.array(date).max(24)})).min(1).max(8),
+  measurements: z.array(z.strictObject({id: version, label: text, date, scenario: text, role: z.enum(["test", "contrast"]), debt: decimal, cash: decimal, netDebt: decimal,
+    reportedEbitda: decimal, adjustments: z.array(z.strictObject({label: text, amount: decimal})).max(16), ebitda: decimal, ratio: decimal.nullable(),
+    unrealizedEbitda: decimal.nullable(), tests: z.array(covenantTest).max(8), tightestLimitId: version.nullable()})).min(1).max(24),
+  effects: z.array(z.strictObject({id: version, label: text, measurementId: version, withoutEffectMeasurementId: version, ratioEffect: decimal.nullable(), netDebtEffect: decimal})).max(8),
+  worst: z.strictObject({measurementId: version, limitId: version, ebitdaHeadroom: decimal}).nullable(), anyBreach: z.boolean()});
+export const adoptedCovenantHeadroomOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-covenant-headroom.v1"),
+  analysisId: z.uuid(), perimeter: text, readingDate: date, headroom: covenantHeadroomOutputSchema.nullable(),
+  definitions: z.array(z.strictObject({limitId: version, definition: text.nullable()})).max(8),
+  openQuestions: z.array(z.strictObject({limitId: version, question: z.literal("ebitda_definition_not_written")})).max(8),
+  consequence: z.strictObject({acceleration: z.enum(["automatic", "non_automatic"]).nullable(), process: text.nullable(), crossDefault: text.nullable()}),
+  exclusions: z.array(z.enum(["projection", "contract_extraction", "waiver_negotiation", "credit_approval", "method_release"])).length(5)
+    .refine(v => v.join("|") === "projection|contract_extraction|waiver_negotiation|credit_approval|method_release", "Exact exclusion ledger required")});
+
+const weekRow = z.strictObject({weekStart: date, inflows: decimal, outflows: decimal, closing: decimal, belowMinimum: z.boolean(),
+  largestOutflows: z.array(z.strictObject({label: text, amount: decimal})).max(3), outflowsByStream: z.array(z.strictObject({streamId: version, label: text, category: z.enum(["debt", "statutory", "operating", "action"]), amount: decimal})).max(64)});
+export const weeklyCashOutputSchema = z.strictObject({schemaVersion: z.literal("weekly-cash.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/),
+  firstMonday: date, horizonEnd: date, openingCash: decimal, minimumCash: decimal,
+  cases: z.array(z.strictObject({id: version, label: text, role: z.enum(["informed", "alternative"]), rows: z.array(weekRow).min(1).max(104),
+    minimum: z.strictObject({weekStart: date, closing: decimal}), weeksBelowMinimum: z.array(date).max(104), closing: decimal, shortfallToMinimum: decimal})).min(1).max(8),
+  calendar: z.array(z.strictObject({date, label: text, category: z.enum(["debt", "statutory"]), amount: decimal})).max(2000),
+  actions: z.array(z.strictObject({id: version, label: text, cases: z.array(version).max(8), isolatedCases: z.array(version).max(8), amount: decimal, days: z.number().int().min(1).max(3660),
+    interest: decimal, iof: decimal, fee: decimal, cost: decimal, openAtCovenantTest: z.boolean().nullable(),
+    covenantEffect: z.strictObject({grossDebt: decimal, cash: decimal, netDebt: z.literal("0")}).nullable()})).max(8),
+  reconciliation: z.strictObject({date, weekly: decimal, projection: decimal, difference: decimal}).nullable(),
+  coverage: z.array(z.strictObject({obligation: z.enum(["payroll", "thirteenth_salary", "payroll_charges", "sales_taxes", "income_taxes", "debt_service"]),
+    status: z.enum(["included", "not_applicable", "not_examined"])})).length(6),
+  gaps: z.array(z.strictObject({item: text, reason: z.literal("obligation_not_examined")})).max(6)});
+export const adoptedWeeklyCashOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-weekly-cash.v1"),
+  analysisId: z.uuid(), perimeter: text, weekly: weeklyCashOutputSchema.nullable(),
+  exclusions: z.array(z.enum(["business_day_inference", "intraday_liquidity", "receivables_assignment_eligibility", "credit_approval", "method_release"])).length(5)
+    .refine(v => v.join("|") === "business_day_inference|intraday_liquidity|receivables_assignment_eligibility|credit_approval|method_release", "Exact exclusion ledger required")});

@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "project-weekly-cash-2026-10-23-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "project-weekly-cash",
+    "version": "2026.10.23-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareWeeklyCashPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/weekly-cash-runs.test-support.ts",
+    "exportName": "buildWeeklyCashRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-23T17:17:10.505Z",
+    "finishedAt": "2026-10-23T17:17:10.698Z",
+    "commit": "ddc3671c20db40d9ad299c0aa1813c5b86bfb60e"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tightest-week-is-the-week-of-21-december",
+      "expectation": "{\"week\":\"2026-12-21\",\"closing\":7.5,\"withinTolerance\":true}",
+      "observed": "{\"week\":\"2026-12-21\",\"closing\":7.5,\"withinTolerance\":true}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "two-weeks-under-the-minimum",
+      "expectation": "[\"2026-12-14\",\"2026-12-21\"]",
+      "observed": "[\"2026-12-14\",\"2026-12-21\"]",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "causes-named-across-the-weeks-under-the-minimum",
+      "expectation": "[[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Impostos sobre vendas (saldo a pagar)\",2.4],[\"13º salário, 2ª parcela e encargos\",2.1],[\"CCB Bradesco, juros trimestrais\",1.7],[\"Finame (principal e juros)\",0.8],[\"INSS\",0.5]]",
+      "observed": "[[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Impostos sobre vendas (saldo a pagar)\",2.4],[\"13º salário, 2ª parcela e encargos\",2.1],[\"CCB Bradesco, juros trimestrais\",1.7],[\"Finame (principal e juros)\",0.8],[\"INSS\",0.5]]",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "december-closing-reconciles-with-the-projection",
+      "expectation": "{\"weekly\":16.1,\"projection\":16,\"near\":true}",
+      "observed": "{\"weekly\":16.1,\"projection\":16,\"near\":true}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "closing-hides-the-week",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "calendar-of-what-falls-due-by-31-december",
+      "expectation": "{\"debt15dec\":[[\"CCB Bradesco, juros trimestrais\",1.7],[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Finame (principal e juros)\",0.8]],\"thirteenth\":[[\"2026-11-30\",1.5],[\"2026-12-18\",2.1]]}",
+      "observed": "{\"debt15dec\":[[\"CCB Bradesco, juros trimestrais\",1.7],[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Finame (principal e juros)\",0.8]],\"thirteenth\":[[\"2026-11-30\",1.5],[\"2026-12-18\",2.1]]}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "actions-costed-for-the-time-in-use",
+      "expectation": "[[\"conta-garantida\",0.12],[\"antecipacao\",0.25],[\"linha-25\",0.87]]",
+      "observed": "[[\"conta-garantida\",0.12],[\"antecipacao\",0.25],[\"linha-25\",0.87]]",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "same-label-streams-stay-distinct-causes",
+      "expectation": "[[\"debenture-amortizacao\",15],[\"debenture-juros\",5.1]]",
+      "observed": "[[\"debenture-amortizacao\",15],[\"debenture-juros\",5.1]]",
+      "inputFingerprint": "577081055ade008b113affc529d8a5bd2cc404b7c5322000e36d1d0d3e4ee642",
+      "outputFingerprint": "0d6fa0fac6cf39a2a0c56a809b633d949fe9d4dd6e47051fd6b22d0ff53b9dd8",
+      "passed": true
+    },
+    {
+      "id": "two-actions-in-one-case-prove-neither-covers-alone",
+      "expectation": "{\"cheapest\":\"linha-25\",\"covers\":[[\"conta-garantida\",false],[\"antecipacao\",false],[\"linha-25\",true]]}",
+      "observed": "{\"cheapest\":\"linha-25\",\"covers\":[[\"conta-garantida\",false],[\"antecipacao\",false],[\"linha-25\",true]]}",
+      "inputFingerprint": "1f84d4badd3ef4fe560285856c75737976d6bdd3dbd190b8b9ff9b57055e7c5a",
+      "outputFingerprint": "56f0f2cd36083914b211cf7b82cec74c16f2dcee00ae61d1536ccb1e6639746f",
+      "passed": true
+    },
+    {
+      "id": "cheapest-covering-action-is-the-existing-overdraft",
+      "expectation": "{\"id\":\"conta-garantida\",\"worst\":15.5}",
+      "observed": "{\"id\":\"conta-garantida\",\"worst\":15.5}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "overdraft-open-at-the-covenant-test-nets-to-zero",
+      "expectation": "{\"open\":true,\"effect\":{\"grossDebt\":\"8\",\"cash\":\"8\",\"netDebt\":\"0\"}}",
+      "observed": "{\"open\":true,\"effect\":{\"grossDebt\":\"8\",\"cash\":\"8\",\"netDebt\":\"0\"}}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "a-harvest-of-30-million",
+      "expectation": "{\"minimum\":2.5,\"weeks\":3}",
+      "observed": "{\"minimum\":2.5,\"weeks\":3}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "harvest-delayed-two-weeks",
+      "expectation": "{\"minimum\":12,\"closing\":18.4}",
+      "observed": "{\"minimum\":12,\"closing\":18.4}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "without-the-harvest-line",
+      "expectation": "{\"minimum\":-9.5,\"closing\":-0.9}",
+      "observed": "{\"minimum\":-9.5,\"closing\":-0.9}",
+      "inputFingerprint": "10a1f6f7c82f6bd245474a4c9c664ff9ec499893a2b024179b738549069355c0",
+      "outputFingerprint": "f0170f394eb62455c63ac5567d013f85c5d550d48d4204d574f3e70aae8ae0d1",
+      "passed": true
+    },
+    {
+      "id": "absent-minimum-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"gap\":true}",
+      "inputFingerprint": "930f427b0f9d19788ac91f0237f3601c8722fde00f176ce2702d987d4647dfe2",
+      "outputFingerprint": "0db07366fce93b214fbc81649b201478159e40559cfb8ad9139202709214607d",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "774888dee3220bbcc2f8cb25acf4539ab39f4193a2e36ebcc23a3d0f9999e2f1",
+  "notes": "Synthetic deterministic execution calibrated on ficha C18. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

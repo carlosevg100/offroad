@@ -10,7 +10,7 @@ const temporary = await mkdtemp(join(tmpdir(), 'offroad-capital-contracts-'));
 try {
   const outfile = join(temporary, 'contracts.mjs');
   await build({entryPoints: [join(root, 'packages/financial-model/src/capital-executor-contracts.ts')], outfile, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
-  const {capitalContractPreparationV2ExecutorContracts, capitalProcedurePacketV2ExecutorContracts, capitalDecisionExecutorContracts, capitalContractPreparationExecutorContracts, capitalProcedurePacketExecutorContracts, fichaCalculationExecutorContracts, investmentDecisionPacketExecutorContracts, financingComparisonPacketExecutorContracts, relativeDebtCostPacketExecutorContracts, debtCapacityPacketExecutorContracts} = await import(pathToFileURL(outfile));
+  const {capitalContractPreparationV2ExecutorContracts, capitalProcedurePacketV2ExecutorContracts, capitalDecisionExecutorContracts, capitalContractPreparationExecutorContracts, capitalProcedurePacketExecutorContracts, fichaCalculationExecutorContracts, investmentDecisionPacketExecutorContracts, financingComparisonPacketExecutorContracts, relativeDebtCostPacketExecutorContracts, debtCapacityPacketExecutorContracts, debtTablePacketExecutorContracts, covenantHeadroomPacketExecutorContracts, weeklyCashPacketExecutorContracts} = await import(pathToFileURL(outfile));
   await writeFile(join(root, 'packages/financial-model/contracts/capital-contract-preparation-v2.json'), JSON.stringify(capitalContractPreparationV2ExecutorContracts()) + '\n');
   await writeFile(join(root, 'packages/financial-model/contracts/capital-procedure-packet-v2.json'), JSON.stringify(capitalProcedurePacketV2ExecutorContracts()) + '\n');
   await writeFile(join(root, 'packages/financial-model/contracts/capital-decision-delivery.json'), JSON.stringify(capitalDecisionExecutorContracts()) + '\n');
@@ -20,5 +20,8 @@ try {
   await writeFile(join(root, 'packages/financial-model/contracts/financing-comparison-packet.json'), JSON.stringify(financingComparisonPacketExecutorContracts()) + '\n');
   await writeFile(join(root, 'packages/financial-model/contracts/relative-debt-cost-packet.json'), JSON.stringify(relativeDebtCostPacketExecutorContracts()) + '\n');
   await writeFile(join(root, 'packages/financial-model/contracts/debt-capacity-packet.json'), JSON.stringify(debtCapacityPacketExecutorContracts()) + '\n');
+  await writeFile(join(root, 'packages/financial-model/contracts/debt-table-packet.json'), JSON.stringify(debtTablePacketExecutorContracts()) + '\n');
+  await writeFile(join(root, 'packages/financial-model/contracts/covenant-headroom-packet.json'), JSON.stringify(covenantHeadroomPacketExecutorContracts()) + '\n');
+  await writeFile(join(root, 'packages/financial-model/contracts/weekly-cash-packet.json'), JSON.stringify(weeklyCashPacketExecutorContracts()) + '\n');
   for (const {name, ...contract} of fichaCalculationExecutorContracts()) await writeFile(join(root, `packages/financial-model/contracts/${name}.json`), JSON.stringify(contract) + '\n');
 } finally {await rm(temporary, {recursive: true, force: true});}

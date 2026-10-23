@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-company-debt-table-2026-10-23-v1-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "build-company-debt-table",
+    "version": "2026.10.23-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareDebtTablePacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/debt-table-runs.test-support.ts",
+    "exportName": "buildDebtTableRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-23T17:06:36.814Z",
+    "finishedAt": "2026-10-23T17:06:36.906Z",
+    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "af30e94bfa915abb4545d11125ed08216c8b88eaac43697ae2cc7171d62dd56b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-result-in-request",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6b5cda6cc33f02dfe2128958a9e53df60be109c822dcad22004feb30d8ede6ae",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-grant-in-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e11884202ecba61e1477952ceca602925215f3ba8fd5344b0b12cf62cdc33a34",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "leverage-names-unknown-view",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8c35124b958e4b43942975a522e90f295cfeb9505d8cae7375504a4749aaca5f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "duplicate-item",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a7112c4ef7741c53a33e45846e0e0eeb1ec3080a41fab504658b8783e5473277",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "payment-on-the-reference-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e1062b62c566a51f16b6250a5c25689a874a958c5f9acf276860fac986474541",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "drawn-above-limit",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c40b8a134f78d5715d48cb18cd0b06925df0468b4cee6e1d534d994aab5e21ef",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "basket-of-an-unknown-instrument",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6e6aafc4496a73fe0ff4bead307297933008c71652526bb97f7c18c479c0387e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "view-repeats-a-component",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "89c17b9c1f5c77f8d6a8659ce9672b18fe35545ce7ab2b28e1dd8828538381f8",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "term-read-in-another-scenario",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9aa43c7f0a79f9f8b2bd0d8d75e3e70352351b7de3dca8a4e62afca0c1b1b6da",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "4d5a590a0678e56a842980e617d5a53365af7552cb5a089356e9ab90b185a09c",
+  "notes": "Synthetic deterministic execution calibrated on ficha C10. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

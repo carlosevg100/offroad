@@ -1,0 +1,57 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "project-weekly-cash",
+  "version": "2026.10.23-v1"
+ },
+ "commit": "7391158da9c7fc5a49d929eb3d65fef594cb587e",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/project-weekly-cash.md",
+   "sha256": "61dacc6122d5bac7afec67d2203b7e4c422fb19945cc08b3003a9bd52e99f8b9"
+  },
+  {
+   "path": "packages/financial-model/src/weekly-cash-packet.ts",
+   "sha256": "bfca12e469f14855412f8384b5000ba3e0b9c899c95f595d36d773d06aab1cb8"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-weekly-cash.ts",
+   "sha256": "9df8b973f2e056ec060ed307e24babd1e33b2d43bedbb3e1869915044d9e3c0e"
+  },
+  {
+   "path": "packages/financial-core/src/weekly-cash.ts",
+   "sha256": "e4304ee3b1500557e09c3ad2c8878f18bbf37b26b9db255bf7a37fb8c30c79bb"
+  },
+  {
+   "path": "packages/financial-model/src/weekly-cash-runs.test-support.ts",
+   "sha256": "11a4ca019bbebdb4b0d535a9a5c145006a99662248f11feb2776f7f3460f4c7d"
+  },
+  {
+   "path": "packages/financial-model/src/weekly-cash.test-support.ts",
+   "sha256": "f24137e19999472ac497127f85ada93f98d77b60e374fc81ecea8f28fdfa3b40"
+  },
+  {
+   "path": "packages/financial-core/src/weekly-cash.fixture.ts",
+   "sha256": "acb63cb6eb1d28672b735ec9a3799df2bff3074d605f6a706a993b030ad70844"
+  },
+  {
+   "path": "packages/financial-model/src/ficha-calculation-results.ts",
+   "sha256": "37f723801e420be08ebd9757129d60783763b92a82577e3bc3ab88ac1d10de7c"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C18/modelo_c18.py",
+   "sha256": "a14b8fd4845a9871a02f523f0a45a3d289f071dac6589ce37994457206eb79b5"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C18/resultados.json",
+   "sha256": "470d338434a2b69a4a5d094fb2fc568c86ef2888ecf695e49cc81ff9cd009423"
+  }
+ ]
+}

@@ -105,6 +105,28 @@ describe("ficha procedure authorship, without invented execution approval", () =
     expect(built.grantsExecution).toBe(false);
   });
 
+  it.each([
+    ["build-company-debt-table", "prepareDebtTablePacket"],
+    ["measure-covenant-headroom", "prepareCovenantHeadroomPacket"],
+    ["project-weekly-cash", "prepareWeeklyCashPacket"],
+  ] as const)("implements lote 2 method %s on recorded runs without granting execution or approval", (id, exportName) => {
+    const method = library.methods.find(m => m.procedure.id === id)!;
+    expect(method.procedure.version).toBe("2026.10.23-v1");
+    expect(["implemented", "ai_reviewed", "tested"]).toContain(method.procedure.maturity);
+    expect(method.procedure.owner.approvedBy).toBeUndefined();
+    expect(method.procedure.implementation?.executor).toEqual({module: "@offroad/financial-model", exportName});
+    expect(method.composition?.authoringStatus).toBe("ready_for_review");
+    expect(method.composition?.budget).toEqual({maxModelCalls: 0, maxDurationMs: 31000, maxCostMinorUnits: 0, currency: "BRL"});
+    const built = procedureBuildProvenance.find(p => p.procedure.id === id)!;
+    if (built.schemaVersion !== "compiled-procedure-manifest.v1") throw new Error("compiled manifest expected");
+    const calculations = built.components.filter(c => c.executor !== null);
+    expect(calculations).toHaveLength(1);
+    expect(calculations[0]!.executor).toMatchObject({module: "@offroad/financial-model", exportName, version: "2026.10.23-v1"});
+    expect(calculations[0]!.evidence.map(e => e.path)).toEqual(expect.arrayContaining(["gold", "adversarial", "consistency"].map(k =>
+      `packages/credit-playbook/knowledge/reviews/runs/${id}-2026-10-23-v1-${k}/run.json`)));
+    expect(built.grantsExecution).toBe(false);
+  });
+
   it("compiles the investment-first v5 candidate without replacing or approving the published v4", () => {
     const filename = join(knowledge, "candidates/capital/prepare-capital-structure-decision-2026.10.07-v5.md");
     const candidate = compileMethodDocument(readFileSync(filename, "utf8"), filename);

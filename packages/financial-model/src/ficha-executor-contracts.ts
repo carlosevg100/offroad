@@ -5,8 +5,11 @@ import {adoptedRelativeDebtCostInputSchema, calculateAdoptedRelativeDebtCost} fr
 import {adoptedDebtCapacityInputSchema, calculateAdoptedDebtCapacity} from "./adopted-debt-capacity";
 import {adoptedInvestmentAnalysisInputSchema, calculateAdoptedInvestmentAnalysis} from "./adopted-investment-analysis";
 import {adoptedFinancingComparisonInputSchema, calculateAdoptedFinancingComparison} from "./adopted-financing-comparison";
+import {adoptedDebtTableInputSchema, calculateAdoptedDebtTable} from "./adopted-debt-table";
+import {adoptedCovenantHeadroomInputSchema, calculateAdoptedCovenantHeadroom} from "./adopted-covenant-headroom";
+import {adoptedWeeklyCashInputSchema, calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
 import {adoptedFinancingProposalOutputSchema, adoptedRelativeDebtCostOutputSchema,
-  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema} from "./ficha-calculation-results";
+  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema, adoptedDebtTableOutputSchema, adoptedCovenantHeadroomOutputSchema, adoptedWeeklyCashOutputSchema} from "./ficha-calculation-results";
 
 export const fichaCalculationExecutorVersion = "2026.10.07-v1";
 /** Build-owned entry points validate the complete result, including operands, trace,
@@ -26,6 +29,15 @@ export function calculateInvestmentAnalysisEvidence(raw: unknown) {
 export function calculateFinancingComparisonEvidence(raw: unknown) {
   const result = calculateAdoptedFinancingComparison(raw); adoptedFinancingComparisonOutputSchema.parse(result); return result;
 }
+export function calculateDebtTableEvidence(raw: unknown) {
+  const result = calculateAdoptedDebtTable(raw); adoptedDebtTableOutputSchema.parse(result); return result;
+}
+export function calculateCovenantHeadroomEvidence(raw: unknown) {
+  const result = calculateAdoptedCovenantHeadroom(raw); adoptedCovenantHeadroomOutputSchema.parse(result); return result;
+}
+export function calculateWeeklyCashEvidence(raw: unknown) {
+  const result = calculateAdoptedWeeklyCash(raw); adoptedWeeklyCashOutputSchema.parse(result); return result;
+}
 
 function contracts(id: string, exportName: string, input: z.ZodType, output: z.ZodType) {
   const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
@@ -42,5 +54,8 @@ export function fichaCalculationExecutorContracts() {
     {name: "debt-capacity-evidence", ...contracts("debt-capacity-evidence", "calculateDebtCapacityEvidence", adoptedDebtCapacityInputSchema, adoptedDebtCapacityOutputSchema)},
     {name: "investment-analysis-evidence", ...contracts("investment-analysis-evidence", "calculateInvestmentAnalysisEvidence", adoptedInvestmentAnalysisInputSchema, adoptedInvestmentAnalysisOutputSchema)},
     {name: "financing-comparison-evidence", ...contracts("financing-comparison-evidence", "calculateFinancingComparisonEvidence", adoptedFinancingComparisonInputSchema, adoptedFinancingComparisonOutputSchema)},
+    {name: "debt-table-evidence", ...contracts("debt-table-evidence", "calculateDebtTableEvidence", adoptedDebtTableInputSchema, adoptedDebtTableOutputSchema)},
+    {name: "covenant-headroom-evidence", ...contracts("covenant-headroom-evidence", "calculateCovenantHeadroomEvidence", adoptedCovenantHeadroomInputSchema, adoptedCovenantHeadroomOutputSchema)},
+    {name: "weekly-cash-evidence", ...contracts("weekly-cash-evidence", "calculateWeeklyCashEvidence", adoptedWeeklyCashInputSchema, adoptedWeeklyCashOutputSchema)},
   ];
 }

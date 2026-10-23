@@ -1,0 +1,57 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "measure-covenant-headroom",
+  "version": "2026.10.23-v1"
+ },
+ "commit": "3d6d4e4ff812accfe055f0f8f1e226cfd96fb2de",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/measure-covenant-headroom.md",
+   "sha256": "f867efb52a05882580a48a659ba2a9830170d1cf874b29c668142973d82b1630"
+  },
+  {
+   "path": "packages/financial-model/src/covenant-headroom-packet.ts",
+   "sha256": "cac9636a0706f7b89fedf8ebd11f0a005fb1f8e0bc79a2b3f47e1a4a0a869d18"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-covenant-headroom.ts",
+   "sha256": "4e1808652d3c9f5cda59823fe732a3f8696914d43fc4925773e89da13f7bbe22"
+  },
+  {
+   "path": "packages/financial-core/src/covenant-headroom.ts",
+   "sha256": "fa2fc54be886b578be12b4880a6fea7eda4b142b35de084ccbda8fa238abeabd"
+  },
+  {
+   "path": "packages/financial-model/src/covenant-headroom-runs.test-support.ts",
+   "sha256": "64f99282bfbf1603e2ee0962aca273ae87f5b377c16802890a0f5f036dcdad0e"
+  },
+  {
+   "path": "packages/financial-model/src/covenant-headroom.test-support.ts",
+   "sha256": "db7934c438e6c817195d7a806370e816d01a2e15b379e14079cd739d081450e0"
+  },
+  {
+   "path": "packages/financial-model/src/ficha-calculation-results.ts",
+   "sha256": "64465ab85d50dba934029112149c7e3f855c6485f351df9ad3bdd616eecf706f"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C12/modelo_c12.py",
+   "sha256": "94052d68c304eb4bf03314dc85a45e8a9be182f963af1e254f39203fd4f02bd0"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C12/resultados.json",
+   "sha256": "adbeacdd73c0be63989d2752aac785bb289013681f9252edf7f86c507722834c"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py",
+   "sha256": "f2fb8619f2a04a9b02401a96cc2efb7c8690cba42098e139a7e7b32b80c09ea8"
+  }
+ ]
+}

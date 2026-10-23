@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "build-company-debt-table-2026-10-23-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "não exposto pelo ambiente",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "build-company-debt-table",
+    "version": "2026.10.23-v1",
+    "fingerprint": "12a2ab3734006285b2ac6c07321facebd8975f782493f955346018c6780a3cbc"
+  },
+  "run": {
+    "id": "c10-r3-openai-171344",
+    "startedAt": "2026-10-23T17:08:44Z",
+    "finishedAt": "2026-10-23T17:13:36Z",
+    "commit": "ddc3671c20db40d9ad299c0aa1813c5b86bfb60e"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os oito SHA-256 fixados conferem diretamente no commit solicitado. O SHA-256 do arquivo de base coincide com o fingerprint informado. HEAD, arquivos fixados, testes e registros permaneceram idênticos nas verificações finais; a árvore terminou limpa.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/build-company-debt-table-2026-10-23-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "O campo commit da base aponta para 3d6d4e4f; a identidade dos bytes foi verificada diretamente em ddc3671c. Os experimentos adicionais carregaram os fontes desse commit em memória."
+    },
+    {
+      "claim": "Os hashes dos dois arquivos do oráculo conferem. A execução integral de modelo_c10.py reproduziu exatamente o conteúdo de resultados.json.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C10/modelo_c10.py; resultados.json",
+      "result": "confirmed",
+      "note": "A escrita do script foi interceptada para um buffer em memória. Nenhum arquivo do oráculo foi alterado."
+    },
+    {
+      "claim": "A primeira condição da segunda rodada foi corrigida: supplier_finance integra as exposições financeiras. No caso Aurora, a cadeia da CCB contém debenture-1, finame e risco-sacado, pois 6 excede 5; risco-sacado não entra na cadeia da debênture, cujo limiar é 10.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/debt-table-runs.test-support.ts",
+      "anchor": "exposures; inScope; potentiallyTriggeredBy",
+      "result": "corrected"
+    },
+    {
+      "claim": "Uma matriz de 60 cenários passou tanto no núcleo quanto no pacote: dois escopos, três estados de identificação do credor, duas bases contratuais e cinco valores. Em named_creditors, risco sacado identificado entra somente quando seu credor consta da cláusula.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/adopted-debt-table.ts; packages/financial-model/src/debt-table-packet.ts",
+      "result": "confirmed",
+      "note": "Foram exercitados os valores 0, 5, 5,000001, 6 e 17 contra limiar 5, com credor desconhecido, nomeado ou distinto."
+    },
+    {
+      "claim": "Com named_creditors, credor desconhecido e valor superior ao limiar, a entrada retorna complete=false e unresolved=[risco-sacado]. O núcleo declara cross_default_scope_unresolved; o pacote preserva a lacuna e retorna partial. Valor igual ao limiar não dispara essa condição.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/debt-table-packet.ts",
+      "anchor": "unresolved; cross_default_scope_unresolved",
+      "result": "corrected"
+    },
+    {
+      "claim": "A segunda condição da segunda rodada foi corrigida: a regressão persistida do pacote agora executa deduções 54 e 60 sobre EBITDA 54. Denominadores 0 e −6 retornam ratio=null, sem Infinity nem erro de validação. O núcleo também mantém os dois casos.",
+      "source": "packages/financial-model/src/debt-table-packet.test.ts; packages/financial-core/src/debt-table.test.ts; packages/financial-core/src/debt-table.ts",
+      "anchor": "it.each([\"54\", \"60\"]); denominator.gt(0)",
+      "result": "corrected"
+    },
+    {
+      "claim": "As correções anteriores de cross-default permanecem: escopo nominal restringe os credores; linhas sacadas entram; a comparação é estritamente superior ao limiar; thresholdBasis é obrigatório. A cadeia declara potentiallyTriggeredBy e a hipótese whole_outstanding_in_default.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/adopted-debt-table.ts",
+      "result": "confirmed",
+      "note": "Uma linha sacada em 17 aparece nas duas cadeias da Aurora. Escopos e bases desconhecidos, assim como escopo nominal sem credores, foram recusados. A saída não afirma inadimplemento efetivo."
+    },
+    {
+      "claim": "As correções anteriores de limites e cobertura permanecem. Com limite 10 e saque 6, unusedLimits é 4. Para cada categoria, examinado sem item produz confirmed_absent; não examinado sem item produz lacuna e pacote partial; não examinado com item é recusado.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/adopted-debt-table.ts; packages/financial-model/src/debt-table-packet.ts",
+      "result": "confirmed",
+      "note": "As combinações de cobertura foram executadas pelo pacote para lease, supplier_finance e guarantee_given. Nenhum componente permite somar limite não utilizado como dívida."
+    },
+    {
+      "claim": "Recálculo independente da Aurora: principal 130; juros 2,2; custo não amortizado −0,4; contábil 131,8, diferença zero. Visões 130 / 131,8 / 138 / 144; ponte contábil +2,2 −0,4; ponte de mercado +8 +6. Fiança 5 fora de todas e limite não utilizado 10.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C10/corpo.html; packages/financial-model/src/debt-table.test-support.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O cronograma recalculado reproduz 18,3 / 76,7 / 21,7 / 6,7 / 6,7. Pelas parcelas decimais adotadas, vencem 36,666672 em doze meses, ou 28,2051323%; a concentração do maior credor é 46,1538462%.",
+      "source": "packages/financial-core/src/debt-table.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C10/modelo_c10.py",
+      "result": "confirmed",
+      "note": "O recálculo usou frações racionais independentes. O horizonte inclui 30/06/2027 e exclui 01/07/2027; referência em 29/02 produz corretamente 28/02 no ano seguinte."
+    },
+    {
+      "claim": "O prazo médio ACT/365 é 1,451141144531085353 ano, confirmado por frações racionais e pelas datas adotadas. A diferença para 1,42 do oráculo é aproximadamente 0,0311411, inferior à tolerância declarada de 0,05.",
+      "source": "packages/financial-core/src/debt-table.ts; packages/financial-model/src/debt-table-runs.test-support.ts",
+      "result": "confirmed",
+      "note": "A convenção ACT/365 está documentada. O oráculo usa frações de ano distintas; a tolerância não significa identidade entre calendários."
+    },
+    {
+      "claim": "O custo nominal ponderado é 15,9247538462%, com taxas individuais 17,6576%, 17,8874% e 9,8422%. A cesta permite 15, tem 12 ocupados e saldo 3. As alavancagens são 109/54=2,0185185x e 95/51=1,8627451x; com fiança, 114/54=2,1111111x.",
+      "source": "packages/financial-core/src/debt-table.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C10/corpo.html",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os 127 subconjuntos não vazios dos componentes produziram as somas esperadas, conferidas por inteiros escalados. Inverter as visões preserva os totais e muda corretamente a base da ponte. Incluir fiança numa visão a retira de outsideEveryView.",
+      "source": "packages/financial-core/src/debt-table.ts",
+      "anchor": "componentValue; views; bridgeFromBase; outsideEveryView",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As quatro suítes passaram: 15 testes no total. A reexecução com fontes do commit reproduziu integralmente casos e fingerprints das corridas registradas: 15 gold, 10 adversariais e 6 de consistência, todos aprovados e sem chamadas de modelo.",
+      "source": "packages/financial-core/src/debt-table.test.ts; packages/financial-model/src/{debt-table-packet,adopted-debt-table,debt-table-runs}.test.ts",
+      "result": "confirmed",
+      "note": "Vitest 4.1.11, cache desativado e pool threads. Os registros históricos citam b1e23469; a prova para o commit desta revisão é a reexecução atual sobre seus bytes, com correspondência integral."
+    },
+    {
+      "claim": "As fronteiras adversariais permanecem: envelope adulterado, resultado livre, concessão fabricada, definição inexistente, IDs duplicados, pagamentos inválidos, saque acima do limite, cesta desconhecida e componentes repetidos são recusados. Principal ausente impede montar a tabela; caixa ausente mantém razões nulas.",
+      "source": "packages/financial-model/src/debt-table-runs.test-support.ts; packages/financial-model/src/adopted-debt-table.ts; packages/financial-core/src/debt-table.ts",
+      "result": "confirmed",
+      "note": "Cronograma insuficiente permanece sinalizado como parcial. Cesta excedida mostrou saldo negativo e exceeded=true; diferença contábil permaneceu explícita."
+    },
+    {
+      "claim": "Binding recusou cenário, período, unidade, moeda e perímetro incompatíveis, além de reutilização de contribuição monetária, textual ou observação. Escala monetária sem interpretação adotada gerou lacuna. Dez repetições adicionais preservaram todos os bytes, fingerprints e a entrada.",
+      "source": "packages/financial-model/src/adopted-analysis-binding.ts; packages/financial-model/src/adopted-numeric-representation.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O conteúdo corresponde ao núcleo profissional da ficha: precedência do aditamento, conciliação, definições com ponte, limites separados, risco sacado, fiança, garantias, custo, alavancagem e pedido do Registrato. Mantém explícitas a exposição potencial e a aprovação profissional pendente.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/build-company-debt-table.md; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C10/corpo.html",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Este executor não demonstra extração documental, precedência automática entre documentos, autorização do leitor SQL, atualização viva, alertas ou conversa pela interface. Integridade do envelope não autentica origem nem concede acesso. Essas fronteiras permanecem externas ao cálculo revisado.",
+      "source": "packages/financial-model/src/adopted-analysis-binding.ts; packages/credit-playbook/knowledge/procedures/capital/build-company-debt-table.md",
+      "result": "limitation"
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As duas condições da segunda rodada foram atendidas, e as correções da primeira rodada permanecem funcionais. Não foi encontrada divergência numérica além da tolerância declarada nem definição incorreta nos casos revisados. A inclusão de fornecedores convênio foi verificada no núcleo e no pacote, inclusive com credor nomeado, diferente ou desconhecido e nas fronteiras do limiar. A regressão persistida do pacote cobre agora denominadores zero e negativo. Os experimentos adicionais utilizaram fontes carregados diretamente do commit solicitado, exclusivamente em memória; as suítes foram executadas com os arquivos da árvore conferidos contra esse commit. Nenhum arquivo foi escrito por esta revisão. A aprovação técnica se limita ao método determinístico, ao leitor adotado e ao pacote nos bytes fixados; não comprova extração universal, autorização de acesso, jornada de interface, implantação ou completude documental efetiva. Não constitui aprovação humana, publicação, promoção de maturidade nem autorização de execução."
+}
