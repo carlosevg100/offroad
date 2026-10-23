@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-23T19:55:45Z",
+  "manifestHash": "729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 23/10/2026 para o procedimento Medir covenants e folga na data de apuração, versão 2026.10.23-v1 (ficha C12). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/measure-covenant-headroom-2026-10-23-v1-publication/founder-instruction.json; SHA-256 2b61ae266a76e0d9f5ccbedb300405d7ce1d96ea0d0bb9e004d5891e35df54c5. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}
