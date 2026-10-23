@@ -66,7 +66,10 @@ describe("debt table premises proposed from a turn", () => {
     expect(shouldProposeDebtTablePremises("Revise o contrato e o cronograma da dívida.", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("Vou confirmar o saldo de R$ 40 milhões amanhã.", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("A CCB do Bradesco tem saldo de R$ 40 milhões a CDI + 2,6%", false, earlier)).toBe(true);
-    expect(shouldProposeDebtTablePremises("O Registrato chega em 2 dias", false, earlier)).toBe(false);
+    expect(shouldProposeDebtTablePremises("Te mando o Registrato em 2 dias", false, earlier)).toBe(false);
+    expect(shouldProposeDebtTablePremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, earlier)).toBe(false);
+    // A due date of the fact is an answer, and a noun that looks like a verb is not a request.
+    for (const m of ["A CCB de R$ 40 milhões vence amanhã.", "Montante de R$ 40 milhões."]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(true);
     expect(shouldProposeDebtTablePremises("Qual o saldo da CCB?", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("A CCB tem saldo de R$ 40 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
     // The latest premise question decides which step an answer continues.

@@ -15,8 +15,15 @@ const interrogative = /^((e|mas|entao|ok|ah)[\s,]+)?(qual|quais|quanto|quanta|qu
 const explanation = /^((e|mas|entao|ok|ah)[\s,]+)?((pode|poderia|consegue|voce pode|me|por favor)\s+)*(explica|explique|explicar|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b|\bo que significa\b/;
 const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
 
-/** A remark that closes or defers rather than answers ("obrigado", "mando em 2 dias"). */
-const deferral = /^(obrigad\w*|valeu|ok,? obrigad\w*)\b|\b(vou|vamos|irei|iremos) (enviar|mandar|pensar|ver|verificar|checar|confirmar|levantar)\b|\b(mando|mandamos|envio|enviamos)\b|\b(depois|amanha|semana que vem)\b|\bem \d+ (dias?|horas?|semanas?)\b|\b(chega|chegam) em\b/;
+/** The speaker promises to answer later, in the first person ("vou confirmar", "mando a ata em 2
+ * dias", "te passo"). A due date of the fact itself ("a folha vence amanhã") is not a deferral. */
+const deferrals = [
+  /\b(vou|vamos|irei|iremos)\s+(confirmar|mandar|enviar|verificar|checar|levantar|passar|ver)\b/,
+  /\b(mando|envio|confirmo|passo|levanto|verifico)\s+(\S+\s+){0,6}?(depois|amanha|mais tarde|em seguida|na semana que vem|em \d+ (dias?|horas?|semanas?))\b/,
+  /\b(te|lhe)\s+(mando|envio|passo|confirmo)\b/,
+  /\bainda nao tenho\b/, /\bnao sei ainda\b/,
+];
+const defers = (text: string) => deferrals.some((d) => d.test(text));
 /** A short answer: a qualitative gap ("É para refinanciamento.") is answered in a sentence or two. */
 const shortAnswer = 280;
 
@@ -27,21 +34,24 @@ const shortAnswer = 280;
 export function answersWithData(message: string, data: RegExp, qualitative?: RegExp): boolean {
   const text = foldCue(message).trim();
   const asks = interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
-  if (asks || deferral.test(text)) return false;
+  if (asks || defers(text)) return false;
   if (data.test(text) && quantity.test(text)) return true;
   return text.length <= shortAnswer && (data.test(text) || !!qualitative?.test(text));
 }
 
 /** The objectives of another premise method: an answer that compiles to one of them is that method's. */
 const specificKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash"]);
-/** A request for new work opens with its verb ("Monte", "Revise", "Prepare a"). The router reads some
- * plain answers as other work ("O covenant é 3x" compiles to a risk matrix), so a non-neutral kind
- * blocks a continuation only when the message asks for work; a request never answers. */
-const command = /^((e|mas|entao|ok|agora|tambem)[\s,]+)?((pode|poderia|consegue|voce pode|por favor|me)\s+)*(mont\w*|fa(ca|z|zer)|prepar\w*|revis\w*|cri(e|a|ar)|elabor\w*|ger(e|a|ar)|analis\w*|compar\w*|projet\w*|calcul\w*|mape\w*|monitor\w*|acompanh\w*|organiz\w*|list(e|a|ar)|levant\w*|escrev\w*|redij\w*|redigir|constru\w*|simul\w*|test(e|a|ar)|avali\w*|estrutur\w*|desenh\w*|(quero|preciso|gostaria) que)\b/;
-/** Whether a message may continue a premise question of `kind`: it compiles to the same kind, or it
- * is not a request for work and does not compile to another premise method. Declarative answers compile
- * to neutral kinds (ambiguous, factual question, capital strategy, company analysis, documents to case);
- * another kind passes only when the router misread an answer, as with a bare "covenant". */
+/** A request for other work opens with an imperative from this list, whole words only, so nouns
+ * ("Montante", "Projeto", "Projeção", "Análise") never match. */
+const imperatives = ["monte", "monta", "montar", "revise", "revisa", "revisar", "prepare", "prepara", "preparar", "projete", "projeta", "projetar",
+  "calcule", "calcula", "calcular", "analise", "analisa", "analisar", "atualize", "atualiza", "atualizar", "verifique", "verifica", "verificar",
+  "compare", "compara", "comparar", "elabore", "elabora", "gere", "gera", "crie", "cria", "liste", "lista", "mostre", "mostra", "faca", "faz", "fazer",
+  "refaca", "simule", "simula", "avalie", "avalia", "levante", "levanta", "organize", "organiza", "extraia", "extrai"];
+const command = new RegExp(`^((e|mas|entao|ok|agora)[\\s,]+)?((pode|poderia|por favor|quero que|preciso que|voce pode)[\\s,]+)*(${imperatives.join("|")})(?![a-z0-9])`);
+/** Whether a message may continue a premise question of `kind`: the same compiled kind continues (a
+ * request of that kind is the same request); another premise method's kind refuses; a request for
+ * other work refuses; otherwise a declarative answer continues, also when the router misreads it as
+ * other work (a bare "covenant" compiles to a risk matrix). */
 function mayContinue(kind: PremiseCueKind, message: string, hasAttachments: boolean): boolean {
   const compiled = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
   if (compiled === kind) return true;
@@ -61,6 +71,8 @@ export function premiseCueKind(message: string, hasAttachments: boolean): Premis
 /** Whether the turn proposes the premises of one kind: the message asks for it, or it answers with
  * data while the latest earlier premise question among the recent messages is of this kind. */
 export function proposesPremisesOfKind(kind: PremiseCueKind, data: RegExp, message: string, hasAttachments: boolean, earlierUserMessages: readonly string[], qualitative?: RegExp): boolean {
+  // A promise to answer later is not an answer, even when it names the work.
+  if (defers(foldCue(message).trim())) return false;
   const own = premiseCueKind(message, hasAttachments);
   if (own) return own === kind;
   if (!answersWithData(message, data, qualitative) || !mayContinue(kind, message, hasAttachments)) return false;

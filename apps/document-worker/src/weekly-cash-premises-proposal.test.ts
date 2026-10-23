@@ -54,9 +54,11 @@ describe("weekly cash premises proposed from a turn", () => {
     const earlier = ["Como fica o caixa até dezembro e o que vence?"];
     expect(shouldProposeWeeklyCashPremises("O saldo hoje é R$ 41 milhões e o caixa mínimo R$ 15 milhões", false, earlier)).toBe(true);
     expect(shouldProposeWeeklyCashPremises("A folha é R$ 3 milhões, certo?", false, earlier)).toBe(true);
-    for (const m of ["O 13º está incluído na folha.", "Não pagamos IR por estimativa."]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
+    for (const m of ["O 13º está incluído na folha.", "Não pagamos IR por estimativa.", "A folha de R$ 3 milhões vence amanhã."]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
     for (const m of ["Obrigado", "O 13º está incluído?", "Vou confirmar a folha de R$ 3 milhões amanhã.", "Monte uma matriz de riscos com o caixa de R$ 41 milhões."])
       expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
+    // A promise to answer later refuses even when it names the work itself.
+    for (const thread of [earlier, []]) expect(shouldProposeWeeklyCashPremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, thread)).toBe(false);
     expect(shouldProposeWeeklyCashPremises("Quanto é a folha?", false, earlier)).toBe(false);
     expect(shouldProposeWeeklyCashPremises("Mando o fluxo em 2 dias", false, earlier)).toBe(false);
     expect(shouldProposeWeeklyCashPremises("O saldo é R$ 41 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
