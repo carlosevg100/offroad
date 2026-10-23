@@ -44,6 +44,12 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareCovenantHeadroomPacket', input: 'covenantHeadroomPacketInputSchema', output: 'covenantHeadroomPacketOutputSchema'}),
     entry: 'export {prepareCovenantHeadroomPacket, covenantHeadroomPacketInputSchema, covenantHeadroomPacketOutputSchema} from "../../packages/financial-model/src/covenant-headroom-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'project-weekly-cash',
+    executorKey: '@offroad/financial-model#prepareWeeklyCashPacket', executorVersion: '2026.10.23-v1',
+    exports: Object.freeze({calculate: 'prepareWeeklyCashPacket', input: 'weeklyCashPacketInputSchema', output: 'weeklyCashPacketOutputSchema'}),
+    entry: 'export {prepareWeeklyCashPacket, weeklyCashPacketInputSchema, weeklyCashPacketOutputSchema} from "../../packages/financial-model/src/weekly-cash-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */

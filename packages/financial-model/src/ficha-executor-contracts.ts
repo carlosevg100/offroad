@@ -7,8 +7,9 @@ import {adoptedInvestmentAnalysisInputSchema, calculateAdoptedInvestmentAnalysis
 import {adoptedFinancingComparisonInputSchema, calculateAdoptedFinancingComparison} from "./adopted-financing-comparison";
 import {adoptedDebtTableInputSchema, calculateAdoptedDebtTable} from "./adopted-debt-table";
 import {adoptedCovenantHeadroomInputSchema, calculateAdoptedCovenantHeadroom} from "./adopted-covenant-headroom";
+import {adoptedWeeklyCashInputSchema, calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
 import {adoptedFinancingProposalOutputSchema, adoptedRelativeDebtCostOutputSchema,
-  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema, adoptedDebtTableOutputSchema, adoptedCovenantHeadroomOutputSchema} from "./ficha-calculation-results";
+  adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema, adoptedDebtTableOutputSchema, adoptedCovenantHeadroomOutputSchema, adoptedWeeklyCashOutputSchema} from "./ficha-calculation-results";
 
 export const fichaCalculationExecutorVersion = "2026.10.07-v1";
 /** Build-owned entry points validate the complete result, including operands, trace,
@@ -34,6 +35,9 @@ export function calculateDebtTableEvidence(raw: unknown) {
 export function calculateCovenantHeadroomEvidence(raw: unknown) {
   const result = calculateAdoptedCovenantHeadroom(raw); adoptedCovenantHeadroomOutputSchema.parse(result); return result;
 }
+export function calculateWeeklyCashEvidence(raw: unknown) {
+  const result = calculateAdoptedWeeklyCash(raw); adoptedWeeklyCashOutputSchema.parse(result); return result;
+}
 
 function contracts(id: string, exportName: string, input: z.ZodType, output: z.ZodType) {
   const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
@@ -52,5 +56,6 @@ export function fichaCalculationExecutorContracts() {
     {name: "financing-comparison-evidence", ...contracts("financing-comparison-evidence", "calculateFinancingComparisonEvidence", adoptedFinancingComparisonInputSchema, adoptedFinancingComparisonOutputSchema)},
     {name: "debt-table-evidence", ...contracts("debt-table-evidence", "calculateDebtTableEvidence", adoptedDebtTableInputSchema, adoptedDebtTableOutputSchema)},
     {name: "covenant-headroom-evidence", ...contracts("covenant-headroom-evidence", "calculateCovenantHeadroomEvidence", adoptedCovenantHeadroomInputSchema, adoptedCovenantHeadroomOutputSchema)},
+    {name: "weekly-cash-evidence", ...contracts("weekly-cash-evidence", "calculateWeeklyCashEvidence", adoptedWeeklyCashInputSchema, adoptedWeeklyCashOutputSchema)},
   ];
 }

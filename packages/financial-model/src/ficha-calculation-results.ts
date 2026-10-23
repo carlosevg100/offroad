@@ -210,3 +210,19 @@ export const adoptedCovenantHeadroomOutputSchema = z.strictObject({...common, sc
   consequence: z.strictObject({acceleration: z.enum(["automatic", "non_automatic"]).nullable(), process: text.nullable(), crossDefault: text.nullable()}),
   exclusions: z.array(z.enum(["projection", "contract_extraction", "waiver_negotiation", "credit_approval", "method_release"])).length(5)
     .refine(v => v.join("|") === "projection|contract_extraction|waiver_negotiation|credit_approval|method_release", "Exact exclusion ledger required")});
+
+const weekRow = z.strictObject({weekStart: date, inflows: decimal, outflows: decimal, closing: decimal, belowMinimum: z.boolean(),
+  largestOutflows: z.array(z.strictObject({label: text, amount: decimal})).max(3)});
+export const weeklyCashOutputSchema = z.strictObject({schemaVersion: z.literal("weekly-cash.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/),
+  firstMonday: date, horizonEnd: date, openingCash: decimal, minimumCash: decimal,
+  cases: z.array(z.strictObject({id: version, label: text, role: z.enum(["informed", "alternative"]), rows: z.array(weekRow).min(1).max(104),
+    minimum: z.strictObject({weekStart: date, closing: decimal}), weeksBelowMinimum: z.array(date).max(104), closing: decimal, shortfallToMinimum: decimal})).min(1).max(8),
+  calendar: z.array(z.strictObject({date, label: text, category: z.enum(["debt", "statutory"]), amount: decimal})).max(2000),
+  actions: z.array(z.strictObject({id: version, label: text, cases: z.array(version).max(8), amount: decimal, days: z.number().int().min(1).max(3660),
+    interest: decimal, iof: decimal, fee: decimal, cost: decimal, openAtCovenantTest: z.boolean().nullable(),
+    covenantEffect: z.strictObject({grossDebt: decimal, cash: decimal, netDebt: z.literal("0")}).nullable()})).max(8),
+  reconciliation: z.strictObject({date, weekly: decimal, projection: decimal, difference: decimal}).nullable()});
+export const adoptedWeeklyCashOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-weekly-cash.v1"),
+  analysisId: z.uuid(), perimeter: text, weekly: weeklyCashOutputSchema.nullable(),
+  exclusions: z.array(z.enum(["business_day_inference", "intraday_liquidity", "receivables_assignment_eligibility", "credit_approval", "method_release"])).length(5)
+    .refine(v => v.join("|") === "business_day_inference|intraday_liquidity|receivables_assignment_eligibility|credit_approval|method_release", "Exact exclusion ledger required")});

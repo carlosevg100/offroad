@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "project-weekly-cash-2026-10-23-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "project-weekly-cash",
+    "version": "2026.10.23-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareWeeklyCashPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/weekly-cash-runs.test-support.ts",
+    "exportName": "buildWeeklyCashRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-23T16:46:16.206Z",
+    "finishedAt": "2026-10-23T16:46:16.351Z",
+    "commit": "923553341b6c1c4027b67b3b7fd6523fcdd20d1d"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tightest-week-is-the-week-of-21-december",
+      "expectation": "{\"week\":\"2026-12-21\",\"closing\":7.5,\"withinTolerance\":true}",
+      "observed": "{\"week\":\"2026-12-21\",\"closing\":7.5,\"withinTolerance\":true}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "two-weeks-under-the-minimum",
+      "expectation": "[\"2026-12-14\",\"2026-12-21\"]",
+      "observed": "[\"2026-12-14\",\"2026-12-21\"]",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "causes-named-in-the-week-of-14-december",
+      "expectation": "[\"Debênture 2021, amortização\",\"Fornecedores de insumos\",\"Debênture 2021, juros semestrais\"]",
+      "observed": "[\"Debênture 2021, amortização\",\"Fornecedores de insumos\",\"Debênture 2021, juros semestrais\"]",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "december-closing-reconciles-with-the-projection",
+      "expectation": "{\"weekly\":16.1,\"projection\":16,\"near\":true}",
+      "observed": "{\"weekly\":16.1,\"projection\":16,\"near\":true}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "closing-hides-the-week",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "calendar-of-what-falls-due-by-31-december",
+      "expectation": "{\"debt15dec\":[[\"CCB Bradesco, juros trimestrais\",1.7],[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Finame (principal e juros)\",0.8]],\"thirteenth\":[[\"2026-11-30\",1.5],[\"2026-12-18\",2.1]]}",
+      "observed": "{\"debt15dec\":[[\"CCB Bradesco, juros trimestrais\",1.7],[\"Debênture 2021, amortização\",15],[\"Debênture 2021, juros semestrais\",5.1],[\"Finame (principal e juros)\",0.8]],\"thirteenth\":[[\"2026-11-30\",1.5],[\"2026-12-18\",2.1]]}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "actions-costed-for-the-time-in-use",
+      "expectation": "[[\"conta-garantida\",0.12],[\"antecipacao\",0.25],[\"linha-25\",0.87]]",
+      "observed": "[[\"conta-garantida\",0.12],[\"antecipacao\",0.25],[\"linha-25\",0.87]]",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "cheapest-covering-action-is-the-existing-overdraft",
+      "expectation": "{\"id\":\"conta-garantida\",\"worst\":15.5}",
+      "observed": "{\"id\":\"conta-garantida\",\"worst\":15.5}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "overdraft-open-at-the-covenant-test-nets-to-zero",
+      "expectation": "{\"open\":true,\"effect\":{\"grossDebt\":\"8\",\"cash\":\"8\",\"netDebt\":\"0\"}}",
+      "observed": "{\"open\":true,\"effect\":{\"grossDebt\":\"8\",\"cash\":\"8\",\"netDebt\":\"0\"}}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "a-harvest-of-30-million",
+      "expectation": "{\"minimum\":2.5,\"weeks\":3}",
+      "observed": "{\"minimum\":2.5,\"weeks\":3}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "harvest-delayed-two-weeks",
+      "expectation": "{\"minimum\":12,\"closing\":18.4}",
+      "observed": "{\"minimum\":12,\"closing\":18.4}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "without-the-harvest-line",
+      "expectation": "{\"minimum\":-9.5,\"closing\":-0.9}",
+      "observed": "{\"minimum\":-9.5,\"closing\":-0.9}",
+      "inputFingerprint": "0a0a5cd8e84913b96f911f596356c3fec7a3680c16b14b0403ac68c1c9c46756",
+      "outputFingerprint": "f8614e2515497f1f0bba2ea394f3eef4960e1952c7bb0e68ab382cea91a71b5b",
+      "passed": true
+    },
+    {
+      "id": "absent-minimum-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"gap\":true}",
+      "inputFingerprint": "4a7b48a201ff0c636ccc5e12b955e7d48a37abfc03550e66274eb3a5fd6f75c8",
+      "outputFingerprint": "a9d89aa7f1bcdb2d87bdb9629043ec84e31441f3d165d7d199c0f85265c44e22",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "ce84a2fa81da52fd529cdff4087ea39c8d4a06d248720c151aa8655010bffe77",
+  "notes": "Synthetic deterministic execution calibrated on ficha C18. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

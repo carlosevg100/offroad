@@ -55,6 +55,8 @@ export function buildMethodManifest(repositoryRoot: string) {
     {path: "packages/financial-model/contracts/debt-table-packet.json", exportName: "prepareDebtTablePacket"},
     {path: "packages/financial-model/contracts/covenant-headroom-evidence.json", exportName: "calculateCovenantHeadroomEvidence"},
     {path: "packages/financial-model/contracts/covenant-headroom-packet.json", exportName: "prepareCovenantHeadroomPacket"},
+    {path: "packages/financial-model/contracts/weekly-cash-evidence.json", exportName: "calculateWeeklyCashEvidence"},
+    {path: "packages/financial-model/contracts/weekly-cash-packet.json", exportName: "prepareWeeklyCashPacket"},
     {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
     {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},

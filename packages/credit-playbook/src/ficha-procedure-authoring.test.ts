@@ -108,6 +108,7 @@ describe("ficha procedure authorship, without invented execution approval", () =
   it.each([
     ["build-company-debt-table", "prepareDebtTablePacket"],
     ["measure-covenant-headroom", "prepareCovenantHeadroomPacket"],
+    ["project-weekly-cash", "prepareWeeklyCashPacket"],
   ] as const)("implements lote 2 method %s on recorded runs without granting execution or approval", (id, exportName) => {
     const method = library.methods.find(m => m.procedure.id === id)!;
     expect(method.procedure.version).toBe("2026.10.23-v1");
