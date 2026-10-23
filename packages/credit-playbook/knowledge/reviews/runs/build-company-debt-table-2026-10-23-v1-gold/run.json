@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-company-debt-table-2026-10-23-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "build-company-debt-table",
+    "version": "2026.10.23-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareDebtTablePacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/debt-table-runs.test-support.ts",
+    "exportName": "buildDebtTableRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-23T16:29:17.237Z",
+    "finishedAt": "2026-10-23T16:29:17.312Z",
+    "commit": "9ce3f6bdb8bd275b77626c8e63fbfb67d3b20964"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "principal-and-accounting-balance-reconcile-exactly",
+      "expectation": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
+      "observed": "{\"principal\":130,\"accrued\":2.2,\"cost\":-0.4,\"accounting\":131.8,\"status\":\"exact\"}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "credit-line-is-a-limit-not-debt",
+      "expectation": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
+      "observed": "{\"limit\":10,\"unused\":10,\"inEscritura\":130}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "four-definitions-with-the-bridge",
+      "expectation": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
+      "observed": "{\"totals\":[130,131.8,138,144],\"market\":[[\"lease\",8],[\"supplier_finance\",6]]}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "bank-guarantee-stays-outside-every-balance",
+      "expectation": "[[\"fianca\",5]]",
+      "observed": "[[\"fianca\",5]]",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "schedule-by-year-independent-oracle",
+      "expectation": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
+      "observed": "[[2026,18.3],[2027,76.7],[2028,21.7],[2029,6.7],[2030,6.7]]",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "tenor-due-in-twelve-months-and-concentration",
+      "expectation": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
+      "observed": "{\"averageLifeNearOracle\":true,\"due\":36.7,\"dueShare\":28.2,\"largest\":[\"Debenturistas\",46.2]}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "average-nominal-cost-under-the-adopted-curve",
+      "expectation": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
+      "observed": "{\"average\":15.92,\"rows\":[17.66,17.89,9.84]}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "basket-occupied-by-the-bradesco-security",
+      "expectation": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
+      "observed": "{\"holder\":\"debenture-1\",\"basket\":15,\"occupied\":12,\"remaining\":3}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "cross-default-chain-from-the-lowest-threshold",
+      "expectation": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,[\"ccb-bradesco\",\"finame\"]]]}",
+      "observed": "{\"lowest\":[\"ccb-bradesco\",5],\"chain\":[[\"ccb-bradesco\",5,[\"debenture-1\",\"finame\"]],[\"debenture-1\",10,[\"ccb-bradesco\",\"finame\"]]]}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "leverage-in-the-bank-and-indenture-definitions",
+      "expectation": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
+      "observed": "{\"bank\":[109,54,2.02],\"indenture\":[95,51,1.86]}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "completeness-asks-for-the-external-register",
+      "expectation": "{\"status\":\"unproven\",\"request\":true}",
+      "observed": "{\"status\":\"unproven\",\"request\":true}",
+      "inputFingerprint": "94750841c548e2306fc1da663f14de009f678e81bf5ddbd36ac0451baa4a7bbc",
+      "outputFingerprint": "aa5b33ca41c62ffd803e27b87ad1310f22cc78f373e5da78fa90e1f2c1087af8",
+      "passed": true
+    },
+    {
+      "id": "drawn-line-counts-in-the-contractual-view",
+      "expectation": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
+      "observed": "{\"escritura\":134,\"unused\":6,\"contabil\":131.8}",
+      "inputFingerprint": "c3c6003f0b9cdd5e8a90c70d9f1a994f336dd07479584437ea0ea80705c24a8a",
+      "outputFingerprint": "91ebf53dd4cbf38eeee34974be048699a064331e913aa50757a8daa597746658",
+      "passed": true
+    },
+    {
+      "id": "schedule-short-of-principal-is-a-gap",
+      "expectation": "{\"status\":\"partial\",\"matches\":false}",
+      "observed": "{\"status\":\"partial\",\"matches\":false}",
+      "inputFingerprint": "5314aae09bb3b03a663c3022e6db9079ebeeef884fbe590f650752310e016dae",
+      "outputFingerprint": "ca5741b0468ea3b00560ca0ef99d7bf2fe9cba194c1fc6076696f6e055ce4379",
+      "passed": true
+    },
+    {
+      "id": "absent-cash-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
+      "observed": "{\"status\":\"partial\",\"ratios\":[null,null],\"gap\":true}",
+      "inputFingerprint": "817fbd4a4f9000525a028d8ebc8a0e262191a21c35bc9b756aca5eff2d255ede",
+      "outputFingerprint": "6126de725ca51f822649351ec68e340fc7d91fe6b4b9b1f84fdc27df187386fa",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "626c425156816231afea60c4279c1544270d38e0043d1311eb583300d955cf4e",
+  "notes": "Synthetic deterministic execution calibrated on ficha C10. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}
