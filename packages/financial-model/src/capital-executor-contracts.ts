@@ -57,3 +57,4 @@ export {investmentDecisionPacketExecutorContracts} from "./investment-decision-c
 export {financingComparisonPacketExecutorContracts} from "./financing-comparison-contracts";
 export {relativeDebtCostPacketExecutorContracts} from "./relative-debt-cost-contracts";
 export {debtCapacityPacketExecutorContracts} from "./debt-capacity-contracts";
+export {debtTablePacketExecutorContracts} from "./debt-table-contracts";

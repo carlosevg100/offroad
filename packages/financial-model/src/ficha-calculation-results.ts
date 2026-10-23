@@ -166,3 +166,30 @@ export const adoptedFinancingComparisonOutputSchema = z.strictObject({...common,
   comparisonId: z.uuid(), perimeter: text, scenario: text, inheritedScenario: text.nullable(), openingDate: date, endDate: date, comparison: comparison.nullable(),
   policies: z.strictObject({minimumCash: decimal.nullable(), maximumCollateralShare: decimal.nullable()}), incompleteProposalIds: z.array(z.uuid()).max(8),
   exclusions: z.array(z.enum(adapterExclusions)).length(7).refine(v => v.join("|") === adapterExclusions.join("|"), "Exact exclusion ledger required")});
+
+const nullableDecimal = decimal.nullable(), component = z.enum(["principal", "accrued_interest", "unamortized_cost", "drawn_credit_lines", "lease", "supplier_finance", "guarantee_given"]);
+const crossDefaultTerm = z.strictObject({threshold: decimal.nullable(), acceleration: z.enum(["automatic", "non_automatic"]), scope: text});
+export const debtTableOutputSchema = z.strictObject({schemaVersion: z.literal("debt-table.v1"), version, referenceDate: date, currency: z.string().regex(/^[A-Z]{3}$/),
+  rows: z.array(z.strictObject({id: version, label: text, creditor: text, borrower: text, principal: decimal, accountingBalance: decimal, indexer: version,
+    spread: nullableDecimal, nominalRate: nullableDecimal, finalPayment: date, scheduleMatchesPrincipal: z.boolean(), guarantee: text, covenant: text.nullable(),
+    crossDefault: crossDefaultTerm.nullable(), prepayment: text.nullable()})).min(1).max(32),
+  reconciliation: z.strictObject({...numbers(["principal", "accruedInterest", "unamortizedCost", "accounting"]), reported: nullableDecimal, difference: nullableDecimal,
+    status: z.enum(["exact", "difference", "not_reported"])}),
+  creditLines: z.array(z.strictObject({id: version, label: text, creditor: text, limit: decimal, drawn: decimal, unused: decimal})).max(32),
+  views: z.array(z.strictObject({id: version, label: text, components: z.array(component).min(1).max(7), total: decimal,
+    bridgeFromBase: z.array(z.strictObject({component, amount: decimal})).max(7), netDebt: nullableDecimal})).min(1).max(8),
+  outsideEveryView: z.array(z.strictObject({id: version, kind: z.enum(["lease", "supplier_finance", "guarantee_given"]), label: text, creditor: text.nullable(), amount: decimal})).max(64),
+  unusedLimits: decimal,
+  profile: z.strictObject({scheduleByYear: z.array(z.strictObject({year: z.number().int().min(1000).max(9999), principal: decimal})).max(100),
+    dueWithinTwelveMonths: decimal, dueWithinTwelveMonthsShare: nullableDecimal, twelveMonthHorizon: date, weightedAverageLifeYears: nullableDecimal,
+    largestCreditor: z.strictObject({creditor: text, principal: decimal, share: nullableDecimal}).nullable(), averageNominalCost: nullableDecimal}),
+  negativePledgeBaskets: z.array(z.strictObject({holderId: version, basket: decimal, occupied: decimal, remaining: decimal, exceeded: z.boolean(), usedBy: z.array(version).max(32)})).max(32),
+  crossDefault: z.strictObject({chain: z.array(z.strictObject({instrumentId: version, threshold: decimal, acceleration: z.enum(["automatic", "non_automatic"]), scope: text,
+    triggeredBy: z.array(version).max(32)})).max(32), lowestThreshold: z.strictObject({instrumentId: version, threshold: decimal}).nullable()}),
+  leverage: z.array(z.strictObject({viewId: version, label: text, netDebt: nullableDecimal, ebitda: decimal, ebitdaDeduction: decimal, denominator: decimal, ratio: nullableDecimal})).max(8),
+  completeness: z.strictObject({status: z.enum(["proven", "unproven"]), evidence: text, request: z.literal("external_register_of_financial_institution_operations").nullable()}),
+  gaps: z.array(z.strictObject({item: text, reason: text})).max(64)});
+export const adoptedDebtTableOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-debt-table.v1"),
+  analysisId: z.uuid(), perimeter: text, referenceDate: date, table: debtTableOutputSchema.nullable(),
+  exclusions: z.array(z.enum(["contract_extraction", "covenant_measurement", "credit_approval", "structure_opinion", "method_release"])).length(5)
+    .refine(v => v.join("|") === "contract_extraction|covenant_measurement|credit_approval|structure_opinion|method_release", "Exact exclusion ledger required")});

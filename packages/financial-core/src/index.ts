@@ -43,3 +43,4 @@ export * from "./credit-review-arithmetic";
 export * from "./deal-arithmetic";
 
 export * from "./relative-debt-cost";
+export * from "./debt-table";

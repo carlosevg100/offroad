@@ -84,3 +84,5 @@ export * from "./debt-capacity-packet";
 export * from "./debt-capacity-contracts";
 export * from "./investment-decision-composer";
 export * from "./investment-premises";
+export * from "./adopted-debt-table";
+export * from "./debt-table-packet";
