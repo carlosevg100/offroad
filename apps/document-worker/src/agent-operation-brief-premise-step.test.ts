@@ -10,6 +10,11 @@ describe("one premise step per turn", () => {
     ["Quando é a semana mais apertada?", "weekly_cash"],
     ["Vale a pena comprar a máquina nova de R$ 8 milhões?", "investment"],
     ["O que é covenant?", "investment"],
+    // The compiled objective decides before the offers' detector.
+    ["Projete o caixa semanal considerando as propostas dos bancos.", "weekly_cash"],
+    ["Monta a tabela de dívida com as propostas dos bancos.", "debt_table"],
+    ["Chegaram três term sheets. Qual é a melhor?", "comparison"],
+    ["Queremos fazer uma segunda linha de produção de R$ 60 milhões em 2027 e 2028. Quanto de dívida a gente aguenta tomar para isso?", "capacity"],
   ] as const)("%s runs the %s step", (message, step) => {
     for (const docs of [false, true]) expect(premiseStepForTurn(message, docs, [])).toBe(step);
   });

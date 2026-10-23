@@ -89,11 +89,20 @@ do $$ declare f text;
 begin
  foreach f in array array['private.execution_result_debt_table_blocks_v1(jsonb)','private.execution_result_covenant_headroom_blocks_v1(jsonb)',
   'private.execution_result_weekly_cash_blocks_v1(jsonb)','private.project_execution_result_artifact_v1(uuid,uuid,uuid,uuid)',
-  'private.record_execution_result_reply_v1(uuid,uuid,uuid)','private.worker_record_agent_response_with_premises_v1(uuid,text,uuid,jsonb,jsonb)'] loop
+  'private.record_execution_result_reply_v1(uuid,uuid,uuid)'] loop
   if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then
    raise exception 'function exposed: %',f; end if;
  end loop;
  raise notice 'PASS: lote 2 artifact functions closed to API roles';
+end $$;
+
+-- 5b. The premise recording keeps the grants it had for lote 1: authorized by the job capability inside,
+-- never by the role, so anon and service_role stay without it.
+do $$ declare f text:='private.worker_record_agent_response_with_premises_v1(uuid,text,uuid,jsonb,jsonb)';
+begin
+ if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'premise recording exposed: %',f; end if;
+ if position('job_for_capability' in pg_get_functiondef(f::regprocedure))=0 then raise exception 'premise recording lost its capability check'; end if;
+ raise notice 'PASS: premise recording stays behind the job capability';
 end $$;
 
 select 'lote2_result_artifacts_passed' as result;

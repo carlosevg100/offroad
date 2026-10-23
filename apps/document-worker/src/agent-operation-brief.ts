@@ -70,10 +70,20 @@ import {covenantHeadroomExtractionContract, proposeCovenantHeadroomPremisesForTu
 import {proposeWeeklyCashPremisesForTurn, shouldProposeWeeklyCashPremises, weeklyCashExtractionContract} from "./weekly-cash-premises-proposal";
 
 export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "investment";
-/** The one premise step a turn may run, in precedence: offers for the same need are compared; a
- * capacity question is measured; a debt table is built; covenant headroom is measured; weekly cash is
- * projected; otherwise an investment may be analyzed. */
+/** The one premise step a turn may run. The compiled objective decides first: a message that compiles
+ * to one premise method runs that method's step, subject to its own cue. Otherwise, in precedence:
+ * offers for the same need are compared; a capacity question is measured; a debt table is built;
+ * covenant headroom is measured; weekly cash is projected; otherwise an investment may be analyzed. */
 export function premiseStepForTurn(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[]): PremiseStep {
+  const own = (step: PremiseStep, proposes: boolean): PremiseStep => proposes ? step : "investment";
+  switch (compileObjectiveToPlan({message, hasAttachments}).objectiveKind) {
+    case "proposal_comparison": return own("comparison", shouldProposeFinancingComparisonPremises(message, hasAttachments));
+    case "debt_capacity": return own("capacity", shouldProposeDebtCapacityPremises(message, hasAttachments, earlierUserMessages));
+    case "debt_table": return own("debt_table", shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages));
+    case "covenant_headroom": return own("covenant_headroom", shouldProposeCovenantHeadroomPremises(message, hasAttachments, earlierUserMessages));
+    case "weekly_cash": return own("weekly_cash", shouldProposeWeeklyCashPremises(message, hasAttachments, earlierUserMessages));
+    default: break;
+  }
   if (shouldProposeFinancingComparisonPremises(message, hasAttachments)) return "comparison";
   if (shouldProposeDebtCapacityPremises(message, hasAttachments, earlierUserMessages)) return "capacity";
   if (shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages)) return "debt_table";

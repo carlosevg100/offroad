@@ -119,6 +119,8 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     // The use of the funds is a qualitative gap, answered without a number.
     expect(shouldProposeDebtCapacityPremises("É para o capex da segunda linha.", false, earlier)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("É para o capex da segunda linha?", false, earlier)).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("Vou confirmar o EBITDA de R$ 60 milhões amanhã.", false, earlier)).toBe(false);
+    expect(shouldProposeDebtCapacityPremises("Monte uma matriz de riscos com o covenant de 3x.", false, earlier)).toBe(false);
     expect(shouldProposeDebtCapacityPremises("A alíquota é 34%", false, ["Qual o prazo da debênture?"])).toBe(false);
     expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", false, earlier)).toBe(false);
     expect(shouldProposeDebtCapacityPremises("Obrigado, falamos em 2 dias", false, earlier)).toBe(false);

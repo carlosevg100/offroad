@@ -27,9 +27,26 @@ const shortAnswer = 280;
 export function answersWithData(message: string, data: RegExp, qualitative?: RegExp): boolean {
   const text = foldCue(message).trim();
   const asks = interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
-  if (asks) return false;
+  if (asks || deferral.test(text)) return false;
   if (data.test(text) && quantity.test(text)) return true;
-  return text.length <= shortAnswer && !deferral.test(text) && (data.test(text) || !!qualitative?.test(text));
+  return text.length <= shortAnswer && (data.test(text) || !!qualitative?.test(text));
+}
+
+/** The objectives of another premise method: an answer that compiles to one of them is that method's. */
+const specificKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash"]);
+/** A request for new work opens with its verb ("Monte", "Revise", "Prepare a"). The router reads some
+ * plain answers as other work ("O covenant é 3x" compiles to a risk matrix), so a non-neutral kind
+ * blocks a continuation only when the message asks for work; a request never answers. */
+const command = /^((e|mas|entao|ok|agora|tambem)[\s,]+)?((pode|poderia|consegue|voce pode|por favor|me)\s+)*(mont\w*|fa(ca|z|zer)|prepar\w*|revis\w*|cri(e|a|ar)|elabor\w*|ger(e|a|ar)|analis\w*|compar\w*|projet\w*|calcul\w*|mape\w*|monitor\w*|acompanh\w*|organiz\w*|list(e|a|ar)|levant\w*|escrev\w*|redij\w*|redigir|constru\w*|simul\w*|test(e|a|ar)|avali\w*|estrutur\w*|desenh\w*|(quero|preciso|gostaria) que)\b/;
+/** Whether a message may continue a premise question of `kind`: it compiles to the same kind, or it
+ * is not a request for work and does not compile to another premise method. Declarative answers compile
+ * to neutral kinds (ambiguous, factual question, capital strategy, company analysis, documents to case);
+ * another kind passes only when the router misread an answer, as with a bare "covenant". */
+function mayContinue(kind: PremiseCueKind, message: string, hasAttachments: boolean): boolean {
+  const compiled = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
+  if (compiled === kind) return true;
+  if (specificKinds.has(compiled) || command.test(foldCue(message).trim())) return false;
+  return true;
 }
 
 export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash";
@@ -46,7 +63,7 @@ export function premiseCueKind(message: string, hasAttachments: boolean): Premis
 export function proposesPremisesOfKind(kind: PremiseCueKind, data: RegExp, message: string, hasAttachments: boolean, earlierUserMessages: readonly string[], qualitative?: RegExp): boolean {
   const own = premiseCueKind(message, hasAttachments);
   if (own) return own === kind;
-  if (!answersWithData(message, data, qualitative)) return false;
+  if (!answersWithData(message, data, qualitative) || !mayContinue(kind, message, hasAttachments)) return false;
   for (let n = earlierUserMessages.length - 1; n >= 0; n--) {
     const earlier = premiseCueKind(earlierUserMessages[n]!, false);
     if (earlier) return earlier === kind;

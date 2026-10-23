@@ -57,7 +57,7 @@ export const weeklyCashExtractionContract = {
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo). Nunca estime, nunca complete, nunca distribua um valor mensal em dias por conta própria.",
     "Valores monetários em reais, sem separador de milhar (R$ 3 milhões vira 3000000), sempre positivos; a direção diz se entra ou sai. Taxas em fração (1,6% ao mês vira rate 0.016 com ratePeriod monthly). Datas no formato AAAA-MM-DD.",
     "openingDate é a data do saldo inicial (openingCash), lido no início desse dia: não inclua eventos anteriores a essa data, que já estão no saldo. minimumCash é o caixa mínimo de operação. calendarEnd é a última data perguntada (por exemplo 31 de dezembro). projectionClosing é o saldo do fechamento projetado no fim do período, quando houver. covenantTestDate é a data de apuração do covenant, quando houver.",
-    "Cada fluxo é uma série de eventos datados de um tipo (recebimentos de clientes, folha, 13º, FGTS, INSS, impostos, fornecedores, parcelas de dívida, safra, desembolso de linha): categoria debt, statutory, operating ou action, direção inflow ou outflow, a obrigação que carrega quando é folha (payroll), 13º (thirteenth_salary), encargos (payroll_charges), impostos sobre vendas (sales_taxes), IR e CSLL (income_taxes) ou serviço da dívida (debt_service), e um evento por data com o valor.",
+    "Cada fluxo é uma série de eventos datados de um tipo (recebimentos de clientes, folha, 13º, FGTS, INSS, impostos, fornecedores, parcelas de dívida, safra, desembolso de linha): categoria debt, statutory, operating ou action, direção inflow ou outflow, a obrigação que carrega quando é folha (payroll), 13º (thirteenth_salary), encargos (payroll_charges), impostos sobre vendas (sales_taxes), IR e CSLL (income_taxes) ou serviço da dívida (debt_service), e um evento por data com o valor. Cada fluxo tem um rótulo único: dois pagamentos distintos ao mesmo credor recebem rótulos distintos.",
     "Uma ação (saque de conta garantida, antecipação de recebíveis, linha maior) é um fluxo de categoria action e direção inflow com um único desembolso, e um item em actions com o rótulo desse fluxo, o fluxo que substitui quando houver, o valor custeado, os dias de uso, a taxa e o período, o IOF diário, o teto de dias do IOF, o IOF adicional, a comissão e a data de devolução, como a proposta escreve.",
     "variantOf é o rótulo do fluxo base que este fluxo substitui quando é uma variante discutida (por exemplo a safra de R$ 30 milhões no lugar da de R$ 25 milhões, ou a safra adiada); null quando o fluxo é do plano.",
     "cases só quando a conversa os descreve: o plano informado e cada alternativa, com os rótulos dos fluxos de cada um. coverage diz, para cada obrigação, se está incluída, não se aplica ou não foi examinada, quando dito.",
@@ -90,7 +90,15 @@ export function completeWeeklyCashFacts(input: {extraction: WeeklyCashExtraction
   if (!minimumCash) missing.push("minimumCash");
   if (!e.streams.length) missing.push("streams");
   const streamIds = itemKeys(e.streams.map((s) => s.label));
-  const streamOf = (label: string) => {const k = e.streams.findIndex((s) => sameLabel(s.label, label)); return k < 0 ? null : streamIds[k]!;};
+  // Ids are unique (a repeated label gets a stable suffix), but a reference by a repeated label could
+  // name either stream: it is refused, and the streams that share the label are asked to be told apart.
+  const ambiguous = new Set<number>();
+  const refer = (label: string): number | "unknown" | "ambiguous" => {
+    const hits = e.streams.flatMap((x, n) => sameLabel(x.label, label) ? [n] : []);
+    if (hits.length > 1) {hits.forEach((n) => ambiguous.add(n)); return "ambiguous";}
+    return hits.length ? hits[0]! : "unknown";
+  };
+  const streamOf = (label: string) => {const k = refer(label); return typeof k === "number" ? streamIds[k]! : null;};
   const firstMonday = opening ? mondayOf(opening.value) : null;
   if (opening && firstMonday !== opening.value) used.push("openingWeek");
   const streams = e.streams.map((s, n) => {
@@ -100,8 +108,8 @@ export function completeWeeklyCashFacts(input: {extraction: WeeklyCashExtraction
     if (s.obligation !== null && s.direction !== "outflow") missing.push(p + "obligation");
     if (s.category === "action" && s.direction !== "inflow") missing.push(p + "direction");
     // A variant replaces a known base stream of the plan; an unknown base is a question.
-    const base = s.variantOf === null ? null : e.streams.find((x) => sameLabel(x.label, s.variantOf!));
-    if (s.variantOf !== null && (!base || base === s || base.variantOf !== null || base.category === "action" || s.category === "action")) missing.push(p + "variantOf");
+    const ref = s.variantOf === null ? null : refer(s.variantOf), base = typeof ref === "number" ? e.streams[ref]! : null;
+    if (ref !== null && ref !== "ambiguous" && (!base || base === s || base.variantOf !== null || base.category === "action" || s.category === "action")) missing.push(p + "variantOf");
     if (missing.length > before) return null;
     return {value: {id: streamIds[n]!, label: s.label, category: s.category, direction: s.direction, obligation: s.obligation,
       dates: s.events.map((x) => x.date), amounts: s.events.map((x) => x.amount)}, origin: s.origin, source: citedSource(s.origin, s.source)};
@@ -110,24 +118,27 @@ export function completeWeeklyCashFacts(input: {extraction: WeeklyCashExtraction
   const actions = e.actions.map((a, n) => {
     const p = `actions.${n + 1}.`, before = missing.length;
     for (const k of ["amount", "days", "rate", "ratePeriod", "iofDaily", "iofDailyCapDays", "iofAdditional", "upfrontFee", "repaymentDate"] as const) if (a[k] === null) missing.push(p + k);
-    const streamId = streamOf(a.streamLabel), replaces = a.replacesStreamLabel === null ? null : streamOf(a.replacesStreamLabel);
-    const s = streamId ? e.streams[streamIds.indexOf(streamId)] : null;
-    if (!s || s.category !== "action" || s.direction !== "inflow") missing.push(p + "streamLabel");
-    if (a.replacesStreamLabel !== null && (!replaces || replaces === streamId)) missing.push(p + "replacesStreamLabel");
+    const drawn = refer(a.streamLabel), replacing = a.replacesStreamLabel === null ? null : refer(a.replacesStreamLabel);
+    const streamId = typeof drawn === "number" ? streamIds[drawn]! : null, replaces = typeof replacing === "number" ? streamIds[replacing]! : null;
+    const s = typeof drawn === "number" ? e.streams[drawn]! : null;
+    if (drawn !== "ambiguous" && (!s || s.category !== "action" || s.direction !== "inflow")) missing.push(p + "streamLabel");
+    if (replacing !== null && replacing !== "ambiguous" && (!replaces || replaces === streamId)) missing.push(p + "replacesStreamLabel");
+    if (drawn === "ambiguous" || replacing === "ambiguous") return null;
     if (missing.length > before) return null;
     return {value: {id: actionIds[n]!, label: a.label, streamId: streamId!, replacesStreamId: replaces, amount: a.amount!, days: a.days!, rate: String(a.rate!), ratePeriod: a.ratePeriod!,
       iofDaily: String(a.iofDaily!), iofDailyCapDays: a.iofDailyCapDays!, iofAdditional: String(a.iofAdditional!), upfrontFee: String(a.upfrontFee!), repaymentDate: a.repaymentDate!},
       origin: a.origin, source: citedSource(a.origin, a.source)};
   });
   // An action stream with no terms would be cash without a cost.
-  e.streams.forEach((s, n) => {if (s.category === "action" && !e.actions.some((a) => sameLabel(a.streamLabel, s.label))) missing.push(`streams.${n + 1}.action`);});
+  e.streams.forEach((s, n) => {if (s.category === "action" && !ambiguous.has(n) && !e.actions.some((a) => sameLabel(a.streamLabel, s.label))) missing.push(`streams.${n + 1}.action`);});
   let cases: WeeklyCashFacts["cases"] = [];
   if (e.cases.length) {
     if (e.cases.filter((c) => c.role === "informed").length !== 1) missing.push("cases.informed");
     const caseIds = itemKeys(e.cases.map((c) => c.label));
     e.cases.forEach((c, n) => {
-      const ids = c.streamLabels.map(streamOf);
-      if (ids.some((x) => x === null)) {missing.push(`cases.${n + 1}.streamLabels`); return;}
+      const refs = c.streamLabels.map(refer), ids = refs.map((k) => typeof k === "number" ? streamIds[k]! : null);
+      if (refs.includes("unknown")) missing.push(`cases.${n + 1}.streamLabels`);
+      if (ids.some((x) => x === null)) return;
       cases.push({value: {id: caseIds[n]!, label: c.label, role: c.role, streamIds: [...new Set(ids as string[])]}, origin: c.origin, source: citedSource(c.origin, c.source)});
     });
   } else if (streams.every((s) => s !== null) && actions.every((a) => a !== null)) {
@@ -146,6 +157,7 @@ export function completeWeeklyCashFacts(input: {extraction: WeeklyCashExtraction
     if (cases.length > 8) missing.push("cases.atMostEight");
     used.push("cases");
   }
+  for (const n of [...ambiguous].sort((a, b) => a - b)) missing.push(`streams.${n + 1}.label`);
   const coverage = Object.fromEntries(obligations.map((o) => {
     const s = stated(e.coverage[o]), carrier = e.streams.find((x) => x.obligation === o);
     if (s) return [o, s];

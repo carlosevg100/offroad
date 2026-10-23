@@ -55,7 +55,8 @@ describe("weekly cash premises proposed from a turn", () => {
     expect(shouldProposeWeeklyCashPremises("O saldo hoje é R$ 41 milhões e o caixa mínimo R$ 15 milhões", false, earlier)).toBe(true);
     expect(shouldProposeWeeklyCashPremises("A folha é R$ 3 milhões, certo?", false, earlier)).toBe(true);
     for (const m of ["O 13º está incluído na folha.", "Não pagamos IR por estimativa."]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Obrigado", "O 13º está incluído?"]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
+    for (const m of ["Obrigado", "O 13º está incluído?", "Vou confirmar a folha de R$ 3 milhões amanhã.", "Monte uma matriz de riscos com o caixa de R$ 41 milhões."])
+      expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
     expect(shouldProposeWeeklyCashPremises("Quanto é a folha?", false, earlier)).toBe(false);
     expect(shouldProposeWeeklyCashPremises("Mando o fluxo em 2 dias", false, earlier)).toBe(false);
     expect(shouldProposeWeeklyCashPremises("O saldo é R$ 41 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
@@ -109,6 +110,20 @@ describe("weekly cash premises proposed from a turn", () => {
     // The balance is read at the start of its date: a payment on 16/09 applies once, from the Monday of that week.
     const c = complete(minimal([{date: "2026-09-16", amount: "10"}]), f);
     expect([c.facts.openingDate, c.facts.openingCash.value, c.facts.streams[0]!.value.dates]).toEqual(["2026-09-14", "100", ["2026-09-16"]]);
+  });
+  it("keeps two flows with the same label apart and refuses a reference that could name either", () => {
+    const f = aurora();
+    const supplier = (amount: string) => ({label: "Fornecedor", origin: "informed" as const, source: "pagamento informado", category: "operating" as const, direction: "outflow" as const,
+      obligation: null, variantOf: null, events: [{date: "2026-09-21", amount}]});
+    const base: WeeklyCashExtraction = {...auroraExtraction(f), openingDate: informed("2026-09-14", "saldo de 14/set"), openingCash: informed("100", "saldo"),
+      minimumCash: informed("10", "caixa mínimo"), projectionClosing: none, covenantTestDate: none, cases: [], actions: [], streams: [supplier("10"), supplier("20")]};
+    // Both payments stay in the plan: 100 less 10 and 20 closes at 70.
+    const c = complete(base, f), plan = c.facts.cases[0]!.value.streamIds;
+    expect(plan).toEqual(["fornecedor", "fornecedor-2"]);
+    expect(c.facts.streams.filter((s) => plan.includes(s.value.id)).flatMap((s) => s.value.amounts).reduce((t, x) => t - Number(x), 100)).toBe(70);
+    // A described case naming "Fornecedor" could mean either: it is asked, never resolved to the first.
+    const named = {...base, cases: [{label: "Plano", origin: "informed" as const, source: "plano", role: "informed" as const, streamLabels: ["Fornecedor"]}]};
+    expect(completeWeeklyCashFacts({extraction: named, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["streams.1.label", "streams.2.label"]});
   });
   it("asks for what nobody stated in one batch instead of assuming it", () => {
     const f = aurora(), e = auroraExtraction(f);

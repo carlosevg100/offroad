@@ -62,6 +62,9 @@ describe("debt table premises proposed from a turn", () => {
     for (const m of ["É para refinanciamento.", "Não recebemos o Registrato.", "A CCB não tem covenant financeiro."]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(true);
     for (const m of ["Obrigado, vou pensar", "Pode explicar o que é refinanciamento?", "É para refinanciamento?", "Mando os contratos depois"]) expect(shouldProposeDebtTablePremises(m, false, earlier), m).toBe(false);
     expect(shouldProposeDebtTablePremises("É para refinanciamento.", false, ["Qual o prazo da debênture?"])).toBe(false);
+    // A request for other work is not an answer, and a deferral is not one even with a number.
+    expect(shouldProposeDebtTablePremises("Revise o contrato e o cronograma da dívida.", false, earlier)).toBe(false);
+    expect(shouldProposeDebtTablePremises("Vou confirmar o saldo de R$ 40 milhões amanhã.", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("A CCB do Bradesco tem saldo de R$ 40 milhões a CDI + 2,6%", false, earlier)).toBe(true);
     expect(shouldProposeDebtTablePremises("O Registrato chega em 2 dias", false, earlier)).toBe(false);
     expect(shouldProposeDebtTablePremises("Qual o saldo da CCB?", false, earlier)).toBe(false);

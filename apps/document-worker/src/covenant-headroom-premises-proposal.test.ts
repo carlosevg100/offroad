@@ -55,7 +55,10 @@ describe("covenant headroom premises proposed from a turn", () => {
     expect(shouldProposeCovenantHeadroomPremises("O limite é 3x e o EBITDA de dezembro é R$ 54,5 milhões", false, earlier)).toBe(true);
     expect(shouldProposeCovenantHeadroomPremises("O limite é 3x, certo?", false, earlier)).toBe(true);
     for (const m of ["A ata não define o EBITDA da política.", "O vencimento antecipado não é automático, depende de assembleia."]) expect(shouldProposeCovenantHeadroomPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["Me explica a definição de EBITDA", "A definição é a da CVM?"]) expect(shouldProposeCovenantHeadroomPremises(m, false, earlier), m).toBe(false);
+    for (const m of ["Me explica a definição de EBITDA", "A definição é a da CVM?", "Monte uma matriz de riscos com os covenants da escritura."])
+      for (const docs of [false, true]) expect(shouldProposeCovenantHeadroomPremises(m, docs, earlier), m).toBe(false);
+    // A plain answer the router reads as a risk matrix ("covenant") still answers.
+    expect(shouldProposeCovenantHeadroomPremises("O covenant é 3x o EBITDA.", false, earlier)).toBe(true);
     expect(shouldProposeCovenantHeadroomPremises("Qual é o limite da escritura?", false, earlier)).toBe(false);
     expect(shouldProposeCovenantHeadroomPremises("Mando a ata em 2 dias", false, earlier)).toBe(false);
     expect(shouldProposeCovenantHeadroomPremises("O limite é 3x", false, ["Qual o prazo da debênture?"])).toBe(false);
