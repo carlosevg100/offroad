@@ -50,3 +50,42 @@ export function auroraCovenantBasis(options: {policyDefinition?: string | null; 
   const seal = () => ({...input, envelope: f.seal()});
   return {...f, input, seal};
 }
+
+/** The same Aurora calibration as facts with their origins, for the premises path: indenture, amendment
+ * and board minutes are documents; figures at each date are the company's plan as informed. */
+export function auroraCovenantFacts(options: {policyDefinition?: string | null; policyOnManagerial?: boolean} = {}): import("./covenant-headroom-premises").CovenantHeadroomFacts {
+  const doc = <T>(value: T, source: string) => ({value, origin: "document" as const, source});
+  const informed = <T>(value: T, source: string) => ({value, origin: "informed" as const, source});
+  const houseFact = <T>(value: T, source: string) => ({value, origin: "house" as const, source});
+  const limit = (key: string, kind: "contractual" | "board_policy", label: string, max: string, source: string, definition: {value: string | null; origin: "document" | "informed"; source: string},
+    status: "in_force" | "superseded" = "in_force", testDates = ["2026-12-31", "2027-12-31"]) => ({term: doc({id: key, kind, status, label, maximumRatio: max, testDates}, source), definition});
+  const measurement = (key: string, scenario: string, date: string, debt: string, cash: string, reported: string, o: {role?: "test" | "contrast"; limitIds?: string[]; unrealized?: string; lease?: boolean} = {}) =>
+    informed({id: key, label: key, role: o.role ?? "test" as const, scenario, date, debt, cash, reportedEbitda: reported,
+      limitIds: o.limitIds ?? (options.policyOnManagerial ? ["aditamento"] : ["aditamento", "politica"]),
+      adjustments: o.lease === false ? [] : [{id: "arrendamentos", label: "Pagamentos de arrendamento", amount: "-3"}], unrealizedEbitda: o.unrealized ?? null}, "plano trimestral da companhia");
+  const policyDefinition = options.policyDefinition === undefined || options.policyDefinition === null
+    ? doc(null, "A ata não diz qual EBITDA a política usa") : informed(options.policyDefinition, "resposta do CFO sobre a política");
+  return {headroomId: id(4600), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3),
+    readingDate: "2026-09-15", endDate: "2027-12-31", scenario: "base", headline: informed("dez26-base", "pergunta sobre o teste de dezembro"),
+    limits: [
+      limit("aditamento", "contractual", "Dívida líquida / EBITDA até 3,0x (1º aditamento)", "3", "1º aditamento cl. 3",
+        doc("EBITDA da CVM 156 dos últimos doze meses menos pagamentos de arrendamento; dívida bruta menos caixa", "1º aditamento cl. 3")),
+      limit("politica", "board_policy", "Política do conselho: até 2,5x", "2.5", "Ata do conselho de março", policyDefinition),
+      limit("original", "contractual", "Escritura original sem o aditamento: 2,75x (superada)", "2.75", "Escritura cl. 7.1", doc("Mesma definição da escritura", "Escritura cl. 7.1"), "superseded", []),
+    ],
+    measurements: [
+      measurement("dez26-base", "base", "2026-12-31", "128.66666667", "15.45720186", "54.5", {unrealized: "26"}),
+      measurement("dez26-adverso", "adverse", "2026-12-31", "128.66666667", "14.07120186", "52.4"),
+      measurement("dez26-safra-30", "safra_30", "2026-12-31", "128.66666667", "10.45720186", "54.5"),
+      measurement("dez26-sem-safra", "sem_safra", "2026-12-31", "128.66666667", "40.45720186", "54.5", {role: "contrast", limitIds: []}),
+      measurement("dez27-base", "base", "2027-12-31", "120", "20.67860248", "56.6"),
+      measurement("dez27-adverso", "adverse", "2027-12-31", "120", "13.05649438", "48.11"),
+      measurement("junho-gerencial", "gerencial", "2026-06-30", "130", "35", "55", {role: "contrast", limitIds: [], lease: false}),
+      measurement("dez26-escritura-original", "original", "2026-12-31", "128.66666667", "15.45720186", "54.5", {role: "contrast", limitIds: ["original"]}),
+      ...options.policyOnManagerial ? [measurement("dez26-politica-gerencial", "gerencial_dez", "2026-12-31", "128.66666667", "15.45720186", "55.5", {limitIds: ["politica"], lease: false})] : [],
+    ],
+    effects: [houseFact({id: "safra", label: "Safra na data de apuração", measurementId: "dez26-base", withoutEffectMeasurementId: "dez26-sem-safra"}, "efeito da safra lido pela diferença das duas medições")],
+    consequence: {acceleration: doc("non_automatic" as const, "Escritura cl. 7.2"),
+      process: doc("Assembleia de debenturistas decide o vencimento antecipado (escritura cl. 7.2)", "Escritura cl. 7.2"),
+      crossDefault: doc("Declarado o vencimento da debênture, a CCB do Bradesco pode ser vencida: limiar de R$ 5 milhões (CCB cl. 9)", "CCB cl. 9")}};
+}

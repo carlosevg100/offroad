@@ -21,7 +21,7 @@ export function compileAdvisorStartingPlan(input: {
   const inferred = inferCapitalProjectJob(input).job;
   const privateHint = !input.explicitHint || ["structure_from_documents","review_existing_operation"].includes(input.explicitHint);
   const objective = compileObjectiveToPlan(input);
-  const financialAnalysis = ["proposal_comparison", "relative_debt_cost", "debt_capacity"].includes(objective.objectiveKind);
+  const financialAnalysis = ["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash"].includes(objective.objectiveKind);
   const explicitDocumentaryScope = /\b(?:documental|documentary|document[- ]only)\b/i.test(input.message);
   const documentary = (!financialAnalysis || explicitDocumentaryScope) && input.documentaryEnabled && input.hasAttachments && privateHint
     // The compiler proposes its scope; people need not know its internal terminology.

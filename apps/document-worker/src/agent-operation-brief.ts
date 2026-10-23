@@ -65,6 +65,22 @@ import {safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} fro
 import {investmentFactExtractionContract, proposeInvestmentPremisesForTurn} from "./investment-premises-proposal";
 import {financingComparisonExtractionContract, proposeFinancingComparisonPremisesForTurn, shouldProposeFinancingComparisonPremises} from "./financing-comparison-premises-proposal";
 import {debtCapacityExtractionContract, proposeDebtCapacityPremisesForTurn, shouldProposeDebtCapacityPremises} from "./debt-capacity-premises-proposal";
+import {debtTableExtractionContract, proposeDebtTablePremisesForTurn, shouldProposeDebtTablePremises} from "./debt-table-premises-proposal";
+import {covenantHeadroomExtractionContract, proposeCovenantHeadroomPremisesForTurn, shouldProposeCovenantHeadroomPremises} from "./covenant-headroom-premises-proposal";
+import {proposeWeeklyCashPremisesForTurn, shouldProposeWeeklyCashPremises, weeklyCashExtractionContract} from "./weekly-cash-premises-proposal";
+
+export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "investment";
+/** The one premise step a turn may run, in precedence: offers for the same need are compared; a
+ * capacity question is measured; a debt table is built; covenant headroom is measured; weekly cash is
+ * projected; otherwise an investment may be analyzed. */
+export function premiseStepForTurn(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[]): PremiseStep {
+  if (shouldProposeFinancingComparisonPremises(message, hasAttachments)) return "comparison";
+  if (shouldProposeDebtCapacityPremises(message, hasAttachments, earlierUserMessages)) return "capacity";
+  if (shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages)) return "debt_table";
+  if (shouldProposeCovenantHeadroomPremises(message, hasAttachments, earlierUserMessages)) return "covenant_headroom";
+  if (shouldProposeWeeklyCashPremises(message, hasAttachments, earlierUserMessages)) return "weekly_cash";
+  return "investment";
+}
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -280,6 +296,28 @@ Rules:
   without refinancing) and that the numbers come after the user confirms. Never state a capacity or
   whether the amount fits before the calculation exists. When its status is missing, ask for the
   missing items in one batch, each with the reason.
+- debtTablePremises is the premise proposal for the company's debt table. When proposed, each
+  instrument, credit line, other obligation and debt definition and the completeness appear in a card
+  below your reply, each with its origin. Give the reading first: what the table will show (each
+  operation by its prevailing clause, the principal reconciled with the accounting balance, each
+  definition and the bridge between them, the schedule, guarantees, cross-default and leverage per
+  definition) and which house premises you are using and why, and that the numbers come after the user
+  confirms. Never state a total, a leverage or a maturity before the calculation exists. When its
+  status is missing, ask for the missing items in one short list, each with the reason.
+- covenantPremises is the premise proposal for covenant headroom. When proposed, each limit, each
+  measurement and the consequence of a breach appear in a card below your reply, each with its origin.
+  Give the reading first: which limit is tested on which date in which definition, which readings are
+  only a contrast, and what a breach triggers, and that the headroom comes after the user confirms.
+  Never state a ratio, a headroom or whether the covenant passes before the calculation exists. When
+  its status is missing, ask for the missing items in one short list, each with the reason; an
+  unwritten definition is a question for whoever owns it.
+- weeklyCashPremises is the premise proposal for weekly cash. When proposed, each flow, each case, each
+  action, the minimum cash and the opening cash appear in a card below your reply, each with its
+  origin. Give the reading first: the weeks from Monday to Sunday up to the date asked, the obligations
+  that cannot be left out, and each action costed for the time it is used, and that the numbers come
+  after the user confirms. Never state a balance, the tightest week or which action is cheaper before
+  the calculation exists. When its status is missing, ask for the missing items in one short list,
+  each with the reason.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -557,9 +595,11 @@ export async function processAgentOperationBriefJob(
     // nothing is adopted or calculated until the person confirms them.
     const premiseStepOpen = !(deterministicClarification || deterministicActivation || executionRoute.action !== "continue_private_case"
       || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises);
-    // One premise step per turn: offers for the same need are compared; a capacity question is measured;
-    // otherwise an investment is analyzed.
-    const comparisonTurn = premiseStepOpen && shouldProposeFinancingComparisonPremises(context.message, context.documents.length > 0);
+    // One premise step per turn, in the precedence of premiseStepForTurn.
+    // The person's earlier messages, without the one this turn answers.
+    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id).map((message) => message.content);
+    const premiseStep = premiseStepOpen ? premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages) : null;
+    const comparisonTurn = premiseStep === "comparison";
     const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
           recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
@@ -573,9 +613,7 @@ export async function processAgentOperationBriefJob(
           })).output,
           log: (event, detail) => log(event, {job: job.job_id, ...detail}),
         });
-    // The person's earlier messages, without the one this turn answers.
-    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id).map((message) => message.content);
-    const capacityTurn = premiseStepOpen && !comparisonTurn && shouldProposeDebtCapacityPremises(context.message, context.documents.length > 0, earlierUserMessages);
+    const capacityTurn = premiseStep === "capacity";
     const capacity = !capacityTurn ? null : await proposeDebtCapacityPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
           recentUserMessages: earlierUserMessages,
@@ -589,7 +627,30 @@ export async function processAgentOperationBriefJob(
           })).output,
           log: (event, detail) => log(event, {job: job.job_id, ...detail}),
         });
-    const premises = !premiseStepOpen || comparisonTurn || capacityTurn ? null
+    const lote2Input = {message: context.message, hasAttachments: context.documents.length > 0, recentUserMessages: earlierUserMessages,
+      projectId: context.project?.id ?? null, loadEvidence: () => queue.loadPremiseEvidence!(job), log: (event: string, detail: Record<string, unknown>) => log(event, {job: job.job_id, ...detail})};
+    const debtTable = premiseStep !== "debt_table" ? null
+      : await proposeDebtTablePremisesForTurn({...lote2Input, extract: async (text) => (await gateway.complete({
+          ...debtTableExtractionContract,
+          input: [{type: "text", text}],
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+          metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+        })).output});
+    const covenant = premiseStep !== "covenant_headroom" ? null
+      : await proposeCovenantHeadroomPremisesForTurn({...lote2Input, extract: async (text) => (await gateway.complete({
+          ...covenantHeadroomExtractionContract,
+          input: [{type: "text", text}],
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+          metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+        })).output});
+    const weeklyCash = premiseStep !== "weekly_cash" ? null
+      : await proposeWeeklyCashPremisesForTurn({...lote2Input, extract: async (text) => (await gateway.complete({
+          ...weeklyCashExtractionContract,
+          input: [{type: "text", text}],
+          dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+          metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+        })).output});
+    const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
           recentUserMessages: context.recent_messages.filter((message) => message.role === "user").map((message) => message.content),
@@ -643,6 +704,9 @@ export async function processAgentOperationBriefJob(
               investmentPremises: premises?.forAdvisor ?? null,
               comparisonPremises: comparison?.forAdvisor ?? null,
               capacityPremises: capacity?.forAdvisor ?? null,
+              debtTablePremises: debtTable?.forAdvisor ?? null,
+              covenantPremises: covenant?.forAdvisor ?? null,
+              weeklyCashPremises: weeklyCash?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -758,7 +822,7 @@ export async function processAgentOperationBriefJob(
         });
       }
     }
-    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? null;
+    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal ?? null;
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
@@ -768,6 +832,9 @@ export async function processAgentOperationBriefJob(
       investmentPremises: premises?.forAdvisor.status,
       comparisonPremises: comparison?.forAdvisor.status,
       capacityPremises: capacity?.forAdvisor.status,
+      debtTablePremises: debtTable?.forAdvisor.status,
+      covenantPremises: covenant?.forAdvisor.status,
+      weeklyCashPremises: weeklyCash?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

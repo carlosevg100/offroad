@@ -66,3 +66,51 @@ export function auroraDebtTableBasis(options: {debentureCrossDefaultCreditors?: 
   const seal = () => ({...input, envelope: f.seal()});
   return {...f, input, seal};
 }
+
+/** The same Aurora calibration as facts with origin: contract terms from the documents, the missing
+ * Registrato as the user stated it, the index curve and the market definitions as house premises. */
+export function auroraDebtTableFacts(): import("./debt-table-premises").DebtTableFacts {
+  const doc = <T>(value: T, source: string) => ({value, origin: "document" as const, source});
+  const informed = <T>(value: T, source: string) => ({value, origin: "informed" as const, source});
+  const houseFact = <T>(value: T, source: string) => ({value, origin: "house" as const, source});
+  const finameDates = Array.from({length: 54}, (_, k) => {
+    const y = 2026 + Math.floor((6 + k) / 12), m = ((6 + k) % 12) + 1;
+    return `${y}-${String(m).padStart(2, "0")}-15`;
+  });
+  const none = {encumbranceAmount: null, usesBasketOf: null, crossDefaultThreshold: null, crossDefaultScope: null, crossDefaultScopeKind: null,
+    crossDefaultCreditors: null, crossDefaultThresholdBasis: null, negativePledgeBasket: null};
+  return {tableId: id(4600), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3), referenceDate: "2026-06-30", endDate: "2030-12-31",
+    instruments: [
+      doc({...none, id: "debenture-1", label: "Debênture 1ª emissão", creditor: "Debenturistas", borrower: "Aurora Alimentos S.A.", principal: "60", accruedInterest: "1.3", unamortizedCost: "-0.4",
+        indexer: "CDI" as const, spread: "0.024", paymentDates: ["2026-12-15", "2027-06-15", "2027-12-15", "2028-06-15"], paymentAmounts: ["15", "15", "15", "15"], guarantee: "Quirografária",
+        covenant: "Dívida líquida / EBITDA até 3,0x, anual em dezembro, sem IFRS 16 (1º aditamento, cl. 2)", crossDefaultAcceleration: "non_automatic" as const, crossDefaultThreshold: "10",
+        crossDefaultScope: "Inadimplemento de outra dívida (escritura cl. 6.1)", crossDefaultScopeKind: "any_financial_debt" as const, crossDefaultThresholdBasis: "amount_in_default" as const,
+        prepayment: "Resgate facultativo total, prêmio de 0,30% ao ano", negativePledgeBasket: "15"}, "escritura da 1ª emissão e 1º aditamento"),
+      doc({...none, id: "ccb-bradesco", label: "CCB", creditor: "Bradesco", borrower: "Aurora Alimentos S.A.", principal: "40", accruedInterest: "0.8", unamortizedCost: "0",
+        indexer: "CDI" as const, spread: "0.026", paymentDates: ["2027-09-15"], paymentAmounts: ["40"],
+        guarantee: "Cessão fiduciária de contratos de dois clientes; reforço em 5 dias úteis abaixo de 80% (cl. 7)", encumbranceAmount: "12", usesBasketOf: ["debenture-1"],
+        covenant: "Nenhum covenant financeiro", crossDefaultAcceleration: "non_automatic" as const, crossDefaultThreshold: "5", crossDefaultScope: "Inadimplemento de qualquer dívida (cl. 9)",
+        crossDefaultScopeKind: "any_financial_debt" as const, crossDefaultThresholdBasis: "amount_in_default" as const, prepayment: "Aviso de 30 dias e tarifa de 1% (cl. 12)"}, "CCB do Bradesco"),
+      doc({...none, id: "finame", label: "Finame", creditor: "BNDES", borrower: "Aurora Alimentos S.A.", principal: "30", accruedInterest: "0.1", unamortizedCost: "0",
+        indexer: "TLP" as const, spread: "0.018", paymentDates: finameDates, paymentAmounts: finameDates.map((_, k) => k === 53 ? "0.555532" : "0.555556"),
+        guarantee: "Alienação fiduciária dos equipamentos (cl. 11)", covenant: "Nenhum covenant financeiro", crossDefaultAcceleration: "non_automatic" as const,
+        crossDefaultScope: "Obrigações com o BNDES ou o agente (cl. 14)", crossDefaultScopeKind: "named_creditors" as const, crossDefaultCreditors: ["BNDES"],
+        crossDefaultThresholdBasis: "amount_in_default" as const, prepayment: "Liquidação antecipada mediante comunicação (cl. 5)"}, "contrato Finame com o BNDES"),
+    ],
+    creditLines: [doc({id: "conta-garantida", label: "Conta garantida", creditor: "Itaú", limit: "10", drawn: "0"}, "contrato da conta garantida e extrato de 30/jun")],
+    otherObligations: [
+      doc({id: "arrendamentos", kind: "lease" as const, label: "Arrendamentos IFRS 16", creditor: null, amount: "8"}, "balancete de 30/jun"),
+      doc({id: "risco-sacado", kind: "supplier_finance" as const, label: "Fornecedores convênio", creditor: null, amount: "6"}, "balancete de 30/jun"),
+      doc({id: "fianca", kind: "guarantee_given" as const, label: "Fiança bancária", creditor: "Santander", amount: "5"}, "carta de fiança do Santander")],
+    reportedAccountingBalance: doc("131.8", "nota explicativa de empréstimos e financiamentos"), availableCash: doc("35", "balancete de 30/jun"),
+    indexRates: [houseFact({indexer: "CDI" as const, annualRate: "0.149"}, "curva adotada de CDI"), houseFact({indexer: "TLP" as const, annualRate: "0.079"}, "curva adotada de TLP")],
+    views: [doc({id: "escritura", label: "Escritura", components: ["principal" as const, "drawn_credit_lines" as const]}, "definição de dívida da escritura"),
+      doc({id: "contabil", label: "Contábil", components: ["principal" as const, "accrued_interest" as const, "unamortized_cost" as const]}, "nota explicativa"),
+      houseFact({id: "ifrs16", label: "Com arrendamentos", components: ["principal" as const, "drawn_credit_lines" as const, "lease" as const]}, "definição com arrendamentos"),
+      houseFact({id: "mercado", label: "Mercado", components: ["principal" as const, "drawn_credit_lines" as const, "lease" as const, "supplier_finance" as const]}, "leitura de bancos e agências")],
+    leverage: [houseFact({viewId: "mercado", label: "Banco", ebitda: "54", ebitdaDeduction: "0"}, "EBITDA dos últimos doze meses na leitura do banco"),
+      doc({viewId: "escritura", label: "Escritura", ebitda: "54", ebitdaDeduction: "3"}, "EBITDA da escritura, sem arrendamentos")],
+    completeness: informed({status: "unproven" as const, evidence: "Registrato não recebido"}, "a companhia ainda não enviou o Registrato"),
+    categoryCoverage: {lease: doc("examined" as const, "balancete com arrendamentos"), supplier_finance: doc("examined" as const, "balancete com risco sacado"),
+      guarantee_given: doc("examined" as const, "relação de fianças prestadas")}};
+}

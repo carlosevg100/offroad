@@ -67,6 +67,7 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
 
 /** What each method's confirmed premises are and what the confirmation asks the method to answer. */
 const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"];
+const debtTableSituations = ["refinancing", "near-covenant", "restructuring"];
 const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"];
 const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
   "analyze-investment-project": {key: "investment.premises",
@@ -83,6 +84,24 @@ const premiseMethods: Record<string, {key: string; text: string; ask: (summary: 
     ask: (summary) => typeof summary.situationId === "string" && capacitySituations.includes(summary.situationId)
       ? {question: "Quanto de dívida nova cabe na companhia e com que perfil?",
         objectives: ["Medir o maior valor sob cada limite e o que prende, revisar o valor pedido nos casos adotados e conferir o plano vigente contra o caixa"],
+        situationIds: [summary.situationId]} : null},
+  "build-company-debt-table": {key: "debt-table.premises",
+    text: "Operações, linhas de crédito, obrigações e definições de dívida confirmadas pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada uma.",
+    ask: (summary) => typeof summary.situationId === "string" && debtTableSituations.includes(summary.situationId)
+      ? {question: "Quanto a companhia deve, a quem e em cada definição?",
+        objectives: ["Montar a tabela por operação com a fonte de cada termo, totais em cada definição com a ponte, cronograma, garantias, cross-default e o que falta para provar completude"],
+        situationIds: [summary.situationId]} : null},
+  "measure-covenant-headroom": {key: "covenant-headroom.premises",
+    text: "Limites, definições, datas de apuração e medições confirmados pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => summary.situationId === "near-covenant"
+      ? {question: "Onde a companhia está contra os covenants e a política do conselho, e quanto pode piorar?",
+        objectives: ["Medir cada covenant e a política pela definição escrita na data, com folga em EBITDA e em dívida, teste reverso, caso adverso, efeito sazonal e consequência"],
+        situationIds: [summary.situationId]} : null},
+  "project-weekly-cash": {key: "weekly-cash.premises",
+    text: "Fluxos de caixa, obrigações, casos e ações confirmados pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => summary.situationId === "seasonal-working-capital"
+      ? {question: "Como fica o caixa semana a semana até a data e o que vence?",
+        objectives: ["Achar a semana mais apertada e as abaixo do mínimo, o que vence nelas, o que o fechamento esconde e a ação mais barata que cobre, custeada pelo tempo de uso"],
         situationIds: [summary.situationId]} : null},
 };
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};

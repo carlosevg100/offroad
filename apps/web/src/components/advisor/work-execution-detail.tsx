@@ -4,7 +4,10 @@ import type {WorkExecutionView} from "@/lib/execution/read";
 import {formatDecimal} from "@/lib/execution/format";
 import {CapacityResult} from "./capacity-result";
 import {ComparisonResult} from "./comparison-result";
+import {CovenantHeadroomResult} from "./covenant-headroom-result";
+import {DebtTableResult} from "./debt-table-result";
 import {InvestmentResult} from "./investment-result";
+import {WeeklyCashResult} from "./weekly-cash-result";
 import {WorkExecutionRefresh} from "./work-execution-refresh";
 import "./work-execution.css";
 
@@ -30,6 +33,9 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
   const investment = result && !result.withheld ? result.investment ?? null : null;
   const comparison = result && !result.withheld ? result.comparison ?? null : null;
   const capacity = result && !result.withheld ? result.capacity ?? null : null;
+  const debtTable = result && !result.withheld ? result.debtTable ?? null : null;
+  const covenantHeadroom = result && !result.withheld ? result.covenantHeadroom ?? null : null;
+  const weeklyCash = result && !result.withheld ? result.weeklyCash ?? null : null;
   const mdTest = result && !result.withheld ? result.mdTest : null; const decisive = result && !result.withheld ? result.decisiveNumbers : null;
   const gates = view.gates;
   // A result with a registered revision is read as a result, not as raw evidence: the screen names no
@@ -74,7 +80,7 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
         ? <><p>{t("detail.recorded", {revision: result.revision.revisionNo, date: date(result.revision.recordedAt)})}</p><p role="status">{t(`detail.freshness.${result.revision.freshness}`)}</p></>
         : <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>}
       {marker ? <p role="status">{t("detail.markerTitle")}: {known("reasons", marker.reason)}</p> : null}
-      {!packet && !marker && !investment && !comparison && !capacity ? <p role="status">{t("detail.unreadable")}</p> : null}
+      {!packet && !marker && !investment && !comparison && !capacity && !debtTable && !covenantHeadroom && !weeklyCash ? <p role="status">{t("detail.unreadable")}</p> : null}
       {packet ? <>
         <dl className="execution-facts">
           <dt>{t("detail.decisionStatus")}</dt><dd>{t(`decisionStatus.${packet.status}`)}</dd>
@@ -98,6 +104,9 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
     {investment ? <InvestmentResult locale={locale} view={investment} /> : null}
     {comparison ? <ComparisonResult locale={locale} view={comparison} /> : null}
     {capacity ? <CapacityResult locale={locale} view={capacity} /> : null}
+    {debtTable ? <DebtTableResult locale={locale} view={debtTable} /> : null}
+    {covenantHeadroom ? <CovenantHeadroomResult locale={locale} view={covenantHeadroom} /> : null}
+    {weeklyCash ? <WeeklyCashResult locale={locale} view={weeklyCash} /> : null}
     {packet && mdTest ? <section><h2>{t("mdTest.title")}</h2><p>{t("mdTest.note")}</p>
       {!mdTest.evaluated ? <p role="status">{t(`mdTest.notEvaluated.${mdTest.reason}`)}</p>
         : <ol className="execution-questions">{mdTest.questions.map(q => <li key={q.id}><strong>{known("mdTest.questions", q.id)}</strong>

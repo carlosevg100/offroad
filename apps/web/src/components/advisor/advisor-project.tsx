@@ -53,6 +53,7 @@ import {InformationRequestCard, type AdvisorInformationRequest, type Information
 import {InvestmentPremisesCard, type InvestmentPremiseProposalView} from "./investment-premises-card";
 import {CapacityPremisesCard} from "./capacity-premises-card";
 import {ComparisonPremisesCard} from "./comparison-premises-card";
+import {DebtMethodsPremisesCard, isDebtPremiseMethod} from "./debt-methods-premises-card";
 import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, ProjectCapabilityId, ProjectWorkContext, ProjectWorkDispatch, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
@@ -451,6 +452,8 @@ export function AdvisorProject(props: Props) {
                 <CitedResultLinks citedResults={message.citedResults} />
                 {message.role === "assistant" && message.premiseProposal ? message.premiseProposal.methodId === "compare-financing-proposals"
                   ? <ComparisonPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={{...message.premiseProposal, summary: message.premiseProposal.summary ?? {}}} />
+                  : isDebtPremiseMethod(message.premiseProposal.methodId)
+                  ? <DebtMethodsPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} methodId={message.premiseProposal.methodId} proposal={{...message.premiseProposal, summary: message.premiseProposal.summary ?? {}}} />
                   : message.premiseProposal.methodId === "assess-debt-capacity"
                   ? <CapacityPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={{...message.premiseProposal, summary: message.premiseProposal.summary ?? {}}} />
                   : <InvestmentPremisesCard locale={props.locale === "en-US" ? "en-US" : "pt-BR"} projectId={props.projectId} proposal={message.premiseProposal} /> : null}

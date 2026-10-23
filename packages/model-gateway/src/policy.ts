@@ -104,6 +104,11 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   investment_fact_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_500, timeoutMs: 60_000},
   financing_comparison_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 6_000, timeoutMs: 90_000},
   debt_capacity_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 6_000, timeoutMs: 90_000},
+  // The lote 2 premise extractions carry whole schedules and dated event series: a debt table and a weekly cash
+  // extraction up to 16k output tokens, covenant headroom up to 10k; the time follows the output.
+  debt_table_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
+  covenant_headroom_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
+  weekly_cash_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.

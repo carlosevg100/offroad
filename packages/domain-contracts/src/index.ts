@@ -802,6 +802,7 @@ export * from "./source-version";
 export * from "./observation";
 export * from "./contextual-adoption";
 export * from "./artifact-protocol";
+export * from "./lote2-result-blocks";
 
 export * from "./review-protocol";
 export * from "./capital-public-capture";

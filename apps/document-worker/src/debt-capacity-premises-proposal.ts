@@ -1,38 +1,25 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {z} from "zod";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
 import {debtCapacityFactsSchema, proposeDebtCapacityHypotheses, type DebtCapacityFacts} from "@offroad/financial-model";
 import {uuidV5} from "./investment-premises-proposal";
+import {foldCue, proposesPremisesOfKind} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const debtCapacityPremiseMethod = {methodId: "assess-debt-capacity", methodVersion: "2026.10.19-v2"} as const;
-const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
-
+const fold = foldCue;
 const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
-/** A financial quantity: a number next to its unit (34%, 3x, três vezes, 60 milhões, três parcelas,
- * R$ 15), or a year. A number by itself ("em 2 dias", "uma frase") is not one. */
-const numberWord = "um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|catorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|duzent\\w+|trezent\\w+|quatrocent\\w+|quinhent\\w+|seiscent\\w+|setecent\\w+|oitocent\\w+|novecent\\w+|mil";
-const unit = "%|x\\b|vez\\b|vezes|por cento|pontos?( percentuais| base)?|bps\\b|pb\\b|basis points|milh\\w*|mil\\b|bi\\b|bilh\\w*|mm\\b|mi\\b|parcela\\w*|anos?\\b";
-const quantity = new RegExp(`\\d+(?:[.,]\\d+)?\\s*(?:${unit})|\\b(?:${numberWord})\\s+(?:${unit})|r\\$\\s*\\d|\\b(?:19|20)\\d{2}\\b`);
-/** A question asks; it does not answer. Only a confirmation tag ("34%, certo?") keeps an answer an answer. */
-const interrogative = /^((e|mas|entao|ok|ah)[\s,]+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que)\b/;
-/** A request for explanation is the imperative that opens the message ("explica", "pode detalhar"), not the
- * same verb inside a statement ("conforme detalha a projeção"). */
-const explanation = /^((e|mas|entao|ok|ah)[\s,]+)?((pode|poderia|consegue|voce pode|me|por favor)\s+)*(explica|explique|explicar|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b|\bo que significa\b/;
-const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
+/** Qualitative answers to the gaps this extraction asks for, which carry no number. */
+const capacityGaps = /\b(capex|investimento|giro|refinanc\w*|expansao|aquisicao|fabrica|planta|segunda linha|faseado|cdi|prefixad\w*|lucro real|lucro presumido|sem ifrs|nao (tem|ha)|nenhum)\b/;
 
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
- * is among the messages the agent reads (the last twelve of the conversation), an answer that states
- * capacity data with a quantity continues it, even when it asks for confirmation ("34%, certo?"), so
- * the data asked for reaches the extraction without the question being repeated. A question, a
- * request for explanation or a remark without such data does not continue it, with or without documents. */
+ * is the latest premise question among the messages the agent reads (the last twelve of the
+ * conversation), an answer that states capacity data with a quantity continues it, even when it asks
+ * for confirmation ("34%, certo?"), so the data asked for reaches the extraction without the question
+ * being repeated. A question, a request for explanation or a remark without such data does not
+ * continue it, with or without documents. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  const text = fold(message).trim();
-  if (capacityCue.test(text)) return compileObjectiveToPlan({message, hasAttachments}).objectiveKind !== "factual_question";
-  const asks = interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
-  return !asks && capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
+  return proposesPremisesOfKind("debt_capacity", capacityData, message, hasAttachments, earlierUserMessages, capacityGaps);
 }
 
 const origin = z.enum(["informed", "document"]);

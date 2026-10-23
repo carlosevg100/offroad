@@ -2932,6 +2932,292 @@
         },
         "pays": "Pays",
         "bindingIn": "in {year}"
+      },
+      "debtTable": {
+        "title": "Company debt table",
+        "status": "Status",
+        "question": "Question",
+        "referenceDate": "Reference date",
+        "units": "Amounts in millions of {currency}; cost in percent per year; leverage in multiples.",
+        "views": "Debt in each definition",
+        "bridgeNone": "base",
+        "columns": {
+          "view": "Definition",
+          "total": "Total",
+          "netDebt": "Net debt",
+          "bridge": "Bridge from the base",
+          "instrument": "Instrument",
+          "creditor": "Creditor",
+          "principal": "Principal",
+          "accounting": "Accounting balance",
+          "cost": "Indexer and spread",
+          "finalPayment": "Final payment",
+          "guarantee": "Guarantee",
+          "covenant": "Covenant",
+          "crossDefault": "Cross-default from",
+          "line": "Line",
+          "limit": "Limit",
+          "drawn": "Drawn",
+          "unused": "Unused",
+          "item": "Item",
+          "kind": "Nature",
+          "amount": "Amount",
+          "year": "Year",
+          "definition": "Definition",
+          "denominator": "EBITDA of the definition",
+          "ratio": "Leverage",
+          "holder": "Restricting instrument",
+          "basket": "Permitted basket",
+          "occupied": "Occupied",
+          "remaining": "Available",
+          "usedBy": "Occupied by",
+          "threshold": "Threshold",
+          "acceleration": "Acceleration",
+          "scope": "Trigger",
+          "triggeredBy": "Can be triggered by"
+        },
+        "components": {
+          "principal": "principal",
+          "drawn_credit_lines": "drawn lines",
+          "accrued_interest": "accrued interest",
+          "unamortized_cost": "unamortized cost",
+          "lease": "leases",
+          "supplier_finance": "supplier finance",
+          "guarantee_given": "guarantees given"
+        },
+        "spread": "{indexer} + {spread}",
+        "noThreshold": "no clause",
+        "reconciliation": "Reconciliation with the balance sheet",
+        "reconciliationLine": "Principal {principal}, accrued interest {accrued}, unamortized cost {unamortized}: accounting {accounting}; reported {reported}; difference {difference}.",
+        "reconciliationStatus": "Reconciliation: {status}",
+        "reconciliationStatuses": {
+          "exact": "exact",
+          "within_tolerance": "within tolerance",
+          "difference": "with a difference",
+          "not_reported": "no reported balance"
+        },
+        "noReconciliation": "No reconciliation: the accounting or reported balance is missing.",
+        "creditLines": "Unused credit lines",
+        "unusedTotal": "Total unused: {amount}",
+        "outside": "Outside every definition",
+        "outsideKinds": {
+          "guarantee_given": "guarantee given"
+        },
+        "profile": "Principal repayment schedule",
+        "dueTwelve": "Due within twelve months: {amount}, {share} of principal.",
+        "averageLife": "Average life: {years} years.",
+        "largestCreditor": "Largest creditor: {creditor}, {amount}, {share} of principal.",
+        "averageCost": "Average nominal cost: {rate} per year.",
+        "crossDefault": "Cross-default chain",
+        "lowestThreshold": "Lowest threshold: {instrument}, {amount}.",
+        "accelerations": {
+          "automatic": "automatic",
+          "non_automatic": "not automatic"
+        },
+        "baskets": "Permitted security baskets (negative pledge)",
+        "exceeded": "exceeded",
+        "notExceeded": "within the basket",
+        "leverage": "Leverage in each definition",
+        "completeness": "Completeness of the list",
+        "completenessStatuses": {
+          "proven": "List proven by an external source.",
+          "unproven": "List not proven by an external source."
+        },
+        "requests": {
+          "external_register_of_financial_institution_operations": "To prove completeness, request the company's Registrato (Central Bank register of credit operations)."
+        },
+        "categoriesNotExamined": "Categories not examined: {list}.",
+        "coverageTitle": "Categories examined",
+        "coverageStatuses": {
+          "present": "present",
+          "absent": "absent",
+          "not_examined": "not examined"
+        },
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "credit_approval": "Credit approval",
+          "method_release": "Method release",
+          "contract_extraction": "Automatic reading of the contracts",
+          "covenant_measurement": "Covenant measurement",
+          "structure_opinion": "Opinion on the capital structure",
+          "projection": "Company projection",
+          "waiver_negotiation": "Waiver negotiation",
+          "business_day_inference": "Adjustment of dates to business days",
+          "intraday_liquidity": "Intraday liquidity",
+          "receivables_assignment_eligibility": "Eligibility of receivables for assignment"
+        }
+      },
+      "covenantHeadroom": {
+        "title": "Covenant headroom",
+        "status": "Status",
+        "question": "Question",
+        "readingDate": "Reading date",
+        "units": "Amounts in millions of {currency}; ratios in multiples. Each limit is measured by the definition written in the document that creates it.",
+        "headline": "On {date}, net debt to EBITDA of {ratio}; the tightest limit is {limit}.",
+        "headlineNoRatio": "On {date}, the ratio was not measured.",
+        "columns": {
+          "limit": "Limit",
+          "kind": "Nature",
+          "ebitdaHeadroom": "EBITDA headroom",
+          "netDebtHeadroom": "Net debt headroom",
+          "unrealized": "Unrealized EBITDA that may fall short",
+          "breached": "Breached?",
+          "measurement": "Measurement",
+          "date": "Date",
+          "scenario": "Scenario",
+          "netDebt": "Net debt",
+          "ebitda": "EBITDA",
+          "ratio": "Ratio",
+          "tightest": "Tightest limit",
+          "effect": "Effect",
+          "ratioEffect": "On the ratio",
+          "netDebtEffect": "On net debt"
+        },
+        "kinds": {
+          "contractual": "contract",
+          "board_policy": "board policy"
+        },
+        "limitStatuses": {
+          "in_force": "in force",
+          "superseded": "superseded"
+        },
+        "yes": "Yes",
+        "no": "No",
+        "policyBindsFirst": "The board policy binds before the contractual covenant.",
+        "contractBindsFirst": "The contractual covenant binds before the board policy.",
+        "worst": "Smallest headroom among the test measurements: {measurement}, against {limit}, {amount} of EBITDA headroom.",
+        "anyBreach": "At least one test measurement breaches a limit.",
+        "noBreach": "No test measurement breaches a limit.",
+        "limits": "Limits",
+        "tests": "Test measurements",
+        "contrasts": "Contrasts, outside the test",
+        "contrastsNote": "Contrasts show the same calculation on another basis for comparison; they are not the contract test.",
+        "effects": "Effects on the measurement date",
+        "consequence": "What follows a breach",
+        "acceleration": "Acceleration",
+        "process": "Process",
+        "crossDefaultLabel": "Cross-default",
+        "accelerations": {
+          "automatic": "automatic",
+          "non_automatic": "not automatic"
+        },
+        "definitions": "Definition of each limit",
+        "definitionMissing": "definition not written",
+        "openQuestions": "Open questions",
+        "questions": {
+          "ebitda_definition_not_written": "the document does not say which EBITDA to use"
+        },
+        "scenarios": {
+          "base": "base",
+          "adverse": "adverse"
+        },
+        "notMeasured": "not measured",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "credit_approval": "Credit approval",
+          "method_release": "Method release",
+          "contract_extraction": "Automatic reading of the contracts",
+          "covenant_measurement": "Covenant measurement",
+          "structure_opinion": "Opinion on the capital structure",
+          "projection": "Company projection",
+          "waiver_negotiation": "Waiver negotiation",
+          "business_day_inference": "Adjustment of dates to business days",
+          "intraday_liquidity": "Intraday liquidity",
+          "receivables_assignment_eligibility": "Eligibility of receivables for assignment"
+        }
+      },
+      "weeklyCash": {
+        "title": "Cash week by week",
+        "status": "Status",
+        "question": "Question",
+        "units": "Amounts in millions of {currency}; action costs in millions with two decimals. Weeks start on Monday.",
+        "horizon": "From {from} to {to}; opening cash {opening}; minimum cash {minimum}.",
+        "tightest": "Tightest week: the week of {week}, closing at {closing}.",
+        "belowMinimum": "Weeks below the minimum: {list}. Shortfall to the minimum: {amount}.",
+        "noneBelow": "No week below the minimum in the stated case.",
+        "causes": "What goes out in those weeks",
+        "closingHides": "The period closing does not show this week: the month-end balance stays above the minimum.",
+        "closingShows": "The period closing shows the tightest week.",
+        "cheapest": "Cheapest covering action: {action}, costing {cost} for the time it is used.",
+        "cheapestOpen": "Still open on the covenant test date.",
+        "noCheapest": "No proposed action covers the shortfall.",
+        "actions": "Actions by cost",
+        "columns": {
+          "action": "Action",
+          "amount": "Amount",
+          "days": "Days",
+          "interest": "Interest",
+          "iof": "IOF",
+          "fee": "Fee",
+          "cost": "Cost",
+          "covers": "Covers?",
+          "openAtTest": "Open at the covenant test?",
+          "case": "Case",
+          "minimum": "Minimum",
+          "minimumWeek": "Week of the minimum",
+          "weeksBelow": "Weeks below",
+          "closing": "Closing",
+          "shortfall": "Shortfall to the minimum",
+          "week": "Week of",
+          "inflows": "Inflows",
+          "outflows": "Outflows",
+          "below": "Below the minimum?",
+          "date": "Date",
+          "item": "Item",
+          "category": "Category",
+          "obligation": "Obligation",
+          "coverage": "Status"
+        },
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "not stated",
+        "cases": "Each case",
+        "sensitivities": "Sensitivities",
+        "weeks": "Weeks of the stated case: {case}",
+        "calendar": "What falls due to the date",
+        "categories": {
+          "debt": "debt",
+          "statutory": "payroll and taxes",
+          "supplier": "suppliers",
+          "other": "other"
+        },
+        "reconciliation": "Reconciliation with the projection",
+        "reconciliationLine": "On {date}: weekly {weekly}; projection {projection}; difference {difference}.",
+        "noReconciliation": "No reconciliation with the projection.",
+        "coverage": "Obligations covered",
+        "obligations": {
+          "payroll": "payroll",
+          "thirteenth_salary": "13th salary",
+          "payroll_charges": "payroll charges",
+          "sales_taxes": "sales taxes",
+          "income_taxes": "income taxes",
+          "debt_service": "debt service"
+        },
+        "coverageStatuses": {
+          "included": "included",
+          "not_examined": "not examined",
+          "absent": "absent"
+        },
+        "notExamined": "Obligations not examined: {list}.",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "exclusionsTitle": "Outside the scope of this analysis",
+        "exclusions": {
+          "credit_approval": "Credit approval",
+          "method_release": "Method release",
+          "contract_extraction": "Automatic reading of the contracts",
+          "covenant_measurement": "Covenant measurement",
+          "structure_opinion": "Opinion on the capital structure",
+          "projection": "Company projection",
+          "waiver_negotiation": "Waiver negotiation",
+          "business_day_inference": "Adjustment of dates to business days",
+          "intraday_liquidity": "Intraday liquidity",
+          "receivables_assignment_eligibility": "Eligibility of receivables for assignment"
+        }
       }
     },
     "overview": "Overview",
@@ -7473,6 +7759,69 @@
       "invalidCnpj": "The CNPJ does not match its check digits. Check it and try again.",
       "roleExists": "This work already has a company registered with another perimeter. Adjust it in the analysis basis.",
       "unavailable": "I could not register it now. Try again."
+    }
+  },
+  "DebtMethodsPremisesCard": {
+    "methods": {
+      "debtTable": {
+        "title": "Premises to build the debt table",
+        "lead": "I build the table with these instruments, lines, obligations and definitions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "For each instrument: creditor, principal, accounting balance, cost, maturity, guarantee, covenant and cross-default. Totals in each definition with the bridge, schedule by year and what is missing to prove the list is complete."
+      },
+      "covenantHeadroom": {
+        "title": "Premises to measure covenant headroom",
+        "lead": "I measure the company against these limits, on these dates and definitions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "For each limit and the board policy: the ratio on the date, headroom in EBITDA and in net debt, how much of the unrealized EBITDA may fall short, the adverse case, the seasonal effect and what follows a breach."
+      },
+      "weeklyCash": {
+        "title": "Premises to project cash week by week",
+        "lead": "I project weekly cash with these streams, obligations, cases and actions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "Week by week to the date: the tightest week, the weeks below the minimum, what falls due in them, what the period closing hides and the cost of each covering action, for the time it is used."
+      }
+    },
+    "groups": {
+      "instrument": "Instruments",
+      "credit_line": "Credit lines",
+      "obligation": "Obligations",
+      "view": "Debt definitions",
+      "limit": "Limits",
+      "measurement": "Measurements",
+      "stream": "Cash streams",
+      "action": "Actions",
+      "case": "Cases",
+      "premise": "Premises"
+    },
+    "origins": {
+      "document": "Document",
+      "informed": "Stated",
+      "house": "House premise",
+      "estimate": "Estimate"
+    },
+    "referenceDate": "Reference date: {date}",
+    "unreadable": "I could not read the premises of this proposal. Ask in the conversation and I will propose them again.",
+    "confirm": "Confirm premises and calculate",
+    "confirming": "Recording the premises",
+    "pendingRelease": "Premises confirmed. The calculation runs once the method is released.",
+    "calculating": "Premises confirmed. Calculation in progress.",
+    "openCalculation": "Open the calculation",
+    "superseded": "Replaced by a more recent proposal in this conversation.",
+    "errors": {
+      "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
+      "unavailable": "I could not confirm now. Try again."
+    },
+    "houseLabels": {
+      "leaseView": "Including leases",
+      "marketView": "Market",
+      "accountingView": "Accounting",
+      "completenessUnproven": "Registrato not received",
+      "completenessProven": "Registrato received",
+      "accelerationAutomatic": "Automatic acceleration",
+      "accelerationNonAutomatic": "Non-automatic acceleration",
+      "openingCash": "Opening cash",
+      "minimumCash": "Minimum operating cash",
+      "informedPlan": "Stated plan",
+      "variantCase": "Plan with {label}",
+      "actionCase": "Plan with the action: {label}"
     }
   }
 }

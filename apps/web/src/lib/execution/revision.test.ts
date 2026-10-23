@@ -1,4 +1,9 @@
 import {capitalProcedurePacketBlocks, investmentDecisionPacketBlocks, readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type CapitalProcedurePacketLike, type InvestmentDecisionPacketLike} from "@offroad/domain-contracts";
+import {covenantHeadroomPacketBlocks, debtTablePacketBlocks, readCovenantHeadroomPacketBlocks, readDebtTablePacketBlocks, readWeeklyCashPacketBlocks, weeklyCashPacketBlocks,
+  type CovenantHeadroomPacketLike, type DebtTablePacketLike, type WeeklyCashPacketLike} from "@offroad/domain-contracts";
+import covenantPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/covenant-headroom-result-packet.json";
+import debtTablePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/debt-table-result-packet.json";
+import weeklyCashPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
 import investmentPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/investment-result-packet.json";
 // The packet the SQL producer and the contract mapping are proved against.
 import packetFixture from "../../../../../packages/domain-contracts/src/fixtures/execution-result-packet.json";
@@ -52,6 +57,28 @@ describe("the registered revision of an execution result", () => {
     // Capital blocks under an investment trace, or investment blocks under a capital trace, are not read.
     expect(executionRevisionFromRead(parsed(recorded({traces: investmentTraces})), executionId)).toEqual({state: "unavailable"});
     expect(executionRevisionFromRead(parsed(recorded({blocks: investmentBlocks})), executionId)).toEqual({state: "unavailable"});
+  });
+
+  it("reads each lote 2 debt result by its packet trace, with its own reader and pins", () => {
+    type Blocks = NonNullable<Parameters<typeof artifactReadFixture>[0]["blocks"]>;
+    const kinds = [
+      {prefix: "debt-table-packet:", kind: "debt_table", field: "debtTable", packet: debtTablePacketFixture as unknown as DebtTablePacketLike,
+        map: (p: unknown) => debtTablePacketBlocks(p as DebtTablePacketLike), read: readDebtTablePacketBlocks},
+      {prefix: "covenant-headroom-packet:", kind: "covenant_headroom", field: "covenantHeadroom", packet: covenantPacketFixture as unknown as CovenantHeadroomPacketLike,
+        map: (p: unknown) => covenantHeadroomPacketBlocks(p as CovenantHeadroomPacketLike), read: readCovenantHeadroomPacketBlocks},
+      {prefix: "weekly-cash-packet:", kind: "weekly_cash", field: "weeklyCash", packet: weeklyCashPacketFixture as unknown as WeeklyCashPacketLike,
+        map: (p: unknown) => weeklyCashPacketBlocks(p as WeeklyCashPacketLike), read: readWeeklyCashPacketBlocks},
+    ] as const;
+    for (const k of kinds) {
+      const kindBlocks = k.map(k.packet) as unknown as Blocks;
+      const kindTraces = [`${k.prefix}${k.packet.fingerprint}`, `execution-gates:${"f".repeat(64)}`];
+      const state = executionRevisionFromRead(parsed(recorded({traces: kindTraces, blocks: kindBlocks})), executionId);
+      expect(state.state === "ready" && state.revision.kind).toBe(k.kind);
+      expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(k.packet.fingerprint);
+      expect(state.state === "ready" && (state.revision as unknown as Record<string, unknown>)[k.field]).toEqual(k.read(kindBlocks as never));
+      // Blocks of another kind under this trace are not read.
+      expect(executionRevisionFromRead(parsed(recorded({traces: kindTraces})), executionId)).toEqual({state: "unavailable"});
+    }
   });
 
   it("serves nothing the database withheld and reads nothing it cannot map", () => {

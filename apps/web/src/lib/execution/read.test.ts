@@ -10,6 +10,11 @@ import {adoptedCapitalPeriodFixture, capitalStructureDecisionFixture} from "@off
 import {formatDecimal} from "./format";
 import {buildExecutionGates} from "@offroad/execution-request";
 import {capitalProcedurePacketBlocks, investmentDecisionPacketBlocks, readCapitalProcedurePacketBlocks, readInvestmentDecisionPacketBlocks, type CapitalProcedurePacketLike, type InvestmentDecisionPacketLike} from "@offroad/domain-contracts";
+import {covenantHeadroomPacketBlocks, readCovenantHeadroomPacketBlocks, type CovenantHeadroomPacketLike} from "@offroad/domain-contracts";
+import {prepareCovenantHeadroomPacket, prepareDebtTablePacket, prepareWeeklyCashPacket} from "@offroad/financial-model";
+import {auroraCovenantBasis} from "../../../../../packages/financial-model/src/covenant-headroom.test-support";
+import {auroraDebtTableBasis} from "../../../../../packages/financial-model/src/debt-table.test-support";
+import {auroraWeeklyCashBasis} from "../../../../../packages/financial-model/src/weekly-cash.test-support";
 import {c32PacketInput} from "../../../../../packages/financial-model/src/investment-decision-packet.test-support";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
 import type {ExecutionRevisionState} from "./revision";
@@ -276,5 +281,41 @@ describe("an investment analysis result", () => {
   it("does not read a capital packet or unknown bytes as an investment result", () => {
     const view = projectWorkExecution({...base, result: committedResult(JSON.stringify({schemaVersion: "investment-decision-packet.v1"}))});
     expect(view.result && !view.result.withheld && view.result.investment).toBeNull();
+  });
+});
+
+describe("the lote 2 debt results", () => {
+  const debtTable = () => prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: auroraDebtTableBasis().seal()});
+  const covenant = () => prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base",
+    analysis: auroraCovenantBasis().seal()});
+  const weekly = () => prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro?", analysis: auroraWeeklyCashBasis().seal()});
+  it("reads each from committed bytes of an execution without a revision, through its blocks, and nothing else from them", () => {
+    const table = projectWorkExecution({...base, result: committedResult(JSON.stringify(debtTable()))});
+    const tableResult = table.result && !table.result.withheld ? table.result : null;
+    expect(tableResult?.debtTable?.views.length).toBeGreaterThan(0);
+    expect([tableResult?.packet, tableResult?.mdTest, tableResult?.investment, tableResult?.capacity, tableResult?.covenantHeadroom, tableResult?.weeklyCash]).toEqual([null, null, null, null, null, null]);
+    const headroom = projectWorkExecution({...base, result: committedResult(JSON.stringify(covenant()))});
+    const headroomResult = headroom.result && !headroom.result.withheld ? headroom.result : null;
+    expect(headroomResult?.covenantHeadroom?.framing.readings?.headline.measurementId).toBe("dez26-base");
+    expect(headroomResult?.debtTable).toBeNull();
+    const cash = projectWorkExecution({...base, result: committedResult(JSON.stringify(weekly()))});
+    const cashResult = cash.result && !cash.result.withheld ? cash.result : null;
+    expect(cashResult?.weeklyCash?.cases.some((c) => c.role === "informed")).toBe(true);
+    expect(cashResult?.covenantHeadroom).toBeNull();
+  });
+  it("takes the result from the registered revision when there is one", () => {
+    const packet = covenant();
+    const view = readCovenantHeadroomPacketBlocks(covenantHeadroomPacketBlocks(packet as unknown as CovenantHeadroomPacketLike))!;
+    const projected = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))}, {state: "ready", revision: {revisionId: "30000000-0000-4000-8000-000000000001",
+      revisionNo: 1, recordedAt: "2026-10-23T12:00:00+00:00", freshness: "current", kind: "covenant_headroom", covenantHeadroom: view,
+      pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: null}}});
+    expect(projected.result).toMatchObject({withheld: false, source: "revision", packet: null, covenantHeadroom: view, revision: {revisionNo: 1}});
+  });
+  it("does not read unknown bytes as a debt result", () => {
+    for (const schemaVersion of ["debt-table-packet.v1", "covenant-headroom-packet.v1", "weekly-cash-packet.v1"]) {
+      const view = projectWorkExecution({...base, result: committedResult(JSON.stringify({schemaVersion}))});
+      const result = view.result && !view.result.withheld ? view.result : null;
+      expect([result?.debtTable, result?.covenantHeadroom, result?.weeklyCash]).toEqual([null, null, null]);
+    }
   });
 });

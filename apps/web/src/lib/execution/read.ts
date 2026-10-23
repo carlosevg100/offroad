@@ -1,8 +1,11 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {executionCanonicalText, executionGatesSchema, type ExecutionGates} from "@offroad/agent-contracts";
+import {covenantHeadroomPacketBlocks, debtTablePacketBlocks, readCovenantHeadroomPacketBlocks, readDebtTablePacketBlocks, readWeeklyCashPacketBlocks, weeklyCashPacketBlocks,
+  type CovenantHeadroomPacketLike, type CovenantHeadroomResultBlocksView, type DebtTablePacketLike, type DebtTableResultBlocksView, type WeeklyCashPacketLike, type WeeklyCashResultBlocksView} from "@offroad/domain-contracts";
 import {debtCapacityPacketBlocks, financingComparisonPacketBlocks, investmentDecisionPacketBlocks, readDebtCapacityPacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks,
   type DebtCapacityPacketLike, type DebtCapacityResultBlocksView, type FinancingComparisonPacketLike, type FinancingComparisonResultBlocksView, type InvestmentDecisionPacketLike, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {covenantHeadroomPacketOutputSchema, debtTablePacketOutputSchema, weeklyCashPacketOutputSchema} from "@offroad/financial-model";
 import {capitalProcedurePacketV2OutputSchema, debtCapacityPacketOutputSchema, deriveCapitalChartSeries, evaluateMdTest, financingComparisonPacketOutputSchema, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
 import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
 
@@ -71,6 +74,12 @@ export type WorkExecutionView = {
       comparison?: FinancingComparisonResultBlocksView | null;
       /** The capacity per limit and schedule (ficha C04). */
       capacity?: DebtCapacityResultBlocksView | null;
+      /** The company's debt table per instrument and view (ficha C10). */
+      debtTable?: DebtTableResultBlocksView | null;
+      /** The headroom against each covenant and the board policy (ficha C12). */
+      covenantHeadroom?: CovenantHeadroomResultBlocksView | null;
+      /** Cash week by week to the horizon (ficha C18). */
+      weeklyCash?: WeeklyCashResultBlocksView | null;
       revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
@@ -113,6 +122,30 @@ export function readCapacityResult(canonicalResult: string): DebtCapacityResultB
   try {
     const parsed = debtCapacityPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
     return parsed.success ? readDebtCapacityPacketBlocks(debtCapacityPacketBlocks(parsed.data as unknown as DebtCapacityPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a debt table, read through the same blocks its revision carries. */
+export function readDebtTableResult(canonicalResult: string): DebtTableResultBlocksView | null {
+  try {
+    const parsed = debtTablePacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readDebtTablePacketBlocks(debtTablePacketBlocks(parsed.data as unknown as DebtTablePacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a covenant headroom reading, read through the same blocks its revision carries. */
+export function readCovenantHeadroomResult(canonicalResult: string): CovenantHeadroomResultBlocksView | null {
+  try {
+    const parsed = covenantHeadroomPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readCovenantHeadroomPacketBlocks(covenantHeadroomPacketBlocks(parsed.data as unknown as CovenantHeadroomPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a weekly cash projection, read through the same blocks its revision carries. */
+export function readWeeklyCashResult(canonicalResult: string): WeeklyCashResultBlocksView | null {
+  try {
+    const parsed = weeklyCashPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readWeeklyCashPacketBlocks(weeklyCashPacketBlocks(parsed.data as unknown as WeeklyCashPacketLike)) : null;
   } catch { return null; }
 }
 
@@ -217,10 +250,13 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
       mdTest: null, decisiveNumbers: null, investment: revision.investment,
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
-  } else if (r.result !== null && registered?.state === "ready" && (registered.revision.kind === "comparison" || registered.revision.kind === "capacity")) {
+  } else if (r.result !== null && registered?.state === "ready" && registered.revision.kind !== undefined && registered.revision.kind !== "capital") {
     const {revision} = registered;
+    const view = revision.kind === "comparison" ? {comparison: revision.comparison} : revision.kind === "capacity" ? {capacity: revision.capacity}
+      : revision.kind === "debt_table" ? {debtTable: revision.debtTable} : revision.kind === "covenant_headroom" ? {covenantHeadroom: revision.covenantHeadroom}
+      : revision.kind === "weekly_cash" ? {weeklyCash: revision.weeklyCash} : {};
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
-      mdTest: null, decisiveNumbers: null, ...(revision.kind === "comparison" ? {comparison: revision.comparison} : {capacity: revision.capacity}),
+      mdTest: null, decisiveNumbers: null, ...view,
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
   } else if (r.result !== null && registered?.state === "ready" && (registered.revision.kind === undefined || registered.revision.kind === "capital")) {
     const {data} = parseCommittedResult(r.result.canonicalResult);
@@ -233,8 +269,11 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     const investment = data || marker ? null : readInvestmentResult(r.result.canonicalResult);
     const comparison = data || marker || investment ? null : readComparisonResult(r.result.canonicalResult);
     const capacity = data || marker || investment || comparison ? null : readCapacityResult(r.result.canonicalResult);
+    const debtTable = data || marker || investment || comparison || capacity ? null : readDebtTableResult(r.result.canonicalResult);
+    const covenantHeadroom = data || marker || investment || comparison || capacity || debtTable ? null : readCovenantHeadroomResult(r.result.canonicalResult);
+    const weeklyCash = data || marker || investment || comparison || capacity || debtTable || covenantHeadroom ? null : readWeeklyCashResult(r.result.canonicalResult);
     result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
-      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, revision: null};
+      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, debtTable, covenantHeadroom, weeklyCash, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),
