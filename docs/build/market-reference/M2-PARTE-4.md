@@ -67,7 +67,7 @@ reunião, a véspera da série da data) e recusa recebê-lo como entrada, recusa
 do nome concreto, de modo que um nome nunca carrega dois pedidos. Cada ato expandido executado entra no registro
 da execução.
 
-Pausas e retomadas são ciclos numerados (três no manifesto): `pause-<k>` fecha o transporte e revoga cada
+Pausas e retomadas são ciclos numerados (quatro no manifesto): `pause-<k>` fecha o transporte e revoga cada
 delegação e agenda viva naquele momento, resolvida na execução, de modo que uma pausa no meio do bootstrap revoga
 só o que existe; `resume-<k>` concede de novo com comandos próprios, porque replay de concessão revogada não a
 reativa e replay de transporte fechado não o fecha de novo. Nenhum segredo entra no manifesto.
