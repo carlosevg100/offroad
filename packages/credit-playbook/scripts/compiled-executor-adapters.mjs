@@ -32,6 +32,12 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareDebtCapacityPacket', input: 'debtCapacityPacketInputSchema', output: 'debtCapacityPacketOutputSchema'}),
     entry: 'export {prepareDebtCapacityPacket, debtCapacityPacketInputSchema, debtCapacityPacketOutputSchema} from "../../packages/financial-model/src/debt-capacity-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'build-company-debt-table',
+    executorKey: '@offroad/financial-model#prepareDebtTablePacket', executorVersion: '2026.10.23-v1',
+    exports: Object.freeze({calculate: 'prepareDebtTablePacket', input: 'debtTablePacketInputSchema', output: 'debtTablePacketOutputSchema'}),
+    entry: 'export {prepareDebtTablePacket, debtTablePacketInputSchema, debtTablePacketOutputSchema} from "../../packages/financial-model/src/debt-table-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */
