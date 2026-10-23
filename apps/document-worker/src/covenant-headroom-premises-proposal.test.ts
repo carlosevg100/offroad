@@ -110,15 +110,17 @@ describe("covenant headroom premises proposed from a turn", () => {
     expect(buildCovenantHeadroomPremiseProposal(changed.facts).fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "measure-covenant-headroom", methodVersion: "2026.10.23-v1"});
   });
-  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+  it("proposes only when the extraction reads the turn as answering, on a continuation and on a direct request alike", async () => {
     const earlier = ["Qual a folga do covenant da debênture em dezembro?"];
     for (const intent of nonAnswering) {
       const r = await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), intent, "Análise da escritura: o limite é 3x.", earlier);
       expect(r, intent).toEqual({extracted: true, status: null, events: ["covenant_premises.not_answering"]});
     }
     expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Análise da escritura: o limite é 3x.", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["covenant_premises.proposed"]});
+    // A direct request is gated the same way: the model reads a request for this analysis as answers_pending.
     for (const intent of nonAnswering)
-      expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), intent, "Qual a folga do covenant da debênture em dezembro?", []), intent).toMatchObject({status: "proposed"});
+      expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), intent, "Qual a folga do covenant da debênture em dezembro?", []), intent).toEqual({extracted: true, status: null, events: ["covenant_premises.not_answering"]});
+    expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Qual a folga do covenant da debênture em dezembro?", [])).toMatchObject({status: "proposed"});
     // A question never reaches the extraction.
     expect(await turnWithIntent(proposeCovenantHeadroomPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });

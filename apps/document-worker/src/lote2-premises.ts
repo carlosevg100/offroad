@@ -77,10 +77,10 @@ export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}
     const documentFields = await input.loadEvidence();
     const extraction = spec.schema.parse(await input.extract(JSON.stringify({
       latestUserMessage: input.message, earlierUserMessages: input.recentUserMessages.slice(-6), documentFields})));
-    // A continuation proposes only when the turn answers what is pending; a direct request always does.
+    // Only a turn that answers what is pending (or itself requests this analysis) proposes.
     const intent = (extraction as {turnIntent: string}).turnIntent;
-    if (input.entry === "continuation" && intent !== "answers_pending") {
-      input.log(`${spec.logPrefix}.not_answering`, {turnIntent: intent});
+    if (intent !== "answers_pending") {
+      input.log(`${spec.logPrefix}.not_answering`, {turnIntent: intent, entry: input.entry});
       return null;
     }
     const completed = spec.complete(extraction, uuidV5(`offroad:${spec.idName}:${input.projectId}`));

@@ -131,26 +131,32 @@ describe("capacity premises proposed from a turn", {timeout: 180000}, () => {
     const long = [...earlier, "A alíquota é 34%", "O covenant é 3x", "CDI de 12% em 2029", "Spread de 2,5%"];
     expect(shouldProposeDebtCapacityPremises("Três parcelas anuais a partir de 2030", false, long)).toBe(true);
     expect(shouldProposeDebtCapacityPremises("O covenant é 3x, certo?", false, earlier)).toBe(true);
-    expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029", false, earlier)).toBe(false);
+    // Without "?", a message opening with "qual" reaches the extraction, which reads its intent.
+    expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029", false, earlier)).toBe(true);
+    expect(shouldProposeDebtCapacityPremises("E, qual o EBITDA de 2029", false, earlier)).toBe(true);
+    // A direct cue phrased as a question starts the step: questions are filtered only for continuations.
+    for (const m of ["Quanto de dívida cabe?", "Qual é a nossa capacidade de endividamento?"]) expect(shouldProposeDebtCapacityPremises(m, false, []), m).toBe(true);
     expect(shouldProposeDebtCapacityPremises("Qual o EBITDA de 2029?", true, earlier)).toBe(false);
     for (const m of ["A alíquota é 34%, certo?", "Três parcelas anuais a partir de 2030, certo?", "O CDI é 12%, certo?"])
       expect(shouldProposeDebtCapacityPremises(m, false, earlier), m).toBe(true);
     for (const m of ["Pode considerar a alíquota de 34%", "Pode usar CDI de 12%", "O EBITDA é 60 milhões conforme explicado na projeção", "Caixa mínimo de R$ 15 milhões", "O EBITDA é sessenta milhões",
       "O EBITDA é quarenta milhões", "O spread é de 250 bps", "O caixa mínimo é R$ 15 milhões, conforme detalha a projeção"])
       for (const docs of [false, true]) expect(shouldProposeDebtCapacityPremises(m, docs, earlier), m).toBe(true);
-    for (const m of ["E qual o EBITDA de 2029?", "E, qual o EBITDA de 2029", "Pode explicar a alíquota de 34%?", "Pode explicar o CDI em uma frase?", "Me explica o covenant de 3x",
+    for (const m of ["E qual o EBITDA de 2029?", "Pode explicar a alíquota de 34%?", "Pode explicar o CDI em uma frase?", "Me explica o covenant de 3x",
       "O CDI de 12% faz sentido?", "Resuma o CDI em 1 frase"])
       for (const docs of [false, true]) expect(shouldProposeDebtCapacityPremises(m, docs, earlier), m).toBe(false);
   });
-  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+  it("proposes only when the extraction reads the turn as answering, on a continuation and on a direct request alike", async () => {
     const earlier = ["Quanto de dívida cabe para a segunda linha?"];
     for (const intent of nonAnswering) {
       const r = await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), intent, "Vou enviar a projeção em 2 dias", earlier);
       expect(r, intent).toEqual({extracted: true, status: null, events: ["capacity_premises.not_answering"]});
     }
     expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), "answers_pending", "Vou enviar a projeção em 2 dias", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["capacity_premises.proposed"]});
+    // A direct request is gated the same way: the model reads a request for this analysis as answers_pending.
     for (const intent of nonAnswering)
-      expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), intent, "Quanto de dívida cabe para a segunda linha?", []), intent).toMatchObject({status: "proposed"});
+      expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), intent, "Quanto de dívida cabe para a segunda linha?", []), intent).toEqual({extracted: true, status: null, events: ["capacity_premises.not_answering"]});
+    expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), "answers_pending", "Quanto de dívida cabe para a segunda linha?", [])).toMatchObject({status: "proposed"});
     // A question never reaches the extraction.
     expect(await turnWithIntent(proposeDebtCapacityPremisesForTurn, c04Extraction(), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });

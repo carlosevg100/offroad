@@ -126,15 +126,17 @@ describe("debt table premises proposed from a turn", () => {
     expect(buildDebtTablePremiseProposal(c.facts, "refinancing").fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "build-company-debt-table", methodVersion: "2026.10.23-v1"});
   });
-  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+  it("proposes only when the extraction reads the turn as answering, on a continuation and on a direct request alike", async () => {
     const earlier = ["Monta a tabela de dívida com tudo que temos."];
     for (const intent of nonAnswering) {
       const r = await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), intent, "Vou te confirmar o saldo da CCB amanhã.", earlier);
       expect(r, intent).toEqual({extracted: true, status: null, events: ["debt_table_premises.not_answering"]});
     }
     expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Vou te confirmar o saldo da CCB amanhã.", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["debt_table_premises.proposed"]});
+    // A direct request is gated the same way: the model reads a request for this analysis as answers_pending.
     for (const intent of nonAnswering)
-      expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), intent, "Monta a tabela de dívida com tudo que temos.", []), intent).toMatchObject({status: "proposed"});
+      expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), intent, "Monta a tabela de dívida com tudo que temos.", []), intent).toEqual({extracted: true, status: null, events: ["debt_table_premises.not_answering"]});
+    expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Monta a tabela de dívida com tudo que temos.", [])).toMatchObject({status: "proposed"});
     // A question never reaches the extraction.
     expect(await turnWithIntent(proposeDebtTablePremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });

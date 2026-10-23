@@ -55,7 +55,10 @@ describe("weekly cash premises proposed from a turn", () => {
     for (const m of ["O saldo hoje é R$ 41 milhões e o caixa mínimo R$ 15 milhões", "A folha é R$ 3 milhões, certo?", "O 13º está incluído na folha.", "Não pagamos IR por estimativa.",
       "A folha de R$ 3 milhões vence amanhã.", "Obrigado", "Vou confirmar a folha de R$ 3 milhões amanhã.", "Mando o fluxo em 2 dias", "Ainda não tenho o fluxo de dezembro."])
       expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
-    for (const m of ["O 13º está incluído?", "Quanto é a folha?", "Explica o IOF"]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
+    // An answer may open with "Como" or "Quanto ao"; only a real question or a request for explanation is refused.
+    for (const m of ["Como solicitado, o saldo é R$ 41 milhões e o caixa mínimo é R$ 15 milhões.", "Quanto ao saldo inicial, é R$ 41 milhões."])
+      expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(true);
+    for (const m of ["O 13º está incluído?", "Quanto é a folha?", "Qual é o saldo?", "Explica o IOF", "Por favor, resuma o fluxo", "O que significa caixa mínimo"]) expect(shouldProposeWeeklyCashPremises(m, false, earlier), m).toBe(false);
     // Its own objective is a direct cue, which the extraction's turnIntent does not gate.
     expect(shouldProposeWeeklyCashPremises("Vou confirmar o caixa semanal de R$ 40 milhões amanhã.", false, [])).toBe(true);
     expect(shouldProposeWeeklyCashPremises("O saldo é R$ 41 milhões", false, ["Qual o prazo da debênture?"])).toBe(false);
@@ -154,15 +157,17 @@ describe("weekly cash premises proposed from a turn", () => {
     expect(buildWeeklyCashPremiseProposal(changed.facts).fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "project-weekly-cash", methodVersion: "2026.10.23-v1"});
   });
-  it("lets the extraction's turnIntent decide a continuation and ignores it on a direct request", async () => {
+  it("proposes only when the extraction reads the turn as answering, on a continuation and on a direct request alike", async () => {
     const earlier = ["Como fica o caixa até dezembro e o que vence?"];
     for (const intent of nonAnswering) {
       const r = await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), intent, "Mando o fluxo em 2 dias", earlier);
       expect(r, intent).toEqual({extracted: true, status: null, events: ["weekly_cash_premises.not_answering"]});
     }
     expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Mando o fluxo em 2 dias", earlier)).toMatchObject({extracted: true, status: "proposed", events: ["weekly_cash_premises.proposed"]});
+    // A direct request is gated the same way: the model reads a request for this analysis as answers_pending.
     for (const intent of nonAnswering)
-      expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), intent, "Como fica o caixa até dezembro e o que vence?", []), intent).toMatchObject({status: "proposed"});
+      expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), intent, "Como fica o caixa até dezembro e o que vence?", []), intent).toEqual({extracted: true, status: null, events: ["weekly_cash_premises.not_answering"]});
+    expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "Como fica o caixa até dezembro e o que vence?", [])).toMatchObject({status: "proposed"});
     // A question never reaches the extraction.
     expect(await turnWithIntent(proposeWeeklyCashPremisesForTurn, auroraExtraction(aurora()), "answers_pending", "E qual é o prazo?", earlier)).toEqual({extracted: false, status: null, events: []});
   });

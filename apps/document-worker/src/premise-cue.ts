@@ -3,18 +3,17 @@ import {compileObjectiveToPlan} from "@offroad/work-plan";
 export const foldCue = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
 
-/** A question asks; it does not answer. Only a confirmation tag ("34%, certo?") keeps an answer an answer. */
-const interrogative = /^((e|mas|entao|ok|ah)[\s,]+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que)\b/;
 /** A request for explanation is the imperative that opens the message ("explica", "pode detalhar"), not the
  * same verb inside a statement ("conforme detalha a projeção"). */
-const explanation = /^((e|mas|entao|ok|ah)[\s,]+)?((pode|poderia|consegue|voce pode|me|por favor)\s+)*(explica|explique|explicar|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b|\bo que significa\b/;
+const explanation = /^((e|mas|entao|ok|ah)[\s,]+)?((pode|poderia|consegue|voce pode|me|por favor)[\s,]+)*(explica|explique|explicar|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b|\bo que significa\b/;
 const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
 
-/** A question or a request for explanation never continues a premise question. Whether anything else
+/** A question (a message ending in "?" that is not a confirmation tag) or a request for explanation
+ * never continues a premise question; an answer may open with "Como" or "Quanto ao". Whether anything else
  * answers it, defers it or asks for other work is the extraction's `turnIntent` to decide. */
 export function asksOrExplains(message: string): boolean {
   const text = foldCue(message).trim();
-  return interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
+  return explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
 }
 
 /** The objectives of the premise methods: an answer that compiles to another one is that method's. */
@@ -32,7 +31,8 @@ export function premiseCueKind(message: string, hasAttachments: boolean): Premis
 /** How a turn enters a premise step of one kind: by its own cue, or as a continuation candidate when
  * the latest earlier premise question among the recent messages is of this kind, the message is not a
  * question nor a request for explanation, and it does not compile to another premise method. A
- * continuation proposes only when the extraction reads the turn as answering what is pending. */
+ * step, cue or continuation, proposes only when the extraction reads the turn as answering what is
+ * pending or as requesting this analysis. */
 export function premiseEntry(kind: PremiseCueKind, message: string, hasAttachments: boolean, earlierUserMessages: readonly string[]): "cue" | "continuation" | null {
   const own = premiseCueKind(message, hasAttachments);
   if (own) return own === kind ? "cue" : null;

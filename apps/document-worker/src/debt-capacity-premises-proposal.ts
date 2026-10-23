@@ -206,9 +206,9 @@ export async function proposeDebtCapacityPremisesForTurn(input: {
     const documentFields = await input.loadEvidence();
     const extraction = debtCapacityExtractionSchema.parse(await input.extract(JSON.stringify({
       latestUserMessage: input.message, earlierUserMessages: input.recentUserMessages.slice(-6), documentFields})));
-    // A continuation proposes only when the turn answers what is pending; a direct question always does.
-    if (entry === "continuation" && extraction.turnIntent !== "answers_pending") {
-      input.log("capacity_premises.not_answering", {turnIntent: extraction.turnIntent});
+    // Only a turn that answers what is pending (or itself asks this question) proposes.
+    if (extraction.turnIntent !== "answers_pending") {
+      input.log("capacity_premises.not_answering", {turnIntent: extraction.turnIntent, entry});
       return null;
     }
     const capacityId = uuidV5(`offroad:debt-capacity:${input.projectId}`);
