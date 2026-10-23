@@ -16,9 +16,9 @@
     "exportName": "buildWeeklyCashRuns"
   },
   "run": {
-    "startedAt": "2026-10-23T17:06:39.813Z",
-    "finishedAt": "2026-10-23T17:06:39.992Z",
-    "commit": "b1e23469f37134bef609c4cd13b9e3cd56074370"
+    "startedAt": "2026-10-23T17:17:10.505Z",
+    "finishedAt": "2026-10-23T17:17:10.698Z",
+    "commit": "ddc3671c20db40d9ad299c0aa1813c5b86bfb60e"
   },
   "modelCalls": 0,
   "cases": [
@@ -119,6 +119,14 @@
       "passed": true
     },
     {
+      "id": "action-stream-without-its-costed-action",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b817c1c610e70f2994720f690581954d0501099d55f82949fe94a7c8fe4e01e2",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "figure-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -128,6 +136,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "deb8d6707d81f78f4ef1929a6edd49573e9524cec9dd9f5421d7e190e30c6cfa",
+  "evidenceFingerprint": "f714860fa182d8397eab2c0cc5b0d694ce8022d9115a9b03db34911a129e774f",
   "notes": "Synthetic deterministic execution calibrated on ficha C18. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

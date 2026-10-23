@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: weekly-cash-packet.v1
 unit_test_files: [packages/financial-model/src/weekly-cash-packet.test.ts, packages/financial-model/src/weekly-cash-runs.test.ts, packages/financial-core/src/weekly-cash.test.ts]
-gold_case_ids: [tightest-week-is-the-week-of-21-december, two-weeks-under-the-minimum, causes-named-across-the-weeks-under-the-minimum, december-closing-reconciles-with-the-projection, closing-hides-the-week, calendar-of-what-falls-due-by-31-december, actions-costed-for-the-time-in-use, two-actions-in-one-case-prove-neither-covers-alone, cheapest-covering-action-is-the-existing-overdraft, overdraft-open-at-the-covenant-test-nets-to-zero, a-harvest-of-30-million, harvest-delayed-two-weeks, without-the-harvest-line, absent-minimum-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, case-names-unknown-stream, two-informed-cases, horizon-not-whole-weeks, event-outside-the-horizon, dates-and-amounts-of-different-length, action-on-an-operating-stream, action-with-two-draws, action-days-off-its-dates, obligation-declared-without-its-stream, figure-read-in-another-scenario]
+gold_case_ids: [tightest-week-is-the-week-of-21-december, two-weeks-under-the-minimum, causes-named-across-the-weeks-under-the-minimum, december-closing-reconciles-with-the-projection, closing-hides-the-week, calendar-of-what-falls-due-by-31-december, actions-costed-for-the-time-in-use, same-label-streams-stay-distinct-causes, two-actions-in-one-case-prove-neither-covers-alone, cheapest-covering-action-is-the-existing-overdraft, overdraft-open-at-the-covenant-test-nets-to-zero, a-harvest-of-30-million, harvest-delayed-two-weeks, without-the-harvest-line, absent-minimum-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, case-names-unknown-stream, two-informed-cases, horizon-not-whole-weeks, event-outside-the-horizon, dates-and-amounts-of-different-length, action-on-an-operating-stream, action-with-two-draws, action-days-off-its-dates, obligation-declared-without-its-stream, action-stream-without-its-costed-action, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:tightest-week-is-the-week-of-21-december]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -75,9 +75,10 @@ Pacote de caixa semanal: para o caso informado e cada alternativa adotada, o sal
 - Maiores saídas da semana = as três maiores somas por fluxo de saída na semana.
 - Custo da ação = valor × ((1 + taxa)^(dias / período) − 1) + valor × IOF diário × min(dias, teto) + valor × IOF adicional + valor × comissão; período de 365 dias para taxa anual e 30 para mensal.
 - Cada ação é um único desembolso; o tempo em uso vai do desembolso à devolução, que fica depois do horizonte; o valor custeado é o desembolso, ou o acréscimo sobre o fluxo que a ação substitui (linha de 25 no lugar da de 17), e o caso da ação não traz o fluxo substituído.
+- Todo fluxo de ação usado num caso tem a sua ficha de ação custeada e conferida; sem ela, o caso é recusado.
 - Ação que cobre = existe um caso só com ela, entre as ações, sem nenhuma semana abaixo do mínimo; um caso com duas ações não prova cobertura de nenhuma. A recomendada é a de menor custo entre as que cobrem.
 - Ação em aberto na data do covenant soma o desembolso inteiro à dívida bruta e ao caixa; a dívida líquida não muda nesse dia.
-- Causas = obrigações datadas (serviço da dívida e pagamentos legais) que caem nas semanas abaixo do mínimo, somadas por fluxo; as maiores saídas recorrentes ficam no detalhe de cada semana.
+- Causas = obrigações datadas (serviço da dívida e pagamentos legais) que caem nas semanas abaixo do mínimo, somadas pela identidade de cada fluxo (dois fluxos com o mesmo nome continuam dois); as maiores saídas recorrentes ficam no detalhe de cada semana.
 - Cobertura: folha, 13º, encargos, impostos sobre vendas, IRPJ e CSLL e serviço da dívida são declarados incluídos, não aplicáveis ou não examinados; declarado incluído exige o fluxo; não examinado vira lacuna.
 - Conciliação = saldo semanal no fim do horizonte − fechamento da projeção.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
@@ -125,9 +126,9 @@ Pacote de caixa semanal: para o caso informado e cada alternativa adotada, o sal
 - packages/financial-core/src/weekly-cash.test.ts: núcleo contra o oráculo da ficha.
 - packages/financial-model/src/weekly-cash-packet.test.ts: leitor adotado e pacote.
 ## Gold
-- tightest-week-is-the-week-of-21-december, two-weeks-under-the-minimum, causes-named-across-the-weeks-under-the-minimum, december-closing-reconciles-with-the-projection, closing-hides-the-week, calendar-of-what-falls-due-by-31-december, actions-costed-for-the-time-in-use, two-actions-in-one-case-prove-neither-covers-alone, cheapest-covering-action-is-the-existing-overdraft, overdraft-open-at-the-covenant-test-nets-to-zero, a-harvest-of-30-million, harvest-delayed-two-weeks, without-the-harvest-line, absent-minimum-is-a-gap-not-a-default.
+- tightest-week-is-the-week-of-21-december, two-weeks-under-the-minimum, causes-named-across-the-weeks-under-the-minimum, december-closing-reconciles-with-the-projection, closing-hides-the-week, calendar-of-what-falls-due-by-31-december, actions-costed-for-the-time-in-use, same-label-streams-stay-distinct-causes, two-actions-in-one-case-prove-neither-covers-alone, cheapest-covering-action-is-the-existing-overdraft, overdraft-open-at-the-covenant-test-nets-to-zero, a-harvest-of-30-million, harvest-delayed-two-weeks, without-the-harvest-line, absent-minimum-is-a-gap-not-a-default.
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, caso com fluxo inexistente, dois casos informados, horizonte que não fecha semanas, evento fora do horizonte, datas e valores de tamanhos diferentes, ação sobre fluxo operacional, ação com dois desembolsos, prazo da ação diferente das datas, obrigação declarada sem o fluxo e número lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, caso com fluxo inexistente, dois casos informados, horizonte que não fecha semanas, evento fora do horizonte, datas e valores de tamanhos diferentes, ação sobre fluxo operacional, ação com dois desembolsos, prazo da ação diferente das datas, obrigação declarada sem o fluxo, fluxo de ação sem a sua ficha e número lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C18 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -3907,6 +3908,12 @@ Saque em aberto na data de apuração soma dívida e caixa no mesmo valor; a dí
                                                 "items": {
                                                   "type": "object",
                                                   "fields": {
+                                                    "streamId": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
                                                     "label": {
                                                       "required": true,
                                                       "value": {
@@ -4336,6 +4343,12 @@ Saque em aberto na data de apuração soma dívida e caixa no mesmo valor; a dí
                           "items": {
                             "type": "object",
                             "fields": {
+                              "streamId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
                               "label": {
                                 "required": true,
                                 "value": {

@@ -3,6 +3,7 @@ import {buildWeeklyCash} from "./weekly-cash";
 import {auroraWeeklyCash} from "./weekly-cash.fixture";
 
 const n = (v: string | null | undefined, p = 1) => Number(v).toFixed(p);
+const withAction = (n: number, patch: object) => ({...auroraWeeklyCash, actions: auroraWeeklyCash.actions.map((a, k) => k === n ? {...a, ...patch} : a)});
 describe("weekly cash", () => {
   const w = buildWeeklyCash(auroraWeeklyCash);
   const c = (id: string) => w.cases.find(x => x.id === id)!;
@@ -44,19 +45,21 @@ describe("weekly cash", () => {
   it("keeps every action coherent with its draw and its case", () => {
     const two = auroraWeeklyCash.streams.map(x => x.id === "conta-garantida" ? {...x, dates: ["2026-12-14", "2026-12-21"], amounts: ["4", "4"]} : x);
     expect(() => buildWeeklyCash({...auroraWeeklyCash, streams: two})).toThrow("weekly_cash_action_single_draw");
-    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, days: 30}]})).toThrow("weekly_cash_action_days_mismatch");
-    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, amount: "5"}]})).toThrow("weekly_cash_action_amount_mismatch");
-    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[2]!, replacesStreamId: null}]})).toThrow("weekly_cash_action_amount_mismatch");
-    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, repaymentDate: "2026-12-28", days: 14}]})).toThrow("weekly_cash_action_repaid_inside_horizon");
+    expect(() => buildWeeklyCash(withAction(0, {days: 30}))).toThrow("weekly_cash_action_days_mismatch");
+    expect(() => buildWeeklyCash(withAction(0, {amount: "5"}))).toThrow("weekly_cash_action_amount_mismatch");
+    expect(() => buildWeeklyCash(withAction(2, {replacesStreamId: null}))).toThrow("weekly_cash_action_amount_mismatch");
+    expect(() => buildWeeklyCash(withAction(0, {repaymentDate: "2026-12-28", days: 14}))).toThrow("weekly_cash_action_repaid_inside_horizon");
     // A case with two actions does not prove either one covers alone.
     const both = buildWeeklyCash({...auroraWeeklyCash, cases: [...auroraWeeklyCash.cases.filter(c => c.id !== "conta-garantida" && c.id !== "antecipacao"),
       {id: "ambas", label: "Saque e antecipação", role: "alternative", streamIds: [...auroraWeeklyCash.cases[0]!.streamIds, "conta-garantida", "antecipacao"]}]});
     expect(both.actions.filter(a => a.id !== "linha-25").map(a => a.isolatedCases)).toEqual([[], []]);
+    // An action stream in a case without its own costed action is refused, so no cover is proven by an unchecked action.
+    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: auroraWeeklyCash.actions.filter(a => a.id !== "antecipacao")})).toThrow("weekly_cash_action_stream_without_action");
   });
   it("refuses malformed weeks", () => {
     expect(() => buildWeeklyCash({...auroraWeeklyCash, firstMonday: "2026-09-15"})).toThrow("weekly_cash_week_must_start_monday");
     expect(() => buildWeeklyCash({...auroraWeeklyCash, cases: auroraWeeklyCash.cases.map(x => ({...x, role: "informed" as const}))})).toThrow("weekly_cash_one_informed_case");
     expect(() => buildWeeklyCash({...auroraWeeklyCash, weeks: 4})).toThrow("weekly_cash_event_outside_horizon");
-    expect(() => buildWeeklyCash({...auroraWeeklyCash, actions: [{...auroraWeeklyCash.actions[0]!, streamId: "folha"}]})).toThrow("weekly_cash_action_stream");
+    expect(() => buildWeeklyCash(withAction(0, {streamId: "folha"}))).toThrow("weekly_cash_action_stream");
   });
 });

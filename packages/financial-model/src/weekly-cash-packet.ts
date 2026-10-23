@@ -28,7 +28,7 @@ export const weeklyCashPacketOutputSchema = z.strictObject({
     weeksBelowMinimum: z.array(z.iso.date()).max(104), shortfallToMinimum: decimal,
     /** Dated obligations (debt service and legal payments) that fall in the weeks under the minimum, or in the
      * tightest week when none is, by stream, largest first; recurring operating outflows stay in each week's largest. */
-    causes: z.array(z.strictObject({label: text, amount: decimal})).max(24),
+    causes: z.array(z.strictObject({streamId: key, label: text, amount: decimal})).max(24),
     obligationsNotExamined: z.array(key).max(6),
     closingHidesTheWeek: z.boolean(),
     /** The cheapest action whose case keeps every week at or above the minimum; null when none does. */
@@ -61,9 +61,13 @@ export function prepareWeeklyCashPacket(raw: unknown): WeeklyCashPacket {
     const byCost = w.actions.map((a) => ({id: a.id, cost: a.cost, covers: covers(a.isolatedCases)}));
     const cheapest = w.actions.find((a) => covers(a.isolatedCases)) ?? null;
     const pressed = informed.weeksBelowMinimum.length ? informed.rows.filter((r) => r.belowMinimum) : [tight];
-    const sums = new Map<string, Decimal>();
-    for (const r of pressed) for (const o of r.outflowsByStream) if (o.category === "debt" || o.category === "statutory") sums.set(o.label, (sums.get(o.label) ?? new Exact(0)).plus(o.amount));
-    const causes = [...sums.entries()].sort((a, b) => b[1].cmp(a[1]) || (a[0] < b[0] ? -1 : 1)).slice(0, 24).map(([label, v]) => ({label, amount: v.toFixed()}));
+    // Summed by stream identity, so two streams with the same label stay two causes.
+    const sums = new Map<string, {label: string; amount: Decimal}>();
+    for (const r of pressed) for (const o of r.outflowsByStream) if (o.category === "debt" || o.category === "statutory") {
+      const prev = sums.get(o.streamId); sums.set(o.streamId, {label: o.label, amount: (prev?.amount ?? new Exact(0)).plus(o.amount)});
+    }
+    const causes = [...sums.entries()].sort((a, b) => b[1].amount.cmp(a[1].amount) || (a[0] < b[0] ? -1 : 1)).slice(0, 24)
+      .map(([streamId, v]) => ({streamId, label: v.label, amount: v.amount.toFixed()}));
     const actionCases = new Set(w.actions.flatMap((a) => a.cases));
     return {tightestWeek: {weekStart: tight.weekStart, closing: tight.closing, belowMinimum: tight.belowMinimum},
       weeksBelowMinimum: informed.weeksBelowMinimum, shortfallToMinimum: informed.shortfallToMinimum, causes,

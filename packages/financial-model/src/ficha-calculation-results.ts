@@ -217,7 +217,7 @@ export const adoptedCovenantHeadroomOutputSchema = z.strictObject({...common, sc
     .refine(v => v.join("|") === "projection|contract_extraction|waiver_negotiation|credit_approval|method_release", "Exact exclusion ledger required")});
 
 const weekRow = z.strictObject({weekStart: date, inflows: decimal, outflows: decimal, closing: decimal, belowMinimum: z.boolean(),
-  largestOutflows: z.array(z.strictObject({label: text, amount: decimal})).max(3), outflowsByStream: z.array(z.strictObject({label: text, category: z.enum(["debt", "statutory", "operating", "action"]), amount: decimal})).max(64)});
+  largestOutflows: z.array(z.strictObject({label: text, amount: decimal})).max(3), outflowsByStream: z.array(z.strictObject({streamId: version, label: text, category: z.enum(["debt", "statutory", "operating", "action"]), amount: decimal})).max(64)});
 export const weeklyCashOutputSchema = z.strictObject({schemaVersion: z.literal("weekly-cash.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/),
   firstMonday: date, horizonEnd: date, openingCash: decimal, minimumCash: decimal,
   cases: z.array(z.strictObject({id: version, label: text, role: z.enum(["informed", "alternative"]), rows: z.array(weekRow).min(1).max(104),

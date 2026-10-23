@@ -90,19 +90,19 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     const rows = weekStarts.map(start => {
       const end = add(start, 7);
       let inflow = new Exact(0), outflow = new Exact(0);
-      const outs: {label: string; category: WeeklyCashCategory; amount: Decimal}[] = [];
+      const outs: {streamId: string; label: string; category: WeeklyCashCategory; amount: Decimal}[] = [];
       for (const u of used) {
         let sum = new Exact(0);
         for (const e of u.events) if (e.date >= start && e.date < end) sum = sum.plus(e.amount);
         if (sum.isZero()) continue;
         if (u.s.direction === "inflow") inflow = inflow.plus(sum);
-        else {outflow = outflow.plus(sum); outs.push({label: u.s.label, category: u.s.category, amount: sum});}
+        else {outflow = outflow.plus(sum); outs.push({streamId: u.s.id, label: u.s.label, category: u.s.category, amount: sum});}
       }
       balance = balance.plus(inflow).minus(outflow);
-      outs.sort((a, b) => b.amount.cmp(a.amount) || (a.label < b.label ? -1 : 1));
+      outs.sort((a, b) => b.amount.cmp(a.amount) || (a.streamId < b.streamId ? -1 : 1));
       return {weekStart: start, inflows: out(inflow), outflows: out(outflow), closing: out(balance), belowMinimum: balance.lt(minimum),
         largestOutflows: outs.slice(0, 3).map(o => ({label: o.label, amount: out(o.amount)})),
-        outflowsByStream: outs.map(o => ({label: o.label, category: o.category, amount: out(o.amount)}))};
+        outflowsByStream: outs.map(o => ({streamId: o.streamId, label: o.label, category: o.category, amount: out(o.amount)}))};
     });
     const tightest = rows.reduce((m, r) => new Exact(r.closing).lt(m.closing) ? r : m);
     return {id: c.id, label: c.label, role: c.role, rows, minimum: {weekStart: tightest.weekStart, closing: tightest.closing},
@@ -114,7 +114,11 @@ export function buildWeeklyCash(input: WeeklyCashInput) {
     && input.cases.find(c => c.role === "informed")!.streamIds.includes(u.s.id))
     .flatMap(u => u.events.filter(e => e.date <= input.calendarEnd).map(e => ({date: e.date, label: u.s.label, category: u.s.category, amount: out(e.amount)})))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.label < b.label ? -1 : 1));
-  const actionStreamIds = new Set(input.actions.map(a => a.streamId));
+  // Every action stream a case uses carries its own costed, checked action; isolation counts every action stream present.
+  const actionStreamIds = new Set([...streams.values()].filter(u => u.s.category === "action").map(u => u.s.id));
+  const costed = new Set(input.actions.map(a => a.streamId));
+  if (new Set(input.actions.map(a => a.streamId)).size !== input.actions.length) throw new Error("weekly_cash_duplicate_action");
+  for (const c of input.cases) if (c.streamIds.some(id => actionStreamIds.has(id) && !costed.has(id))) throw new Error("weekly_cash_action_stream_without_action");
   const actions = input.actions.map(a => {
     text(a.label, "weekly_cash_label_required");
     const stream = streams.get(a.streamId);

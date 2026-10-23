@@ -53,6 +53,8 @@ function goldCases(): Case[] {
         thirteenth: p.result.weekly!.calendar.filter((x) => x.label.startsWith("13º")).map((x) => [x.date, r(x.amount)])})),
     reuse("actions-costed-for-the-time-in-use", [["conta-garantida", 0.12], ["antecipacao", 0.25], ["linha-25", 0.87]],
       (p) => p.readings!.actionsByCost.map((a) => [a.id, r(a.cost, 2)])),
+    observe("same-label-streams-stay-distinct-causes", packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("stream.debenture-juros.label"))!.value = {type: "text", value: "Debênture 2021, amortização"};}),
+      [["debenture-amortizacao", 15], ["debenture-juros", 5.1]], (p) => p.readings!.causes.filter((c) => c.label === "Debênture 2021, amortização").map((c) => [c.streamId, r(c.amount)])),
     observe("two-actions-in-one-case-prove-neither-covers-alone", packetInput((f) => undefined, (i) => {
       i.analysis.cases = [...i.analysis.cases.filter((c) => c.id !== "conta-garantida" && c.id !== "antecipacao"),
         {id: "ambas", label: "Saque e antecipação", role: "alternative", streamIds: [...i.analysis.cases[0]!.streamIds, "conta-garantida", "antecipacao"]}];
@@ -88,6 +90,7 @@ function adversarialCases(): Case[] {
       f.entries.find((x) => x.fieldPath.endsWith("stream.conta-garantida.amounts"))!.value = {type: "list", value: ["4", "4"]};}), "weekly_cash_action_single_draw"],
     ["action-days-off-its-dates", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("action.conta-garantida.days"))!.value = {type: "number", value: "30"};}), "weekly_cash_action_days_mismatch"],
     ["obligation-declared-without-its-stream", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("coverage.thirteenth_salary"))!.value = {type: "text", value: "not_applicable"};}), "weekly_cash_obligation_stream_without_declaration"],
+    ["action-stream-without-its-costed-action", () => {const i = packetInput(); i.analysis.actions = i.analysis.actions.filter((a) => a.id !== "antecipacao"); return i;}, "weekly_cash_action_stream_without_action"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("stream.folha.amounts"))!.dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {
