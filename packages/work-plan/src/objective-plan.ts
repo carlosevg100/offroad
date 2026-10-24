@@ -22,6 +22,9 @@ export const workspaceObjectiveKindSchema = z.enum([
   "proposal_comparison",
   "relative_debt_cost",
   "debt_capacity",
+  "debt_table",
+  "covenant_headroom",
+  "weekly_cash",
   "company_analysis",
   "capital_strategy",
   "material_preparation",
@@ -249,6 +252,24 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
     sourcePlan: ["project_context", "provided_documents", "public_company", "public_market", "house_method"],
     analysisPlan: ["Analisar investimento incremental antes de escolher financiamento", "Projetar companhia com e sem projeto até o fim da amortização", "Buscar tamanho e perfil que respeitam cada limite em cada período e cenário", "Separar limite contratual, política, liquidez, mercado e condições da recomendação"],
     proposedDeliverable: "Capacidade de dívida por período e cenário, com limite vinculante, perfil viável e condições",
+  },
+  debt_table: {
+    objectiveKind: "debt_table", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C05"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Uma linha por operação, com a cláusula de onde saiu cada termo", "Conciliar principal, saldo contábil e cada definição de dívida com a ponte", "Cronograma, garantias, covenants e cadeia de cross-default", "Separar o que está fora do saldo e o que falta para provar completude"],
+    proposedDeliverable: "Tabela de dívida auditável, com totais em cada definição, cronograma, garantias, cross-default e completude",
+  },
+  covenant_headroom: {
+    objectiveKind: "covenant_headroom", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C08"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Medir cada covenant e a política do conselho pela definição escrita, na data de apuração", "Traduzir a folga em EBITDA e em dívida, com teste reverso sobre o período não realizado", "Testar o caso adverso, o efeito sazonal e os contrastes de definição", "Explicar a consequência de romper antes de qualquer ação"],
+    proposedDeliverable: "Folga de covenant e da política por data e cenário, em reais, com teste reverso e consequência",
+  },
+  weekly_cash: {
+    objectiveKind: "weekly_cash", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C06"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Somar o caixa por semana a partir de eventos datados", "Achar a semana mais apertada, as abaixo do mínimo e o que vence nelas", "Conciliar com a projeção mensal e mostrar o que o fechamento esconde", "Custear cada ação pelo tempo de uso e mostrar o efeito na apuração"],
+    proposedDeliverable: "Fluxo de caixa semanal com a semana crítica, o calendário de vencimentos e a ação mais barata que cobre",
   },
   company_analysis: {
     objectiveKind: "company_analysis", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C11"],
@@ -551,7 +572,7 @@ function inferObjectiveKind(message: string, hasAttachments: boolean): Workspace
   if (foldedObjectivePatterns.informationOrganization.test(text)) return "information_organization";
   const financialObjective = inferSpecificFinancialObjective(message);
   if (financialObjective) return financialObjective;
-  if (/^(?:o que (?:e|significa)|explique (?:o conceito|a definicao)|qual (?:e )?a diferenca entre)\b/i.test(financialRoutingText(message))) return "factual_question";
+  if (/^(?:o que (?:e|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b/i.test(financialRoutingText(message))) return "factual_question";
   // A meeting request that asks for an approach, a script or questions is meeting preparation even
   // when it also mentions material: the brief comes first and material only after it is confirmed.
   if (foldedObjectivePatterns.meeting.test(text) && /\b(abordagem|roteiro|perguntas)\b/.test(text)) return "meeting_preparation";
@@ -574,7 +595,8 @@ function financialRoutingText(message: string): string {
 }
 
 function isSpecificFinancialObjective(kind: WorkspaceObjectiveKind): boolean {
-  return kind === "proposal_comparison" || kind === "relative_debt_cost" || kind === "debt_capacity";
+  return kind === "proposal_comparison" || kind === "relative_debt_cost" || kind === "debt_capacity"
+    || kind === "debt_table" || kind === "covenant_headroom" || kind === "weekly_cash";
 }
 
 /** Interpret action/object pairs before broad audience and attachment heuristics. No case names,
@@ -591,6 +613,25 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
   if (/\b(?:comparar|compare|comparacao|recebemos|chegaram|recebi)\b.{0,120}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\b(?:qual|escolher|melhor|mais barata)\b.{0,100}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\bmais barato\b.{0,60}\bposso fechar\b/.test(text)) return "proposal_comparison";
+  // The debt methods of lote 2 answer the measurement itself. A conceptual question, or a message whose
+  // action is another one (compare, review, a risk matrix, a draft, proposals, strategy or paths), keeps
+  // its own route even when it mentions the debt table, a covenant or weekly cash.
+  const conceptual = /^(?:o que (?:e|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b|\b(?:o conceito de|como funciona)\b/.test(text);
+  // A purpose or a source ("para refinanciamento", "considerando a proposta") does not change an explicit
+  // request for the measurement; another action only wins when the message does not ask for one.
+  const asksMeasurement = /\b(?:mont\w*|projet\w*|calcul\w*|med(?:e|ir|a)|atualiz\w*|extra(?:i|ia|ir)|levant\w*|fa(?:z|ca|zer))\b.{0,40}\b(?:tabela|caixa|covenants?|divida|endividamento|folga)\b/.test(text);
+  const otherAction = /\b(?:compar\w*|revis\w*|redline|matriz|minutas?|term\s*sheets?|propostas?|ofertas?|negoci\w*|waiver|estrategi\w*|caminhos?|alongar|refinanc\w*|captar|captacao)\b/.test(text);
+  if (conceptual || (otherAction && !asksMeasurement)) return null;
+  if (/\b(?:semana mais apertada|caixa semanal|fluxo (?:de caixa )?semanal|semana a semana|o que vence)\b/.test(text)
+    || /\bcaixa\b.{0,40}\bate (?:dezembro|janeiro|o fim|o final|o fechamento)\b/.test(text)
+    || /\baguent\w*\b.{0,30}\bate o (?:fim|final)\b/.test(text)
+    || /\bsacar\b.{0,40}\b(?:conta garantida|linha|cheque especial)\b/.test(text)) return "weekly_cash";
+  if ((/\b(?:folga|headroom|estour\w*|romp\w*|fur(?:ar|a)|quebr\w*|calcul\w*|med(?:e|ir)|apur\w*|contra os|risco de)\b.{0,60}\bcovenants?\b/.test(text)
+      || /\bcovenants?\b.{0,60}\b(?:folga|em (?:dezembro|junho|marco|setembro)|na data|na definicao|passa)\b/.test(text))) return "covenant_headroom";
+  if (/\b(?:tabela|mapa|quadro|posicao|cronograma)\b.{0,40}\b(?:divida|endividamento)\b/.test(text)
+    || /\bendividamento\b.{0,20}\batualizado\b/.test(text)
+    || /\bquanto (?:a gente|a empresa|a companhia|nos) (?:deve|devemos)\b/.test(text)
+    || /\bextra(?:i|ia|ir|ia)\b.{0,40}\bdivida\b/.test(text)) return "debt_table";
   return null;
 }
 

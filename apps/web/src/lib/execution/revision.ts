@@ -1,6 +1,7 @@
 import "server-only";
 
-import {readCapitalProcedurePacketBlocks, readDebtCapacityPacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks, type DebtCapacityResultBlocksView, type ExecutionResultBlocksView, type ExecutionResultCitation, type FinancingComparisonResultBlocksView, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {readCapitalProcedurePacketBlocks, readCovenantHeadroomPacketBlocks, readDebtCapacityPacketBlocks, readDebtTablePacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks, readWeeklyCashPacketBlocks,
+  type CovenantHeadroomResultBlocksView, type DebtCapacityResultBlocksView, type DebtTableResultBlocksView, type WeeklyCashResultBlocksView, type ExecutionResultBlocksView, type ExecutionResultCitation, type FinancingComparisonResultBlocksView, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 import {artifactServing, readArtifactHead, readArtifactRevision, revisionBelongsTo, type ArtifactRead} from "@/lib/artifacts/authorized-artifact-reader";
@@ -24,12 +25,16 @@ type ExecutionRevisionBase = {
   readonly pins: ExecutionRevisionPins;
 };
 /** A capital result carries its decision blocks; an investment result the case comparison; a
- * comparison of offers its proposals per case; a capacity analysis its limits per schedule. */
+ * comparison of offers its proposals per case; a capacity analysis its limits per schedule; the debt
+ * table its instruments and views; covenant headroom its measurements per limit; weekly cash its weeks. */
 export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind?: "capital"; readonly blocks: ExecutionResultBlocksView}
   | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView}
   | {readonly kind: "comparison"; readonly comparison: FinancingComparisonResultBlocksView}
-  | {readonly kind: "capacity"; readonly capacity: DebtCapacityResultBlocksView});
+  | {readonly kind: "capacity"; readonly capacity: DebtCapacityResultBlocksView}
+  | {readonly kind: "debt_table"; readonly debtTable: DebtTableResultBlocksView}
+  | {readonly kind: "covenant_headroom"; readonly covenantHeadroom: CovenantHeadroomResultBlocksView}
+  | {readonly kind: "weekly_cash"; readonly weeklyCash: WeeklyCashResultBlocksView});
 
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
@@ -73,6 +78,18 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   if (pinned(manifest.traces, "debt-capacity-packet:")) {
     const capacity = readDebtCapacityPacketBlocks(serving.blocks);
     return capacity ? {state: "ready", revision: {...base("debt-capacity-packet:"), kind: "capacity", capacity}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "debt-table-packet:")) {
+    const debtTable = readDebtTablePacketBlocks(serving.blocks);
+    return debtTable ? {state: "ready", revision: {...base("debt-table-packet:"), kind: "debt_table", debtTable}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "covenant-headroom-packet:")) {
+    const covenantHeadroom = readCovenantHeadroomPacketBlocks(serving.blocks);
+    return covenantHeadroom ? {state: "ready", revision: {...base("covenant-headroom-packet:"), kind: "covenant_headroom", covenantHeadroom}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "weekly-cash-packet:")) {
+    const weeklyCash = readWeeklyCashPacketBlocks(serving.blocks);
+    return weeklyCash ? {state: "ready", revision: {...base("weekly-cash-packet:"), kind: "weekly_cash", weeklyCash}} : {state: "unavailable"};
   }
   const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
   if (!blocks) return {state: "unavailable"};

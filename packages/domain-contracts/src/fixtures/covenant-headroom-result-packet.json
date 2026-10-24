@@ -1,0 +1,464 @@
+{
+  "schemaVersion": "covenant-headroom-packet.v1",
+  "executorVersion": "2026.10.23-v1",
+  "financialCoreVersion": "2026.10.07-v29",
+  "question": "Como estamos contra os covenants?",
+  "basisFingerprint": "64a16eea75733fb9e32b2a0e30e1b4bd0df7f35d976c36f713f272edf918f969",
+  "scope": {
+    "workId": "ac400000-0000-4000-9000-000000000007",
+    "purpose": "synthetic adopted financial analysis",
+    "versionId": "ac400000-0000-4000-9000-000000000500"
+  },
+  "entityId": "ac400000-0000-4000-9000-000000000001",
+  "currency": "BRL",
+  "result": {
+    "financialCoreVersion": "2026.10.07-v29",
+    "scope": {
+      "workId": "ac400000-0000-4000-9000-000000000007",
+      "purpose": "synthetic adopted financial analysis",
+      "versionId": "ac400000-0000-4000-9000-000000000500"
+    },
+    "entityId": "ac400000-0000-4000-9000-000000000001",
+    "currency": "BRL",
+    "basisFingerprint": "64a16eea75733fb9e32b2a0e30e1b4bd0df7f35d976c36f713f272edf918f969",
+    "status": "partial_composition",
+    "gaps": [
+      {
+        "operand": "covenant.ac400000-0000-4000-9000-000000000060.limit.politica.definition",
+        "reason": "A ata não diz qual EBITDA a política usa"
+      }
+    ],
+    "classification": "working_hypothesis",
+    "grantsExecution": false,
+    "grantsPublication": false,
+    "fingerprint": "d31199e5377bf58ae26bab361a4a93beab717eb92c8676bf0475b0381a607c5f",
+    "schemaVersion": "adopted-covenant-headroom.v1",
+    "analysisId": "ac400000-0000-4000-9000-000000000060",
+    "perimeter": "standalone",
+    "readingDate": "2026-09-15",
+    "headroom": {
+      "schemaVersion": "covenant-headroom.v1",
+      "version": "2026.10.23-v1",
+      "currency": "BRL",
+      "readingDate": "2026-09-15",
+      "limits": [
+        {
+          "id": "aditamento",
+          "label": "Dívida líquida / EBITDA até 3,0x (1º aditamento)",
+          "kind": "contractual",
+          "status": "in_force",
+          "maximumRatio": "3",
+          "source": "1º aditamento cl. 3",
+          "testDates": [
+            "2026-12-31",
+            "2027-12-31"
+          ]
+        },
+        {
+          "id": "politica",
+          "label": "Política do conselho: até 2,5x",
+          "kind": "board_policy",
+          "status": "in_force",
+          "maximumRatio": "2.5",
+          "source": "Ata do conselho de março",
+          "testDates": [
+            "2026-12-31",
+            "2027-12-31"
+          ]
+        },
+        {
+          "id": "original",
+          "label": "Escritura original sem o aditamento: 2,75x (superada)",
+          "kind": "contractual",
+          "status": "superseded",
+          "maximumRatio": "2.75",
+          "source": "Escritura cl. 7.1",
+          "testDates": []
+        }
+      ],
+      "measurements": [
+        {
+          "id": "dez26-base",
+          "label": "dez26-base",
+          "date": "2026-12-31",
+          "scenario": "base",
+          "role": "test",
+          "debt": "128.66666667",
+          "cash": "15.45720186",
+          "netDebt": "113.20946481",
+          "reportedEbitda": "54.5",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "51.5",
+          "ratio": "2.19824203514563106796",
+          "unrealizedEbitda": "26",
+          "tests": [
+            {
+              "limitId": "aditamento",
+              "kind": "contractual",
+              "maximumRatio": "3",
+              "breached": false,
+              "ebitdaHeadroom": "13.76351173",
+              "netDebtHeadroom": "41.29053519",
+              "unrealizedEbitdaLossToLimit": "0.52936583576923076923"
+            },
+            {
+              "limitId": "politica",
+              "kind": "board_policy",
+              "maximumRatio": "2.5",
+              "breached": false,
+              "ebitdaHeadroom": "6.216214076",
+              "netDebtHeadroom": "15.54053519",
+              "unrealizedEbitdaLossToLimit": "0.23908515676923076923"
+            }
+          ],
+          "tightestLimitId": "politica"
+        },
+        {
+          "id": "dez26-adverso",
+          "label": "dez26-adverso",
+          "date": "2026-12-31",
+          "scenario": "adverse",
+          "role": "test",
+          "debt": "128.66666667",
+          "cash": "14.07120186",
+          "netDebt": "114.59546481",
+          "reportedEbitda": "52.4",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "49.4",
+          "ratio": "2.31974625121457489879",
+          "unrealizedEbitda": null,
+          "tests": [
+            {
+              "limitId": "aditamento",
+              "kind": "contractual",
+              "maximumRatio": "3",
+              "breached": false,
+              "ebitdaHeadroom": "11.20151173",
+              "netDebtHeadroom": "33.60453519",
+              "unrealizedEbitdaLossToLimit": null
+            },
+            {
+              "limitId": "politica",
+              "kind": "board_policy",
+              "maximumRatio": "2.5",
+              "breached": false,
+              "ebitdaHeadroom": "3.561814076",
+              "netDebtHeadroom": "8.90453519",
+              "unrealizedEbitdaLossToLimit": null
+            }
+          ],
+          "tightestLimitId": "politica"
+        },
+        {
+          "id": "dez26-safra-30",
+          "label": "dez26-safra-30",
+          "date": "2026-12-31",
+          "scenario": "safra_30",
+          "role": "test",
+          "debt": "128.66666667",
+          "cash": "10.45720186",
+          "netDebt": "118.20946481",
+          "reportedEbitda": "54.5",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "51.5",
+          "ratio": "2.29532941378640776699",
+          "unrealizedEbitda": null,
+          "tests": [
+            {
+              "limitId": "aditamento",
+              "kind": "contractual",
+              "maximumRatio": "3",
+              "breached": false,
+              "ebitdaHeadroom": "12.09684506333333333333",
+              "netDebtHeadroom": "36.29053519",
+              "unrealizedEbitdaLossToLimit": null
+            },
+            {
+              "limitId": "politica",
+              "kind": "board_policy",
+              "maximumRatio": "2.5",
+              "breached": false,
+              "ebitdaHeadroom": "4.216214076",
+              "netDebtHeadroom": "10.54053519",
+              "unrealizedEbitdaLossToLimit": null
+            }
+          ],
+          "tightestLimitId": "politica"
+        },
+        {
+          "id": "dez26-sem-safra",
+          "label": "dez26-sem-safra",
+          "date": "2026-12-31",
+          "scenario": "sem_safra",
+          "role": "contrast",
+          "debt": "128.66666667",
+          "cash": "40.45720186",
+          "netDebt": "88.20946481",
+          "reportedEbitda": "54.5",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "51.5",
+          "ratio": "1.71280514194174757282",
+          "unrealizedEbitda": null,
+          "tests": [],
+          "tightestLimitId": null
+        },
+        {
+          "id": "dez27-base",
+          "label": "dez27-base",
+          "date": "2027-12-31",
+          "scenario": "base",
+          "role": "test",
+          "debt": "120",
+          "cash": "20.67860248",
+          "netDebt": "99.32139752",
+          "reportedEbitda": "56.6",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "53.6",
+          "ratio": "1.85301114776119402985",
+          "unrealizedEbitda": null,
+          "tests": [
+            {
+              "limitId": "aditamento",
+              "kind": "contractual",
+              "maximumRatio": "3",
+              "breached": false,
+              "ebitdaHeadroom": "20.49286749333333333333",
+              "netDebtHeadroom": "61.47860248",
+              "unrealizedEbitdaLossToLimit": null
+            },
+            {
+              "limitId": "politica",
+              "kind": "board_policy",
+              "maximumRatio": "2.5",
+              "breached": false,
+              "ebitdaHeadroom": "13.871440992",
+              "netDebtHeadroom": "34.67860248",
+              "unrealizedEbitdaLossToLimit": null
+            }
+          ],
+          "tightestLimitId": "politica"
+        },
+        {
+          "id": "dez27-adverso",
+          "label": "dez27-adverso",
+          "date": "2027-12-31",
+          "scenario": "adverse",
+          "role": "test",
+          "debt": "120",
+          "cash": "13.05649438",
+          "netDebt": "106.94350562",
+          "reportedEbitda": "48.11",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "45.11",
+          "ratio": "2.37072723608955885613",
+          "unrealizedEbitda": null,
+          "tests": [
+            {
+              "limitId": "aditamento",
+              "kind": "contractual",
+              "maximumRatio": "3",
+              "breached": false,
+              "ebitdaHeadroom": "9.46216479333333333333",
+              "netDebtHeadroom": "28.38649438",
+              "unrealizedEbitdaLossToLimit": null
+            },
+            {
+              "limitId": "politica",
+              "kind": "board_policy",
+              "maximumRatio": "2.5",
+              "breached": false,
+              "ebitdaHeadroom": "2.332597752",
+              "netDebtHeadroom": "5.83149438",
+              "unrealizedEbitdaLossToLimit": null
+            }
+          ],
+          "tightestLimitId": "politica"
+        },
+        {
+          "id": "junho-gerencial",
+          "label": "junho-gerencial",
+          "date": "2026-06-30",
+          "scenario": "gerencial",
+          "role": "contrast",
+          "debt": "130",
+          "cash": "35",
+          "netDebt": "95",
+          "reportedEbitda": "55",
+          "adjustments": [],
+          "ebitda": "55",
+          "ratio": "1.72727272727272727273",
+          "unrealizedEbitda": null,
+          "tests": [],
+          "tightestLimitId": null
+        },
+        {
+          "id": "dez26-escritura-original",
+          "label": "dez26-escritura-original",
+          "date": "2026-12-31",
+          "scenario": "original",
+          "role": "contrast",
+          "debt": "128.66666667",
+          "cash": "15.45720186",
+          "netDebt": "113.20946481",
+          "reportedEbitda": "54.5",
+          "adjustments": [
+            {
+              "label": "Pagamentos de arrendamento",
+              "amount": "-3"
+            }
+          ],
+          "ebitda": "51.5",
+          "ratio": "2.19824203514563106796",
+          "unrealizedEbitda": null,
+          "tests": [
+            {
+              "limitId": "original",
+              "kind": "contractual",
+              "maximumRatio": "2.75",
+              "breached": false,
+              "ebitdaHeadroom": "10.33292188727272727273",
+              "netDebtHeadroom": "28.41553519",
+              "unrealizedEbitdaLossToLimit": null
+            }
+          ],
+          "tightestLimitId": "original"
+        }
+      ],
+      "effects": [
+        {
+          "id": "safra",
+          "label": "Safra na data de apuração",
+          "measurementId": "dez26-base",
+          "withoutEffectMeasurementId": "dez26-sem-safra",
+          "ratioEffect": "0.48543689320388349514",
+          "netDebtEffect": "25"
+        }
+      ],
+      "worst": {
+        "measurementId": "dez27-adverso",
+        "limitId": "politica",
+        "ebitdaHeadroom": "2.332597752"
+      },
+      "anyBreach": false
+    },
+    "definitions": [
+      {
+        "limitId": "aditamento",
+        "definition": "EBITDA da CVM 156 dos últimos doze meses menos pagamentos de arrendamento; dívida bruta menos caixa"
+      },
+      {
+        "limitId": "politica",
+        "definition": null
+      },
+      {
+        "limitId": "original",
+        "definition": "Mesma definição da escritura"
+      }
+    ],
+    "openQuestions": [
+      {
+        "limitId": "politica",
+        "question": "ebitda_definition_not_written"
+      }
+    ],
+    "consequence": {
+      "acceleration": "non_automatic",
+      "process": "Assembleia de debenturistas decide o vencimento antecipado (escritura cl. 7.2)",
+      "crossDefault": "Declarado o vencimento da debênture, a CCB do Bradesco pode ser vencida: limiar de R$ 5 milhões (CCB cl. 9)"
+    },
+    "exclusions": [
+      "projection",
+      "contract_extraction",
+      "waiver_negotiation",
+      "credit_approval",
+      "method_release"
+    ]
+  },
+  "readings": {
+    "headline": {
+      "measurementId": "dez26-base",
+      "date": "2026-12-31",
+      "ratio": "2.19824203514563106796",
+      "tightestLimitId": "politica",
+      "byLimit": [
+        {
+          "limitId": "aditamento",
+          "kind": "contractual",
+          "ebitdaHeadroom": "13.76351173",
+          "netDebtHeadroom": "41.29053519",
+          "unrealizedEbitdaLossToLimit": "0.52936583576923076923",
+          "breached": false
+        },
+        {
+          "limitId": "politica",
+          "kind": "board_policy",
+          "ebitdaHeadroom": "6.216214076",
+          "netDebtHeadroom": "15.54053519",
+          "unrealizedEbitdaLossToLimit": "0.23908515676923076923",
+          "breached": false
+        }
+      ]
+    },
+    "policyBindsFirst": true,
+    "worst": {
+      "measurementId": "dez27-adverso",
+      "limitId": "politica",
+      "ebitdaHeadroom": "2.332597752"
+    },
+    "anyBreach": false,
+    "contrasts": [
+      "dez26-sem-safra",
+      "junho-gerencial",
+      "dez26-escritura-original"
+    ],
+    "openQuestions": [
+      "politica"
+    ]
+  },
+  "gaps": [
+    {
+      "operand": "covenant.ac400000-0000-4000-9000-000000000060.limit.politica.definition",
+      "reason": "A ata não diz qual EBITDA a política usa"
+    }
+  ],
+  "status": "partial",
+  "exclusions": [
+    "projection",
+    "waiver_negotiation",
+    "credit_approval",
+    "method_release"
+  ],
+  "grantsExecution": false,
+  "grantsPublication": false,
+  "fingerprint": "e9513c411baa977e281f1b91ae7989ee865235710c5b5546a6db21df6aa2d0c2"
+}

@@ -26,6 +26,24 @@ const fichas = [
     "Até quanto a gente pode se alavancar?",
     "O banco disse que cabem mais 80 milhões. Faz sentido?",
   ]},
+  {id: "C10", kind: "debt_table", messages: [
+    "Monta a tabela de dívida com tudo que temos.",
+    "Extrai a dívida desses contratos e notas.",
+    "Quanto a gente deve hoje, e pra quem?",
+    "Preciso do endividamento atualizado para o conselho.",
+  ]},
+  {id: "C12", kind: "covenant_headroom", messages: [
+    "Como estamos contra os covenants?",
+    "Qual a folga do covenant da debênture em dezembro?",
+    "A gente corre risco de estourar o covenant?",
+    "Calcula o covenant na definição da escritura.",
+  ]},
+  {id: "C18", kind: "weekly_cash", messages: [
+    "Como fica o caixa até dezembro e o que vence?",
+    "A gente aguenta até o fim do ano?",
+    "Quando é a semana mais apertada?",
+    "Preciso sacar a conta garantida em dezembro?",
+  ]},
   {id: "C32", kind: "capital_strategy", messages: [
     "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?",
     "Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?",
@@ -36,6 +54,24 @@ const fichas = [
 ] as const;
 
 describe("canonical ficha objective routing", () => {
+  it.each([
+    ["O que é caixa semanal?", "factual_question"],
+    ["O que é uma tabela de dívida?", "factual_question"],
+    ["Explique o conceito de folga de covenant.", "factual_question"],
+    ["Compare as propostas considerando o caixa semanal.", "proposal_comparison"],
+    ["Revise o contrato e o cronograma da dívida.", "operation_review"],
+    ["Monte uma matriz de riscos com os covenants da escritura.", "risk_matrix"],
+    ["Quero alongar a dívida; como fica o caixa até dezembro?", "capital_strategy"],
+    ["Quanto de dívida cabe sem estourar o covenant?", "debt_capacity"],
+    ["Como funciona uma tabela de dívida?", "factual_question"],
+    ["Explique como funciona o caixa semanal.", "factual_question"],
+    ["Monta a tabela de dívida para refinanciamento.", "debt_table"],
+    ["Projete o caixa semanal considerando a proposta do banco.", "weekly_cash"],
+    ["Calcula a folga do covenant antes de negociar o waiver.", "covenant_headroom"],
+  ] as const)("lote 2 patterns leave other intents in place: %s", (message, kind) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
+  });
+
   for (const ficha of fichas) for (const message of ficha.messages) {
     it.each([false, true])(`${ficha.id}: ${message} (attachments: %s)`, (hasAttachments) => {
       const plan = compileObjectiveToPlan({message, hasAttachments});

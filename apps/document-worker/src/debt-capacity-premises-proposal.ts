@@ -1,38 +1,21 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {z} from "zod";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
 import {debtCapacityFactsSchema, proposeDebtCapacityHypotheses, type DebtCapacityFacts} from "@offroad/financial-model";
 import {uuidV5} from "./investment-premises-proposal";
+import {foldCue, premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const debtCapacityPremiseMethod = {methodId: "assess-debt-capacity", methodVersion: "2026.10.19-v2"} as const;
-const fold = (text: string) => text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const capacityCue = /\b(quanto (de )?(divida )?((a gente|a empresa|a companhia|nos|eu) )?(cabe|aguent\w*|suport\w*|consig\w* (tomar|captar)|pode\w* (tomar|captar)|posso (tomar|captar)|da para (tomar|captar))|capacidade de (endividamento|divida|alavancagem)|alavancagem maxima)/;
-
-const capacityData = /\b(aliquota|covenant|escritura|parcela\w*|amortiza\w*|carencia|cdi|spread|prefixad\w*|ebitda|caixa|divida|debenture|capex|investimento|projecao|arrendamento\w*|depreciacao|capital de giro|vencimento|juros|r\$|milh\w*|mil|por cento|%)/;
-/** A financial quantity: a number next to its unit (34%, 3x, três vezes, 60 milhões, três parcelas,
- * R$ 15), or a year. A number by itself ("em 2 dias", "uma frase") is not one. */
-const numberWord = "um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|catorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|duzent\\w+|trezent\\w+|quatrocent\\w+|quinhent\\w+|seiscent\\w+|setecent\\w+|oitocent\\w+|novecent\\w+|mil";
-const unit = "%|x\\b|vez\\b|vezes|por cento|pontos?( percentuais| base)?|bps\\b|pb\\b|basis points|milh\\w*|mil\\b|bi\\b|bilh\\w*|mm\\b|mi\\b|parcela\\w*|anos?\\b";
-const quantity = new RegExp(`\\d+(?:[.,]\\d+)?\\s*(?:${unit})|\\b(?:${numberWord})\\s+(?:${unit})|r\\$\\s*\\d|\\b(?:19|20)\\d{2}\\b`);
-/** A question asks; it does not answer. Only a confirmation tag ("34%, certo?") keeps an answer an answer. */
-const interrogative = /^((e|mas|entao|ok|ah)[\s,]+)?(qual|quais|quanto|quanta|quantos|quantas|quando|como|onde|quem|por que|porque|o que)\b/;
-/** A request for explanation is the imperative that opens the message ("explica", "pode detalhar"), not the
- * same verb inside a statement ("conforme detalha a projeção"). */
-const explanation = /^((e|mas|entao|ok|ah)[\s,]+)?((pode|poderia|consegue|voce pode|me|por favor)\s+)*(explica|explique|explicar|detalha|detalhe|detalhar|esclarece|esclareca|esclarecer|resuma|resumir)\b|\bo que significa\b/;
-const confirmationTag = /,?\s*(certo|correto|ne|ok|confere|isso|nao e)\s*\?$/;
+const fold = foldCue;
 
 /** How much new debt fits: the turn may propose the capacity analysis's premises. While the question
- * is among the messages the agent reads (the last twelve of the conversation), an answer that states
- * capacity data with a quantity continues it, even when it asks for confirmation ("34%, certo?"), so
- * the data asked for reaches the extraction without the question being repeated. A question, a
- * request for explanation or a remark without such data does not continue it, with or without documents. */
+ * is the latest premise question among the messages the agent reads (the last twelve of the
+ * conversation), a message that is not a question nor a request for explanation is a continuation
+ * candidate, even when it asks for confirmation ("34%, certo?"); the extraction's `turnIntent` decides
+ * whether it answers what is pending. */
 export function shouldProposeDebtCapacityPremises(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[] = []): boolean {
-  const text = fold(message).trim();
-  if (capacityCue.test(text)) return compileObjectiveToPlan({message, hasAttachments}).objectiveKind !== "factual_question";
-  const asks = interrogative.test(text) || explanation.test(text) || (text.endsWith("?") && !confirmationTag.test(text));
-  return !asks && capacityData.test(text) && quantity.test(text) && earlierUserMessages.some((m) => capacityCue.test(fold(m)));
+  return premiseEntry("debt_capacity", message, hasAttachments, earlierUserMessages) !== null;
 }
 
 const origin = z.enum(["informed", "document"]);
@@ -44,6 +27,7 @@ const share = z.number().min(0).max(1);
 export const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"] as const;
 /** Only what the person said or a document states. Absence stays null; nothing is estimated here. */
 export const debtCapacityExtractionSchema = z.strictObject({
+  turnIntent: z.enum(turnIntents),
   /** What the money is for, as one of the company situations the capacity analysis serves. */
   needSituation: sourced(z.enum(capacitySituations)),
   /** The company's own projection, one item per year (December). */
@@ -82,12 +66,13 @@ export const debtCapacityExtractionContract = {
     "covenantLimit é o limite de dívida líquida sobre EBITDA da escritura; covenantEbitdaExcludesLeases é true quando o EBITDA do covenant exclui arrendamentos (sem IFRS 16). minimumCash é o caixa mínimo que a companhia quer manter, quando dito.",
     "A estrutura da dívida nova só quando dita: indexador (CDI ou prefixado), spread ou taxa, ano da primeira amortização e número de amortizações anuais iguais. indexCurve é o CDI anual por ano, quando houver em documento ou na conversa.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
+    turnIntentInstruction,
   ].join("\n"),
   schema: debtCapacityExtractionSchema,
-  schemaName: "debt_capacity_extraction_v1",
+  schemaName: "debt_capacity_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 6_000,
-  cacheKey: "debt-capacity-extraction-2026.10.19-v1",
+  cacheKey: "debt-capacity-extraction-2026.10.23-v1",
 };
 
 export type CapacityCompletion =
@@ -215,11 +200,17 @@ export async function proposeDebtCapacityPremisesForTurn(input: {
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void;
 }): Promise<CapacityTurnPremises | null> {
-  if (!input.projectId || !shouldProposeDebtCapacityPremises(input.message, input.hasAttachments, input.recentUserMessages)) return null;
+  const entry = input.projectId ? premiseEntry("debt_capacity", input.message, input.hasAttachments, input.recentUserMessages) : null;
+  if (!input.projectId || !entry) return null;
   try {
     const documentFields = await input.loadEvidence();
     const extraction = debtCapacityExtractionSchema.parse(await input.extract(JSON.stringify({
       latestUserMessage: input.message, earlierUserMessages: input.recentUserMessages.slice(-6), documentFields})));
+    // Only a turn that answers what is pending (or itself asks this question) proposes.
+    if (extraction.turnIntent !== "answers_pending") {
+      input.log("capacity_premises.not_answering", {turnIntent: extraction.turnIntent, entry});
+      return null;
+    }
     const capacityId = uuidV5(`offroad:debt-capacity:${input.projectId}`);
     const completed = completeDebtCapacityFacts({extraction, ids: {capacityId, entityId: capacityId, definitionVersionId: capacityId}, currency: "BRL"});
     if (completed.status === "missing") {

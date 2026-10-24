@@ -1,5 +1,6 @@
 import {executionCanonicalText, type ExecutionContract, type ExecutionGates} from "@offroad/agent-contracts";
-import {composeBoundCapitalPacketV2, composeBoundDebtCapacity, composeBoundFinancingComparison, composeBoundInvestmentPacket, deriveBoundCapitalScope} from "@offroad/financial-model";
+import {composeBoundCapitalPacketV2, composeBoundCovenantHeadroom, composeBoundDebtCapacity, composeBoundDebtTable, composeBoundFinancingComparison, composeBoundInvestmentPacket,
+  composeBoundWeeklyCash, deriveBoundCapitalScope} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {composeExecutionContract, contractBasisVersions, executionContractText, type ExecutionContractBasis, type ExecutionRequestIds} from "./contract";
 import {closeExecutionGates, openExecutionGates} from "./gates";
@@ -41,6 +42,12 @@ const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: Capit
     composeBoundFinancingComparison({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
   "assess-debt-capacity": (basis, ask) =>
     composeBoundDebtCapacity({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "build-company-debt-table": (basis, ask) =>
+    composeBoundDebtTable({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "measure-covenant-headroom": (basis, ask) =>
+    composeBoundCovenantHeadroom({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "project-weekly-cash": (basis, ask) =>
+    composeBoundWeeklyCash({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
 };
 
 /** Same order and refusals as the capital request, for any method with a packet composer. */

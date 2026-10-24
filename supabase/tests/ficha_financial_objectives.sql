@@ -100,7 +100,7 @@ declare
     'tasks',jsonb_build_array(jsonb_build_object('taskId','M02','executable',false,'reasons',jsonb_build_array('method_not_promoted')))
   );
 begin
-  foreach kind in array array['proposal_comparison','relative_debt_cost','debt_capacity',
+  foreach kind in array array['proposal_comparison','relative_debt_cost','debt_capacity','debt_table','covenant_headroom','weekly_cash',
     'information_organization','market_mapping','monitoring','workspace_management'] loop
     plan := jsonb_build_object('schemaVersion','objective-plan.v1','objectiveKind',kind,
       'structuralIdentity',encode(extensions.digest(kind,'sha256'),'hex'),
@@ -137,7 +137,7 @@ $$;
 reset role;
 do $$
 begin
-  if (select count(*) from public.capital_project_objective_preflights) <> 7 then
+  if (select count(*) from public.capital_project_objective_preflights) <> 10 then
     raise exception 'financial_objective_record_count_wrong';
   end if;
   if not (select relrowsecurity and relforcerowsecurity from pg_class where oid='public.capital_project_objective_preflights'::regclass)

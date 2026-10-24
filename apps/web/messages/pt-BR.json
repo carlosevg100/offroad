@@ -2932,6 +2932,292 @@
         },
         "pays": "Paga",
         "bindingIn": "em {year}"
+      },
+      "debtTable": {
+        "title": "Tabela de dívida da companhia",
+        "status": "Situação",
+        "question": "Pergunta",
+        "referenceDate": "Data de referência",
+        "units": "Valores em milhões de {currency}; custo em percentual ao ano; alavancagem em múltiplos.",
+        "views": "Dívida em cada definição",
+        "bridgeNone": "base",
+        "columns": {
+          "view": "Definição",
+          "total": "Total",
+          "netDebt": "Dívida líquida",
+          "bridge": "Ponte a partir da base",
+          "instrument": "Operação",
+          "creditor": "Credor",
+          "principal": "Principal",
+          "accounting": "Saldo contábil",
+          "cost": "Indexador e spread",
+          "finalPayment": "Último pagamento",
+          "guarantee": "Garantia",
+          "covenant": "Covenant",
+          "crossDefault": "Cross-default a partir de",
+          "line": "Linha",
+          "limit": "Limite",
+          "drawn": "Sacado",
+          "unused": "Não usado",
+          "item": "Item",
+          "kind": "Natureza",
+          "amount": "Valor",
+          "year": "Ano",
+          "definition": "Definição",
+          "denominator": "EBITDA da definição",
+          "ratio": "Alavancagem",
+          "holder": "Operação que restringe",
+          "basket": "Cesta permitida",
+          "occupied": "Ocupado",
+          "remaining": "Disponível",
+          "usedBy": "Ocupado por",
+          "threshold": "Limiar",
+          "acceleration": "Vencimento",
+          "scope": "Gatilho",
+          "triggeredBy": "Pode ser acionado por"
+        },
+        "components": {
+          "principal": "principal",
+          "drawn_credit_lines": "linhas sacadas",
+          "accrued_interest": "juros acumulados",
+          "unamortized_cost": "custo a amortizar",
+          "lease": "arrendamentos",
+          "supplier_finance": "risco sacado",
+          "guarantee_given": "garantias prestadas"
+        },
+        "spread": "{indexer} + {spread}",
+        "noThreshold": "sem cláusula",
+        "reconciliation": "Conciliação com o balanço",
+        "reconciliationLine": "Principal {principal}, juros acumulados {accrued}, custo a amortizar {unamortized}: contábil {accounting}; reportado {reported}; diferença {difference}.",
+        "reconciliationStatus": "Conciliação: {status}",
+        "reconciliationStatuses": {
+          "exact": "exata",
+          "within_tolerance": "dentro da tolerância",
+          "difference": "com diferença",
+          "not_reported": "sem saldo reportado"
+        },
+        "noReconciliation": "Sem conciliação: falta o saldo contábil ou o reportado.",
+        "creditLines": "Linhas de crédito não usadas",
+        "unusedTotal": "Total não usado: {amount}",
+        "outside": "Fora de todas as definições",
+        "outsideKinds": {
+          "guarantee_given": "garantia prestada"
+        },
+        "profile": "Cronograma de pagamento do principal",
+        "dueTwelve": "Vence em doze meses: {amount}, {share} do principal.",
+        "averageLife": "Prazo médio: {years} anos.",
+        "largestCreditor": "Maior credor: {creditor}, {amount}, {share} do principal.",
+        "averageCost": "Custo nominal médio: {rate} ao ano.",
+        "crossDefault": "Cadeia de cross-default",
+        "lowestThreshold": "Menor limiar: {instrument}, {amount}.",
+        "accelerations": {
+          "automatic": "automático",
+          "non_automatic": "não automático"
+        },
+        "baskets": "Cestas de garantia permitidas (negative pledge)",
+        "exceeded": "excedida",
+        "notExceeded": "dentro da cesta",
+        "leverage": "Alavancagem em cada definição",
+        "completeness": "Completude da lista",
+        "completenessStatuses": {
+          "proven": "Lista comprovada por fonte externa.",
+          "unproven": "Lista não comprovada por fonte externa."
+        },
+        "requests": {
+          "external_register_of_financial_institution_operations": "Para provar a completude, peça o Registrato (relatório de operações do Banco Central) da companhia."
+        },
+        "categoriesNotExamined": "Categorias não examinadas: {list}.",
+        "coverageTitle": "Categorias examinadas",
+        "coverageStatuses": {
+          "present": "presente",
+          "absent": "ausente",
+          "not_examined": "não examinada"
+        },
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "credit_approval": "Aprovação de crédito",
+          "method_release": "Liberação do método",
+          "contract_extraction": "Leitura automática dos contratos",
+          "covenant_measurement": "Medição dos covenants",
+          "structure_opinion": "Opinião sobre a estrutura de capital",
+          "projection": "Projeção da companhia",
+          "waiver_negotiation": "Negociação de waiver",
+          "business_day_inference": "Ajuste de datas a dias úteis",
+          "intraday_liquidity": "Liquidez dentro do dia",
+          "receivables_assignment_eligibility": "Elegibilidade dos recebíveis para cessão"
+        }
+      },
+      "covenantHeadroom": {
+        "title": "Folga nos covenants",
+        "status": "Situação",
+        "question": "Pergunta",
+        "readingDate": "Data da leitura",
+        "units": "Valores em milhões de {currency}; relações em múltiplos. Cada limite é medido pela definição escrita no documento que o cria.",
+        "headline": "Em {date}, dívida líquida sobre EBITDA de {ratio}; o limite mais apertado é {limit}.",
+        "headlineNoRatio": "Em {date}, a relação não foi medida.",
+        "columns": {
+          "limit": "Limite",
+          "kind": "Natureza",
+          "ebitdaHeadroom": "Folga em EBITDA",
+          "netDebtHeadroom": "Folga em dívida líquida",
+          "unrealized": "EBITDA não realizado que pode faltar",
+          "breached": "Rompido?",
+          "measurement": "Medição",
+          "date": "Data",
+          "scenario": "Cenário",
+          "netDebt": "Dívida líquida",
+          "ebitda": "EBITDA",
+          "ratio": "Relação",
+          "tightest": "Limite mais apertado",
+          "effect": "Efeito",
+          "ratioEffect": "Na relação",
+          "netDebtEffect": "Na dívida líquida"
+        },
+        "kinds": {
+          "contractual": "contrato",
+          "board_policy": "política do conselho"
+        },
+        "limitStatuses": {
+          "in_force": "vigente",
+          "superseded": "superado"
+        },
+        "yes": "Sim",
+        "no": "Não",
+        "policyBindsFirst": "A política do conselho trava antes do covenant contratual.",
+        "contractBindsFirst": "O covenant contratual trava antes da política do conselho.",
+        "worst": "Menor folga entre as medições de teste: {measurement}, contra {limit}, folga de {amount} em EBITDA.",
+        "anyBreach": "Ao menos uma medição de teste rompe um limite.",
+        "noBreach": "Nenhuma medição de teste rompe um limite.",
+        "limits": "Limites",
+        "tests": "Medições de teste",
+        "contrasts": "Contrastes, fora do teste",
+        "contrastsNote": "Contrastes mostram a mesma conta em outra base para comparação; não são o teste do contrato.",
+        "effects": "Efeitos na data de apuração",
+        "consequence": "O que acontece se romper",
+        "acceleration": "Vencimento antecipado",
+        "process": "Processo",
+        "crossDefaultLabel": "Cross-default",
+        "accelerations": {
+          "automatic": "automático",
+          "non_automatic": "não automático"
+        },
+        "definitions": "Definição de cada limite",
+        "definitionMissing": "definição não escrita",
+        "openQuestions": "Perguntas em aberto",
+        "questions": {
+          "ebitda_definition_not_written": "o documento não diz qual EBITDA usar"
+        },
+        "scenarios": {
+          "base": "base",
+          "adverse": "adverso"
+        },
+        "notMeasured": "não medida",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "credit_approval": "Aprovação de crédito",
+          "method_release": "Liberação do método",
+          "contract_extraction": "Leitura automática dos contratos",
+          "covenant_measurement": "Medição dos covenants",
+          "structure_opinion": "Opinião sobre a estrutura de capital",
+          "projection": "Projeção da companhia",
+          "waiver_negotiation": "Negociação de waiver",
+          "business_day_inference": "Ajuste de datas a dias úteis",
+          "intraday_liquidity": "Liquidez dentro do dia",
+          "receivables_assignment_eligibility": "Elegibilidade dos recebíveis para cessão"
+        }
+      },
+      "weeklyCash": {
+        "title": "Caixa semana a semana",
+        "status": "Situação",
+        "question": "Pergunta",
+        "units": "Valores em milhões de {currency}; custo das ações em milhões com duas casas. Semanas começam na segunda-feira.",
+        "horizon": "De {from} a {to}; caixa inicial {opening}; caixa mínimo {minimum}.",
+        "tightest": "Semana mais apertada: a de {week}, fechando em {closing}.",
+        "belowMinimum": "Semanas abaixo do mínimo: {list}. Falta para o mínimo: {amount}.",
+        "noneBelow": "Nenhuma semana abaixo do mínimo no caso informado.",
+        "causes": "O que sai nessas semanas",
+        "closingHides": "O fechamento do período não mostra essa semana: o saldo de fim de mês fica acima do mínimo.",
+        "closingShows": "O fechamento do período mostra a semana mais apertada.",
+        "cheapest": "Ação mais barata que cobre: {action}, custo de {cost} pelo tempo de uso.",
+        "cheapestOpen": "Ainda em aberto na data do teste do covenant.",
+        "noCheapest": "Nenhuma ação proposta cobre a falta.",
+        "actions": "Ações por custo",
+        "columns": {
+          "action": "Ação",
+          "amount": "Valor",
+          "days": "Dias",
+          "interest": "Juros",
+          "iof": "IOF",
+          "fee": "Tarifa",
+          "cost": "Custo",
+          "covers": "Cobre?",
+          "openAtTest": "Aberta no teste do covenant?",
+          "case": "Caso",
+          "minimum": "Mínimo",
+          "minimumWeek": "Semana do mínimo",
+          "weeksBelow": "Semanas abaixo",
+          "closing": "Fechamento",
+          "shortfall": "Falta para o mínimo",
+          "week": "Semana de",
+          "inflows": "Entradas",
+          "outflows": "Saídas",
+          "below": "Abaixo do mínimo?",
+          "date": "Data",
+          "item": "Item",
+          "category": "Categoria",
+          "obligation": "Obrigação",
+          "coverage": "Situação"
+        },
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "não informado",
+        "cases": "Cada caso",
+        "sensitivities": "Sensibilidades",
+        "weeks": "Semanas do caso informado: {case}",
+        "calendar": "O que vence até a data",
+        "categories": {
+          "debt": "dívida",
+          "statutory": "folha e tributos",
+          "supplier": "fornecedores",
+          "other": "outros"
+        },
+        "reconciliation": "Conciliação com a projeção",
+        "reconciliationLine": "Em {date}: semanal {weekly}; projeção {projection}; diferença {difference}.",
+        "noReconciliation": "Sem conciliação com a projeção.",
+        "coverage": "Obrigações cobertas",
+        "obligations": {
+          "payroll": "folha",
+          "thirteenth_salary": "13º salário",
+          "payroll_charges": "encargos da folha",
+          "sales_taxes": "impostos sobre vendas",
+          "income_taxes": "IRPJ e CSLL",
+          "debt_service": "serviço da dívida"
+        },
+        "coverageStatuses": {
+          "included": "incluída",
+          "not_examined": "não examinada",
+          "absent": "ausente"
+        },
+        "notExamined": "Obrigações não examinadas: {list}.",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "exclusionsTitle": "Fora do escopo desta análise",
+        "exclusions": {
+          "credit_approval": "Aprovação de crédito",
+          "method_release": "Liberação do método",
+          "contract_extraction": "Leitura automática dos contratos",
+          "covenant_measurement": "Medição dos covenants",
+          "structure_opinion": "Opinião sobre a estrutura de capital",
+          "projection": "Projeção da companhia",
+          "waiver_negotiation": "Negociação de waiver",
+          "business_day_inference": "Ajuste de datas a dias úteis",
+          "intraday_liquidity": "Liquidez dentro do dia",
+          "receivables_assignment_eligibility": "Elegibilidade dos recebíveis para cessão"
+        }
       }
     },
     "overview": "Visão geral",
@@ -7473,6 +7759,69 @@
       "invalidCnpj": "O CNPJ não confere com os dígitos verificadores. Confira e tente de novo.",
       "roleExists": "Este trabalho já tem uma companhia cadastrada com outro perímetro. Ajuste na base da análise.",
       "unavailable": "Não consegui cadastrar agora. Tente de novo."
+    }
+  },
+  "DebtMethodsPremisesCard": {
+    "methods": {
+      "debtTable": {
+        "title": "Premissas para montar a tabela de dívida",
+        "lead": "Monto a tabela com estas operações, linhas, obrigações e definições, cada uma com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Para cada operação: credor, principal, saldo contábil, custo, vencimento, garantia, covenant e cross-default. Totais em cada definição com a ponte, cronograma por ano e o que falta para provar que a lista está completa."
+      },
+      "covenantHeadroom": {
+        "title": "Premissas para medir a folga nos covenants",
+        "lead": "Meço a companhia contra estes limites, nestas datas e definições, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Para cada limite e para a política do conselho: a relação na data, a folga em EBITDA e em dívida líquida, quanto do EBITDA ainda não realizado pode faltar, o caso adverso, o efeito sazonal e o que acontece se romper."
+      },
+      "weeklyCash": {
+        "title": "Premissas para projetar o caixa semana a semana",
+        "lead": "Projeto o caixa semanal com estes fluxos, obrigações, casos e ações, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Semana a semana até a data: a semana mais apertada, as semanas abaixo do mínimo, o que vence nelas, o que o fechamento do período esconde e o custo de cada ação que cobre, pelo tempo de uso."
+      }
+    },
+    "groups": {
+      "instrument": "Operações",
+      "credit_line": "Linhas de crédito",
+      "obligation": "Obrigações",
+      "view": "Definições de dívida",
+      "limit": "Limites",
+      "measurement": "Medições",
+      "stream": "Fluxos de caixa",
+      "action": "Ações",
+      "case": "Casos",
+      "premise": "Premissas"
+    },
+    "origins": {
+      "document": "Documento",
+      "informed": "Informado",
+      "house": "Premissa da casa",
+      "estimate": "Estimativa"
+    },
+    "referenceDate": "Data de referência: {date}",
+    "unreadable": "Não consegui ler as premissas desta proposta. Peça na conversa que eu as proponha de novo.",
+    "confirm": "Confirmar premissas e calcular",
+    "confirming": "Gravando as premissas",
+    "pendingRelease": "Premissas confirmadas. O cálculo roda assim que o método estiver liberado.",
+    "calculating": "Premissas confirmadas. Cálculo em andamento.",
+    "openCalculation": "Abrir o cálculo",
+    "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
+    "errors": {
+      "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
+      "unavailable": "Não consegui confirmar agora. Tente de novo."
+    },
+    "houseLabels": {
+      "leaseView": "Com arrendamentos",
+      "marketView": "Mercado",
+      "accountingView": "Contábil",
+      "completenessUnproven": "Registrato não recebido",
+      "completenessProven": "Registrato recebido",
+      "accelerationAutomatic": "Vencimento antecipado automático",
+      "accelerationNonAutomatic": "Vencimento antecipado não automático",
+      "openingCash": "Caixa inicial",
+      "minimumCash": "Caixa mínimo de operação",
+      "informedPlan": "Plano informado",
+      "variantCase": "Plano com {label}",
+      "actionCase": "Plano com a ação: {label}"
     }
   }
 }

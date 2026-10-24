@@ -2774,6 +2774,16 @@
       "name": "lote2_payload_provenance",
       "version": "20261023204645",
       "statements_md5": "3c621bd8cfc2b68365e5db4e17276af5"
+    },
+    {
+      "name": "lote2_financial_objectives",
+      "version": "20261023221305",
+      "statements_md5": "f4b0eff2c474f8ba559a026edb714188"
+    },
+    {
+      "name": "lote2_bridge",
+      "version": "20261023221527",
+      "statements_md5": "cefbe7849ed9c9ac62734f462c46d2b1"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",

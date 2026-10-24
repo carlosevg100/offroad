@@ -1,0 +1,477 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "Monta a tabela de dívida com tudo que temos.",
+      "currency": "BRL",
+      "referenceDate": "2026-06-30",
+      "readings": {
+        "reconciled": true,
+        "viewCount": 4,
+        "unusedLimits": "10",
+        "categoriesNotExamined": [],
+        "outsideEveryView": [
+          "fianca"
+        ],
+        "basketsExceeded": [],
+        "lowestCrossDefault": {
+          "instrumentId": "ccb-bradesco",
+          "threshold": "5"
+        },
+        "leverageDefinitions": 2,
+        "completenessRequest": true
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "instruments",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "debenture-1",
+          "label": "Debênture 1ª emissão",
+          "creditor": "Debenturistas",
+          "borrower": "Aurora Alimentos S.A.",
+          "principal": "60",
+          "accountingBalance": "60.9",
+          "indexer": "CDI",
+          "spread": "0.024",
+          "nominalRate": "0.176576",
+          "finalPayment": "2028-06-15",
+          "scheduleMatchesPrincipal": true,
+          "guarantee": "Quirografária",
+          "covenant": "Dívida líquida / EBITDA até 3,0x, anual em dezembro, sem IFRS 16 (1º aditamento, cl. 2)",
+          "crossDefault": {
+            "threshold": "10",
+            "acceleration": "non_automatic",
+            "scope": "Inadimplemento de outra dívida (escritura cl. 6.1)",
+            "scopeKind": "any_financial_debt",
+            "creditors": [],
+            "thresholdBasis": "amount_in_default"
+          },
+          "prepayment": "Resgate facultativo total, prêmio de 0,30% ao ano"
+        },
+        {
+          "id": "ccb-bradesco",
+          "label": "CCB",
+          "creditor": "Bradesco",
+          "borrower": "Aurora Alimentos S.A.",
+          "principal": "40",
+          "accountingBalance": "40.8",
+          "indexer": "CDI",
+          "spread": "0.026",
+          "nominalRate": "0.178874",
+          "finalPayment": "2027-09-15",
+          "scheduleMatchesPrincipal": true,
+          "guarantee": "Cessão fiduciária de contratos de dois clientes; reforço em 5 dias úteis abaixo de 80% (cl. 7)",
+          "covenant": "Nenhum covenant financeiro",
+          "crossDefault": {
+            "threshold": "5",
+            "acceleration": "non_automatic",
+            "scope": "Inadimplemento de qualquer dívida (cl. 9)",
+            "scopeKind": "any_financial_debt",
+            "creditors": [],
+            "thresholdBasis": "amount_in_default"
+          },
+          "prepayment": "Aviso de 30 dias e tarifa de 1% (cl. 12)"
+        },
+        {
+          "id": "finame",
+          "label": "Finame",
+          "creditor": "BNDES",
+          "borrower": "Aurora Alimentos S.A.",
+          "principal": "30",
+          "accountingBalance": "30.1",
+          "indexer": "TLP",
+          "spread": "0.018",
+          "nominalRate": "0.098422",
+          "finalPayment": "2030-12-15",
+          "scheduleMatchesPrincipal": true,
+          "guarantee": "Alienação fiduciária dos equipamentos (cl. 11)",
+          "covenant": "Nenhum covenant financeiro",
+          "crossDefault": {
+            "threshold": null,
+            "acceleration": "non_automatic",
+            "scope": "Obrigações com o BNDES ou o agente (cl. 14)",
+            "scopeKind": "named_creditors",
+            "creditors": [
+              "BNDES"
+            ],
+            "thresholdBasis": "amount_in_default"
+          },
+          "prepayment": "Liquidação antecipada mediante comunicação (cl. 5)"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "principal:debenture-1",
+        "kind": "calculation",
+        "value": "60",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      },
+      {
+        "claimId": "principal:ccb-bradesco",
+        "kind": "calculation",
+        "value": "40",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      },
+      {
+        "claimId": "principal:finame",
+        "kind": "calculation",
+        "value": "30",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "views",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "escritura",
+          "label": "Escritura",
+          "components": [
+            "principal",
+            "drawn_credit_lines"
+          ],
+          "total": "130",
+          "bridgeFromBase": [],
+          "netDebt": "95"
+        },
+        {
+          "id": "contabil",
+          "label": "Contábil",
+          "components": [
+            "principal",
+            "accrued_interest",
+            "unamortized_cost"
+          ],
+          "total": "131.8",
+          "bridgeFromBase": [
+            {
+              "component": "accrued_interest",
+              "amount": "2.2"
+            },
+            {
+              "component": "unamortized_cost",
+              "amount": "-0.4"
+            },
+            {
+              "component": "drawn_credit_lines",
+              "amount": "0"
+            }
+          ],
+          "netDebt": "96.8"
+        },
+        {
+          "id": "ifrs16",
+          "label": "Com arrendamentos",
+          "components": [
+            "principal",
+            "drawn_credit_lines",
+            "lease"
+          ],
+          "total": "138",
+          "bridgeFromBase": [
+            {
+              "component": "lease",
+              "amount": "8"
+            }
+          ],
+          "netDebt": "103"
+        },
+        {
+          "id": "mercado",
+          "label": "Mercado",
+          "components": [
+            "principal",
+            "drawn_credit_lines",
+            "lease",
+            "supplier_finance"
+          ],
+          "total": "144",
+          "bridgeFromBase": [
+            {
+              "component": "lease",
+              "amount": "8"
+            },
+            {
+              "component": "supplier_finance",
+              "amount": "6"
+            }
+          ],
+          "netDebt": "109"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "view:escritura",
+        "kind": "calculation",
+        "value": "130",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      },
+      {
+        "claimId": "view:contabil",
+        "kind": "calculation",
+        "value": "131.8",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      },
+      {
+        "claimId": "view:ifrs16",
+        "kind": "calculation",
+        "value": "138",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      },
+      {
+        "claimId": "view:mercado",
+        "kind": "calculation",
+        "value": "144",
+        "unit": "BRL",
+        "period": "2026-06-30",
+        "supportIds": [
+          "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "reconciliation",
+    "kind": "section",
+    "content": {
+      "reconciliation": {
+        "principal": "130",
+        "accruedInterest": "2.2",
+        "unamortizedCost": "-0.4",
+        "accounting": "131.8",
+        "reported": "131.8",
+        "difference": "0",
+        "status": "exact"
+      },
+      "creditLines": [
+        {
+          "id": "conta-garantida",
+          "label": "Conta garantida",
+          "creditor": "Itaú",
+          "limit": "10",
+          "drawn": "0",
+          "unused": "10"
+        }
+      ],
+      "unusedLimits": "10",
+      "outsideEveryView": [
+        {
+          "id": "fianca",
+          "kind": "guarantee_given",
+          "label": "Fiança bancária",
+          "creditor": "Santander",
+          "amount": "5"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "profile",
+    "kind": "section",
+    "content": {
+      "profile": {
+        "scheduleByYear": [
+          {
+            "year": 2026,
+            "principal": "18.333336"
+          },
+          {
+            "year": 2027,
+            "principal": "76.666672"
+          },
+          {
+            "year": 2028,
+            "principal": "21.666672"
+          },
+          {
+            "year": 2029,
+            "principal": "6.666672"
+          },
+          {
+            "year": 2030,
+            "principal": "6.666648"
+          }
+        ],
+        "dueWithinTwelveMonths": "36.666672",
+        "dueWithinTwelveMonthsShare": "0.28205132307692307692",
+        "twelveMonthHorizon": "2027-06-30",
+        "weightedAverageLifeYears": "1.451141144531085353",
+        "largestCreditor": {
+          "creditor": "Debenturistas",
+          "principal": "60",
+          "share": "0.46153846153846153846"
+        },
+        "averageNominalCost": "0.15924753846153846154"
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "security",
+    "kind": "section",
+    "content": {
+      "crossDefault": {
+        "chain": [
+          {
+            "instrumentId": "ccb-bradesco",
+            "threshold": "5",
+            "acceleration": "non_automatic",
+            "scope": "Inadimplemento de qualquer dívida (cl. 9)",
+            "scopeKind": "any_financial_debt",
+            "thresholdBasis": "amount_in_default",
+            "hypothesis": "whole_outstanding_in_default",
+            "potentiallyTriggeredBy": [
+              "debenture-1",
+              "finame",
+              "risco-sacado"
+            ],
+            "complete": true,
+            "unresolved": []
+          },
+          {
+            "instrumentId": "debenture-1",
+            "threshold": "10",
+            "acceleration": "non_automatic",
+            "scope": "Inadimplemento de outra dívida (escritura cl. 6.1)",
+            "scopeKind": "any_financial_debt",
+            "thresholdBasis": "amount_in_default",
+            "hypothesis": "whole_outstanding_in_default",
+            "potentiallyTriggeredBy": [
+              "ccb-bradesco",
+              "finame"
+            ],
+            "complete": true,
+            "unresolved": []
+          }
+        ],
+        "lowestThreshold": {
+          "instrumentId": "ccb-bradesco",
+          "threshold": "5"
+        }
+      },
+      "negativePledgeBaskets": [
+        {
+          "holderId": "debenture-1",
+          "basket": "15",
+          "occupied": "12",
+          "remaining": "3",
+          "exceeded": false,
+          "usedBy": [
+            "ccb-bradesco"
+          ]
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "leverage",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "viewId": "mercado",
+          "label": "Banco",
+          "netDebt": "109",
+          "ebitda": "54",
+          "ebitdaDeduction": "0",
+          "denominator": "54",
+          "ratio": "2.01851851851851851852"
+        },
+        {
+          "viewId": "escritura",
+          "label": "Escritura",
+          "netDebt": "95",
+          "ebitda": "54",
+          "ebitdaDeduction": "3",
+          "denominator": "51",
+          "ratio": "1.86274509803921568627"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "completeness",
+    "kind": "section",
+    "content": {
+      "completeness": {
+        "status": "unproven",
+        "evidence": "Registrato não recebido",
+        "request": "external_register_of_financial_institution_operations"
+      },
+      "categoryCoverage": [
+        {
+          "kind": "lease",
+          "status": "present"
+        },
+        {
+          "kind": "supplier_finance",
+          "status": "present"
+        },
+        {
+          "kind": "guarantee_given",
+          "status": "present"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "contract_extraction",
+        "covenant_measurement",
+        "structure_opinion",
+        "credit_approval"
+      ]
+    },
+    "claims": []
+  }
+]

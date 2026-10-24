@@ -62,7 +62,7 @@ describe("R3 situation catalogue", () => {
     }
   });
 
-  it("binds the receivables situation to the method behind task R01 and the rest to the capital procedure, comparison and capacity where they decide", () => {
+  it("binds the receivables situation to the method behind task R01 and the rest to the capital procedure, comparison, capacity and the debt methods where they decide", () => {
     const receivables = structuringSituations.find((situation) => situation.situationId === "receivables")!;
     expect(receivables.servedBy).toEqual([receivablesPoolMethodId]);
     const bound = specialistMethodRuntimeManifest.find((method) => method.procedure.id === receivablesPoolMethodId);
@@ -70,8 +70,10 @@ describe("R3 situation catalogue", () => {
     for (const situation of structuringSituations) {
       const capacity = ["structural-working-capital", "stable-business-high-conversion", "near-covenant"];
       if (situation.situationId === "capex-infrastructure") expect(situation.servedBy).toEqual([capitalStructureMethodId, "analyze-investment-project", "compare-financing-proposals", "assess-debt-capacity"]);
+      else if (situation.situationId === "near-covenant") expect(situation.servedBy).toEqual([capitalStructureMethodId, "compare-financing-proposals", "assess-debt-capacity", "build-company-debt-table", "measure-covenant-headroom"]);
       else if (capacity.includes(situation.situationId)) expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId, "compare-financing-proposals", "assess-debt-capacity"]);
-      else if (situation.situationId === "seasonal-working-capital") expect(situation.servedBy).toEqual([capitalStructureMethodId, "compare-financing-proposals"]);
+      else if (situation.situationId === "seasonal-working-capital") expect(situation.servedBy).toEqual([capitalStructureMethodId, "compare-financing-proposals", "project-weekly-cash"]);
+      else if (["refinancing", "restructuring"].includes(situation.situationId)) expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId, "build-company-debt-table"]);
       else if (situation.situationId !== "receivables") expect(situation.servedBy, situation.situationId).toEqual([capitalStructureMethodId]);
     }
   });
