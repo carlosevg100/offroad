@@ -137,7 +137,7 @@ $$;
 reset role;
 do $$
 begin
-  if (select count(*) from public.capital_project_objective_preflights) <> 7 then
+  if (select count(*) from public.capital_project_objective_preflights) <> 10 then
     raise exception 'financial_objective_record_count_wrong';
   end if;
   if not (select relrowsecurity and relforcerowsecurity from pg_class where oid='public.capital_project_objective_preflights'::regclass)
