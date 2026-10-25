@@ -6,7 +6,7 @@ import {capitalS11ArtifactSchema} from "./capital-s11-final";
 import {loadCapitalS11RevisionInput,type CapitalS11RevisionInputPorts} from "./capital-s11-revision-input";
 import type {CapitalS11RetentionScope} from "./capital-s11-protocol";
 function synth(s:Record<string,any>):any{
- if(s.const!==undefined)return s.const;if(s.enum)return s.enum[0];if(s.anyOf)return synth(s.anyOf.find((v:Record<string,unknown>)=>v.type!=="null")??s.anyOf[0]);
+ if(s.const!==undefined)return s.const;if(Array.isArray(s.type))return synth({...s,type:s.type.find((t:string)=>t!=="null")??"null"});if(s.enum)return s.enum[0];if(s.anyOf)return synth(s.anyOf.find((v:Record<string,unknown>)=>v.type!=="null")??s.anyOf[0]);
  if(s.type==="object")return Object.fromEntries((s.required??[]).map((key:string)=>[key,synth(s.properties[key])]));
  if(s.type==="array")return Array.from({length:s.minItems??0},()=>synth(s.items));
  if(s.type==="string")return s.format==="date"?"2026-10-02":s.format==="uri"?"https://example.invalid/synthetic":s.pattern?"alt_fixture":"x".repeat(Math.max(1,s.minLength??1));
