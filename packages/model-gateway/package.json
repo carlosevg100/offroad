@@ -18,7 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "0.126.0",
     "openai": "7.18.0",
-    "zod": "4.4.3"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

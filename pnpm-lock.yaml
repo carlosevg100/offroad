@@ -118,8 +118,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@offroad/testing-fixtures':
         specifier: workspace:*
@@ -245,8 +245,8 @@ importers:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@playwright/test':
         specifier: ^1.63.0
@@ -285,8 +285,8 @@ importers:
   packages/access-policy:
     dependencies:
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -301,8 +301,8 @@ importers:
         specifier: workspace:*
         version: link:../work-plan
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -362,8 +362,8 @@ importers:
         specifier: workspace:*
         version: link:../reconciliation
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -427,8 +427,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -496,8 +496,8 @@ importers:
         specifier: workspace:*
         version: link:../case-understanding
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -521,8 +521,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -572,8 +572,8 @@ importers:
   packages/credit-ontology:
     dependencies:
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@offroad/testing-fixtures':
         specifier: workspace:*
@@ -594,8 +594,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -638,8 +638,8 @@ importers:
         specifier: workspace:*
         version: link:../work-plan
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -679,8 +679,8 @@ importers:
         specifier: workspace:*
         version: link:../model-gateway
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -698,8 +698,8 @@ importers:
         specifier: workspace:*
         version: link:../model-gateway
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -726,8 +726,8 @@ importers:
         specifier: 1.17.1
         version: 1.17.1
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -763,8 +763,8 @@ importers:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@offroad/testing-fixtures':
         specifier: workspace:*
@@ -776,8 +776,8 @@ importers:
   packages/domain-contracts:
     dependencies:
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
 
   packages/evals:
     dependencies:
@@ -848,8 +848,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -873,8 +873,8 @@ importers:
         specifier: workspace:*
         version: link:../reconciliation
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@offroad/testing-fixtures':
         specifier: workspace:*
@@ -899,8 +899,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -939,8 +939,8 @@ importers:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@offroad/testing-fixtures':
         specifier: workspace:*
@@ -958,8 +958,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -977,8 +977,8 @@ importers:
         specifier: workspace:*
         version: link:../fund-mandate
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -990,8 +990,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1016,8 +1016,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1035,8 +1035,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1055,13 +1055,13 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: 0.126.0
-        version: 0.126.0(zod@4.4.3)
+        version: 0.126.0(zod@4.6.6)
       openai:
         specifier: 7.18.0
-        version: 7.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(ws@8.21.3)(zod@4.4.3)
+        version: 7.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(ws@8.21.3)(zod@4.6.6)
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1092,8 +1092,8 @@ importers:
         specifier: 3.10.2
         version: 3.10.2
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1111,8 +1111,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1136,8 +1136,8 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1152,8 +1152,8 @@ importers:
         specifier: workspace:*
         version: link:../case-understanding
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -1203,8 +1203,8 @@ importers:
         specifier: workspace:*
         version: link:../public-research
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: ^20.19.43
@@ -5270,8 +5270,8 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
 snapshots:
 
@@ -5280,12 +5280,12 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@anthropic-ai/sdk@0.126.0(zod@4.4.3)':
+  '@anthropic-ai/sdk@0.126.0(zod@4.6.6)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.0.0
     optionalDependencies:
-      zod: 4.4.3
+      zod: 4.6.6
 
   '@asamuzakjp/css-color@4.1.2':
     dependencies:
@@ -7643,8 +7643,8 @@ snapshots:
       '@babel/parser': 7.29.8
       eslint: 9.39.5(jiti@2.7.0)
       hermes-parser: 0.25.1
-      zod: 4.4.3
-      zod-validation-error: 4.0.2(zod@4.4.3)
+      zod: 4.6.6
+      zod-validation-error: 4.0.2(zod@4.6.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -8530,12 +8530,12 @@ snapshots:
 
   obug@2.1.4: {}
 
-  openai@7.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(ws@8.21.3)(zod@4.4.3):
+  openai@7.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.4)(ws@8.21.3)(zod@4.6.6):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.84
       '@smithy/signature-v4': 5.7.4
       ws: 8.21.3
-      zod: 4.4.3
+      zod: 4.6.6
 
   optionator@0.9.4:
     dependencies:
@@ -9419,8 +9419,8 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@4.0.2(zod@4.4.3):
+  zod-validation-error@4.0.2(zod@4.6.6):
     dependencies:
-      zod: 4.4.3
+      zod: 4.6.6
 
-  zod@4.4.3: {}
+  zod@4.6.6: {}
