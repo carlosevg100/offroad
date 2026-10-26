@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {statedLabel, withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -44,6 +44,8 @@ export const receivablesFundingExtractionSchema = z.strictObject({
     debtorCount: z.number().int().min(1).max(1000000).nullable(), largestDebtorAmount: money.nullable(),
     /** The debtor these receivables are owed by, when one debtor spans several groups; null names the group itself. */
     debtorLabel: itemLabel.nullable(),
+    /** Where the lot was read (row, page or cell of the borderô or the document); null when the source does not say. */
+    anchor: z.string().trim().min(1).max(200).nullable(),
     /** The debtor's CNPJ when a document states it: the debtor's identity before any name. */
     debtorTaxId: z.string().regex(/^\d{14}$/).nullable(), debtorSetDisjoint: z.boolean().nullable()})).max(16),
   options: z.array(z.strictObject({...item, kind: z.enum(kinds), recourse: z.enum(["with_recourse", "without_recourse"]).nullable(),
@@ -63,17 +65,17 @@ export const receivablesFundingExtractionContract = {
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo) ou lista vazia. Nunca estime, nunca complete, nunca invente taxa de mercado.",
     "Valores monetários em reais, sem separador de milhar (R$ 62 milhões vira 62000000). Taxas em fração (1,6% ao mês vira rate 0.016 com rateBasis monthly; CDI mais 1,2 ao ano vira rate 0.012 com rateBasis di_plus). Datas no formato AAAA-MM-DD.",
     "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba (o fim da safra, o horizonte da análise), useEndDate o último dia em que o dinheiro é usado (quando é pago ou deixa de ser sacado), calendarDays e businessDays o prazo de uso, do início ao fim do uso, em dias corridos e úteis; o fim do uso pode ser diferente do fim da necessidade, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
-    "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado quando um sacado aparece em mais de um grupo, e debtorTaxId o CNPJ do sacado quando um documento o traz.",
+    "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado sempre que o grupo tem um só sacado (e o nome do sacado comum quando um sacado aparece em mais de um grupo), nunca o nome do lote; debtorTaxId é o CNPJ do sacado quando um documento o traz; anchor é onde o grupo foi lido (linha, página ou célula do borderô ou do documento), null quando a fonte não diz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
     "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. sublimitGroup é o nome do grupo de compradores que divide o sublimite com outras opções (por exemplo os mesmos cotistas em dois produtos FIDC), \"none\" quando foi dito que a opção tem compradores próprios e null quando ninguém disse. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: receivablesFundingExtractionSchema,
-  schemaName: "receivables_funding_extraction_v4",
+  schemaName: "receivables_funding_extraction_v5",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "receivables-funding-extraction-2026.10.26-v4",
+  cacheKey: "receivables-funding-extraction-2026.10.26-v5",
 };
 
 const dayMs = 86400000;
@@ -142,7 +144,9 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
   // Options name their anchor items by label: an item label stated twice is asked, never resolved to the first.
-  for (const k of repeatedLabels(e.items.map((i) => i.label))) if (!ambiguous.get("items")!.has(k)) missing.push(`items.${k}.label`);
+  // A repeated lot label matters only where an option names its lots by label; two rows of one borderô may share a label.
+  const referenced = new Set(e.options.flatMap((o) => o.anchorItemLabels.map(statedLabel)));
+  for (const k of repeatedLabels(e.items.map((i) => i.label))) if (!ambiguous.get("items")!.has(k) && referenced.has(statedLabel(e.items[k - 1]!.label))) missing.push(`items.${k}.label`);
   const itemIds = itemKeys(e.items.map((i) => i.label));
   // Debtor identities are reconciled across every group before any key: the same whole normalized name with
   // compatible CNPJs (equal, or stated in some groups only) is one debtor, keyed by its CNPJ when any group states
@@ -167,6 +171,10 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     const taxes = [...taxesByName.get(nameOf(i))!];
     return taxes.length === 1 ? `cnpj-${taxes[0]}` : stableKey(i.debtorLabel ?? i.label, 80);
   };
+  // A single debtor with neither name nor CNPJ has no identity: where a per-debtor sublimit applies, the lot label is
+  // never read as the debtor (two lots would become two independent buyers); the debtor is asked (round 15).
+  const perDebtorCap = e.options.some((o) => o.kind !== "bank_line" && o.sublimitPerDebtor !== null && o.sublimitPerDebtor !== "none");
+  e.items.forEach((i, k) => {if (perDebtorCap && i.debtorCount === 1 && i.debtorLabel === null && i.debtorTaxId === null) missing.push(`items.${k + 1}.debtorLabel`);});
   const groupIdentities = new Map<string, string>();
   e.options.forEach((o, k) => {if (o.sublimitGroup === null || o.sublimitGroup === "none") return; const key = stableKey(o.sublimitGroup), seen = groupIdentities.get(key), id = normalizedName(o.sublimitGroup);
     if (seen !== undefined && seen !== id) missing.push(`options.${k + 1}.sublimitGroup`); else groupIdentities.set(key, id);});

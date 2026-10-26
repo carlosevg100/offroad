@@ -56,13 +56,15 @@ export function itemKeys(labels: readonly string[], max = 30): string[] {
   });
 }
 /** The normalized identity of a name: case, accents, punctuation and spacing folded, nothing truncated. */
-export const normalizedName = (name: string) => foldCue(name).replace(/[^a-z0-9]+/g, " ").trim();
+export const normalizedName = (name: string) => foldCue(name).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 /** A key that identifies a whole name, not a truncated slug: a readable prefix of the full normalized name and
  * a hash of all of it, so two names that share a long prefix never meet in one key. Used where a key is an
  * identity the method groups by (a debtor, a sublimit group), not a position in one list. */
 export function stableKey(name: string, max = 40): string {
+  // The hash is over the whole normalized name, every Unicode letter and digit kept (北京食品 and 上海化工 are two
+  // names); only the readable prefix keeps the characters a key may carry (independent review, round 15).
   const full = normalizedName(name) || "item", hash = createHash("sha256").update(full).digest("hex").slice(0, 12);
-  const prefix = full.replace(/ /g, "-").slice(0, max - hash.length - 1).replace(/-+$/, "") || "k";
+  const prefix = full.replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").slice(0, max - hash.length - 1).replace(/-+$/, "") || "k";
   return `${prefix}-${hash}`;
 }
 /** Matches a label the extraction repeats to the item it names, ignoring case and accents. */
@@ -80,10 +82,11 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
  * - A keyed collection (a driver's column, a stream's transform, a labelled line, cause, facility, dependent, scenario,
  *   option or assumption, a version's figure) holds one fact per key: the same key with equal values is one fact,
  *   wherever it was read, and the same key with different values is a conflict the method asks.
- * - A countable collection (lots of a portfolio) adds up: two records are the same fact only when they are equal in
- *   value AND were read from the same origin and source (the same thing read twice, merged). Equal values read from
- *   different sources (two borderôs, two documents) are ambiguous: the later one is asked as `<collection>.N.duplicateOf`,
- *   never merged and never silently doubled. */
+ * - A countable collection (lots of a portfolio) adds up, and a record is identified by its anchor (row, page or cell
+ *   where it was read). Two records are the same fact only when value, origin, source AND anchor are equal (the same
+ *   row read twice, merged). Equal values with different anchors are two records. Equal values without an anchor that
+ *   tells them apart, from the same source or from different ones (two borderôs), are ambiguous: the later one is
+ *   asked as `<collection>.N.duplicateOf`, never merged and never silently doubled (rounds 14 and 15). */
 export const statedLabel = (label: string) => foldCue(label.trim());
 const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
 function canonical(value: unknown, key: string): unknown {
@@ -129,14 +132,19 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
     ambiguous.set(name, new Set());
   }
   for (const name of collections.countable) {
-    const kept: unknown[] = [], contents: string[] = [], fulls: string[] = [], asked = new Set<number>();
-    for (const t of extraction[name] as unknown[]) {
-      const {origin, source, ...content} = t as Record<string, unknown>;
-      const c = canonicalJson(content), f = canonicalJson({c: content, origin: origin ?? null, source: typeof source === "string" ? source.trim() : source ?? null});
-      if (fulls.includes(f)) continue;
-      kept.push(t); fulls.push(f);
-      if (contents.includes(c)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
-      contents.push(c);
+    const kept: Record<string, unknown>[] = [], asked = new Set<number>();
+    const parts = (t: Record<string, unknown>) => {
+      const {origin, source, anchor, ...content} = t;
+      return {value: canonicalJson(content), where: canonicalJson({origin: origin ?? null, source: typeof source === "string" ? source.trim() : source ?? null}),
+        anchor: typeof anchor === "string" && anchor.trim() ? statedLabel(anchor) : null};
+    };
+    for (const t of extraction[name] as Record<string, unknown>[]) {
+      const p = parts(t), same = kept.map(parts).filter((x) => x.value === p.value);
+      // The same row read twice: equal value, source and anchor.
+      if (p.anchor !== null && same.some((x) => x.where === p.where && x.anchor === p.anchor)) continue;
+      kept.push(t);
+      // Equal value that no anchor tells apart is asked; different anchors are different records.
+      if (same.some((x) => x.anchor === null || p.anchor === null || x.anchor === p.anchor)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
     }
     e[name] = kept; ambiguous.set(name, asked);
   }

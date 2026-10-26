@@ -23,7 +23,8 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
     dedicatedVehicleThreshold: {value: f.dedicatedVehicleThreshold.value, origin: "informed", source: "faixa informada pela tesouraria"},
     items: f.items.map((i) => {const v = i.value; return {label: v.label, origin: said(i.origin), source: i.source, amount: v.amount, contract: v.contract, encumbrance: v.encumbrance,
       encumbranceHolder: v.encumbranceHolder, releaseEvent: v.releaseEvent, originDate: v.originDate, dueDate: v.dueDate, registration: v.registration, creditTier: v.creditTier,
-      anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount, debtorLabel: null, debtorTaxId: null, debtorSetDisjoint: v.debtorSetDisjoint};}),
+      anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount,
+      debtorLabel: v.debtorCount === 1 ? v.label : null, debtorTaxId: null, debtorSetDisjoint: v.debtorSetDisjoint, anchor: null};}),
     options: f.options.map((o) => {const v = o.value, el = v.eligibility; return {label: v.label, origin: said(o.origin), source: o.source, kind: v.kind, recourse: v.recourse,
       rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays ?? "none",
       upfrontFee: v.upfrontFee, collateral: v.collateral, leadDaysMin: v.leadDaysMin, leadDaysMax: v.leadDaysMax, maxDaysPastDue: el?.maxDaysPastDue ?? null,
@@ -99,7 +100,8 @@ describe("receivables funding premises proposed from a turn", () => {
   it("never merges two debtors whose names share a long prefix, keys a CNPJ as itself and asks for a key that would join two identities (independent review, round 3)", () => {
     const f = aurora(), e = auroraExtraction(f);
     const base = e.items.find((i) => i.debtorCount === 1)!;
-    e.items = [{...base, label: "Distribuidora Brasileira de Alimentos Nordeste Ltda", amount: "3000000"}, {...base, label: "Distribuidora Brasileira de Alimentos Sudeste Ltda", amount: "3000000"}];
+    const nordeste = "Distribuidora Brasileira de Alimentos Nordeste Ltda", sudeste = "Distribuidora Brasileira de Alimentos Sudeste Ltda";
+    e.items = [{...base, label: nordeste, debtorLabel: nordeste, amount: "3000000"}, {...base, label: sudeste, debtorLabel: sudeste, amount: "3000000"}];
     e.options = e.options.filter((o) => o.kind !== "anchor_program");
     const c = complete(e, f), keys = c.facts.items.map((i) => i.value.debtorKey);
     expect(new Set(keys).size).toBe(2);
@@ -107,7 +109,7 @@ describe("receivables funding premises proposed from a turn", () => {
     const same = auroraExtraction(f); same.items = [{...base, label: "Lote 1", debtorLabel: "Rede Z"}, {...base, label: "Lote 2", debtorLabel: "Rede Z"}];
     same.options = same.options.filter((o) => o.kind !== "anchor_program");
     expect(new Set(complete(same, f).facts.items.map((i) => i.value.debtorKey)).size).toBe(1);
-    const taxed = auroraExtraction(f); taxed.items = [{...base, label: "Rede Z", debtorTaxId: "12345678000190"}];
+    const taxed = auroraExtraction(f); taxed.items = [{...base, label: "Rede Z", debtorLabel: "Rede Z", debtorTaxId: "12345678000190"}];
     taxed.options = taxed.options.filter((o) => o.kind !== "anchor_program");
     expect(complete(taxed, f).facts.items[0]!.value.debtorKey).toBe("cnpj-12345678000190");
     // Sublimit groups with long shared prefixes stay apart too.
@@ -269,17 +271,41 @@ describe("receivables funding premises proposed from a turn", () => {
     // The calibration states the end of the need (31/03/2027) and 180 days of use: different facts, both kept.
     expect(receivablesFundingContradictions(auroraExtraction(f))).toEqual([]);
   });
-  it("record identity of lots: equal lots from two borderôs are asked, the same lot read twice is one, '001' and '1' are two (independent review, round 14)", () => {
-    const f = aurora(), e = auroraExtraction(f), lot = {...e.items[0]!, label: "Lote Rede X", amount: "6", source: "borderô 101"};
+  it("record identity of lots: a lot is identified by its anchor; equal lots that no anchor tells apart are asked (independent review, rounds 14 and 15)", () => {
+    const f = aurora(), e = auroraExtraction(f), lot = {...e.items[0]!, label: "Lote Rede X", amount: "6", source: "borderô 101", anchor: null};
+    const n = e.items.length;
+    // Two borderôs, no anchor: asked.
     const two = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot, source: "borderô 102"}]}, ids: idsOf(f), currency: "BRL"});
-    expect(two.status === "missing" ? two.missing : two).toEqual([`items.${e.items.length + 2}.duplicateOf`]);
-    const once = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot}]}, ids: idsOf(f), currency: "BRL"});
-    expect(once.status === "complete" ? once.facts.items.length : once).toBe(e.items.length + 1);
+    expect(two.status === "missing" ? two.missing : two).toEqual([`items.${n + 2}.duplicateOf`]);
+    // One borderô, two rows without anchors: asked as well (the same source does not identify a row).
+    const rows = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot}]}, ids: idsOf(f), currency: "BRL"});
+    expect(rows.status === "missing" ? rows.missing : rows).toEqual([`items.${n + 2}.duplicateOf`]);
+    // Two rows of one borderô with their anchors: two lots, R$ 12 million, no gap.
+    const anchored = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, anchor: "linha 3"}, {...lot, anchor: "linha 4"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(anchored.status === "complete" ? anchored.facts.items.length : anchored).toBe(n + 2);
+    // The same row read twice: merged.
+    const once = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, anchor: "linha 3"}, {...lot, anchor: "linha 3"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(once.status === "complete" ? once.facts.items.length : once).toBe(n + 1);
+    // Labels are stated text: "001" and "1" are two lots.
     const labels = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, label: "001"}, {...lot, label: "1"}]}, ids: idsOf(f), currency: "BRL"});
     expect(labels.status === "complete" ? labels.facts.items.slice(-2).map((i) => i.value.label) : labels).toEqual(["001", "1"]);
   });
+  it("never reads a lot label as the debtor where a per-debtor sublimit applies, and keeps Unicode names apart (independent review, round 15)", () => {
+    const f = aurora(), e = auroraExtraction(f), single = e.items.findIndex((i) => i.debtorCount === 1);
+    const unnamed = {...e, items: e.items.map((i, k) => k === single ? {...i, label: "Lote de outubro", debtorLabel: null} : i)};
+    const c = completeReceivablesFundingFacts({extraction: unnamed, ids: idsOf(f), currency: "BRL"});
+    expect(c.status === "missing" ? c.missing : c).toEqual([`items.${single + 1}.debtorLabel`]);
+    // Names in other scripts and accents keep their identity: two Chinese names, an Arabic and accented names.
+    const names = ["北京食品", "上海化工", "شركة الغذاء", "Açúcar Guaraní", "Acucar Guarani Ltda"];
+    expect(new Set(names.map((x) => stableKey(x))).size).toBe(names.length);
+    expect(stableKey("Açúcar Guaraní")).toBe(stableKey("ACUCAR GUARANI"));
+    expect(names.every((x) => /^[a-z0-9][a-z0-9.-]{0,79}$/.test(stableKey(x, 80)))).toBe(true);
+  });
+
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};
+    // Asked because an option names its lots by that label.
+    e.options[0] = {...e.options[0]!, anchorItemLabels: [e.items[0]!.label]};
     const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(aurora()), currency: "BRL"});
     expect(c.status === "missing" && c.missing.includes("items.2.label")).toBe(true);
   });

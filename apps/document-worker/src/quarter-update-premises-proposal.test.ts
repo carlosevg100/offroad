@@ -288,6 +288,14 @@ describe("quarter update premises proposed from a turn", () => {
       if (name.startsWith("two equal")) expect(complete(e).facts.streamUpdates.length, name).toBe(complete(auroraExtraction(aurora(W, C))).facts.streamUpdates.length);
     }
   });
+  it("reconciles records after converting their stated scale: 4.2 milhões and 4200000 reais of one line are one fact (independent review, round 15)", () => {
+    const e = auroraExtraction(aurora(W, C)), k = e.lines.findIndex((l) => l.unit === "currency"), line = e.lines[k]!;
+    line.projected = "4200000"; line.actual = "3800000"; line.scale = "reais";
+    e.lines.push({...line, projected: "4.2", actual: "3.8", scale: "milhoes", source: "gerencial do trimestre"});
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c.status === "complete" ? c.facts.lines.length : c).toBe(e.lines.length - 1);
+    expect(c.status === "complete" ? [c.facts.lines[k]!.value.projected, c.facts.lines[k]!.value.actual] : c).toEqual(["4200000", "3800000"]);
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;

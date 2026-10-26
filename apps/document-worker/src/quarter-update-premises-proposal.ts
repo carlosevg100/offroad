@@ -113,6 +113,18 @@ export const quarterUpdateExtractionContract = {
 export const quarterUpdateSituation = "near-covenant";
 const short = (id: string) => id.slice(0, 8);
 
+/** Every amount whose scale is stated, carried in reais before records are reconciled: R$ 4.2 milhões and 4200000
+ * reais of the same line are one fact (independent review, round 15). An amount without a stated scale is left as
+ * written, and asked later. */
+export function statedInReais(e: QuarterUpdateExtraction): QuarterUpdateExtraction {
+  const to = (v: string, scale: AmountScale | null) => scale === null ? v : amountInReais(v, scale);
+  return {...e,
+    lines: e.lines.map((l) => l.unit !== "currency" || l.scale === null ? l : {...l, projected: to(l.projected, l.scale), actual: to(l.actual, l.scale), scale: "reais" as const}),
+    causes: e.causes.map((c) => c.scale === null ? c : {...c, amount: to(c.amount, c.scale), scale: "reais" as const}),
+    addedStreams: e.addedStreams.map((x) => x.scale === null ? x : {...x, events: x.events.map((v) => ({...v, amount: to(v.amount, x.scale)})), scale: "reais" as const}),
+    facilities: e.facilities.map((x) => x.scale === null ? x : {...x, limit: to(x.limit, x.scale), scale: "reais" as const}),
+  };
+}
 /** Contradictions inside one record of a quarter close turn, each named by its field. */
 export function quarterUpdateContradictions(e: QuarterUpdateExtraction): string[] {
   const out: string[] = [], start = e.quarterStart.value, end = e.quarterEnd.value;
@@ -148,7 +160,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
   // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
   const missing: string[] = [], used: string[] = [];
-  const {e, ambiguous} = withRecordIdentity(input.extraction, {keyed: ["lines", "causes", "streamUpdates", "addedStreams", "facilities", "steps", "dependents"], countable: []}, missing);
+  const {e, ambiguous} = withRecordIdentity(statedInReais(input.extraction), {keyed: ["lines", "causes", "streamUpdates", "addedStreams", "facilities", "steps", "dependents"], countable: []}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
