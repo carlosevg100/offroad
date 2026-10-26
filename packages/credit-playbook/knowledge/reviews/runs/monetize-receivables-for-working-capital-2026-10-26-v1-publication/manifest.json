@@ -7,7 +7,7 @@
   },
   "source": {
     "path": "capital/monetize-receivables-for-working-capital.md",
-    "hash": "a8d9489342c2d157f8a5cd32df26a4f48aa384e472387aedcc97f60e5874bfef"
+    "hash": "5955e728b847574a37f41cb0ea81e3cab0dd0eb1d673477ee306d349006e92dc"
   },
   "compiler": {
     "version": "2026.09.21-v9",
@@ -6270,7 +6270,9 @@
         "evidence": [
           "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-gold/run.json",
           "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-adversarial/run.json",
-          "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json"
+          "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json",
+          "packages/credit-playbook/knowledge/reviews/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review.json",
+          "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
         ],
         "kind": "rule",
         "authority": "house",
@@ -6281,7 +6283,7 @@
           "version": "2026.10.26-v1"
         }
       },
-      "componentHash": "37d401dd1bb34fdd7a11b7ddd9b9bbfadb94cdcf5c31ec70acc9dbcbc33c1bf3",
+      "componentHash": "525257f96482bfe49509f6efcda3729e2d902aa3e4653da5657284f5702a3b06",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareReceivablesFundingPacket",
@@ -7930,9 +7932,17 @@
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json",
           "hash": "ed10a9f486597e7cf3e29bfefa9bb5697aa7939221eb7b4b0748ec6932ca7ead"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review.json",
+          "hash": "7f36332646acb2950efdbd9a65853a5f9f6cda5551be7e42c513286c0bb857be"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+          "hash": "f3cece53f9cfa02743a908b62784dc03cc3c428340658b11d25f98cf4a35c354"
         }
       ]
     }
   ],
-  "manifestHash": "97e7ca0a2c72dafb7d182d6a861d4f1b985298a3c37e95b4e6b71a1e720dfa89"
+  "manifestHash": "40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5"
 }

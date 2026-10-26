@@ -11142,7 +11142,9 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/update-after-quarter-close-2026-10-26-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/update-after-quarter-close-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

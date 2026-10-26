@@ -7,7 +7,7 @@
   },
   "source": {
     "path": "capital/update-after-quarter-close.md",
-    "hash": "83d16d3e7f21012773eb99ac8a2ed69e57ef937201cdb8cff144581d6f9d92d4"
+    "hash": "7e741c5fd7c1f7db7973874440f510f1b7911a72df08b70685ec2b706972f6ae"
   },
   "compiler": {
     "version": "2026.09.21-v9",
@@ -10978,7 +10978,9 @@
         "evidence": [
           "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-gold/run.json",
           "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-adversarial/run.json",
-          "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json"
+          "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json",
+          "packages/credit-playbook/knowledge/reviews/update-after-quarter-close-2026-10-26-v1-independent-review.json",
+          "packages/credit-playbook/knowledge/reviews/evidence/update-after-quarter-close-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
         ],
         "kind": "rule",
         "authority": "house",
@@ -10989,7 +10991,7 @@
           "version": "2026.10.26-v1"
         }
       },
-      "componentHash": "640b685836cc63702cfc2de99d70e10f3f8c3466757689616cc0294d2e6355e2",
+      "componentHash": "a7ce4ab28342c1e83ea75d810be6415cb6a8a9d91f9ce1c3746e0617ded36575",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareQuarterUpdatePacket",
@@ -12638,9 +12640,17 @@
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json",
           "hash": "f8fe6044621abe6a8976353ab911418bd84973b9cef396e7f7490078cb186146"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/update-after-quarter-close-2026-10-26-v1-independent-review.json",
+          "hash": "77a9e0c5d16768cf970be2d146fe0b4764c9cf1d80558ce89899ecf12326efc6"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/evidence/update-after-quarter-close-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+          "hash": "29f28f96438bdfadfd8f6d34e03764c33bfc0a0969df2623f975c34becd30f69"
         }
       ]
     }
   ],
-  "manifestHash": "59a0398bd50f866a3fa8ef95de1aef388ca6093386a0ed141d5000d0cd24bbc2"
+  "manifestHash": "f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729"
 }

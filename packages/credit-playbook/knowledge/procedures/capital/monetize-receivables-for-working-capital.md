@@ -6423,7 +6423,9 @@ Com coobrigação o risco fica com a cedente e o valor tende a ficar no passivo;
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

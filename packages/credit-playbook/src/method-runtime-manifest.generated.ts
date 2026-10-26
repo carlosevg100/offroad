@@ -30705,7 +30705,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/build-operating-projection.md",
-      "hash": "1d8f92dab480321f21a453fae61f1caddd1f68309189f6561b41df042b16ede4"
+      "hash": "27562c30d1f87cb50071259782b9a55cd21272b77632c1a467b2a79cc3bd3dac"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -38439,7 +38439,9 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/build-operating-projection-2026-10-26-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -38450,7 +38452,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             "version": "2026.10.26-v1"
           }
         },
-        "componentHash": "266579b91b9087ebc1f5f97ba5e05359578dafb7e4e7dae2191e4cfa9e0c87d7",
+        "componentHash": "badd29356278d1a590eafb0353dd9138e0a729e10a20dff9f5634729538bd2cb",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareOperatingProjectionPacket",
@@ -40099,11 +40101,19 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json",
             "hash": "b7c33d651a7d2b8ec117d2e7db142828a96e8852187269f4ac2b2945154442fd"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/build-operating-projection-2026-10-26-v1-independent-review.json",
+            "hash": "11ba594766b5dd78a23601d7570c291fcb22293c516d5534a9856f76ae7df5b2"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "4d3e55dac364044f14f032a3685857e969551aa8190629dab1134b504de70ef4"
           }
         ]
       }
     ],
-    "manifestHash": "6924fe482364fa48c7df738965fb583ec6bca25deadfd4568fcb55705a031a25"
+    "manifestHash": "4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -40114,7 +40124,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/challenge-financial-projection.md",
-      "hash": "a36596e734075377f14492628e63f64eabf04fd84ee9f5130a5226d30d0eb616"
+      "hash": "606aa74dc5a64ed5cc551d88e7c115e25dca18810d01d0f7f7d6ca18419217fa"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -45963,7 +45973,9 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/challenge-financial-projection-2026-10-26-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/challenge-financial-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -45974,7 +45986,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             "version": "2026.10.26-v1"
           }
         },
-        "componentHash": "a84b1cfb44035033b405db82e02d02bbf1daf3a322acf6feb15e2fe169817e66",
+        "componentHash": "4045d533f7e2eeec70ddc2bfadd22f97cf7b0d8dd3c88bb2a50461cef2774597",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareProjectionChallengePacket",
@@ -47623,11 +47635,19 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-consistency/run.json",
             "hash": "035f3e9e48372bf9995b9e693c97fdb60d630c013eaeaddc1e1b9655727ae46a"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/challenge-financial-projection-2026-10-26-v1-independent-review.json",
+            "hash": "b3ca0bd3f1fe8f213e61d3d4755d9dad882d8588acaa4e32ec1fdd5256bee90c"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/challenge-financial-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "8b718e5d34a6b5526f83c6bed0589df4425889ad155d84a33919e47c5c99114c"
           }
         ]
       }
     ],
-    "manifestHash": "b9d732041a32321213c1f9f49498ebfda0cbd2d2a97cbeb8e803cac8af81a252"
+    "manifestHash": "1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -62564,7 +62584,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/monetize-receivables-for-working-capital.md",
-      "hash": "a8d9489342c2d157f8a5cd32df26a4f48aa384e472387aedcc97f60e5874bfef"
+      "hash": "5955e728b847574a37f41cb0ea81e3cab0dd0eb1d673477ee306d349006e92dc"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -68827,7 +68847,9 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -68838,7 +68860,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             "version": "2026.10.26-v1"
           }
         },
-        "componentHash": "37d401dd1bb34fdd7a11b7ddd9b9bbfadb94cdcf5c31ec70acc9dbcbc33c1bf3",
+        "componentHash": "525257f96482bfe49509f6efcda3729e2d902aa3e4653da5657284f5702a3b06",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareReceivablesFundingPacket",
@@ -70487,11 +70509,19 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/monetize-receivables-for-working-capital-2026-10-26-v1-consistency/run.json",
             "hash": "ed10a9f486597e7cf3e29bfefa9bb5697aa7939221eb7b4b0748ec6932ca7ead"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review.json",
+            "hash": "7f36332646acb2950efdbd9a65853a5f9f6cda5551be7e42c513286c0bb857be"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "f3cece53f9cfa02743a908b62784dc03cc3c428340658b11d25f98cf4a35c354"
           }
         ]
       }
     ],
-    "manifestHash": "97e7ca0a2c72dafb7d182d6a861d4f1b985298a3c37e95b4e6b71a1e720dfa89"
+    "manifestHash": "40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -100729,7 +100759,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/update-after-quarter-close.md",
-      "hash": "83d16d3e7f21012773eb99ac8a2ed69e57ef937201cdb8cff144581d6f9d92d4"
+      "hash": "7e741c5fd7c1f7db7973874440f510f1b7911a72df08b70685ec2b706972f6ae"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -111700,7 +111730,9 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           "evidence": [
             "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-gold/run.json",
             "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json"
+            "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/update-after-quarter-close-2026-10-26-v1-independent-review.json",
+            "packages/credit-playbook/knowledge/reviews/evidence/update-after-quarter-close-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
           "kind": "rule",
           "authority": "house",
@@ -111711,7 +111743,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             "version": "2026.10.26-v1"
           }
         },
-        "componentHash": "640b685836cc63702cfc2de99d70e10f3f8c3466757689616cc0294d2e6355e2",
+        "componentHash": "a7ce4ab28342c1e83ea75d810be6415cb6a8a9d91f9ce1c3746e0617ded36575",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareQuarterUpdatePacket",
@@ -113360,11 +113392,19 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/update-after-quarter-close-2026-10-26-v1-consistency/run.json",
             "hash": "f8fe6044621abe6a8976353ab911418bd84973b9cef396e7f7490078cb186146"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/update-after-quarter-close-2026-10-26-v1-independent-review.json",
+            "hash": "77a9e0c5d16768cf970be2d146fe0b4764c9cf1d80558ce89899ecf12326efc6"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/evidence/update-after-quarter-close-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+            "hash": "29f28f96438bdfadfd8f6d34e03764c33bfc0a0969df2623f975c34becd30f69"
           }
         ]
       }
     ],
-    "manifestHash": "59a0398bd50f866a3fa8ef95de1aef388ca6093386a0ed141d5000d0cd24bbc2"
+    "manifestHash": "f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
