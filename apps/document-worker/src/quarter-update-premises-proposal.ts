@@ -113,6 +113,28 @@ export const quarterUpdateExtractionContract = {
 export const quarterUpdateSituation = "near-covenant";
 const short = (id: string) => id.slice(0, 8);
 
+/** Contradictions inside one record of a quarter close turn, each named by its field. */
+export function quarterUpdateContradictions(e: QuarterUpdateExtraction): string[] {
+  const out: string[] = [], start = e.quarterStart.value, end = e.quarterEnd.value;
+  if (start !== null && end !== null && end <= start) out.push("quarterEnd");
+  e.lines.forEach((l, k) => {if (l.unit !== "currency" && l.scale !== null) out.push(`lines.${k + 1}.scale`);});
+  e.causes.forEach((c, k) => {
+    const p = `causes.${k + 1}.`;
+    if (c.classification === "structural" && c.until !== null && end !== null && c.until <= end) out.push(p + "until");
+    if (c.equalsDeviationOfLabel !== null && sameLabel(c.equalsDeviationOfLabel, c.lineLabel)) out.push(p + "equalsDeviationOfLabel");
+  });
+  e.streamUpdates.forEach((u, k) => {if ((u.kind === "scale" && u.days !== null) || (u.kind === "delay" && u.factor !== null)) out.push(`streamUpdates.${k + 1}.kind`);});
+  e.steps.forEach((s, k) => {
+    if (s.mode === "fixed" && s.date !== null) out.push(`steps.${k + 1}.date`);
+    if (s.mode === "residual" && (s.addedStreamLabel !== null || s.replacesStreamIds.length)) out.push(`steps.${k + 1}.mode`);
+  });
+  e.dependents.forEach((d, k) => {
+    if (d.horizonEnd < d.horizonStart) out.push(`dependents.${k + 1}.horizonEnd`);
+    if (d.recomputedBy !== "none" && d.owner !== null) out.push(`dependents.${k + 1}.owner`);
+  });
+  return out;
+}
+
 /** Turns the extraction and the prior results into the facts the method needs. The close, its two bridges
  * and each cause are the company's or its documents'; what nobody stated is asked in one batch. The prior
  * versions are the recorded results, named by the fingerprint of the basis each was adopted on. House
@@ -126,6 +148,8 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   const e = input.extraction, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
+  // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
+  missing.push(...quarterUpdateContradictions(e));
   // Every amount is carried in reais, the units of the prior results. An amount whose scale nobody stated is
   // asked, never guessed; one that does not fit the basis after the exact conversion is named, never dropped.
   const money = (value: string, from: AmountScale | null, path: string, scalePath: string, fits = basisMoney): string | null => {

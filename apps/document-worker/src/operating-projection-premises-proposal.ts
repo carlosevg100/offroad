@@ -73,6 +73,18 @@ export const operatingProjectionExtractionContract = {
 };
 
 type Origin = OperatingProjectionFacts["base"][number]["origins"][number];
+/** Contradictions inside one record of an operating projection turn, each named by its field. */
+export function operatingProjectionContradictions(e: OperatingProjectionExtraction): string[] {
+  const out: string[] = [];
+  if (e.reportedRevenue.value !== null && !(Number(e.reportedRevenue.value) > 0)) out.push("reportedRevenue");
+  e.companyVersions.forEach((v, k) => {
+    if (v.metric === "revenue" && !(Number(v.value) > 0)) out.push(`companyVersions.${k + 1}.value`);
+    if (e.actualYear.value !== null && v.year <= e.actualYear.value) out.push(`companyVersions.${k + 1}.year`);
+  });
+  e.scenarios.forEach((s, k) => {if (s.inputCostShock && e.actualYear.value !== null && s.inputCostShock.fromYear <= e.actualYear.value) out.push(`scenarios.${k + 1}.inputCostShock`);});
+  return out;
+}
+
 /** Turns the extraction into the facts the method needs. The last year and its reported figures are
  * required: without them nothing can be rebuilt, so the proposal waits and the reply asks for them in one
  * batch. House premises are conventions of the method and stated as such: the purpose when none was said,
@@ -85,6 +97,8 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
   const e = input.extraction, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
+  // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
+  missing.push(...operatingProjectionContradictions(e));
   const actualYear = stated(e.actualYear), revenue = stated(e.reportedRevenue), ebitda = stated(e.reportedEbitda);
   if (!actualYear) missing.push("actualYear");
   if (!revenue) missing.push("reportedRevenue");

@@ -84,6 +84,17 @@ const rulerOf = (d: Driver) => (caseDrivers as readonly string[]).includes(d) ? 
 const same = (a: string | readonly string[], b: string | readonly string[]) => Array.isArray(a)
   ? a.length === (b as string[]).length && a.every((x, k) => new Decimal(x).eq((b as string[])[k]!)) : new Decimal(a as string).eq(b as string);
 
+/** Contradictions inside one record of a projection challenge turn, each named by its field. */
+export function projectionChallengeContradictions(e: ProjectionChallengeExtraction): string[] {
+  const out: string[] = [], d = (x: string) => new Decimal(x);
+  if (e.capacityInvestmentInPlan.value !== null && e.capacityQuantity.value === null) out.push("capacityQuantity");
+  if (e.capacityQuantity.value !== null && !d(e.capacityQuantity.value).gt(0)) out.push("capacityQuantity");
+  if (e.premiumOverAverage.value !== null && !d(e.premiumOverAverage.value).gt(0)) out.push("premiumOverAverage");
+  for (const [name, c] of [["plan", e.plan], ["reference", e.reference]] as const) if (c?.taxRate != null && d(c.taxRate).gt(1)) out.push(`${name}.taxRate`);
+  e.assumptions.forEach((a, k) => {if (a.evidenceStatus === "documented" && !a.evidence.length) out.push(`assumptions.${k + 1}.evidence`);});
+  return out;
+}
+
 /** Turns the extraction into the facts the method needs. The plan, the reference and the years are required:
  * without them nothing can be read, so the proposal waits and the reply asks for them in one batch. House
  * premises are conventions of the method and stated as such: the last year as the target, a commercial year,
@@ -96,6 +107,8 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
   const e = input.extraction, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
+  // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
+  missing.push(...projectionChallengeContradictions(e));
   const periods = stated(e.periods);
   if (!periods) missing.push("periods");
   else if (new Set(periods.value).size !== periods.value.length || periods.value.some((p, k) => k > 0 && p <= periods.value[k - 1]!)) missing.push("periods");

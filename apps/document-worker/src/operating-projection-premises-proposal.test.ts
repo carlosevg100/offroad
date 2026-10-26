@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {operatingProjectionDriverUnits, proposeOperatingProjectionHypotheses, type OperatingProjectionFacts} from "@offroad/financial-model";
-import {buildOperatingProjectionPremiseProposal, completeOperatingProjectionFacts, proposeOperatingProjectionPremisesForTurn, shouldProposeOperatingProjectionPremises,
+import {operatingProjectionContradictions, buildOperatingProjectionPremiseProposal, completeOperatingProjectionFacts, proposeOperatingProjectionPremisesForTurn, shouldProposeOperatingProjectionPremises,
   type OperatingProjectionExtraction} from "./operating-projection-premises-proposal";
 import {itemKeys} from "./lote2-premises";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
@@ -163,6 +163,22 @@ describe("operating projection premises proposed from a turn", () => {
     expect(none3.status === "complete" ? none3.housePremiseKeys.includes("horizon") : none3).toBe(true);
     const unsourced = completeOperatingProjectionFacts({extraction: {...base, lastProjectedYear: {value: year + 3, origin: null, source: null}}, ids: idsOf(f), currency: "BRL"});
     expect(unsourced.status === "missing" && unsourced.missing.includes("lastProjectedYear")).toBe(true);
+  });
+  it("asks every contradiction inside one record (independent review, round 12)", () => {
+    const f = aurora();
+    expect(operatingProjectionContradictions(auroraExtraction(f))).toEqual([]);
+    const cases: [string, (e: OperatingProjectionExtraction) => void][] = [
+      ["reportedRevenue", (e) => {e.reportedRevenue = {...e.reportedRevenue, value: "-1"};}],
+      ["companyVersions.1.value", (e) => {e.companyVersions[0] = {...e.companyVersions[0]!, metric: "revenue", value: "-5"};}],
+      ["companyVersions.1.year", (e) => {e.companyVersions[0] = {...e.companyVersions[0]!, year: e.actualYear.value!};}],
+      ["scenarios.1.inputCostShock", (e) => {e.scenarios[0] = {...e.scenarios[0]!, inputCostShock: {fromYear: e.actualYear.value!, rate: "0.1", passThroughLagMonths: 0}};}],
+    ];
+    for (const [key, edit] of cases) {
+      const e = auroraExtraction(f); edit(e);
+      expect(operatingProjectionContradictions(e), key).toEqual([key]);
+      const c = completeOperatingProjectionFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
+      expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
+    }
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora({informed: true}), c = complete(auroraExtraction(f), f);

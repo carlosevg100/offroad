@@ -1,7 +1,7 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {createHash} from "node:crypto";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, shouldProposeReceivablesFundingPremises,
+import {receivablesFundingContradictions, buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
 import {itemKeys, stableKey} from "./lote2-premises";
 import {readerGaps} from "./lote3-reader-check";
@@ -210,6 +210,32 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(unsourced.status === "missing" && unsourced.missing.includes("lienBasketRemaining")).toBe(true);
     const days = completeReceivablesFundingFacts({extraction: {...e, businessDays: {value: 400, origin: "informed", source: "tesouraria"}}, ids: idsOf(f), currency: "BRL"});
     expect(days.status === "missing" && days.missing.includes("businessDays")).toBe(true);
+  });
+  it("asks every contradiction inside one record, never resolving it in favour of availability (independent review, round 12)", () => {
+    const f = aurora();
+    expect(receivablesFundingContradictions(auroraExtraction(f))).toEqual([]);
+    const cases: [string, (e: ReceivablesFundingExtraction) => void][] = [
+      ["items.1.encumbrance", (e) => {e.items[0] = {...e.items[0]!, encumbrance: "free", encumbranceHolder: "Banco Alfa", releaseEvent: "quitação da CCB"};}],
+      ["items.1.dueDate", (e) => {e.items[0] = {...e.items[0]!, originDate: "2026-09-10", dueDate: "2026-09-01"};}],
+      ["items.1.originDate", (e) => {e.items[0] = {...e.items[0]!, originDate: "2027-01-01", dueDate: "2027-02-01"};}],
+      ["items.1.debtorSetDisjoint", (e) => {e.items[0] = {...e.items[0]!, debtorCount: 1, debtorSetDisjoint: true};}],
+      ["items.1.largestDebtorAmount", (e) => {e.items[0] = {...e.items[0]!, largestDebtorAmount: String(Number(e.items[0]!.amount) + 1)};}],
+      ["needPeak", (e) => {e.needPeak = {...e.needPeak, value: "1"}; e.needAverage = {...e.needAverage, value: "2"};}],
+      ["needEndDate", (e) => {e.needEndDate = {...e.needEndDate, value: e.needStartDate.value};}],
+      ["dedicatedVehicleThreshold", (e) => {e.dedicatedVehicleThreshold = {...e.dedicatedVehicleThreshold, value: {min: "5", max: "3"}};}],
+      [`options.${5}.recourse`, (e) => {e.options[4] = {...e.options[4]!, recourse: "without_recourse"};}],
+      [`options.${5}.kind`, (e) => {e.options[4] = {...e.options[4]!, maxDaysPastDue: 0};}],
+      [`options.${2}.anchorItemLabels`, (e) => {e.options[1] = {...e.options[1]!, anchorItemLabels: [e.items[0]!.label]};}],
+      [`options.${4}.sublimitGroup`, (e) => {e.options[3] = {...e.options[3]!, sublimitPerDebtor: "none", sublimitGroup: "Cotistas"};}],
+      [`options.${2}.leadDays`, (e) => {e.options[1] = {...e.options[1]!, leadDaysMin: 30, leadDaysMax: 15};}],
+    ];
+    expect(auroraExtraction(f).options[4]!.kind).toBe("bank_line");
+    for (const [key, edit] of cases) {
+      const e = auroraExtraction(f); edit(e);
+      expect(receivablesFundingContradictions(e), key).toEqual([key]);
+      const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
+      expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
+    }
   });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};

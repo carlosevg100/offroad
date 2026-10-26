@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {buildProjectionChallengePremiseProposal, completeProjectionChallengeFacts, projectionChallengeReader, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises,
+import {projectionChallengeContradictions, buildProjectionChallengePremiseProposal, completeProjectionChallengeFacts, projectionChallengeReader, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises,
   type ProjectionChallengeExtraction} from "./projection-challenge-premises-proposal";
 import {itemKeys} from "./lote2-premises";
 import {readerGaps} from "./lote3-reader-check";
@@ -88,6 +88,22 @@ describe("projection challenge premises proposed from a turn", () => {
     const f = aurora(), e = {...auroraExtraction(f), targetPeriod: {value: f.targetPeriodId.value, origin: null, source: null}};
     const c = completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
     expect(c.status === "missing" && c.missing.includes("targetPeriod")).toBe(true);
+  });
+  it("asks every contradiction inside one record (independent review, round 12)", () => {
+    const f = aurora();
+    expect(projectionChallengeContradictions(auroraExtraction(f))).toEqual([]);
+    const cases: [string, (e: ProjectionChallengeExtraction) => void][] = [
+      ["capacityQuantity", (e) => {e.capacityQuantity = none; e.capacityInvestmentInPlan = {value: false, origin: "informed", source: "CFO"};}],
+      ["premiumOverAverage", (e) => {e.premiumOverAverage = {value: "0", origin: "informed", source: "CFO"};}],
+      ["plan.taxRate", (e) => {e.plan = {...e.plan!, taxRate: "1.5"};}],
+      ["assumptions.1.evidence", (e) => {e.assumptions[0] = {...e.assumptions[0]!, evidenceStatus: "documented", evidence: []};}],
+    ];
+    for (const [key, edit] of cases) {
+      const e = auroraExtraction(f); edit(e);
+      expect(projectionChallengeContradictions(e), key).toEqual([key]);
+      const c = completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
+      expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
+    }
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);

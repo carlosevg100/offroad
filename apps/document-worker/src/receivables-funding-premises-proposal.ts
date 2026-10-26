@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
 import {unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
@@ -79,6 +80,34 @@ const between = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z
 /** Monday to Friday from the start, for the stated number of calendar days; holidays are not known here. */
 const weekdays = (start: string, n: number) => Array.from({length: n}, (_, k) => new Date(Date.parse(`${start}T00:00:00Z`) + k * dayMs).getUTCDay()).filter((d) => d !== 0 && d !== 6).length;
 
+/** Contradictions inside one record of a receivables funding turn, each named by its field. */
+export function receivablesFundingContradictions(e: ReceivablesFundingExtraction): string[] {
+  const out: string[] = [], d = (x: string) => new Decimal(x);
+  const average = e.needAverage.value, peak = e.needPeak.value, start = e.needStartDate.value, end = e.needEndDate.value, band = e.dedicatedVehicleThreshold.value;
+  if (average !== null && peak !== null && d(peak).lt(d(average))) out.push("needPeak");
+  if (start !== null && end !== null && end <= start) out.push("needEndDate");
+  if (band !== null && d(band.min).gt(d(band.max))) out.push("dedicatedVehicleThreshold");
+  const reference = e.referenceDate.value;
+  e.items.forEach((i, k) => {
+    const p = `items.${k + 1}.`;
+    if (i.encumbrance === "free" && (i.encumbranceHolder !== null || i.releaseEvent !== null)) out.push(p + "encumbrance");
+    if (i.originDate !== null && i.dueDate !== null && i.dueDate < i.originDate) out.push(p + "dueDate");
+    if (i.originDate !== null && reference !== null && i.originDate > reference) out.push(p + "originDate");
+    if (i.debtorCount === 1 && i.debtorSetDisjoint !== null) out.push(p + "debtorSetDisjoint");
+    if (i.largestDebtorAmount !== null && (d(i.largestDebtorAmount).gt(d(i.amount)) || (i.debtorCount === 1 && !d(i.largestDebtorAmount).eq(d(i.amount)))
+      || (i.debtorCount !== null && d(i.amount).gt(d(i.largestDebtorAmount).mul(i.debtorCount))))) out.push(p + "largestDebtorAmount");
+  });
+  e.options.forEach((o, k) => {
+    const p = `options.${k + 1}.`;
+    if (o.kind === "bank_line" && o.recourse === "without_recourse") out.push(p + "recourse");
+    if (o.kind === "bank_line" && [o.maxDaysPastDue, o.maxRemainingTermDays, o.registrationRule, o.minCreditTier, o.sublimitPerDebtor, o.sublimitGroup].some((x) => x !== null)) out.push(p + "kind");
+    if (o.kind !== "anchor_program" && o.anchorItemLabels.length) out.push(p + "anchorItemLabels");
+    if (o.sublimitGroup !== null && o.sublimitGroup !== "none" && (o.sublimitPerDebtor === null || o.sublimitPerDebtor === "none")) out.push(p + "sublimitGroup");
+    if (o.leadDaysMin !== null && o.leadDaysMax !== null && o.leadDaysMin > o.leadDaysMax) out.push(p + "leadDays");
+  });
+  return out;
+}
+
 /** Turns the extraction into the facts the method needs. The portfolio, the need and every option's terms,
  * IOF included, are the company's or its documents': a value no source states is never adopted under that
  * source's origin, so the reply asks for it in one batch. House premises carry their own origin and are
@@ -90,6 +119,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   const e = input.extraction, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
+  // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
+  missing.push(...receivablesFundingContradictions(e));
   const need = {average: stated(e.needAverage), peak: stated(e.needPeak), start: stated(e.needStartDate), profile: stated(e.needProfile),
     di: stated(e.annualDi), term: stated(e.averageTermDays), reference: stated(e.referenceDate)};
   for (const [k, v] of [["referenceDate", need.reference], ["needAverage", need.average], ["needPeak", need.peak], ["needStartDate", need.start], ["needProfile", need.profile],

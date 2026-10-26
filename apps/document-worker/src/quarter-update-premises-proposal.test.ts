@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeQuarterUpdateHypotheses, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {amountInReais, buildQuarterUpdatePremiseProposal, quarterUpdateReaderGaps, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
+import {quarterUpdateContradictions, amountInReais, buildQuarterUpdatePremiseProposal, quarterUpdateReaderGaps, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
   shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction, priorResultPins} from "./quarter-update-premises-proposal";
 import {factsOrGaps, itemKeys} from "./lote2-premises";
 import {z} from "zod";
@@ -255,6 +255,26 @@ describe("quarter update premises proposed from a turn", () => {
     const e = auroraExtraction(aurora(W, C)); e.quarterStart = {value: e.quarterStart.value, origin: null, source: null};
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" && c.missing.includes("quarterStart")).toBe(true);
+  });
+  it("asks every contradiction inside one record (independent review, round 12)", () => {
+    expect(quarterUpdateContradictions(auroraExtraction(aurora(W, C)))).toEqual([]);
+    const cases: [string, (e: QuarterUpdateExtraction) => string][] = [
+      ["quarterEnd", (e) => {e.quarterEnd = {...e.quarterEnd, value: e.quarterStart.value}; return "quarterEnd";}],
+      ["lines.scale", (e) => {const k = e.lines.findIndex((l) => l.unit !== "currency"); e.lines[k]!.scale = "reais"; return `lines.${k + 1}.scale`;}],
+      ["causes.until", (e) => {const k = e.causes.findIndex((c) => c.classification === "structural"); e.causes[k]!.until = e.quarterEnd.value; return `causes.${k + 1}.until`;}],
+      ["causes.equals", (e) => {e.causes[0]!.equalsDeviationOfLabel = e.causes[0]!.lineLabel; return "causes.1.equalsDeviationOfLabel";}],
+      ["streamUpdates.kind", (e) => {const k = e.streamUpdates.findIndex((u) => u.kind === "scale"); e.streamUpdates[k]!.days = 3; return `streamUpdates.${k + 1}.kind`;}],
+      ["steps.date", (e) => {const k = e.steps.findIndex((s) => s.mode === "fixed"); e.steps[k]!.date = "2026-10-01"; return `steps.${k + 1}.date`;}],
+      ["steps.mode", (e) => {const k = e.steps.findIndex((s) => s.mode === "residual"); e.steps[k]!.replacesStreamIds = ["linha-17"]; return `steps.${k + 1}.mode`;}],
+      ["dependents.horizon", (e) => {e.dependents[0]!.horizonEnd = "2000-01-01"; return "dependents.1.horizonEnd";}],
+      ["dependents.owner", (e) => {const k = e.dependents.findIndex((d) => d.recomputedBy !== "none"); e.dependents[k]!.owner = "outro método"; return `dependents.${k + 1}.owner`;}],
+    ];
+    for (const [name, edit] of cases) {
+      const e = auroraExtraction(aurora(W, C)), key = edit(e);
+      expect(quarterUpdateContradictions(e), name).toEqual([key]);
+      const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+      expect(c.status === "missing" && c.missing.includes(key), name).toBe(true);
+    }
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
