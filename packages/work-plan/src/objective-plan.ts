@@ -708,8 +708,13 @@ const conceptualMarker = /\b(?:explique|explica|explicar|explicacao|o que (?:e|s
 /** A contractual, amortization or debt-management object: never a lote 3 method. */
 const debtObject = /\b(?:amortiz\w*|contratua\w*|contratos?|dividas?|endividamento|credores|passivo|emprestimos?|quit\w*|reestrutur\w*|renegoci\w*|alongar|alongamento|refinanc\w*|sald(?:ar|e)|liquid(?:ar|e)|parcel\w*|pagamentos?)\b/;
 
+/** An explicit negation of the action ("não revise", "não atualize", "não construa"): never a lote 3 kind. A negated
+ * possession ("não temos projeção pronta") is not a negated action and keeps the C24 ficha. */
+const negatedAction = /\b(?:nao|nunca|jamais)\s+(?:(?:me|nos|lhe|quero|queremos|precisa|precisamos|vamos|deve|devemos|e para|pode|podem)\s+)?(?:revis\w*|atualiz\w*|constru\w*|mont\w*|fa(?:z|ca|cam|zer|ca)\b|cri(?:a|e|ar)\b|elabor\w*|desenvolv\w*|question\w*|contest\w*|critiqu\w*|critic\w*|refa\w*|refaz\w*|propag\w*|prepar\w*|projet\w*|calcul\w*|rod\w*|analis\w*|antecip\w*|ced(?:a|er)\b|financi\w*|us(?:e|ar)\b)/;
+
 function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
   const trimmed = text.trim();
+  if (negatedAction.test(text)) return existing;
   const open = existing === "ambiguous" || existing === "documents_to_case";
   const vetoed = conceptualMarker.test(text) || debtObject.test(text);
   if (!vetoed) for (const e of lote3FichaExceptions) if ((existing === e.from || open) && e.pattern.test(trimmed)

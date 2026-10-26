@@ -377,6 +377,27 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 8: an explicit negation of the action never selects a lote 3 kind; a negated
+  // possession ("não temos projeção pronta") keeps the C24 ficha.
+  it.each([
+    ["Não revise a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não atualize as análises depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Não construa uma projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", "operating_projection", "operating_projection"],
+    ["Não questione as premissas do business plan.", "ambiguous", "documents_to_case"],
+    ["Nunca refaça a projeção por drivers.", "ambiguous", "documents_to_case"],
+    ["Não precisa montar o business plan.", "ambiguous", "documents_to_case"],
+    ["Não quero antecipar recebíveis em vez de pegar linha no banco.", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre, mas não atualize nada ainda.", "ambiguous", "documents_to_case"],
+    ["Não faça a primeira versão da projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não critique o plano de negócios.", "ambiguous", "documents_to_case"],
+    ["Nós não temos business plan, ajuda a montar.", "operating_projection", "operating_projection"],
+    ["Revisa a projeção que vamos mandar para o banco, sem rodar nada novo.", "projection_challenge", "projection_challenge"],
+  ] as const)("round 8: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
