@@ -5,11 +5,11 @@
   "id": "update-after-quarter-close",
   "version": "2026.10.26-v1"
  },
- "commit": "5e02c4367b6d6804e7c512e6c8fcc91d4f6f66d0",
+ "commit": "9db1ee1912a0fdad0e33a8abfed7c901cb6ebb84",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/update-after-quarter-close.md",
-   "sha256": "5274557a8378c49b6dd6452a54ce25b1816aa6a48d5e9321b1906b1612b08063"
+   "sha256": "f8b0a023f321498f133fb6b7413199831b3c674793381bf6c77d6b18c0a08152"
   },
   {
    "path": "packages/financial-model/src/quarter-update-packet.ts",
@@ -17,27 +17,27 @@
   },
   {
    "path": "packages/financial-model/src/adopted-quarter-update.ts",
-   "sha256": "e4c4cfccc282d7680a9dd8f70061836cc191669c0e4a8241cb9ef4a806cb2317"
+   "sha256": "cadadf97ed801e1c050d7f8ea465a8f91856c448b29d9a62435b4aaffc17bce1"
   },
   {
    "path": "packages/financial-model/src/quarter-update-results.ts",
-   "sha256": "ff7478852947192c1463a35b91692ba2ec0a59af08c3db7469cdc4464672de0f"
+   "sha256": "6d9bc197dcfef1707af17e316679bc6890599fa269eb6eeff19032b65a043bb4"
   },
   {
    "path": "packages/financial-core/src/quarter-update.ts",
-   "sha256": "ff1e5cda742446532f84ec97d888049215d97a81e010c1b5619e09fdafbc442f"
+   "sha256": "712cf77bddaaf0a170c65446d253251552d9ed8d4066af04793415618398e324"
   },
   {
    "path": "packages/financial-model/src/quarter-update-runs.test-support.ts",
-   "sha256": "8344cf010f6eb56c0b88a81233ecd6633365b0ef6ab7fdd191689143975f0c77"
+   "sha256": "fb457ebf7029d154336c2f7a6dddd3d7e389cf37126b4c112a4e48012fb74f55"
   },
   {
    "path": "packages/financial-model/src/quarter-update.test-support.ts",
-   "sha256": "0ea37e801818bdf0d700906b0ba0ba949bcd8e7666ee798913e201a66164b7f6"
+   "sha256": "c41a23eb855e1b9d8931e921a34dba16d2505d3dc0c9d8afa3641dc252a54751"
   },
   {
    "path": "packages/financial-core/src/quarter-update.fixture.ts",
-   "sha256": "d97ca391929072ca1e6f42f993a581a2f6b611170b5c03ddfbfd9a1afb440746"
+   "sha256": "f03973120ef2175a39bfdda38a410ff9633969ac60fdde17175fe1f5440fe3ac"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
