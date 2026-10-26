@@ -3218,6 +3218,409 @@
           "intraday_liquidity": "Liquidez dentro do dia",
           "receivables_assignment_eligibility": "Elegibilidade dos recebíveis para cessão"
         }
+      },
+      "operatingProjection": {
+        "title": "Projeção por driver",
+        "status": "Situação",
+        "question": "Pergunta",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "não informado",
+        "purpose": "Propósito",
+        "units": "Valores em milhões de {currency}; margens e conversão em porcentagem. Cada número vem dos drivers adotados.",
+        "calibration": "Último ano ({period}): receita reportada {reportedRevenue}, reconstruída pelos drivers {modeledRevenue}; EBITDA reportado {reportedEbitda}, reconstruído {modeledEbitda}.",
+        "reproduces": "A projeção reproduz o último ano.",
+        "notReproduced": "A projeção não reproduz o último ano, e nada foi projetado até que os drivers expliquem a diferença.",
+        "documented": "Todos os números do último ano vêm de documento.",
+        "notDocumented": "Parte dos números do último ano não vem de documento: reproduzir prova a conta, não a fonte.",
+        "noCalibration": "Faltam premissas para reconstruir o último ano; o que falta está nas lacunas.",
+        "base": "Base por ano",
+        "comparisons": "Contra as versões da companhia",
+        "comparisonsNote": "As versões da companhia ficam como estão; a diferença vem com a causa quando ela foi explicada.",
+        "noCause": "causa não informada",
+        "sensitivities": "O que cada premissa vale em dinheiro",
+        "scenarios": "Cenários contra a base de cada um",
+        "largestCashReduction": "O que mais reduz o caixa disponível: cenário {scenario} em {period}, {cash} no caixa, com {workingCapital} a mais de giro.",
+        "scenario": "Cenário {id} ({role}), comparado com {basedOn}",
+        "baseName": "a base",
+        "changes": "Muda: {list}.",
+        "ledger": "Dados e hipóteses",
+        "ledgerLine": "{data} números são dados de documento; {assumptions} são hipóteses.",
+        "assumptionDrivers": "Hipóteses em: {list}.",
+        "questionsTitle": "O que só a companhia sabe e muda a projeção",
+        "openQuestions": "Diferença sem causa explicada nas versões: {list}.",
+        "columns": {
+          "period": "Período",
+          "revenue": "Receita",
+          "ebitda": "EBITDA",
+          "margin": "Margem",
+          "workingCapital": "Variação de giro",
+          "cashForDebt": "Caixa disponível para a dívida",
+          "conversion": "Conversão do EBITDA",
+          "version": "Versão",
+          "versionStatus": "Situação",
+          "metric": "Métrica",
+          "company": "Da companhia",
+          "projected": "Pelos drivers",
+          "difference": "Diferença",
+          "cause": "Causa",
+          "price": "1% de preço no EBITDA",
+          "inputCost": "1% de custo do insumo no EBITDA",
+          "receivableDay": "Um dia de prazo de recebimento no giro",
+          "ebitdaEffect": "Efeito no EBITDA",
+          "cashEffect": "Efeito no caixa"
+        },
+        "versionStatuses": {
+          "approved": "aprovada",
+          "under_review": "em revisão"
+        },
+        "metrics": {
+          "revenue": "receita",
+          "ebitda": "EBITDA"
+        },
+        "roles": {
+          "alternative": "alternativa",
+          "informed": "informado pela companhia"
+        },
+        "natures": {
+          "data": "dado",
+          "assumption": "hipótese"
+        },
+        "drivers": {
+          "volume": "volume",
+          "netUnitPrice": "preço líquido",
+          "inputCostPerUnit": "custo do insumo por unidade",
+          "otherVariableCostPerUnit": "demais custos variáveis por unidade",
+          "fixedCosts": "custos fixos",
+          "receivableDays": "prazo de recebimento",
+          "inventoryDays": "prazo de estoque",
+          "payableDays": "prazo de pagamento",
+          "maintenanceCapex": "capex de manutenção",
+          "leasePayments": "arrendamentos",
+          "depreciation": "depreciação",
+          "interestExpense": "despesa de juros",
+          "taxRate": "alíquota de impostos",
+          "reportedRevenue": "receita reportada",
+          "reportedEbitda": "EBITDA reportado",
+          "volumeGrowthRate": "crescimento de volume",
+          "volumeFactor": "volume relativo à base",
+          "inputCostShock": "alta do insumo com regra de repasse"
+        },
+        "questions": {
+          "volume": "Quanto a companhia planeja crescer em volume e se a capacidade comporta.",
+          "pass_through": "Quanto tempo o custo do insumo leva para chegar ao preço de venda.",
+          "receivable_days": "Se os clientes estão pedindo mais prazo."
+        },
+        "exclusions": {
+          "financing_recommendation": "Não recomenda o financiamento; isso vem com a projeção aceita.",
+          "debt_service": "Não calcula o serviço da dívida.",
+          "credit_approval": "Não é aprovação de crédito.",
+          "method_release": "Não libera o método."
+        }
+      },
+      "projectionChallenge": {
+        "title": "Premissas do plano contra a referência",
+        "status": "Situação",
+        "question": "Pergunta",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "não informado",
+        "units": "Valores em milhões de {currency}; margens e participações em porcentagem; margem por unidade e quantidades nas unidades do plano.",
+        "gap": "Em {period}, o plano chega a EBITDA de {plan}, contra {reference} na referência por drivers: diferença de {ebitda} no EBITDA e {cash} no caixa.",
+        "margin": "A margem do plano vai de {first} para {target}, contra {reference} na referência;",
+        "marginCause": "causa declarada: {cause}.",
+        "noMarginCause": "sem causa explícita.",
+        "noGap": "Faltam premissas para ler o plano contra a referência; o que falta está nas lacunas.",
+        "assumptions": "Premissas em ordem de efeito",
+        "isolated": "Efeito isolado de cada premissa sobre a referência; a soma difere do total pela interação entre premissas.",
+        "interaction": "Interação entre premissas, que os efeitos isolados não mostram: {ebitda} no EBITDA e {cash} no caixa.",
+        "unitMargin": "Margem por unidade no plano: de {first} para {target}, variação de {change}; na referência, {reference} no alvo.",
+        "rulers": "Réguas",
+        "capacityAbove": "Capacidade instalada de {maximum}; o plano passa dela em {period}, {excess} acima no alvo, sem investimento de capacidade no plano.",
+        "capacityWithInvestment": "Capacidade instalada de {maximum}; o plano passa dela em {period}, com o investimento de capacidade no plano.",
+        "capacityWithin": "Capacidade instalada de {maximum}; o plano fica dentro dela.",
+        "source": "Fonte: {source}.",
+        "noCapacity": "Capacidade instalada não informada; é a primeira pergunta.",
+        "receivables": "Prazo de recebimento do plano de {days} dias; cada dia vale {perDay} de caixa.",
+        "requestedDays": "Com os {days} dias que os clientes pedem, o caixa muda em {cash}.",
+        "premiumMix": "Para o preço vir do mix, a linha premium ({premium} acima da média) precisa chegar a {share} do volume no alvo, cerca de {perPeriod} a mais por período.",
+        "recommendation": "Como levar o plano",
+        "conditions": "Condições para o plano se sustentar: {list}.",
+        "recommendations": {
+          "present_plan_as_upside_case": "Levar como base as premissas que a companhia consegue provar com documento e a referência no resto; o plano atual fica como cenário de alta, com as condições para acontecer.",
+          "present_plan_with_its_evidence": "Levar o plano com a evidência de cada premissa anexada.",
+          "plan_within_reference": "O plano fica dentro da referência por drivers."
+        },
+        "capacityConditions": {
+          "limit_quantity_to_capacity_or_add_the_investment_and_its_financing": "Limitar o volume à capacidade ou incluir no plano o investimento de capacidade e o financiamento dele."
+        },
+        "openQuestions": "O que falta saber",
+        "questions": {
+          "installed_capacity": "Qual a capacidade instalada?",
+          "current_premium_share": "Qual a participação atual da linha premium no volume?",
+          "premium_incremental_unit_cost": "Quanto a linha premium custa a mais por unidade?",
+          "premium_sell_in_since_launch": "Como foi o sell-in da linha premium desde o lançamento?"
+        },
+        "evidenceStatuses": {
+          "documented": "documentada",
+          "not_presented": "não apresentada"
+        },
+        "columns": {
+          "assumption": "Premissa",
+          "ebitda": "Efeito no EBITDA",
+          "cash": "Efeito no caixa",
+          "share": "Parte acumulada da diferença",
+          "ruler": "Régua",
+          "evidence": "Evidência que sustentaria",
+          "evidenceStatus": "Evidência"
+        },
+        "exclusions": {
+          "scenario_execution": "Não roda cenário novo.",
+          "model_rebuild": "Não refaz o modelo.",
+          "material_production": "Não produz material.",
+          "credit_approval": "Não é aprovação de crédito.",
+          "method_release": "Não libera o método."
+        }
+      },
+      "receivablesFunding": {
+        "title": "Recebíveis como capital de giro",
+        "status": "Situação",
+        "question": "Pergunta",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "não informado",
+        "units": "Valores em milhões de {currency}; custos com duas casas; taxas em porcentagem ao ano.",
+        "referenceDate": "Carteira em {date}.",
+        "headline": "Da carteira de {gross}, {assignable} pode ser cedido hoje ({share}).",
+        "noReading": "Faltam premissas para ler a carteira; o que falta está nas lacunas.",
+        "need": "Necessidade {profile}: média de {average}, pico de {peak}, a partir de {start}, por {days} dias.",
+        "profiles": {
+          "seasonal": "sazonal",
+          "structural": "estrutural"
+        },
+        "portfolio": "A carteira por grupo",
+        "holderUntil": "{holder}, até {event}",
+        "options": "Portas, da mais barata à mais cara",
+        "optionsNote": "Custo do mesmo valor pelo mesmo tempo de uso em cada porta, com as taxas convertidas para o mesmo período antes de comparar.",
+        "notApplicable": "não se aplica",
+        "toConfirm": "a confirmar",
+        "kinds": {
+          "anchor_program": "programa do sacado",
+          "fidc": "FIDC",
+          "bank_discount": "desconto bancário",
+          "bank_line": "linha bancária"
+        },
+        "balanceSheets": {
+          "derecognized": "sai do balanço",
+          "tends_to_remain_as_liability": "tende a ficar como passivo",
+          "liability": "dívida"
+        },
+        "liens": {
+          "not_a_guarantee_confirm_with_counsel": "não é garantia real (confirmar com o jurídico)",
+          "uses_basket": "usa a exceção de garantias",
+          "uses_basket_if_collateralized": "usa a exceção se tiver cessão em garantia",
+          "none": "não usa garantia"
+        },
+        "plan": "Plano pela porta mais barata",
+        "coversPeak": "O plano cobre o pico da necessidade.",
+        "doesNotCoverPeak": "O plano não cobre o pico da necessidade.",
+        "reserve": "A {line} fica em negociação como reserva até a primeira compra.",
+        "startBy": "Para ter o dinheiro a tempo, começar até {date} (folga de {slack} dias).",
+        "conditions": {
+          "duplicata_registration": "Escriturar e registrar as duplicatas antes da primeira compra ({amount}).",
+          "other": "Outras condições precedentes ({amount})."
+        },
+        "releases": "O que fica livre depois",
+        "release": "Depois de {event}: {amount} de {item}, dos quais {after} cedíveis.",
+        "releaseUnverified": "A liberação ainda precisa ser confirmada.",
+        "dedicatedVehicle": "Volume cedível por mês: {monthly}.",
+        "vehicleReadings": {
+          "not_for_seasonal_need": "Operação dedicada não se justifica para necessidade sazonal.",
+          "worth_studying": "Volume que justifica estudar uma operação dedicada.",
+          "below_threshold": "Abaixo do volume que justifica operação dedicada.",
+          "borderline": "No limite do volume que justifica operação dedicada."
+        },
+        "questions": "O que pode mudar o plano",
+        "questionCodes": {
+          "anchor_program_of_restricted_debtor": "{item} tem programa de antecipação a fornecedores? Se tiver, {amount} passam a ser a fonte mais barata, no risco do sacado.",
+          "anchor_program_terms": "Quais as condições do programa de {item} (taxa, prazo de adesão, limite por fornecedor)? Envolve {amount}.",
+          "duplicata_registration_capability": "O sistema de vocês já emite duplicata escritural? Condiciona {amount}."
+        },
+        "process": "Vários compradores em paralelo, com o mesmo pacote. Nenhum comprador foi nomeado ou contatado, e nenhuma aprovação foi prometida.",
+        "gapReasons": {
+          "largest_debtor_not_informed": "maior sacado do grupo não informado",
+          "debtor_set_not_declared_disjoint": "grupos de sacados sem declaração de que não se sobrepõem",
+          "lead_time_not_informed": "prazo de execução não informado"
+        },
+        "reasons": {
+          "zero_balance": "saldo zero",
+          "defaulted": "inadimplido",
+          "past_due": "vencido",
+          "remaining_term": "prazo remanescente fora da regra",
+          "seasoning": "emissão recente demais",
+          "not_assignable": "contrato veda a cessão",
+          "evidence_unverified": "lastro não verificado",
+          "anchor_unverified": "programa do sacado não verificado",
+          "registration_missing": "duplicata sem registro",
+          "registration_conflict": "registro em conflito",
+          "encumbered": "já cedido ou onerado",
+          "disputed": "em disputa",
+          "related_party": "parte relacionada",
+          "sector_outside_policy": "setor fora da política",
+          "credit_tier_outside_policy": "crédito do sacado fora da política",
+          "debtor_sublimit": "acima do sublimite por sacado",
+          "not_offered_to_any_sale_option": "nenhuma porta de venda compra"
+        },
+        "columns": {
+          "group": "Grupo",
+          "amount": "Valor",
+          "assignable": "Cedível",
+          "excluded": "Fora",
+          "reasons": "Por quê",
+          "holder": "Com quem",
+          "option": "Porta",
+          "kind": "Tipo",
+          "volume": "Volume",
+          "cost": "Custo",
+          "differenceToBankLine": "Contra a linha",
+          "annualEffective": "Taxa efetiva ao ano",
+          "spreadOverDi": "Spread sobre o CDI",
+          "iof": "IOF",
+          "balanceSheet": "Balanço",
+          "lien": "Garantias",
+          "capacity": "Cabe",
+          "allocated": "Alocado",
+          "cumulative": "Acumulado"
+        },
+        "exclusions": {
+          "buyer_contact": "Não contata compradores.",
+          "fund_selection": "Não escolhe fundos.",
+          "credit_approval": "Não é aprovação de crédito.",
+          "legal_opinion": "Não é parecer jurídico.",
+          "accounting_opinion": "Não é parecer contábil."
+        }
+      },
+      "quarterUpdate": {
+        "title": "Fechamento do trimestre",
+        "status": "Situação",
+        "question": "Pergunta",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "não informado",
+        "units": "Valores em milhões de {currency}; prazos em dias; variações de custo em porcentagem; alavancagem em vezes.",
+        "quarter": "Trimestre de {start} a {end}.",
+        "noReading": "Faltam premissas para ler o fechamento; o que falta está nas lacunas.",
+        "lines": "Realizado contra projetado",
+        "bridge": "Ponte de {line}: desvio de {deviation}",
+        "structuralUntil": "continua até {date}",
+        "calendar": "pontual",
+        "residual": "Resíduo sem causa: {amount}.",
+        "persisting": "O que continua à frente",
+        "oneOff": "Pontuais, sem efeito à frente: {list}.",
+        "balanceShifts": "Já no caixa fechado e contado uma vez só: {list}.",
+        "natures": {
+          "flow": "fluxo que se repete",
+          "balance": "mudança de saldo"
+        },
+        "weekly": "Caixa semanal",
+        "tightest": "Semana mais apertada: antes {prior} na de {priorWeek}; agora {updated} na de {updatedWeek}.",
+        "shortfall": "Falta para o mínimo: de {prior} para {updated}.",
+        "closingAtHorizon": "Saldo no fim do horizonte: de {prior} para {updated}.",
+        "topUpExceeds": "A necessidade passa o limite de {limit} da {facility}; mesmo usando todo o limite, a semana mais apertada fecha em {closing}.",
+        "topUpCovers": "A {facility}, com limite de {limit}, cobre a necessidade.",
+        "action": "Ação proposta",
+        "withinApproved": "Dentro do que já foi aprovado.",
+        "outsideApproved": "Fora do que foi aprovado; precisa de nova decisão.",
+        "actionCovers": "Com a ação, a semana mais apertada fecha em {closing} na de {week}.",
+        "actionDoesNotCover": "A ação não cobre a falta.",
+        "covenant": "Covenant em cada definição",
+        "anyBreach": "Ao menos uma medição rompe um limite.",
+        "noBreach": "Nenhuma medição rompe um limite.",
+        "notUpdated": "Medições não atualizadas: {list}.",
+        "projectedEbitda": "EBITDA do ano no teste: de {prior} para {updated}.",
+        "decisions": "O que muda nas decisões",
+        "noDecisionChanged": "Nenhuma decisão muda com o fechamento.",
+        "decisionCodes": {
+          "short_term_financing": "O financiamento de curto prazo: a necessidade cresceu.",
+          "covenant_headroom": "A folga do covenant diminuiu.",
+          "third_party_material": "Um material enviado antes do fechamento não traz os números fechados."
+        },
+        "dependents": "O que depende do fechamento",
+        "dependentKinds": {
+          "analysis": "análise",
+          "plan": "plano",
+          "material": "material"
+        },
+        "dependentStatuses": {
+          "updated": "atualizado",
+          "affected_not_recomputed": "afetado, a refazer pelo método dono",
+          "stale": "desatualizado",
+          "unchanged": "não mudou"
+        },
+        "openQuestions": "O que muda o diagnóstico",
+        "kept": "As versões anteriores ficam preservadas ao lado da atualização, e nada foi enviado a terceiros.",
+        "kinds": {
+          "contractual": "contrato",
+          "board_policy": "política do conselho"
+        },
+        "gapReasons": {
+          "unexplained_residual": "desvio sem causa",
+          "structural_cause_not_in_weekly_cash": "causa estrutural fora do caixa semanal",
+          "structural_cause_weekly_effect_inconsistent": "efeito semanal inconsistente com a causa",
+          "structural_cause_effect_immaterial": "efeito da causa abaixo da materialidade",
+          "structural_cause_series_not_matching_factor": "série que não corresponde ao fator da causa",
+          "structural_cause_question_missing": "causa estrutural sem a pergunta que a confirma",
+          "affected_not_recomputed": "análise afetada não refeita",
+          "asked_dependent_not_recomputed": "análise pedida não refeita aqui"
+        },
+        "columns": {
+          "line": "Linha",
+          "projected": "Projetado",
+          "actual": "Realizado",
+          "deviation": "Desvio",
+          "cause": "Causa",
+          "nature": "Natureza",
+          "until": "Até",
+          "ebitdaAhead": "EBITDA à frente",
+          "cashAhead": "Caixa à frente",
+          "facility": "Linha aprovada",
+          "amount": "Valor",
+          "limit": "Limite",
+          "withinLimit": "Dentro do limite?",
+          "source": "Aprovação",
+          "minimumAfter": "Semana mais apertada depois",
+          "definition": "Definição",
+          "ratioPrior": "Antes",
+          "ratioUpdated": "Agora",
+          "ebitdaPrior": "EBITDA antes",
+          "ebitdaUpdated": "EBITDA agora",
+          "kind": "Natureza",
+          "headroomPrior": "Folga antes",
+          "headroomUpdated": "Folga agora",
+          "breached": "Rompe?",
+          "dependent": "Análise, plano ou material",
+          "dependentStatus": "Situação",
+          "owner": "Quem refaz"
+        },
+        "exclusions": {
+          "accounting_close": "Não fecha a contabilidade.",
+          "cause_attribution": "Não atribui causas por conta própria; usa as informadas.",
+          "financing_cost_comparison": "Não compara custo de financiamento.",
+          "third_party_distribution": "Não envia nada a terceiros.",
+          "credit_approval": "Não é aprovação de crédito."
+        }
       }
     },
     "overview": "Visão geral",
@@ -7777,6 +8180,21 @@
         "title": "Premissas para projetar o caixa semana a semana",
         "lead": "Projeto o caixa semanal com estes fluxos, obrigações, casos e ações, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
         "cases": "Semana a semana até a data: a semana mais apertada, as semanas abaixo do mínimo, o que vence nelas, o que o fechamento do período esconde e o custo de cada ação que cobre, pelo tempo de uso."
+      },
+      "operatingProjection": {
+        "title": "Premissas para construir a projeção",
+        "lead": "Monto a projeção com estes drivers, cenários e versões da companhia, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Por ano: o último ano reconstruído pelos drivers, receita, EBITDA e caixa disponível para a dívida, a comparação com o orçamento sem sobrescrever, o que cada premissa vale em dinheiro e o que é dado e o que é hipótese."
+      },
+      "projectionChallenge": {
+        "title": "Premissas para ler o plano contra a referência",
+        "lead": "Leio o plano contra a referência por drivers com estas premissas e réguas, cada uma com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "No ano alvo: a diferença de EBITDA e de caixa, o efeito de cada premissa em ordem, a régua e a evidência que sustentaria cada uma, a capacidade e como levar o plano ao banco. Nenhum cenário novo é rodado."
+      },
+      "receivablesFunding": {
+        "title": "Premissas para financiar o giro com recebíveis",
+        "lead": "Leio a carteira contra cada porta com estes grupos, portas e condições, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Quanto da carteira pode ser cedido e por quê o resto não, o volume e o custo de cada porta pelo mesmo tempo de uso contra a linha do banco, o efeito em balanço e garantias, o plano e quando começar."
       }
     },
     "groups": {
@@ -7789,13 +8207,20 @@
       "stream": "Fluxos de caixa",
       "action": "Ações",
       "case": "Casos",
-      "premise": "Premissas"
+      "premise": "Premissas",
+      "driver": "Drivers",
+      "scenario": "Cenários",
+      "version": "Versões da companhia",
+      "assumption": "Premissas do plano",
+      "item": "Grupos da carteira",
+      "option": "Portas de financiamento"
     },
     "origins": {
       "document": "Documento",
       "informed": "Informado",
       "house": "Premissa da casa",
-      "estimate": "Estimativa"
+      "estimate": "Estimativa",
+      "market": "Faixa de mercado"
     },
     "referenceDate": "Data de referência: {date}",
     "unreadable": "Não consegui ler as premissas desta proposta. Peça na conversa que eu as proponha de novo.",
@@ -7821,7 +8246,35 @@
       "minimumCash": "Caixa mínimo de operação",
       "informedPlan": "Plano informado",
       "variantCase": "Plano com {label}",
-      "actionCase": "Plano com a ação: {label}"
+      "actionCase": "Plano com a ação: {label}",
+      "purpose": "Propósito da projeção",
+      "actualYear": "Último ano realizado",
+      "reportedRevenue": "Receita reportada",
+      "reportedEbitda": "EBITDA reportado",
+      "driverVolume": "Volume",
+      "driverNetUnitPrice": "Preço líquido",
+      "driverInputCostPerUnit": "Custo do insumo por unidade",
+      "driverOtherVariableCostPerUnit": "Demais custos variáveis por unidade",
+      "driverFixedCosts": "Custos fixos",
+      "driverReceivableDays": "Prazo de recebimento",
+      "driverInventoryDays": "Prazo de estoque",
+      "driverPayableDays": "Prazo de pagamento",
+      "driverMaintenanceCapex": "Capex de manutenção",
+      "driverLeasePayments": "Arrendamentos",
+      "driverDepreciation": "Depreciação",
+      "driverInterestExpense": "Despesa de juros",
+      "driverTaxRate": "Alíquota de impostos",
+      "referenceCase": "Referência por drivers",
+      "planCase": "Plano da companhia",
+      "capacity": "Capacidade instalada",
+      "requestedReceivableDays": "Prazo pedido pelos clientes",
+      "premiumOverAverage": "Prêmio da linha premium sobre o preço médio",
+      "marginCause": "Causa da expansão de margem",
+      "needAverage": "Necessidade média",
+      "needPeak": "Pico da necessidade",
+      "annualDi": "CDI anual",
+      "lienBasketRemaining": "Saldo livre da exceção de garantias",
+      "dedicatedVehicleThreshold": "Volume que justifica operação dedicada"
     }
   }
 }

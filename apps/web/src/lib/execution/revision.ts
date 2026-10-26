@@ -1,6 +1,8 @@
 import "server-only";
 
 import {readCapitalProcedurePacketBlocks, readCovenantHeadroomPacketBlocks, readDebtCapacityPacketBlocks, readDebtTablePacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks, readWeeklyCashPacketBlocks,
+  readOperatingProjectionPacketBlocks, readProjectionChallengePacketBlocks, readQuarterUpdatePacketBlocks, readReceivablesFundingPacketBlocks,
+  type OperatingProjectionResultBlocksView, type ProjectionChallengeResultBlocksView, type QuarterUpdateResultBlocksView, type ReceivablesFundingResultBlocksView,
   type CovenantHeadroomResultBlocksView, type DebtCapacityResultBlocksView, type DebtTableResultBlocksView, type WeeklyCashResultBlocksView, type ExecutionResultBlocksView, type ExecutionResultCitation, type FinancingComparisonResultBlocksView, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
@@ -26,7 +28,8 @@ type ExecutionRevisionBase = {
 };
 /** A capital result carries its decision blocks; an investment result the case comparison; a
  * comparison of offers its proposals per case; a capacity analysis its limits per schedule; the debt
- * table its instruments and views; covenant headroom its measurements per limit; weekly cash its weeks. */
+ * table its instruments and views; covenant headroom its measurements per limit; weekly cash its weeks;
+ * the lote 3 results (projection, challenge, receivables funding, quarter update) their own blocks. */
 export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind?: "capital"; readonly blocks: ExecutionResultBlocksView}
   | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView}
@@ -34,7 +37,11 @@ export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind: "capacity"; readonly capacity: DebtCapacityResultBlocksView}
   | {readonly kind: "debt_table"; readonly debtTable: DebtTableResultBlocksView}
   | {readonly kind: "covenant_headroom"; readonly covenantHeadroom: CovenantHeadroomResultBlocksView}
-  | {readonly kind: "weekly_cash"; readonly weeklyCash: WeeklyCashResultBlocksView});
+  | {readonly kind: "weekly_cash"; readonly weeklyCash: WeeklyCashResultBlocksView}
+  | {readonly kind: "operating_projection"; readonly operatingProjection: OperatingProjectionResultBlocksView}
+  | {readonly kind: "projection_challenge"; readonly projectionChallenge: ProjectionChallengeResultBlocksView}
+  | {readonly kind: "receivables_funding"; readonly receivablesFunding: ReceivablesFundingResultBlocksView}
+  | {readonly kind: "quarter_update"; readonly quarterUpdate: QuarterUpdateResultBlocksView});
 
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
@@ -90,6 +97,22 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   if (pinned(manifest.traces, "weekly-cash-packet:")) {
     const weeklyCash = readWeeklyCashPacketBlocks(serving.blocks);
     return weeklyCash ? {state: "ready", revision: {...base("weekly-cash-packet:"), kind: "weekly_cash", weeklyCash}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "operating-projection-packet:")) {
+    const operatingProjection = readOperatingProjectionPacketBlocks(serving.blocks);
+    return operatingProjection ? {state: "ready", revision: {...base("operating-projection-packet:"), kind: "operating_projection", operatingProjection}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "projection-challenge-packet:")) {
+    const projectionChallenge = readProjectionChallengePacketBlocks(serving.blocks);
+    return projectionChallenge ? {state: "ready", revision: {...base("projection-challenge-packet:"), kind: "projection_challenge", projectionChallenge}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "receivables-funding-packet:")) {
+    const receivablesFunding = readReceivablesFundingPacketBlocks(serving.blocks);
+    return receivablesFunding ? {state: "ready", revision: {...base("receivables-funding-packet:"), kind: "receivables_funding", receivablesFunding}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "quarter-update-packet:")) {
+    const quarterUpdate = readQuarterUpdatePacketBlocks(serving.blocks);
+    return quarterUpdate ? {state: "ready", revision: {...base("quarter-update-packet:"), kind: "quarter_update", quarterUpdate}} : {state: "unavailable"};
   }
   const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
   if (!blocks) return {state: "unavailable"};

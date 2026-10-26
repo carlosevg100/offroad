@@ -9,24 +9,29 @@ import {z} from "zod";
 import {confirmPremiseProposal} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
 import {CompanyRegistration} from "./company-registration";
 
-/** The three debt methods of lote 2 that share this card, by the key of their copy. */
+/** The premise methods of lote 2 and lote 3 that share this card, by the key of their copy. The quarter
+ * close (lote 3) has no premise proposal yet and so no card. */
 export const debtPremiseMethods = {
   "build-company-debt-table": "debtTable",
   "measure-covenant-headroom": "covenantHeadroom",
   "project-weekly-cash": "weeklyCash",
+  "build-operating-projection": "operatingProjection",
+  "challenge-financial-projection": "projectionChallenge",
+  "monetize-receivables-for-working-capital": "receivablesFunding",
 } as const;
 export type DebtPremiseMethodId = keyof typeof debtPremiseMethods;
 export const isDebtPremiseMethod = (id: string | undefined | null): id is DebtPremiseMethodId => typeof id === "string" && Object.hasOwn(debtPremiseMethods, id);
 
-const groups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise"] as const;
-/** The summary the worker writes for the three methods; anything else is not read. */
+const groups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action",
+  "driver", "scenario", "version", "assumption", "item", "option", "case", "premise"] as const;
+/** The summary the worker writes for these methods; anything else is not read. */
 const summarySchema = z.object({
   situationId: z.string(),
   referenceDate: z.iso.date().nullable(),
   items: z.array(z.object({group: z.enum(groups), label: z.string().min(1),
     // Older proposals carry no key: their label is shown as written, like a label from the person or a document.
     labelKey: z.string().min(1).nullable().optional().transform((key) => key ?? null),
-    origin: z.enum(["document", "informed", "house", "estimate"]), source: z.string()})),
+    origin: z.enum(["document", "informed", "market", "house", "estimate"]), source: z.string()})),
 });
 
 export type DebtMethodsPremiseProposalView = {

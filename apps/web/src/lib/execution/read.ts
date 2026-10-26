@@ -5,7 +5,12 @@ import {covenantHeadroomPacketBlocks, debtTablePacketBlocks, readCovenantHeadroo
   type CovenantHeadroomPacketLike, type CovenantHeadroomResultBlocksView, type DebtTablePacketLike, type DebtTableResultBlocksView, type WeeklyCashPacketLike, type WeeklyCashResultBlocksView} from "@offroad/domain-contracts";
 import {debtCapacityPacketBlocks, financingComparisonPacketBlocks, investmentDecisionPacketBlocks, readDebtCapacityPacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks,
   type DebtCapacityPacketLike, type DebtCapacityResultBlocksView, type FinancingComparisonPacketLike, type FinancingComparisonResultBlocksView, type InvestmentDecisionPacketLike, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
+import {operatingProjectionPacketBlocks, projectionChallengePacketBlocks, quarterUpdatePacketBlocks, readOperatingProjectionPacketBlocks, readProjectionChallengePacketBlocks,
+  readQuarterUpdatePacketBlocks, readReceivablesFundingPacketBlocks, receivablesFundingPacketBlocks, type OperatingProjectionPacketLike, type OperatingProjectionResultBlocksView,
+  type ProjectionChallengePacketLike, type ProjectionChallengeResultBlocksView, type QuarterUpdatePacketLike, type QuarterUpdateResultBlocksView,
+  type ReceivablesFundingPacketLike, type ReceivablesFundingResultBlocksView} from "@offroad/domain-contracts";
 import {covenantHeadroomPacketOutputSchema, debtTablePacketOutputSchema, weeklyCashPacketOutputSchema} from "@offroad/financial-model";
+import {operatingProjectionPacketOutputSchema, projectionChallengePacketOutputSchema, quarterUpdatePacketOutputSchema, receivablesFundingPacketOutputSchema} from "@offroad/financial-model";
 import {capitalProcedurePacketV2OutputSchema, debtCapacityPacketOutputSchema, deriveCapitalChartSeries, evaluateMdTest, financingComparisonPacketOutputSchema, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
 import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
 
@@ -80,6 +85,14 @@ export type WorkExecutionView = {
       covenantHeadroom?: CovenantHeadroomResultBlocksView | null;
       /** Cash week by week to the horizon (ficha C18). */
       weeklyCash?: WeeklyCashResultBlocksView | null;
+      /** The projection by driver with its calibration, comparisons and sensitivities (ficha C24). */
+      operatingProjection?: OperatingProjectionResultBlocksView | null;
+      /** The plan read against the reference, assumption by assumption (ficha C26). */
+      projectionChallenge?: ProjectionChallengeResultBlocksView | null;
+      /** The portfolio against each funding option and the bank line (ficha C35). */
+      receivablesFunding?: ReceivablesFundingResultBlocksView | null;
+      /** The quarter close carried into the weekly cash and the covenant test (ficha C54). */
+      quarterUpdate?: QuarterUpdateResultBlocksView | null;
       revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
@@ -146,6 +159,38 @@ export function readWeeklyCashResult(canonicalResult: string): WeeklyCashResultB
   try {
     const parsed = weeklyCashPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
     return parsed.success ? readWeeklyCashPacketBlocks(weeklyCashPacketBlocks(parsed.data as unknown as WeeklyCashPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of an operating projection, read through the same blocks its revision carries. */
+export function readOperatingProjectionResult(canonicalResult: string): OperatingProjectionResultBlocksView | null {
+  try {
+    const parsed = operatingProjectionPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readOperatingProjectionPacketBlocks(operatingProjectionPacketBlocks(parsed.data as unknown as OperatingProjectionPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a projection challenge, read through the same blocks its revision carries. */
+export function readProjectionChallengeResult(canonicalResult: string): ProjectionChallengeResultBlocksView | null {
+  try {
+    const parsed = projectionChallengePacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readProjectionChallengePacketBlocks(projectionChallengePacketBlocks(parsed.data as unknown as ProjectionChallengePacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a receivables funding reading, read through the same blocks its revision carries. */
+export function readReceivablesFundingResult(canonicalResult: string): ReceivablesFundingResultBlocksView | null {
+  try {
+    const parsed = receivablesFundingPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readReceivablesFundingPacketBlocks(receivablesFundingPacketBlocks(parsed.data as unknown as ReceivablesFundingPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a quarter update, read through the same blocks its revision carries. */
+export function readQuarterUpdateResult(canonicalResult: string): QuarterUpdateResultBlocksView | null {
+  try {
+    const parsed = quarterUpdatePacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readQuarterUpdatePacketBlocks(quarterUpdatePacketBlocks(parsed.data as unknown as QuarterUpdatePacketLike)) : null;
   } catch { return null; }
 }
 
@@ -254,7 +299,9 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     const {revision} = registered;
     const view = revision.kind === "comparison" ? {comparison: revision.comparison} : revision.kind === "capacity" ? {capacity: revision.capacity}
       : revision.kind === "debt_table" ? {debtTable: revision.debtTable} : revision.kind === "covenant_headroom" ? {covenantHeadroom: revision.covenantHeadroom}
-      : revision.kind === "weekly_cash" ? {weeklyCash: revision.weeklyCash} : {};
+      : revision.kind === "weekly_cash" ? {weeklyCash: revision.weeklyCash}
+      : revision.kind === "operating_projection" ? {operatingProjection: revision.operatingProjection} : revision.kind === "projection_challenge" ? {projectionChallenge: revision.projectionChallenge}
+      : revision.kind === "receivables_funding" ? {receivablesFunding: revision.receivablesFunding} : revision.kind === "quarter_update" ? {quarterUpdate: revision.quarterUpdate} : {};
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
       mdTest: null, decisiveNumbers: null, ...view,
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
@@ -272,8 +319,14 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     const debtTable = data || marker || investment || comparison || capacity ? null : readDebtTableResult(r.result.canonicalResult);
     const covenantHeadroom = data || marker || investment || comparison || capacity || debtTable ? null : readCovenantHeadroomResult(r.result.canonicalResult);
     const weeklyCash = data || marker || investment || comparison || capacity || debtTable || covenantHeadroom ? null : readWeeklyCashResult(r.result.canonicalResult);
+    const before = data || marker || investment || comparison || capacity || debtTable || covenantHeadroom || weeklyCash;
+    const operatingProjection = before ? null : readOperatingProjectionResult(r.result.canonicalResult);
+    const projectionChallenge = before || operatingProjection ? null : readProjectionChallengeResult(r.result.canonicalResult);
+    const receivablesFunding = before || operatingProjection || projectionChallenge ? null : readReceivablesFundingResult(r.result.canonicalResult);
+    const quarterUpdate = before || operatingProjection || projectionChallenge || receivablesFunding ? null : readQuarterUpdateResult(r.result.canonicalResult);
     result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
-      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, debtTable, covenantHeadroom, weeklyCash, revision: null};
+      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, debtTable, covenantHeadroom, weeklyCash,
+      operatingProjection, projectionChallenge, receivablesFunding, quarterUpdate, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),

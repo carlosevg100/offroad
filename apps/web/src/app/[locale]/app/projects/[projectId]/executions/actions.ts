@@ -69,6 +69,8 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
 const comparisonSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "stable-business-high-conversion", "near-covenant"];
 const debtTableSituations = ["refinancing", "near-covenant", "restructuring"];
 const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"];
+const projectionSituations = ["stable-business-high-conversion", "structural-working-capital", "capex-infrastructure"];
+const receivablesFundingSituations = ["seasonal-working-capital", "structural-working-capital"];
 const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
   "analyze-investment-project": {key: "investment.premises",
     text: "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.",
@@ -102,6 +104,24 @@ const premiseMethods: Record<string, {key: string; text: string; ask: (summary: 
     ask: (summary) => summary.situationId === "seasonal-working-capital"
       ? {question: "Como fica o caixa semana a semana até a data e o que vence?",
         objectives: ["Achar a semana mais apertada e as abaixo do mínimo, o que vence nelas, o que o fechamento esconde e a ação mais barata que cobre, custeada pelo tempo de uso"],
+        situationIds: [summary.situationId]} : null},
+  "build-operating-projection": {key: "operating-projection.premises",
+    text: "Drivers do último ano, drivers projetados, cenários e versões da companhia confirmados pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && projectionSituations.includes(summary.situationId)
+      ? {question: "Quanto caixa a companhia gera para servir a dívida e o que pode dar errado?",
+        objectives: ["Reproduzir o último ano pelos drivers, projetar até o caixa disponível para a dívida, comparar com o orçamento sem sobrescrever, medir em reais as premissas que decidem e separar dado de hipótese"],
+        situationIds: [summary.situationId]} : null},
+  "challenge-financial-projection": {key: "projection-challenge.premises",
+    text: "Plano da companhia, referência por drivers, premissas e réguas confirmados pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && projectionSituations.includes(summary.situationId)
+      ? {question: "Onde o plano vai ser questionado pelo banco e o que o sustentaria?",
+        objectives: ["Medir o efeito isolado de cada premissa no EBITDA e no caixa contra a referência, confrontar com histórico, capacidade e contratos, dizer a evidência que sustentaria cada uma e como apresentar o plano"],
+        situationIds: [summary.situationId]} : null},
+  "monetize-receivables-for-working-capital": {key: "receivables-funding.premises",
+    text: "Carteira por grupo de sacados, portas de financiamento, linha bancária e necessidade confirmados pela pessoa na conversa: documento, informado, faixa de mercado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && receivablesFundingSituations.includes(summary.situationId)
+      ? {question: "Quanto da carteira vira caixa, com quem, a que custo e em quanto tempo, contra a linha do banco?",
+        objectives: ["Separar a carteira cedível com o motivo de cada exclusão, ler cada porta com volume e custo pelo tempo de uso, comparar com a linha bancária e montar o plano com prazo e condições"],
         situationIds: [summary.situationId]} : null},
 };
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};

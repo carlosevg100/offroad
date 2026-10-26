@@ -64,8 +64,33 @@ describe("debt methods premises card", () => {
       expect(html).toContain(card.unreadable); expect(html).not.toContain("<button");
     }
   });
-  it("recognizes only the three debt methods", () => {
-    expect(["build-company-debt-table", "measure-covenant-headroom", "project-weekly-cash"].every(isDebtPremiseMethod)).toBe(true);
+  it("shows the lote 3 groups, house labels and the market origin", () => {
+    const summary = {situationId: "seasonal-working-capital", referenceDate: "2026-09-15", items: [
+      {group: "item", label: "Rede A (maior cliente)", labelKey: null, origin: "document", source: "carteira.xlsx"},
+      {group: "option", label: "FIDC multicedente com coobrigação", labelKey: null, origin: "market", source: "Faixa de mercado do módulo de recebíveis"},
+      {group: "premise", label: "Pico da necessidade", labelKey: "needPeak", origin: "informed", source: "Mensagem"},
+    ]};
+    const html = render("pt-BR", {...proposal, summary}, "monetize-receivables-for-working-capital");
+    for (const text of [card.methods.receivablesFunding.title, card.groups.item, card.groups.option, card.origins.market, card.houseLabels.needPeak, "Rede A (maior cliente)"]) expect(html).toContain(text);
+    const projection = {situationId: "stable-business-high-conversion", referenceDate: null, items: [
+      {group: "driver", label: "Volume", labelKey: "driverVolume", origin: "estimate", source: "Calibrado no histórico"},
+      {group: "scenario", label: "Prazo das redes de 50 para 60 dias", labelKey: null, origin: "informed", source: "Mensagem"},
+      {group: "version", label: "Orçamento 2026 aprovado", labelKey: null, origin: "document", source: "orcamento.xlsx"},
+    ]};
+    const english = render("en-US", {...proposal, summary: projection}, "build-operating-projection");
+    for (const text of [en.DebtMethodsPremisesCard.methods.operatingProjection.title, en.DebtMethodsPremisesCard.groups.driver, en.DebtMethodsPremisesCard.houseLabels.driverVolume,
+      en.DebtMethodsPremisesCard.groups.scenario, en.DebtMethodsPremisesCard.groups.version]) expect(english).toContain(text);
+    const challenge = {situationId: "stable-business-high-conversion", referenceDate: null, items: [
+      {group: "case", label: "Plano", labelKey: "planCase", origin: "document", source: "plano.xlsx"},
+      {group: "assumption", label: "Preço líquido +3,5% ao ano", labelKey: null, origin: "document", source: "plano.xlsx"},
+    ]};
+    const read = render("pt-BR", {...proposal, summary: challenge}, "challenge-financial-projection");
+    for (const text of [card.methods.projectionChallenge.title, card.groups.assumption, card.houseLabels.planCase]) expect(read).toContain(text);
+  });
+  it("recognizes only the lote 2 and lote 3 premise methods", () => {
+    expect(["build-company-debt-table", "measure-covenant-headroom", "project-weekly-cash", "build-operating-projection", "challenge-financial-projection",
+      "monetize-receivables-for-working-capital"].every(isDebtPremiseMethod)).toBe(true);
+    expect(isDebtPremiseMethod("update-after-quarter-close")).toBe(false);
     expect(isDebtPremiseMethod("assess-debt-capacity")).toBe(false); expect(isDebtPremiseMethod(undefined)).toBe(false); expect(isDebtPremiseMethod("toString")).toBe(false);
   });
 });

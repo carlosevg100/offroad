@@ -7,6 +7,10 @@ import {ComparisonResult} from "./comparison-result";
 import {CovenantHeadroomResult} from "./covenant-headroom-result";
 import {DebtTableResult} from "./debt-table-result";
 import {InvestmentResult} from "./investment-result";
+import {OperatingProjectionResult} from "./operating-projection-result";
+import {ProjectionChallengeResult} from "./projection-challenge-result";
+import {QuarterUpdateResult} from "./quarter-update-result";
+import {ReceivablesFundingResult} from "./receivables-funding-result";
 import {WeeklyCashResult} from "./weekly-cash-result";
 import {WorkExecutionRefresh} from "./work-execution-refresh";
 import "./work-execution.css";
@@ -36,6 +40,10 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
   const debtTable = result && !result.withheld ? result.debtTable ?? null : null;
   const covenantHeadroom = result && !result.withheld ? result.covenantHeadroom ?? null : null;
   const weeklyCash = result && !result.withheld ? result.weeklyCash ?? null : null;
+  const operatingProjection = result && !result.withheld ? result.operatingProjection ?? null : null;
+  const projectionChallenge = result && !result.withheld ? result.projectionChallenge ?? null : null;
+  const receivablesFunding = result && !result.withheld ? result.receivablesFunding ?? null : null;
+  const quarterUpdate = result && !result.withheld ? result.quarterUpdate ?? null : null;
   const mdTest = result && !result.withheld ? result.mdTest : null; const decisive = result && !result.withheld ? result.decisiveNumbers : null;
   const gates = view.gates;
   // A result with a registered revision is read as a result, not as raw evidence: the screen names no
@@ -80,7 +88,8 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
         ? <><p>{t("detail.recorded", {revision: result.revision.revisionNo, date: date(result.revision.recordedAt)})}</p><p role="status">{t(`detail.freshness.${result.revision.freshness}`)}</p></>
         : <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>}
       {marker ? <p role="status">{t("detail.markerTitle")}: {known("reasons", marker.reason)}</p> : null}
-      {!packet && !marker && !investment && !comparison && !capacity && !debtTable && !covenantHeadroom && !weeklyCash ? <p role="status">{t("detail.unreadable")}</p> : null}
+      {!packet && !marker && !investment && !comparison && !capacity && !debtTable && !covenantHeadroom && !weeklyCash
+        && !operatingProjection && !projectionChallenge && !receivablesFunding && !quarterUpdate ? <p role="status">{t("detail.unreadable")}</p> : null}
       {packet ? <>
         <dl className="execution-facts">
           <dt>{t("detail.decisionStatus")}</dt><dd>{t(`decisionStatus.${packet.status}`)}</dd>
@@ -107,6 +116,10 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
     {debtTable ? <DebtTableResult locale={locale} view={debtTable} /> : null}
     {covenantHeadroom ? <CovenantHeadroomResult locale={locale} view={covenantHeadroom} /> : null}
     {weeklyCash ? <WeeklyCashResult locale={locale} view={weeklyCash} /> : null}
+    {operatingProjection ? <OperatingProjectionResult locale={locale} view={operatingProjection} /> : null}
+    {projectionChallenge ? <ProjectionChallengeResult locale={locale} view={projectionChallenge} /> : null}
+    {receivablesFunding ? <ReceivablesFundingResult locale={locale} view={receivablesFunding} /> : null}
+    {quarterUpdate ? <QuarterUpdateResult locale={locale} view={quarterUpdate} /> : null}
     {packet && mdTest ? <section><h2>{t("mdTest.title")}</h2><p>{t("mdTest.note")}</p>
       {!mdTest.evaluated ? <p role="status">{t(`mdTest.notEvaluated.${mdTest.reason}`)}</p>
         : <ol className="execution-questions">{mdTest.questions.map(q => <li key={q.id}><strong>{known("mdTest.questions", q.id)}</strong>
