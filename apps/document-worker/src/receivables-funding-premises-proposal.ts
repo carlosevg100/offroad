@@ -48,7 +48,7 @@ export const receivablesFundingExtractionSchema = z.strictObject({
     iofDaily: ratio.nullable(), iofDailyCapDays: days.nullable(), iofAdditional: ratio.nullable(), rolloverDays: z.union([days, z.literal("none")]).nullable(), upfrontFee: ratio.nullable(),
     collateral: z.enum(["none", "receivables_assignment", "unknown"]).nullable(), leadDaysMin: days.nullable(), leadDaysMax: days.nullable(),
     maxDaysPastDue: days.nullable(), maxRemainingTermDays: days.nullable(), registrationRule: z.enum(["required", "not_required"]).nullable(),
-    minCreditTier: z.enum(["selected", "standard"]).nullable(), sublimitPerDebtor: z.union([money, z.literal("none")]).nullable(), sublimitGroup: itemLabel.nullable(),
+    minCreditTier: z.enum(["selected", "standard"]).nullable(), sublimitPerDebtor: z.union([money, z.literal("none")]).nullable(), sublimitGroup: z.union([z.literal("none"), itemLabel]).nullable(),
     anchorItemLabels: z.array(itemLabel).max(16)})).max(8),
 });
 export type ReceivablesFundingExtraction = z.infer<typeof receivablesFundingExtractionSchema>;
@@ -62,15 +62,15 @@ export const receivablesFundingExtractionContract = {
     "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
     "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado quando um sacado aparece em mais de um grupo, e debtorTaxId o CNPJ do sacado quando um documento o traz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
-    "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
+    "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. sublimitGroup é o nome do grupo de compradores que divide o sublimite com outras opções (por exemplo os mesmos cotistas em dois produtos FIDC), \"none\" quando foi dito que a opção tem compradores próprios e null quando ninguém disse. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: receivablesFundingExtractionSchema,
-  schemaName: "receivables_funding_extraction_v2",
+  schemaName: "receivables_funding_extraction_v3",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "receivables-funding-extraction-2026.10.26-v2",
+  cacheKey: "receivables-funding-extraction-2026.10.26-v3",
 };
 
 const dayMs = 86400000;
@@ -125,7 +125,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     return taxes.length === 1 ? `cnpj-${taxes[0]}` : stableKey(i.debtorLabel ?? i.label, 80);
   };
   const groupIdentities = new Map<string, string>();
-  e.options.forEach((o, k) => {if (o.sublimitGroup === null) return; const key = stableKey(o.sublimitGroup), seen = groupIdentities.get(key), id = normalizedName(o.sublimitGroup);
+  e.options.forEach((o, k) => {if (o.sublimitGroup === null || o.sublimitGroup === "none") return; const key = stableKey(o.sublimitGroup), seen = groupIdentities.get(key), id = normalizedName(o.sublimitGroup);
     if (seen !== undefined && seen !== id) missing.push(`options.${k + 1}.sublimitGroup`); else groupIdentities.set(key, id);});
   const items = e.items.map((i, k) => {
     const p = `items.${k + 1}.`, before = missing.length;
@@ -142,6 +142,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
       debtorSetDisjoint: single ? null : i.debtorSetDisjoint!}, origin: i.origin, source: citedSource(i.origin, i.source)};
   });
   const optionIds = itemKeys(e.options.map((o) => o.label));
+  const sublimited = e.options.flatMap((o, k) => o.kind !== "bank_line" && o.sublimitPerDebtor !== null && o.sublimitPerDebtor !== "none" ? [k] : []);
   const options = e.options.map((o, k) => {
     const p = `options.${k + 1}.`, before = missing.length;
     // IOF is asked for every option the documents or the person do not price, a sale of receivables included:
@@ -152,12 +153,15 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     // Absence is never read as none: a rollover term or a per-debtor sublimit nobody stated is asked; "none" is stated.
     if (o.rolloverDays === null) missing.push(p + "rolloverDays");
     if (o.kind !== "bank_line" && o.sublimitPerDebtor === null) missing.push(p + "sublimitPerDebtor");
+    // With two or more sale options capped per debtor, an unstated grouping is asked: shared buyers or independent
+    // ones change the volume, and absence is never read as independence (independent review, round 10).
+    if (sublimited.length > 1 && sublimited.includes(k) && o.sublimitGroup === null) missing.push(p + "sublimitGroup");
     const anchors = o.anchorItemLabels.map((l) => e.items.findIndex((i) => sameLabel(i.label, l)));
     if (anchors.some((x) => x < 0) || (o.kind === "anchor_program" && !anchors.length)) missing.push(p + "anchorItemLabels");
     if (missing.length > before) return null;
     return {value: {id: optionIds[k]!, label: o.label, kind: o.kind, recourse: o.recourse!,
       eligibility: o.kind === "bank_line" ? null : {maxDaysPastDue: o.maxDaysPastDue!, maxRemainingTermDays: o.maxRemainingTermDays!, registrationRule: o.registrationRule!,
-        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor === "none" ? null : o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : stableKey(o.sublimitGroup),
+        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor === "none" ? null : o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null || o.sublimitGroup === "none" ? null : stableKey(o.sublimitGroup),
         anchorItemIds: anchors.map((x) => itemIds[x]!)},
       rate: {basis: o.rateBasis!, rate: o.rate!}, iofDaily: o.iofDaily!, iofDailyCapDays: o.iofDailyCapDays!, iofAdditional: o.iofAdditional!,
       rolloverDays: o.rolloverDays === "none" ? null : o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral!, leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},

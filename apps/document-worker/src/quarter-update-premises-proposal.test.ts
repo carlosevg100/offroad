@@ -1,26 +1,21 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeQuarterUpdateHypotheses, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {amountInReais, buildQuarterUpdatePremiseProposal, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
+import {amountInReais, buildQuarterUpdatePremiseProposal, quarterUpdateReaderGaps, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
   shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction, priorResultPins} from "./quarter-update-premises-proposal";
 import {factsOrGaps, itemKeys} from "./lote2-premises";
 import {z} from "zod";
-import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
+import {auroraQuarterUpdatePriors, comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
 import weeklyPacket from "../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
 
 let aurora: (w: string, c: string) => QuarterUpdateFacts;
 beforeAll(async () => {aurora = (await financialModelFixture<{auroraQuarterUpdateFacts: (w: string, c: string) => QuarterUpdateFacts}>("quarter-update.test-support.ts")).auroraQuarterUpdateFacts;});
 const said = (o: string) => o === "document" ? "document" as const : "informed" as const;
 const hex = (c: string) => c.repeat(64);
-/** The prior results as the worker reads them: the lote 2 weekly cash packet and a covenant test with the indenture and the managerial reading in December. */
-const priors = () => ({
-  weeklyCash: {executionId: "a0000000-0000-4000-8000-000000000071", resultFingerprint: hex("1"), envelopeFingerprint: hex("a"), packet: weeklyPacket as unknown as Record<string, unknown>,
-    streamIds: ["recebimentos", "insumos", "linha-17", "folha"]},
-  covenant: {executionId: "a0000000-0000-4000-8000-000000000072", resultFingerprint: hex("2"), envelopeFingerprint: hex("b"), packet: {
-    readings: {headline: {measurementId: "dez26-base"}},
-    result: {headroom: {measurements: [{id: "dez26-adverso", label: "Adverso", role: "test", date: "2026-12-31"}, {id: "dez26-base", label: "Escritura", role: "test", date: "2026-12-31"},
-      {id: "junho-gerencial", label: "Junho gerencial", role: "contrast", date: "2026-06-30"}, {id: "dez26-gerencial", label: "Gerencial", role: "test", date: "2026-12-31"},
-      {id: "dez27-base", label: "Dezembro de 2027", role: "test", date: "2027-12-31"}]}}}},
-});
+/** The prior results as the worker reads them: the stored inputs of the Aurora prior weekly cash and covenant, adopted
+ * on their own bases (W and C are their fingerprints), and the packets the card reads. */
+let stored: Awaited<ReturnType<typeof auroraQuarterUpdatePriors>>, W = "", C = "";
+beforeAll(async () => {stored = await auroraQuarterUpdatePriors(weeklyPacket as unknown as Record<string, unknown>); W = stored.weeklyCash.envelopeFingerprint; C = stored.covenant.envelopeFingerprint;});
+const priors = () => structuredClone(stored);
 
 /** The turn of ficha C54 as the extraction would read it from the balancete, the managerial close and the conversation. */
 function auroraExtraction(f: QuarterUpdateFacts): QuarterUpdateExtraction {
@@ -83,15 +78,15 @@ describe("quarter update premises proposed from a turn", () => {
     expect(priorMeasurements(p.covenant).map((m) => m.id)).toEqual(["dez26-base", "dez26-adverso", "dez26-gerencial", "dez27-base", "junho-gerencial"]);
   });
   it("completes the Aurora close and proposes the hypotheses the fixture proposes, naming the recorded prior results", () => {
-    const f = aurora(hex("a"), hex("b")), c = complete(auroraExtraction(f), {updateId: f.updateId, entityId: f.entityId, definitionVersionId: f.definitionVersionId});
+    const f = aurora(W, C), c = complete(auroraExtraction(f), {updateId: f.updateId, entityId: f.entityId, definitionVersionId: f.definitionVersionId});
     expect(c.situationId).toBe("near-covenant");
-    expect([c.facts.priorWeeklyFingerprint, c.facts.priorCovenantFingerprint].map((x) => [x.value, x.origin])).toEqual([[hex("a"), "document"], [hex("b"), "document"]]);
+    expect([c.facts.priorWeeklyFingerprint, c.facts.priorCovenantFingerprint].map((x) => [x.value, x.origin])).toEqual([[W, "document"], [C, "document"]]);
     expect(c.facts.materialityFloor).toMatchObject({value: "1000", origin: "house"});
     expect(c.housePremiseKeys).toEqual(["materialityFloor"]);
     expect(withoutFloor(comparableHypotheses(proposeQuarterUpdateHypotheses(c.facts), renameOf(f)))).toEqual(withoutFloor(comparableHypotheses(proposeQuarterUpdateHypotheses(f))));
   });
   it("takes the December tests of the headline date when the close names no measurement", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b"))); e.covenantMeasurementIds = [];
+    const e = auroraExtraction(aurora(W, C)); e.covenantMeasurementIds = [];
     const c = complete(e);
     expect(c.facts.covenant.value.measurementIds).toEqual(["dez26-base", "dez26-adverso", "dez26-gerencial"]);
     expect(c.housePremiseKeys).toContain("covenantMeasurements");
@@ -99,14 +94,14 @@ describe("quarter update premises proposed from a turn", () => {
     expect(c.facts.covenant.origin).toBe("house");
   });
   it("asks for what nobody stated in one batch, and refuses a stream or a measurement the prior results do not carry", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    const e = auroraExtraction(aurora(W, C));
     e.cashLineLabel = {value: null, origin: null, source: null}; e.streamUpdates[0]!.streamId = "nao-existe"; e.covenantMeasurementIds = ["dez29-base"];
     e.causes[0]!.until = "2026-12-31";
     expect(completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"})).toEqual({status: "missing",
       missing: ["cashLineLabel", "causes.1.until", "streamUpdates.1.streamId", "covenantMeasurementIds"]});
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
-    const c = complete(auroraExtraction(aurora(hex("a"), hex("b")))), pins = priorResultPins(priors()), proposal = buildQuarterUpdatePremiseProposal(c.facts, pins);
+    const c = complete(auroraExtraction(aurora(W, C))), pins = priorResultPins(priors()), proposal = buildQuarterUpdatePremiseProposal(c.facts, pins);
     expect(proposal.summary).toMatchObject({situationId: "near-covenant", referenceDate: "2026-09-30"});
     expect(proposal.summary.items.every((x) => summaryGroups.includes(x.group) && summaryOrigins.includes(x.origin))).toBe(true);
     expect(proposal.summary.items.slice(0, 2).map((x) => x.labelKey)).toEqual(["priorWeeklyCash", "priorCovenant"]);
@@ -121,7 +116,7 @@ describe("quarter update premises proposed from a turn", () => {
     expect(proposal).toMatchObject({methodId: "update-after-quarter-close", methodVersion: "2026.10.26-v1"});
   });
   it("carries the dependents the person asked by name to update, and asks back a label that names none (independent review, round 5)", async () => {
-    const f = aurora(hex("a"), hex("b")), plan = f.dependents.find((d) => d.value.id === "plano-2027")!.value.label;
+    const f = aurora(W, C), plan = f.dependents.find((d) => d.value.id === "plano-2027")!.value.label;
     const planId = itemKeys(f.dependents.map((d) => d.value.label))[f.dependents.findIndex((d) => d.value.id === "plano-2027")]!;
     const e = auroraExtraction(f); e.askedDependentLabels = [plan.toUpperCase(), plan];
     const c = complete(e);
@@ -144,7 +139,7 @@ describe("quarter update premises proposed from a turn", () => {
     expect(amountInReais("12345678901234567890.123456789", "milhoes")).toBe("12345678901234567890123456.789");
   });
   it("carries a close in reais from R$ 1 million up, in any stated scale, and asks the scale nobody stated (independent review, round 7)", async () => {
-    const f = aurora(hex("a"), hex("b"));
+    const f = aurora(W, C);
     const written = (scale: "reais" | "milhares" | "milhoes", divisor: number) => {
       const e = auroraExtraction(f);
       const cash = e.lines.findIndex((l) => l.unit === "currency");
@@ -166,7 +161,7 @@ describe("quarter update premises proposed from a turn", () => {
     expect(completeQuarterUpdateFacts({extraction: unknown.e, priors: priors(), ids, currency: "BRL"})).toEqual({status: "missing", missing: [`lines.${unknown.cash + 1}.scale`, "causes.1.scale"]});
   });
   it("names an amount the basis cannot carry instead of dropping the card (independent review, round 7)", async () => {
-    const f = aurora(hex("a"), hex("b")), e = auroraExtraction(f), cash = e.lines.findIndex((l) => l.unit === "currency"), days = e.lines.findIndex((l) => l.unit !== "currency");
+    const f = aurora(W, C), e = auroraExtraction(f), cash = e.lines.findIndex((l) => l.unit === "currency"), days = e.lines.findIndex((l) => l.unit !== "currency");
     e.lines[cash]!.actual = "1".repeat(20); e.lines[cash]!.scale = "milhoes";
     e.causes[0]!.amount = "0.123456789"; e.causes[0]!.scale = "reais";
     if (days >= 0) e.lines[days]!.projected = "1250000";
@@ -187,12 +182,12 @@ describe("quarter update premises proposed from a turn", () => {
     expect(factsOrGaps(schema, {lines: [{value: {amount: "1"}}, {value: {amount: "2"}}]})).toMatchObject({ok: true});
   });
   it("names a rule of the close the method refuses instead of failing the turn", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b"))); e.ebitdaLineLabel = {...e.cashLineLabel};
+    const e = auroraExtraction(aurora(W, C)); e.ebitdaLineLabel = {...e.cashLineLabel};
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" && c.missing.includes("facts")).toBe(true);
   });
   it("names the basis limit as a gap in the turn instead of dropping the card: 20 dependents (independent review, round 8)", async () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    const e = auroraExtraction(aurora(W, C));
     e.dependents = Array.from({length: 20}, (_, k) => ({...e.dependents[k % e.dependents.length]!, label: k < e.dependents.length ? e.dependents[k]!.label : `Dependente ${k + 1}`}));
     expect(completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"})).toMatchObject({status: "complete"});
     const events: string[] = [];
@@ -202,19 +197,19 @@ describe("quarter update premises proposed from a turn", () => {
     expect(events).toEqual(["quarter_update_premises.expansion_refused"]);
   });
   it("asks for a label stated twice in a collection referenced by label (independent review, round 8)", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    const e = auroraExtraction(aurora(W, C));
     e.lines.push({...e.lines[0]!, actual: "999"}); e.facilities.push({...e.facilities[0]!});
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" ? c.missing.filter((m) => m.endsWith(".label")) : null).toEqual([`lines.${e.lines.length}.label`, `facilities.${e.facilities.length}.label`]);
   });
   it("asks two transforms of the same stream instead of offering a card the reader would refuse (independent review, round 9)", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b"))), u = e.streamUpdates.find((x) => x.kind === "scale")!;
+    const e = auroraExtraction(aurora(W, C)), u = e.streamUpdates.find((x) => x.kind === "scale")!;
     u.factor = "0.9"; e.streamUpdates.push({...u, factor: "0.7"});
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c).toEqual({status: "missing", missing: [`streamUpdates.${e.streamUpdates.length}.streamId`]});
   });
   it("never turns absence into zero: every optional operand of the close absent is asked or the method names it (independent review, round 9)", () => {
-    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    const e = auroraExtraction(aurora(W, C));
     // No series moved, no new stream, no facility, no action, no dependent, no linked or driver line, no question:
     // each is a legitimate none; a persisting cause left without its series is named by the method itself
     // (structural_cause_not_in_weekly_cash, covered in financial-model quarter-update-premises.test.ts).
@@ -223,23 +218,45 @@ describe("quarter update premises proposed from a turn", () => {
     const c = complete(e);
     expect(c.housePremiseKeys.sort()).toEqual(["covenantMeasurements", "materialityFloor"]);
     // A dependent nobody recomputes, or one bound to this close without what it reads, is asked.
-    const owners = auroraExtraction(aurora(hex("a"), hex("b"))), elsewhere = owners.dependents.findIndex((d) => d.recomputedBy === "none"),
+    const owners = auroraExtraction(aurora(W, C)), elsewhere = owners.dependents.findIndex((d) => d.recomputedBy === "none"),
       here = owners.dependents.findIndex((d) => d.recomputedBy !== "none");
     owners.dependents[elsewhere]!.owner = null; owners.dependents[here]!.scenario = null;
     const o = completeQuarterUpdateFacts({extraction: owners, priors: priors(), ids, currency: "BRL"});
     expect(o.status === "missing" ? [...o.missing].sort() : o).toEqual([`dependents.${elsewhere + 1}.owner`, `dependents.${here + 1}.scenario`].sort());
     // A scale nobody stated and a structural cause without its date or nature are asked.
-    const asked = auroraExtraction(aurora(hex("a"), hex("b"))), k = asked.causes.findIndex((x) => x.classification === "structural");
+    const asked = auroraExtraction(aurora(W, C)), k = asked.causes.findIndex((x) => x.classification === "structural");
     asked.causes[k]!.until = null; asked.causes[k]!.nature = null; asked.lines[0]!.scale = asked.lines[0]!.unit === "currency" ? null : asked.lines[0]!.scale;
     const m = completeQuarterUpdateFacts({extraction: asked, priors: priors(), ids, currency: "BRL"});
     expect(m.status === "missing" ? m.missing : m).toEqual(expect.arrayContaining([`causes.${k + 1}.until`, `causes.${k + 1}.nature`]));
+  });
+  it("runs the full chain over the pinned priors before the card: the reviewer's three refusals become named gaps (independent review, round 10)", async () => {
+    const cases: [string, (e: QuarterUpdateExtraction) => void][] = [
+      ["quarter_update_series_shared_by_causes", (e) => {
+        const structural = e.causes.filter((c) => c.classification === "structural").map((c) => c.label);
+        e.streamUpdates[0]!.causeLabels = structural;
+      }],
+      ["quarter_update_transform", (e) => {e.streamUpdates.find((u) => u.kind === "scale")!.factor = "0";}],
+      ["quarter_update_step_date", (e) => {e.steps.find((x) => x.mode === "residual")!.date = "2030-01-02";}],
+    ];
+    for (const [code, edit] of cases) {
+      const e = auroraExtraction(aurora(W, C)); edit(e);
+      const c = complete(e);
+      expect(quarterUpdateReaderGaps(c.facts, priors()), code).toEqual([`readerRefused.${code}`]);
+      const events: string[] = [];
+      const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo.", hasAttachments: true, recentUserMessages: [],
+        projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => e, log: (event) => {events.push(event);}});
+      expect(turn, code).toEqual({forAdvisor: {status: "missing", missing: [`readerRefused.${code}`]}, proposal: null});
+      expect(events, code).toEqual(["quarter_update_premises.reader_refused"]);
+    }
+    // The calibration close passes the same chain, so its card is offered.
+    expect(quarterUpdateReaderGaps(complete(auroraExtraction(aurora(W, C))).facts, priors())).toEqual([]);
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;
       const result = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo.", hasAttachments: true, recentUserMessages: [],
         projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => loaded,
-        extract: async () => {extracted = true; return {...auroraExtraction(aurora(hex("a"), hex("b"))), turnIntent: intent};}, log: (event) => {events.push(event);}});
+        extract: async () => {extracted = true; return {...auroraExtraction(aurora(W, C)), turnIntent: intent};}, log: (event) => {events.push(event);}});
       return {extracted, result, events};
     };
     expect(await run({weeklyCash: null, covenant: priors().covenant})).toEqual({extracted: false, events: ["quarter_update_premises.priors_missing"],

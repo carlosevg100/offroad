@@ -397,8 +397,8 @@ begin
  w:=private.quarter_update_latest_prior_v1(job_row.organization_id,work,'weekly_cash',job_row.authorization_subject_id);
  cv:=private.quarter_update_latest_prior_v1(job_row.organization_id,work,'covenant',job_row.authorization_subject_id);
  return jsonb_build_object(
-  'weeklyCash',case when w is null then null else jsonb_build_object('executionId',w->'executionId','resultFingerprint',w->'resultFingerprint','envelopeFingerprint',w->'envelopeFingerprint','packet',w->'packet','streamIds',w->'streamIds') end,
-  'covenant',case when cv is null then null else jsonb_build_object('executionId',cv->'executionId','resultFingerprint',cv->'resultFingerprint','envelopeFingerprint',cv->'envelopeFingerprint','packet',cv->'packet') end);
+  'weeklyCash',case when w is null then null else jsonb_build_object('executionId',w->'executionId','resultFingerprint',w->'resultFingerprint','envelopeFingerprint',w->'envelopeFingerprint','packet',w->'packet','streamIds',w->'streamIds','inputSnapshot',w->'inputSnapshot') end,
+  'covenant',case when cv is null then null else jsonb_build_object('executionId',cv->'executionId','resultFingerprint',cv->'resultFingerprint','envelopeFingerprint',cv->'envelopeFingerprint','packet',cv->'packet','inputSnapshot',cv->'inputSnapshot') end);
 end $$;
 revoke all on function private.worker_quarter_update_priors_v1(uuid,text) from public,anon,authenticated,service_role;
 grant execute on function private.worker_quarter_update_priors_v1(uuid,text) to authenticated;

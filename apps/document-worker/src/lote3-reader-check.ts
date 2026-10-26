@@ -8,6 +8,17 @@ const sequential = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(
 /** A refusal message as a gap key: lower case, letters, digits and underscores only. */
 const code = (message: string) => message.toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "unknown";
 
+/** The hypotheses adopted in memory as one working basis, one entry per hypothesis in order. */
+export function inMemoryBasis(hypotheses: readonly ProposedHypothesis[], version = 900002): BoundBasis {
+  const workId = sequential(900001), versionId = sequential(version), purpose = "premise-check";
+  const entries = hypotheses.map((h, n) => ({decisionId: sequential(n + 1), slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"),
+    kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value, observationId: null, referenceValue: null, referenceDimensions: null,
+    definitionKind: "managerial", actorId: sequential(900003), reason: h.reason}));
+  const canonical = JSON.stringify({schemaVersion: "contextual-adoption.v1", versionId, setId: sequential(900004), workId, purpose, contextKey: purpose, revision: 1,
+    previousVersionId: null, classification: "working_basis", entries});
+  return {envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}, scope: {workId, purpose, versionId}};
+}
+
 /** Before a card is offered, the proposed hypotheses are adopted in memory exactly as a confirmation adopts them
  * (one entry per slot, in proposal order) and handed to the method's own reader and packet. Two hypotheses for
  * the same slot with different values, or anything the reader or the packet refuses, become named gaps now,
@@ -21,13 +32,7 @@ export function readerGaps(hypotheses: readonly ProposedHypothesis[], run: (basi
     else if (slots.get(slot) !== value) conflicts.add(`conflictingSlot.${h.fieldPath.split(".").slice(2).join(".")}`);
   }
   if (conflicts.size) return [...conflicts];
-  const workId = sequential(900001), versionId = sequential(900002), purpose = "premise-check";
-  const entries = kept.map((h, n) => ({decisionId: sequential(n + 1), slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"),
-    kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value, observationId: null, referenceValue: null, referenceDimensions: null,
-    definitionKind: "managerial", actorId: sequential(900003), reason: h.reason}));
-  const canonical = JSON.stringify({schemaVersion: "contextual-adoption.v1", versionId, setId: sequential(900004), workId, purpose, contextKey: purpose, revision: 1,
-    previousVersionId: null, classification: "working_basis", entries});
-  try { run({envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}, scope: {workId, purpose, versionId}}); }
+  try { run(inMemoryBasis(kept)); }
   catch (error) { return [`readerRefused.${code(error instanceof Error ? error.message : String(error))}`]; }
   return [];
 }

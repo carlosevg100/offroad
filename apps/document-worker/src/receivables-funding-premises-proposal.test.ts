@@ -28,7 +28,7 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
       rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays ?? "none",
       upfrontFee: v.upfrontFee, collateral: v.collateral, leadDaysMin: v.leadDaysMin, leadDaysMax: v.leadDaysMax, maxDaysPastDue: el?.maxDaysPastDue ?? null,
       maxRemainingTermDays: el?.maxRemainingTermDays ?? null, registrationRule: el?.registrationRule ?? null, minCreditTier: el?.minCreditTier ?? null,
-      sublimitPerDebtor: el ? el.sublimitPerDebtor ?? "none" : null, sublimitGroup: el?.sublimitGroup ?? null, anchorItemLabels: (el?.anchorItemIds ?? []).map(label)};}),
+      sublimitPerDebtor: el ? el.sublimitPerDebtor ?? "none" : null, sublimitGroup: el ? el.sublimitGroup ?? "none" : null, anchorItemLabels: (el?.anchorItemIds ?? []).map(label)};}),
   };
 }
 const idsOf = (f: ReceivablesFundingFacts) => ({receivablesFundingId: f.receivablesFundingId, entityId: f.entityId, definitionVersionId: f.definitionVersionId});
@@ -186,6 +186,23 @@ describe("receivables funding premises proposed from a turn", () => {
     const text = JSON.stringify(packet!.result);
     expect(text.includes("\"leadDays\":null")).toBe(true);
     expect(text.includes("\"leadDays\":{\"min\":0")).toBe(false);
+  });
+  it("asks whether two sale options capped per debtor share their buyers, never assuming independence (independent review, round 10)", () => {
+    const f = aurora(), e = auroraExtraction(f), fidc = e.options.find((o) => o.kind === "fidc")!;
+    const two = (group1: string | null, group2: string | null) => ({...e, options: [...e.options.filter((o) => o.kind !== "fidc"),
+      {...fidc, label: "FIDC produto A", sublimitPerDebtor: "3", sublimitGroup: group1}, {...fidc, label: "FIDC produto B", sublimitPerDebtor: "3", sublimitGroup: group2}]});
+    const n = e.options.filter((o) => o.kind !== "fidc").length;
+    const asked = completeReceivablesFundingFacts({extraction: two(null, null), ids: idsOf(f), currency: "BRL"});
+    expect(asked.status === "missing" ? asked.missing.filter((m) => m.endsWith("sublimitGroup")) : asked).toEqual([`options.${n + 1}.sublimitGroup`, `options.${n + 2}.sublimitGroup`]);
+    // Stated either way, the card is offered, and the packet reads the stated grouping.
+    const packetOf = (g1: string, g2: string) => {
+      const c = completeReceivablesFundingFacts({extraction: two(g1, g2), ids: idsOf(f), currency: "BRL"});
+      if (c.status !== "complete") throw new Error(JSON.stringify(c));
+      let packet: {result: unknown} | undefined;
+      expect(readerGaps(proposeReceivablesFundingHypotheses(c.facts), (b) => {packet = receivablesFundingReader(b) as never;})).toEqual([]);
+      return JSON.stringify(packet!.result);
+    };
+    expect(packetOf("none", "none")).not.toBe(packetOf("Cotistas do FIDC", "Cotistas do FIDC"));
   });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};

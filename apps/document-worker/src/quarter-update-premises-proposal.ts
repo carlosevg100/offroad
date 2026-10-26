@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {composeQuarterUpdateClose, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
+import {composeQuarterUpdateFromStoredPriors, prepareQuarterUpdatePacket, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
 import {citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
@@ -18,7 +18,9 @@ export function shouldProposeQuarterUpdatePremises(message: string, hasAttachmen
 const priorSchema = z.looseObject({executionId: z.uuid(), resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), envelopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   packet: z.looseObject({}),
   /** The stream ids of the prior weekly cash input, when the database states them; the packet names only the outflows. */
-  streamIds: z.array(z.string()).optional()});
+  streamIds: z.array(z.string()).optional(),
+  /** The stored input snapshot of the prior execution, verbatim: the confirmation composes the close over it. */
+  inputSnapshot: z.string().min(2)});
 export const quarterUpdatePriorsSchema = z.looseObject({weeklyCash: priorSchema.nullable(), covenant: priorSchema.nullable()});
 export type QuarterUpdatePriorsRead = z.infer<typeof quarterUpdatePriorsSchema>;
 type Prior = z.infer<typeof priorSchema>;
@@ -272,11 +274,18 @@ export const priorResultPins = (priors: {weeklyCash: Prior; covenant: Prior}): P
 
 /** What the method's own reader and packet would refuse after confirmation, named before the card is offered. */
 /** The method's own reader and packet over a basis, as the confirmation will run them. */
-export const quarterUpdateReader = (b: BoundBasis) => {
-  return composeQuarterUpdateClose(b);
-};
-export function quarterUpdateReaderGaps(facts: QuarterUpdateFacts): string[] {
-  return readerGaps(proposeQuarterUpdateHypotheses(facts), quarterUpdateReader);
+/** The full chain the confirmation runs, over the pinned priors: the close composed with the stored prior inputs
+ * verbatim, then the packet. Series shared by causes, a zero factor, a draw outside the horizon and any other
+ * refusal of the reader or the packet become named gaps before the card is offered (independent review, round 10). */
+export const quarterUpdateReader = (priors: {weeklyCash: Prior; covenant: Prior}, askedDependentIds: readonly string[] = []) => (b: BoundBasis) =>
+  prepareQuarterUpdatePacket(composeQuarterUpdateFromStoredPriors({update: b, question: "Verificação das premissas antes da confirmação",
+    prior: {weeklyCash: priors.weeklyCash.inputSnapshot, covenant: priors.covenant.inputSnapshot}, askedDependentIds: [...askedDependentIds]}));
+export function quarterUpdateReaderGaps(facts: QuarterUpdateFacts, priors: {weeklyCash: Prior; covenant: Prior}, askedDependentIds: readonly string[] = []): string[] {
+  // The confirmation binds the close to the company the priors were measured on; the check does the same.
+  let entityId = facts.entityId;
+  try { entityId = (JSON.parse(priors.weeklyCash.inputSnapshot) as {analysis?: {entityId?: string}}).analysis?.entityId ?? entityId; } catch { /* the reader names it */ }
+  const hypotheses = proposeQuarterUpdateHypotheses(facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId}}));
+  return readerGaps(hypotheses, quarterUpdateReader(priors, askedDependentIds));
 }
 
 /** One turn's premise step for the quarter close. Without both prior completed results of the work it proposes
@@ -305,6 +314,6 @@ export async function proposeQuarterUpdatePremisesForTurn(input: {
       if (completion.status === "complete") asked = completion.askedDependentIds;
       return completion;
     },
-    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found), asked), readerCheck: quarterUpdateReaderGaps}, {...input, entry, projectId: input.projectId,
+    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found), asked), readerCheck: (facts) => quarterUpdateReaderGaps(facts, found, asked)}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({documentFields: await input.loadEvidence(), ...context})});
 }

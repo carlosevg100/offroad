@@ -14,7 +14,7 @@ const {proposeReceivablesFundingPremisesForTurn} = await import("./receivables-f
 const {proposeQuarterUpdatePremisesForTurn} = await import("./quarter-update-premises-proposal");
 
 const base = {hasAttachments: false, recentUserMessages: [], projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], extract: async () => ({}), log: () => {}};
-const prior = (n: number) => ({executionId: `a0000000-0000-4000-8000-00000000007${n}`, resultFingerprint: String(n).repeat(64), envelopeFingerprint: "a".repeat(64), packet: {}});
+const prior = (n: number) => ({executionId: `a0000000-0000-4000-8000-00000000007${n}`, resultFingerprint: String(n).repeat(64), envelopeFingerprint: "a".repeat(64), packet: {}, inputSnapshot: "{}"});
 
 describe("any refusal to expand facts into hypotheses is a gap in the turn, for the four lote 3 methods (independent review, round 8)", () => {
   it("each turn opts in, and its own expansion throwing yields a named gap, never a dropped card", async () => {

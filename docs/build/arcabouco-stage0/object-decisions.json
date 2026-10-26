@@ -343528,7 +343528,7 @@
       "owner": "Claude, implementação do lote 3 de fichas (fechamento do trimestre sobre resultados anteriores)",
       "decision": "preservar",
       "stage": "fichas C54, resultados anteriores",
-      "reason": "Leitura do worker, com a capacidade do job e o sujeito do job, dos pacotes anteriores e das impressões das bases para propor o cartão.",
+      "reason": "Leitura do worker, com a capacidade do job e o sujeito do job, dos pacotes anteriores, das impressões das bases e das entradas guardadas, para propor o cartão e rodar em memória a cadeia inteira da confirmação antes de oferecê-lo.",
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
