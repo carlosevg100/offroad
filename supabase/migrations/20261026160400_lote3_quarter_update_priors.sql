@@ -284,7 +284,7 @@ revoke all on function private.execution_capital_payload_current_v1(jsonb,jsonb,
 -- execution only with the same priors.
 create function private.request_work_execution_producer_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
-declare c jsonb;s jsonb;org uuid;work uuid;resolved jsonb:='[]';ref jsonb;v_role text;expected jsonb;r jsonb;ex uuid;item jsonb;
+declare c jsonb;s jsonb;org uuid;work uuid;resolved jsonb:='[]';ref jsonb;v_role text;expected jsonb;r jsonb;ex uuid;item jsonb;ex_org uuid;ex_work uuid;
 begin
  if auth.uid() is null then raise exception 'execution_subject_required' using errcode='42501';end if;
  if p_contract_text is null or octet_length(p_contract_text)>1048576 or p_snapshot_text is null or octet_length(p_snapshot_text)>8388608
@@ -309,6 +309,11 @@ begin
  end loop;
  ex:=(c->>'executionId')::uuid;
  if ex is null then raise exception 'execution_contract_denied' using errcode='42501';end if;
+ -- An execution id that already belongs to another work or organization is treated exactly as a new one
+ -- would be up to this point: nothing is recorded or compared for it, so no conflict can reveal it, and the v2
+ -- producer refuses it as it refuses any contract it cannot issue.
+ select e.organization_id,e.work_id into ex_org,ex_work from public.work_executions e where e.id=ex;
+ if ex_org is null or (ex_org=org and ex_work=work) then
  -- Recorded before the execution exists (the key is deferred), so the provenance walk inside the v2 producer
  -- finds them; a replay of the same contract finds its own rows, and any other priors under it conflict.
  for item in select value from jsonb_array_elements(resolved) loop
@@ -321,6 +326,7 @@ begin
     and p.prior_input_fingerprint=x.v->>'inputFingerprint' and p.prior_result_fingerprint=x.v->>'resultFingerprint')<>2
   or (select count(*) from private.execution_prior_results p where p.organization_id=org and p.execution_id=ex)<>2
  then raise exception 'execution_request_conflict' using errcode='23505',detail=ex::text;end if;
+ end if;
  r:=private.request_work_execution_producer_v2(p_contract_text,p_snapshot_text,p_gates_text);
  if r->>'executionId' is distinct from ex::text then raise exception 'execution_request_conflict' using errcode='23505',detail=coalesce(r->>'executionId','');end if;
  return r||jsonb_build_object('priorResults',resolved);

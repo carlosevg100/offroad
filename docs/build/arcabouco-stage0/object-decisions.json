@@ -343282,7 +343282,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 330,
+          "line": 336,
           "anchor": "create function public.request_work_execution_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343337,7 +343337,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 338,
+          "line": 344,
           "anchor": "create function private.quarter_update_latest_prior_v1(p_org uuid,p_work uuid,p_role text,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343402,7 +343402,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 362,
+          "line": 368,
           "anchor": "create function private.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343467,7 +343467,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 377,
+          "line": 383,
           "anchor": "create function public.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343532,7 +343532,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 384,
+          "line": 390,
           "anchor": "create function private.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343597,7 +343597,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 399,
+          "line": 405,
           "anchor": "create function public.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }

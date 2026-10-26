@@ -91,9 +91,32 @@ begin
  -- Embedded priors equal to a stored input are not enough: the execution itself must carry the v3 record.
  if private.quarter_update_priors_recorded_v1(c,jsonb_build_object('analysis',jsonb_build_object('prior',jsonb_build_object(
    'weeklyCash',(select s.payload->'analysis' from private.execution_input_snapshots s limit 1),'covenant','{}'::jsonb)))) then raise exception 'equal analyses without a v3 record accepted';end if;
- if position('execution_capital_payload_current_v1' in pg_get_functiondef('private.request_work_execution_v1(uuid,text,text)'::regprocedure))=0 then raise exception 'v1 path lost the provenance walk';end if;
  raise notice 'PASS: provenance walk binds the quarter close and leaves other methods as they were';
 end $$;
+
+-- 5b. Behaviourally: a quarter close requested through the common request path (request_work_execution_v1,
+-- which the v1 and v2 producers both reach through request_work_execution_as_subject_v1) carries no v3 record
+-- of its priors and is refused by the provenance walk, even with priors embedded in the snapshot.
+insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
+values('synthetic-quarter-close',true,'universal','update-after-quarter-close','2026.10.26-v1','tested','Synthetic approver',current_date,'Synthetic rollback-only fixture');
+insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
+select 'synthetic-quarter-close-2026.10.26-v1','update-after-quarter-close','2026.10.26-v1',repeat('a',64),manifest,components,evidence,approval,'synthetic-quarter-close'
+from private.platform_method_releases where id='synthetic-execution-test-v1';
+insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
+select 'a4171000-0000-4000-9000-0000000000c5','synthetic-quarter-close-2026.10.26-v1','offroad-execution-json-utf16-v1',payload::text,encode(extensions.digest(payload::text,'sha256'),'hex'),adapter_source_commit,review_evidence
+from (select jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platformReleaseId}','"synthetic-quarter-close-2026.10.26-v1"'),'{method,methodId}','"update-after-quarter-close"'),'{method,methodVersion}','"2026.10.26-v1"') payload,
+ p.adapter_source_commit,p.review_evidence from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') x;
+create temporary table quarter_close_request as
+select jsonb_set(jsonb_set(pg_temp.execution_contract_fixture('a4171000-0000-4000-9000-0000000000c6'),'{method}',(select payload->'method' from private.execution_method_profiles where id='a4171000-0000-4000-9000-0000000000c5')),
+ '{inputs,fingerprint}',to_jsonb(encode(extensions.digest(snap::text,'sha256'),'hex'))) contract,snap::text snapshot
+from (select jsonb_build_object('schemaVersion','quarter-update-packet-input.v1','question','Fechou o trimestre. Atualiza tudo.','askedDependentIds','[]'::jsonb,
+ 'analysis',jsonb_build_object('prior',jsonb_build_object('weeklyCash','{}'::jsonb,'covenant','{}'::jsonb),'update','{}'::jsonb)) snap) s;
+select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000001',true);
+select pg_temp.expect_execution_command_error($q$select private.request_work_execution_v1('a4171000-0000-4000-9000-0000000000c5',contract::text,snapshot) from quarter_close_request$q$,
+ 'execution_payload_provenance_denied','a quarter close outside v3 is refused by the provenance walk');
+-- And v3 refuses a reference list without both roles before anything is recorded.
+select pg_temp.expect_execution_command_error($q$select public.request_work_execution_v3(contract::text,snapshot,'{}','[]') from quarter_close_request$q$,
+ 'quarter_update_priors_invalid','v3 without both priors refused');
 
 -- 6. Grants: the three doors for authenticated only; every helper and the pins closed.
 do $$ declare f text;
