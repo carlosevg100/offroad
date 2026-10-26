@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-10-26T17:44:58Z",
+  "manifestHash": "6924fe482364fa48c7df738965fb583ec6bca25deadfd4568fcb55705a031a25",
+  "rationale": "Registro da aprovação expressa do fundador recebida nesta tarefa em 26/10/2026 para o procedimento Construir projeção operacional por driver, versão 2026.10.26-v1 (ficha C24). Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-publication/founder-instruction.json; SHA-256 d5dabdd6081143ce924fedad9c093f0f9ffcf5e0f95dd833e8bb979878898fca. Aprova o corpus profissional desta versão; não aprova parâmetros legais ou tributários específicos, não ativa o procedimento e não certifica execução."
+}
