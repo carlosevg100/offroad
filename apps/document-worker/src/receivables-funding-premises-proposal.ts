@@ -203,11 +203,15 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     if (name !== null && taxesByName.get(name)!.size > 1) missing.push(`items.${k + 1}.debtorTaxId`);
     if (i.debtorTaxId !== null && namesByTax.get(i.debtorTaxId)!.size > 1) missing.push(`items.${k + 1}.debtorLabel`);
   });
-  const debtorKeyOf = (i: ReceivablesFundingExtraction["items"][number]) => {
+  const debtorKeyOf = (i: ReceivablesFundingExtraction["items"][number], k: number) => {
+    // A group of several debtors is a set identified by the group's own record identity (source and anchor, or its
+    // position when no anchor is stated), never by its descriptive label: two "Varejo" groups at two borderô rows are
+    // two sets; whether they share debtors is the stated debtorSetDisjoint (round 21).
+    if (i.debtorCount !== 1) return stableKey(`conjunto ${statedLabel(i.source)} ${i.anchor === null ? `posicao ${itemIds[k]}` : statedLabel(i.anchor)}`, 80);
     if (i.debtorTaxId !== null) return `cnpj-${i.debtorTaxId}`;
     const name = nameOf(i), taxes = name === null ? [] : [...taxesByName.get(name)!];
     if (taxes.length === 1) return `cnpj-${taxes[0]}`;
-    // A set of debtors (or a lot without a stated debtor where no per-debtor sublimit applies) keys by its own label.
+    // A single debtor named without a CNPJ keys by the stated name; one with neither is asked where it matters.
     return stableKey(i.debtorLabel ?? i.label, 80);
   };
   // A single debtor with neither name nor CNPJ has no identity: where a per-debtor sublimit applies, the lot label is
@@ -224,7 +228,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     if (missing.length > before) return null;
     const single = i.debtorCount === 1;
     if (!single && i.debtorSetDisjoint === null) {missing.push(p + "debtorSetDisjoint"); return null;}
-    const debtor = debtorKeyOf(i);
+    const debtor = debtorKeyOf(i, k);
     const free = i.encumbrance === "free";
     return {value: {id: itemIds[k]!, label: i.label, amount: i.amount, contract: i.contract!, encumbrance: i.encumbrance!, encumbranceHolder: free ? null : i.encumbranceHolder,
       releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier!,
