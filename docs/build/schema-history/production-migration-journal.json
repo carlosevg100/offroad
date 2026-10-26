@@ -2724,6 +2724,21 @@
       "name": "worker_claim_executor_list_bound",
       "version": "20261026215637",
       "statements_md5": "febe2894d773b331c5630dc5789003ab"
+    },
+    {
+      "name": "lote3_financial_objectives",
+      "version": "20261026220000",
+      "statements_md5": "15795c4a009be90514b59f2f6f1409ba"
+    },
+    {
+      "name": "lote3_bridge",
+      "version": "20261026220200",
+      "statements_md5": "1c7cf52bb79a0508e2334234fe3b261c"
+    },
+    {
+      "name": "lote3_quarter_update_priors",
+      "version": "20261026220400",
+      "statements_md5": "019a1ddd83a416f31fdc97effc0d525f"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",

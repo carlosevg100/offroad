@@ -153,7 +153,7 @@ begin
   -- The priors are the stored inputs the v3 producer recorded for this execution, checked whole above; the walk reads the close alone. -- quarter close
   payload:=payload #- '{analysis,prior}';pending:=array[payload]; -- quarter close
  end if; -- quarter close
- if c#>>'{method,methodId}' not in ('prepare-capital-structure-decision','analyze-investment-project','compare-financing-proposals','analyze-relative-debt-cost','assess-debt-capacity','build-company-debt-table','measure-covenant-headroom','project-weekly-cash','update-after-quarter-close') then return true;end if;
+ if c#>>'{method,methodId}' not in ('prepare-capital-structure-decision','analyze-investment-project','compare-financing-proposals','analyze-relative-debt-cost','assess-debt-capacity','build-company-debt-table','measure-covenant-headroom','project-weekly-cash','build-operating-projection','challenge-financial-projection','monetize-receivables-for-working-capital','update-after-quarter-close') then return true;end if;
  -- Each released method is bound to its exact version, manifest and payload schema.
  if (c#>>'{method,methodId}'='prepare-capital-structure-decision' and (c#>>'{method,methodVersion}' is distinct from '2026.09.21-v4'
    or c#>>'{method,manifestHash}' is distinct from '2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478'
@@ -179,6 +179,18 @@ begin
  or (c#>>'{method,methodId}'='project-weekly-cash' and (c#>>'{method,methodVersion}' is distinct from '2026.10.23-v1'
    or c#>>'{method,manifestHash}' is distinct from 'b7e135f7e60457bfd79f19817a064f1d69bf7301c1f7efcefed736e771362fb1'
    or payload->>'schemaVersion' is distinct from 'weekly-cash-packet-input.v1'))
+ or (c#>>'{method,methodId}'='build-operating-projection' and (c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1'
+   or c#>>'{method,manifestHash}' is distinct from '4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a'
+   or payload->>'schemaVersion' is distinct from 'operating-projection-packet-input.v1'))
+ or (c#>>'{method,methodId}'='challenge-financial-projection' and (c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1'
+   or c#>>'{method,manifestHash}' is distinct from '1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64'
+   or payload->>'schemaVersion' is distinct from 'projection-challenge-packet-input.v1'))
+ or (c#>>'{method,methodId}'='monetize-receivables-for-working-capital' and (c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1'
+   or c#>>'{method,manifestHash}' is distinct from '40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5'
+   or payload->>'schemaVersion' is distinct from 'receivables-funding-packet-input.v1'))
+ or (c#>>'{method,methodId}'='update-after-quarter-close' and (c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1'
+   or c#>>'{method,manifestHash}' is distinct from 'f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729'
+   or payload->>'schemaVersion' is distinct from 'quarter-update-packet-input.v1'))
  or total_bytes>8388608 then return false;end if;
  -- No authoritative derivation-to-observation publication receipt exists yet. A caller's
  -- fingerprint must never impersonate one, including an otherwise numerically aligned link.

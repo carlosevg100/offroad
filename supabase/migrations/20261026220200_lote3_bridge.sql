@@ -1,7 +1,7 @@
 -- Conversation bridge of lote 3 (fichas C24, C26, C35 and C54), as for lotes 1 and 2: premise cards for
 -- the operating projection, the projection challenge, the receivables funding and the quarter close, each
 -- confirmed into its own context; the four results as execution_result revisions; and the cited reply. The
--- quarter close reads its prior results through 20261026160400_lote3_quarter_update_priors. A proposal
+-- quarter close reads its prior results through 20261026220400_lote3_quarter_update_priors. A proposal
 -- never adopts, calculates or grants.
 set local lock_timeout='5s';
 

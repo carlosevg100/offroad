@@ -27736,7 +27736,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 138,
           "anchor": "create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
           "mechanism": "direct_ddl"
@@ -45191,7 +45191,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 224,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
@@ -96231,7 +96231,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261026160000_lote3_financial_objectives.sql",
+          "path": "supabase/migrations/20261026220000_lote3_financial_objectives.sql",
           "line": 18,
           "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
           "mechanism": "direct_ddl"
@@ -319604,7 +319604,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 27,
           "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
           "mechanism": "direct_ddl"
@@ -320726,7 +320726,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 344,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -321007,7 +321007,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado da projeção operacional; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 87,
           "anchor": "create function private.execution_result_operating_projection_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -321062,7 +321062,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado da crítica da projeção; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 120,
           "anchor": "create function private.execution_result_projection_challenge_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -321117,7 +321117,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do giro com recebíveis; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 151,
           "anchor": "create function private.execution_result_receivables_funding_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -321172,7 +321172,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do fechamento do trimestre; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
           "line": 190,
           "anchor": "create function private.execution_result_quarter_update_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -342931,7 +342931,7 @@
       "reason": "Método, versão liberada e esquema de pacote que cada papel do fechamento do trimestre lê.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 39,
           "anchor": "create function private.quarter_update_prior_method_v1(p_role text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -342986,7 +342986,7 @@
       "reason": "Veredito de identidade de um resultado anterior: outra organização ou outro trabalho como não encontrado, sem revelar existência; resultado não concluído recusado pelo nome.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 50,
           "anchor": "create function private.quarter_update_prior_identity_v1(p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text",
           "mechanism": "direct_ddl"
@@ -343041,7 +343041,7 @@
       "reason": "Veredito de conteúdo de um resultado anterior: método e versão, impressão do pacote, entrada guardada igual à copiada e fontes fixadas de novo no contrato.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 61,
           "anchor": "create function private.quarter_update_prior_content_v1(p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,p_prior_snapshot jsonb,p_result jsonb) returns text",
           "mechanism": "direct_ddl"
@@ -343096,7 +343096,7 @@
       "reason": "Resolve uma referência contra as linhas guardadas, com o fechamento de fontes do resultado anterior pelo mecanismo normal de direitos; recusa cada falha pelo nome.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 81,
           "anchor": "create function private.quarter_update_prior_resolve_v1(p_org uuid,p_work uuid,p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -343151,7 +343151,7 @@
       "reason": "Na verificação de proveniência, exige os resultados anteriores que o produtor v3 resolveu e registrou para a própria execução, iguais byte a byte à entrada guardada; pedido por v1 ou v2 não tem registro e é recusado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 109,
           "anchor": "create function private.quarter_update_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
@@ -343216,8 +343216,8 @@
       "reason": "Produtor v3 só do fechamento do trimestre: resolve as referências anteriores, chama o produtor v2 sem mudança e fixa os ids das execuções anteriores.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 285,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 297,
           "anchor": "create function private.request_work_execution_producer_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343281,8 +343281,8 @@
       "reason": "Porta autenticada do produtor v3, invocador.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 336,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 348,
           "anchor": "create function public.request_work_execution_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343336,8 +343336,8 @@
       "reason": "Último resultado concluído de cada papel, determinístico, com a entrada guardada e as fontes; ausente quando o fechamento de fontes não pode ser lido.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 344,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 356,
           "anchor": "create function private.quarter_update_latest_prior_v1(p_org uuid,p_work uuid,p_role text,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343401,8 +343401,8 @@
       "reason": "Leitura, para quem confirma as premissas do fechamento, dos resultados anteriores de onde o pedido é composto.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 368,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 380,
           "anchor": "create function private.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343466,8 +343466,8 @@
       "reason": "Porta autenticada da leitura dos resultados anteriores, invocador.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 383,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 395,
           "anchor": "create function public.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343531,8 +343531,8 @@
       "reason": "Leitura do worker, com a capacidade do job e o sujeito do job, dos pacotes anteriores, das impressões das bases e das entradas guardadas, para propor o cartão e rodar em memória a cadeia inteira da confirmação antes de oferecê-lo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 390,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 402,
           "anchor": "create function private.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343596,8 +343596,8 @@
       "reason": "Porta autenticada da leitura do worker, invocador.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 405,
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+          "line": 417,
           "anchor": "create function public.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343715,7 +343715,7 @@
       "reason": "Execuções anteriores sobre as quais um fechamento do trimestre foi emitido, fixadas por id com as impressões da entrada e do pacote; escritas pelo produtor v3 na mesma transação, imutáveis, sem concessão.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 10,
           "anchor": "create table private.execution_prior_results (",
           "mechanism": "direct_ddl"
@@ -343762,7 +343762,7 @@
       "reason": "Negação restritiva em toda operação: só funções definidoras do produtor escrevem.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 32,
           "anchor": "create policy execution_prior_results_deny on private.execution_prior_results as restrictive for all to public using(false) with check(false);",
           "mechanism": "direct_ddl"
@@ -343801,7 +343801,7 @@
       "reason": "Linha imutável depois de escrita.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 34,
           "anchor": "create trigger execution_prior_results_immutable before update or delete on private.execution_prior_results for each row execute function private.guard_contribution_immutable_v1();",
           "mechanism": "direct_ddl"
@@ -343840,7 +343840,7 @@
       "reason": "Truncamento recusado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
+          "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
           "line": 35,
           "anchor": "create trigger execution_prior_results_truncate_guard before truncate on private.execution_prior_results for each statement execute function private.guard_platform_ledger_truncate_v1();",
           "mechanism": "direct_ddl"
@@ -351456,6 +351456,24 @@
       "reason": "Ponte da conversa do lote 2: cartões de premissas da tabela de dívida, da folga de covenant e do caixa semanal em contextos próprios, resultados como revisões com blocos espelhados do contrato e resposta citada; uma proposta nunca adota, calcula ou concede."
     },
     {
+      "path": "supabase/migrations/20261026220400_lote3_quarter_update_priors.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "O fechamento do trimestre executa sobre uma base, o fechamento; os resultados anteriores de caixa semanal e covenant são execuções concluídas do mesmo trabalho, copiadas pelo servidor no snapshot, conferidas byte a byte, recusadas pelo nome, fixadas por id e com as fontes no contrato; o caminho dos demais métodos não muda."
+    },
+    {
+      "path": "supabase/migrations/20261026220200_lote3_bridge.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "Ponte da conversa do lote 3: cartões de premissas da projeção operacional, da crítica da projeção, do giro com recebíveis e do fechamento do trimestre em contextos próprios, os quatro resultados como revisões com blocos espelhados do contrato e resposta citada; uma proposta nunca adota, calcula ou concede."
+    },
+    {
+      "path": "supabase/migrations/20261026220000_lote3_financial_objectives.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "O roteador reconhece a projeção operacional, a crítica da projeção, o giro com recebíveis e o fechamento do trimestre como objetivos próprios, com paridade de persistência no pré-voo; observa a intenção, não libera método nem concede execução."
+    },
+    {
       "path": "supabase/migrations/20261026215637_worker_claim_executor_list_bound.sql",
       "kind": "migration",
       "decision": "preservar",
@@ -351752,12 +351770,6 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 4, atos de produção",
       "reason": "M2 parte 4: a evidência do calendário do Copom admite o JSON do normativo do Banco Central, único meio em que o Comunicado nº 43.383 é publicado."
-    },
-    {
-      "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-      "kind": "migration",
-      "decision": "preservar",
-      "reason": "O fechamento do trimestre executa sobre uma base, o fechamento; os resultados anteriores de caixa semanal e covenant são execuções concluídas do mesmo trabalho, copiadas pelo servidor no snapshot, conferidas byte a byte, recusadas pelo nome, fixadas por id e com as fontes no contrato; o caminho dos demais métodos não muda."
     }
   ],
   "staging_archive": [

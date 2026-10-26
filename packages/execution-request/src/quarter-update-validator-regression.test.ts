@@ -12,14 +12,14 @@ const body = (file: string) => {
 };
 
 describe("the provenance walk after the quarter close priors", () => {
-  it("is the lote 2 body byte for byte for every other method", () => {
-    const before = body("20261023204746_lote2_payload_provenance.sql"), after = body("20261026160400_lote3_quarter_update_priors.sql");
+  it("is the lote 3 provenance body (20261026203118, in production) byte for byte for every other method, every lote 3 binding kept", () => {
+    const before = body("20261026203118_lote3_payload_provenance.sql"), after = body("20261026220400_lote3_quarter_update_priors.sql");
     const added = after.split("\n").filter((line) => line.endsWith(" -- quarter close"));
     expect(added.length).toBe(6);
-    const restored = after.split("\n").filter((line) => !line.endsWith(" -- quarter close")).join("\n")
-      .replace(",'update-after-quarter-close') then return true;end if;", ") then return true;end if;");
+    const restored = after.split("\n").filter((line) => !line.endsWith(" -- quarter close")).join("\n");
     expect(restored).toBe(before);
-    // The only other difference is the quarter close in the list of bound methods.
-    expect(after.match(/update-after-quarter-close/g)).toHaveLength(2);
+    // Every lote 3 method stays bound by version, manifest and payload schema.
+    for (const id of ["build-operating-projection", "challenge-financial-projection", "monetize-receivables-for-working-capital", "update-after-quarter-close"])
+      expect(after.includes(`c#>>'{method,methodId}'='${id}' and (c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1'`), id).toBe(true);
   });
 });
