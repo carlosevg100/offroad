@@ -1,7 +1,7 @@
 ---
 id: challenge-financial-projection
 version: 2026.10.26-v1
-maturity: implemented
+maturity: tested
 title_pt: Questionar a projeção
 title_en: Challenge a Financial Projection
 role: financial_analysis
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [challenge-financial-projection-2026-10-26-v1-consistency]
 adversarial_run_ids: [challenge-financial-projection-2026-10-26-v1-adversarial]
-review_ids: []
+review_ids: [challenge-financial-projection-2026-10-26-v1-independent-review]
 gold_run_ids: [challenge-financial-projection-2026-10-26-v1-gold]
 ---
 

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "monetize-receivables-for-working-capital-2026-10-26-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "não informado",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "monetize-receivables-for-working-capital",
+    "version": "2026.10.26-v1",
+    "fingerprint": "f3cece53f9cfa02743a908b62784dc03cc3c428340658b11d25f98cf4a35c354"
+  },
+  "run": {
+    "id": "c35-r7-150358",
+    "startedAt": "2026-10-26T15:03:58Z",
+    "finishedAt": "2026-10-26T15:09:04Z",
+    "commit": "c84499d5baf2bf79ca29fe85843b0958c489e736"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os nove arquivos fixados conferem com os SHA-256 da base no commit solicitado e na cópia temporária. Os dois arquivos externos do oráculo também conferem.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/monetize-receivables-for-working-capital-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "A revisão utilizou uma extração do commit por git archive. Os hashes foram novamente conferidos ao final."
+    },
+    {
+      "claim": "A carteira reconcilia exatamente 62 = 25 + 37. As exclusões são A: 19,8; C e D: 12; vencidos: 2,2; excesso de sublimite em E e F: 1,5 cada. Os volumes das portas são B: 3,7; FIDC com coobrigação: 21,3; sem coobrigação: 10.",
+      "source": "packages/financial-core/src/receivables-funding.ts; oracle/modelo_c35.py; /tmp/offroad-r7-prior-output.txt",
+      "result": "confirmed",
+      "note": "Os volumes dos grupos pulverizados permanecem tetos com lacunas quando falta o maior sacado. O exemplo Bom agora explicita todos os cortes."
+    },
+    {
+      "claim": "Para 17 durante seis meses, os custos recalculados são B: 1,33155018; FIDC com coobrigação: 1,74968946; linha: 1,81543663; desconto: 1,98521532; FIDC sem coobrigação: 2,08342055. A ordem permanece correta.",
+      "source": "packages/financial-core/src/receivables-funding.ts; /tmp/offroad-r7-prior-output.txt",
+      "result": "confirmed",
+      "note": "O desconto usa quatro desembolsos de 50/50/50/30 e IOF de 0,50932, resultando em 1,99. A linha usa 180 dias; com 182, custa 1,81822463. A diferença de 0,002788 está documentada como diferença de entrada dentro da tolerância."
+    },
+    {
+      "claim": "As conversões reproduzem 1,6% ao mês como 21,0% ao ano e spread de 5,3%; 1,9% como 25,3% e 9,1%. O giro mensal é 12,78, e o início calculado é 16/09/2026.",
+      "source": "packages/financial-core/src/receivables-funding.ts; /tmp/offroad-r7-prior-output.txt",
+      "result": "confirmed",
+      "note": "Foram verificadas as bases dias úteis/252, dias corridos/30 e IOF por dias corridos. Registro ausente permanece condição precedente."
+    },
+    {
+      "claim": "A capacidade residual corrigida respeita saldo por sacado e consumo do grupo compartilhado. No caso A e B com 5 cada, a porta cara apresenta capacidade 5 em fundos independentes e 3 em grupo compartilhado, inclusive com divisão e reordenação.",
+      "source": "/tmp/offroad-independent-r7-_593l83w/packages/financial-model/src/independent-r6-capacities.test.ts; /tmp/offroad-r7-prior-output.txt",
+      "result": "confirmed",
+      "note": "Verificado pelo núcleo, leitor adotado e pacote, com picos de 6 a 9. Casos próprios adicionais cobriram três portas, compras parciais e consumo sucessivo de sublimites."
+    },
+    {
+      "claim": "Uma enumeração própria de 360 bases confirmou cedível máximo, custo mínimo, cobertura e capacidade publicada de cada passo. Reordenação preservou o plano; subdivisão preservou cedível, cobertura e custo.",
+      "source": "/tmp/offroad-independent-r7-_593l83w/packages/financial-model/src/independent-r7.test.ts; /tmp/offroad-r7-independent-output.txt",
+      "result": "confirmed",
+      "note": "O oráculo independente enumera alocações inteiras diretamente, sem usar o algoritmo de fluxo. Inclui elegibilidades por vencimento e crédito, múltiplos sacados e grupos compartilhados. Amostras atravessaram também leitor e pacote. A enumeração independente anterior de 120 redes foi reexecutada."
+    },
+    {
+      "claim": "Os contraexemplos anteriores passaram: identidade agrega lotes; dados contraditórios são recusados; compras parciais preservam saldos; exclusão integral mantém debtor_sublimit; vencimentos distintos permitem cobertura de 5; turno 2 compra apenas 1,5 no FIDC e termina em 25.",
+      "source": "/tmp/offroad-r7-prior-output.txt; /tmp/offroad-r7-independent-output.txt",
+      "result": "confirmed",
+      "note": "Os 22 testes preservados passaram. No teste antigo da rodada 3, os fundos foram declarados independentes, adequando a entrada ao contrato posterior de grupos de sublimite. Os arquivos fixados não foram alterados."
+    },
+    {
+      "claim": "Horizonte menor que a rolagem permite desembolso único. O caso 30/50 produz IOF de 0,10642 sobre 17. Horizontes iguais e superiores, parcelas finais curtas e tetos diários também passaram nas três camadas.",
+      "source": "/tmp/offroad-independent-r7-_593l83w/packages/financial-model/src/independent-r7.test.ts; /tmp/offroad-r7-prior-output.txt",
+      "result": "confirmed",
+      "note": "A ampliação própria incluiu rolagens de 7, 50 e 500 dias, horizontes antes, no e depois do vencimento e diferentes tetos por desembolso."
+    },
+    {
+      "claim": "A liberação de C e D acrescenta até 6 sob o sublimite de 3 por sacado, sem afirmar verificação. Isso resulta em FIDC de até 27,3, em vez dos 32,1 do oráculo.",
+      "source": "packages/financial-core/src/receivables-funding.ts; packages/credit-playbook/knowledge/procedures/capital/monetize-receivables-for-working-capital.md",
+      "result": "confirmed",
+      "note": "A divergência é justificada: liberar o ônus não remove o sublimite. O fator de 90% usado pelo oráculo não substitui essa restrição. A diferença está declarada no procedimento."
+    },
+    {
+      "claim": "Passaram 97 testes no núcleo, 15 no financial-model e 31 de pool-kernel-parity. As corridas registradas reproduziram casos e fingerprints: 32 gold, 18 adversariais e 6 de consistência.",
+      "source": "/tmp/offroad-r7-core-output.txt; /tmp/offroad-r7-model-output.txt; /tmp/offroad-r7-parity-output.txt",
+      "result": "confirmed",
+      "note": "A paridade está em packages/receivables-analysis/src/pool-kernel-parity.test.ts e foi executada adicionalmente. O núcleo de recebíveis, receivables-analysis e o procedimento publicado não apresentam alterações desde antes da introdução deste método."
+    },
+    {
+      "claim": "O procedimento segue a ordem profissional da ficha: cedível e exclusões, portas e custos, efeitos contratuais e contábeis, pergunta sobre A, prazo e processo. Não autoriza as condutas de reprovação imediata.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/monetize-receivables-for-working-capital.md; oracle/corpo.html; packages/financial-model/src/receivables-funding-packet.ts",
+      "result": "confirmed",
+      "note": "O executor preserva vedação e ônus, converte taxas, rejeita veículo dedicado para necessidade sazonal e não nomeia fundos, contata compradores ou promete aprovação. Adulterações próprias de envelope e dados contraditórios foram recusadas."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "Aprovação técnica dos bytes fixados no escopo desta revisão. As correções das seis rodadas foram confirmadas, sem regressão nos casos reexecutados e nas ampliações independentes. Não foi encontrada divergência numérica indevida acima da tolerância declarada nem definição financeira implementada incorretamente nos testes realizados. Toda execução ocorreu fora do repositório, em /tmp/offroad-independent-r7-_593l83w, usando Node 24.19.0 e Vitest com cache desabilitado. Nenhum arquivo foi escrito dentro do repositório. Os testes foram invocados diretamente pelo CLI local do Vitest, com filtros equivalentes aos comandos solicitados. Esta revisão não constitui aprovação humana, aprovação profissional do fundador, validação de produção ou autorização de publicação."
+}

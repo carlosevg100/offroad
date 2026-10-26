@@ -1,7 +1,7 @@
 ---
 id: build-operating-projection
 version: 2026.10.26-v1
-maturity: implemented
+maturity: tested
 title_pt: Construir projeção operacional por driver
 title_en: Build Operating Projection by Driver
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [build-operating-projection-2026-10-26-v1-consistency]
 adversarial_run_ids: [build-operating-projection-2026-10-26-v1-adversarial]
-review_ids: []
+review_ids: [build-operating-projection-2026-10-26-v1-independent-review]
 gold_run_ids: [build-operating-projection-2026-10-26-v1-gold]
 ---
 

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "challenge-financial-projection-2026-10-26-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "challenge-financial-projection",
+    "version": "2026.10.26-v1",
+    "fingerprint": "8b718e5d34a6b5526f83c6bed0589df4425889ad155d84a33919e47c5c99114c"
+  },
+  "run": {
+    "id": "c26-independent-130103",
+    "startedAt": "2026-10-26T13:01:03Z",
+    "finishedAt": "2026-10-26T13:04:43Z",
+    "commit": "63799d0c38e4a842a723b49fcbe3e7340a8d70be"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os oito arquivos fixados conferem com os hashes no HEAD solicitado e na árvore de trabalho. O SHA-256 da base é o fingerprint informado para esta revisão.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/challenge-financial-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "A base registra o commit anterior 182c4bf876d8faec3436fc9a4895a552b2efa23f; os bytes fixados permanecem idênticos em 63799d0c38e4a842a723b49fcbe3e7340a8d70be. A execução usou uma cópia extraída deste último commit."
+    },
+    {
+      "claim": "O procedimento, o pacote, o leitor adotado, o vínculo à base e o núcleo foram percorridos. Todos os drivers da calibração reproduzem as entradas do oráculo, incluindo componentes do custo variável, juros, impostos, prazos e unidades.",
+      "source": "packages/financial-model/src/projection-challenge.test-support.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C26/modelo_c26.py",
+      "result": "confirmed",
+      "note": "Os hashes dos dois arquivos externos conferem. O script C26 e sua dependência C24 foram copiados para fora do repositório; a execução do script original reproduziu integralmente o resultados.json fornecido."
+    },
+    {
+      "claim": "Em 2028, as diferenças exatas são R$ 27,19329 milhões de EBITDA e R$ 19,0738005667 milhões de caixa, correspondentes a 27,2 e 19,1 na precisão publicada pelo oráculo.",
+      "source": "packages/financial-core/src/projection-challenge.ts; /private/tmp/projection-review-a_v68ki5/recalculate.py",
+      "anchor": "challengeProjection; gap",
+      "result": "confirmed",
+      "note": "O recálculo independente em Decimal, com precisão 60, concordou com as linhas anuais e as duas convenções de isolamento até 1e-20. Os números solicitados coincidem após o arredondamento declarado de uma casa decimal."
+    },
+    {
+      "claim": "Na convenção principal, referência com apenas a premissa do plano menos referência, os efeitos EBITDA/caixa são: preço 12,9/7,8; volume 9,6/4,7; fixos 3,8/2,5; prazo e capex 0,0/3,3, em R$ milhões.",
+      "source": "packages/financial-core/src/projection-challenge.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C26/resultados.json",
+      "anchor": "effects.fromReference; order",
+      "result": "confirmed",
+      "note": "A ordem é preço, volume, fixos, prazo e capex. As três primeiras premissas explicam 96,9% da diferença de EBITDA. O resíduo exato é 0,8395 no EBITDA e 0,7258547222 no caixa."
+    },
+    {
+      "claim": "Na segunda convenção, plano menos plano com apenas a premissa devolvida à referência, os efeitos EBITDA/caixa são: preço 13,8/8,4; volume 10,5/5,4; fixos 3,8/2,5; prazo e capex 0,0/3,6.",
+      "source": "packages/financial-core/src/projection-challenge.ts; packages/financial-model/src/projection-challenge-packet.ts",
+      "anchor": "effects.fromPlan; convention; interaction",
+      "result": "confirmed",
+      "note": "As duas convenções estão corretamente calculadas e identificadas. O resíduo da segunda é -0,8395 no EBITDA e -0,732945 no caixa. O teste de inversão da ordem preserva efeitos, classificação e resíduos."
+    },
+    {
+      "claim": "A margem do plano passa de 12,4% para 16,2%. A margem por kg passa de R$ 1,241 para R$ 1,4323, contra R$ 1,3173 na referência em 2028. O volume de 119,8 mil t excede a capacidade de 118 mil t em 1,8 mil t, sem investimento.",
+      "source": "packages/financial-core/src/projection-challenge.ts; packages/financial-model/src/projection-challenge-packet.ts",
+      "anchor": "unitMargin; capacity; readings.gap",
+      "result": "confirmed",
+      "note": "O pacote explicita a ausência de causa declarada para a expansão da margem e recomenda limitar o volume ou incluir o investimento de capacidade e seu financiamento."
+    },
+    {
+      "claim": "Para a alegação sobre a receita do plano em 2028, estão corretos R$ 1,4758694444 milhão por dia e R$ 22,1380416667 milhões para passar de 45 a 60 dias. A referência de 2028 produz R$ 1,35 milhão por dia.",
+      "source": "packages/financial-core/src/projection-challenge.ts; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C26/corpo.html",
+      "anchor": "receivables",
+      "result": "confirmed",
+      "note": "A prosa da ficha usa outra base temporal: receita da referência em 2027 de R$ 463,65 milhões, equivalente a R$ 1,2879166667 milhão por dia e R$ 19,31875 milhões por 15 dias. A diferença não é erro do executor; a base usada está explicitada no resultado."
+    },
+    {
+      "claim": "Toda diferença precisa pertencer a uma premissa nomeada. Premissa sem diferença, driver duplicado, diferença não atribuída e agrupamento dos drivers de resultado são recusados. Réguas e evidências acompanham cada premissa.",
+      "source": "packages/financial-core/src/projection-challenge.ts; packages/financial-model/src/adopted-projection-challenge.ts",
+      "anchor": "validação das premissas; assumptions",
+      "result": "confirmed",
+      "note": "O pacote recomenda a referência com premissas documentadas como base e o plano atual como cenário de alta. Documentar o preço retira essa premissa das condições. Evidência ausente permanece lacuna, sem preenchimento inventado."
+    },
+    {
+      "claim": "As exceções produzem resultados honestos: capacidade ausente gera pacote parcial e pergunta; driver numérico ausente impede a crítica e gera enquadramento com lacuna.",
+      "source": "packages/financial-model/src/projection-challenge-premises.test.ts; /private/tmp/projection-review-a_v68ki5/reviewer-output.json",
+      "result": "confirmed",
+      "note": "O primeiro período tem caixa e variação do giro nulos por definição explícita, pois falta saldo anterior. O oráculo assume variação inicial zero e publica caixa nesse período. Essa diferença declarada não afeta os cálculos de 2028."
+    },
+    {
+      "claim": "Os comandos solicitados passaram em Node 24: financial-model com 17 testes em três arquivos; financial-core com sete testes em um arquivo. As corridas gravadas reproduziram seus casos e fingerprints.",
+      "source": "packages/financial-model/src/projection-challenge-runs.test.ts; packages/financial-core/src/projection-challenge.test.ts",
+      "anchor": "npx vitest run src/projection-challenge",
+      "result": "confirmed",
+      "note": "Foram reproduzidos 16 casos gold, 14 adversariais e seis de consistência. Os testes e scripts foram executados exclusivamente na cópia temporária fora do repositório."
+    },
+    {
+      "claim": "Oito adulterações adicionais foram recusadas: conteúdo sem novo selo, unidade de capacidade incorreta, preço de outra entidade, premissa sem diferença, driver duplicado, corte agrupado, diferença sem atribuição e pedido estruturado de deck.",
+      "source": "/private/tmp/projection-review-a_v68ki5/packages/financial-model/reviewer.mts; /private/tmp/projection-review-a_v68ki5/reviewer-output.json",
+      "result": "confirmed",
+      "note": "Todas falharam na fronteira esperada. O pedido de cenário e deck somente no texto da pergunta não alterou as leituras nem concedeu execução. O pacote preservou os dados de entrada."
+    },
+    {
+      "claim": "O procedimento expressa a resposta profissional na ordem da ficha: distância e margem, preço com margem por unidade, volume e capacidade, fixos, prazo e capex, evidências e recomendação de apresentação.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/challenge-financial-projection.md; /Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C26/corpo.html",
+      "anchor": "Exemplos; Template; Regra; Qualidade",
+      "result": "confirmed",
+      "note": "Os quatro critérios de reprovação imediata são tratados: a crítica exige números e premissas; cenário e material estão excluídos; corte uniforme não substitui a atribuição por driver; capacidade é verificada ou declarada ausente. O executor apenas calcula a crítica e os efeitos isolados, sem persistir cenários, reconstruir modelo ou produzir material."
+    },
+    {
+      "claim": "Esta revisão comprova o comportamento determinístico do sujeito fixado, sem comprovar atendimento pela interface real, autorização de acesso em produção ou aprovação profissional humana.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/challenge-financial-projection.md; packages/financial-model/src/adopted-analysis-binding.ts",
+      "anchor": "Aceitação; Aprovação profissional; createAnalysisBinding",
+      "result": "limitation",
+      "note": "O vínculo à base verifica integridade e contexto; o acesso depende do leitor autorizado anterior. A aprovação do fundador e a publicação continuam separadas desta revisão técnica."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "Não identifiquei erro numérico ou definição implementada incorretamente no escopo solicitado. Os resultados de 2028 reproduzem o oráculo na precisão publicada; o recálculo independente confirma ambas as convenções e seus resíduos. A diferença do valor por dia decorre da receita e do período explicitamente escolhidos, e o caixa inicial nulo é uma exceção documentada. Procedimento e executor cobrem os critérios profissionais de reprovação da ficha. Nenhum arquivo foi escrito dentro do repositório; HEAD e árvore de trabalho permaneceram inalterados. O resultado é uma aprovação técnica independente dos bytes fixados, sem aprovação humana, promoção, publicação ou concessão de execução."
+}

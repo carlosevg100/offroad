@@ -1,7 +1,7 @@
 ---
 id: update-after-quarter-close
 version: 2026.10.26-v1
-maturity: implemented
+maturity: tested
 title_pt: Atualizar depois do fechamento do trimestre
 title_en: Update After the Quarter Close
 role: credit_structuring
@@ -30,6 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [update-after-quarter-close-2026-10-26-v1-consistency]
 adversarial_run_ids: [update-after-quarter-close-2026-10-26-v1-adversarial]
+review_ids: [update-after-quarter-close-2026-10-26-v1-independent-review]
 gold_run_ids: [update-after-quarter-close-2026-10-26-v1-gold]
 ---
 

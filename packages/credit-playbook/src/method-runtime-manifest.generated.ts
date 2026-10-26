@@ -30701,11 +30701,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "procedure": {
       "id": "build-operating-projection",
       "version": "2026.10.26-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/build-operating-projection.md",
-      "hash": "69939a218af0caaa75a77769c80129345d2e46ea288e89e0a1b04b4120141b2f"
+      "hash": "1d8f92dab480321f21a453fae61f1caddd1f68309189f6561b41df042b16ede4"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -40103,18 +40103,18 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "3a7a9a330571bbdf1a7b73d33540c91596789cfcf3587746999d3a4730e0d5a7"
+    "manifestHash": "6924fe482364fa48c7df738965fb583ec6bca25deadfd4568fcb55705a031a25"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
       "id": "challenge-financial-projection",
       "version": "2026.10.26-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/challenge-financial-projection.md",
-      "hash": "b99b1b63359755d3f33a266f794001062f2bc7002fb20369808e258e151d5094"
+      "hash": "a36596e734075377f14492628e63f64eabf04fd84ee9f5130a5226d30d0eb616"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -47627,7 +47627,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "0be1ad055c3b7f3af48e3b48aec12e620b92bd24f62e603859affdaa59ff26ac"
+    "manifestHash": "b9d732041a32321213c1f9f49498ebfda0cbd2d2a97cbeb8e803cac8af81a252"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -62560,11 +62560,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "procedure": {
       "id": "monetize-receivables-for-working-capital",
       "version": "2026.10.26-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/monetize-receivables-for-working-capital.md",
-      "hash": "f32d167b1a7784e56da444336de5587e650bb9969e0790d1ae067e442bbe4c5e"
+      "hash": "a8d9489342c2d157f8a5cd32df26a4f48aa384e472387aedcc97f60e5874bfef"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -70491,7 +70491,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "33e7540e6ab09c4be20ae621f31cebfa47982bb834a577af9d529081a05cb4ab"
+    "manifestHash": "97e7ca0a2c72dafb7d182d6a861d4f1b985298a3c37e95b4e6b71a1e720dfa89"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -100725,11 +100725,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "procedure": {
       "id": "update-after-quarter-close",
       "version": "2026.10.26-v1",
-      "maturity": "implemented"
+      "maturity": "tested"
     },
     "source": {
       "path": "capital/update-after-quarter-close.md",
-      "hash": "2686403235b9e8267e7ef0f2845d46d3303964bb9e0f496e6cad27a1ddb18398"
+      "hash": "83d16d3e7f21012773eb99ac8a2ed69e57ef937201cdb8cff144581d6f9d92d4"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -113364,7 +113364,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "8b1d488d695b91931126a0b01cad023de3b6962e8851f97e6e03563a1dc84962"
+    "manifestHash": "59a0398bd50f866a3fa8ef95de1aef388ca6093386a0ed141d5000d0cd24bbc2"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

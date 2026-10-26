@@ -1,7 +1,7 @@
 ---
 id: monetize-receivables-for-working-capital
 version: 2026.10.26-v1
-maturity: implemented
+maturity: tested
 title_pt: Recebíveis para giro
 title_en: Monetize Receivables for Working Capital
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [monetize-receivables-for-working-capital-2026-10-26-v1-consistency]
 adversarial_run_ids: [monetize-receivables-for-working-capital-2026-10-26-v1-adversarial]
-review_ids: []
+review_ids: [monetize-receivables-for-working-capital-2026-10-26-v1-independent-review]
 gold_run_ids: [monetize-receivables-for-working-capital-2026-10-26-v1-gold]
 ---
 
