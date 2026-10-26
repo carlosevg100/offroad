@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {composeBoundOperatingProjection, prepareOperatingProjectionPacket, actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
-import {conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {unsourcedFields, conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -83,6 +83,8 @@ type Origin = OperatingProjectionFacts["base"][number]["origins"][number];
 export function completeOperatingProjectionFacts(input: {extraction: OperatingProjectionExtraction; ids: {projectionId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<OperatingProjectionFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // A value stated without its origin is asked, never replaced by a house default nor dropped.
+  missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   const actualYear = stated(e.actualYear), revenue = stated(e.reportedRevenue), ebitda = stated(e.reportedEbitda);
   if (!actualYear) missing.push("actualYear");
   if (!revenue) missing.push("reportedRevenue");
@@ -95,8 +97,10 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
   for (const k of actualOperatingDriverNames) if (!actual.has(k)) missing.push(`actual.${k}`);
   if (!actualYear) return {status: "missing", missing: [...new Set(missing)]};
   const asked = stated(e.lastProjectedYear);
+  // The house horizon applies only when nobody stated one; a stated horizon that does not follow the actual year is asked.
+  if (asked && asked.value <= actualYear.value) missing.push("lastProjectedYear");
   const last = asked && asked.value > actualYear.value ? asked.value : actualYear.value + 3;
-  if (!asked || asked.value <= actualYear.value) used.push("horizon");
+  if (!asked) used.push("horizon");
   if (last - actualYear.value > 40) missing.push("lastProjectedYear");
   const periodEnds = Array.from({length: Math.min(last - actualYear.value, 40)}, (_, k) => `${actualYear.value + k + 1}-12-31`), n = periodEnds.length;
   const columnConflicts = conflictingKeys(e.baseColumns, (c) => c.driver, (c) => c.values);

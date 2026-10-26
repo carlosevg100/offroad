@@ -204,6 +204,13 @@ describe("receivables funding premises proposed from a turn", () => {
     };
     expect(packetOf("none", "none")).not.toBe(packetOf("Cotistas do FIDC", "Cotistas do FIDC"));
   });
+  it("asks a value stated without origin and business days beyond the calendar days (independent review, round 11)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const unsourced = completeReceivablesFundingFacts({extraction: {...e, lienBasketRemaining: {value: "3", origin: null, source: null}}, ids: idsOf(f), currency: "BRL"});
+    expect(unsourced.status === "missing" && unsourced.missing.includes("lienBasketRemaining")).toBe(true);
+    const days = completeReceivablesFundingFacts({extraction: {...e, businessDays: {value: 400, origin: "informed", source: "tesouraria"}}, ids: idsOf(f), currency: "BRL"});
+    expect(days.status === "missing" && days.missing.includes("businessDays")).toBe(true);
+  });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};
     const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(aurora()), currency: "BRL"});

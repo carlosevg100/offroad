@@ -151,6 +151,19 @@ describe("operating projection premises proposed from a turn", () => {
     const c = completeOperatingProjectionFacts({extraction: {...bare, baseColumns: columns}, ids: idsOf(f), currency: "BRL"});
     expect(c.status === "complete" ? [...c.housePremiseKeys].sort() : c).toEqual(["alternativesToTest", "heldDrivers", "horizon", "purpose", "taxRate"]);
   });
+  it("never replaces a stated horizon with the house default, nor drops a value stated without origin (independent review, round 11)", () => {
+    const f = aurora(), base = auroraExtraction(f), year = base.actualYear.value!;
+    for (const last of [year, year - 1]) {
+      const c = completeOperatingProjectionFacts({extraction: {...base, lastProjectedYear: {value: last, origin: "informed", source: "CFO"}}, ids: idsOf(f), currency: "BRL"});
+      expect(c.status === "missing" && c.missing.includes("lastProjectedYear"), String(last)).toBe(true);
+    }
+    // Only absence takes the house's three years.
+    const columns = base.baseColumns.map((c) => ({...c, values: c.values.slice(0, 3)}));
+    const none3 = completeOperatingProjectionFacts({extraction: {...base, lastProjectedYear: none, baseColumns: columns, scenarios: [], companyVersions: []}, ids: idsOf(f), currency: "BRL"});
+    expect(none3.status === "complete" ? none3.housePremiseKeys.includes("horizon") : none3).toBe(true);
+    const unsourced = completeOperatingProjectionFacts({extraction: {...base, lastProjectedYear: {value: year + 3, origin: null, source: null}}, ids: idsOf(f), currency: "BRL"});
+    expect(unsourced.status === "missing" && unsourced.missing.includes("lastProjectedYear")).toBe(true);
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora({informed: true}), c = complete(auroraExtraction(f), f);
     const proposal = buildOperatingProjectionPremiseProposal(c.facts);

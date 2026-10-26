@@ -251,6 +251,11 @@ describe("quarter update premises proposed from a turn", () => {
     // The calibration close passes the same chain, so its card is offered.
     expect(quarterUpdateReaderGaps(complete(auroraExtraction(aurora(W, C))).facts, priors())).toEqual([]);
   });
+  it("asks a value stated without origin (independent review, round 11)", () => {
+    const e = auroraExtraction(aurora(W, C)); e.quarterStart = {value: e.quarterStart.value, origin: null, source: null};
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c.status === "missing" && c.missing.includes("quarterStart")).toBe(true);
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;

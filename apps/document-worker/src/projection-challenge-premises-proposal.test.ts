@@ -84,6 +84,11 @@ describe("projection challenge premises proposed from a turn", () => {
     expect(packet!.status).toBe("partial");
     expect([packet!.readings!.capacity, packet!.readings!.premiumMix, packet!.readings!.receivables.requestedDays, packet!.readings!.gap.marginCauseStated]).toEqual([null, null, null, null]);
   });
+  it("asks a value stated without origin instead of falling to the house default (independent review, round 11)", () => {
+    const f = aurora(), e = {...auroraExtraction(f), targetPeriod: {value: f.targetPeriodId.value, origin: null, source: null}};
+    const c = completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
+    expect(c.status === "missing" && c.missing.includes("targetPeriod")).toBe(true);
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);
     expect(proposal.summary).toMatchObject({situationId: "stable-business-high-conversion", referenceDate: "2028-12-31"});

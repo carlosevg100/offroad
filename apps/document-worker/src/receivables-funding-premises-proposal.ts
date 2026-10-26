@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -88,6 +88,8 @@ const weekdays = (start: string, n: number) => Array.from({length: n}, (_, k) =>
 export function completeReceivablesFundingFacts(input: {extraction: ReceivablesFundingExtraction; ids: {receivablesFundingId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ReceivablesFundingFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // A value stated without its origin is asked, never replaced by a house default nor dropped.
+  missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   const need = {average: stated(e.needAverage), peak: stated(e.needPeak), start: stated(e.needStartDate), profile: stated(e.needProfile),
     di: stated(e.annualDi), term: stated(e.averageTermDays), reference: stated(e.referenceDate)};
   for (const [k, v] of [["referenceDate", need.reference], ["needAverage", need.average], ["needPeak", need.peak], ["needStartDate", need.start], ["needProfile", need.profile],
@@ -169,6 +171,9 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   });
   // An option that pledges or may pledge the receivables uses the indenture's permitted-lien basket: its remaining balance is asked, never read as unlimited.
   if (e.options.some((o) => o.collateral !== null && o.collateral !== "none") && !stated(e.lienBasketRemaining)) missing.push("lienBasketRemaining");
+  // Business days stated beyond the calendar days of use are asked, never reconciled by choosing one.
+  const statedBusiness = stated(e.businessDays), calendarSpan = statedDays?.value ?? (end && need.start ? between(need.start.value, end.value) : null);
+  if (statedBusiness && calendarSpan !== null && statedBusiness.value > calendarSpan) missing.push("businessDays");
   if (missing.length || !threshold || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};
   const calendarDays = statedDays ?? {value: between(need.start.value, end!.value), origin: "house" as const, source: "Dias corridos entre o início e o fim da necessidade"};
   if (!statedDays) used.push("calendarDays");

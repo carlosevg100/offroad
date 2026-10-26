@@ -36,6 +36,12 @@ export type Lote2Summary = {situationId: string; referenceDate: string | null; i
 /** A stated fact keeps its origin; its source defaults to where it came from when the extraction did not cite it. */
 export const stated = <T>(f: Sourced<T>) => f.value === null || f.origin === null ? null
   : {value: f.value, origin: f.origin, source: f.source?.trim() || (f.origin === "informed" ? "Informado na conversa" : "Documento")};
+/** Lote 3: the top-level sourced fields that carry a value but no origin. Such a value is asked, never dropped
+ * to a house default nor to absence (independent review, round 11). */
+export function unsourcedFields(extraction: Record<string, unknown>): string[] {
+  return Object.entries(extraction).flatMap(([k, v]) => v !== null && typeof v === "object" && !Array.isArray(v) && "value" in v && "origin" in v
+    && (v as {value: unknown}).value !== null && (v as {origin: unknown}).origin === null ? [k] : []);
+}
 export const citedSource = (origin: "informed" | "document", source: string | null | undefined) => source?.trim() || (origin === "informed" ? "Informado na conversa" : "Documento");
 
 /** A stable item key from its label, unique within its list. Keys travel inside field paths, so they carry no dot. */

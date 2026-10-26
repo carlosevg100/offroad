@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundProjectionChallenge, prepareProjectionChallengePacket, projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
+import {unsourcedFields, factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -94,6 +94,8 @@ const same = (a: string | readonly string[], b: string | readonly string[]) => A
 export function completeProjectionChallengeFacts(input: {extraction: ProjectionChallengeExtraction; ids: {challengeId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ProjectionChallengeFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // A value stated without its origin is asked, never replaced by a house default nor dropped.
+  missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   const periods = stated(e.periods);
   if (!periods) missing.push("periods");
   else if (new Set(periods.value).size !== periods.value.length || periods.value.some((p, k) => k > 0 && p <= periods.value[k - 1]!)) missing.push("periods");

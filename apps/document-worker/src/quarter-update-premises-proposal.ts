@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {composeQuarterUpdateFromStoredPriors, prepareQuarterUpdatePacket, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -124,6 +124,8 @@ export type QuarterUpdateCompletion = (Extract<Lote2Completion<QuarterUpdateFact
 export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtraction; priors: {weeklyCash: Prior; covenant: Prior};
   ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): QuarterUpdateCompletion {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // A value stated without its origin is asked, never replaced by a house default nor dropped.
+  missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Every amount is carried in reais, the units of the prior results. An amount whose scale nobody stated is
   // asked, never guessed; one that does not fit the basis after the exact conversion is named, never dropped.
   const money = (value: string, from: AmountScale | null, path: string, scalePath: string, fits = basisMoney): string | null => {
