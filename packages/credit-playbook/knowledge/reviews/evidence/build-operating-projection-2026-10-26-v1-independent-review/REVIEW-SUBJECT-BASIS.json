@@ -1,0 +1,53 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "build-operating-projection",
+  "version": "2026.10.26-v1"
+ },
+ "commit": "b16c6342d65a327c660cb38f5d9bed06afa8e870",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/build-operating-projection.md",
+   "sha256": "69939a218af0caaa75a77769c80129345d2e46ea288e89e0a1b04b4120141b2f"
+  },
+  {
+   "path": "packages/financial-model/src/operating-projection-packet.ts",
+   "sha256": "0a6d49a332525b9b8cd24be59758f6caa04398c0c223db8be97de1952379cfd0"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-operating-projection-drivers.ts",
+   "sha256": "77559d9ec5f02653ce96ef898a7941307c427fc8332022dcc55759750b97f225"
+  },
+  {
+   "path": "packages/financial-model/src/operating-projection-results.ts",
+   "sha256": "e3090f6dd88ac1b08437f69e95a7028289692337f853bb302b596e08c37dae40"
+  },
+  {
+   "path": "packages/financial-core/src/operating-projection.ts",
+   "sha256": "274f58979044b94b8abeb3f2ab160a8992f3fede00eb8b5f174fa2bf0669afb1"
+  },
+  {
+   "path": "packages/financial-model/src/operating-projection-runs.test-support.ts",
+   "sha256": "7da1aec105deb136608eab81bc04faa6e7ad768f186ad1f91ceac2047bafe1d6"
+  },
+  {
+   "path": "packages/financial-model/src/operating-projection.test-support.ts",
+   "sha256": "5fbac6fb60bd5a8bf85c49b775ea75f5bf61723f33e6e5bb811667b684e11a39"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C24/modelo_c24.py",
+   "sha256": "4588b82f3f878d6164bd40fedda88187b5e883bd191e75352811af4a1fef8597"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C24/resultados.json",
+   "sha256": "3041c7a492d5459cdce0dc28c9cb1abcdbd9ec83cd968910b8cad33fc2a66196"
+  }
+ ]
+}

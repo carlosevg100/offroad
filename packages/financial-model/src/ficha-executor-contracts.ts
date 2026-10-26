@@ -8,6 +8,14 @@ import {adoptedFinancingComparisonInputSchema, calculateAdoptedFinancingComparis
 import {adoptedDebtTableInputSchema, calculateAdoptedDebtTable} from "./adopted-debt-table";
 import {adoptedCovenantHeadroomInputSchema, calculateAdoptedCovenantHeadroom} from "./adopted-covenant-headroom";
 import {adoptedWeeklyCashInputSchema, calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
+import {quarterUpdateAnalysesSchema, calculateAdoptedQuarterUpdate} from "./adopted-quarter-update";
+import {adoptedQuarterUpdateOutputSchema} from "./quarter-update-results";
+import {adoptedReceivablesFundingInputSchema, calculateAdoptedReceivablesFunding} from "./adopted-receivables-funding";
+import {adoptedReceivablesFundingOutputSchema} from "./receivables-funding-results";
+import {adoptedProjectionChallengeInputSchema, calculateAdoptedProjectionChallenge} from "./adopted-projection-challenge";
+import {adoptedProjectionChallengeOutputSchema} from "./projection-challenge-results";
+import {adoptedDriverProjectionInputSchema, calculateAdoptedDriverProjection} from "./adopted-operating-projection-drivers";
+import {adoptedDriverProjectionOutputSchema} from "./operating-projection-results";
 import {adoptedFinancingProposalOutputSchema, adoptedRelativeDebtCostOutputSchema,
   adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema, adoptedDebtTableOutputSchema, adoptedCovenantHeadroomOutputSchema, adoptedWeeklyCashOutputSchema} from "./ficha-calculation-results";
 
@@ -38,6 +46,18 @@ export function calculateCovenantHeadroomEvidence(raw: unknown) {
 export function calculateWeeklyCashEvidence(raw: unknown) {
   const result = calculateAdoptedWeeklyCash(raw); adoptedWeeklyCashOutputSchema.parse(result); return result;
 }
+export function calculateOperatingProjectionEvidence(raw: unknown) {
+  const result = calculateAdoptedDriverProjection(raw); adoptedDriverProjectionOutputSchema.parse(result); return result;
+}
+export function calculateProjectionChallengeEvidence(raw: unknown) {
+  const result = calculateAdoptedProjectionChallenge(raw); adoptedProjectionChallengeOutputSchema.parse(result); return result;
+}
+export function calculateReceivablesFundingEvidence(raw: unknown) {
+  const result = calculateAdoptedReceivablesFunding(raw); adoptedReceivablesFundingOutputSchema.parse(result); return result;
+}
+export function calculateQuarterUpdateEvidence(raw: unknown) {
+  const result = calculateAdoptedQuarterUpdate(raw); adoptedQuarterUpdateOutputSchema.parse(result); return result;
+}
 
 function contracts(id: string, exportName: string, input: z.ZodType, output: z.ZodType) {
   const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
@@ -57,5 +77,9 @@ export function fichaCalculationExecutorContracts() {
     {name: "debt-table-evidence", ...contracts("debt-table-evidence", "calculateDebtTableEvidence", adoptedDebtTableInputSchema, adoptedDebtTableOutputSchema)},
     {name: "covenant-headroom-evidence", ...contracts("covenant-headroom-evidence", "calculateCovenantHeadroomEvidence", adoptedCovenantHeadroomInputSchema, adoptedCovenantHeadroomOutputSchema)},
     {name: "weekly-cash-evidence", ...contracts("weekly-cash-evidence", "calculateWeeklyCashEvidence", adoptedWeeklyCashInputSchema, adoptedWeeklyCashOutputSchema)},
+    {name: "operating-projection-evidence", ...contracts("operating-projection-evidence", "calculateOperatingProjectionEvidence", adoptedDriverProjectionInputSchema, adoptedDriverProjectionOutputSchema)},
+    {name: "projection-challenge-evidence", ...contracts("projection-challenge-evidence", "calculateProjectionChallengeEvidence", adoptedProjectionChallengeInputSchema, adoptedProjectionChallengeOutputSchema)},
+    {name: "receivables-funding-evidence", ...contracts("receivables-funding-evidence", "calculateReceivablesFundingEvidence", adoptedReceivablesFundingInputSchema, adoptedReceivablesFundingOutputSchema)},
+    {name: "quarter-update-evidence", ...contracts("quarter-update-evidence", "calculateQuarterUpdateEvidence", quarterUpdateAnalysesSchema, adoptedQuarterUpdateOutputSchema)},
   ];
 }

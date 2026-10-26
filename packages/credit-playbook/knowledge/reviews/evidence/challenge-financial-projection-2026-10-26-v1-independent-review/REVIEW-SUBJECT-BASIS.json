@@ -1,0 +1,53 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "challenge-financial-projection",
+  "version": "2026.10.26-v1"
+ },
+ "commit": "182c4bf876d8faec3436fc9a4895a552b2efa23f",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/challenge-financial-projection.md",
+   "sha256": "b99b1b63359755d3f33a266f794001062f2bc7002fb20369808e258e151d5094"
+  },
+  {
+   "path": "packages/financial-model/src/projection-challenge-packet.ts",
+   "sha256": "97eac255e6ab599699d6d932d6004cb2bfa7227e91a7c985bcb7742e33eef146"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-projection-challenge.ts",
+   "sha256": "736e4cb4acd3c96093cf5dd37d6fe5f68a65ac2217fd827d5cd892d90f2faba4"
+  },
+  {
+   "path": "packages/financial-model/src/projection-challenge-results.ts",
+   "sha256": "7897cfc2cdbb8fa2c11a1e65cf8c1f3c2366ee1dd8c8a28a5360b63f846cbebd"
+  },
+  {
+   "path": "packages/financial-core/src/projection-challenge.ts",
+   "sha256": "9cc8091a553d2d8a1c4f409c0aa0ae999c8aebff895671b1545e7738eb093cdb"
+  },
+  {
+   "path": "packages/financial-model/src/projection-challenge-runs.test-support.ts",
+   "sha256": "f9111e8a1534255c23afc70e41c205cc1686c1e0e9d0ce4acd316b20cfb9e8c0"
+  },
+  {
+   "path": "packages/financial-model/src/projection-challenge.test-support.ts",
+   "sha256": "871256ee066ed4e29de435fc9fb000f71fbd2cc453408a580a6365fe58b0a50b"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C26/modelo_c26.py",
+   "sha256": "cd19aa1c249d6cc22062b3a46061acc723bef91b6fe0d2cc4228a0276c3c4d9b"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C26/resultados.json",
+   "sha256": "997dc9dc0229e167c2acc6d334220cc26fdc8d10fe07d81a144294f24277f3d1"
+  }
+ ]
+}

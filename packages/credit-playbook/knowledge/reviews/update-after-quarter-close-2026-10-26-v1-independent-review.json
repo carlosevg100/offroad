@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "update-after-quarter-close-2026-10-26-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "update-after-quarter-close",
+    "version": "2026.10.26-v1",
+    "fingerprint": "29f28f96438bdfadfd8f6d34e03764c33bfc0a0969df2623f975c34becd30f69"
+  },
+  "run": {
+    "id": "c54-r6-u8t3t75x",
+    "startedAt": "2026-10-26T14:49:01Z",
+    "finishedAt": "2026-10-26T14:55:02Z",
+    "commit": "5086f06053a5071b9980548b69ab1145308cecb7"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os nove arquivos fixados conferem por SHA-256 no commit solicitado, na cópia examinada e na árvore de trabalho. O hash da base reproduz o fingerprint do assunto.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/isolation-final.json",
+      "result": "confirmed",
+      "note": "A base registra outro commit em seu metadado, mas todos os bytes fixados foram verificados diretamente no HEAD solicitado. Procedimento, composição, leitor adotado, contratos de resultado e núcleos compostos foram revisitados."
+    },
+    {
+      "claim": "Os arquivos externos fixados conferem por SHA-256. A reexecução do modelo C54 em cópia temporária reproduziu resultados.json byte a byte; o modelo C12 também foi reexecutado.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/oracle-replay.log",
+      "result": "confirmed",
+      "note": "O oráculo original permanece como contraste documentado. As expectativas corrigidas fornecidas para esta rodada prevalecem sobre sua dupla absorção do prazo e sua aplicação de efeitos semanais antes do fechamento."
+    },
+    {
+      "claim": "As pontes somam exatamente os desvios: EBITDA de -0,4 e caixa de -1,7, ambos com resíduo zero. Um resíduo próprio de -0,00000001 permaneceu nomeado e tornou o pacote parcial.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/independent-observations.json",
+      "anchor": "baseline; residual",
+      "result": "confirmed",
+      "note": "Estoque antecipado permanece calendário; trigo é fluxo estrutural e prazo é mudança estrutural de saldo até a data adotada. Causa ligada ao EBITDA é conferida contra seu desvio, sem distribuição de resíduo."
+    },
+    {
+      "claim": "O recálculo independente confirmou a pior semana em 21/12/2026: 7,48118286 para 4,39270974. A necessidade é 10,60729026; o limite inteiro de 10 deixa 14,39270974. Programas de 23 substituem a linha de 17, e saque residual de 4,60729026 leva o mínimo a 15.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/independent-numbers.json",
+      "result": "confirmed",
+      "note": "Foram confrontados todos os saldos semanais anteriores e atualizados, além dos resultados principais. As 42 comparações passaram com tolerância de 0,000001; o maior erro absoluto foi 0,000000001522255. As séries usam as regras do oráculo, preservando a versão anterior fora da janela de persistência."
+    },
+    {
+      "claim": "O oráculo conta novamente os 2,1 do prazo já incluídos no desvio fechado de 1,7. A correção leva o caixa do teste de dezembro a 13,15720186, dívida líquida a 115,50946481 e alavancagem da escritura a 2,28731613x, arredondada para 2,29x.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/independent-numbers.json",
+      "result": "corrected",
+      "note": "O caixa do teste parte de 15,45720186, carrega -1,7 uma vez e incorpora -0,6 do fluxo de trigo no quarto trimestre. Remover apenas a duplicação de 2,1 produziria cerca de 2,28x; incluir a perna adicional de caixa do trigo justifica 2,29x sob a premissa adotada. A pior semana e o caixa do teste são resultados distintos."
+    },
+    {
+      "claim": "O EBITDA anual passa de 54,5 para 53,5. Pela escritura, a folga até 2,5x passa de 6,216214076 para 4,296214076 e a contratual fica em 11,9968450633. Pela definição gerencial, a alavancagem é 2,11943972x e a folga é 8,296214076.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/baseline.json",
+      "anchor": "readings.covenant; readings.projectedEbitda",
+      "result": "confirmed",
+      "note": "Cada leitura identifica sua definição. Os valores 2,32x e 3,7 do oráculo permanecem apenas como contraste, sem substituir o resultado corrigido."
+    },
+    {
+      "claim": "Os ataques da rodada 5 estão bloqueados: séries fornecidas com ruído isolado de 0,00000001 ou redução de 0,0000008 por pagamento não substituem a série derivada. O fator 1,00000002 deriva efeito de -0,000001392, abaixo do piso de 0,006, e mantém o caixa afetado sem recálculo.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/packages/financial-model/src/quarter-update-independent.test.ts",
+      "result": "confirmed",
+      "note": "A adoção de séries propagadas é recusada no contrato de fatos; no núcleo, uma série fornecida diferente da derivada é recusada exatamente. Fatores de identidade e próximos dela deixam o pacote parcial. Fatores 0,99999986 e 0,95 geram efeito contrário e também deixam o pacote parcial. O efeito efetivamente derivado sustenta a verificação, sem tolerância por data."
+    },
+    {
+      "claim": "A materialidade declarada corresponde à decisão desta rodada: o maior entre piso absoluto e 1% do valor da causa. Um fator 1,0001 deriva -0,00696 e satisfaz o piso de 0,006; fatores menores testados não o satisfazem.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/independent-observations.json",
+      "anchor": "material-small; factor-1.00005; factor-1.00000002",
+      "result": "confirmed",
+      "note": "A decisão é tecnicamente coerente como critério de suficiência declarado: a série vem da transformação adotada e seu efeito precisa ter sinal e magnitude verificáveis. Ela não substitui o julgamento profissional sobre a transformação adotada."
+    },
+    {
+      "claim": "Persistência individual, atribuição única e cenário ativo continuam protegidos. Encurtar trigo até 01/10 limita seu efeito anual e produz lacuna por ausência de efeito semanal material; compartilhar a série com prazo ou atribuir propagação à série inativa é recusado.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/packages/financial-model/src/quarter-update-independent.test.ts",
+      "anchor": "bounds a shortened cause individually; refuses inactive attribution and mismatched days",
+      "result": "confirmed",
+      "note": "A maior data de outra causa não libera a janela do trigo. Atraso de três dias, quando a linha adotada varia quatro dias, produz lacuna. Remover todas as séries mantém o pacote parcial e o caixa semanal affected_not_recomputed; covenant e EBITDA continuam efetivamente derivados."
+    },
+    {
+      "claim": "Os contraexemplos de identidade e período continuam bloqueados. Covenant de novembro, projeção acumulada até novembro e EBITDA mensal vinculado ao caixa semanal não recebem updated. Definição ou cenário gerencial incompatível com o resultado da escritura também não recebe updated.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/independent-observations.json",
+      "anchor": "nov-covenant-dez26; nov-projecao-2026; monthly-driver; identity-definition; identity-scenario",
+      "result": "confirmed",
+      "note": "Os testes próprios passaram pelo caminho fatos, premissas, adoção, composição, leitor e pacote. Alterar driverLineId para ebitda não faz o caixa semanal produzir EBITDA. Dependentes externos ficam em ownedElsewhere; quando explicitamente solicitados, geram lacuna e pacote parcial."
+    },
+    {
+      "claim": "O procedimento apresenta causas, persistência, aperto de dezembro com ação, covenant por definição, EBITDA anual, itens sem mudança e pergunta diagnóstica. Stop conditions está harmonizado com ownedElsewhere.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/update-after-quarter-close.md",
+      "anchor": "Sequência operacional; Cálculos determinísticos; Stop conditions; Exemplos",
+      "result": "confirmed",
+      "note": "A antecipação de estoque é tratada como calendário; o diagnóstico aberto do prazo exige a pergunta sobre negociação ou atraso. Permanecem sem mudança a tabela de dívida, o plano de 2027 e a análise da embalagem. O material anterior fica desatualizado e sua atualização é oferecida sem envio."
+    },
+    {
+      "claim": "Os comandos solicitados passaram: financial-model com 24 testes e financial-core com 18. Os 19 testes independentes também passaram. As corridas registradas reproduziram casos e fingerprints: 26 gold, 16 adversariais e 6 de consistência.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/financial-model-tests.log",
+      "result": "confirmed",
+      "note": "Evidências adicionais em financial-core-tests.log e independent-tests.log na mesma pasta. Versões anteriores são reconstruídas pelos leitores liberados com prova de reprodução, sem mutação. Versão errada e recálculo de item não afetado são recusados. sentToThirdParties, grantsExecution e grantsPublication permanecem false."
+    },
+    {
+      "claim": "Nenhum arquivo foi escrito no repositório. HEAD e git status permaneceram inalterados; os caches existentes dos dois pacotes conservaram seus hashes. Testes, dependências, caches novos, scripts, cópias do oráculo e resultados ficaram em /tmp.",
+      "source": "/tmp/offroad-independent-r6-u8t3t75x/isolation-final.json",
+      "result": "confirmed",
+      "note": "A cópia foi extraída do commit fixado. As dependências foram copiadas fisicamente, e a inspeção final não encontrou links que resolvessem para fora da cópia temporária."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As condições técnicas das cinco rodadas anteriores foram verificadas como encerradas nos bytes examinados, incluindo os contraexemplos próprios desta rodada. A calibração atende às expectativas corrigidas: a mudança de saldo do prazo é carregada uma vez, e 2,29x incorpora corretamente a perna adicional de caixa do trigo sob a premissa adotada. A derivação das séries elimina o contorno por ruído, e as verificações de sinal e materialidade impedem suficiência por efeito simbólico ou contrário. A restrição de updated aos produtos efetivamente calculados, confrontados com grandeza, definição, cenário e período do dependente, é adequada. Não foram identificadas condições remanescentes de conteúdo nem regressões nos caminhos examinados. Esta aprovação é exclusivamente técnica e independente; não concede aprovação humana, publicação, promoção de maturidade ou autorização de execução ou efeito externo."
+}

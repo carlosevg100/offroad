@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "build-operating-projection-2026-10-26-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "não informado pela interface",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "build-operating-projection",
+    "version": "2026.10.26-v1",
+    "fingerprint": "4d3e55dac364044f14f032a3685857e969551aa8190629dab1134b504de70ef4"
+  },
+  "run": {
+    "id": "c24-r2-133823",
+    "startedAt": "2026-10-26T13:28:23Z",
+    "finishedAt": "2026-10-26T13:36:56Z",
+    "commit": "b64830ea84f70eb50c955ea79c61b1c736650aee"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os oito arquivos fixados coincidem com os bytes do commit revisado. Os dois arquivos externos coincidem com seus hashes. O SHA-256 do arquivo de base corresponde ao fingerprint do objeto desta revisão.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "Verificação repetida ao término. A revisão e os testes utilizaram uma extração imutável do commit em /private/tmp. O repositório permaneceu limpo."
+    },
+    {
+      "claim": "O procedimento segue a ordem profissional da ficha: mecanismo, reprodução histórica, projeção com caixa, orçamento e revisão com causa, sensibilidades e cenários, origens e até três perguntas.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/build-operating-projection.md",
+      "anchor": "Sequência operacional; T1; R1 a R3",
+      "result": "confirmed",
+      "note": "Comparado com corpo.html da ficha C24. R3 e T1 removem a classificação automática do histórico como dado. Os contratos tipados de entrada e saída do procedimento coincidem com os gerados pelo executor."
+    },
+    {
+      "claim": "A calibração reproduz receita de 420 e EBITDA de 52,005 em 2025. A diferença relativa do EBITDA é aproximadamente 0,009615%, dentro da tolerância adotada de 0,5%.",
+      "source": "packages/financial-core/src/operating-projection.ts",
+      "anchor": "Calibração do último ano; linhas 90 a 104",
+      "result": "confirmed",
+      "note": "O valor 52 é a apresentação arredondada. Testei também o limite exato da tolerância e um operando imediatamente além dele; somente o primeiro permite projeção."
+    },
+    {
+      "claim": "A base produz EBITDA de 54,51, 56,63 e 58,79625, com caixa disponível de 33,14465555, 33,39524445 e 34,90135833. Atende aos valores e à tolerância da ficha.",
+      "source": "/private/tmp/offroad-projection-review-qzf0y31n/independent-output.json",
+      "anchor": "result.projection.base",
+      "result": "confirmed",
+      "note": "Entradas reconstruídas diretamente dos parâmetros de modelo_c24.py. Receita, custos, giro, imposto e caixa foram recalculados independentemente."
+    },
+    {
+      "claim": "Em 2027, trigo +15% com repasse em seis meses produz EBITDA de 48,05; sem repasse no ano, 39,47; volume 2% menor, 53,7854. As sensibilidades são 4,6365 para preço, 1,144 para trigo e 1,28791667 para um dia de recebimento.",
+      "source": "/private/tmp/offroad-projection-review-qzf0y31n/independent-output.json",
+      "anchor": "result.projection.scenarios; result.projection.sensitivities",
+      "result": "confirmed",
+      "note": "Os cenários preservam os demais drivers e respeitam a base ou o cenário anterior indicado."
+    },
+    {
+      "claim": "Orçamento de 58 e revisão de 55,5 permanecem separados da projeção de 54,51, com diferenças de +3,49 e +0,99 e causa explícita. Causa ausente mantém a comparação e abre uma pergunta.",
+      "source": "packages/financial-model/src/operating-projection-packet.test.ts",
+      "anchor": "Comparações com a companhia e diferença sem causa",
+      "result": "confirmed",
+      "note": "A execução não modifica a entrada nem substitui as versões da companhia."
+    },
+    {
+      "claim": "O turno informado produz EBITDA de 55,3342, 58,4330885 e 61,7421741. Em 2026, a variação de giro é 15,56916667 contra 2,88194445 na base, com caixa de 21,00140533. O choque com repasse em quatro meses produz EBITDA de 52,6405745 em 2027.",
+      "source": "/private/tmp/offroad-projection-review-qzf0y31n/independent-output.json",
+      "anchor": "Cenários informed e informed4",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O giro informado de 2027 correto é 4,35213625, apresentado como 4,4. O método e a regressão usam esse valor; o snapshot externo resultados.json ainda contém 4,3.",
+      "source": "packages/financial-model/src/operating-projection-packet.test.ts",
+      "anchor": "Linhas 61 e 62",
+      "result": "corrected",
+      "note": "Reexecutei a função original do oráculo com volume crescendo 3%. A única diferença encontrada entre suas saídas arredondadas e o snapshot salvo foi esse campo. A correção está na comparação e na regressão do método; o arquivo externo não foi alterado."
+    },
+    {
+      "claim": "O leitor exige a origem dos dez operandos históricos. Apenas document recebe nature=data. Histórico estimado, informado ou da casa preserva sua origem, recebe nature=assumption e não recebe documented=true.",
+      "source": "packages/financial-model/src/adopted-operating-projection-drivers.ts; packages/financial-model/src/operating-projection-packet.ts",
+      "anchor": "actual.origins; actualOrigins; nature; calibration.documented",
+      "result": "confirmed",
+      "note": "Além das regressões registradas, testei individualmente os dez operandos com as quatro origens, totalizando quarenta combinações. A ausência de qualquer origem histórica impede o cálculo, sem assumir document."
+    },
+    {
+      "claim": "As alterações de cenário exibem origem e natureza na leitura resumida. Crescimento, fator de volume, substituição de driver e choque sem origem obrigatória impedem o cálculo.",
+      "source": "/private/tmp/offroad-projection-review-qzf0y31n/packages/financial-model/src/independent-review.test.ts",
+      "anchor": "Origens das quatro modalidades de alteração",
+      "result": "confirmed",
+      "note": "Também confirmei rejeição de origem desconhecida, origem de outra entidade, envelope adulterado, referência a cenário posterior e alíquota fora do domínio."
+    },
+    {
+      "claim": "As definições de receita, custos variáveis, giro por dias, imposto limitado a zero e caixa após arrendamentos foram confirmadas em 1.365 comparações decimais independentes.",
+      "source": "/private/tmp/offroad-projection-review-qzf0y31n/independent-numeric-summary.json",
+      "result": "confirmed",
+      "note": "Incluí bases de 360 e 365 dias, prazos de estoque e pagamento diferentes e imposto zerado por base tributável negativa. A maior diferença contra o cálculo sem arredondamento intermediário foi inferior a 0,00000002, explicada pelo arredondamento declarado dos operandos do motor. As 210 comparações de apresentação com o oráculo reexecutado passaram."
+    },
+    {
+      "claim": "Os comandos solicitados passaram: 8 testes no financial-core e 18 no financial-model. Foram reproduzidos os 20 casos gold, 14 adversariais e 6 de consistência, incluindo seus fingerprints registrados.",
+      "source": "packages/financial-model/src/operating-projection-runs.test.ts; packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-*/run.json",
+      "result": "confirmed",
+      "note": "Executados com Node 24.19.0 em cópia temporária. Oito testes adicionais independentes também passaram, cobrindo adulterações, origens, tolerância e equivalência dos contratos tipados."
+    },
+    {
+      "claim": "O procedimento proíbe as cinco falhas eliminatórias. O executor exige drivers, bloqueia projeção sem reprodução histórica, preserva o orçamento e separa hipóteses de dados pela origem.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/build-operating-projection.md; packages/financial-model/src/operating-projection-packet.ts",
+      "anchor": "Red flags; Stop conditions; Template; R1 a R3",
+      "result": "confirmed",
+      "note": "A primeira versão de calibração é entregue com hipóteses explícitas e três perguntas. Entradas realmente ausentes produzem lacunas. Uma taxa única de crescimento não substitui a estrutura obrigatória de drivers."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As correções da rodada 1 estão implementadas no leitor, no pacote, nas regressões e na regra R3. Não encontrei definição financeira incorreta nem divergência do método além da precisão declarada. A ressalva factual é o snapshot externo ainda registrar 4,3 no giro informado de 2027; a reexecução do próprio oráculo confirma 4,35213625, valor corretamente produzido e fixado pelo método. Essa discrepância do arquivo de referência não foi reproduzida como erro no cálculo. A revisão cobre os bytes fixados e sua execução determinística. Não constitui aprovação humana, comprovação de autenticidade documental, validação de interface em produção ou autorização de publicação. Nenhum arquivo foi escrito dentro do repositório."
+}
