@@ -1,8 +1,9 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeQuarterUpdateHypotheses, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {quarterUpdateContradictions, amountInReais, buildQuarterUpdatePremiseProposal, quarterUpdateReaderGaps, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
+import {quarterUpdateContradictions, amountInReais, buildQuarterUpdatePremiseProposal, quarterUpdateReader, quarterUpdateReaderGaps, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
   shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction, priorResultPins} from "./quarter-update-premises-proposal";
 import {factsOrGaps, itemKeys} from "./lote2-premises";
+import {readerGaps} from "./lote3-reader-check";
 import {z} from "zod";
 import {auroraQuarterUpdatePriors, comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
 import weeklyPacket from "../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
@@ -321,6 +322,30 @@ describe("quarter update premises proposed from a turn", () => {
     const stream = {...base.addedStreams[0]!, source: "contrato do programa", anchor: "cláusula 2"};
     const streams = completeQuarterUpdateFacts({extraction: {...base, addedStreams: [stream, {...stream, origin: "document" as const}, {...stream}]}, ids, priors: priors(), currency: "BRL"});
     expect(streams.status === "complete" ? streams.facts.addedStreams.length : streams).toBe(1);
+  });
+  it("one piece of evidence explaining two bridge lines is two causes; readings within one line still reconcile (independent review, round 20)", async () => {
+    const base = auroraExtraction(aurora(W, C)), ebitda = base.ebitdaLineLabel.value!, cash = base.cashLineLabel.value!;
+    const add = (label: string, delta: number) => {const l = base.lines.find((x) => x.label === label)!; l.actual = String(Math.round((Number(l.actual) + delta) * 1e8) / 1e8);};
+    add(ebitda, -0.15); add(cash, -0.15);
+    // The cash bridge carries the EBITDA effect as its own amount here, so the freight explains each line once.
+    for (const c of base.causes) if (c.equalsDeviationOfLabel === ebitda) c.equalsDeviationOfLabel = null;
+    const freight = {...base.causes.find((c) => c.classification === "calendar")!, label: "Frete", amount: "-0.15", source: "nota fiscal 1201", anchor: "item 1",
+      equalsDeviationOfLabel: null, driverLineLabel: null, question: null};
+    const e = {...base, causes: [...base.causes, {...freight, lineLabel: ebitda}, {...freight, lineLabel: cash, origin: "informed" as const}]};
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    if (c.status !== "complete") throw new Error(JSON.stringify(c));
+    expect(c.facts.bridges.flatMap((b) => b.causes).filter((x) => x.value.label === "Frete").length).toBe(2);
+    // The card is proposed and the method's own packet explains both lines with no residual.
+    const entityId = (JSON.parse(priors().weeklyCash.inputSnapshot) as {analysis: {entityId: string}}).analysis.entityId;
+    let packet: {readings: {bridges: {lineId: string; residual: string}[]}} | undefined;
+    const hypotheses = proposeQuarterUpdateHypotheses(c.facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId}}));
+    expect(readerGaps(hypotheses, (b) => {packet = quarterUpdateReader(priors())(b) as never;})).toEqual([]);
+    expect(packet!.readings.bridges.map((b) => b.residual)).toEqual(["0", "0"]);
+    // Within one line, the same invoice item read twice is one cause, and with another value it is asked.
+    const twice = completeQuarterUpdateFacts({extraction: {...e, causes: [...e.causes, {...freight, lineLabel: ebitda}]}, priors: priors(), ids, currency: "BRL"});
+    expect(twice.status === "complete" ? twice.facts.bridges.flatMap((b) => b.causes).length : twice).toBe(c.facts.bridges.flatMap((b) => b.causes).length);
+    const other = completeQuarterUpdateFacts({extraction: {...e, causes: [...e.causes, {...freight, lineLabel: ebitda, amount: "-0.2"}]}, priors: priors(), ids, currency: "BRL"});
+    expect(other.status === "missing" ? other.missing : other).toEqual([`causes.${e.causes.length + 1}.anchor`]);
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {

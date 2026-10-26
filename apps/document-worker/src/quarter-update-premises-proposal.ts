@@ -163,7 +163,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
   // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
   const missing: string[] = [], used: string[] = [];
-  const {e, ambiguous} = withRecordIdentity(statedInReais(input.extraction), {keyed: ["lines", "streamUpdates", "facilities", "steps", "dependents"], countable: [{name: "causes", sourceIdentifies: true}, {name: "addedStreams", sourceIdentifies: true}]}, missing);
+  const {e, ambiguous} = withRecordIdentity(statedInReais(input.extraction), {keyed: ["lines", "streamUpdates", "facilities", "steps", "dependents"], countable: [{name: "causes", sourceIdentifies: true, role: "lineLabel"}, {name: "addedStreams", sourceIdentifies: true}]}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
