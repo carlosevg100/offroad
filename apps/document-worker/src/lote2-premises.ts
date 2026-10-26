@@ -138,28 +138,36 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
   }
   for (const entry of collections.countable) {
     const name = typeof entry === "string" ? entry : entry.name, sourceIdentifies = typeof entry !== "string";
-    const kept: Record<string, unknown>[] = [], asked = new Set<number>();
-    const parts = (t: Record<string, unknown>) => {
+    // The identity key of each kept record is computed once, from the record as first read, and never changes:
+    // provenance accumulated by later readings (their origins) is kept apart and only rendered into the record.
+    const kept: Record<string, unknown>[] = [], keys: ReturnType<typeof parts>[] = [], origins: Set<unknown>[] = [], firsts: Record<string, unknown>[] = [];
+    const asked = new Set<number>();
+    function parts(t: Record<string, unknown>) {
       const {origin: _origin, source, anchor, ...content} = t;
       return {value: canonicalJson(content), where: typeof source === "string" ? statedLabel(source) : null,
         anchor: typeof anchor === "string" && anchor.trim() ? statedLabel(anchor) : null};
-    };
+    }
+    const keep = (t: Record<string, unknown>, p: ReturnType<typeof parts>) => {kept.push(t); keys.push(p); origins.push(new Set([t.origin])); firsts.push(t);};
     for (const t of extraction[name] as Record<string, unknown>[]) {
-      const p = parts(t), prior = kept.map(parts);
+      const p = parts(t), prior = [...keys];
       if (p.anchor !== null) {
         // A stated anchor is the identity: (source, anchor). Origin is provenance only.
-        const k = prior.findIndex((x) => x.where === p.where && x.anchor === p.anchor);
-        if (k >= 0 && prior[k]!.value === p.value) {
-          // Told in the conversation and read in the document: one fact, both origins kept in its provenance.
-          if (kept[k]!.origin !== t.origin) kept[k] = {...kept[k]!, origin: "document", source: `${String(kept[k]!.source ?? "").trim()} (também informado na conversa)`};
+        const sameKey = (x: ReturnType<typeof parts>) => x.where === p.where && x.anchor === p.anchor;
+        // Reconciled against the immutable keys: a reading equal to any earlier reading of this key joins it.
+        const k = prior.findIndex((x) => sameKey(x) && x.value === p.value);
+        if (k >= 0) {
+          // Told in the conversation and read in the document: one fact, every origin kept in its provenance.
+          origins[k]!.add(t.origin);
+          const first = firsts[k]!;
+          kept[k] = origins[k]!.size > 1 ? {...first, origin: "document", source: `${String(first.source ?? "").trim()} (também informado na conversa)`} : first;
           continue;
         }
-        kept.push(t);
-        if (k >= 0) {asked.add(kept.length); missing.push(`${name}.${kept.length}.anchor`);}
+        keep(t, p);
+        if (prior.some(sameKey)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.anchor`);}
         else if (prior.some((x) => x.value === p.value && x.anchor === null && !(sourceIdentifies && x.where !== p.where))) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
         continue;
       }
-      kept.push(t);
+      keep(t, p);
       // Without an anchor, an equal value that nothing tells apart is asked; where the source is the record's own
       // document, another source is another record.
       if (prior.some((x) => x.value === p.value && !(sourceIdentifies && x.where !== p.where))) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}

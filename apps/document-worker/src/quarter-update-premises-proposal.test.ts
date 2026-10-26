@@ -310,6 +310,18 @@ describe("quarter update premises proposed from a turn", () => {
     const inconsistent = run([line, {...line, amount: "-160000"}]);
     expect(inconsistent.status === "missing" ? inconsistent.missing : inconsistent).toEqual([`causes.${n + 2}.anchor`]);
   });
+  it("three readings of one invoice line are one cause and one new stream; a third with another value is asked (independent review, round 19)", () => {
+    const base = auroraExtraction(aurora(W, C)), n = base.causes.length, k = base.causes.findIndex((c) => c.classification === "calendar" && c.lineLabel === base.ebitdaLineLabel.value);
+    const line = {...base.causes[k]!, label: "Frete", amount: "-150000", source: "nota fiscal 1201", anchor: "item 3"};
+    const reading = (origin: "document" | "informed", amount = "-150000") => ({...line, origin, amount});
+    const three = completeQuarterUpdateFacts({extraction: {...base, causes: [...base.causes, reading("informed"), reading("document"), reading("document")]}, ids, priors: priors(), currency: "BRL"});
+    expect(three.status === "complete" ? three.facts.bridges.flatMap((b) => b.causes).length : three).toBe(n + 1);
+    const odd = completeQuarterUpdateFacts({extraction: {...base, causes: [...base.causes, reading("document"), reading("informed"), reading("document", "-160000")]}, ids, priors: priors(), currency: "BRL"});
+    expect(odd.status === "missing" ? odd.missing : odd).toEqual([`causes.${n + 2}.anchor`]);
+    const stream = {...base.addedStreams[0]!, source: "contrato do programa", anchor: "cláusula 2"};
+    const streams = completeQuarterUpdateFacts({extraction: {...base, addedStreams: [stream, {...stream, origin: "document" as const}, {...stream}]}, ids, priors: priors(), currency: "BRL"});
+    expect(streams.status === "complete" ? streams.facts.addedStreams.length : streams).toBe(1);
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;
