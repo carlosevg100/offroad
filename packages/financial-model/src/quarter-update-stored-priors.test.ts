@@ -52,6 +52,20 @@ describe("the quarter update composed from the close and the stored prior inputs
     expect(p.readings).toEqual(reference.readings);
     expect(p.fingerprint).toBe(prepareQuarterUpdatePacket(fromBases).fingerprint);
   });
+  it("carries the dependents the person asked to update: one asked and not recomputed makes the packet partial (independent review, round 5)", () => {
+    const c = cases();
+    // The plan for 2027 now reads the close inside its horizon and belongs to another method: affected, not recomputed here.
+    const facts = auroraQuarterUpdateFacts(c.weeklyCash.envelope.fingerprint, c.covenant.envelope.fingerprint);
+    for (const x of facts.dependents) if (x.value.id === "plano-2027") x.value.horizonStart = "2026-10-01";
+    const update = envelopeOf(adopt(proposeQuarterUpdateHypotheses(facts), 9700), 504, "synthetic quarter update");
+    const plain = prepareQuarterUpdatePacket(composeQuarterUpdateFromStoredPriors({update, question, prior: {weeklyCash: c.storedWeekly, covenant: c.storedCovenant}}));
+    expect(plain.readings!.affectedNotRecomputed).toContain("plano-2027");
+    expect(plain.gaps.some((g) => g.reason === "asked_dependent_not_recomputed")).toBe(false);
+    const asked = prepareQuarterUpdatePacket(composeQuarterUpdateFromStoredPriors({update, question, askedDependentIds: ["plano-2027"],
+      prior: {weeklyCash: c.storedWeekly, covenant: c.storedCovenant}}));
+    expect(asked.status).toBe("partial");
+    expect(asked.gaps.filter((g) => g.reason === "asked_dependent_not_recomputed").map((g) => g.operand.endsWith(".dependent.plano-2027"))).toEqual([true]);
+  });
   it("accepts parsed stored inputs and refuses a stored input of another method", () => {
     const c = cases();
     const parsed = composeQuarterUpdateFromStoredPriors({update: c.update, question, prior: {weeklyCash: JSON.parse(c.storedWeekly), covenant: JSON.parse(c.storedCovenant)}});

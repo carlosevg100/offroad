@@ -1,6 +1,6 @@
 "use server";
 
-import {checkQuarterUpdatePins, type PriorResultPins} from "@/lib/execution/quarter-update-pins";
+import {askedQuarterUpdateDependents, checkQuarterUpdatePins, type PriorResultPins} from "@/lib/execution/quarter-update-pins";
 import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {revalidatePath} from "next/cache";
@@ -170,6 +170,7 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   // refused before anything is written when one is missing, and superseded when the card named other versions.
   let priors: QuarterUpdatePriors | undefined;
   let pins: PriorResultPins | undefined;
+  let askedDependentIds: string[] = [];
   if (proposal.data.method_id === quarterUpdateMethodId) {
     const read = await supabase.rpc("quarter_update_prior_results_v1", {p_work_id: projectId});
     if (read.error) return failure(read.error);
@@ -182,6 +183,10 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
     const pinned = checkQuarterUpdatePins(summary, facts, priors);
     if (!pinned.ok) return {ok: false, error: "superseded"};
     pins = pinned.pins;
+    // The dependents the person asked by name to update travel with the request: one not recomputed makes the packet partial.
+    const asked = askedQuarterUpdateDependents(summary, facts);
+    if (!asked) return failure({code: "22023"});
+    askedDependentIds = asked;
   }
   const dossiers = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).in("resource_id", [projectId, proposal.data.intake_session_id]);
   if (dossiers.error || !dossiers.data?.length) return {ok: false, error: "company_unregistered"};
@@ -214,7 +219,7 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!basis.success || basis.data.workId !== projectId || basis.data.versionId !== versionId || basis.data.purpose !== capitalDecisionPurpose) return failure({code: "22023"});
   const composed = composeMethodExecutionRequest({basis: basis.data,
     ask: {...ask, asOf: now.slice(0, 10)},
-    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}, ...priors ? {priors} : {}});
+    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}, ...priors ? {priors, askedDependentIds} : {}});
   if (!composed.ok) return composed.error === "method_unavailable" ? {ok: true, versionId, executionId: null, calculation: "pending_release"}
     : composed.error === "provenance_denied" || composed.error === "composition_invalid" ? failure({code: "22023"}) : refused(composed.error);
   // Only the quarter close names prior results, through the v3 producer; every other method keeps v2.

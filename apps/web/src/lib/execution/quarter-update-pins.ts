@@ -27,3 +27,16 @@ export function checkQuarterUpdatePins(summary: Record<string, unknown>, facts: 
   if (facts.priorWeeklyFingerprint?.value !== envelopeOf(priors.weeklyCash) || facts.priorCovenantFingerprint?.value !== envelopeOf(priors.covenant)) return {ok: false, error: "superseded"};
   return {ok: true, pins: parsed.data};
 }
+
+
+const dependentId = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/);
+/** The dependents the card says the person asked by name to update. Each must be a dependent of the card's own
+ * close; a card without the list asked for none, and anything else is not a card this action composes. */
+export function askedQuarterUpdateDependents(summary: Record<string, unknown>, facts: Record<string, unknown>): string[] | null {
+  if (summary.askedDependentIds === undefined) return [];
+  const asked = z.array(dependentId).max(24).safeParse(summary.askedDependentIds);
+  const carried = z.array(z.object({value: z.object({id: dependentId}).loose()}).loose()).safeParse(facts.dependents);
+  if (!asked.success || !carried.success) return null;
+  const ids = new Set(carried.data.map((d) => d.value.id));
+  return asked.data.every((id) => ids.has(id)) && new Set(asked.data).size === asked.data.length ? asked.data : null;
+}

@@ -66,6 +66,7 @@ export const quarterUpdateExtractionSchema = z.strictObject({
   dependents: z.array(z.strictObject({...item, kind: z.enum(["analysis", "plan", "material"]), readsLineLabels: z.array(itemLabel).max(24),
     horizonStart: z.iso.date(), horizonEnd: z.iso.date(), recomputedBy: z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9-]{0,39}|projection:[1-9]\d{3})$/),
     owner: text.nullable(), quantities: z.array(z.string().regex(/^[a-z][a-z0-9_]{0,59}$/)).max(8), definition: text.nullable(), scenario: z.string().min(1).max(160).nullable()})).max(24),
+  askedDependentLabels: z.array(itemLabel).max(24),
 });
 export type QuarterUpdateExtraction = z.infer<typeof quarterUpdateExtractionSchema>;
 
@@ -80,14 +81,15 @@ export const quarterUpdateExtractionContract = {
     "streamUpdates dizem como uma causa estrutural move um fluxo do caixa semanal anterior: streamId é um id de priorWeeklyCash.streams; scale multiplica os valores por factor, delay atrasa os eventos em days.",
     "addedStreams são fluxos novos (por exemplo o desembolso de um programa aprovado); facilities são as linhas aprovadas com o limite e a aprovação; steps são a ação: fixed usa um fluxo novo no lugar de fluxos anteriores (replacesStreamIds), residual cobre o que falta a partir de uma data.",
     "covenantMeasurementIds são os ids de priorCovenant.measurements que o fechamento atualiza, a principal primeiro. dependents são as análises, planos e materiais que leem o fechamento, com as linhas que leem, o horizonte, quem recalcula (weekly_cash, covenant:<id>, projection:<ano> ou none) e o dono quando for outro.",
+    "askedDependentLabels são os rótulos, como em dependents, das análises, planos e materiais que a pessoa pediu expressamente para atualizar (por exemplo 'atualiza também o plano de 2027'); lista vazia quando ela não pediu nenhum pelo nome. Um pedido genérico ('atualiza tudo') não nomeia nenhum.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: quarterUpdateExtractionSchema,
-  schemaName: "quarter_update_extraction_v1",
+  schemaName: "quarter_update_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 16_000,
-  cacheKey: "quarter-update-extraction-2026.10.26-v1",
+  cacheKey: "quarter-update-extraction-2026.10.26-v2",
 };
 
 export const quarterUpdateSituation = "near-covenant";
@@ -99,8 +101,10 @@ const short = (id: string) => id.slice(0, 8);
  * premises are conventions of the method and stated as such: the floor of R$ 1,000 under which a weekly
  * effect does not propagate, and, when the close names none, the covenant measurements at the date of the
  * headline test. */
+export type QuarterUpdateCompletion = (Extract<Lote2Completion<QuarterUpdateFacts>, {status: "complete"}> & {askedDependentIds: string[]})
+  | Extract<Lote2Completion<QuarterUpdateFacts>, {status: "missing"}>;
 export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtraction; priors: {weeklyCash: Prior; covenant: Prior};
-  ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): Lote2Completion<QuarterUpdateFacts> {
+  ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): QuarterUpdateCompletion {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
   const start = stated(e.quarterStart), end = stated(e.quarterEnd);
   if (!start) missing.push("quarterStart");
@@ -173,6 +177,13 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     return [{value: {id: dependentIds[k]!, label: d.label, kind: d.kind, reads: reads as string[], horizonStart: d.horizonStart, horizonEnd: d.horizonEnd, recomputedBy: d.recomputedBy,
       owner: d.owner, quantities: d.quantities, definition: d.definition, scenario: d.scenario}, origin: d.origin, source: citedSource(d.origin, d.source)}];
   });
+  // The dependents the person asked by name to update, by id; a label that names no dependent is asked back.
+  const askedDependentIds: string[] = [];
+  e.askedDependentLabels.forEach((label, k) => {
+    const d = e.dependents.findIndex((x) => sameLabel(x.label, label));
+    if (d < 0) missing.push(`askedDependentLabels.${k + 1}`);
+    else if (!askedDependentIds.includes(dependentIds[d]!)) askedDependentIds.push(dependentIds[d]!);
+  });
   if (missing.length || !start || !end || !cashId || !ebitdaId) return {status: "missing", missing: [...new Set(missing)]};
   used.push("materialityFloor");
   const {weeklyCash, covenant} = input.priors;
@@ -186,14 +197,15 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     addedStreams, covenant: measurementsChosenByHouse
       ? {value: {measurementIds}, origin: "house", source: "Medições do teste registrado na data da apuração principal, escolhidas pela casa"}
       : {value: {measurementIds}, origin: "informed", source: "Medições do teste registrado citadas na conversa"}, facilities, steps, dependents});
-  return {status: "complete", facts, situationId: quarterUpdateSituation, housePremiseKeys: [...new Set(used)]};
+  return {status: "complete", facts, situationId: quarterUpdateSituation, housePremiseKeys: [...new Set(used)], askedDependentIds};
 }
 
 /** The card: the prior versions, each line, each cause, the facilities and the dependents, and the materiality floor.
- * The exact prior executions shown are pinned on the card, so confirmation never silently moves to other results. */
-export function quarterUpdateSummary(facts: QuarterUpdateFacts, priorResults: PriorResultPin[]): Lote2Summary {
+ * The exact prior executions shown are pinned on the card, so confirmation never silently moves to other results,
+ * and the dependents the person asked to update travel with it to the request. */
+export function quarterUpdateSummary(facts: QuarterUpdateFacts, priorResults: PriorResultPin[], askedDependentIds: string[] = []): Lote2Summary {
   const row = summaryRow;
-  return {situationId: quarterUpdateSituation, referenceDate: facts.quarterEnd, priorResults, items: [
+  return {situationId: quarterUpdateSituation, referenceDate: facts.quarterEnd, priorResults, askedDependentIds, items: [
     row("premise", "Caixa semanal anterior", facts.priorWeeklyFingerprint, "priorWeeklyCash"),
     row("premise", "Teste de covenant anterior", facts.priorCovenantFingerprint, "priorCovenant"),
     ...facts.lines.map((l) => row("line", l.value.label, l)),
@@ -204,8 +216,8 @@ export function quarterUpdateSummary(facts: QuarterUpdateFacts, priorResults: Pr
   ]};
 }
 
-export function buildQuarterUpdatePremiseProposal(facts: QuarterUpdateFacts, priorResults: PriorResultPin[]) {
-  return fingerprintedProposal(quarterUpdatePremiseMethod, facts, proposeQuarterUpdateHypotheses(facts), quarterUpdateSummary(facts, priorResults));
+export function buildQuarterUpdatePremiseProposal(facts: QuarterUpdateFacts, priorResults: PriorResultPin[], askedDependentIds: string[] = []) {
+  return fingerprintedProposal(quarterUpdatePremiseMethod, facts, proposeQuarterUpdateHypotheses(facts), quarterUpdateSummary(facts, priorResults, askedDependentIds));
 }
 /** The pins of the priors a card is proposed over, weekly cash first. */
 export const priorResultPins = (priors: {weeklyCash: Prior; covenant: Prior}): PriorResultPin[] => [
@@ -231,8 +243,13 @@ export async function proposeQuarterUpdatePremisesForTurn(input: {
   }
   const found = {weeklyCash: priors.weeklyCash!, covenant: priors.covenant!};
   const context = {priorWeeklyCash: {streams: priorStreams(found.weeklyCash)}, priorCovenant: {measurements: priorMeasurements(found.covenant)}};
+  let asked: string[] = [];
   return proposeLote2PremisesForTurn({logPrefix: "quarter_update_premises", idName: "quarter-update", schema: quarterUpdateExtractionSchema,
-    complete: (extraction, id) => completeQuarterUpdateFacts({extraction, priors: found, ids: {updateId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found))}, {...input, entry, projectId: input.projectId,
+    complete: (extraction, id) => {
+      const completion = completeQuarterUpdateFacts({extraction, priors: found, ids: {updateId: id, entityId: id, definitionVersionId: id}, currency: "BRL"});
+      if (completion.status === "complete") asked = completion.askedDependentIds;
+      return completion;
+    },
+    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found), asked)}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({documentFields: await input.loadEvidence(), ...context})});
 }

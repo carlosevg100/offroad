@@ -29,7 +29,9 @@ export const summaryRow = (group: Lote2SummaryItem["group"], label: string, x: {
   ({group, label, labelKey, origin: x.origin, source: x.source});
 /** The prior results a quarter close card was proposed over, pinned by execution and packet fingerprint. */
 export type PriorResultPin = {role: "weekly_cash" | "covenant"; executionId: string; resultFingerprint: string};
-export type Lote2Summary = {situationId: string; referenceDate: string | null; items: Lote2SummaryItem[]; priorResults?: PriorResultPin[]};
+export type Lote2Summary = {situationId: string; referenceDate: string | null; items: Lote2SummaryItem[]; priorResults?: PriorResultPin[];
+  /** Quarter close only: the dependents the person asked by name to update, by id. */
+  askedDependentIds?: string[]};
 
 /** A stated fact keeps its origin; its source defaults to where it came from when the extraction did not cite it. */
 export const stated = <T>(f: Sourced<T>) => f.value === null || f.origin === null ? null

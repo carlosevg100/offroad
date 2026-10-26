@@ -49,6 +49,7 @@ function auroraExtraction(f: QuarterUpdateFacts): QuarterUpdateExtraction {
     dependents: f.dependents.map((d) => ({label: d.value.label, origin: "informed", source: d.source, kind: d.value.kind, readsLineLabels: d.value.reads.map((r) => lineLabel(r)!),
       horizonStart: d.value.horizonStart, horizonEnd: d.value.horizonEnd, recomputedBy: d.value.recomputedBy, owner: d.value.owner, quantities: d.value.quantities,
       definition: d.value.definition, scenario: d.value.scenario})),
+    askedDependentLabels: [],
   };
 }
 const ids = {updateId: "a0000000-0000-4000-8000-000000009100", entityId: "a0000000-0000-4000-8000-000000000001", definitionVersionId: "a0000000-0000-4000-8000-000000000003"};
@@ -117,6 +118,24 @@ describe("quarter update premises proposed from a turn", () => {
     const other = buildQuarterUpdatePremiseProposal(c.facts, [{...pins[0]!, executionId: "a0000000-0000-4000-8000-000000000099", resultFingerprint: hex("9")}, pins[1]!]);
     expect(other.fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "update-after-quarter-close", methodVersion: "2026.10.26-v1"});
+  });
+  it("carries the dependents the person asked by name to update, and asks back a label that names none (independent review, round 5)", async () => {
+    const f = aurora(hex("a"), hex("b")), plan = f.dependents.find((d) => d.value.id === "plano-2027")!.value.label;
+    const planId = itemKeys(f.dependents.map((d) => d.value.label))[f.dependents.findIndex((d) => d.value.id === "plano-2027")]!;
+    const e = auroraExtraction(f); e.askedDependentLabels = [plan.toUpperCase(), plan];
+    const c = complete(e);
+    expect(c.askedDependentIds).toEqual([planId]);
+    expect(buildQuarterUpdatePremiseProposal(c.facts, priorResultPins(priors()), c.askedDependentIds).summary.askedDependentIds).toEqual([planId]);
+    // Asking for a dependent is part of what the card shows, so it changes the fingerprint.
+    expect(buildQuarterUpdatePremiseProposal(c.facts, priorResultPins(priors()), c.askedDependentIds).fingerprint)
+      .not.toBe(buildQuarterUpdatePremiseProposal(c.facts, priorResultPins(priors())).fingerprint);
+    expect(complete(auroraExtraction(f)).askedDependentIds).toEqual([]);
+    const unknown = auroraExtraction(f); unknown.askedDependentLabels = ["Orçamento de 2028"];
+    expect(completeQuarterUpdateFacts({extraction: unknown, priors: priors(), ids, currency: "BRL"})).toEqual({status: "missing", missing: ["askedDependentLabels.1"]});
+    // Through the turn, the card summary names the asked dependent.
+    const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo e também o plano de 2027.", hasAttachments: true, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => e, log: () => {}});
+    expect(turn?.proposal?.summary.askedDependentIds).toEqual([planId]);
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {

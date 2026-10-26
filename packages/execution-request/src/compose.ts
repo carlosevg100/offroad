@@ -41,7 +41,7 @@ export function composeCapitalExecutionRequest(input: {basis: ExecutionContractB
 }
 
 /** The packet composer of each released method, chosen by the method the server's basis names. */
-const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: CapitalExecutionAsk, priors: QuarterUpdatePriors | null) => unknown> = {
+const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: CapitalExecutionAsk, priors: QuarterUpdatePriors | null, askedDependentIds: readonly string[]) => unknown> = {
   "prepare-capital-structure-decision": (basis, ask) => {
     const scope = {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId};
     const snapshot = readContextualBasis(basis.envelope, scope);
@@ -67,10 +67,15 @@ const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: Capit
     composeBoundReceivablesFunding({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
   // The quarter close executes on its one basis; the prior weekly cash and covenant analyses are copied
   // verbatim from the stored inputs of the prior completed executions, which the database checks byte for byte.
-  [quarterUpdateMethodId]: (basis, ask, priors) =>
-    composeQuarterUpdateFromStoredPriors({update: {envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}},
-      question: ask.question, prior: {weeklyCash: priors!.weeklyCash!.inputSnapshot, covenant: priors!.covenant!.inputSnapshot}}),
+  [quarterUpdateMethodId]: (basis, ask, priors, askedDependentIds) => composeQuarterUpdatePacket(basis, ask, priors!, askedDependentIds),
 };
+
+/** The quarter close packet: the close on this basis, the priors verbatim from their stored inputs, and the dependents the
+ * person asked to update, which travel with the question (one that is not recomputed makes the packet partial). */
+export function composeQuarterUpdatePacket(basis: ExecutionContractBasis, ask: CapitalExecutionAsk, priors: QuarterUpdatePriors, askedDependentIds: readonly string[]) {
+  return composeQuarterUpdateFromStoredPriors({update: {envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}},
+    question: ask.question, prior: {weeklyCash: priors.weeklyCash!.inputSnapshot, covenant: priors.covenant!.inputSnapshot}, askedDependentIds: [...askedDependentIds]});
+}
 
 /** The prior results a quarter close request names, weekly cash first. */
 export function quarterUpdatePriorResults(priors: QuarterUpdatePriors): PriorResultReference[] | null {
@@ -87,7 +92,9 @@ export function quarterUpdateContractBasis(basis: ExecutionContractBasis, priors
 }
 
 /** Same order and refusals as the capital request, for any method with a packet composer. */
-export function composeMethodExecutionRequest(input: {basis: ExecutionContractBasis; ask: CapitalExecutionAsk; ids: ExecutionRequestIds; now?: Date; priors?: QuarterUpdatePriors}): CapitalExecutionComposition {
+export function composeMethodExecutionRequest(input: {basis: ExecutionContractBasis; ask: CapitalExecutionAsk; ids: ExecutionRequestIds; now?: Date; priors?: QuarterUpdatePriors;
+  /** Quarter close only: the dependents the person explicitly asked to update, by id. */
+  askedDependentIds?: readonly string[]}): CapitalExecutionComposition {
   const {ask} = input;
   const composePacket = packetComposers[input.basis.profile.method.methodId];
   if (!composePacket) return {ok: false, error: "method_unavailable"};
@@ -103,7 +110,7 @@ export function composeMethodExecutionRequest(input: {basis: ExecutionContractBa
   if (basis.unverifiedSources.length) return {ok: false, error: "provenance_denied", unverifiedSources: basis.unverifiedSources};
   let packet: unknown; let snapshotText: string; let contract: ExecutionContract; let contractText: string;
   try {
-    packet = composePacket(basis, ask, quarter ? input.priors! : null);
+    packet = composePacket(basis, ask, quarter ? input.priors! : null, quarter ? input.askedDependentIds ?? [] : []);
     snapshotText = executionCanonicalText(packet);
     contract = composeExecutionContract(basis, snapshotText, input.ids, input.now);
     contractText = executionContractText(contract);
