@@ -1,0 +1,57 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "update-after-quarter-close",
+  "version": "2026.10.26-v1"
+ },
+ "commit": "182c4bf876d8faec3436fc9a4895a552b2efa23f",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/update-after-quarter-close.md",
+   "sha256": "e075bbec6f698675be0f6c1ffb4cbaef97e76303f3504679fa7468890e50505d"
+  },
+  {
+   "path": "packages/financial-model/src/quarter-update-packet.ts",
+   "sha256": "623565ad8575bf2c46d2acaba315d055b50c8a9d44095416103195b13f816af8"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-quarter-update.ts",
+   "sha256": "9316a9cc5108c651009581b3387550f83b7ec3db7b01b1f8a0d077a4e7c4a619"
+  },
+  {
+   "path": "packages/financial-model/src/quarter-update-results.ts",
+   "sha256": "b34ce51dcd09dd215ee9b7580f8e20dad417e2b0482f0a733cdb38e939e357a1"
+  },
+  {
+   "path": "packages/financial-core/src/quarter-update.ts",
+   "sha256": "27f793a477f63f4ca1685602486126d04eb01ea6adf497103c7373c091fd7cf8"
+  },
+  {
+   "path": "packages/financial-model/src/quarter-update-runs.test-support.ts",
+   "sha256": "f65f75b6dc9b41cdfcf08f1e2640c614cdf8fbbf81fe03d918600b874e975aa9"
+  },
+  {
+   "path": "packages/financial-model/src/quarter-update.test-support.ts",
+   "sha256": "8700aff343dfea3b22c77e60dcd2f88d278958d22a2965401115f03e4ecb5ac4"
+  },
+  {
+   "path": "packages/financial-core/src/quarter-update.fixture.ts",
+   "sha256": "2948ee8aa55b4e3ac61e18bcac381f764edab3b5a0b6bda654d03abd48b680ae"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C54/modelo_c54.py",
+   "sha256": "37931f74bc4b9cdfc13fc3f48e843d262cd51eac21e88d14c48291b74319a2c1"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C54/resultados.json",
+   "sha256": "ea78d013f94c642a510b3657382dcc862403602d59b52fe59e60508d13d2e527"
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "monetize-receivables-for-working-capital",
+  "version": "2026.10.26-v1"
+ },
+ "commit": "182c4bf876d8faec3436fc9a4895a552b2efa23f",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/monetize-receivables-for-working-capital.md",
+   "sha256": "3df02031595c050bb6f32f626eaa93885a33856411a0f96f8d9f1c0a340af068"
+  },
+  {
+   "path": "packages/financial-model/src/receivables-funding-packet.ts",
+   "sha256": "4b54f8722663e3bb78996297f9a6856bbbbd8e766f5a284c0b0a2082a19dcc1b"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-receivables-funding.ts",
+   "sha256": "462b2b99e2bc017e4d05f345e03185273bdd7c531a3be142ab223d70abc8bc40"
+  },
+  {
+   "path": "packages/financial-model/src/receivables-funding-results.ts",
+   "sha256": "36bee3920b47512a4e1836f6658519f1b3cfe2e0a64504082789a7d6c8d4f89b"
+  },
+  {
+   "path": "packages/financial-core/src/receivables-funding.ts",
+   "sha256": "c1b3d1bc891b4a34eafccd2d2230257690f70f22a9628854e93d848116f6306c"
+  },
+  {
+   "path": "packages/financial-model/src/receivables-funding-runs.test-support.ts",
+   "sha256": "cfad8ef43d9d19d21a8afb68563d25838223d844b8bd6d03dbb8536b0b6f8ae8"
+  },
+  {
+   "path": "packages/financial-model/src/receivables-funding.test-support.ts",
+   "sha256": "2b052641329f2ca5a1b3c93303d78863d2f771516d90ee76f0b5d40d6d340735"
+  },
+  {
+   "path": "packages/financial-core/src/receivables-funding.fixture.ts",
+   "sha256": "99c6044ce03cdd650e5fbf28f3881fee7d58e0772bf791c71b94cf635dfc063e"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C35/modelo_c35.py",
+   "sha256": "5477ee5c1451129241acdffcd7dca6c7939c1c37d839115626bde0088349545b"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C35/resultados.json",
+   "sha256": "7f883c7ca70eabacacf25e739359ed6ab064e78e73217d2686cc45b73ae59863"
+  }
+ ]
+}
