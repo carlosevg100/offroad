@@ -45186,7 +45186,7 @@
         },
         {
           "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
-          "line": 218,
+          "line": 221,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
         }
@@ -320721,7 +320721,7 @@
         },
         {
           "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
-          "line": 338,
+          "line": 341,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -321057,7 +321057,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
-          "line": 114,
+          "line": 117,
           "anchor": "create function private.execution_result_projection_challenge_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -321112,7 +321112,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
-          "line": 145,
+          "line": 148,
           "anchor": "create function private.execution_result_receivables_funding_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -321167,7 +321167,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
-          "line": 184,
+          "line": 187,
           "anchor": "create function private.execution_result_quarter_update_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
