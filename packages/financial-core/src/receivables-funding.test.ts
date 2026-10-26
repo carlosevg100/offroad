@@ -170,4 +170,17 @@ describe("receivables funding", () => {
     const apart = assessReceivablesFunding({...base, options: base.options.map(o => o.kind === "fidc" ? {...o, eligibility: {...o.eligibility!, sublimitGroup: null}} : o)});
     expect([apart.portfolio.assignable, apart.portfolio.items.find(i => i.itemId === "rede-e")!.assignable]).toEqual(["28", "4.5"]);
   });
+  it("shows each step's capacity on what earlier steps left, per debtor and sublimit scope", () => {
+    const a = {...base.items[3]!, id: "sacado-a", label: "Sacado A", amount: "5", creditTier: "selected" as const, registration: "registered" as const, debtorKey: "sacado-a"};
+    const b = {...a, id: "sacado-b", label: "Sacado B", creditTier: "standard" as const, debtorKey: "sacado-b"};
+    const fund = (id: string, rate: string, tier: "selected" | "standard", group: string | null) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate},
+      eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: "3", sublimitGroup: group, minCreditTier: tier}});
+    const arrangements = [[a, b], [b, a], [{...a, id: "sacado-a-2", amount: "2"}, b, {...a, id: "sacado-a-1", amount: "3"}]];
+    for (const [group, expected] of [[null, [["barato", "3", "3", "3"], ["caro", "5", "5", "8"]]], ["mesmos-fundos", [["barato", "3", "3", "3"], ["caro", "3", "3", "6"]]]] as const) {
+      for (const items of arrangements) {
+        const r = assessReceivablesFunding({...base, items, options: [fund("barato", "0.01", "selected", group), fund("caro", "0.02", "standard", group), base.options[4]!], needAverage: "8", needPeak: "8"});
+        expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual(expected);
+      }
+    }
+  });
 });

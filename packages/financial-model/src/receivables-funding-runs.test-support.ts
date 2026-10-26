@@ -69,6 +69,16 @@ const maturities = (arrangement: "short-first" | "long-first" | "subdivided") =>
     : [{...long, id: "longo-b", amount: "0.5"}, {...short, id: "curto-1", amount: "1"}, {...long, id: "longo-a", amount: "1.5"}, {...short, id: "curto-2", amount: "2"}];
   return auroraReceivablesFundingBasis({...k, items, options: [at("fundo-barato", "0.01", "2", 180), at("fundo-restrito", "0.02", "3", 60), k.options[4]!], needAverage: "5", needPeak: "5"});
 };
+/** Debtors A and B of 5 each, a cheap fund restricted to A and a dearer one open to both, sublimit 3, peak 8 (review repro). */
+const residualCapacity = (group: string | null, split: boolean) => () => {
+  const k = auroraReceivablesFunding(), fund = k.options[1]!;
+  const a = {...k.items[3]!, id: "sacado-a", label: "Sacado A", amount: "5", creditTier: "selected" as const, registration: "registered" as const, debtorKey: "sacado-a"};
+  const b = {...a, id: "sacado-b", label: "Sacado B", creditTier: "standard" as const, debtorKey: "sacado-b"};
+  const at = (id: string, rate: string, tier: "selected" | "standard") => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate},
+    eligibility: {...fund.eligibility!, sublimitPerDebtor: "3", sublimitGroup: group, minCreditTier: tier}});
+  return auroraReceivablesFundingBasis({...k, items: split ? [b, {...a, id: "sacado-a-2", amount: "2"}, {...a, id: "sacado-a-1", amount: "3"}] : [a, b],
+    options: [at("fundo-barato", "0.01", "selected"), at("fundo-caro", "0.02", "standard"), k.options[4]!], needAverage: "8", needPeak: "8"});
+};
 /** Retailer E in lots of 3 and 1.5: the second is fully cut by the debtor's sublimit (review repro). */
 const fullCut = () => {
   const k = auroraReceivablesFunding(), e = k.items.find((i) => i.id === "rede-e")!;
@@ -136,6 +146,10 @@ function goldCases(): Case[] {
     ...(["short-first", "long-first", "subdivided"] as const).map((arrangement) => observe(`lots-of-different-maturities-${arrangement}-cover-the-peak`,
       packetInput(undefined, undefined, maturities(arrangement)), {assignable: 5, excluded: [], plan: [["fundo-barato", 2, 2, 2], ["fundo-restrito", 3, 3, 5]], coversPeak: true},
       (p) => ({assignable: r(p.readings!.assignable), excluded: p.readings!.exclusions, plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak}))),
+    ...([[null, false, 5], [null, true, 5], ["mesmos-fundos", false, 3], ["mesmos-fundos", true, 3]] as const).map(([group, split, capacity]) =>
+      observe(`residual-capacity-${group === null ? "independent-funds" : "shared-sublimit"}${split ? "-split-and-reordered" : ""}`,
+        packetInput(undefined, undefined, residualCapacity(group, split)), {plan: [["fundo-barato", 3, 3], ["fundo-caro", capacity, capacity]]},
+        (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount)])}))),
     observe("lot-fully-cut-by-the-sublimit-keeps-its-reason", packetInput(undefined, undefined, fullCut),
       {lot: ["rede-e-lote-2", 1.5, ["debtor_sublimit"]], assignable: 25, everyExclusionHasAReason: true},
       (p) => {const x = p.readings!.exclusions.find((e) => e.itemId === "rede-e-lote-2")!;

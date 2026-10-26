@@ -16,9 +16,9 @@
     "exportName": "buildReceivablesFundingRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T14:45:06.290Z",
-    "finishedAt": "2026-10-26T14:45:06.543Z",
-    "commit": "349ba71ecdd9a1537598c2b074b65ee7b2a6a923"
+    "startedAt": "2026-10-26T15:00:34.026Z",
+    "finishedAt": "2026-10-26T15:00:34.288Z",
+    "commit": "5086f06053a5071b9980548b69ab1145308cecb7"
   },
   "modelCalls": 0,
   "cases": [

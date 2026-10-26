@@ -407,14 +407,36 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
   const planned = allocate([...items.values()], options.filter(o => o.eligibility !== null), unitCost, needPeak);
   const plan: {optionId: string; capacity: string; amount: string; cumulative: string}[] = [];
   let cumulative = new Exact(0);
+  // Capacity at each step: what the option could still buy from the balances left after the earlier
+  // steps, per debtor: the least of the debtor's remaining accepted balance and the sublimit headroom left
+  // after what the earlier steps of the same sublimit scope consumed. Excess above a sublimit never counts.
+  const scopeOf = (id: string) => {const e = options.find(o => o.id === id)!.eligibility!; return e.sublimitGroup ?? `option:${id}`;};
+  const flowOf = (optionId: string, lotId: string) => planned.byPair.get(`${optionId}|${lotId}`) ?? new Exact(0);
+  const earlier: string[] = [];
   for (const r of ranked) {
     const add = planned.byOption.get(r.id);
     if (!add?.gt(0)) continue;
     cumulative = cumulative.plus(add);
-    // Capacity: the option's own volume, bounded by its allocation plus what the plan leaves unsold in lots it accepts.
-    const c = costed.find(x => x.id === r.id)!;
-    const unsold = c.byItem.filter(t => t.offered && !t.reasons.length).reduce((v, t) => v.plus(items.get(t.itemId)!.value.minus(planned.byLot.get(t.itemId) ?? 0)), new Exact(0));
-    plan.push({optionId: r.id, capacity: out(Decimal.min(new Exact(c.volume!), add.plus(unsold))), amount: out(add), cumulative: out(cumulative)});
+    const e = options.find(o => o.id === r.id)!.eligibility!, scope = scopeOf(r.id), takes = planned.takes.get(r.id)!;
+    const cap = e.sublimitPerDebtor === null ? null : amount(e.sublimitPerDebtor);
+    const perKey = new Map<string, {left: Decimal; limit: Decimal | null}>();
+    for (const i of [...items.values()].sort((x, y) => (x.id < y.id ? -1 : 1))) {
+      const t = takes.get(i.id)!;
+      if (!t.offered || t.reasons.length) continue;
+      const left = earlier.reduce((v, id) => v.minus(flowOf(id, i.id)), i.value);
+      const limit = i.debtorCount !== 1 ? t.bound : cap;
+      const k = perKey.get(i.debtorKey) ?? {left: new Exact(0), limit};
+      perKey.set(i.debtorKey, {left: k.left.plus(Decimal.max(left, 0)), limit: k.limit});
+    }
+    let capacity = new Exact(0);
+    for (const [key, k] of perKey) {
+      if (k.limit === null) {capacity = capacity.plus(k.left); continue;}
+      const consumed = earlier.filter(id => scopeOf(id) === scope).reduce((v, id) =>
+        v.plus([...items.values()].filter(i => i.debtorKey === key).reduce((w, i) => w.plus(flowOf(id, i.id)), new Exact(0))), new Exact(0));
+      capacity = capacity.plus(Decimal.min(k.left, Decimal.max(k.limit.minus(consumed), 0)));
+    }
+    plan.push({optionId: r.id, capacity: out(capacity), amount: out(add), cumulative: out(cumulative)});
+    earlier.push(r.id);
   }
   const leads = plan.map(p => costed.find(c => c.id === p.optionId)!.leadDays);
   // Without the lead time of every planned option the start date is not stated.

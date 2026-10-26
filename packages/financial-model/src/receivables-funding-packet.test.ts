@@ -58,4 +58,15 @@ describe("receivables funding packet", () => {
       expect(p.readings!.plan.map((s) => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["restrito", "3", "3", "5"]]);
     }
   });
+  it("shows residual capacity per step through the adopted reader, with independent or shared sublimits", () => {
+    const k = auroraReceivablesFunding(), a = {...k.items[3]!, id: "sacado-a", label: "Sacado A", amount: "5", creditTier: "selected" as const, registration: "registered" as const, debtorKey: "sacado-a"};
+    const b = {...a, id: "sacado-b", label: "Sacado B", creditTier: "standard" as const, debtorKey: "sacado-b"};
+    const fund = (id: string, rate: string, tier: "selected" | "standard", group: string | null) => ({...k.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate},
+      eligibility: {...k.options[1]!.eligibility!, sublimitPerDebtor: "3", sublimitGroup: group, minCreditTier: tier}});
+    for (const [group, capacity] of [[null, "5"], ["mesmos-fundos", "3"]] as const) for (const items of [[a, b], [b, {...a, id: "sacado-a-2", amount: "2"}, {...a, id: "sacado-a-1", amount: "3"}]]) {
+      const p = prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question, analysis: auroraReceivablesFundingBasis({...k, items,
+        options: [fund("barato", "0.01", "selected", group), fund("caro", "0.02", "standard", group), k.options[4]!], needAverage: "8", needPeak: "8"}).seal()});
+      expect(p.readings!.plan.map((s) => [s.optionId, s.capacity, s.amount])).toEqual([["barato", "3", "3"], ["caro", capacity, capacity]]);
+    }
+  });
 });

@@ -16,9 +16,9 @@
     "exportName": "buildReceivablesFundingRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T14:45:06.290Z",
-    "finishedAt": "2026-10-26T14:45:06.543Z",
-    "commit": "349ba71ecdd9a1537598c2b074b65ee7b2a6a923"
+    "startedAt": "2026-10-26T15:00:34.026Z",
+    "finishedAt": "2026-10-26T15:00:34.288Z",
+    "commit": "5086f06053a5071b9980548b69ab1145308cecb7"
   },
   "modelCalls": 0,
   "cases": [
@@ -183,6 +183,38 @@
       "passed": true
     },
     {
+      "id": "residual-capacity-independent-funds",
+      "expectation": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",5,5]]}",
+      "observed": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",5,5]]}",
+      "inputFingerprint": "490a9e2fa64b1c7c5224e026e9883802b98db418ba39e60cbf63c45b1cebb0d3",
+      "outputFingerprint": "f08a4960eac0188a4af5bc6259aa7b17e58f37967d24573f03ef209ae05fbc51",
+      "passed": true
+    },
+    {
+      "id": "residual-capacity-independent-funds-split-and-reordered",
+      "expectation": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",5,5]]}",
+      "observed": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",5,5]]}",
+      "inputFingerprint": "5102162cc95b8f3713269968958b4fc777d0115651ee740b109afea6b6b171f6",
+      "outputFingerprint": "ba986b1ad43a4b75d3f86f776a4994490bc5e18a3817cf7592966de2f333d7f1",
+      "passed": true
+    },
+    {
+      "id": "residual-capacity-shared-sublimit",
+      "expectation": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",3,3]]}",
+      "observed": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",3,3]]}",
+      "inputFingerprint": "656347365a2eb47bd6ad2448540926de7a5bb9a4b8182e7cf7046d2eadd468e4",
+      "outputFingerprint": "c87647ab6ad3d2f4b3fc5371e86937993667d6f77c5d1ef6ac1e9655a4bc836d",
+      "passed": true
+    },
+    {
+      "id": "residual-capacity-shared-sublimit-split-and-reordered",
+      "expectation": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",3,3]]}",
+      "observed": "{\"plan\":[[\"fundo-barato\",3,3],[\"fundo-caro\",3,3]]}",
+      "inputFingerprint": "7b4fb86c4a0fff237ab4ae5bde1fab08d37a2c821ffab3e838de4db3888b13f8",
+      "outputFingerprint": "bdeb52cefdff1b5b3c3025a832ff26d0f4ebf16f3ac328f5b4f10684f6ffdf64",
+      "passed": true
+    },
+    {
       "id": "lot-fully-cut-by-the-sublimit-keeps-its-reason",
       "expectation": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
       "observed": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
@@ -248,6 +280,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "f9c03cb377d6d77bafbd6f5a4f00c6e14b481aba6af87c2e21aab825b50076b8",
+  "evidenceFingerprint": "27fbfb901a3aea4b75ddf3d82055b1abaf3f23c23297f04fab3b05dd79bb3e23",
   "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
