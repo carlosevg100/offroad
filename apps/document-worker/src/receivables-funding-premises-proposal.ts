@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {withoutRepeats, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -123,8 +123,10 @@ export function receivablesFundingContradictions(e: ReceivablesFundingExtraction
  * vehicle pays is asked: no public source in the repository states it. */
 export function completeReceivablesFundingFacts(input: {extraction: ReceivablesFundingExtraction; ids: {receivablesFundingId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ReceivablesFundingFacts> {
-  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
-  const e = {...input.extraction, items: withoutRepeats(input.extraction.items), options: withoutRepeats(input.extraction.options)}, missing: string[] = [], used: string[] = [];
+  // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
+  // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
+  const missing: string[] = [], used: string[] = [];
+  const {e, ambiguous} = withRecordIdentity(input.extraction, {keyed: ["options"], countable: ["items"]}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -140,7 +142,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
   // Options name their anchor items by label: an item label stated twice is asked, never resolved to the first.
-  for (const k of repeatedLabels(e.items.map((i) => i.label))) missing.push(`items.${k}.label`);
+  for (const k of repeatedLabels(e.items.map((i) => i.label))) if (!ambiguous.get("items")!.has(k)) missing.push(`items.${k}.label`);
   const itemIds = itemKeys(e.items.map((i) => i.label));
   // Debtor identities are reconciled across every group before any key: the same whole normalized name with
   // compatible CNPJs (equal, or stated in some groups only) is one debtor, keyed by its CNPJ when any group states

@@ -269,6 +269,15 @@ describe("receivables funding premises proposed from a turn", () => {
     // The calibration states the end of the need (31/03/2027) and 180 days of use: different facts, both kept.
     expect(receivablesFundingContradictions(auroraExtraction(f))).toEqual([]);
   });
+  it("record identity of lots: equal lots from two borderôs are asked, the same lot read twice is one, '001' and '1' are two (independent review, round 14)", () => {
+    const f = aurora(), e = auroraExtraction(f), lot = {...e.items[0]!, label: "Lote Rede X", amount: "6", source: "borderô 101"};
+    const two = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot, source: "borderô 102"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(two.status === "missing" ? two.missing : two).toEqual([`items.${e.items.length + 2}.duplicateOf`]);
+    const once = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot}]}, ids: idsOf(f), currency: "BRL"});
+    expect(once.status === "complete" ? once.facts.items.length : once).toBe(e.items.length + 1);
+    const labels = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, label: "001"}, {...lot, label: "1"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(labels.status === "complete" ? labels.facts.items.slice(-2).map((i) => i.value.label) : labels).toEqual(["001", "1"]);
+  });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};
     const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(aurora()), currency: "BRL"});

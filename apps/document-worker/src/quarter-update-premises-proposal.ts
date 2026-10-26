@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {composeQuarterUpdateFromStoredPriors, prepareQuarterUpdatePacket, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {withoutRepeats, unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {withRecordIdentity, unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -145,8 +145,10 @@ export type QuarterUpdateCompletion = (Extract<Lote2Completion<QuarterUpdateFact
   | Extract<Lote2Completion<QuarterUpdateFacts>, {status: "missing"}>;
 export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtraction; priors: {weeklyCash: Prior; covenant: Prior};
   ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): QuarterUpdateCompletion {
-  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
-  const e = {...input.extraction, lines: withoutRepeats(input.extraction.lines), causes: withoutRepeats(input.extraction.causes), streamUpdates: withoutRepeats(input.extraction.streamUpdates), addedStreams: withoutRepeats(input.extraction.addedStreams), facilities: withoutRepeats(input.extraction.facilities), steps: withoutRepeats(input.extraction.steps), dependents: withoutRepeats(input.extraction.dependents)}, missing: string[] = [], used: string[] = [];
+  // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
+  // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
+  const missing: string[] = [], used: string[] = [];
+  const {e, ambiguous} = withRecordIdentity(input.extraction, {keyed: ["lines", "causes", "streamUpdates", "addedStreams", "facilities", "steps", "dependents"], countable: []}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -171,7 +173,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   // A collection referenced by label never carries the same label twice: the reference would silently take the first.
   for (const [name, labels] of [["lines", e.lines.map((x) => x.label)], ["causes", e.causes.map((x) => x.label)], ["addedStreams", e.addedStreams.map((x) => x.label)],
     ["facilities", e.facilities.map((x) => x.label)], ["dependents", e.dependents.map((x) => x.label)]] as const)
-    for (const k of repeatedLabels(labels)) missing.push(`${name}.${k}.label`);
+    for (const k of repeatedLabels(labels)) if (!ambiguous.get(name)!.has(k)) missing.push(`${name}.${k}.label`);
   const lineIds = itemKeys(e.lines.map((l) => l.label));
   const lineOf = (label: string | null) => {
     if (label === null) return null;
@@ -203,7 +205,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     const p = `streamUpdates.${k + 1}.`, before = missing.length, causes = u.causeLabels.map(causeOf);
     if (!streams.has(u.streamId)) missing.push(p + "streamId");
     // One transform per stream: two for the same stream are asked, never resolved by order (independent review, round 9).
-    if (e.streamUpdates.findIndex((x) => x.streamId === u.streamId) !== k) missing.push(p + "streamId");
+    if (e.streamUpdates.findIndex((x) => x.streamId === u.streamId) !== k && !ambiguous.get("streamUpdates")!.has(k + 1)) missing.push(p + "streamId");
     if (causes.some((c) => c === null)) missing.push(p + "causeLabels");
     if ((u.kind === "scale" && u.factor === null) || (u.kind === "delay" && u.days === null)) missing.push(p + u.kind);
     if (missing.length > before) return [];

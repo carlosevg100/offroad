@@ -201,6 +201,21 @@ describe("operating projection premises proposed from a turn", () => {
       expect(operatingProjectionContradictions(e), name).toEqual([]);
     }
   });
+  it("a company version is a set of figures keyed by label, metric and period (independent review, round 14)", () => {
+    const f = aurora(), base = auroraExtraction(f), year = base.actualYear.value!;
+    const figure = (metric: "revenue" | "ebitda", y: number, value: string) => ({label: "Orçamento aprovado 2026", origin: "document" as const, source: "orçamento",
+      status: "approved" as const, year: y, metric, value, cause: null});
+    // The reviewer's budget with revenue and EBITDA for the same year, and the same budget over two years: all kept.
+    const one = completeOperatingProjectionFacts({extraction: {...base, companyVersions: [figure("revenue", year + 1, "450"), figure("ebitda", year + 1, "50")]}, ids: idsOf(f), currency: "BRL"});
+    expect(one.status === "complete" ? one.facts.companyVersions.length : one).toBe(2);
+    const years = completeOperatingProjectionFacts({extraction: {...base, companyVersions: [figure("ebitda", year + 1, "50"), figure("ebitda", year + 2, "55")]}, ids: idsOf(f), currency: "BRL"});
+    expect(years.status === "complete" ? years.facts.companyVersions.length : years).toBe(2);
+    // One figure (label, metric, period) with two values is asked; the same figure written 50 and 50.00 is one.
+    expect(completeOperatingProjectionFacts({extraction: {...base, companyVersions: [figure("ebitda", year + 1, "50"), figure("ebitda", year + 1, "48")]}, ids: idsOf(f), currency: "BRL"}))
+      .toEqual({status: "missing", missing: ["companyVersions.2"]});
+    const same = completeOperatingProjectionFacts({extraction: {...base, companyVersions: [figure("ebitda", year + 1, "50"), {...figure("ebitda", year + 1, "50.00"), source: "outra cópia"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(same.status === "complete" ? same.facts.companyVersions.length : same).toBe(1);
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora({informed: true}), c = complete(auroraExtraction(f), f);
     const proposal = buildOperatingProjectionPremiseProposal(c.facts);

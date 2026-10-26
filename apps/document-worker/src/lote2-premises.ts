@@ -73,10 +73,29 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
 
 /** The facts a method accepts, or what it refuses named by path (a rule of the set as a whole as "facts"):
  * a refusal becomes a gap the card asks about, never a dropped card. */
+/** Record identity in the lote 3 bridges (independent review, rounds 13 and 14).
+ * - A label is compared exactly as stated after trimming and case and accent folding only; a numeric-looking label is
+ *   never normalized as a number ("001" and "1" are two labels).
+ * - Numbers are compared by exact decimal value (107.5 and 107.5000 are one value).
+ * - A keyed collection (a driver's column, a stream's transform, a labelled line, cause, facility, dependent, scenario,
+ *   option or assumption, a version's figure) holds one fact per key: the same key with equal values is one fact,
+ *   wherever it was read, and the same key with different values is a conflict the method asks.
+ * - A countable collection (lots of a portfolio) adds up: two records are the same fact only when they are equal in
+ *   value AND were read from the same origin and source (the same thing read twice, merged). Equal values read from
+ *   different sources (two borderôs, two documents) are ambiguous: the later one is asked as `<collection>.N.duplicateOf`,
+ *   never merged and never silently doubled. */
+export const statedLabel = (label: string) => foldCue(label.trim());
+const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
+function canonical(value: unknown, key: string): unknown {
+  if (typeof value === "string") return textKey.test(key) ? statedLabel(value) : canonicalDecimal(value);
+  if (Array.isArray(value)) return value.map((v) => canonical(v, key));
+  if (value !== null && typeof value === "object") return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : 1).map(([k, v]) => [k, canonical(v, k)]));
+  return value;
+}
 /** The entries of a collection referenced by label whose label repeats an earlier one: a reference by that label
  * would silently pick the first, so each repeat is asked. One-based positions. */
 export function repeatedLabels(labels: readonly string[]): number[] {
-  return labels.flatMap((label, k) => labels.slice(0, k).some((x) => sameLabel(x, label)) ? [k + 1] : []);
+  return labels.flatMap((label, k) => labels.slice(0, k).some((x) => statedLabel(x) === statedLabel(label)) ? [k + 1] : []);
 }
 /** A numeric string by its exact decimal value (107.5 and 107.5000 are one value); anything else unchanged. */
 export function canonicalDecimal(v: string): string {
@@ -85,27 +104,45 @@ export function canonicalDecimal(v: string): string {
   const integer = whole!.replace(/^0+(?=\d)/, ""), decimals = fraction.replace(/0+$/, ""), out = decimals ? `${integer}.${decimals}` : integer;
   return negative && /[1-9]/.test(out) ? `-${out}` : out;
 }
-/** A value as canonical text, numeric strings compared by exact decimal value at any depth. */
-export function canonicalJson(value: unknown): string {
-  return JSON.stringify(value, (_k, v: unknown) => typeof v === "string" ? canonicalDecimal(v) : v);
+/** A value as canonical text: numbers by exact decimal value, labels and other text as stated (trimmed and folded). */
+export function canonicalJson(value: unknown, key = ""): string {
+  return JSON.stringify(canonical(value, key));
 }
-/** The keys stated more than once with different values: never resolved by order, always asked. Values are
- * compared by exact decimal value, never by how the number is written (independent review, round 13). */
+/** The keys stated more than once with different values: never resolved by order, always asked. */
 export function conflictingKeys<T>(items: readonly T[], key: (t: T) => string, value: (t: T) => unknown): Set<string> {
   const seen = new Map<string, string>(), out = new Set<string>();
-  for (const t of items) { const k = key(t), v = canonicalJson(value(t)); if (seen.has(k) && seen.get(k) !== v) out.add(k); else seen.set(k, v); }
+  for (const t of items) { const k = key(t), v = canonicalJson(value(t), "value"); if (seen.has(k) && seen.get(k) !== v) out.add(k); else seen.set(k, v); }
   return out;
 }
-/** A list without the entries that repeat an earlier one exactly, by value: the same record stated twice is one record. */
-export function withoutRepeats<T>(items: readonly T[]): T[] {
-  const seen = new Set<string>();
-  return items.filter((t) => {
-    // Where it was read does not make it another record: origin and source are left out of the comparison.
-    const {origin: _o, source: _s, ...content} = t as Record<string, unknown>;
-    const v = canonicalJson(content);
-    if (seen.has(v)) return false; seen.add(v); return true;
-  });
+/** Applies record identity to each named collection of an extraction: the same fact read twice from the same source is
+ * merged; equal values from another source are kept and asked as `<collection>.N.duplicateOf` (positions after merging).
+ * Returns the extraction with merged collections and the asked positions per collection. */
+export function withRecordIdentity<E extends Record<string, unknown>>(extraction: E, collections: {keyed: readonly (keyof E & string)[]; countable: readonly (keyof E & string)[]},
+  missing: string[]): {e: E; ambiguous: Map<string, Set<number>>} {
+  const e = {...extraction} as Record<string, unknown>, ambiguous = new Map<string, Set<number>>();
+  for (const name of collections.keyed) {
+    const seen = new Set<string>();
+    e[name] = (extraction[name] as unknown[]).filter((t) => {
+      const {origin: _o, source: _s, ...content} = t as Record<string, unknown>, c = canonicalJson(content);
+      if (seen.has(c)) return false; seen.add(c); return true;
+    });
+    ambiguous.set(name, new Set());
+  }
+  for (const name of collections.countable) {
+    const kept: unknown[] = [], contents: string[] = [], fulls: string[] = [], asked = new Set<number>();
+    for (const t of extraction[name] as unknown[]) {
+      const {origin, source, ...content} = t as Record<string, unknown>;
+      const c = canonicalJson(content), f = canonicalJson({c: content, origin: origin ?? null, source: typeof source === "string" ? source.trim() : source ?? null});
+      if (fulls.includes(f)) continue;
+      kept.push(t); fulls.push(f);
+      if (contents.includes(c)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
+      contents.push(c);
+    }
+    e[name] = kept; ambiguous.set(name, asked);
+  }
+  return {e: e as E, ambiguous};
 }
+
 export function factsOrGaps<T>(schema: z.ZodType<T>, raw: unknown): {ok: true; facts: T} | {ok: false; missing: string[]} {
   const parsed = schema.safeParse(raw);
   if (parsed.success) return {ok: true, facts: parsed.data};

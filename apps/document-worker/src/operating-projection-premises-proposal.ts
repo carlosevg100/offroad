@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {composeBoundOperatingProjection, prepareOperatingProjectionPacket, actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
-import {normalizedName, withoutRepeats, unsourcedFields, conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {statedLabel, withRecordIdentity, unsourcedFields, conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -94,8 +94,10 @@ export function operatingProjectionContradictions(e: OperatingProjectionExtracti
  * none, the reply asks which alternatives to test (`alternativesToTest`) and the house supplies no number. */
 export function completeOperatingProjectionFacts(input: {extraction: OperatingProjectionExtraction; ids: {projectionId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<OperatingProjectionFacts> {
-  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
-  const e = {...input.extraction, scenarios: withoutRepeats(input.extraction.scenarios), companyVersions: withoutRepeats(input.extraction.companyVersions), actualDrivers: withoutRepeats(input.extraction.actualDrivers), baseColumns: withoutRepeats(input.extraction.baseColumns)}, missing: string[] = [], used: string[] = [];
+  // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
+  // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
+  const missing: string[] = [], used: string[] = [];
+  const {e, ambiguous} = withRecordIdentity(input.extraction, {keyed: ["scenarios", "companyVersions", "actualDrivers", "baseColumns"], countable: []}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -141,7 +143,7 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
     const basedOn = s.basedOnLabel === null ? "base" : (() => {const j = e.scenarios.findIndex((x) => sameLabel(x.label, s.basedOnLabel!)); return j >= 0 && j < k ? scenarioIds[j]! : null;})();
     if (basedOn === null) missing.push(p + "basedOnLabel");
     if (s.overrides.some((o) => o.values.length !== n) || conflictingKeys(s.overrides, (o) => o.driver, (o) => o.values).size) missing.push(p + "overrides");
-    if (repeatedLabels(e.scenarios.map((x) => x.label)).includes(k + 1)) missing.push(p + "label");
+    if (repeatedLabels(e.scenarios.map((x) => x.label)).includes(k + 1) && !ambiguous.get("scenarios")!.has(k + 1)) missing.push(p + "label");
     // A scenario with no rule, no override and no shock would run as the base with zero effect: its parameters are asked.
     if (s.volumeGrowthRate === null && s.volumeFactor === null && !s.overrides.length && s.inputCostShock === null) missing.push(p + "parameters");
     const shockEnd = s.inputCostShock ? `${s.inputCostShock.fromYear}-12-31` : null;
@@ -156,10 +158,12 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
       inputCostShock: s.inputCostShock && shockEnd ? fact({fromPeriodEnd: shockEnd, rate: s.inputCostShock.rate, passThroughLagMonths: s.inputCostShock.passThroughLagMonths}) : null}];
   });
   if (!e.scenarios.some((s) => s.role === "alternative")) used.push("alternativesToTest");
-  // A company version is identified by its label: the original budget and an approved revision are two versions; one
-  // version stated with two values is asked (independent review, round 13).
-  const versionConflicts = conflictingKeys(e.companyVersions, (v) => normalizedName(v.label), (v) => ({status: v.status, year: v.year, metric: v.metric, value: v.value, cause: v.cause}));
-  e.companyVersions.forEach((v, k) => {if (versionConflicts.has(normalizedName(v.label)) && e.companyVersions.findIndex((x) => normalizedName(x.label) === normalizedName(v.label)) !== k) missing.push(`companyVersions.${k + 1}`);});
+  // A company version is a set of figures: the identity of one figure is (version label, metric, period). The same
+  // budget holding revenue and EBITDA, or several years, is normal; one figure stated with two values is asked
+  // (independent review, round 14).
+  const figure = (v: OperatingProjectionExtraction["companyVersions"][number]) => `${statedLabel(v.label)}|${v.metric}|${v.year}`;
+  const versionConflicts = conflictingKeys(e.companyVersions, figure, (v) => ({status: v.status, value: v.value, cause: v.cause}));
+  e.companyVersions.forEach((v, k) => {if (versionConflicts.has(figure(v)) && e.companyVersions.findIndex((x) => figure(x) === figure(v)) !== k) missing.push(`companyVersions.${k + 1}`);});
   const versionIds = itemKeys(e.companyVersions.map((v) => v.label));
   const companyVersions = e.companyVersions.flatMap((v, k) => {
     const end = `${v.year}-12-31`;
