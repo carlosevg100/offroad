@@ -6005,7 +6005,9 @@ Um plano com uma base defensável e um cenário de alta com condições escritas
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/challenge-financial-projection-2026-10-26-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/challenge-financial-projection-2026-10-26-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/challenge-financial-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

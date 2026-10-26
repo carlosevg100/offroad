@@ -7894,7 +7894,9 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/build-operating-projection-2026-10-26-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]
