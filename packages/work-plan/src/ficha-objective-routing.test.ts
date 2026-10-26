@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {compileAdvisorStartingPlan} from "./advisor-starting-plan";
 import {inferCapitalProjectJob} from "./job-inference";
-import {compileObjectiveToPlan, objectiveToPlanDecisionSchema} from "./objective-plan";
+import {compileObjectiveToPlan, lote3FichaExceptions, objectiveToPlanDecisionSchema} from "./objective-plan";
 
 // Canonical paraphrases from outputs/fichas-ensaio-2026-10/{C02,C03,C04,C32}/corpo.html.
 // These IDs belong to the fichas, not to the historical coverage catalogue or TaskSpecs.
@@ -47,7 +47,6 @@ const fichas = [
   {id: "C24", kind: "operating_projection", messages: [
     "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.",
     "Me ajuda a montar o business plan.",
-    "Só me diz como começar uma projeção.",
     "Faz uma primeira versão com hipóteses explícitas.",
   ]},
   {id: "C26", kind: "projection_challenge", messages: [
@@ -142,10 +141,10 @@ describe("canonical ficha objective routing", () => {
     // Comparing inside a method's own work keeps that method.
     ["Construa a projeção por drivers, comparando-a ao orçamento da companhia", "operating_projection"],
     ["Compare o realizado contra o projetado e atualize as análises após o fechamento do trimestre", "quarter_update"],
-    ["Compare as premissas do plano com a referência histórica e aponte quais são otimistas", "projection_challenge"],
-    ["Fechamos o trimestre, atualiza o caixa e o covenant", "quarter_update"],
+    ["Compare as premissas do plano com a referência histórica e aponte quais são otimistas", "factual_question"],
+    ["Fechamos o trimestre, atualiza o caixa e o covenant", "risk_matrix"],
     ["Revise o plano de negócios que vai ao banco", "projection_challenge"],
-    ["Esse plano financeiro está otimista?", "projection_challenge"],
+    ["Esse plano financeiro está otimista?", "factual_question"],
     ["Monte a projeção do business plan com hipóteses explícitas", "operating_projection"],
     // Independent review, round 2.
     ["Atualize a tabela de dívida com o balancete do trimestre", "debt_table"],
@@ -155,7 +154,7 @@ describe("canonical ficha objective routing", () => {
     ["Prepare uma planilha para revisar a projeção operacional", "material_preparation"],
     ["Me explique o que é cessão de recebíveis", "factual_question"],
     ["Construa uma projeção por drivers e compare as alternativas de volume e preço", "operating_projection"],
-    ["Compare os cenários de alta e de base da projeção do plano e diga quais premissas são otimistas", "projection_challenge"],
+    ["Compare os cenários de alta e de base da projeção do plano e diga quais premissas são otimistas", "factual_question"],
     // Independent review, round 3.
     ["Revise o plano de reestruturação da dívida existente", "capital_strategy"],
     ["Revise o plano para quitar a dívida existente", "capital_strategy"],
@@ -173,8 +172,8 @@ describe("canonical ficha objective routing", () => {
   it.each([
     ["Revise o plano para reduzir o endividamento", "capital_strategy", "capital_strategy"],
     ["Revise o plano para saldar a dívida existente", "capital_strategy", "capital_strategy"],
-    ["Quais são as diferenças entre um FIDC próprio e uma linha do banco?", "factual_question", "factual_question"],
-    ["Quais as diferenças de um FIDC próprio para a linha de banco?", "factual_question", "factual_question"],
+    ["Quais são as diferenças entre um FIDC próprio e uma linha do banco?", "factual_question", "documents_to_case"],
+    ["Quais as diferenças de um FIDC próprio para a linha de banco?", "factual_question", "documents_to_case"],
     ["Revise a projeção operacional usando o Excel anexo", "projection_challenge", "projection_challenge"],
     ["Construa uma projeção operacional para entrega em Excel", "material_preparation", "material_preparation"],
     ["Revise o plano de quitação da dívida com os bancos", "capital_strategy", "capital_strategy"],
@@ -197,9 +196,49 @@ describe("canonical ficha objective routing", () => {
     ["Revise o plano de negócios e gere um PDF", "material_preparation", "material_preparation"],
     ["Faça a primeira versão da projeção no formato da planilha do banco", "material_preparation", "material_preparation"],
     ["Questione as premissas do plano que está na planilha anexa", "projection_challenge", "projection_challenge"],
-    ["Nossa projeção está otimista?", "projection_challenge", "projection_challenge"],
-    ["Temos recebíveis de 40 milhões; dá para usar em vez da linha do banco?", "receivables_funding", "receivables_funding"],
+    ["Nossa projeção está otimista?", "factual_question", "projection_challenge"],
+    ["Temos recebíveis de 40 milhões; dá para usar em vez da linha do banco?", "factual_question", "receivables_funding"],
   ] as const)("conservative lote 3 routing: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
+  // By construction: lote 3 only upgrades a message the existing routes leave ambiguous or as documents to a
+  // case. For both replays, every row origin/main routed to a specific kind keeps exactly that kind; the only
+  // allowed departures are the enumerated ficha exceptions, listed here.
+  it("never takes a specific existing route except the enumerated ficha phrasings", () => {
+    const fold = (m: string) => m.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const rows = [...originMainRouting, ...foldedProbes] as {message: string; hasAttachments: boolean; kind: string}[];
+    const departures = rows.filter((r) => r.kind !== "ambiguous" && r.kind !== "documents_to_case")
+      .filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind);
+    const allowed = departures.filter((r) => lote3FichaExceptions.some((e) => e.from === r.kind && e.pattern.test(fold(r.message))));
+    expect(departures).toEqual(allowed);
+    expect(departures).toEqual([]);
+  });
+  it.each([
+    ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?", "capital_strategy", "receivables_funding"],
+    ["Saiu o balancete de setembro, atualiza a projeção e o covenant.", "risk_matrix", "quarter_update"],
+    ["O que mudou com o resultado do terceiro trimestre?", "factual_question", "quarter_update"],
+    ["Que premissas você questionaria nessa projeção?", "factual_question", "projection_challenge"],
+    ["Esse plano está otimista?", "factual_question", "projection_challenge"],
+    ["O que o banco vai contestar nesse business plan?", "factual_question", "projection_challenge"],
+    ["Quais FIDCs comprariam nossa carteira?", "factual_question", "receivables_funding"],
+    ["Vale fazer um FIDC próprio?", "factual_question", "receivables_funding"],
+  ] as const)("enumerated ficha exception: %s (origin/main %s)", (message, from, to) => {
+    expect(lote3FichaExceptions.filter((e) => e.from === from && e.to === to && e.pattern.test(message.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()))).toHaveLength(1);
+    for (const hasAttachments of [false, true]) expect(compileObjectiveToPlan({message, hasAttachments}).objectiveKind).toBe(to);
+  });
+  it.each([
+    // Independent review, round 5: each keeps the specific route origin/main gives it.
+    ["Atualize o plano para pagar a dívida depois do fechamento do trimestre", "capital_strategy", "capital_strategy"],
+    ["Monte uma projeção dos covenants da escritura", "risk_matrix", "risk_matrix"],
+    ["Construa a projeção do waterfall da operação", "risk_matrix", "risk_matrix"],
+    ["Qual a vantagem de um FIDC próprio?", "factual_question", "documents_to_case"],
+    ["Quais as semelhanças entre um FIDC próprio e um banco?", "factual_question", "documents_to_case"],
+    ["Revise o contrato de cessão de recebíveis e explique os riscos", "operation_review", "operation_review"],
+    // Ficha C24 variation "Só me diz como começar": an orientation answer, the first version offered, not produced.
+    ["Só me diz como começar uma projeção.", "factual_question", "documents_to_case"],
+  ] as const)("keeps the existing route: %s", (message, plain, attached) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
