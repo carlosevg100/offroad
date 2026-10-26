@@ -421,6 +421,35 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 10: the C35 ficha exception only for the working-capital purposes of the ficha family
+  // (an investment keeps capital_strategy); "sem" with an infinitive and modifiers between "quero" and "que" negate
+  // the action; a projection's full noun phrase decides, so an administrative qualifier after it never selects C24 or C26.
+  it.each([
+    ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a nova fábrica em vez da linha do banco?", "capital_strategy", "capital_strategy"],
+    ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar o capex em vez da linha do banco?", "capital_strategy", "capital_strategy"],
+    ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a expansão em vez da linha do banco?", "capital_strategy", "capital_strategy"],
+    ["Temos 40 milhões de recebíveis. Dá para usar isso para financiar a aquisição em vez da linha do banco?", "capital_strategy", "capital_strategy"],
+    ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?", "receivables_funding", "receivables_funding"],
+    ["Temos 30 milhões em recebíveis. Dá pra usar isso pra financiar o estoque em vez da linha do banco?", "receivables_funding", "receivables_funding"],
+    ["Temos 25 milhões de recebíveis. Dá para usar isso para financiar o capital de giro em vez da linha do banco?", "receivables_funding", "receivables_funding"],
+    ["Quero ceder recebíveis em vez da linha do banco para financiar a nova planta", "capital_strategy", "capital_strategy"],
+    ["Sem revisar a projeção operacional, apenas aguarde.", "ambiguous", "documents_to_case"],
+    ["Não quero mais que atualize as análises depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Não quero de jeito nenhum que construa a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Sem montar o business plan por enquanto.", "ambiguous", "documents_to_case"],
+    ["Revisa a projeção que vamos mandar para o banco, sem rodar nada novo.", "projection_challenge", "projection_challenge"],
+    ["Crie uma primeira versão da projeção anual de férias dos funcionários.", "ambiguous", "documents_to_case"],
+    ["Monte a projeção anual de férias.", "ambiguous", "documents_to_case"],
+    ["Revise a projeção operacional de manutenção da frota.", "ambiguous", "documents_to_case"],
+    ["Monte a projeção anual da empresa.", "operating_projection", "operating_projection"],
+    ["Monte a projeção de receita e EBITDA.", "operating_projection", "operating_projection"],
+    ["Crie uma primeira versão da projeção anual.", "operating_projection", "operating_projection"],
+    ["Revise a projeção financeira da companhia.", "projection_challenge", "projection_challenge"],
+  ] as const)("round 10: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);

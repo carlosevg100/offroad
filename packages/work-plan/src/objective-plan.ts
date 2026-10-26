@@ -679,7 +679,7 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
 export const lote3FichaExceptions = [
   // Ficha C35: "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?" (origin/main: capital_strategy).
   {ficha: "C35", from: "capital_strategy", to: "receivables_funding",
-    pattern: /^(?:tenho|temos) (?:uns |umas |cerca de |quase )?\d+(?:[.,]\d+)? (?:mil|milhoes|mi|bilhoes) (?:de reais )?(?:de|em) recebiveis[.,;]? da (?:para|pra) usar (?:isso|eles|esses recebiveis) (?:para|pra) financiar (?:a|o) [a-z]+(?: [a-z]+)? em vez da linha (?:do|de) banco[?.!]*$/},
+    pattern: /^(?:tenho|temos) (?:uns |umas |cerca de |quase )?\d+(?:[.,]\d+)? (?:mil|milhoes|mi|bilhoes) (?:de reais )?(?:de|em) recebiveis[.,;]? da (?:para|pra) usar (?:isso|eles|esses recebiveis) (?:para|pra) financiar (?:a |o |os |as )?(?:safra|entressafra|plantio|colheita|giro|capital de giro|estoques?|fornecedores|sazonalidade|ciclo|caixa do ciclo|pico da safra) em vez da linha (?:do|de) banco[?.!]*$/},
   // Ficha C54: "Saiu o balancete de setembro, atualiza a projeção e o covenant." (origin/main: risk_matrix).
   {ficha: "C54", from: "risk_matrix", to: "quarter_update",
     pattern: /^(?:saiu|chegou) o balancete(?: de [a-z]+)?[,;.]? atualiz[ae] (?:a projecao e o covenant|o covenant e a projecao)[.!]*$/},
@@ -710,7 +710,7 @@ const debtObject = /\b(?:amortiz\w*|contratua\w*|contratos?|dividas?|endividamen
 
 /** An explicit negation of the action ("não revise", "não atualize", "não construa"): never a lote 3 kind. A negated
  * possession ("não temos projeção pronta") is not a negated action and keeps the C24 ficha. */
-const negatedAction = /(?:\b(?:nao|nunca|jamais)\s+(?:(?:quero|queremos|gostaria|gostariamos) que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?|(?:me|nos|lhe|quero|queremos|precisa|precisamos|vamos|deve|devemos|e para|pode|podem)\s+)?|\bprefir(?:o|imos) que\s+(?:voce\s+|voces\s+)?(?:nao|nunca)\s+|\bsem que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?)(?:revis\w*|atualiz\w*|constru\w*|mont\w*|fa(?:z|ca|cam|zer|ca)\b|cri(?:a|e|ar)\b|elabor\w*|desenvolv\w*|question\w*|contest\w*|critiqu\w*|critic\w*|refa\w*|refaz\w*|propag\w*|prepar\w*|projet\w*|calcul\w*|rod\w*|analis\w*|antecip\w*|ced(?:a|er)\b|financi\w*|us(?:e|ar)\b)/;
+const negatedAction = /(?:\b(?:nao|nunca|jamais)\s+(?:(?:quero|queremos|gostaria|gostariamos)(?:\s+(?:mais|nunca|jamais|mesmo|agora|ainda|de jeito nenhum|de forma alguma|de modo algum|por enquanto))*\s+que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?|(?:me|nos|lhe|quero|queremos|precisa|precisamos|vamos|deve|devemos|e para|pode|podem)\s+)?|\bprefir(?:o|imos) que\s+(?:voce\s+|voces\s+)?(?:nao|nunca)\s+|\bsem que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?|\bsem\s+(?=(?:revisar|atualizar|construir|montar|fazer|criar|elaborar|desenvolver|questionar|contestar|criticar|refazer|propagar|preparar|projetar|calcular|analisar|antecipar|ceder|financiar|usar)\b))(?:revis\w*|atualiz\w*|constru\w*|mont\w*|fa(?:z|ca|cam|zer|ca)\b|cri(?:a|e|ar)\b|elabor\w*|desenvolv\w*|question\w*|contest\w*|critiqu\w*|critic\w*|refa\w*|refaz\w*|propag\w*|prepar\w*|projet\w*|calcul\w*|rod\w*|analis\w*|antecip\w*|ced(?:a|er)\b|financi\w*|us(?:e|ar)\b)/;
 
 function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
   const trimmed = text.trim();
@@ -718,7 +718,7 @@ function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
   const open = existing === "ambiguous" || existing === "documents_to_case";
   const vetoed = conceptualMarker.test(text) || debtObject.test(text);
   if (!vetoed) for (const e of lote3FichaExceptions) if ((existing === e.from || open) && e.pattern.test(trimmed)
-    && !(e.to === "receivables_funding" && receivablesRefusal.test(text))) return e.to;
+    && !(e.to === "receivables_funding" && (receivablesRefusal.test(text) || investmentPurpose.test(text)))) return e.to;
   if (!open) return existing;
   return lote3Upgrade(text) ?? existing;
 }
@@ -726,9 +726,9 @@ function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
 // The closed lists of objects each lote 3 method serves. A verb with a generic word ("revise o plano", "monte a
 // projeção") is not enough: the object has to be one the method answers.
 /** C24: the operating projection, by drivers, annual, of results, revenue and EBITDA, the business plan. */
-const operatingProjectionObject = /\b(?:projec(?:ao|oes) (?:operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)|business plan|plano de negocios)\b/;
+const operatingProjectionObject = /\b(?:projec(?:ao|oes) (?:operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)(?!\s+d[eoa]s?\s+(?!(?:receitas?|resultados?|ebitda|dre|empresa|companhia|negocio|grupo)\b))|business plan|plano de negocios)\b/;
 /** C26: the financial projection, the business plan, the premises of the projection or plan, the plan going to the bank. */
-const challengedObject = /\b(?:projec(?:ao|oes) (?:financeira|operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)|business plan|plano financeiro|plano de negocios|premissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) (?:projec(?:ao|oes)|plano financeiro|business plan|plano de negocios)|(?:projecao|plano) que (?:vamos|vou|iremos|a gente vai) (?:mandar|enviar|levar|apresentar))\b/;
+const challengedObject = /\b(?:projec(?:ao|oes) (?:financeira|operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)(?!\s+d[eoa]s?\s+(?!(?:receitas?|resultados?|ebitda|dre|empresa|companhia|negocio|grupo)\b))|business plan|plano financeiro|plano de negocios|premissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) (?:projec(?:ao|oes)|plano financeiro|business plan|plano de negocios)|(?:projecao|plano) que (?:vamos|vou|iremos|a gente vai) (?:mandar|enviar|levar|apresentar))\b/;
 /** "As premissas do plano" with the plan unqualified: the financial plan only when the message also names the
  * projection, revenue, EBITDA or margin; "plano de saúde", "plano de segurança" and any other qualified plan never. */
 const barePlanPremises = /\bpremissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) plano(?=\s*(?:[.!?;,]|$)|\s+(?:que|e|para|com|sem|antes|atual|novo)\b)/;
@@ -747,9 +747,11 @@ const accountingClose = /\b(?:lancamentos?|ajustes?|fechamento contabil|contabil
 function firstVersion(text: string): boolean {
   if (/^(?:faz|faca|fazer|monta|monte|cria|crie|elabora|elabore) (?:uma|a) primeira versao com (?:hipoteses|premissas) explicitas[.!]*$/.test(text.trim())) return true;
   return text.split(/[.;!?]/).some((clause) => /\bprimeira versao\b/.test(clause)
-    && new RegExp(`(?:${operatingProjectionObject.source}|\\bprojec(?:ao|oes) financeiras?\\b)`).test(clause));
+    && new RegExp(`(?:${operatingProjectionObject.source}|\\bprojec(?:ao|oes) financeiras?\\b${"(?!\\s+d[eoa]s?\\s+(?!(?:empresa|companhia|negocio|grupo)\\b))"})`).test(clause));
 }
 /** C35 never on a refusal or on a request only to record something. */
+/** An investment purpose: the capital strategy of C32, never the working-capital method of C35. */
+const investmentPurpose = /\b(?:fabricas?|capex|expansao|aquisic\w*|investiment\w*|maquinas?|maquinario|plantas?|obras?|equipamentos?|nova linha|linha nova|ampliac\w*)\b/;
 const receivablesRefusal = /\b(?:nao|nunca|jamais|sem|recus\w*)\b|\b(?:registr(?:e|a|ar)|anot(?:e|a|ar))\b/;
 
 /** Inside the upgrade, conservative: a lote 3 kind only on a positive, specific request about one of the
@@ -783,7 +785,7 @@ function lote3Upgrade(text: string): WorkspaceObjectiveKind | null {
   // stays where lotes 1 and 2 leave it.
   const receivablesUse = /\b(?:recebiveis|duplicatas)\b/.test(text) && (/\b(?:em vez|no lugar|ao inves)\b.{0,40}\blinha\b/.test(text)
     || /\b(?:antecip\w*|ced(?:er|emos|a)|cessao de|financiar com)\b.{0,20}\b(?:os |nossos |de |dos )?(?:recebiveis|duplicatas)\b.{0,60}\b(?:em vez|no lugar|ao inves|alternativa (?:a|ao)|substituir)\b/.test(text));
-  if (!debtObject.test(text) && !receivablesRefusal.test(text) && !/\b(?:cobranca|vencimentos?|inadimplencia|provisao)\b/.test(text)
+  if (!debtObject.test(text) && !receivablesRefusal.test(text) && !investmentPurpose.test(text) && !/\b(?:cobranca|vencimentos?|inadimplencia|provisao)\b/.test(text)
     && (receivablesUse || /\bfidcs?\b.{0,40}\bcompr\w*\b.{0,30}\bnossa carteira\b/.test(text))) return route("receivables_funding");
   if (/\bplanos?\b.{0,40}\b(?:pagamentos?|parcel\w*|contratua\w*|contrato)\b/.test(text) || debtObject.test(text) || neighbourObject.test(text)) return null;
   // C26: reviewing, questioning or contesting one of the challenged objects, or asking whether it is optimistic.
