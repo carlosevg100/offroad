@@ -7,7 +7,7 @@
   },
   "source": {
     "path": "capital/build-operating-projection.md",
-    "hash": "1d8f92dab480321f21a453fae61f1caddd1f68309189f6561b41df042b16ede4"
+    "hash": "27562c30d1f87cb50071259782b9a55cd21272b77632c1a467b2a79cc3bd3dac"
   },
   "compiler": {
     "version": "2026.09.21-v9",
@@ -7741,7 +7741,9 @@
         "evidence": [
           "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-gold/run.json",
           "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-adversarial/run.json",
-          "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json"
+          "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json",
+          "packages/credit-playbook/knowledge/reviews/build-operating-projection-2026-10-26-v1-independent-review.json",
+          "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
         ],
         "kind": "rule",
         "authority": "house",
@@ -7752,7 +7754,7 @@
           "version": "2026.10.26-v1"
         }
       },
-      "componentHash": "266579b91b9087ebc1f5f97ba5e05359578dafb7e4e7dae2191e4cfa9e0c87d7",
+      "componentHash": "badd29356278d1a590eafb0353dd9138e0a729e10a20dff9f5634729538bd2cb",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareOperatingProjectionPacket",
@@ -9401,9 +9403,17 @@
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/build-operating-projection-2026-10-26-v1-consistency/run.json",
           "hash": "b7c33d651a7d2b8ec117d2e7db142828a96e8852187269f4ac2b2945154442fd"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/build-operating-projection-2026-10-26-v1-independent-review.json",
+          "hash": "11ba594766b5dd78a23601d7570c291fcb22293c516d5534a9856f76ae7df5b2"
+        },
+        {
+          "path": "packages/credit-playbook/knowledge/reviews/evidence/build-operating-projection-2026-10-26-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+          "hash": "4d3e55dac364044f14f032a3685857e969551aa8190629dab1134b504de70ef4"
         }
       ]
     }
   ],
-  "manifestHash": "6924fe482364fa48c7df738965fb583ec6bca25deadfd4568fcb55705a031a25"
+  "manifestHash": "4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a"
 }
