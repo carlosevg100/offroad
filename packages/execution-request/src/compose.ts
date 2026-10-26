@@ -1,6 +1,6 @@
 import {executionCanonicalText, type ExecutionContract, type ExecutionGates} from "@offroad/agent-contracts";
 import {composeBoundCapitalPacketV2, composeBoundCovenantHeadroom, composeBoundDebtCapacity, composeBoundDebtTable, composeBoundFinancingComparison, composeBoundInvestmentPacket,
-  composeBoundWeeklyCash, deriveBoundCapitalScope} from "@offroad/financial-model";
+  composeBoundOperatingProjection, composeBoundProjectionChallenge, composeBoundReceivablesFunding, composeBoundWeeklyCash, deriveBoundCapitalScope} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {composeExecutionContract, contractBasisVersions, executionContractText, type ExecutionContractBasis, type ExecutionRequestIds} from "./contract";
 import {closeExecutionGates, openExecutionGates} from "./gates";
@@ -48,6 +48,15 @@ const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: Capit
     composeBoundCovenantHeadroom({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
   "project-weekly-cash": (basis, ask) =>
     composeBoundWeeklyCash({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "build-operating-projection": (basis, ask) =>
+    composeBoundOperatingProjection({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "challenge-financial-projection": (basis, ask) =>
+    composeBoundProjectionChallenge({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "monetize-receivables-for-working-capital": (basis, ask) =>
+    composeBoundReceivablesFunding({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  // update-after-quarter-close reads three bases (the prior weekly cash, the prior covenant test and the
+  // close); the producer pins exactly one basis version per execution, so it has no composer here and
+  // its request stays method_unavailable until the producer accepts a contract over several versions.
 };
 
 /** Same order and refusals as the capital request, for any method with a packet composer. */

@@ -34,6 +34,9 @@ export type TaskKind =
   | "debt_table_extraction"
   | "covenant_headroom_extraction"
   | "weekly_cash_extraction"
+  | "operating_projection_extraction"
+  | "projection_challenge_extraction"
+  | "receivables_funding_extraction"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";
