@@ -35,6 +35,11 @@ export const releasedMethodReferenceDataKeys: Readonly<Record<string, readonly s
   "build-company-debt-table@2026.10.23-v1": [],
   "measure-covenant-headroom@2026.10.23-v1": [],
   "project-weekly-cash@2026.10.23-v1": [],
+  // Lote 3 reads only the adopted basis; projection, receivables and quarter conventions are adopted premises.
+  "build-operating-projection@2026.10.26-v1": [],
+  "challenge-financial-projection@2026.10.26-v1": [],
+  "monetize-receivables-for-working-capital@2026.10.26-v1": [],
+  "update-after-quarter-close@2026.10.26-v1": [],
 };
 
 export function referenceDataKeysOf(method: MethodIdentity): readonly string[] | null {

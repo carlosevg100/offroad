@@ -21,7 +21,9 @@ function withCopy(test: (copy: string) => void) {
   } finally {rmSync(copy, {recursive: true, force: true});}
 }
 const r01 = (copy: string) => buildMethodManifest(copy).provenance.find(p => p.procedure.id === "underwrite-receivables-pool");
-describe("published method isolation", () => {
+// Each case copies the authoring packages, released snapshots included (about 230 MB after lote 3), so the
+// budget covers the copy under a full parallel run rather than the 5 s default.
+describe("published method isolation", {timeout: 60_000}, () => {
   it("does not change R01 when an unrelated calculation is added to the authoring package", () => withCopy(copy => {
     const before = r01(copy);
     writeFileSync(join(copy, "packages/financial-core/src/isolation-probe-only.ts"), "export const isolationProbe = true;\n");
