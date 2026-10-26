@@ -28,7 +28,12 @@ export type QuarterUpdateCause = {
 };
 export type QuarterUpdateBridge = {lineId: string; causes: readonly QuarterUpdateCause[]};
 /** A stream of the prior weekly projection replaced by its updated series, attributed to structural causes. */
-export type QuarterUpdateStreamUpdate = {streamId: string; causeIds: readonly string[]; dates: readonly string[]; amounts: readonly string[]};
+/** How the cause moves the series inside its window: every amount scaled by a factor (an input price), or every event
+ * delayed by a number of days (receivable days). The adopted series must equal the transform of the prior one. */
+export type QuarterUpdateTransform = {kind: "scale"; factor: string} | {kind: "delay"; days: number};
+export type QuarterUpdateStreamUpdate = {streamId: string; causeIds: readonly string[]; transform: QuarterUpdateTransform; dates: readonly string[]; amounts: readonly string[]};
+/** Tolerance per date between the adopted series and the transform of the prior one, in currency units. */
+export const quarterUpdateSeriesTolerance = "0.000001";
 /** An approved facility: the limit approved or contracted, and where the approval is written. */
 export type QuarterUpdateFacility = {id: string; label: string; limit: string; source: string};
 /** One step of the proposed action, in order: a fixed draw replacing planned streams, or a draw sized to what is still missing. */
@@ -38,8 +43,12 @@ export type QuarterUpdateStep =
 export type QuarterUpdateDependent = {id: string; label: string; kind: "analysis" | "plan" | "material";
   /** Lines of the close the item reads, over its own horizon. */
   reads: readonly string[]; horizonStart: string; horizonEnd: string;
-  /** Which recomputation of this update replaces it; null when it is not recomputed here. */
-  recomputedBy: "weekly_cash" | "covenant" | "projection" | null};
+  /** The result this packet computes that replaces it: "weekly_cash" (the informed case over the prior horizon),
+   * "covenant:<measurement>" (one recomputed test, its definition and date) or "projection:<year>" (that year's EBITDA);
+   * null when another method owns it. */
+  recomputedBy: string | null;
+  /** The method that must recompute it when this packet does not. */
+  owner: string | null};
 export type QuarterUpdateInput = {
   currency: string; quarterStart: string; quarterEnd: string;
   lines: readonly QuarterUpdateLine[];
@@ -75,7 +84,7 @@ const overlaps = (a0: string, a1: string, b0: string, b1: string) => a0 <= b1 &&
 const sum = (values: Decimal[]) => values.reduce((s, v) => s.plus(v), new Exact(0));
 const dayCount = (from: string, to: string) => (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000 + 1;
 export type QuarterUpdateGapReason = "unexplained_residual" | "structural_cause_not_in_weekly_cash" | "structural_cause_weekly_effect_inconsistent"
-  | "structural_cause_question_missing" | "affected_not_recomputed";
+  | "structural_cause_series_not_matching_factor" | "structural_cause_question_missing" | "affected_not_recomputed";
 
 /** What the quarter changed and what it changes ahead. Actual against projected line by line; each
  * bridged deviation explained by causes that must sum to it exactly, the unexplained residual named
@@ -159,7 +168,7 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   const informed = priorWeekly.cases.find(c => c.role === "informed");
   if (!informed) throw new Error("quarter_update_prior_without_informed_case");
   const priorStreams = new Map(priorWeekly.streams.map(s => [s.id, s]));
-  const inWeekly = new Map<string, {streams: string[]; effect: Decimal}>();
+  const inWeekly = new Map<string, {streams: string[]; effect: Decimal; matches: boolean}>();
   const byDate = (dates: readonly string[], amounts: readonly string[]) => {
     const m = new Map<string, Decimal>(); dates.forEach((d, n) => m.set(d, (m.get(d) ?? new Exact(0)).plus(amount(amounts[n]!)))); return m;
   };
@@ -188,7 +197,22 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
       if (d <= qe || d > until) throw new Error("quarter_update_series_outside_persistence");
       effect = effect.plus(prior.direction === "inflow" ? change : change.neg());
     }
-    for (const c of named) {const w = inWeekly.get(c.id) ?? {streams: [], effect: new Exact(0)}; inWeekly.set(c.id, {streams: [...w.streams, u.streamId], effect: w.effect.plus(effect)});}
+    // The adopted series must be the cause's own transform of the prior series, inside the window, within the tolerance.
+    const inside = (d: string) => d > qe && d <= until, expected = new Map([...before].filter(([d]) => !inside(d)));
+    if (u.transform.kind === "scale") {
+      const factor = amount(u.transform.factor); if (!factor.gt(0)) throw new Error("quarter_update_transform");
+      for (const [d, v] of before) if (inside(d)) expected.set(d, v.mul(factor));
+    } else if (u.transform.kind === "delay") {
+      if (!Number.isInteger(u.transform.days) || u.transform.days === 0 || Math.abs(u.transform.days) > 366) throw new Error("quarter_update_transform");
+      for (const [d, v] of before) {const to = shift(d, u.transform.days); if (inside(to)) expected.set(to, (expected.get(to) ?? new Exact(0)).plus(v));}
+    } else throw new Error("quarter_update_transform");
+    const tolerance = new Exact(quarterUpdateSeriesTolerance);
+    let matches = [...new Set([...expected.keys(), ...after.keys()])].every(d => (after.get(d) ?? new Exact(0)).minus(expected.get(d) ?? new Exact(0)).abs().lte(tolerance));
+    // A delay measured by a line in days must be that line's deviation.
+    const driver = named[0]!.driverLineId === null ? null : line(named[0]!.driverLineId);
+    if (u.transform.kind === "delay" && driver?.unit === "days" && !driver.deviation.eq(u.transform.days)) matches = false;
+    for (const c of named) {const w = inWeekly.get(c.id) ?? {streams: [], effect: new Exact(0), matches: true};
+      inWeekly.set(c.id, {streams: [...w.streams, u.streamId], effect: w.effect.plus(effect), matches: w.matches && matches});}
     updated.set(u.streamId, {...prior, dates: [...u.dates], amounts: [...u.amounts]});
   }
   const added = new Set<string>();
@@ -294,25 +318,33 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     const w = inWeekly.get(c.id);
     if (!w) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_not_in_weekly_cash"});
     else if (w.effect.isZero() || w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
+    else if (!w.matches) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_series_not_matching_factor"});
   }
+  const weeklyReasons: QuarterUpdateGapReason[] = ["structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent", "structural_cause_series_not_matching_factor"];
+  const weeklyPropagated = structuralCauses.every(c => !gaps.some(g => g.item === `cause.${c.id}` && weeklyReasons.includes(g.reason)));
 
   // Dependents: affected by what they read over their horizon, never recomputed when nothing they read moved.
-  // What each recomputation actually covers: its horizon and the lines it reads. "updated" needs both to contain the dependent's.
+  // The only results this packet computes, each identified: the weekly cash of the informed case over the prior horizon,
+  // each recomputed covenant test (limit, definition, scenario, date) and the EBITDA of the projection year.
   const yearBefore = (d: string) => shift(`${Number(d.slice(0, 4)) - 1}${d.slice(4)}`, 1);
   const leadDate = targets[0]!.date;
-  const weeklyLines = new Set([cashLineId, ...structuralCauses.filter(c => inWeekly.has(c.id)).flatMap(c => [c.lineId, ...c.driverLineId ? [c.driverLineId] : []])]);
-  const recomputed = {
-    weekly_cash: {start: priorWeekly.firstMonday, end: weeklyEnd, lines: weeklyLines},
-    covenant: {start: targets.map(m => yearBefore(m.date)).sort()[0]!, end: targets.map(m => m.date).sort().at(-1)!, lines: new Set([cashLineId, ebitdaLineId])},
-    projection: {start: yearBefore(leadDate), end: leadDate, lines: new Set([cashLineId, ebitdaLineId])},
-  } as const;
+  type Result = {kind: "weekly_cash" | "covenant" | "projection"; id: string; start: string; end: string; scenario: string; lines: string[]; propagated: boolean};
+  const results = new Map<string, Result>([
+    ["weekly_cash", {kind: "weekly_cash", id: "weekly_cash", start: priorWeekly.firstMonday, end: weeklyEnd, scenario: informed.id,
+      lines: [...new Set([cashLineId, ...structuralCauses.filter(c => c.driverLineId !== null).map(c => c.driverLineId!)])], propagated: weeklyPropagated}],
+    ...targets.map(m => [`covenant:${m.id}`, {kind: "covenant" as const, id: m.id, start: yearBefore(m.date), end: m.date, scenario: m.scenario, lines: [cashLineId, ebitdaLineId], propagated: true}] as [string, Result]),
+    // The projection year exists only when the leading test closes a calendar year.
+    ...leadDate.endsWith("-12-31") ? [[`projection:${leadDate.slice(0, 4)}`, {kind: "projection" as const, id: leadDate.slice(0, 4), start: `${leadDate.slice(0, 4)}-01-01`, end: leadDate,
+      scenario: targets[0]!.scenario, lines: [ebitdaLineId], propagated: true}] as [string, Result]] : [],
+  ]);
   const forwardUntil = (lineId: string) => [...causes.values()].filter(c => c.classification === "structural" && (c.lineId === lineId || c.driverLineId === lineId))
     .reduce<string | null>((u, c) => u === null || c.until! > u ? c.until! : u, null);
   if (new Set(input.dependents.map(d => d.id)).size !== input.dependents.length) throw new Error("quarter_update_duplicate_dependent");
   const dependents = input.dependents.map(d => {
     key(d.id); text(d.label, "quarter_update_label_required");
     if (!["analysis", "plan", "material"].includes(d.kind)) throw new Error("quarter_update_dependent_kind");
-    if (d.recomputedBy !== null && !["weekly_cash", "covenant", "projection"].includes(d.recomputedBy)) throw new Error("quarter_update_dependent_recomputation");
+    if (d.recomputedBy !== null && !/^(weekly_cash|covenant:[a-z0-9][a-z0-9_-]{0,39}|projection:[1-9]\d{3})$/.test(d.recomputedBy)) throw new Error("quarter_update_dependent_recomputation");
+    if (d.owner !== null) text(d.owner, "quarter_update_owner_required");
     if (date(d.horizonStart) > date(d.horizonEnd) || d.reads.length > 24) throw new Error("quarter_update_dependent_horizon");
     const moved = d.reads.filter(id => {
       const l = line(id), until = forwardUntil(id);
@@ -320,12 +352,17 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     });
     const supersededByClose = d.kind === "material" && d.horizonEnd < qe && d.reads.some(id => !line(id).deviation.isZero());
     if (!moved.length && d.recomputedBy !== null) throw new Error("quarter_update_recomputes_unaffected");
-    const cover = d.recomputedBy === null ? null : recomputed[d.recomputedBy];
-    const proven = cover !== null && d.horizonStart >= cover.start && d.horizonEnd <= cover.end && moved.every(id => cover.lines.has(id));
-    const status = moved.length ? (proven ? "updated" as const : "affected_not_recomputed" as const) : supersededByClose ? "stale" as const : "unchanged" as const;
-    if (status === "affected_not_recomputed") gaps.push({item: `dependent.${d.id}`, reason: "affected_not_recomputed"});
+    // Bound only to the very result: same horizon, nothing read beyond what that result computes.
+    const bound = d.recomputedBy === null ? null : results.get(d.recomputedBy) ?? null;
+    const binding = d.recomputedBy === null ? "none" as const
+      : bound !== null && d.horizonStart === bound.start && d.horizonEnd === bound.end && d.reads.every(id => bound.lines.includes(id)) ? "matched" as const : "mismatched" as const;
+    const status = !moved.length ? (supersededByClose ? "stale" as const : "unchanged" as const)
+      : binding === "matched" && bound!.propagated ? "updated" as const : "affected_not_recomputed" as const;
+    // A result this packet computes whose propagation is missing is a gap; anything owned elsewhere is information for its owner.
+    if (status === "affected_not_recomputed" && binding === "matched") gaps.push({item: `dependent.${d.id}`, reason: "affected_not_recomputed"});
     return {id: d.id, label: d.label, kind: d.kind, status, movedBy: moved, recomputedBy: d.recomputedBy,
-      recomputedHorizon: cover === null ? null : {start: cover.start, end: cover.end, lines: [...cover.lines]},
+      binding, result: binding === "matched" ? {kind: bound!.kind, id: bound!.id, start: bound!.start, end: bound!.end, scenario: bound!.scenario, lines: bound!.lines} : null,
+      owner: binding === "matched" ? null : d.owner,
       /** A stale material is offered again with the closed figures; it is never sent from here. */
       sentToThirdParties: false as const};
   });

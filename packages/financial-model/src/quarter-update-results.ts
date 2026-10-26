@@ -33,10 +33,11 @@ export const quarterUpdateOutputSchema = z.strictObject({schemaVersion: z.litera
     measurementsNotUpdated: z.array(version).max(24), effectsNotUpdated: z.array(version).max(8)}),
   dependents: z.array(z.strictObject({id: version, label: text, kind: z.enum(["analysis", "plan", "material"]),
     status: z.enum(["updated", "affected_not_recomputed", "stale", "unchanged"]), movedBy: z.array(version).max(24),
-    recomputedBy: z.enum(["weekly_cash", "covenant", "projection"]).nullable(),
-    recomputedHorizon: z.strictObject({start: date, end: date, lines: z.array(version).max(24)}).nullable(), sentToThirdParties: z.literal(false)})).max(16),
+    recomputedBy: version.nullable(), binding: z.enum(["none", "matched", "mismatched"]),
+    result: z.strictObject({kind: z.enum(["weekly_cash", "covenant", "projection"]), id: version, start: date, end: date, scenario: text, lines: z.array(version).max(24)}).nullable(),
+    owner: text.nullable(), sentToThirdParties: z.literal(false)})).max(24),
   gaps: z.array(z.strictObject({item: text, reason: z.enum(["unexplained_residual", "structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent",
-    "structural_cause_question_missing", "affected_not_recomputed"])})).max(64)});
+    "structural_cause_series_not_matching_factor", "structural_cause_question_missing", "affected_not_recomputed"])})).max(64)});
 
 export const quarterUpdateExclusions = ["accounting_close", "cause_attribution", "financing_cost_comparison", "third_party_distribution", "credit_approval", "method_release"] as const;
 /** The prior version an update reads, by identity: its basis, its result and whether it was complete. */

@@ -18,6 +18,10 @@ export const quarterUpdatePacketInputSchema = z.strictObject({
   schemaVersion: z.literal("quarter-update-packet-input.v1"),
   question: text,
   analysis: quarterUpdateAnalysesSchema,
+  /** Dependents the question names explicitly; if one of them is not updated here the packet is partial. */
+  askedDependentIds: z.array(key).max(24).default([]),
+}).superRefine((i, ctx) => {
+  if (i.askedDependentIds.some((id) => !i.analysis.update.dependents.some((d) => d.id === id))) ctx.addIssue({code: "custom", message: "The question names a dependent the analysis does not carry"});
 });
 export type QuarterUpdatePacketInput = z.infer<typeof quarterUpdatePacketInputSchema>;
 const decisions = ["short_term_financing", "covenant_headroom", "third_party_material"] as const;
@@ -51,7 +55,9 @@ export const quarterUpdatePacketOutputSchema = z.strictObject({
     /** The year's EBITDA as the leading test reads it (the trailing twelve months at the test date). */
     projectedEbitda: beforeAfter(decimal),
     decisionsChanged: z.array(z.enum(decisions)).max(3),
-    updated: z.array(key).max(16), unchanged: z.array(key).max(16), stale: z.array(key).max(16), affectedNotRecomputed: z.array(key).max(16),
+    /** Updated only for a result this packet computes; the rest is affected (with the method that owns it), unchanged or stale. */
+    updated: z.array(key).max(24), unchanged: z.array(key).max(24), stale: z.array(key).max(24), affectedNotRecomputed: z.array(key).max(24),
+    ownedElsewhere: z.array(z.strictObject({dependentId: key, owner: text.nullable()})).max(24),
     openQuestions: z.array(z.strictObject({causeId: key, question: text})).max(96),
     /** The prior versions are kept as adopted; this packet never sends a material to anyone. */
     priorVersionsKept: z.literal(true), sentToThirdParties: z.literal(false),
@@ -111,11 +117,15 @@ export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
       // A decision changes when the need grows, the headroom shrinks or a material sent before the close no longer carries the closed figures.
       decisionsChanged: [...needGrew ? ["short_term_financing" as const] : [], ...lessHeadroom ? ["covenant_headroom" as const] : [], ...by("stale").length ? ["third_party_material" as const] : []],
       updated: by("updated"), unchanged: by("unchanged"), stale: by("stale"), affectedNotRecomputed: by("affected_not_recomputed"),
+      ownedElsewhere: u.dependents.filter((d) => d.status === "affected_not_recomputed" && d.binding !== "matched").map((d) => ({dependentId: d.id, owner: d.owner})),
       openQuestions: causes.filter((c) => c.question !== null).map((c) => ({causeId: c.id, question: c.question!})),
       priorVersionsKept: true as const, sentToThirdParties: false as const,
     };
   })() : null;
-  const gaps = [...result.gaps, ...(u?.gaps ?? []).map((g) => ({operand: `quarter_update.${result.analysisId}.${g.item}`, reason: g.reason}))];
+  // A dependent the question names and this packet does not update is a gap; otherwise it is information for its owner.
+  const asked = (u?.dependents ?? []).filter((d) => input.askedDependentIds.includes(d.id) && d.status === "affected_not_recomputed" && d.binding !== "matched")
+    .map((d) => ({operand: `quarter_update.${result.analysisId}.dependent.${d.id}`, reason: "asked_dependent_not_recomputed"}));
+  const gaps = [...result.gaps, ...(u?.gaps ?? []).map((g) => ({operand: `quarter_update.${result.analysisId}.${g.item}`, reason: g.reason})), ...asked];
   const status = !u ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "quarter-update-packet.v1" as const, executorVersion: quarterUpdatePacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, currency: result.currency,

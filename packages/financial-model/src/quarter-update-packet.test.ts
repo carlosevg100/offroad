@@ -24,7 +24,8 @@ describe("quarter update packet", {timeout: 180000}, () => {
     expect([r.action.withinApproved, r.action.covers]).toEqual([true, true]);
     expect([n(r.projectedEbitda.prior), n(r.projectedEbitda.updated)]).toEqual(["54.5", "53.5"]);
     expect(r.decisionsChanged).toEqual(["short_term_financing", "covenant_headroom", "third_party_material"]);
-    expect([r.updated, r.unchanged, r.stale]).toEqual([["caixa-semanal", "covenant-dez26", "projecao-2026"], ["tabela-divida", "plano-2027", "linha-embalagem"], ["material-sondagem"]]);
+    expect([r.updated, r.unchanged, r.stale, r.ownedElsewhere]).toEqual([["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"],
+      ["tabela-divida", "plano-2027", "linha-embalagem"], ["material-sondagem"], []]);
     expect(r.openQuestions).toEqual([{causeId: "prazo-redes", question: "Os 54 dias das redes são prazo negociado ou atraso?"}]);
     expect([r.priorVersionsKept, r.sentToThirdParties, p.grantsPublication]).toEqual([true, false, false]);
   });
@@ -75,6 +76,17 @@ describe("quarter update packet", {timeout: 180000}, () => {
     const p = packet(b);
     expect(p.status).toBe("partial");
     expect(p.gaps.some((g) => g.operand.endsWith(".cause.prazo-redes") && g.reason === "structural_cause_question_missing")).toBe(true);
+  });
+  it("review r3: an affected dependent owned elsewhere is information, unless the question names it", () => {
+    const b = auroraQuarterUpdateBasis();
+    b.set("cause.trigo.until", {type: "date", value: "2027-03-31"});
+    const seal = b.seal();
+    const p = prepareQuarterUpdatePacket({schemaVersion: "quarter-update-packet-input.v1", question, analysis: seal});
+    expect(p.status).toBe("prepared_for_human_review");
+    expect(p.readings!.ownedElsewhere).toEqual([{dependentId: "plano-2027", owner: "build-operating-projection"}, {dependentId: "linha-embalagem", owner: "analyze-investment-project"}]);
+    const asked = prepareQuarterUpdatePacket({schemaVersion: "quarter-update-packet-input.v1", question: "E o plano de 2027?", analysis: seal, askedDependentIds: ["plano-2027"]});
+    expect(asked.status).toBe("partial");
+    expect(asked.gaps.map((g) => g.reason)).toEqual(["asked_dependent_not_recomputed"]);
   });
   it("refuses an update of a version other than the one it names", () => {
     const b = auroraQuarterUpdateBasis();

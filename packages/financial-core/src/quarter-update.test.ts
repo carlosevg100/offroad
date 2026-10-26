@@ -51,12 +51,14 @@ describe("update after the quarter close", () => {
     expect(again.covenant.prior).toEqual(measureCovenantHeadroom(base.prior.covenant));
   });
   it("updates only what reads a moved line and names what did not change", () => {
-    expect(u.dependents.map(d => [d.id, d.status])).toEqual([["caixa-semanal", "updated"], ["covenant-dez26", "updated"], ["projecao-2026", "updated"],
+    expect(u.dependents.map(d => [d.id, d.status])).toEqual([["caixa-semanal", "updated"], ["covenant-dez26", "updated"], ["covenant-dez26-gerencial", "updated"], ["projecao-2026", "updated"],
       ["tabela-divida", "unchanged"], ["plano-2027", "unchanged"], ["linha-embalagem", "unchanged"], ["material-sondagem", "stale"]]);
     expect(u.dependents.every(d => d.sentToThirdParties === false)).toBe(true);
-    expect(() => updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "plano-2027" ? {...d, recomputedBy: "projection" as const} : d)})).toThrow("quarter_update_recomputes_unaffected");
-    const missed = updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "caixa-semanal" ? {...d, recomputedBy: null} : d)});
-    expect(missed.gaps).toEqual([{item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
+    expect(() => updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "plano-2027" ? {...d, recomputedBy: "projection:2027"} : d)})).toThrow("quarter_update_recomputes_unaffected");
+    // Owned by another method: information for its owner, not a gap of this packet.
+    const missed = updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "caixa-semanal" ? {...d, recomputedBy: null, owner: "project-weekly-cash"} : d)});
+    expect(missed.dependents[0]).toMatchObject({status: "affected_not_recomputed", binding: "none", owner: "project-weekly-cash"});
+    expect(missed.gaps).toEqual([]);
   });
   it("names an unexplained residual and never spreads it", () => {
     const r = updateAfterQuarterClose(withBridge("caixa", c => c.filter(x => x.id !== "impostos-outros")));
@@ -70,7 +72,8 @@ describe("update after the quarter close", () => {
       {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
     expect(n(r.covenant.measurements[0]!.trailingEbitda.updated)).toBe("53.5");
     const cheaper = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map((a, k) => x.dates[k]! > "2026-09-30" ? "5.7" : a)} : x);
-    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"}]);
+    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"},
+      {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
   });
   it("review r1: effects are bounded by the persistence window", () => {
     const short = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2026-10-03"} : x));
@@ -87,17 +90,31 @@ describe("update after the quarter close", () => {
     const shared = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, causeIds: ["trigo", "prazo-redes"]} : x);
     expect(() => updateAfterQuarterClose({...withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2026-10-03"} : x)), weekly: {...base.weekly, updates: shared}})).toThrow("quarter_update_series_shared_by_causes");
     const harvest = base.prior.weeklyCash.streams.find(s => s.id === "safra-30")!;
-    const inactive = [{streamId: "safra-30", causeIds: ["trigo"], dates: [...harvest.dates], amounts: harvest.amounts.map(a => String(Number(a) + 0.01))}];
+    const inactive = [{streamId: "safra-30", causeIds: ["trigo"], transform: {kind: "scale" as const, factor: "1.01"}, dates: [...harvest.dates], amounts: harvest.amounts.map(a => String(Number(a) + 0.01))}];
     expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: inactive}})).toThrow("quarter_update_series_outside_scenario");
   });
-  it("review r2: updated only where a recomputed result covers the dependent's horizon and lines", () => {
+  it("review r3: updated only for a result this packet computes, bound by identity, horizon and what it reads", () => {
     const longer = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2027-03-31"} : x));
-    const r = updateAfterQuarterClose({...longer, dependents: longer.dependents.map(d => ["plano-2027", "linha-embalagem"].includes(d.id) ? {...d, recomputedBy: "projection" as const} : d)});
-    expect(r.dependents.filter(d => ["plano-2027", "linha-embalagem"].includes(d.id)).map(d => [d.id, d.status])).toEqual([["plano-2027", "affected_not_recomputed"], ["linha-embalagem", "affected_not_recomputed"]]);
-    expect(r.gaps).toEqual([{item: "dependent.plano-2027", reason: "affected_not_recomputed"}, {item: "dependent.linha-embalagem", reason: "affected_not_recomputed"}]);
-    expect(u.dependents.find(d => d.id === "projecao-2026")!.recomputedHorizon).toEqual({start: "2026-01-01", end: "2026-12-31", lines: ["caixa", "ebitda"]});
-    const revenue = updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "projecao-2026" ? {...d, reads: ["receita", "ebitda"]} : d)});
-    expect(revenue.dependents.find(d => d.id === "projecao-2026")!.status).toBe("affected_not_recomputed");
+    const extra = [
+      {id: "covenant-nov", label: "Covenant até 30/11/2026", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "covenant:dez26-base", owner: "measure-covenant-headroom"},
+      {id: "ebitda-nov", label: "EBITDA acumulado até novembro", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "projection:2026", owner: "build-operating-projection"},
+      {id: "dre-mensal", label: "DRE mensal do quarto trimestre", kind: "analysis" as const, reads: ["ebitda"], horizonStart: "2026-10-01", horizonEnd: "2026-12-31", recomputedBy: "weekly_cash", owner: "build-operating-projection"},
+      {id: "plano-2027-declarado", label: "Plano de 2027", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "projection:2027", owner: "build-operating-projection"},
+    ];
+    const r = updateAfterQuarterClose({...longer, dependents: [...longer.dependents, ...extra]});
+    expect(r.dependents.slice(-4).map(d => [d.id, d.status, d.binding, d.owner])).toEqual([["covenant-nov", "affected_not_recomputed", "mismatched", "measure-covenant-headroom"],
+      ["ebitda-nov", "affected_not_recomputed", "mismatched", "build-operating-projection"], ["dre-mensal", "affected_not_recomputed", "mismatched", "build-operating-projection"],
+      ["plano-2027-declarado", "affected_not_recomputed", "mismatched", "build-operating-projection"]]);
+    expect(r.gaps).toEqual([]);
+    expect(u.dependents.find(d => d.id === "covenant-dez26")!.result).toEqual({kind: "covenant", id: "dez26-base", start: "2026-01-01", end: "2026-12-31", scenario: "base", lines: ["caixa", "ebitda"]});
+  });
+  it("review r3: a series must be the adopted factor applied to the prior one, or the weekly cash is not updated", () => {
+    const tiny = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: base.prior.weeklyCash.streams.find(s => s.id === "insumos")!.amounts.map((a, k) => k === 3 ? "5.80000001" : a)} : x);
+    const r = updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: tiny}});
+    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_series_not_matching_factor"}, {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
+    expect(r.dependents.find(d => d.id === "caixa-semanal")!.status).toBe("affected_not_recomputed");
+    const days = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 3}} : x);
+    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: days}}).gaps[0]).toEqual({item: "cause.prazo-redes", reason: "structural_cause_series_not_matching_factor"});
   });
   it("asks the open diagnosis of a balance shift read by interpretation", () => {
     const r = updateAfterQuarterClose(withBridge("caixa", c => c.map(x => x.id === "prazo-redes" ? {...x, question: null} : x)));
@@ -115,7 +132,7 @@ describe("update after the quarter close", () => {
     expect(() => updateAfterQuarterClose(withBridge("ebitda", c => c.map(x => x.id === "volume" ? {...x, until: "2026-12-31"} : x)))).toThrow("quarter_update_calendar_cause_with_end");
     const prior = base.prior.weeklyCash.streams.find(s => s.id === "insumos")!;
     expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, dates: [...prior.dates], amounts: [...prior.amounts]} : x)}})).toThrow("quarter_update_stream_update_without_change");
-    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: [...base.weekly.updates, {streamId: "inventado", causeIds: ["trigo"], dates: ["2026-10-01"], amounts: ["1"]}]}})).toThrow("quarter_update_unknown_stream");
+    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: [...base.weekly.updates, {streamId: "inventado", causeIds: ["trigo"], transform: {kind: "scale" as const, factor: "1.01"}, dates: ["2026-10-01"], amounts: ["1"]}]}})).toThrow("quarter_update_unknown_stream");
     expect(() => updateAfterQuarterClose({...base, covenant: {measurementIds: ["dez27-base"]}})).toThrow("quarter_update_quarter_outside_test_period");
     expect(() => updateAfterQuarterClose({...base, bridges: base.bridges.filter(b => b.lineId !== "caixa")})).toThrow("quarter_update_carry_line_without_bridge");
     expect(() => updateAfterQuarterClose({...base, steps: [base.steps[1]!]})).toThrow("quarter_update_added_stream_unused");

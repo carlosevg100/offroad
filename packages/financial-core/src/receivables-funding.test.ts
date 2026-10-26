@@ -124,4 +124,22 @@ describe("receivables funding", () => {
     expect(open.gaps.map(g => g.item)).toContain("item.varejo-demais.debtorSetDisjoint");
     expect(open.options[1]!.byItem.find(x => x.itemId === "varejo-demais")!.unverifiedBy).toEqual(["largest_debtor", "debtor_set_overlap"]);
   });
+  it("keeps the same headroom for a debtor in one lot or several after a partial purchase", () => {
+    const one = {...base.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const, debtorKey: "sacado-unico"};
+    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap}});
+    const whole = {...base, items: [one], options: [fund("barato", "0.01", "2"), fund("caro", "0.02", "3"), base.options[4]!], needAverage: "4", needPeak: "4"};
+    const lots = {...whole, items: [{...one, id: "lote-1", amount: "2.5"}, {...one, id: "lote-2", amount: "2.5"}]};
+    for (const x of [whole, lots]) {
+      const r = assessReceivablesFunding(x);
+      expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["caro", "3", "2", "4"]]);
+      expect(r.plan.coversPeak).toBe(true);
+    }
+  });
+  it("records the sublimit as the reason when the cut leaves a lot fully excluded", () => {
+    const e = base.items.find(i => i.id === "rede-e")!;
+    const r = assessReceivablesFunding({...base, items: [...base.items.filter(i => i.id !== "rede-e"), {...e, id: "lote-1", amount: "3"}, {...e, id: "lote-2", amount: "1.5"}]});
+    expect(r.portfolio.items.filter(i => i.itemId.startsWith("lote")).map(i => [i.itemId, i.assignable, i.excluded, i.reasons]))
+      .toEqual([["lote-1", "3", "0", []], ["lote-2", "0", "1.5", ["debtor_sublimit"]]]);
+    expect(r.portfolio.items.every(i => i.excluded === "0" || i.reasons.length > 0)).toBe(true);
+  });
 });

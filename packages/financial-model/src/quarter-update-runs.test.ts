@@ -22,7 +22,9 @@ describe("recorded quarter update evaluations", () => {
       "december-covenant-by-each-definition", "oracle-second-absorption-kept-as-contrast", "projection-2026-ebitda-propagated", "decisions-that-change-are-named",
       "what-did-not-change-in-one-line", "question-negotiated-terms-or-late-payment", "stale-material-offered-never-sent", "prior-version-kept-as-released",
       "deviation-without-cause-is-a-named-residual", "structural-cause-without-weekly-effect-is-a-gap", "persistence-date-bounds-every-effect",
-      "open-diagnosis-without-question-is-a-gap", "updated-only-where-a-recomputed-result-covers-it", "absent-actual-is-a-gap-not-a-default"]);
+      "open-diagnosis-without-question-is-a-gap", "updated-only-for-results-this-packet-computes",
+      "token-weekly-propagation-keeps-the-weekly-cash-affected", "inconsistent-weekly-propagation-keeps-the-weekly-cash-affected",
+      "named-dependent-owned-elsewhere-makes-the-packet-partial", "absent-actual-is-a-gap-not-a-default"]);
     expect(records.get(quarterUpdateRunIds.adversarial)!.cases).toHaveLength(17);
     expect(records.get(quarterUpdateRunIds.consistency)!.cases).toHaveLength(6);
   });

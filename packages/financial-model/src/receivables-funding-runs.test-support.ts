@@ -49,6 +49,19 @@ const splitDebtor = () => {
   const k = auroraReceivablesFunding(), e = k.items.find((i) => i.id === "rede-e")!;
   return auroraReceivablesFundingBasis({...k, items: [...k.items.filter((i) => i.id !== "rede-e"), {...e, id: "rede-e-lote-1", amount: "2.5"}, {...e, id: "rede-e-lote-2", amount: "2"}]});
 };
+/** One registered debtor of R$ 5 mi in one lot or two of 2.5, a cheap fund capped at 2, a dear one at 3, peak 4 (review repro). */
+const partialPurchase = (split: boolean) => () => {
+  const k = auroraReceivablesFunding(), fund = k.options[1]!;
+  const one = {...k.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const, registration: "registered" as const, debtorKey: "sacado-unico"};
+  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap}});
+  return auroraReceivablesFundingBasis({...k, items: split ? [{...one, id: "lote-1", amount: "2.5"}, {...one, id: "lote-2", amount: "2.5"}] : [one],
+    options: [at("fundo-barato", "0.01", "2"), at("fundo-caro", "0.02", "3"), k.options[4]!], needAverage: "4", needPeak: "4"});
+};
+/** Retailer E in lots of 3 and 1.5: the second is fully cut by the debtor's sublimit (review repro). */
+const fullCut = () => {
+  const k = auroraReceivablesFunding(), e = k.items.find((i) => i.id === "rede-e")!;
+  return auroraReceivablesFundingBasis({...k, items: [...k.items.filter((i) => i.id !== "rede-e"), {...e, id: "rede-e-lote-1", amount: "3"}, {...e, id: "rede-e-lote-2", amount: "1.5"}]});
+};
 /** The varejo bucket with a debtor count and a largest debtor adopted together. */
 const withDebtors = (count: string, largest: string) => {
   let ids: string[] = [];
@@ -105,6 +118,13 @@ function goldCases(): Case[] {
       {lots: [["rede-e-lote-1", 2.5, 0], ["rede-e-lote-2", 0.5, 1.5]], fidc: 21.3, assignable: 25, gaps: ["largest_debtor_not_informed", "largest_debtor_not_informed"]},
       (p) => {const f = p.result.funding!.options.find((o) => o.id === "fidc-com-coobrigacao")!;
         return {lots: f.byItem.filter((b) => b.itemId.startsWith("rede-e")).map((b) => [b.itemId, r(b.retained), r(b.sublimitExcess)]), fidc: r(f.volume), assignable: r(p.readings!.assignable), gaps: p.gaps.map((g) => g.reason)};}),
+    ...[false, true].map((split) => observe(split ? "split-lots-keep-headroom-after-a-partial-purchase" : "one-lot-keeps-headroom-after-a-partial-purchase",
+      packetInput(undefined, undefined, partialPurchase(split)), {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 2, 4]], coversPeak: true},
+      (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak}))),
+    observe("lot-fully-cut-by-the-sublimit-keeps-its-reason", packetInput(undefined, undefined, fullCut),
+      {lot: ["rede-e-lote-2", 1.5, ["debtor_sublimit"]], assignable: 25, everyExclusionHasAReason: true},
+      (p) => {const x = p.readings!.exclusions.find((e) => e.itemId === "rede-e-lote-2")!;
+        return {lot: [x.itemId, r(x.amount), x.reasons], assignable: r(p.readings!.assignable), everyExclusionHasAReason: p.readings!.exclusions.every((e) => e.reasons.length > 0)};}),
     observe("unsold-balance-goes-to-the-next-buyer", packetInput(undefined, undefined, unsoldBalance),
       {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 1, 3]], coversPeak: true},
       (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak})),

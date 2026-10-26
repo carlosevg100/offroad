@@ -78,7 +78,7 @@ function goldCases(): Case[] {
     })(),
     reuse("projection-2026-ebitda-propagated", [54.5, 53.5], (p) => [r(p.readings!.projectedEbitda.prior), r(p.readings!.projectedEbitda.updated)]),
     reuse("decisions-that-change-are-named", ["short_term_financing", "covenant_headroom", "third_party_material"], (p) => p.readings!.decisionsChanged),
-    reuse("what-did-not-change-in-one-line", {updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"], unchanged: ["tabela-divida", "plano-2027", "linha-embalagem"]},
+    reuse("what-did-not-change-in-one-line", {updated: ["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"], unchanged: ["tabela-divida", "plano-2027", "linha-embalagem"]},
       (p) => ({updated: p.readings!.updated, unchanged: p.readings!.unchanged})),
     reuse("question-negotiated-terms-or-late-payment", [["prazo-redes", "Os 54 dias das redes são prazo negociado ou atraso?"]], (p) => p.readings!.openQuestions.map((q) => [q.causeId, q.question])),
     reuse("stale-material-offered-never-sent", {stale: ["material-sondagem"], sent: false, publication: false}, (p) => ({stale: p.readings!.stale, sent: p.readings!.sentToThirdParties, publication: p.grantsPublication})),
@@ -102,11 +102,35 @@ function goldCases(): Case[] {
     observe("open-diagnosis-without-question-is-a-gap", packetInput((f) => {
       (f.input as unknown as {bridges: {causes: {id: string; question: unknown}[]}[]}).bridges[1]!.causes.find((x) => x.id === "prazo-redes")!.question = null;
     }), {status: "partial", gap: true}, (p) => ({status: p.status, gap: p.gaps.some((g) => g.operand.endsWith(".cause.prazo-redes") && g.reason === "structural_cause_question_missing")})),
-    observe("updated-only-where-a-recomputed-result-covers-it", packetInput((f) => {
+    observe("updated-only-for-results-this-packet-computes", packetInput((f) => {
       f.set("cause.trigo.until", {type: "date", value: "2027-03-31"});
-      for (const id of ["plano-2027", "linha-embalagem"]) f.set(`dependent.${id}.recomputedBy`, {type: "text", value: "projection"});
-    }), {status: "partial", affected: ["plano-2027", "linha-embalagem"], updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"]},
-      (p) => ({status: p.status, affected: p.readings!.affectedNotRecomputed, updated: p.readings!.updated})),
+      f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection:2027"});
+      // A November covenant, an EBITDA to November and a monthly statement are not the December results nor the weekly cash.
+      const dependents = (f.input as unknown as {dependents: unknown[]}).dependents;
+      const add = (id: string, label: string, kind: string, reads: string[], start: string, end: string, by: string, owner: string) => {
+        const p = `dependent.${id}.`, txt = (k: string, v: string, unit = "text") => f.contribute(p + k, unit, {type: "text", value: v});
+        dependents.push({id, label: txt("label", label), kind: txt("kind", kind, "convention"), reads: f.contribute(p + "reads", "identity", {type: "list", value: reads}),
+          horizonStart: f.contribute(p + "horizonStart", "date", {type: "date", value: start}), horizonEnd: f.contribute(p + "horizonEnd", "date", {type: "date", value: end}),
+          recomputedBy: txt("recomputedBy", by, "convention"), owner: txt("owner", owner)});
+      };
+      add("covenant-nov", "Covenant até 30/11/2026", "analysis", ["ebitda", "caixa"], "2026-01-01", "2026-11-30", "covenant:dez26-base", "measure-covenant-headroom");
+      add("ebitda-nov", "EBITDA acumulado até novembro", "plan", ["ebitda"], "2026-01-01", "2026-11-30", "projection:2026", "build-operating-projection");
+      add("dre-mensal", "DRE mensal do quarto trimestre", "analysis", ["ebitda"], "2026-10-01", "2026-12-31", "weekly_cash", "build-operating-projection");
+    }), {status: "prepared_for_human_review", updated: ["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"],
+      ownedElsewhere: ["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal"]},
+      (p) => ({status: p.status, updated: p.readings!.updated, ownedElsewhere: p.readings!.ownedElsewhere.map((x) => x.dependentId)})),
+    observe("token-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
+      const prior = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
+      f.set("streamUpdate.insumos.amounts", {type: "list", value: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)});
+    }), {status: "partial", reasons: ["structural_cause_series_not_matching_factor", "affected_not_recomputed"], weeklyUpdated: false},
+      (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
+    observe("inconsistent-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
+      const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
+      f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map((d) => d > "2026-09-30" ? "5.7" : "5.8")});
+    }), {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
+      (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
+    observe("named-dependent-owned-elsewhere-makes-the-packet-partial", packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2027-03-31"}), (i) => {i.askedDependentIds = ["plano-2027"];}),
+      {status: "partial", reasons: ["asked_dependent_not_recomputed"]}, (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason)})),
     (() => {
       const i = packetInput();
       i.analysis.update.lines = i.analysis.update.lines.map((l) => l.id === "caixa" ? {...l, actual: {...l.actual, decisionId: null, missingReason: "Caixa de 30/set não informado"}} : l);
@@ -135,10 +159,12 @@ function adversarialCases(): Case[] {
       const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
       const dates = f.contribute("streamUpdate.safra-30.dates", "date", {type: "list", value: [...harvest.dates]});
       const amounts = f.contribute("streamUpdate.safra-30.amounts", "currency", {type: "list", value: harvest.amounts.map((a) => new D(a).plus("0.01").toFixed())});
-      (f.input as unknown as {streamUpdates: unknown[]}).streamUpdates = [{streamId: "safra-30", causeIds: ["trigo"], dates, amounts}];
+      const transformKind = f.contribute("streamUpdate.safra-30.transformKind", "convention", {type: "text", value: "scale"});
+      const transformValue = f.contribute("streamUpdate.safra-30.transformValue", "ratio", {type: "number", value: "1.01"});
+      (f.input as unknown as {streamUpdates: unknown[]}).streamUpdates = [{streamId: "safra-30", causeIds: ["trigo"], transformKind, transformValue, dates, amounts}];
     }), "quarter_update_series_outside_scenario"],
     ["structural-cause-without-an-end", () => packetInput((f) => f.set("cause.volume.classification", {type: "text", value: "structural"})), "quarter_update_structural_cause_end"],
-    ["recomputing-what-did-not-move", () => packetInput((f) => f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection"})), "quarter_update_recomputes_unaffected"],
+    ["recomputing-what-did-not-move", () => packetInput((f) => f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection:2027"})), "quarter_update_recomputes_unaffected"],
     ["series-updated-without-change", () => packetInput((f) => {
       const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
       f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map(() => "5.8")});

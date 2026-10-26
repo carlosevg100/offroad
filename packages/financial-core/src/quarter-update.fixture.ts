@@ -85,8 +85,8 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
   prior: {weeklyCash: auroraWeeklyCash, covenant: auroraPriorCovenant},
   weekly: {
     updates: [
-      {streamId: "recebimentos", causeIds: ["prazo-redes"], ...auroraReceipts()},
-      {streamId: "insumos", causeIds: ["trigo"], ...auroraDearerInputs()},
+      {streamId: "recebimentos", causeIds: ["prazo-redes"], transform: {kind: "delay", days: 4}, ...auroraReceipts()},
+      {streamId: "insumos", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"}, ...auroraDearerInputs()},
     ],
     added: [{id: "programas-redes", label: "Programas de antecipação das redes A e B", category: "operating", direction: "inflow", obligation: null, dates: ["2026-10-15"], amounts: ["23"]}],
   },
@@ -100,12 +100,13 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
     {facilityId: "conta-garantida", mode: "residual", date: "2026-12-14"},
   ],
   dependents: [
-    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis", reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash"},
-    {id: "covenant-dez26", label: "Covenant de dezembro de 2026", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant"},
-    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection"},
-    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis", reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: null},
-    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan", reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: null},
-    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: null},
-    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material", reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: null},
+    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis", reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash", owner: null},
+    {id: "covenant-dez26", label: "Covenant de dezembro de 2026, definição da escritura", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-base", owner: null},
+    {id: "covenant-dez26-gerencial", label: "Covenant de dezembro de 2026, definição gerencial", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-gerencial", owner: null},
+    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan", reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection:2026", owner: null},
+    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis", reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: null, owner: "build-company-debt-table"},
+    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan", reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: null, owner: "build-operating-projection"},
+    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: null, owner: "analyze-investment-project"},
+    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material", reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: null, owner: "autoria do material da sondagem"},
   ],
 };

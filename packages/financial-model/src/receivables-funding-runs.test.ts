@@ -20,7 +20,7 @@ describe("recorded receivables funding evaluations", () => {
       "gross-portfolio-is-not-assignable", "every-exclusion-carries-its-reason", "options-sized-by-eligibility-and-sublimit", "cost-for-the-time-in-use-against-the-bank-line",
       "iof-where-it-applies", "discount-iof-on-whole-draws", "monthly-rates-converted-before-comparing", "recourse-on-the-balance-sheet-and-the-covenant", "sale-is-not-a-guarantee-under-the-negative-pledge",
       "asks-about-retailer-a-program", "fifteen-to-thirty-days-with-registration-as-condition-precedent", "several-buyers-and-the-bank-line-as-reserve",
-      "no-dedicated-vehicle-for-a-seasonal-need", "retailer-a-program-reorders-the-plan", "one-debtor-split-across-lots-shares-the-sublimit", "unsold-balance-goes-to-the-next-buyer", "encumbered-bucket-released-under-the-same-sublimit",
+      "no-dedicated-vehicle-for-a-seasonal-need", "retailer-a-program-reorders-the-plan", "one-debtor-split-across-lots-shares-the-sublimit", "one-lot-keeps-headroom-after-a-partial-purchase", "split-lots-keep-headroom-after-a-partial-purchase", "lot-fully-cut-by-the-sublimit-keeps-its-reason", "unsold-balance-goes-to-the-next-buyer", "encumbered-bucket-released-under-the-same-sublimit",
       "largest-debtor-unknown-is-a-gap-not-a-default", "absent-peak-is-a-gap-not-a-default"]);
     expect(records.get(receivablesFundingRunIds.adversarial)!.cases).toHaveLength(17);
     expect(records.get(receivablesFundingRunIds.consistency)!.cases).toHaveLength(6);

@@ -16,6 +16,8 @@ export const boundQuarterUpdateInputSchema = z.strictObject({
   prior: z.strictObject({weeklyCash: bound, covenant: bound}),
   update: bound,
   question: text,
+  /** Dependents the question names explicitly, as the conversation identified them. */
+  askedDependentIds: z.array(z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/)).max(24).default([]),
 });
 type Selection = z.infer<typeof adoptedValueSelectionSchema>;
 type ValueType = AdoptionBasisEntry["value"]["type"];
@@ -93,7 +95,9 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
   const bridges = bridgeIds.map((lineId) => ({lineId, causes: causes.filter((c) => c.lineId === lineId).map((c) => c.cause)}));
   const streamUpdates = keys("streamUpdate", "order.streamUpdates").map((streamId) => {
     const p = `streamUpdate.${streamId}.`;
+    const kind = meta(p + "transformKind", "text", "quarter_update_stream_transform", false), unit = kind === "delay" ? "days" : "ratio";
     return {streamId, causeIds: z.array(keyOf).parse(meta(p + "causeIds", "list", "quarter_update_stream_causes", true)),
+      transformKind: select(p + "transformKind", "convention", "text"), transformValue: select(p + "transformValue", unit, "number"),
       dates: select(p + "dates", "date", "list"), amounts: select(p + "amounts", "currency", "list")};
   });
   const addedStreams = keys("added", "order.added").map((id) => {
@@ -113,7 +117,7 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
   const dependents = keys("dependent", "order.dependents").map((id) => {
     const p = `dependent.${id}.`;
     return {id, label: select(p + "label", "text", "text"), kind: select(p + "kind", "convention", "text"), reads: select(p + "reads", "identity", "list"),
-      horizonStart: select(p + "horizonStart", "date", "date"), horizonEnd: select(p + "horizonEnd", "date", "date"), recomputedBy: select(p + "recomputedBy", "convention", "text")};
+      horizonStart: select(p + "horizonStart", "date", "date"), horizonEnd: select(p + "horizonEnd", "date", "date"), recomputedBy: select(p + "recomputedBy", "convention", "text"), owner: optional(p + "owner", "text", "text")};
   });
   const measurementIds = z.array(keyOf).min(1).parse(meta("covenant.measurementIds", "list", "quarter_update_covenant_measurement", true));
   const update = {envelope: input.update.envelope, scope: input.update.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,
@@ -127,5 +131,5 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
   // The prior versions are composed by their own composers, exactly as they were adopted.
   const weeklyCash = composeBoundWeeklyCash({...input.prior.weeklyCash, question: input.question}).analysis;
   const covenant = composeBoundCovenantHeadroom({...input.prior.covenant, question: input.question, headlineMeasurementId: measurementIds[0]!}).analysis;
-  return quarterUpdatePacketInputSchema.parse({schemaVersion: "quarter-update-packet-input.v1", question: input.question, analysis: {prior: {weeklyCash, covenant}, update}});
+  return quarterUpdatePacketInputSchema.parse({schemaVersion: "quarter-update-packet-input.v1", question: input.question, analysis: {prior: {weeklyCash, covenant}, update}, askedDependentIds: input.askedDependentIds});
 }

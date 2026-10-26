@@ -75,20 +75,38 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
   it("review r2 F2: a series outside the scenario used does not carry a cause", () => {
     const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
     const b = bases((f) => {
-      f.streamUpdates = [{value: {streamId: "safra-30", causeIds: ["trigo"], dates: [...harvest.dates], amounts: harvest.amounts.map((a) => new Decimal(a).plus("0.01").toFixed())},
+      f.streamUpdates = [{value: {streamId: "safra-30", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"}, dates: [...harvest.dates], amounts: harvest.amounts.map((a) => new Decimal(a).plus("0.01").toFixed())},
         origin: "estimate", source: "série fora do cenário informado"}];
     });
     expect(() => packetOf(b)).toThrow("quarter_update_series_outside_scenario");
   });
-  it("review r2 F3: updated needs a recomputed result covering the dependent's horizon", () => {
+  it("review r3: a November covenant, an EBITDA to November and a monthly statement are not updated by the December results", () => {
     const b = bases((f) => {
       f.bridges[0]!.causes[1]!.value.until = "2027-03-31";
-      for (const d of f.dependents) if (["plano-2027", "linha-embalagem"].includes(d.value.id)) d.value.recomputedBy = "projection";
+      const d = (id: string, label: string, kind: "analysis" | "plan", reads: string[], start: string, end: string, recomputedBy: string, owner: string) =>
+        ({value: {id, label, kind, reads, horizonStart: start, horizonEnd: end, recomputedBy, owner}, origin: "house" as const, source: "mapa de dependências"});
+      f.dependents.push(d("covenant-nov", "Covenant até 30/11/2026", "analysis", ["ebitda", "caixa"], "2026-01-01", "2026-11-30", "covenant:dez26-base", "measure-covenant-headroom"),
+        d("ebitda-nov", "EBITDA acumulado até novembro", "plan", ["ebitda"], "2026-01-01", "2026-11-30", "projection:2026", "build-operating-projection"),
+        d("dre-mensal", "DRE mensal do quarto trimestre", "analysis", ["ebitda"], "2026-10-01", "2026-12-31", "weekly_cash", "build-operating-projection"));
+      for (const x of f.dependents) if (x.value.id === "plano-2027") x.value.recomputedBy = "projection:2027";
     });
     const p = packetOf(b);
+    expect(p.status).toBe("prepared_for_human_review");
+    expect(p.readings!.updated).toEqual(["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"]);
+    expect(p.readings!.ownedElsewhere.map((x) => x.dependentId)).toEqual(["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal"]);
+  });
+  it("review r3: an inconsistent or token weekly propagation keeps the weekly cash affected and the packet partial", () => {
+    const tiny = bases((f) => {
+      const s = f.streamUpdates[1]!.value; s.amounts = auroraWeeklyCash.streams.find((x) => x.id === "insumos")!.amounts.map((a, k) => k === 3 ? "5.80000001" : a);
+    });
+    const p = packetOf(tiny);
     expect(p.status).toBe("partial");
-    expect(p.readings!.affectedNotRecomputed).toEqual(["plano-2027", "linha-embalagem"]);
-    expect(p.readings!.updated).toEqual(["caixa-semanal", "covenant-dez26", "projecao-2026"]);
+    expect(p.readings!.updated).not.toContain("caixa-semanal");
+    expect(p.gaps.map((g) => g.reason)).toEqual(["structural_cause_series_not_matching_factor", "affected_not_recomputed"]);
+    const cheaper = bases((f) => {const s = f.streamUpdates[1]!.value; s.amounts = s.amounts.map((a, k) => s.dates[k]! > "2026-09-30" ? "5.7" : a);});
+    const q = packetOf(cheaper);
+    expect(q.readings!.affectedNotRecomputed).toContain("caixa-semanal");
+    expect(q.gaps.map((g) => g.reason)).toEqual(["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"]);
   });
   it("refuses a composition whose structure is missing, by name", () => {
     const b = bases(), without = (suffix: string) => ({...b, update: envelopeOf(b.entries.filter((e) => !e.fieldPath.endsWith(suffix)), 503, "synthetic quarter update")});

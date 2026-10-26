@@ -3,7 +3,7 @@ import {prepareReceivablesFundingPacket} from "./receivables-funding-packet";
 import {calculateAdoptedReceivablesFunding} from "./adopted-receivables-funding";
 import {adoptedReceivablesFundingOutputSchema} from "./receivables-funding-results";
 import {receivablesFundingPacketExecutorContracts} from "./receivables-funding-contracts";
-import {auroraReceivablesFundingBasis} from "./receivables-funding.test-support";
+import {auroraReceivablesFunding, auroraReceivablesFundingBasis} from "./receivables-funding.test-support";
 
 const question = "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?";
 const packet = () => prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question, analysis: auroraReceivablesFundingBasis().seal()});
@@ -32,5 +32,12 @@ describe("receivables funding packet", () => {
     expect(packet().fingerprint).toBe(packet().fingerprint);
     expect(adoptedReceivablesFundingOutputSchema.parse(calculateAdoptedReceivablesFunding(auroraReceivablesFundingBasis().seal())).status).toBe("partial_composition");
     expect(receivablesFundingPacketExecutorContracts().executor).toEqual({module: "@offroad/financial-model", exportName: "prepareReceivablesFundingPacket", version: "2026.10.26-v1"});
+  });
+  it("keeps the reason of a lot fully cut by the debtor sublimit through the adopted reader", () => {
+    const k = auroraReceivablesFunding(), e = k.items.find((i) => i.id === "rede-e")!;
+    const split = {...k, items: [...k.items.filter((i) => i.id !== "rede-e"), {...e, id: "rede-e-lote-1", amount: "3"}, {...e, id: "rede-e-lote-2", amount: "1.5"}]};
+    const p = prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question, analysis: auroraReceivablesFundingBasis(split).seal()});
+    expect(p.readings!.exclusions.find((x) => x.itemId === "rede-e-lote-2")).toMatchObject({amount: "1.5", reasons: ["debtor_sublimit"]});
+    expect([p.readings!.assignable, p.readings!.exclusions.every((x) => x.reasons.length > 0)]).toEqual(["25", true]);
   });
 });

@@ -287,8 +287,9 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     const best = takes.reduce((m, b) => new Exact(b.retained).gt(m) ? new Exact(b.retained) : m, new Exact(0));
     // The reasons no sale option overcomes; when each option fails for its own reason, all of them.
     const common = [...new Set(takes.flatMap(b => b.reasons))].filter(r => takes.every(b => b.reasons.includes(r)));
-    const reasons = (common.length ? common : [...new Set(takes.flatMap(b => b.reasons))]).sort();
-    if (best.gt(0) && best.lt(i.value)) reasons.push("debtor_sublimit");
+    // A lot some option accepts is cut only by the debtor sublimit, even when the cut leaves nothing of it.
+    const accepted = takes.some(b => !b.reasons.length);
+    const reasons = accepted ? (best.lt(i.value) ? ["debtor_sublimit"] : []) : (common.length ? common : [...new Set(takes.flatMap(b => b.reasons))]).sort();
     if (!takes.length) reasons.push("not_offered_to_any_sale_option");
     const excluded = i.value.minus(best);
     return {itemId: i.id, label: i.label, amount: out(i.value), assignable: out(best), excluded: out(excluded), reasons: excluded.gt(0) ? reasons : [],
@@ -308,8 +309,10 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     return {itemId: i.id, amount: out(i.value), holder: i.encumbranceHolder!, releaseEvent: i.releaseEvent!, assignableAfterRelease: out(best.value), verified: best.verified};
   });
 
-  // Plan: the cheapest options first. Each takes, bucket by bucket, the least of what it buys, what is
-  // still unsold in the bucket and what is still missing to the peak; capacity is what it could take.
+  // Plan: the cheapest options first. Each option's capacity is recomputed on what is still unsold: a
+  // named debtor's accepted lots share the option's own sublimit, so a balance bought in part earlier
+  // keeps the same headroom whether it sits in one lot or several; a bucket keeps its bound. Each option
+  // takes the least of its capacity per lot and what is still missing to the peak.
   const unsold = new Map([...items.values()].map(i => [i.id, i.value]));
   const plan: {optionId: string; capacity: string; amount: string; cumulative: string}[] = [];
   let cumulative = new Exact(0);
@@ -318,8 +321,17 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     const c = costed.find(x => x.id === r.id)!;
     if (c.kind === "bank_line") continue;
     let add = new Exact(0), capacity = new Exact(0);
+    const cap = options.find(o => o.id === c.id)!.eligibility!.sublimitPerDebtor;
+    const headroom = new Map<string, Decimal>();
     for (const b of c.byItem) {
-      const free = Decimal.min(new Exact(b.retained), unsold.get(b.itemId)!);
+      const i = items.get(b.itemId)!;
+      let free: Decimal;
+      if (i.debtorCount === 1) {
+        if (!b.offered || b.reasons.length) continue;
+        const left = headroom.get(i.debtorKey) ?? (cap === null ? null : new Exact(cap));
+        free = left === null ? unsold.get(b.itemId)! : Decimal.min(unsold.get(b.itemId)!, left);
+        if (left !== null) headroom.set(i.debtorKey, left.minus(free));
+      } else free = Decimal.min(new Exact(b.retained), unsold.get(b.itemId)!);
       if (!free.gt(0)) continue;
       capacity = capacity.plus(free);
       const take = Decimal.min(free, needPeak.minus(cumulative).minus(add));

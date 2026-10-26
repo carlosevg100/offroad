@@ -23,7 +23,7 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   carry: z.strictObject({cashLineId: key, ebitdaLineId: key}),
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(z.strictObject({id: key, equalsDeviationOf: key.nullable(), driverLineId: key.nullable(),
     label: selection, amount: selection, classification: selection, until: selection.nullable(), nature: selection.nullable(), basis: selection, question: selection.nullable()})).min(1).max(12)})).min(2).max(8),
-  streamUpdates: z.array(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), dates: selection, amounts: selection})).max(16),
+  streamUpdates: z.array(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transformKind: selection, transformValue: selection, dates: selection, amounts: selection})).max(16),
   addedStreams: z.array(z.strictObject({id: key, label: selection, dates: selection, amounts: selection})).max(4),
   /** The test measurements the close updates, the leading one first; what the causes do to them is derived, never adopted. */
   covenant: z.strictObject({measurementIds: z.array(key).min(1).max(8)}),
@@ -31,7 +31,7 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   steps: z.array(z.discriminatedUnion("mode", [
     z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).max(8)}),
     z.strictObject({facilityId: key, mode: z.literal("residual"), date: selection})])).max(4),
-  dependents: z.array(z.strictObject({id: key, label: selection, kind: selection, reads: selection, horizonStart: selection, horizonEnd: selection, recomputedBy: selection})).max(16),
+  dependents: z.array(z.strictObject({id: key, label: selection, kind: selection, reads: selection, horizonStart: selection, horizonEnd: selection, recomputedBy: selection, owner: selection.nullable()})).max(24),
 }).refine(i => i.endDate > i.openingDate, "Invalid quarter")
   .refine(i => new Set(i.lines.map(l => l.id)).size === i.lines.length, "Duplicate line")
   .refine(i => i.bridges.every(b => i.lines.some(l => l.id === b.lineId)), "A bridge names a line the analysis does not carry");
@@ -117,7 +117,11 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
       basis: need(read(c.basis, p + "basis", "convention", "text", z.enum(["document", "interpretation"]))),
       question: c.question === null ? null : need(read(c.question, p + "question", "text", "text", words))};
   })}));
-  const updates = input.streamUpdates.map(u => {const p = `streamUpdate.${u.streamId}.`; return {streamId: u.streamId, causeIds: u.causeIds,
+  const updates = input.streamUpdates.map(u => {const p = `streamUpdate.${u.streamId}.`;
+    const kind = need(read(u.transformKind, p + "transformKind", "convention", "text", z.enum(["scale", "delay"])));
+    const value = kind === null ? null : kind === "scale" ? need(read(u.transformValue, p + "transformValue", "ratio", "number", ratio)) : need(read(u.transformValue, p + "transformValue", "days", "number", z.string().regex(/^-?\d{1,3}$/)));
+    const transform = kind === "scale" ? {kind, factor: value as string} : {kind: "delay" as const, days: Number(value)};
+    return {streamId: u.streamId, causeIds: u.causeIds, transform,
     dates: need(read(u.dates, p + "dates", "date", "list", z.array(z.iso.date()).min(1).max(2000))), amounts: need(read(u.amounts, p + "amounts", "currency", "list", z.array(unsigned).min(1).max(2000)))};});
   const added = input.addedStreams.map(s => {const p = `added.${s.id}.`; return {id: s.id, label: need(read(s.label, p + "label", "text", "text", words)),
     category: "operating" as const, direction: "inflow" as const, obligation: null,
@@ -125,10 +129,11 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const facilities = input.facilities.map(f => {const p = `facility.${f.id}.`; return {id: f.id, label: need(read(f.label, p + "label", "text", "text", words)),
     limit: need(read(f.limit, p + "limit", "currency", "number", unsigned)), source: need(read(f.source, p + "source", "text", "text", words))};});
   const steps = input.steps.map(s => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: need(read(s.date, `step.${s.facilityId}.date`, "date", "date", z.iso.date()))});
-  const dependents = input.dependents.map(d => {const p = `dependent.${d.id}.`; const by = need(read(d.recomputedBy, p + "recomputedBy", "convention", "text", z.enum(["weekly_cash", "covenant", "projection", "none"])));
+  const dependents = input.dependents.map(d => {const p = `dependent.${d.id}.`; const by = need(read(d.recomputedBy, p + "recomputedBy", "convention", "text", z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9_-]{0,39}|projection:[1-9]\d{3})$/)));
+    const owner = d.owner === null ? null : need(read(d.owner, p + "owner", "text", "text", words));
     return {id: d.id, label: need(read(d.label, p + "label", "text", "text", words)), kind: need(read(d.kind, p + "kind", "convention", "text", z.enum(["analysis", "plan", "material"]))),
       reads: need(read(d.reads, p + "reads", "identity", "list", z.array(key).max(24))), horizonStart: need(read(d.horizonStart, p + "horizonStart", "date", "date", z.iso.date())),
-      horizonEnd: need(read(d.horizonEnd, p + "horizonEnd", "date", "date", z.iso.date())), recomputedBy: by === "none" ? null : by};});
+      horizonEnd: need(read(d.horizonEnd, p + "horizonEnd", "date", "date", z.iso.date())), recomputedBy: by === "none" ? null : by, owner};});
   const priorComplete = weekly.weekly !== null && covenant.headroom !== null;
   const kernelInput: QuarterUpdateInput | null = complete && priorComplete ? {currency: input.currency, quarterStart: input.openingDate, quarterEnd: input.endDate,
     lines, bridges, carry: input.carry,

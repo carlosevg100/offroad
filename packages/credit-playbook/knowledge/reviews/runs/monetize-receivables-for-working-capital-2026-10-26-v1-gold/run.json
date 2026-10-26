@@ -16,9 +16,9 @@
     "exportName": "buildReceivablesFundingRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T13:40:51.694Z",
-    "finishedAt": "2026-10-26T13:40:51.895Z",
-    "commit": "b64830ea84f70eb50c955ea79c61b1c736650aee"
+    "startedAt": "2026-10-26T13:53:53.944Z",
+    "finishedAt": "2026-10-26T13:53:54.144Z",
+    "commit": "76df8a470ec13fa7db412ebae1f1a9f512e53c43"
   },
   "modelCalls": 0,
   "cases": [
@@ -143,6 +143,30 @@
       "passed": true
     },
     {
+      "id": "one-lot-keeps-headroom-after-a-partial-purchase",
+      "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
+      "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
+      "inputFingerprint": "48eb1071ce5ba22896ca9e336da2cb686d4daa271268ed55c70fcb90b1ce3896",
+      "outputFingerprint": "4a78d37277d024da79262a680928fc2d2724946f07f19c64e5fc022c8c15f9fc",
+      "passed": true
+    },
+    {
+      "id": "split-lots-keep-headroom-after-a-partial-purchase",
+      "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
+      "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
+      "inputFingerprint": "8c35fdbb42e3a72a2928e601be74fb364aec7f4795fb2816ffa4e8582174fe3e",
+      "outputFingerprint": "710609cebc917a270dbede2e7d2d0a64ddb0d4516e5e7204ef20663e421bc5dd",
+      "passed": true
+    },
+    {
+      "id": "lot-fully-cut-by-the-sublimit-keeps-its-reason",
+      "expectation": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
+      "observed": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
+      "inputFingerprint": "ba546713fb6d2a93e411698400dcd2976ccc9a1fe1d1202ec428155c389278d3",
+      "outputFingerprint": "4f88766390228417f9381b68329717e272f76ec60cdf14095781a3188bd5080d",
+      "passed": true
+    },
+    {
       "id": "unsold-balance-goes-to-the-next-buyer",
       "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,1,3]],\"coversPeak\":true}",
       "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,1,3]],\"coversPeak\":true}",
@@ -176,6 +200,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "d5f9e5eb64a82ff6911925b2519c90ec89f6c3f988e65728b899f38c6ea1040a",
+  "evidenceFingerprint": "5963e583fb42e1526fe3d14fc271bbcdde294a022f09485e38944bf97bd8bbb8",
   "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -59,8 +59,8 @@ export const auroraClose = {
     ]},
   ],
   streamUpdates: [
-    {streamId: "recebimentos", causeIds: ["prazo-redes"], ...auroraReceipts()},
-    {streamId: "insumos", causeIds: ["trigo"], ...auroraDearerInputs()},
+    {streamId: "recebimentos", causeIds: ["prazo-redes"], transform: {kind: "delay" as const, days: 4} as {kind: "scale"; factor: string} | {kind: "delay"; days: number}, ...auroraReceipts()},
+    {streamId: "insumos", causeIds: ["trigo"], transform: {kind: "scale" as const, factor: "1.01"} as {kind: "scale"; factor: string} | {kind: "delay"; days: number}, ...auroraDearerInputs()},
   ],
   addedStreams: [{id: "programas-redes", label: "Programas de antecipação das redes A e B", dates: ["2026-10-15"], amounts: ["23"]}],
   covenant: {measurementIds: ["dez26-base", "dez26-gerencial"]},
@@ -73,13 +73,14 @@ export const auroraClose = {
     {facilityId: "conta-garantida", mode: "residual" as const, date: "2026-12-14"},
   ],
   dependents: [
-    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis" as const, reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash" as const},
-    {id: "covenant-dez26", label: "Covenant de dezembro de 2026", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant" as const},
-    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection" as const},
-    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis" as const, reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: "none" as const},
-    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "none" as const},
-    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: "none" as const},
-    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material" as const, reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: "none" as const},
+    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis" as const, reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash", owner: null as string | null},
+    {id: "covenant-dez26", label: "Covenant de dezembro de 2026, definição da escritura", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-base", owner: null as string | null},
+    {id: "covenant-dez26-gerencial", label: "Covenant de dezembro de 2026, definição gerencial", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-gerencial", owner: null as string | null},
+    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection:2026", owner: null as string | null},
+    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis" as const, reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: "none", owner: "build-company-debt-table" as string | null},
+    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "none", owner: "build-operating-projection" as string | null},
+    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: "none", owner: "analyze-investment-project" as string | null},
+    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material" as const, reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: "none", owner: "autoria do material da sondagem" as string | null},
   ],
 };
 
@@ -120,14 +121,16 @@ export function auroraQuarterUpdateBasis() {
     bridges: c.bridges.map((b) => ({lineId: b.lineId, causes: b.causes.map((x) => {const p = `cause.${x.id}.`; return {id: x.id, equalsDeviationOf: x.equalsDeviationOf, driverLineId: x.driverLineId,
       label: text(p + "label", x.label), amount: num(p + "amount", "currency", x.amount), classification: text(p + "classification", x.classification, "convention"),
       until: x.until === null ? null : date(p + "until", x.until), nature: x.nature === null ? null : text(p + "nature", x.nature, "convention"), basis: text(p + "basis", x.basis, "convention"), question: x.question === null ? null : text(p + "question", x.question)};})})),
-    streamUpdates: c.streamUpdates.map((u) => ({streamId: u.streamId, causeIds: u.causeIds, dates: list(`streamUpdate.${u.streamId}.dates`, "date", u.dates), amounts: list(`streamUpdate.${u.streamId}.amounts`, "currency", u.amounts)})),
+    streamUpdates: c.streamUpdates.map((u) => ({streamId: u.streamId, causeIds: u.causeIds,
+      transformKind: text(`streamUpdate.${u.streamId}.transformKind`, u.transform.kind, "convention"),
+      transformValue: u.transform.kind === "scale" ? num(`streamUpdate.${u.streamId}.transformValue`, "ratio", u.transform.factor) : num(`streamUpdate.${u.streamId}.transformValue`, "days", String(u.transform.days)), dates: list(`streamUpdate.${u.streamId}.dates`, "date", u.dates), amounts: list(`streamUpdate.${u.streamId}.amounts`, "currency", u.amounts)})),
     addedStreams: c.addedStreams.map((s) => ({id: s.id, label: text(`added.${s.id}.label`, s.label), dates: list(`added.${s.id}.dates`, "date", s.dates), amounts: list(`added.${s.id}.amounts`, "currency", s.amounts)})),
     covenant: {measurementIds: c.covenant.measurementIds},
     facilities: c.facilities.map((x) => ({id: x.id, label: text(`facility.${x.id}.label`, x.label), limit: num(`facility.${x.id}.limit`, "currency", x.limit), source: text(`facility.${x.id}.source`, x.source)})),
     steps: c.steps.map((s) => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: date(`step.${s.facilityId}.date`, s.date)}),
     dependents: c.dependents.map((d) => {const p = `dependent.${d.id}.`; return {id: d.id, label: text(p + "label", d.label), kind: text(p + "kind", d.kind, "convention"),
       reads: list(p + "reads", "identity", d.reads), horizonStart: date(p + "horizonStart", d.horizonStart), horizonEnd: date(p + "horizonEnd", d.horizonEnd),
-      recomputedBy: text(p + "recomputedBy", d.recomputedBy, "convention")};}),
+      recomputedBy: text(p + "recomputedBy", d.recomputedBy, "convention"), owner: d.owner === null ? null : text(p + "owner", d.owner)};}),
   } as unknown as AdoptedQuarterUpdateInput;
   const seal = (): QuarterUpdateAnalyses => ({prior, update: {...input, envelope: f.seal()}});
   return {...f, input, prior, weekly, covenant, seal};

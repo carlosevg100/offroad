@@ -25,8 +25,12 @@ const series = {dates: z.array(z.iso.date()).min(1).max(2000), amounts: z.array(
 const step = z.discriminatedUnion("mode", [
   z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).min(1).max(8)}),
   z.strictObject({facilityId: key, mode: z.literal("residual"), date: z.iso.date()})]);
+/** recomputedBy names the result this packet computes ("weekly_cash", "covenant:<measurement>", "projection:<year>") or "none"; owner names the method that must recompute it otherwise. */
 const dependent = z.strictObject({id: key, label: text, kind: z.enum(["analysis", "plan", "material"]), reads: z.array(key).max(24),
-  horizonStart: z.iso.date(), horizonEnd: z.iso.date(), recomputedBy: z.enum(["weekly_cash", "covenant", "projection", "none"])});
+  horizonStart: z.iso.date(), horizonEnd: z.iso.date(), recomputedBy: z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9-]{0,39}|projection:[1-9]\d{3})$/), owner: text.nullable()});
+/** How the cause moves the series inside its window: amounts scaled by a factor, or events delayed by days. */
+const transform = z.discriminatedUnion("kind", [z.strictObject({kind: z.literal("scale"), factor: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/)}),
+  z.strictObject({kind: z.literal("delay"), days: z.number().int().min(-366).max(366)})]);
 
 /** The facts of one quarter close, each with its origin. The prior weekly cash and covenant test are
  * named by the fingerprint of the basis each was adopted on; nothing of them is restated here. Nothing
@@ -38,13 +42,13 @@ export const quarterUpdateFactsSchema = z.strictObject({
   lines: z.array(fact(line)).min(1).max(24),
   carry: fact(z.strictObject({cashLineId: key, ebitdaLineId: key})),
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(fact(cause)).min(1).max(12)})).min(2).max(8),
-  streamUpdates: z.array(fact(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), ...series}))).max(16),
+  streamUpdates: z.array(fact(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transform, ...series}))).max(16),
   addedStreams: z.array(fact(z.strictObject({id: key, label: text, ...series}))).max(4),
   /** The prior test measurements the close updates, the leading one first; their effects are derived, never stated. */
   covenant: fact(z.strictObject({measurementIds: z.array(key).min(1).max(8)})),
   facilities: z.array(fact(z.strictObject({id: key, label: text, limit: unsignedMoney, source: text}))).max(8),
   steps: z.array(fact(step)).max(4),
-  dependents: z.array(fact(dependent)).max(16),
+  dependents: z.array(fact(dependent)).max(24),
 }).superRefine((f, ctx) => {
   const fail = (message: string) => ctx.addIssue({code: "custom", message});
   if (f.quarterEnd <= f.quarterStart) fail("The quarter must end after it starts");
@@ -129,6 +133,8 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
   for (const u of f.streamUpdates) {
     const v = u.value, p = `streamUpdate.${v.streamId}.`, r = why(u);
     list(p + "causeIds", "identity", v.causeIds, r); list(p + "dates", "date", v.dates, r); list(p + "amounts", "currency", v.amounts, r);
+    txt(p + "transformKind", "convention", v.transform.kind, r);
+    if (v.transform.kind === "scale") num(p + "transformValue", "ratio", v.transform.factor, r); else num(p + "transformValue", "days", String(v.transform.days), r);
   }
   for (const s of f.addedStreams) {
     const v = s.value, p = `added.${v.id}.`, r = why(s);
@@ -149,6 +155,7 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
     const v = d.value, p = `dependent.${v.id}.`, r = why(d);
     txt(p + "label", "text", v.label, r); txt(p + "kind", "convention", v.kind, r); list(p + "reads", "identity", v.reads, r);
     date(p + "horizonStart", v.horizonStart, r); date(p + "horizonEnd", v.horizonEnd, r); txt(p + "recomputedBy", "convention", v.recomputedBy, r);
+    if (v.owner !== null) txt(p + "owner", "text", v.owner, r);
   }
   list("order.lines", "identity", f.lines.map((l) => l.value.id), house("Ordem das linhas como informada"));
   list("order.bridges", "identity", f.bridges.map((b) => b.lineId), house("Ordem das pontes como informada"));
