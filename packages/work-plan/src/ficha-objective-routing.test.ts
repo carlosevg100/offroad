@@ -471,6 +471,26 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 12: "não gostaria de" negates the action; any complement after a projection or its
+  // premises (de, para, sobre, com foco em, referente a) follows the closed list.
+  it.each([
+    ["Não gostaria de revisar a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não gostaríamos de montar o business plan agora.", "ambiguous", "documents_to_case"],
+    ["Revise as premissas da projeção para a escala de férias dos nossos funcionários.", "ambiguous", "documents_to_case"],
+    ["Revise a projeção operacional para a escala de férias.", "ambiguous", "documents_to_case"],
+    ["Monte a projeção anual sobre a frota de veículos.", "ambiguous", "documents_to_case"],
+    ["Questione as premissas da projeção com foco em eventos corporativos.", "ambiguous", "documents_to_case"],
+    ["Revise a projeção financeira para o banco.", "projection_challenge", "projection_challenge"],
+    ["Revise as premissas da projeção financeira.", "projection_challenge", "projection_challenge"],
+    ["Questione as premissas da projeção.", "projection_challenge", "projection_challenge"],
+    ["Faça a primeira versão da projeção financeira para os investidores.", "operating_projection", "operating_projection"],
+    ["Faça a primeira versão da projeção financeira sobre a reforma do escritório.", "ambiguous", "documents_to_case"],
+    ["Construa uma projeção operacional para discutir o financiamento.", "operating_projection", "operating_projection"],
+  ] as const)("round 12: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
