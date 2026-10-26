@@ -104,11 +104,10 @@ begin
   'execution_result_capacity_blocks_v1','execution_result_comparison_blocks_v1','execution_result_investment_blocks_v1'] loop
   if position(k in src)=0 then raise exception 'projector lost %',k; end if;
  end loop;
- foreach k in array array['''projecao:''','''critica:''','''recebiveis:''','''operating_projection''','''projection_challenge''','''receivables_funding''',
+ foreach k in array array['''projecao:''','''critica:''','''recebiveis:''','''trimestre:''','''operating_projection''','''projection_challenge''','''receivables_funding''','''quarter_update''',
   '''divida:''','''covenant:''','''caixa:''','''capacidade:''','''propostas:'''] loop
   if position(k in prem)=0 then raise exception 'premise card lost %',k; end if;
  end loop;
- if position('update-after-quarter-close' in prem)>0 then raise exception 'the quarter close has no premise card'; end if;
  raise notice 'PASS: projector, reply and premise card cover lote 3 and keep lotes 1 and 2';
 end $$;
 
@@ -118,8 +117,8 @@ declare c text:=pg_get_constraintdef((select oid from pg_constraint where connam
  m text:=pg_get_constraintdef((select oid from pg_constraint where conname='work_premise_proposals_method_id_check'));
 begin
  if position('build-operating-projection' in c)=0 or position('challenge-financial-projection' in c)=0 or position('monetize-receivables-for-working-capital' in c)=0
-  or position('project-weekly-cash' in c)=0 then raise exception 'context check misses a method'; end if;
- if position('monetize-receivables-for-working-capital' in m)=0 or position('update-after-quarter-close' in m)>0 then raise exception 'method check wrong'; end if;
+  or position('update-after-quarter-close' in c)=0 or position('project-weekly-cash' in c)=0 then raise exception 'context check misses a method'; end if;
+ if position('monetize-receivables-for-working-capital' in m)=0 or position('update-after-quarter-close' in m)=0 then raise exception 'method check wrong'; end if;
  raise notice 'PASS: lote 3 premise contexts are constrained';
 end $$;
 

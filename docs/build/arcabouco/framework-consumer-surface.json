@@ -435,7 +435,7 @@
     },
     {
       "path": "apps/document-worker/src/dependency-recompute.ts",
-      "sha256": "fbaa1db0bc877a752065a6b9fa0766dc86be3c83c2a9df0de677da036ea00dd3",
+      "sha256": "cce2afe897a8e245b4774a6f4a75a919e264d1d1ab08a7c9b3429aaf929a950d",
       "entrypoint": false,
       "rpcs": [
         "worker_claim_dependency_recompute_v1",
@@ -584,7 +584,7 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "32270ae519d44b9dc7cd585975eca6f4b5b1733c14b0f796f4774a1370a633f0",
+      "sha256": "cea195b1f28914b55d6526074c9786431034f66c1ef31f8e94e6de8cef8dc175",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
@@ -628,6 +628,7 @@
         "worker_load_receivables_method_supplement_draft_v1",
         "worker_load_work_freshness_v1",
         "worker_load_work_turn_v1",
+        "worker_quarter_update_priors_v1",
         "worker_read_presentation_template_version_v1",
         "worker_read_public_entity_subject_v1",
         "worker_record_agent_assessment_v1",
@@ -1142,13 +1143,15 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
-      "sha256": "d78a46870b29811b65897cd3cd6e1b43e3a52e8f55ef547fe34d416416906345",
+      "sha256": "4cfc8fd51f74c194c6e7f560f8ff6feeb8106f39c353370a5cea70948898df00",
       "entrypoint": true,
       "rpcs": [
         "confirm_work_premise_proposal_v1",
         "execution_contract_basis_v2",
+        "quarter_update_prior_results_v1",
         "record_definition_version_v1",
-        "request_work_execution_v2"
+        "request_work_execution_v2",
+        "request_work_execution_v3"
       ],
       "decision": "preserve governed consumer",
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",

@@ -1,15 +1,16 @@
 -- Conversation bridge of lote 3 (fichas C24, C26, C35 and C54), as for lotes 1 and 2: premise cards for
--- the operating projection, the projection challenge and the receivables funding, each confirmed into its
--- own context; the four results as execution_result revisions; and the cited reply. The quarter close has
--- no premise card: it reads three bases, and the producer pins one basis version per execution. A
--- proposal never adopts, calculates or grants.
+-- the operating projection, the projection challenge, the receivables funding and the quarter close, each
+-- confirmed into its own context; the four results as execution_result revisions; and the cited reply. The
+-- quarter close reads its prior results through 20261026160400_lote3_quarter_update_priors. A proposal
+-- never adopts, calculates or grants.
 set local lock_timeout='5s';
 
 alter table public.work_premise_proposals drop constraint work_premise_proposals_method_id_check;
 alter table public.work_premise_proposals add constraint work_premise_proposals_method_id_check
   check (method_id in ('analyze-investment-project', 'compare-financing-proposals', 'assess-debt-capacity',
     'build-company-debt-table', 'measure-covenant-headroom', 'project-weekly-cash',
-    'build-operating-projection', 'challenge-financial-projection', 'monetize-receivables-for-working-capital'));
+    'build-operating-projection', 'challenge-financial-projection', 'monetize-receivables-for-working-capital',
+    'update-after-quarter-close'));
 alter table public.work_premise_proposals drop constraint work_premise_proposals_context_key_check;
 alter table public.work_premise_proposals add constraint work_premise_proposals_context_key_check
   check ((method_id = 'analyze-investment-project' and context_key = 'investimento')
@@ -20,7 +21,8 @@ alter table public.work_premise_proposals add constraint work_premise_proposals_
     or (method_id = 'project-weekly-cash' and context_key ~ '^caixa:[0-9a-f]{16}$')
     or (method_id = 'build-operating-projection' and context_key ~ '^projecao:[0-9a-f]{16}$')
     or (method_id = 'challenge-financial-projection' and context_key ~ '^critica:[0-9a-f]{16}$')
-    or (method_id = 'monetize-receivables-for-working-capital' and context_key ~ '^recebiveis:[0-9a-f]{16}$'));
+    or (method_id = 'monetize-receivables-for-working-capital' and context_key ~ '^recebiveis:[0-9a-f]{16}$')
+    or (method_id = 'update-after-quarter-close' and context_key ~ '^trimestre:[0-9a-f]{16}$'));
 
 create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)
 returns jsonb language plpgsql volatile security definer set search_path = '' as $$
@@ -45,11 +47,12 @@ begin
     when 'project-weekly-cash' then 'caixa:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16)
     when 'build-operating-projection' then 'projecao:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16)
     when 'challenge-financial-projection' then 'critica:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16)
-    when 'monetize-receivables-for-working-capital' then 'recebiveis:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16) end;
+    when 'monetize-receivables-for-working-capital' then 'recebiveis:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16)
+    when 'update-after-quarter-close' then 'trimestre:' || left(md5(source::text || ':' || (p_premises ->> 'fingerprint')), 16) end;
   prefix := case p_premises ->> 'methodId' when 'analyze-investment-project' then 'investment' when 'compare-financing-proposals' then 'comparison' when 'assess-debt-capacity' then 'debt_capacity'
     when 'build-company-debt-table' then 'debt_table' when 'measure-covenant-headroom' then 'covenant' when 'project-weekly-cash' then 'weekly_cash'
     when 'build-operating-projection' then 'operating_projection' when 'challenge-financial-projection' then 'projection_challenge'
-    when 'monetize-receivables-for-working-capital' then 'receivables_funding' end;
+    when 'monetize-receivables-for-working-capital' then 'receivables_funding' when 'update-after-quarter-close' then 'quarter_update' end;
   if ctx is null then raise exception 'invalid_premise_proposal' using errcode = '22023'; end if;
   for h in select value from jsonb_array_elements(p_premises -> 'hypotheses') loop
     if jsonb_typeof(h) <> 'object' or h - array['fieldPath', 'dimensions', 'value', 'reason'] <> '{}'::jsonb
