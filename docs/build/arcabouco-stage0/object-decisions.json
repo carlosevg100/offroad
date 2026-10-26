@@ -350242,6 +350242,12 @@
       "reason": "Ponte da conversa do lote 2: cartões de premissas da tabela de dívida, da folga de covenant e do caixa semanal em contextos próprios, resultados como revisões com blocos espelhados do contrato e resposta citada; uma proposta nunca adota, calcula ou concede."
     },
     {
+      "path": "supabase/migrations/20261026200000_lote3_payload_provenance.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "As cargas das fichas do lote 3 (projeção operacional, desafio à projeção, antecipação de recebíveis e atualização do trimestre) passam pela mesma prova de proveniência do capital: base adotada guardada, decisões fixadas no contrato, entidades, definições e fontes legíveis pelo solicitante."
+    },
+    {
       "path": "supabase/migrations/20261019220834_premise_proposals_capacity.sql",
       "kind": "migration",
       "decision": "preservar",
