@@ -512,6 +512,20 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 15: adjectives between the projection's qualifier and its complement ("anual consolidada
+  // de turnos") do not hide the complement; the whole noun phrase follows the closed list.
+  it.each([
+    ["Revise as premissas da projeção anual consolidada de turnos dos funcionários.", "ambiguous", "documents_to_case"],
+    ["Monte a projeção operacional detalhada da frota.", "ambiguous", "documents_to_case"],
+    ["Revise a projeção financeira consolidada da companhia.", "projection_challenge", "projection_challenge"],
+    ["Revise a projeção financeira consolidada do grupo.", "projection_challenge", "projection_challenge"],
+    ["Monte a projeção anual consolidada de receita e EBITDA.", "operating_projection", "operating_projection"],
+    ["Crie a primeira versão da projeção financeira consolidada para os investidores.", "operating_projection", "operating_projection"],
+  ] as const)("round 15: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
