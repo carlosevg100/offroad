@@ -37,6 +37,7 @@ describe("the shared operating projection result fixture (C24)", () => {
     expect(view.base.map((r) => Number(r.ebitda).toFixed(1))).toEqual(["54.5", "56.6", "58.8"]);
     expect(view.comparisons.map((c) => c.versionId)).toEqual(["orcamento", "revisao-julho"]);
     expect(view.scenarios.some((s) => s.role === "informed")).toBe(true);
+    expect(view.scenarios.find((s) => s.id === "prazo-60")?.label).toBe("Prazo das redes de 50 para 60 dias");
     expect(view.largestCashReduction?.scenarioId).toBe("prazo-60");
     expect(readOperatingProjectionPacketBlocks(without(blocks, "ledger"))).toBeNull();
     expect(readOperatingProjectionPacketBlocks(tampered(blocks, "base"))).toBeNull();

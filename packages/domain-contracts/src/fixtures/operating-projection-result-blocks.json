@@ -198,7 +198,8 @@
                 "changeInWorkingCapital": "1.31614583"
               }
             }
-          ]
+          ],
+          "label": "Trigo +15% em 2027, repasse em seis meses"
         },
         {
           "id": "trigo-sem-repasse",
@@ -245,7 +246,8 @@
                 "changeInWorkingCapital": "2.5078125"
               }
             }
-          ]
+          ],
+          "label": "Trigo +15% em 2027, sem repasse no ano"
         },
         {
           "id": "prazo-60",
@@ -292,7 +294,8 @@
                 "changeInWorkingCapital": "0.62083333"
               }
             }
-          ]
+          ],
+          "label": "Prazo das redes de 50 para 60 dias"
         },
         {
           "id": "volume-menor",
@@ -339,7 +342,8 @@
                 "changeInWorkingCapital": "-0.06208334"
               }
             }
-          ]
+          ],
+          "label": "Volume 2% menor ao ano"
         },
         {
           "id": "informado",
@@ -391,7 +395,8 @@
                 "changeInWorkingCapital": "1.25135828"
               }
             }
-          ]
+          ],
+          "label": "Informado pelo CFO: volume 3% ao ano, prazo de 60 dias"
         },
         {
           "id": "informado-trigo-4m",
@@ -438,7 +443,8 @@
                 "changeInWorkingCapital": "1.13835896"
               }
             }
-          ]
+          ],
+          "label": "Informado, com trigo +15% e repasse em quatro meses"
         }
       ],
       "largestCashReduction": {

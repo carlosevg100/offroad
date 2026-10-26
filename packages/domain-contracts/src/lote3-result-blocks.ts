@@ -71,11 +71,12 @@ const claimsMatch = (claims: readonly {claimId: string; value: string}[], expect
 /** The operating projection packet as the result protocol reads it. */
 export type OperatingProjectionPacketLike = {
   readonly schemaVersion: "operating-projection-packet.v1"; readonly status: Status; readonly question: string; readonly currency: string; readonly fingerprint: string;
+  readonly result: {readonly projection: null | {readonly projection: null | {readonly scenarios: ReadonlyArray<{readonly id: string; readonly label: string}>}}};
   readonly readings: null | {
     readonly purpose: string | null; readonly calibration: unknown; readonly ledger: readonly unknown[]; readonly questions: readonly string[]; readonly openQuestions: readonly string[];
     readonly projected: null | {
       readonly base: ReadonlyArray<{readonly periodId: string; readonly ebitda: string}>;
-      readonly comparisons: readonly unknown[]; readonly sensitivities: readonly unknown[]; readonly scenarios: readonly unknown[]; readonly largestCashReduction: unknown;
+      readonly comparisons: readonly unknown[]; readonly sensitivities: readonly unknown[]; readonly scenarios: ReadonlyArray<{readonly id: string}>; readonly largestCashReduction: unknown;
     };
   };
   readonly gaps: readonly Gap[]; readonly exclusions: readonly string[];
@@ -84,6 +85,8 @@ export type OperatingProjectionPacketLike = {
 export function operatingProjectionPacketBlocks(packet: OperatingProjectionPacketLike): readonly ArtifactBlockDraft[] {
   if (packet.schemaVersion !== "operating-projection-packet.v1") throw new Error("execution_result_unmappable");
   const r = packet.readings, p = r?.projected ?? null, support = [packet.fingerprint];
+  // Each scenario row carries the label the scenario has in the result (null when it has none).
+  const labels = new Map((packet.result.projection?.projection?.scenarios ?? []).map((s) => [s.id, s.label]));
   claimable((p?.base ?? []).map((x) => x.periodId));
   return finish([
     {blockKey: "framing", kind: "section", claims: [], content: {status: packet.status, question: packet.question, currency: packet.currency,
@@ -92,7 +95,7 @@ export function operatingProjectionPacketBlocks(packet: OperatingProjectionPacke
       claims: (p?.base ?? []).map((x) => ({claimId: `ebitda:${x.periodId}`, kind: "calculation", value: x.ebitda, unit: packet.currency, period: x.periodId, supportIds: support}))},
     {blockKey: "comparisons", kind: "table", claims: [], content: {rows: copy(p?.comparisons ?? [])}},
     {blockKey: "sensitivities", kind: "table", claims: [], content: {rows: copy(p?.sensitivities ?? [])}},
-    {blockKey: "scenarios", kind: "table", claims: [], content: {rows: copy(p?.scenarios ?? []), largestCashReduction: copy(p?.largestCashReduction ?? null)}},
+    {blockKey: "scenarios", kind: "table", claims: [], content: {rows: (p?.scenarios ?? []).map((s) => ({...copy(s) as Record<string, Json>, label: labels.get(s.id) ?? null})), largestCashReduction: copy(p?.largestCashReduction ?? null)}},
     {blockKey: "ledger", kind: "table", claims: [], content: {rows: copy(r?.ledger ?? [])}},
     ...tail(packet),
   ]);
@@ -112,7 +115,7 @@ const operatingProjectionSpec = {
   sensitivities: {kind: "table" as const, claims: noClaims, content: rows(z.looseObject({periodId: z.string(), ebitdaPerOnePercentPrice: num,
     ebitdaLossPerOnePercentInputCost: num, workingCapitalPerReceivableDay: num}))},
   scenarios: {kind: "table" as const, claims: noClaims, content: z.strictObject({
-    rows: z.array(z.looseObject({id: z.string(), role: z.enum(["alternative", "informed"]), basedOn: z.string(),
+    rows: z.array(z.looseObject({id: z.string(), label: z.string().nullable(), role: z.enum(["alternative", "informed"]), basedOn: z.string(),
       changes: z.array(z.looseObject({item: z.string(), origin: origin.nullable(), nature: z.enum(["data", "assumption"])})),
       rows: z.array(z.looseObject({periodId: z.string(), ebitda: num, margin: num.nullable(), cashAvailableForDebt: num, effects: projectionEffects}))})),
     largestCashReduction: z.looseObject({scenarioId: z.string(), periodId: z.string(), cashEffect: num, workingCapitalChangeEffect: num}).nullable()})},

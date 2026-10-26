@@ -45183,6 +45183,12 @@
           "line": 164,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 218,
+          "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -96215,6 +96221,12 @@
         {
           "path": "supabase/migrations/20261023221614_lote2_financial_objectives.sql",
           "line": 16,
+          "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261026160000_lote3_financial_objectives.sql",
+          "line": 18,
           "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
           "mechanism": "direct_ddl"
         }
@@ -319584,6 +319596,12 @@
           "line": 19,
           "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 25,
+          "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -320700,6 +320718,12 @@
           "line": 276,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 338,
+          "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Chamada apenas pelo commit da execução; nenhum grant a API."
@@ -320925,6 +320949,226 @@
           "path": "supabase/migrations/20261023221825_lote2_bridge.sql",
           "line": 132,
           "anchor": "create function private.execution_result_weekly_cash_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_result_operating_projection_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_operating_projection_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_operating_projection_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_operating_projection_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_operating_projection_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 3 de fichas (resultado da projeção operacional)",
+      "decision": "preservar",
+      "stage": "fichas C24, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado da projeção operacional; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 84,
+          "anchor": "create function private.execution_result_operating_projection_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_result_projection_challenge_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_projection_challenge_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_projection_challenge_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_projection_challenge_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_projection_challenge_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 3 de fichas (resultado da crítica da projeção)",
+      "decision": "preservar",
+      "stage": "fichas C26, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado da crítica da projeção; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 114,
+          "anchor": "create function private.execution_result_projection_challenge_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_result_receivables_funding_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_receivables_funding_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_receivables_funding_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_receivables_funding_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_receivables_funding_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 3 de fichas (resultado do giro com recebíveis)",
+      "decision": "preservar",
+      "stage": "fichas C35, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do giro com recebíveis; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 145,
+          "anchor": "create function private.execution_result_receivables_funding_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_result_quarter_update_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_quarter_update_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_quarter_update_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_quarter_update_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_quarter_update_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 3 de fichas (resultado do fechamento do trimestre)",
+      "decision": "preservar",
+      "stage": "fichas C54, página do resultado",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do fechamento do trimestre; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261026160200_lote3_bridge.sql",
+          "line": 184,
+          "anchor": "create function private.execution_result_quarter_update_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
