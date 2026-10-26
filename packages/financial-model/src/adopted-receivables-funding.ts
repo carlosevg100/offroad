@@ -17,7 +17,8 @@ export const adoptedReceivablesFundingInputSchema = adoptedAnalysisContextSchema
   needAverage: selection, needPeak: selection, needStartDate: selection, calendarDays: selection, businessDays: selection, annualDi: selection,
   averageTermDays: selection, needProfile: selection, vehicleThresholdMin: selection, vehicleThresholdMax: selection, lienBasketRemaining: optional,
   items: z.array(z.strictObject({id: key, label: selection, amount: selection, contract: selection, encumbrance: selection, encumbranceHolder: optional, releaseEvent: optional,
-    originDate: selection, dueDate: selection, registration: selection, creditTier: selection, anchorProgram: selection, debtorCount: optional, largestDebtorAmount: optional})).min(1).max(16),
+    originDate: selection, dueDate: selection, registration: selection, creditTier: selection, anchorProgram: selection, debtorCount: optional, largestDebtorAmount: optional,
+    debtorKey: selection, debtorSetDisjoint: optional})).min(1).max(16),
   options: z.array(z.strictObject({id: key, label: selection, kind: selection, recourse: selection, rateBasis: selection, rate: selection,
     iofDaily: selection, iofDailyCapDays: selection, iofAdditional: selection, rolloverDays: optional, upfrontFee: selection, collateral: selection,
     leadDaysMin: optional, leadDaysMax: optional,
@@ -53,7 +54,9 @@ export function calculateAdoptedReceivablesFunding(raw: unknown) {
       creditTier: read(i.creditTier, p + "creditTier", "convention", "text", z.enum(["selected", "standard"])),
       anchorProgram: read(i.anchorProgram, p + "anchorProgram", "convention", "text", z.enum(["active", "none", "unknown"])),
       debtorCount: n(maybe(i.debtorCount, p + "debtorCount", "count", "number", whole)),
-      largestDebtorAmount: maybe(i.largestDebtorAmount, p + "largestDebtorAmount", "currency", "number", unsigned)};
+      largestDebtorAmount: maybe(i.largestDebtorAmount, p + "largestDebtorAmount", "currency", "number", unsigned),
+      debtorKey: read(i.debtorKey, p + "debtorKey", "identity", "text", z.string().regex(/^[a-z0-9][a-z0-9.-]{0,79}$/)),
+      debtorSetDisjoint: i.debtorSetDisjoint === null ? null : read(i.debtorSetDisjoint, p + "debtorSetDisjoint", "convention", "text", z.enum(["declared", "not_declared"])) === "declared"};
   });
   const options = input.options.map(o => {
     const p = `option.${o.id}.`, e = o.eligibility;

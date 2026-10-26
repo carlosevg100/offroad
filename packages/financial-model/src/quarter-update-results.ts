@@ -33,7 +33,8 @@ export const quarterUpdateOutputSchema = z.strictObject({schemaVersion: z.litera
     measurementsNotUpdated: z.array(version).max(24), effectsNotUpdated: z.array(version).max(8)}),
   dependents: z.array(z.strictObject({id: version, label: text, kind: z.enum(["analysis", "plan", "material"]),
     status: z.enum(["updated", "affected_not_recomputed", "stale", "unchanged"]), movedBy: z.array(version).max(24),
-    recomputedBy: z.enum(["weekly_cash", "covenant", "projection"]).nullable(), sentToThirdParties: z.literal(false)})).max(16),
+    recomputedBy: z.enum(["weekly_cash", "covenant", "projection"]).nullable(),
+    recomputedHorizon: z.strictObject({start: date, end: date, lines: z.array(version).max(24)}).nullable(), sentToThirdParties: z.literal(false)})).max(16),
   gaps: z.array(z.strictObject({item: text, reason: z.enum(["unexplained_residual", "structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent",
     "structural_cause_question_missing", "affected_not_recomputed"])})).max(64)});
 

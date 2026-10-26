@@ -20,7 +20,7 @@ export const receivablesFundingOutputSchema = z.strictObject({schemaVersion: z.l
   options: z.array(z.strictObject({id: version, label: text, kind, recourse: z.enum(["with_recourse", "without_recourse"]), indicative: z.literal(true),
     volume: decimal.nullable(), volumeVerified: z.boolean(),
     byItem: z.array(z.strictObject({itemId: version, offered: z.boolean(), reasons: z.array(reason).max(17), curable: z.array(reason).max(2), retained: decimal,
-      sublimitVerified: z.boolean(), sublimitExcess: decimal})).max(32),
+      sublimitVerified: z.boolean(), unverifiedBy: z.array(z.enum(["largest_debtor", "debtor_set_overlap"])).max(2), sublimitExcess: decimal})).max(32),
     rates: z.strictObject({basis: z.enum(["monthly", "annual", "di_plus"]), quoted: decimal, annualEffective: decimal, monthlyEquivalent: decimal, spreadOverDi: decimal}),
     cost: z.strictObject({amount: decimal, calendarDays: z.number().int(), businessDays: z.number().int(), draws: z.number().int().min(1).max(3660), iofDays: z.number().int().min(0).max(3660), interest: decimal, iof: decimal, fee: decimal,
       total: decimal, allInPeriod: decimal, allInAnnual: decimal}),
@@ -37,7 +37,7 @@ export const receivablesFundingOutputSchema = z.strictObject({schemaVersion: z.l
     reading: z.enum(["not_for_seasonal_need", "worth_studying", "below_threshold", "borderline"])}),
   questions: z.array(z.strictObject({code: z.enum(["anchor_program_of_restricted_debtor", "anchor_program_terms", "duplicata_registration_capability"]),
     itemId: version.nullable(), amount: decimal})).max(65),
-  gaps: z.array(z.strictObject({item: text, reason: z.enum(["largest_debtor_not_informed", "lead_time_not_informed"])})).max(40)});
+  gaps: z.array(z.strictObject({item: text, reason: z.enum(["largest_debtor_not_informed", "debtor_set_not_declared_disjoint", "lead_time_not_informed"])})).max(40)});
 
 export const receivablesFundingAdoptedExclusions = ["buyer_contact", "fund_selection", "credit_approval", "legal_opinion", "accounting_opinion", "debtor_dispute_and_related_party_screening", "method_release"] as const;
 export const adoptedReceivablesFundingOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-receivables-funding.v1"),

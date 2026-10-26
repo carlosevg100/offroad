@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
 import type {ProposedHypothesis} from "./investment-premises";
@@ -9,6 +10,7 @@ import {proposeWeeklyCashHypotheses} from "./weekly-cash-premises";
 import {proposeCovenantHeadroomHypotheses} from "./covenant-headroom-premises";
 import {auroraPriorCovenantFacts, auroraQuarterUpdateBasis, auroraQuarterUpdateFacts} from "./quarter-update.test-support";
 import {auroraWeeklyCashFacts} from "./weekly-cash.test-support";
+import {auroraWeeklyCash} from "./weekly-cash-streams.test-support";
 import {analysisTestId as id} from "./adopted-analysis.test-support";
 
 const question = "Fechou o trimestre. Atualiza tudo.";
@@ -62,6 +64,31 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     expect(p.status).toBe("partial");
     expect(p.gaps.filter((g) => g.reason === "structural_cause_not_in_weekly_cash")).toHaveLength(2);
     expect(Number(p.readings!.projectedEbitda.updated).toFixed(1)).toBe("53.5");
+  });
+  it("review r2 F1: a series attributed to two causes cannot stretch the shorter one's window", () => {
+    const b = bases((f) => {
+      f.bridges[0]!.causes[1]!.value.until = "2026-10-01";
+      f.streamUpdates[1]!.value.causeIds = ["trigo", "prazo-redes"];
+    });
+    expect(() => packetOf(b)).toThrow("quarter_update_series_shared_by_causes");
+  });
+  it("review r2 F2: a series outside the scenario used does not carry a cause", () => {
+    const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
+    const b = bases((f) => {
+      f.streamUpdates = [{value: {streamId: "safra-30", causeIds: ["trigo"], dates: [...harvest.dates], amounts: harvest.amounts.map((a) => new Decimal(a).plus("0.01").toFixed())},
+        origin: "estimate", source: "série fora do cenário informado"}];
+    });
+    expect(() => packetOf(b)).toThrow("quarter_update_series_outside_scenario");
+  });
+  it("review r2 F3: updated needs a recomputed result covering the dependent's horizon", () => {
+    const b = bases((f) => {
+      f.bridges[0]!.causes[1]!.value.until = "2027-03-31";
+      for (const d of f.dependents) if (["plano-2027", "linha-embalagem"].includes(d.value.id)) d.value.recomputedBy = "projection";
+    });
+    const p = packetOf(b);
+    expect(p.status).toBe("partial");
+    expect(p.readings!.affectedNotRecomputed).toEqual(["plano-2027", "linha-embalagem"]);
+    expect(p.readings!.updated).toEqual(["caixa-semanal", "covenant-dez26", "projecao-2026"]);
   });
   it("refuses a composition whose structure is missing, by name", () => {
     const b = bases(), without = (suffix: string) => ({...b, update: envelopeOf(b.entries.filter((e) => !e.fieldPath.endsWith(suffix)), 503, "synthetic quarter update")});

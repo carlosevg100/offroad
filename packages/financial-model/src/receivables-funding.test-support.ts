@@ -9,7 +9,9 @@ import type {ReceivablesFundingFacts} from "./receivables-funding-premises";
  * six months. Synthetic calibration, never a production parameter. BRL millions. */
 const current = {originDate: "2026-09-15", dueDate: "2026-11-04", registration: "missing" as const, encumbranceHolder: null, releaseEvent: null, encumbrance: "free" as const,
   contract: "assignable" as const, anchorProgram: "none" as const, creditTier: "standard" as const, debtorCount: null, largestDebtorAmount: null};
-const item = (patch: Partial<ReceivablesFundingItem> & Pick<ReceivablesFundingItem, "id" | "label" | "amount">): ReceivablesFundingItem => ({...current, ...patch});
+// Each named debtor is keyed by itself; each bucket's debtor set is declared disjoint from the named debtors and the other buckets.
+const item = (patch: Partial<ReceivablesFundingItem> & Pick<ReceivablesFundingItem, "id" | "label" | "amount">): ReceivablesFundingItem =>
+  ({...current, debtorKey: patch.id, debtorSetDisjoint: patch.debtorCount === 1 ? null : true, ...patch});
 const policy = {maxDaysPastDue: 0, maxRemainingTermDays: 180, registrationRule: "required" as const, minCreditTier: "standard" as const, sublimitPerDebtor: "3", anchorItemIds: [] as string[]};
 const noIof = {iofDaily: "0", iofDailyCapDays: 0, iofAdditional: "0", rolloverDays: null, upfrontFee: "0", collateral: "none" as const};
 export function auroraReceivablesFunding(): ReceivablesFundingInput {
@@ -21,7 +23,7 @@ export function auroraReceivablesFunding(): ReceivablesFundingInput {
     item({id: "rede-f", label: "Rede F", amount: "4.5", creditTier: "selected", debtorCount: 1}),
     item({id: "varejo-selecionado", label: "Varejo médio e atacado, sacados de melhor crédito", amount: "4", creditTier: "selected"}),
     item({id: "varejo-demais", label: "Varejo médio e atacado, demais sacados", amount: "11.3"}),
-    item({id: "vencidos", label: "Vencidos acima de 30 dias", amount: "2.2", originDate: "2026-06-26", dueDate: "2026-08-15"}),
+    item({id: "vencidos", label: "Vencidos acima de 30 dias", amount: "2.2", originDate: "2026-06-26", dueDate: "2026-08-15", debtorSetDisjoint: false}),
   ];
   const options: ReceivablesFundingOption[] = [
     {id: "risco-sacado-b", label: "Risco sacado da rede B", kind: "anchor_program", recourse: "without_recourse",
@@ -60,7 +62,9 @@ export function auroraReceivablesFundingBasis(k: ReceivablesFundingInput = auror
       encumbranceHolder: opt(i.encumbranceHolder, (v) => text(p + "encumbranceHolder", v)), releaseEvent: opt(i.releaseEvent, (v) => text(p + "releaseEvent", v)),
       originDate: date(p + "originDate", i.originDate), dueDate: date(p + "dueDate", i.dueDate), registration: text(p + "registration", i.registration, "convention"),
       creditTier: text(p + "creditTier", i.creditTier, "convention"), anchorProgram: text(p + "anchorProgram", i.anchorProgram, "convention"),
-      debtorCount: opt(i.debtorCount, (v) => num(p + "debtorCount", "count", String(v))), largestDebtorAmount: opt(i.largestDebtorAmount, (v) => num(p + "largestDebtorAmount", "currency", v))};}),
+      debtorCount: opt(i.debtorCount, (v) => num(p + "debtorCount", "count", String(v))), largestDebtorAmount: opt(i.largestDebtorAmount, (v) => num(p + "largestDebtorAmount", "currency", v)),
+      debtorKey: text(p + "debtorKey", i.debtorKey, "identity"),
+      debtorSetDisjoint: opt(i.debtorSetDisjoint, (v) => text(p + "debtorSetDisjoint", v ? "declared" : "not_declared", "convention"))};}),
     options: k.options.map((o) => {const p = `option.${o.id}.`, e = o.eligibility; return {id: o.id, label: text(p + "label", o.label), kind: text(p + "kind", o.kind, "convention"),
       recourse: text(p + "recourse", o.recourse, "convention"), rateBasis: text(p + "rateBasis", o.rate.basis, "convention"), rate: num(p + "rate", "ratio", o.rate.rate),
       iofDaily: num(p + "iofDaily", "ratio", o.iofDaily), iofDailyCapDays: num(p + "iofDailyCapDays", "days", String(o.iofDailyCapDays)), iofAdditional: num(p + "iofAdditional", "ratio", o.iofAdditional),

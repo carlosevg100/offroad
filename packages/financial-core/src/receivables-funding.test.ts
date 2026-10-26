@@ -105,4 +105,23 @@ describe("receivables funding", () => {
     expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["caro", "3", "1", "3"]]);
     expect(r.plan.coversPeak).toBe(true);
   });
+  it("sums one debtor's lots before the sublimit", () => {
+    const e = base.items.find(i => i.id === "rede-e")!;
+    const split = {...base, items: [...base.items.filter(i => i.id !== "rede-e"), {...e, id: "rede-e-lote-1", amount: "2.5"}, {...e, id: "rede-e-lote-2", amount: "2"}]};
+    const r = assessReceivablesFunding(split), fidc = r.options.find(o => o.id === "fidc-com-coobrigacao")!;
+    expect(fidc.byItem.filter(b => b.itemId.startsWith("rede-e")).map(b => [b.itemId, b.retained, b.sublimitExcess, b.sublimitVerified]))
+      .toEqual([["rede-e-lote-1", "2.5", "0", true], ["rede-e-lote-2", "0.5", "1.5", true]]);
+    expect([fidc.volume, r.portfolio.assignable, r.portfolio.excluded]).toEqual(["21.3", "25", "37"]);
+  });
+  it("refuses a basis that cannot prove separation between debtors", () => {
+    expect(() => assessReceivablesFunding(withItem("varejo-demais", {debtorKey: "rede-e"}))).toThrow("receivables_funding_debtor_key_conflict");
+    expect(() => assessReceivablesFunding(withItem("rede-f", {debtorKey: "rede-e", creditTier: "selected", contract: "prohibited_without_consent"}))).toThrow("receivables_funding_debtor_lots_inconsistent");
+    const b = base.items.find(i => i.id === "rede-b")!;
+    expect(() => assessReceivablesFunding({...base, items: [...base.items, {...b, id: "rede-b-lote-2"}]})).toThrow("receivables_funding_debtor_lots_inconsistent");
+    expect(() => assessReceivablesFunding(withItem("rede-e", {debtorSetDisjoint: true}))).toThrow("receivables_funding_debtor_set");
+    // A bucket not declared disjoint keeps its volume as a ceiling and names the gap.
+    const open = assessReceivablesFunding(withItem("varejo-demais", {debtorSetDisjoint: false}));
+    expect(open.gaps.map(g => g.item)).toContain("item.varejo-demais.debtorSetDisjoint");
+    expect(open.options[1]!.byItem.find(x => x.itemId === "varejo-demais")!.unverifiedBy).toEqual(["largest_debtor", "debtor_set_overlap"]);
+  });
 });

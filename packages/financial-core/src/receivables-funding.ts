@@ -22,6 +22,11 @@ export type ReceivablesFundingItem = {
   anchorProgram: "active" | "none" | "unknown";
   /** One debtor, or several; for several, the largest debtor's balance, when known, proves the sublimit. */
   debtorCount: number | null; largestDebtorAmount: string | null;
+  /** Canonical key of the debtor (a document number or registry key) for one debtor, or of the declared
+   * debtor set for several. Lots of one debtor share its key and its exposure is summed before the sublimit. */
+  debtorKey: string;
+  /** For several debtors only: whether the set is declared disjoint from every other item's debtors. */
+  debtorSetDisjoint: boolean | null;
 };
 export const receivablesFundingOptionKinds = ["anchor_program", "fidc", "bank_discount", "bank_line"] as const;
 export type ReceivablesFundingOptionKind = typeof receivablesFundingOptionKinds[number];
@@ -129,7 +134,16 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
       // The bucket cannot hold more than its debtors at the largest balance each: contradictory data is refused, not capped.
       if (i.debtorCount !== null && value.gt(largest.mul(i.debtorCount))) throw new Error("receivables_funding_largest_debtor");
     }
+    if (typeof i.debtorKey !== "string" || !/^[a-z0-9][a-z0-9.-]{0,79}$/.test(i.debtorKey)) throw new Error("receivables_funding_debtor_key");
+    if ((i.debtorCount === 1) !== (i.debtorSetDisjoint === null)) throw new Error("receivables_funding_debtor_set");
     items.set(i.id, {...i, value});
+  }
+  // A debtor's lots share one key and one contract and program; a debtor set's key belongs to it alone.
+  const byKey = new Map<string, (ReceivablesFundingItem & {value: Decimal})[]>();
+  for (const i of items.values()) byKey.set(i.debtorKey, [...byKey.get(i.debtorKey) ?? [], i]);
+  for (const lots of byKey.values()) {
+    if (lots.length > 1 && lots.some(l => l.debtorCount !== 1)) throw new Error("receivables_funding_debtor_key_conflict");
+    if (lots.some(l => l.contract !== lots[0]!.contract || l.anchorProgram !== lots[0]!.anchorProgram)) throw new Error("receivables_funding_debtor_lots_inconsistent");
   }
   const gross = [...items.values()].reduce((s, i) => s.plus(i.value), new Exact(0));
 
@@ -165,32 +179,54 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     return o;
   });
   const anchored = new Set(options.flatMap(o => o.eligibility?.anchorItemIds ?? []));
-
-  /** The volume an option takes from one bucket: the eligibility kernel's reasons, the curable ones
-   * apart, then the debtor sublimit. A debtor with its own program goes to the program only. */
-  function take(o: ReceivablesFundingOption, i: ReceivablesFundingItem & {value: Decimal}) {
-    const e = o.eligibility!;
-    const offered = o.kind === "anchor_program" ? e.anchorItemIds.includes(i.id) : !anchored.has(i.id);
-    if (!offered) return {itemId: i.id, offered: false, reasons: [] as string[], curable: [] as string[], retained: "0", sublimitVerified: true, sublimitExcess: "0"};
-    const policy: ReceivablesPoolEligibilityPolicy = {maxDaysPastDue: e.maxDaysPastDue, maxRemainingTermDays: e.maxRemainingTermDays, minSeasoningDays: 0,
-      // The debtor's own program is its consent; every other buyer needs an assignable contract.
-      requireAssignable: o.kind !== "anchor_program", requireEvidenceVerified: false, registrationRule: e.registrationRule,
-      excludeDisputed: false, excludeRelatedParties: false, excludeEncumbered: true, allowedDebtorSectors: []};
-    const c = classifyReceivablesPoolTitle({outstandingBalance: i.amount, defaultedBalance: "0", originDate: i.originDate as IsoDate, dueDate: i.dueDate as IsoDate,
-      assignable: i.contract === "assignable", evidenceVerified: true, anchorVerified: true, registration: i.registration,
-      encumbrance: i.encumbrance, disputed: false, relatedParty: false, debtorSector: ""}, policy, input.referenceDate as IsoDate);
-    const reasons: string[] = c.reasons.filter(r => !curable.includes(r));
-    if (tierRank[i.creditTier] > tierRank[e.minCreditTier]) reasons.push("credit_tier_outside_policy");
-    const cure = c.reasons.filter(r => curable.includes(r));
-    if (reasons.length) return {itemId: i.id, offered: true, reasons, curable: cure, retained: "0", sublimitVerified: true, sublimitExcess: "0"};
-    const {retained, verified} = sublimit(i, e.sublimitPerDebtor === null ? null : amount(e.sublimitPerDebtor));
-    return {itemId: i.id, offered: true, reasons, curable: cure, retained: out(retained), sublimitVerified: verified, sublimitExcess: out(i.value.minus(retained))};
+  // A program buys the debtor, not one lot of it: every lot of an anchored debtor is named by the same program.
+  for (const o of options) for (const id of o.eligibility?.anchorItemIds ?? []) {
+    if (byKey.get(items.get(id)!.debtorKey)!.some(l => !o.eligibility!.anchorItemIds.includes(l.id))) throw new Error("receivables_funding_debtor_lots_inconsistent");
   }
-  /** One debtor is capped at the sublimit. Several debtors are proved within it only by the largest
-   * one; otherwise the volume is an upper bound (count times sublimit, less the known excess). */
-  function sublimit(i: ReceivablesFundingItem & {value: Decimal}, cap: Decimal | null) {
+
+  type Unverified = "largest_debtor" | "debtor_set_overlap";
+  /** The volume an option takes from every bucket: the eligibility kernel's reasons per lot, the
+   * curable ones apart; then the debtor sublimit on the exposure summed per debtor key across lots.
+   * A debtor with its own program goes to the program only. */
+  function takeAll(o: ReceivablesFundingOption, list: readonly (ReceivablesFundingItem & {value: Decimal})[]) {
+    const e = o.eligibility!, cap = e.sublimitPerDebtor === null ? null : amount(e.sublimitPerDebtor);
+    const tested = list.map(i => {
+      const offered = o.kind === "anchor_program" ? e.anchorItemIds.includes(i.id) : !anchored.has(i.id);
+      if (!offered) return {i, offered, reasons: [] as string[], curable: [] as string[], eligible: new Exact(0)};
+      const policy: ReceivablesPoolEligibilityPolicy = {maxDaysPastDue: e.maxDaysPastDue, maxRemainingTermDays: e.maxRemainingTermDays, minSeasoningDays: 0,
+        // The debtor's own program is its consent; every other buyer needs an assignable contract.
+        requireAssignable: o.kind !== "anchor_program", requireEvidenceVerified: false, registrationRule: e.registrationRule,
+        excludeDisputed: false, excludeRelatedParties: false, excludeEncumbered: true, allowedDebtorSectors: []};
+      const c = classifyReceivablesPoolTitle({outstandingBalance: i.amount, defaultedBalance: "0", originDate: i.originDate as IsoDate, dueDate: i.dueDate as IsoDate,
+        assignable: i.contract === "assignable", evidenceVerified: true, anchorVerified: true, registration: i.registration,
+        encumbrance: i.encumbrance, disputed: false, relatedParty: false, debtorSector: ""}, policy, input.referenceDate as IsoDate);
+      const reasons: string[] = c.reasons.filter(r => !curable.includes(r));
+      if (tierRank[i.creditTier] > tierRank[e.minCreditTier]) reasons.push("credit_tier_outside_policy");
+      return {i, offered, reasons, curable: c.reasons.filter(r => curable.includes(r)), eligible: reasons.length ? new Exact(0) : i.value};
+    });
+    // One debtor's eligible lots share one sublimit, filled in the order of the lots.
+    const room = new Map<string, Decimal>();
+    return tested.map(t => {
+      const base = {itemId: t.i.id, offered: t.offered, reasons: t.reasons, curable: t.curable};
+      if (!t.eligible.gt(0)) return {...base, retained: "0", sublimitVerified: true, unverifiedBy: [] as Unverified[], sublimitExcess: "0"};
+      let retained: Decimal, unverifiedBy: Unverified[] = [];
+      if (t.i.debtorCount === 1) {
+        const left = room.get(t.i.debtorKey) ?? cap;
+        retained = left === null ? t.eligible : Decimal.min(t.eligible, left);
+        if (left !== null) room.set(t.i.debtorKey, left.minus(retained));
+      } else {
+        const b = bucket(t.i, cap);
+        retained = b.retained; if (!b.verified) unverifiedBy.push("largest_debtor");
+        // Without a declared disjoint set, a debtor of the bucket may hold lots elsewhere: the sublimit is not proved.
+        if (cap !== null && t.i.debtorSetDisjoint === false) unverifiedBy.push("debtor_set_overlap");
+      }
+      return {...base, retained: out(retained), sublimitVerified: !unverifiedBy.length, unverifiedBy, sublimitExcess: out(t.eligible.minus(retained))};
+    });
+  }
+  /** Several debtors are proved within the sublimit only by the largest one; otherwise the volume is
+   * an upper bound (count times sublimit, less the known excess). */
+  function bucket(i: ReceivablesFundingItem & {value: Decimal}, cap: Decimal | null) {
     if (cap === null) return {retained: i.value, verified: true};
-    if (i.debtorCount === 1) return {retained: Decimal.min(i.value, cap), verified: true};
     const largest = i.largestDebtorAmount === null ? null : new Exact(i.largestDebtorAmount);
     if (largest !== null && largest.lte(cap)) return {retained: i.debtorCount === null ? i.value : Decimal.min(i.value, cap.mul(i.debtorCount)), verified: true};
     let bound = i.value.minus(largest === null ? 0 : Decimal.max(largest.minus(cap), 0));
@@ -221,7 +257,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     const fee = needAverage.mul(amount(o.upfrontFee));
     const total = interest.plus(iof).plus(fee);
     const period = total.div(needAverage);
-    const byItem = o.eligibility ? [...items.values()].map(i => take(o, i)) : [];
+    const byItem = o.eligibility ? takeAll(o, [...items.values()]) : [];
     const volume = o.eligibility ? byItem.reduce((s, b) => s.plus(b.retained), new Exact(0)) : null;
     const sale = saleKinds.includes(o.kind);
     const liability = !sale || o.recourse === "with_recourse";
@@ -266,7 +302,8 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
   // After a release, the encumbered bucket is tested as free by the same options: an upper bound until it is.
   const releases = [...items.values()].filter(i => i.encumbrance !== "free" && i.releaseEvent !== null).map(i => {
     const freed = {...i, encumbrance: "free" as const};
-    const best = options.filter(o => saleKinds.includes(o.kind)).map(o => take(o, freed))
+    const list = [...items.values()].map(x => x.id === i.id ? freed : x);
+    const best = options.filter(o => saleKinds.includes(o.kind)).map(o => takeAll(o, list).find(b => b.itemId === i.id)!)
       .reduce((m, b) => new Exact(b.retained).gt(m.value) ? {value: new Exact(b.retained), verified: b.sublimitVerified} : m, {value: new Exact(0), verified: true});
     return {itemId: i.id, amount: out(i.value), holder: i.encumbranceHolder!, releaseEvent: i.releaseEvent!, assignableAfterRelease: out(best.value), verified: best.verified};
   });
@@ -309,8 +346,13 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     ...[...items.values()].filter(i => i.anchorProgram === "active" && !anchored.has(i.id)).map(i => ({code: "anchor_program_terms" as const, itemId: i.id, amount: out(i.value)})),
     ...curableByCode.has("registration_missing") ? [{code: "duplicata_registration_capability" as const, itemId: null, amount: out(curableByCode.get("registration_missing")!)}] : [],
   ];
-  const gaps = [...items.values()].filter(i => costed.some(c => c.byItem.some(b => b.itemId === i.id && !b.sublimitVerified && new Exact(b.retained).gt(0))))
-    .map(i => ({item: `item.${i.id}.largestDebtorAmount`, reason: "largest_debtor_not_informed" as "largest_debtor_not_informed" | "lead_time_not_informed"}));
+  type GapReason = "largest_debtor_not_informed" | "debtor_set_not_declared_disjoint" | "lead_time_not_informed";
+  const gaps: {item: string; reason: GapReason}[] = [];
+  const unproved = (i: ReceivablesFundingItem, why: Unverified) => costed.some(c => c.byItem.some(b => b.itemId === i.id && b.unverifiedBy.includes(why) && new Exact(b.retained).gt(0)));
+  for (const i of items.values()) {
+    if (unproved(i, "largest_debtor")) gaps.push({item: `item.${i.id}.largestDebtorAmount`, reason: "largest_debtor_not_informed"});
+    if (unproved(i, "debtor_set_overlap")) gaps.push({item: `item.${i.id}.debtorSetDisjoint`, reason: "debtor_set_not_declared_disjoint"});
+  }
   for (const p of plan) if (costed.find(c => c.id === p.optionId)!.leadDays === null) gaps.push({item: `option.${p.optionId}.leadDays`, reason: "lead_time_not_informed"});
   return {schemaVersion: "receivables-funding.v1" as const, version: receivablesFundingVersion, currency: input.currency, referenceDate: input.referenceDate,
     need: {average: out(needAverage), peak: out(needPeak), startDate: input.needStartDate, calendarDays, businessDays, profile: input.needProfile},

@@ -75,7 +75,7 @@ export const auroraClose = {
   dependents: [
     {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis" as const, reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash" as const},
     {id: "covenant-dez26", label: "Covenant de dezembro de 2026", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant" as const},
-    {id: "projecao-2026", label: "Projeção de 2026", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection" as const},
+    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection" as const},
     {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis" as const, reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: "none" as const},
     {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "none" as const},
     {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: "none" as const},
@@ -135,7 +135,8 @@ export function auroraQuarterUpdateBasis() {
 
 /** The close as facts with their origin, for the premises path. */
 export function auroraQuarterUpdateFacts(priorWeeklyFingerprint: string, priorCovenantFingerprint: string): import("./quarter-update-premises").QuarterUpdateFacts {
-  const c = auroraClose;
+  // A copy, so a test that edits the facts never edits the calibration.
+  const c = structuredClone(auroraClose);
   const fact = <T>(value: T, origin: Origin, source: string) => ({value, origin, source});
   return {updateId: id(9100), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3),
     quarterStart: c.quarterStart, quarterEnd: c.quarterEnd,

@@ -169,13 +169,17 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     const prior = priorStreams.get(u.streamId);
     if (!prior) throw new Error("quarter_update_unknown_stream");
     if (!u.causeIds.length || new Set(u.causeIds).size !== u.causeIds.length) throw new Error("quarter_update_stream_update_without_cause");
+    // Each series change belongs to one cause and is bounded by that cause's own window; a shared attribution proves neither.
+    if (u.causeIds.length !== 1) throw new Error("quarter_update_series_shared_by_causes");
+    // Only a series of the scenario actually used can carry a cause into the weekly cash.
+    if (!informed.streamIds.includes(u.streamId)) throw new Error("quarter_update_series_outside_scenario");
     const named = u.causeIds.map(structural);
     if (!u.dates.length || u.dates.length !== u.amounts.length) throw new Error("quarter_update_stream_series");
     u.dates.forEach(date); u.amounts.forEach(amount);
     const same = u.dates.length === prior.dates.length && u.dates.every((d, n) => d === prior.dates[n] && amount(u.amounts[n]!).eq(amount(prior.amounts[n]!)));
     if (same) throw new Error("quarter_update_stream_update_without_change");
     // A series moves only while its causes persist: before the close the actual already holds it, after the end the cause is gone.
-    const until = named.reduce((m, c) => c.until! > m ? c.until! : m, qe);
+    const until = named[0]!.until!;
     const before = byDate(prior.dates, prior.amounts), after = byDate(u.dates, u.amounts);
     let effect = new Exact(0);
     for (const d of new Set([...before.keys(), ...after.keys()])) {
@@ -293,6 +297,15 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   }
 
   // Dependents: affected by what they read over their horizon, never recomputed when nothing they read moved.
+  // What each recomputation actually covers: its horizon and the lines it reads. "updated" needs both to contain the dependent's.
+  const yearBefore = (d: string) => shift(`${Number(d.slice(0, 4)) - 1}${d.slice(4)}`, 1);
+  const leadDate = targets[0]!.date;
+  const weeklyLines = new Set([cashLineId, ...structuralCauses.filter(c => inWeekly.has(c.id)).flatMap(c => [c.lineId, ...c.driverLineId ? [c.driverLineId] : []])]);
+  const recomputed = {
+    weekly_cash: {start: priorWeekly.firstMonday, end: weeklyEnd, lines: weeklyLines},
+    covenant: {start: targets.map(m => yearBefore(m.date)).sort()[0]!, end: targets.map(m => m.date).sort().at(-1)!, lines: new Set([cashLineId, ebitdaLineId])},
+    projection: {start: yearBefore(leadDate), end: leadDate, lines: new Set([cashLineId, ebitdaLineId])},
+  } as const;
   const forwardUntil = (lineId: string) => [...causes.values()].filter(c => c.classification === "structural" && (c.lineId === lineId || c.driverLineId === lineId))
     .reduce<string | null>((u, c) => u === null || c.until! > u ? c.until! : u, null);
   if (new Set(input.dependents.map(d => d.id)).size !== input.dependents.length) throw new Error("quarter_update_duplicate_dependent");
@@ -307,9 +320,12 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     });
     const supersededByClose = d.kind === "material" && d.horizonEnd < qe && d.reads.some(id => !line(id).deviation.isZero());
     if (!moved.length && d.recomputedBy !== null) throw new Error("quarter_update_recomputes_unaffected");
-    const status = moved.length ? (d.recomputedBy !== null ? "updated" as const : "affected_not_recomputed" as const) : supersededByClose ? "stale" as const : "unchanged" as const;
+    const cover = d.recomputedBy === null ? null : recomputed[d.recomputedBy];
+    const proven = cover !== null && d.horizonStart >= cover.start && d.horizonEnd <= cover.end && moved.every(id => cover.lines.has(id));
+    const status = moved.length ? (proven ? "updated" as const : "affected_not_recomputed" as const) : supersededByClose ? "stale" as const : "unchanged" as const;
     if (status === "affected_not_recomputed") gaps.push({item: `dependent.${d.id}`, reason: "affected_not_recomputed"});
     return {id: d.id, label: d.label, kind: d.kind, status, movedBy: moved, recomputedBy: d.recomputedBy,
+      recomputedHorizon: cover === null ? null : {start: cover.start, end: cover.end, lines: [...cover.lines]},
       /** A stale material is offered again with the closed figures; it is never sent from here. */
       sentToThirdParties: false as const};
   });

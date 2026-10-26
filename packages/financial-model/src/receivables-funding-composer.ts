@@ -73,7 +73,8 @@ export function composeBoundReceivablesFunding(raw: unknown): ReceivablesFunding
       encumbrance: select(p + "encumbrance", "convention", "text"), encumbranceHolder: optional(p + "encumbranceHolder", "text", "text"), releaseEvent: optional(p + "releaseEvent", "text", "text"),
       originDate: select(p + "originDate", "date", "date"), dueDate: select(p + "dueDate", "date", "date"), registration: select(p + "registration", "convention", "text"),
       creditTier: select(p + "creditTier", "convention", "text"), anchorProgram: select(p + "anchorProgram", "convention", "text"),
-      debtorCount: optional(p + "debtorCount", "count", "number"), largestDebtorAmount: optional(p + "largestDebtorAmount", "currency", "number")};
+      debtorCount: optional(p + "debtorCount", "count", "number"), largestDebtorAmount: optional(p + "largestDebtorAmount", "currency", "number"),
+      debtorKey: select(p + "debtorKey", "identity", "text"), debtorSetDisjoint: optional(p + "debtorSetDisjoint", "convention", "text")};
   });
   const options = keys(optionPath, "order.options").map((id) => {
     const p = `option.${id}.`;

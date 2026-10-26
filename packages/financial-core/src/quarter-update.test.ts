@@ -65,7 +65,9 @@ describe("update after the quarter close", () => {
   });
   it("review r1: a structural cause with no weekly effect is a gap, and the covenant and projection still carry it", () => {
     const r = updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: []}});
-    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_not_in_weekly_cash"}, {item: "cause.prazo-redes", reason: "structural_cause_not_in_weekly_cash"}]);
+    // The weekly cash then no longer reflects the days or the wheat it reads, so it cannot count as updated either.
+    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_not_in_weekly_cash"}, {item: "cause.prazo-redes", reason: "structural_cause_not_in_weekly_cash"},
+      {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
     expect(n(r.covenant.measurements[0]!.trailingEbitda.updated)).toBe("53.5");
     const cheaper = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map((a, k) => x.dates[k]! > "2026-09-30" ? "5.7" : a)} : x);
     expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"}]);
@@ -80,6 +82,22 @@ describe("update after the quarter close", () => {
     // A series moved before the close is already in the actual.
     const early = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map(() => "5.858")} : x);
     expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: early}})).toThrow("quarter_update_series_outside_persistence");
+  });
+  it("review r2: one cause per series, inside the scenario used, bounded by its own window", () => {
+    const shared = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, causeIds: ["trigo", "prazo-redes"]} : x);
+    expect(() => updateAfterQuarterClose({...withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2026-10-03"} : x)), weekly: {...base.weekly, updates: shared}})).toThrow("quarter_update_series_shared_by_causes");
+    const harvest = base.prior.weeklyCash.streams.find(s => s.id === "safra-30")!;
+    const inactive = [{streamId: "safra-30", causeIds: ["trigo"], dates: [...harvest.dates], amounts: harvest.amounts.map(a => String(Number(a) + 0.01))}];
+    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: inactive}})).toThrow("quarter_update_series_outside_scenario");
+  });
+  it("review r2: updated only where a recomputed result covers the dependent's horizon and lines", () => {
+    const longer = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2027-03-31"} : x));
+    const r = updateAfterQuarterClose({...longer, dependents: longer.dependents.map(d => ["plano-2027", "linha-embalagem"].includes(d.id) ? {...d, recomputedBy: "projection" as const} : d)});
+    expect(r.dependents.filter(d => ["plano-2027", "linha-embalagem"].includes(d.id)).map(d => [d.id, d.status])).toEqual([["plano-2027", "affected_not_recomputed"], ["linha-embalagem", "affected_not_recomputed"]]);
+    expect(r.gaps).toEqual([{item: "dependent.plano-2027", reason: "affected_not_recomputed"}, {item: "dependent.linha-embalagem", reason: "affected_not_recomputed"}]);
+    expect(u.dependents.find(d => d.id === "projecao-2026")!.recomputedHorizon).toEqual({start: "2026-01-01", end: "2026-12-31", lines: ["caixa", "ebitda"]});
+    const revenue = updateAfterQuarterClose({...base, dependents: base.dependents.map(d => d.id === "projecao-2026" ? {...d, reads: ["receita", "ebitda"]} : d)});
+    expect(revenue.dependents.find(d => d.id === "projecao-2026")!.status).toBe("affected_not_recomputed");
   });
   it("asks the open diagnosis of a balance shift read by interpretation", () => {
     const r = updateAfterQuarterClose(withBridge("caixa", c => c.map(x => x.id === "prazo-redes" ? {...x, question: null} : x)));

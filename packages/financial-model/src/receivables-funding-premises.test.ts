@@ -27,7 +27,7 @@ const n = (v: string | null | undefined, p = 1) => Number(v).toFixed(p);
 describe("C35 premises proposed from facts with origin, adopted, composed and measured", {timeout: 180000}, () => {
   it("stays inside the basis limit and states the origin of every premise", () => {
     const h = proposeReceivablesFundingHypotheses(auroraReceivablesFundingFacts());
-    expect(h.length).toBe(168);
+    expect(h.length).toBe(180);
     expect(h.every((x) => x.reason.startsWith("Origem: "))).toBe(true);
     expect(h.find((x) => x.fieldPath.endsWith(".item.varejo-selecionado.amount"))!.reason).toMatch(/^Origem: estimativa\./);
     expect(h.find((x) => x.fieldPath.endsWith(".option.fidc-com-coobrigacao.rate"))!.reason).toMatch(/^Origem: faixa de mercado\./);

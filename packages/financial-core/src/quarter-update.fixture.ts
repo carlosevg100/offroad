@@ -102,7 +102,7 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
   dependents: [
     {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis", reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash"},
     {id: "covenant-dez26", label: "Covenant de dezembro de 2026", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant"},
-    {id: "projecao-2026", label: "Projeção de 2026", kind: "plan", reads: ["receita", "ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection"},
+    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection"},
     {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis", reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: null},
     {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan", reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: null},
     {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: null},

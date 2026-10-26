@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: quarter-update-packet.v1
 unit_test_files: [packages/financial-model/src/quarter-update-packet.test.ts, packages/financial-model/src/quarter-update-premises.test.ts, packages/financial-model/src/quarter-update-runs.test.ts, packages/financial-core/src/quarter-update.test.ts]
-gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, absent-actual-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, series-moved-outside-persistence, balance-shift-on-ebitda, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
+gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-where-a-recomputed-result-covers-it, absent-actual-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, series-moved-outside-persistence, balance-shift-on-ebitda, series-shared-by-two-causes, series-outside-the-scenario-used, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:bridges-sum-exactly-to-the-deviations]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -75,13 +75,13 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Ponte: soma das causas de cada linha; resíduo = desvio menos a soma. Resíduo diferente de zero vira lacuna nomeada na linha e nunca é distribuído entre as causas.
 - Causa que é o desvio de outra linha (EBITDA abaixo dentro da ponte do caixa) tem de ser igual a esse desvio, exatamente.
 - Causa de calendário não tem data de fim e não move a projeção além do que o realizado já leva aos saldos; causa estrutural tem data de fim depois do fechamento e é fluxo ou mudança de saldo. Mudança de saldo pertence à ponte do caixa.
-- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. A série só pode mudar depois do fechamento e até a data de fim da causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor; sem série ou com efeito nulo ou de sinal oposto, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
+- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. Cada série atualizada pertence a uma única causa e a uma série do cenário informado; série atribuída a duas causas, ou fora do cenário usado, é recusada. A série só pode mudar depois do fechamento e até a data de fim da sua causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor; sem série ou com efeito nulo ou de sinal oposto, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
 - Necessidade = mínimo menos o menor saldo semanal, nunca negativa; comparada ao limite da linha que completa as semanas; o limite inteiro é medido como caso próprio.
 - Ação: passos em ordem; o passo fixo saca uma série nova que substitui a planejada; o passo residual saca, na data adotada, a necessidade que ainda resta. Cada passo é comparado ao limite aprovado.
 - Efeito à frente de uma causa estrutural, por medição: fluxo = valor do trimestre × dias entre o dia seguinte ao fechamento e o menor entre a data de fim e a data do teste ÷ dias do trimestre; entra no EBITDA quando a causa está na ponte do EBITDA e no caixa sempre. Mudança de saldo = zero à frente: o saldo já está no desvio de caixa do fechamento, levado uma vez, e continua mais baixo enquanto a causa persiste.
 - Covenant atualizado = cada medição adotada da versão anterior (a da escritura e a gerencial) com EBITDA reportado acrescido do desvio de EBITDA do trimestre e dos efeitos à frente, e caixa acrescido do desvio de caixa e dos efeitos à frente; o trimestre precisa estar dentro dos doze meses do teste. A medição de núcleo é a do método de folga de covenant. Cada folga diz em qual definição foi medida.
 - Divergência declarada do oráculo da ficha C54: o oráculo baixa o caixa de dezembro pelo desvio do trimestre (R$ 1,7 milhão) e de novo pelos R$ 2,1 milhões do prazo das redes. Os R$ 2,1 milhões já estão dentro do desvio de R$ 1,7 milhão; o prazo de 54 dias mantém o saldo mais baixo, mas não absorve outros R$ 2,1 milhões no quarto trimestre. O método leva a mudança de saldo uma vez. A leitura do oráculo (2,32x e folga de R$ 3,7 milhões) fica só como contraste registrado nas corridas.
-- Dependência atualizada quando lê uma linha com desvio dentro do seu horizonte, ou uma linha movida por causa estrutural no período até a data de fim; sem isso, sem mudança. Recalcular o que não foi movido é recusado. Material para terceiros cujo horizonte termina antes do fechamento e que lê linha com desvio fica desatualizado.
+- Dependência movida quando lê uma linha com desvio dentro do seu horizonte, ou uma linha movida por causa estrutural no período até a data de fim; sem isso, sem mudança. Recalcular o que não foi movido é recusado. Dependência movida só fica atualizada quando um recálculo deste pacote cobre o seu horizonte e as linhas que ela lê: caixa semanal (horizonte da versão anterior; caixa e as linhas das causas com série), covenant (doze meses até cada data de teste; caixa e EBITDA) e projeção (doze meses até a data do teste principal; caixa e EBITDA). Sem essa cobertura fica afetada sem recálculo, e o pacote, parcial. Material para terceiros cujo horizonte termina antes do fechamento e que lê linha com desvio fica desatualizado.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
 # Julgamentos permitidos
@@ -129,9 +129,9 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - packages/financial-core/src/quarter-update.test.ts: núcleo contra o oráculo da ficha, com os núcleos de caixa semanal e de covenant compostos.
 - packages/financial-model/src/quarter-update-packet.test.ts e packages/financial-model/src/quarter-update-premises.test.ts: leitor adotado sobre três bases, pacote e ida e volta das premissas.
 ## Gold
-- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, absent-actual-is-a-gap-not-a-default.
+- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-where-a-recomputed-result-covers-it, absent-actual-is-a-gap-not-a-default.
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série movida fora do período em que a causa persiste, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série movida fora do período em que a causa persiste, série atribuída a duas causas, série fora do cenário usado, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C54 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -9688,6 +9688,43 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                               "covenant",
                                               "projection"
                                             ]
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "recomputedHorizon": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "object",
+                                            "fields": {
+                                              "start": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "date"
+                                                }
+                                              },
+                                              "end": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "date"
+                                                }
+                                              },
+                                              "lines": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                            }
                                           },
                                           {
                                             "type": "null"

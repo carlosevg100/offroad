@@ -44,6 +44,11 @@ const unsoldBalance = () => {
   const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap}});
   return auroraReceivablesFundingBasis({...k, items: [one], options: [at("fundo-barato", "0.01", "2"), at("fundo-caro", "0.02", "3"), k.options[4]!], needAverage: "3", needPeak: "3"});
 };
+/** Retailer E's R$ 4.5 mi split into two lots of the same debtor (review repro): the sublimit is the debtor's, not the lot's. */
+const splitDebtor = () => {
+  const k = auroraReceivablesFunding(), e = k.items.find((i) => i.id === "rede-e")!;
+  return auroraReceivablesFundingBasis({...k, items: [...k.items.filter((i) => i.id !== "rede-e"), {...e, id: "rede-e-lote-1", amount: "2.5"}, {...e, id: "rede-e-lote-2", amount: "2"}]});
+};
 /** The varejo bucket with a debtor count and a largest debtor adopted together. */
 const withDebtors = (count: string, largest: string) => {
   let ids: string[] = [];
@@ -96,6 +101,10 @@ function goldCases(): Case[] {
     observe("retailer-a-program-reorders-the-plan", packetInput(undefined, undefined, programA),
       {plan: [["risco-sacado-b", 3.7, 3.7, 3.7], ["risco-sacado-a", 19.8, 19.8, 23.5], ["fidc-com-coobrigacao", 21.3, 1.5, 25]], questions: ["duplicata_registration_capability"], startBy: null},
       (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), questions: p.readings!.questions.map((q) => q.code), startBy: p.readings!.startBy})),
+    observe("one-debtor-split-across-lots-shares-the-sublimit", packetInput(undefined, undefined, splitDebtor),
+      {lots: [["rede-e-lote-1", 2.5, 0], ["rede-e-lote-2", 0.5, 1.5]], fidc: 21.3, assignable: 25, gaps: ["largest_debtor_not_informed", "largest_debtor_not_informed"]},
+      (p) => {const f = p.result.funding!.options.find((o) => o.id === "fidc-com-coobrigacao")!;
+        return {lots: f.byItem.filter((b) => b.itemId.startsWith("rede-e")).map((b) => [b.itemId, r(b.retained), r(b.sublimitExcess)]), fidc: r(f.volume), assignable: r(p.readings!.assignable), gaps: p.gaps.map((g) => g.reason)};}),
     observe("unsold-balance-goes-to-the-next-buyer", packetInput(undefined, undefined, unsoldBalance),
       {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 1, 3]], coversPeak: true},
       (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak})),
@@ -136,6 +145,8 @@ function adversarialCases(): Case[] {
     ["largest-debtor-above-its-bucket", () => packetInput((f) => {f.contribute("item.varejo-demais.largestDebtorAmount", "currency", {type: "number", value: "12"});},
       (i) => {i.analysis.items[6] = {...i.analysis.items[6]!, largestDebtorAmount: {decisionId: auroraLast(i), definitionVersionId: i.analysis.items[6]!.amount.definitionVersionId, definitionKind: "managerial", missingReason: null}};}), "receivables_funding_largest_debtor"],
     ["largest-debtor-cannot-hold-its-bucket", () => withDebtors("2", "1"), "receivables_funding_largest_debtor"],
+    ["debtor-key-shared-by-a-bucket-and-a-named-debtor", () => packetInput((f) => {entry(f, "item.varejo-demais.debtorKey").value = {type: "text", value: "rede-e"};}), "receivables_funding_debtor_key_conflict"],
+    ["lots-of-one-debtor-with-different-contracts", () => packetInput((f) => {entry(f, "item.rede-f.debtorKey").value = {type: "text", value: "rede-a"};}), "receivables_funding_debtor_lots_inconsistent"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {entry(f, "item.rede-b.amount").dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

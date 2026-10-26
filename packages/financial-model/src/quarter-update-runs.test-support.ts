@@ -6,6 +6,7 @@ import {calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
 import {auroraDearerInputs, auroraQuarterUpdateBasis} from "./quarter-update.test-support";
 import {measureCovenantHeadroom} from "@offroad/financial-core";
 import {analysisTestId} from "./adopted-analysis.test-support";
+import {auroraWeeklyCash} from "./weekly-cash-streams.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic
 // calibrations of ficha C54 (modelo_c54.py over modelo_c18.py and modelo_c12.py), never production parameters. The method
@@ -101,6 +102,11 @@ function goldCases(): Case[] {
     observe("open-diagnosis-without-question-is-a-gap", packetInput((f) => {
       (f.input as unknown as {bridges: {causes: {id: string; question: unknown}[]}[]}).bridges[1]!.causes.find((x) => x.id === "prazo-redes")!.question = null;
     }), {status: "partial", gap: true}, (p) => ({status: p.status, gap: p.gaps.some((g) => g.operand.endsWith(".cause.prazo-redes") && g.reason === "structural_cause_question_missing")})),
+    observe("updated-only-where-a-recomputed-result-covers-it", packetInput((f) => {
+      f.set("cause.trigo.until", {type: "date", value: "2027-03-31"});
+      for (const id of ["plano-2027", "linha-embalagem"]) f.set(`dependent.${id}.recomputedBy`, {type: "text", value: "projection"});
+    }), {status: "partial", affected: ["plano-2027", "linha-embalagem"], updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"]},
+      (p) => ({status: p.status, affected: p.readings!.affectedNotRecomputed, updated: p.readings!.updated})),
     (() => {
       const i = packetInput();
       i.analysis.update.lines = i.analysis.update.lines.map((l) => l.id === "caixa" ? {...l, actual: {...l.actual, decisionId: null, missingReason: "Caixa de 30/set não informado"}} : l);
@@ -121,6 +127,16 @@ function adversarialCases(): Case[] {
     ["calendar-cause-moves-the-projection", () => {const i = packetInput(); i.analysis.update.streamUpdates[1] = {...i.analysis.update.streamUpdates[1]!, causeIds: ["estoque-trigo"]}; return i;}, "quarter_update_calendar_cause_propagated"],
     ["series-moved-outside-persistence", () => packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2026-10-03"})), "quarter_update_series_outside_persistence"],
     ["balance-shift-on-ebitda", () => packetInput((f) => f.set("cause.trigo.nature", {type: "text", value: "balance"})), "quarter_update_balance_cause_off_cash"],
+    ["series-shared-by-two-causes", () => packetInput((f) => {
+      f.set("cause.trigo.until", {type: "date", value: "2026-10-01"});
+      (f.input as unknown as {streamUpdates: {causeIds: string[]}[]}).streamUpdates[1]!.causeIds = ["trigo", "prazo-redes"];
+    }), "quarter_update_series_shared_by_causes"],
+    ["series-outside-the-scenario-used", () => packetInput((f) => {
+      const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
+      const dates = f.contribute("streamUpdate.safra-30.dates", "date", {type: "list", value: [...harvest.dates]});
+      const amounts = f.contribute("streamUpdate.safra-30.amounts", "currency", {type: "list", value: harvest.amounts.map((a) => new D(a).plus("0.01").toFixed())});
+      (f.input as unknown as {streamUpdates: unknown[]}).streamUpdates = [{streamId: "safra-30", causeIds: ["trigo"], dates, amounts}];
+    }), "quarter_update_series_outside_scenario"],
     ["structural-cause-without-an-end", () => packetInput((f) => f.set("cause.volume.classification", {type: "text", value: "structural"})), "quarter_update_structural_cause_end"],
     ["recomputing-what-did-not-move", () => packetInput((f) => f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection"})), "quarter_update_recomputes_unaffected"],
     ["series-updated-without-change", () => packetInput((f) => {

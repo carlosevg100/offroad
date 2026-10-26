@@ -21,6 +21,8 @@ const item = z.strictObject({
   encumbranceHolder: text.nullable(), releaseEvent: text.nullable(), originDate: z.iso.date(), dueDate: z.iso.date(),
   registration: z.enum(["registered", "not_required", "missing"]), creditTier: z.enum(["selected", "standard"]), anchorProgram: z.enum(["active", "none", "unknown"]),
   debtorCount: z.number().int().min(1).max(1000000).nullable(), largestDebtorAmount: money.nullable(),
+  /** Canonical key of the debtor, or of the declared debtor set; lots of one debtor share it. */
+  debtorKey: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,79}$/), debtorSetDisjoint: z.boolean().nullable(),
 });
 /** One funding option with its eligibility (none for the bank line), rate, taxes and lead time. */
 const option = z.strictObject({
@@ -52,6 +54,7 @@ export const receivablesFundingFactsSchema = z.strictObject({
     if ((i.encumbrance === "free") !== (i.encumbranceHolder === null)) fail(`Item ${i.id} must name the holder of its encumbrance, and only then`);
     if (i.releaseEvent !== null && i.encumbrance === "free") fail(`Item ${i.id} is free and has no release event`);
     if (i.dueDate < i.originDate || i.originDate > f.referenceDate) fail(`Item ${i.id} has inconsistent dates`);
+    if ((i.debtorCount === 1) !== (i.debtorSetDisjoint === null)) fail(`Item ${i.id} declares the disjoint debtor set only when it has several debtors`);
   }
   if (new Set(f.options.map((o) => o.value.id)).size !== f.options.length) fail("Duplicate option");
   for (const {value: o} of f.options) {
@@ -109,6 +112,8 @@ export function proposeReceivablesFundingHypotheses(raw: unknown): ProposedHypot
     txt(p + "anchorProgram", "convention", v.anchorProgram, r);
     if (v.debtorCount !== null) num(p + "debtorCount", "count", v.debtorCount, r);
     if (v.largestDebtorAmount !== null) num(p + "largestDebtorAmount", "currency", v.largestDebtorAmount, r);
+    txt(p + "debtorKey", "identity", v.debtorKey, r);
+    if (v.debtorSetDisjoint !== null) txt(p + "debtorSetDisjoint", "convention", v.debtorSetDisjoint ? "declared" : "not_declared", r);
   }
   for (const o of f.options) {
     const v = o.value, p = `option.${v.id}.`, r = why(o);
