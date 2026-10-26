@@ -50,6 +50,30 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareWeeklyCashPacket', input: 'weeklyCashPacketInputSchema', output: 'weeklyCashPacketOutputSchema'}),
     entry: 'export {prepareWeeklyCashPacket, weeklyCashPacketInputSchema, weeklyCashPacketOutputSchema} from "../../packages/financial-model/src/weekly-cash-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'update-after-quarter-close',
+    executorKey: '@offroad/financial-model#prepareQuarterUpdatePacket', executorVersion: '2026.10.26-v1',
+    exports: Object.freeze({calculate: 'prepareQuarterUpdatePacket', input: 'quarterUpdatePacketInputSchema', output: 'quarterUpdatePacketOutputSchema'}),
+    entry: 'export {prepareQuarterUpdatePacket, quarterUpdatePacketInputSchema, quarterUpdatePacketOutputSchema} from "../../packages/financial-model/src/quarter-update-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'monetize-receivables-for-working-capital',
+    executorKey: '@offroad/financial-model#prepareReceivablesFundingPacket', executorVersion: '2026.10.26-v1',
+    exports: Object.freeze({calculate: 'prepareReceivablesFundingPacket', input: 'receivablesFundingPacketInputSchema', output: 'receivablesFundingPacketOutputSchema'}),
+    entry: 'export {prepareReceivablesFundingPacket, receivablesFundingPacketInputSchema, receivablesFundingPacketOutputSchema} from "../../packages/financial-model/src/receivables-funding-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'challenge-financial-projection',
+    executorKey: '@offroad/financial-model#prepareProjectionChallengePacket', executorVersion: '2026.10.26-v1',
+    exports: Object.freeze({calculate: 'prepareProjectionChallengePacket', input: 'projectionChallengePacketInputSchema', output: 'projectionChallengePacketOutputSchema'}),
+    entry: 'export {prepareProjectionChallengePacket, projectionChallengePacketInputSchema, projectionChallengePacketOutputSchema} from "../../packages/financial-model/src/projection-challenge-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'build-operating-projection',
+    executorKey: '@offroad/financial-model#prepareOperatingProjectionPacket', executorVersion: '2026.10.26-v1',
+    exports: Object.freeze({calculate: 'prepareOperatingProjectionPacket', input: 'operatingProjectionPacketInputSchema', output: 'operatingProjectionPacketOutputSchema'}),
+    entry: 'export {prepareOperatingProjectionPacket, operatingProjectionPacketInputSchema, operatingProjectionPacketOutputSchema} from "../../packages/financial-model/src/operating-projection-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */

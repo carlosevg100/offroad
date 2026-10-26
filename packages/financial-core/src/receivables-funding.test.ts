@@ -1,0 +1,86 @@
+import {describe, expect, it} from "vitest";
+import {assessReceivablesFunding, type ReceivablesFundingInput} from "./receivables-funding";
+import {auroraReceivablesFunding as base} from "./receivables-funding.fixture";
+
+const n = (v: string | null | undefined, p = 1) => Number(v).toFixed(p);
+const withItem = (id: string, patch: object): ReceivablesFundingInput => ({...base, items: base.items.map(i => i.id === id ? {...i, ...patch} : i)});
+const withOption = (id: string, patch: object): ReceivablesFundingInput => ({...base, options: base.options.map(o => o.id === id ? {...o, ...patch} : o)});
+const programA = (): ReceivablesFundingInput => ({...withItem("rede-a", {anchorProgram: "active"}), options: [...base.options,
+  {...base.options[0]!, id: "risco-sacado-a", label: "Risco sacado da rede A", eligibility: {...base.options[0]!.eligibility!, anchorItemIds: ["rede-a"]},
+    rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]});
+
+describe("receivables funding", () => {
+  const r = assessReceivablesFunding(base);
+  const o = (id: string) => r.options.find(x => x.id === id)!;
+  it("separates the assignable portfolio from the gross, with the reason for every exclusion", () => {
+    expect([r.portfolio.gross, r.portfolio.assignable, r.portfolio.excluded]).toEqual(["62", "25", "37"]);
+    expect(r.portfolio.items.filter(i => i.excluded !== "0").map(i => [i.itemId, i.excluded, i.reasons])).toEqual([
+      ["rede-a", "19.8", ["not_assignable"]], ["redes-c-d", "12", ["encumbered"]], ["rede-e", "1.5", ["debtor_sublimit"]],
+      ["rede-f", "1.5", ["debtor_sublimit"]], ["vencidos", "2.2", ["past_due"]]]);
+    expect(r.portfolio.releases).toEqual([{itemId: "redes-c-d", amount: "12", holder: "Bradesco", releaseEvent: "pré-pagamento da CCB do Bradesco", assignableAfterRelease: "6", verified: false}]);
+  });
+  it("sizes each option by its eligibility and sublimit, as the oracle", () => {
+    expect(["risco-sacado-b", "fidc-com-coobrigacao", "fidc-sem-coobrigacao"].map(id => o(id).volume)).toEqual(["3.7", "21.3", "10"]);
+    expect(o("linha-giro").volume).toBeNull();
+    // The varejo buckets have no largest debtor: the FIDC volume is an upper bound, and says so.
+    expect([o("fidc-com-coobrigacao").volumeVerified, r.gaps.map(g => g.item)]).toEqual([false, ["item.varejo-selecionado.largestDebtorAmount", "item.varejo-demais.largestDebtorAmount"]]);
+  });
+  it("costs every option for the same amount and time in use, IOF where it applies", () => {
+    expect(r.ranking.map(x => [x.id, n(x.total, 2)])).toEqual([["risco-sacado-b", "1.33"], ["fidc-com-coobrigacao", "1.75"], ["linha-giro", "1.82"],
+      ["desconto-bancario", "1.96"], ["fidc-sem-coobrigacao", "2.08"]]);
+    expect(r.options.map(x => [x.id, x.iofApplies])).toEqual([["risco-sacado-b", false], ["fidc-com-coobrigacao", false], ["fidc-sem-coobrigacao", false],
+      ["desconto-bancario", true], ["linha-giro", true]]);
+    expect(n(o("desconto-bancario").cost.draws)).toBe("3.6");
+  });
+  it("converts monthly rates to annual effective before comparing with the DI", () => {
+    expect([n(String(Number(o("fidc-com-coobrigacao").rates.annualEffective) * 100)), n(String(Number(o("fidc-com-coobrigacao").rates.spreadOverDi) * 100))]).toEqual(["21.0", "5.3"]);
+    expect([n(String(Number(o("fidc-sem-coobrigacao").rates.annualEffective) * 100)), n(String(Number(o("fidc-sem-coobrigacao").rates.spreadOverDi) * 100))]).toEqual(["25.3", "9.1"]);
+    expect(n(o("risco-sacado-b").rates.spreadOverDi, 4)).toBe("0.0120");
+  });
+  it("states the balance sheet and negative pledge effect of each", () => {
+    expect(r.options.map(x => [x.id, x.balanceSheet, x.measuredDebtAdded, x.lien, x.fitsLienBasket])).toEqual([
+      ["risco-sacado-b", "derecognized", "0", "not_a_guarantee_confirm_with_counsel", null],
+      ["fidc-com-coobrigacao", "tends_to_remain_as_liability", "17", "not_a_guarantee_confirm_with_counsel", null],
+      ["fidc-sem-coobrigacao", "derecognized", "0", "not_a_guarantee_confirm_with_counsel", null],
+      ["desconto-bancario", "liability", "17", "uses_basket", false],
+      ["linha-giro", "liability", "17", "uses_basket_if_collateralized", false]]);
+  });
+  it("fills the peak from the cheapest option, keeps the line as reserve and dates the start", () => {
+    expect(r.plan).toEqual({steps: [{optionId: "risco-sacado-b", amount: "3.7", cumulative: "3.7"}, {optionId: "fidc-com-coobrigacao", amount: "21.3", cumulative: "25"}],
+      covered: "25", coversPeak: true, reserve: "linha-giro"});
+    expect(r.timing).toEqual({startBy: "2026-09-16", slackDays: 1, leadDaysMax: 30, conditionsPrecedent: [{code: "duplicata_registration", amount: "21.3"}]});
+    expect(r.questions.map(q => [q.code, q.itemId])).toEqual([["anchor_program_of_restricted_debtor", "rede-a"], ["duplicata_registration_capability", null]]);
+  });
+  it("does not read a dedicated vehicle into a seasonal need", () => {
+    expect([n(r.dedicatedVehicle.monthlyAssignable), r.dedicatedVehicle.reading]).toEqual(["12.8", "not_for_seasonal_need"]);
+    expect(assessReceivablesFunding({...base, needProfile: "structural"}).dedicatedVehicle.reading).toBe("worth_studying");
+  });
+  it("reorders the plan when the restricted debtor's own program is confirmed", () => {
+    const a = assessReceivablesFunding(programA());
+    expect(a.plan.steps.map(s => [s.optionId, s.cumulative])).toEqual([["risco-sacado-b", "3.7"], ["risco-sacado-a", "23.5"], ["fidc-com-coobrigacao", "44.8"]]);
+    expect(a.questions.map(q => q.code)).toEqual(["duplicata_registration_capability"]);
+    // The program's terms are still to be asked: without its lead time the start date is a gap, not a guess.
+    expect([a.timing.startBy, a.gaps.at(-1)]).toEqual([null, {item: "option.risco-sacado-a.leadDays", reason: "lead_time_not_informed"}]);
+  });
+  it("never assigns a prohibited, encumbered or overdue bucket", () => {
+    const named = {...withItem("redes-c-d", {anchorProgram: "active"}), options: base.options.map(x => x.id === "risco-sacado-b"
+      ? {...x, eligibility: {...x.eligibility!, anchorItemIds: ["rede-b", "redes-c-d"]}} : x)};
+    expect(assessReceivablesFunding(named).options[0]!.byItem.find(b => b.itemId === "redes-c-d")).toMatchObject({retained: "0", reasons: ["encumbered"]});
+    expect(() => assessReceivablesFunding(withOption("risco-sacado-b", {eligibility: {...base.options[0]!.eligibility!, anchorItemIds: ["rede-a"]}}))).toThrow("receivables_funding_anchor_program_not_active");
+    expect(() => assessReceivablesFunding(withOption("fidc-com-coobrigacao", {collateral: "receivables_assignment"}))).toThrow("receivables_funding_sale_with_collateral");
+    expect(() => assessReceivablesFunding(withOption("desconto-bancario", {recourse: "without_recourse"}))).toThrow("receivables_funding_option_recourse");
+  });
+  it("refuses malformed portfolios", () => {
+    expect(() => assessReceivablesFunding(withItem("redes-c-d", {encumbranceHolder: null}))).toThrow("receivables_funding_encumbrance_holder");
+    expect(() => assessReceivablesFunding(withItem("rede-e", {largestDebtorAmount: "1"}))).toThrow("receivables_funding_largest_debtor");
+    expect(() => assessReceivablesFunding({...base, needPeak: "10"})).toThrow("receivables_funding_need");
+    expect(() => assessReceivablesFunding(withOption("linha-giro", {eligibility: base.options[1]!.eligibility}))).toThrow("receivables_funding_option_eligibility");
+    expect(() => assessReceivablesFunding(withItem("rede-a", {amount: "-1"}))).toThrow("receivables_funding_invalid_amount");
+  });
+  it("proves the sublimit for several debtors only by the largest one", () => {
+    const known = assessReceivablesFunding(withItem("varejo-demais", {debtorCount: 280, largestDebtorAmount: "0.4"}));
+    expect(known.options[1]!.byItem.find(b => b.itemId === "varejo-demais")).toMatchObject({retained: "11.3", sublimitVerified: true});
+    const over = assessReceivablesFunding(withItem("varejo-demais", {debtorCount: 280, largestDebtorAmount: "5"}));
+    expect(over.options[1]!.byItem.find(b => b.itemId === "varejo-demais")).toMatchObject({retained: "9.3", sublimitVerified: false});
+  });
+});

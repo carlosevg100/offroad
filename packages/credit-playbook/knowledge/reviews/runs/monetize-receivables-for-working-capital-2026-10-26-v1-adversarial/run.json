@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "monetize-receivables-for-working-capital-2026-10-26-v1-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "monetize-receivables-for-working-capital",
+    "version": "2026.10.26-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareReceivablesFundingPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/receivables-funding-runs.test-support.ts",
+    "exportName": "buildReceivablesFundingRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-26T12:43:01.973Z",
+    "finishedAt": "2026-10-26T12:43:02.138Z",
+    "commit": "930087c5d543e0a573150fc5978ebc52f889d91c"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5448df213294fe9dc37236fda5af202f864e3c255cec829ad138d894ffa4de0f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-result-in-request",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "1cb02888963627a69409f62b9c20252aa007ce164b9c8bbbe7f6d50be6d4327a",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-grant-in-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "93c8cd29f0d97fbe9a61534d69526c6d3c9c9a0313ef0bbf555079b868d381e6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-approval-promise",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7f7a9d641321c8c6be7b59bf203856ea5457febcb33706f2edf8fb10585ad3ec",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "program-buys-a-debtor-without-a-program",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e73d3a8041ecca30a051ea5feb96382eca9c18b044f2db6404d44a0c016b6fad",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "policy-override-to-take-encumbered-receivables",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b9f44900fab3562df659598e5e934ff7fd72a4ec192033b7fa260f4ad73de497",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "sale-carrying-collateral",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "68dc308a1817d02b938f62dfc78a4dd227a22b9eb1a9d121cfcaa59297f1c535",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "discount-without-recourse",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6a0b2e9ce1b20273073da627be246948a47705365a4971cce222f86f9fc96cf4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "bank-line-with-portfolio-eligibility",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "01637ed1970dc7dc8a736405a80a65acada08b81b7d2d75518dbd090c921519b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "rate-without-a-declared-period",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3732d1a47dc3cbd4ddca2620c834b6c6fa2c8e1dc650cf3529e1f61492fba24f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "encumbrance-without-holder",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "0c04796a46d18d87fcae8a9c53999c1f1b923da707854aecbc3c4ce40c020295",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "peak-below-average-need",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4f22f7843dfc4d9603ce684e8039c5db892c0dba44fd25df85b77e0dfe340ee9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "largest-debtor-above-its-bucket",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ec6214af9a4b0d2ee8ff38bf98259559d80205b0fbd3a2cd4dd34b405d545f1f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "figure-read-in-another-scenario",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3d38ba0189acfbf652a8558e67befc550d67c3b2612ba597c56db83617ad206f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "74486ed80d3bdd61de9ef5b6229b62767025c5c12909180df7f8d1e9d0431be9",
+  "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

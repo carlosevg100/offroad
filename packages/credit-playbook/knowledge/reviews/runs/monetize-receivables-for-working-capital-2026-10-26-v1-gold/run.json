@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "monetize-receivables-for-working-capital-2026-10-26-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "monetize-receivables-for-working-capital",
+    "version": "2026.10.26-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareReceivablesFundingPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/receivables-funding-runs.test-support.ts",
+    "exportName": "buildReceivablesFundingRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-26T12:43:01.973Z",
+    "finishedAt": "2026-10-26T12:43:02.138Z",
+    "commit": "930087c5d543e0a573150fc5978ebc52f889d91c"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gross-portfolio-is-not-assignable",
+      "expectation": "{\"gross\":62,\"assignable\":25,\"nearTwentyFive\":true}",
+      "observed": "{\"gross\":62,\"assignable\":25,\"nearTwentyFive\":true}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "every-exclusion-carries-its-reason",
+      "expectation": "[[\"rede-a\",19.8,[\"not_assignable\"]],[\"redes-c-d\",12,[\"encumbered\"]],[\"rede-e\",1.5,[\"debtor_sublimit\"]],[\"rede-f\",1.5,[\"debtor_sublimit\"]],[\"vencidos\",2.2,[\"past_due\"]]]",
+      "observed": "[[\"rede-a\",19.8,[\"not_assignable\"]],[\"redes-c-d\",12,[\"encumbered\"]],[\"rede-e\",1.5,[\"debtor_sublimit\"]],[\"rede-f\",1.5,[\"debtor_sublimit\"]],[\"vencidos\",2.2,[\"past_due\"]]]",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "options-sized-by-eligibility-and-sublimit",
+      "expectation": "{\"riscoSacadoB\":3.7,\"fidcWithRecourse\":21.3,\"fidcWithoutRecourse\":10}",
+      "observed": "{\"riscoSacadoB\":3.7,\"fidcWithRecourse\":21.3,\"fidcWithoutRecourse\":10}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "cost-for-the-time-in-use-against-the-bank-line",
+      "expectation": "[[\"risco-sacado-b\",1.33,true],[\"fidc-com-coobrigacao\",1.75,true],[\"linha-giro\",1.82,true],[\"desconto-bancario\",1.96,true],[\"fidc-sem-coobrigacao\",2.08,true]]",
+      "observed": "[[\"risco-sacado-b\",1.33,true],[\"fidc-com-coobrigacao\",1.75,true],[\"linha-giro\",1.82,true],[\"desconto-bancario\",1.96,true],[\"fidc-sem-coobrigacao\",2.08,true]]",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "iof-where-it-applies",
+      "expectation": "{\"withIof\":[\"linha-giro\",\"desconto-bancario\"],\"discountDraws\":3.6}",
+      "observed": "{\"withIof\":[\"linha-giro\",\"desconto-bancario\"],\"discountDraws\":3.6}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "monthly-rates-converted-before-comparing",
+      "expectation": "{\"1,6% a.m.\":[21,5.3],\"1,9% a.m.\":[25.3,9.1]}",
+      "observed": "{\"1,6% a.m.\":[21,5.3],\"1,9% a.m.\":[25.3,9.1]}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "recourse-on-the-balance-sheet-and-the-covenant",
+      "expectation": "[[\"fidc-com-coobrigacao\",\"tends_to_remain_as_liability\",17],[\"fidc-sem-coobrigacao\",\"derecognized\",0],[\"risco-sacado-b\",\"derecognized\",0]]",
+      "observed": "[[\"fidc-com-coobrigacao\",\"tends_to_remain_as_liability\",17],[\"fidc-sem-coobrigacao\",\"derecognized\",0],[\"risco-sacado-b\",\"derecognized\",0]]",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "sale-is-not-a-guarantee-under-the-negative-pledge",
+      "expectation": "{\"sales\":[\"not_a_guarantee_confirm_with_counsel\"],\"line\":\"uses_basket_if_collateralized\",\"lineFitsBasket\":false}",
+      "observed": "{\"sales\":[\"not_a_guarantee_confirm_with_counsel\"],\"line\":\"uses_basket_if_collateralized\",\"lineFitsBasket\":false}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "asks-about-retailer-a-program",
+      "expectation": "[[\"anchor_program_of_restricted_debtor\",\"rede-a\",19.8],[\"duplicata_registration_capability\",null,21.3]]",
+      "observed": "[[\"anchor_program_of_restricted_debtor\",\"rede-a\",19.8],[\"duplicata_registration_capability\",null,21.3]]",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "fifteen-to-thirty-days-with-registration-as-condition-precedent",
+      "expectation": "{\"fidcLead\":{\"min\":15,\"max\":30},\"startBy\":\"2026-09-16\",\"slackDays\":1,\"conditions\":[[\"duplicata_registration\",21.3]]}",
+      "observed": "{\"fidcLead\":{\"min\":15,\"max\":30},\"startBy\":\"2026-09-16\",\"slackDays\":1,\"conditions\":[[\"duplicata_registration\",21.3]]}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "several-buyers-and-the-bank-line-as-reserve",
+      "expectation": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"fidc-com-coobrigacao\",25]],\"coversPeak\":true,\"reserve\":\"linha-giro\",\"buyers\":\"several_in_parallel\",\"named\":false,\"approval\":false}",
+      "observed": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"fidc-com-coobrigacao\",25]],\"coversPeak\":true,\"reserve\":\"linha-giro\",\"buyers\":\"several_in_parallel\",\"named\":false,\"approval\":false}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "no-dedicated-vehicle-for-a-seasonal-need",
+      "expectation": "{\"monthly\":12.8,\"reading\":\"not_for_seasonal_need\"}",
+      "observed": "{\"monthly\":12.8,\"reading\":\"not_for_seasonal_need\"}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "retailer-a-program-reorders-the-plan",
+      "expectation": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"risco-sacado-a\",23.5],[\"fidc-com-coobrigacao\",44.8]],\"questions\":[\"duplicata_registration_capability\"],\"startBy\":null}",
+      "observed": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"risco-sacado-a\",23.5],[\"fidc-com-coobrigacao\",44.8]],\"questions\":[\"duplicata_registration_capability\"],\"startBy\":null}",
+      "inputFingerprint": "1de6ab939d6dff51bf1fbaaa00a0f888c2cce332e35ab12442ab08ca0cb2904d",
+      "outputFingerprint": "47c798f02a72d1babae0ca10f5f312c909096dc5f7929bc5eae88ccda17ed432",
+      "passed": true
+    },
+    {
+      "id": "encumbered-bucket-released-under-the-same-sublimit",
+      "expectation": "[[\"redes-c-d\",12,\"pré-pagamento da CCB do Bradesco\",6,false]]",
+      "observed": "[[\"redes-c-d\",12,\"pré-pagamento da CCB do Bradesco\",6,false]]",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "largest-debtor-unknown-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"partial\",\"gaps\":[\"item.varejo-selecionado.largestDebtorAmount\",\"item.varejo-demais.largestDebtorAmount\"]}",
+      "observed": "{\"status\":\"partial\",\"gaps\":[\"item.varejo-selecionado.largestDebtorAmount\",\"item.varejo-demais.largestDebtorAmount\"]}",
+      "inputFingerprint": "c1bea73eaa1888bce7391255f372822a29e255248c0e9b92a72ff0a567f52bb6",
+      "outputFingerprint": "cfdb5a8db834f7eddaf9122a39f2464c5846434729d3a8374dfd309fc147a6b1",
+      "passed": true
+    },
+    {
+      "id": "absent-peak-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"gap\":true}",
+      "inputFingerprint": "dfa0cbbfc3820717031fa8133d92546c682c7ab067ea14dc9f395bce3507d45d",
+      "outputFingerprint": "982346c4cf0f74b2eeeeae38b0b0732202f391c45794c607b6ce96a63a6e9617",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "e909239a9e39becb5d9656de3f5a514f378fcada1725cece6fcc02a1111e2a41",
+  "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

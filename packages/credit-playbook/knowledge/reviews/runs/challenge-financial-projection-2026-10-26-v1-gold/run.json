@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "challenge-financial-projection-2026-10-26-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "challenge-financial-projection",
+    "version": "2026.10.26-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareProjectionChallengePacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/projection-challenge-runs.test-support.ts",
+    "exportName": "buildProjectionChallengeRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-26T12:39:21.063Z",
+    "finishedAt": "2026-10-26T12:39:21.162Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "plan-about-27-million-above-the-reference-in-2028",
+      "expectation": "{\"plan\":86,\"reference\":58.8,\"ebitda\":27.2,\"cash\":19.1}",
+      "observed": "{\"plan\":86,\"reference\":58.8,\"ebitda\":27.2,\"cash\":19.1}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "margin-to-16-2-without-a-stated-cause",
+      "expectation": "{\"first\":12.4,\"target\":16.2,\"reference\":12.1,\"cause\":null}",
+      "observed": "{\"first\":12.4,\"target\":16.2,\"reference\":12.1,\"cause\":null}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "price-above-cost-is-the-largest-effect-with-margin-per-kg",
+      "expectation": "{\"largest\":\"preco\",\"ebitda\":12.9,\"cash\":7.8,\"planGrowth\":3.5,\"unitMargin\":[1.24,1.43],\"referenceUnitMargin\":1.32,\"unitMarginChange\":15.4}",
+      "observed": "{\"largest\":\"preco\",\"ebitda\":12.9,\"cash\":7.8,\"planGrowth\":3.5,\"unitMargin\":[1.24,1.43],\"referenceUnitMargin\":1.32,\"unitMarginChange\":15.4}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "assumptions-in-order-of-isolated-effect",
+      "expectation": "[[\"preco\",12.9,7.8],[\"volume\",9.6,4.7],[\"fixos\",3.8,2.5],[\"prazo-capex\",0,3.3]]",
+      "observed": "[[\"preco\",12.9,7.8],[\"volume\",9.6,4.7],[\"fixos\",3.8,2.5],[\"prazo-capex\",0,3.3]]",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "volume-above-the-118-thousand-tonne-capacity-in-2028-without-capex",
+      "expectation": "{\"planGrowth\":4.5,\"referenceGrowth\":2.3,\"firstAbove\":\"2028\",\"excess\":1.8,\"investmentInPlan\":false,\"condition\":\"limit_quantity_to_capacity_or_add_the_investment_and_its_financing\"}",
+      "observed": "{\"planGrowth\":4.5,\"referenceGrowth\":2.3,\"firstAbove\":\"2028\",\"excess\":1.8,\"investmentInPlan\":false,\"condition\":\"limit_quantity_to_capacity_or_add_the_investment_and_its_financing\"}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "fixed-costs-below-inflation",
+      "expectation": "{\"planGrowth\":3,\"referenceGrowth\":4.5,\"ebitda\":3.8}",
+      "observed": "{\"planGrowth\":3,\"referenceGrowth\":4.5,\"ebitda\":3.8}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "receivable-days-and-maintenance-capex-in-cash",
+      "expectation": "{\"ebitda\":0,\"cash\":3.3,\"days\":[45,50],\"capex\":[5,8],\"cashPerDay\":1.48,\"atRequestedDays\":22.1}",
+      "observed": "{\"ebitda\":0,\"cash\":3.3,\"days\":[45,50],\"capex\":[5,8],\"cashPerDay\":1.48,\"atRequestedDays\":22.1}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "evidence-that-would-sustain-each-assumption",
+      "expectation": "[[\"preco\",3,true],[\"volume\",2,true],[\"fixos\",1,true],[\"prazo-capex\",2,true]]",
+      "observed": "[[\"preco\",3,true],[\"volume\",2,true],[\"fixos\",1,true],[\"prazo-capex\",2,true]]",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "interaction-between-assumptions-shown-not-absorbed",
+      "expectation": "{\"ebitda\":0.8,\"cash\":0.7,\"explainedByThree\":96.9}",
+      "observed": "{\"ebitda\":0.8,\"cash\":0.7,\"explainedByThree\":96.9}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "effects-from-the-plan-under-the-second-convention",
+      "expectation": "[[\"preco\",13.8,8.4],[\"volume\",10.5,5.4],[\"fixos\",3.8,2.5],[\"prazo-capex\",0,3.6]]",
+      "observed": "[[\"preco\",13.8,8.4],[\"volume\",10.5,5.4],[\"fixos\",3.8,2.5],[\"prazo-capex\",0,3.6]]",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "present-the-current-plan-as-the-upside-case",
+      "expectation": "{\"kind\":\"present_plan_as_upside_case\",\"baseCase\":\"reference_with_documented_assumptions\",\"conditions\":[\"preco\",\"volume\",\"fixos\",\"prazo-capex\"]}",
+      "observed": "{\"kind\":\"present_plan_as_upside_case\",\"baseCase\":\"reference_with_documented_assumptions\",\"conditions\":[\"preco\",\"volume\",\"fixos\",\"prazo-capex\"]}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "no-scenario-no-rebuilt-model-no-material",
+      "expectation": "{\"exclusions\":[\"scenario_execution\",\"model_rebuild\",\"material_production\",\"credit_approval\",\"method_release\"],\"grantsExecution\":false,\"status\":\"prepared_for_human_review\"}",
+      "observed": "{\"exclusions\":[\"scenario_execution\",\"model_rebuild\",\"material_production\",\"credit_approval\",\"method_release\"],\"grantsExecution\":false,\"status\":\"prepared_for_human_review\"}",
+      "inputFingerprint": "ba2f7a626dfa27a49b1b74596743f0ceacb8fdfe0a049c6074d8cfea1f855767",
+      "outputFingerprint": "bc0dc1adfcecc3b606f779537259dc174a74c974d38ef7c1a0999363d3c60260",
+      "passed": true
+    },
+    {
+      "id": "turn-two-premium-line-needs-mix-share",
+      "expectation": "{\"shareNeeded\":10.6,\"perYear\":3.5,\"questions\":[\"current_premium_share\",\"premium_incremental_unit_cost\",\"premium_sell_in_since_launch\"]}",
+      "observed": "{\"shareNeeded\":10.6,\"perYear\":3.5,\"questions\":[\"current_premium_share\",\"premium_incremental_unit_cost\",\"premium_sell_in_since_launch\"]}",
+      "inputFingerprint": "f601a34c224a7cae9e86fd42500427181c0464f2e454260aa22b8bbaff51c3c4",
+      "outputFingerprint": "86f8895586807ac59d20f7c842908d7f70e0aef5e8b5d78fa1eb0051ba009cf7",
+      "passed": true
+    },
+    {
+      "id": "documented-price-leaves-the-conditions",
+      "expectation": "[\"volume\",\"fixos\",\"prazo-capex\"]",
+      "observed": "[\"volume\",\"fixos\",\"prazo-capex\"]",
+      "inputFingerprint": "a61de54fa6f52fc97fe9431b13cf6e1f7ed472d9ceca1f4e8ce2c5d3e1d8bebf",
+      "outputFingerprint": "eec57e356e402e923517373afcf71f9de75a98e9a9d00fee61e2fec2e83fd322",
+      "passed": true
+    },
+    {
+      "id": "capacity-not-informed-is-a-gap-and-a-question",
+      "expectation": "{\"status\":\"partial\",\"gaps\":[\"installed_capacity_not_informed\"],\"questions\":[\"installed_capacity\"]}",
+      "observed": "{\"status\":\"partial\",\"gaps\":[\"installed_capacity_not_informed\"],\"questions\":[\"installed_capacity\"]}",
+      "inputFingerprint": "827bbd79c0ce8fa3a13582adf330902535402cbb653b71556dcae792eae43068",
+      "outputFingerprint": "d1d8b5e69eb49acbe64f785c0a8866daa497b96b3b0e52f07d765ae5c932cfe4",
+      "passed": true
+    },
+    {
+      "id": "absent-plan-figure-is-a-gap-not-a-default",
+      "expectation": "{\"status\":\"framed\",\"readings\":null,\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"readings\":null,\"gap\":true}",
+      "inputFingerprint": "7f94c89d7bae8c691aa0d2017c0deaeeea4392ac4e1ffdd89594badb0270ff34",
+      "outputFingerprint": "abe28100de5ab616480ba18794f14fbe2290550235705847f010b01f794c72e5",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "355b3c240d62ddc461bb35ecd2916c16d8615fec76ae7327e7e52753beea2b5b",
+  "notes": "Synthetic deterministic execution calibrated on ficha C26. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

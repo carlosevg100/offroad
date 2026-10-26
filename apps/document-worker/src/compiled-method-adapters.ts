@@ -18,6 +18,14 @@ export const compiledMethodAdapters = [
     exports: {calculate: "prepareCovenantHeadroomPacket", input: "covenantHeadroomPacketInputSchema", output: "covenantHeadroomPacketOutputSchema"}},
   {methodId: "project-weekly-cash", executorKey: "@offroad/financial-model#prepareWeeklyCashPacket", executorVersion: "2026.10.23-v1",
     exports: {calculate: "prepareWeeklyCashPacket", input: "weeklyCashPacketInputSchema", output: "weeklyCashPacketOutputSchema"}},
+  {methodId: "update-after-quarter-close", executorKey: "@offroad/financial-model#prepareQuarterUpdatePacket", executorVersion: "2026.10.26-v1",
+    exports: {calculate: "prepareQuarterUpdatePacket", input: "quarterUpdatePacketInputSchema", output: "quarterUpdatePacketOutputSchema"}},
+  {methodId: "monetize-receivables-for-working-capital", executorKey: "@offroad/financial-model#prepareReceivablesFundingPacket", executorVersion: "2026.10.26-v1",
+    exports: {calculate: "prepareReceivablesFundingPacket", input: "receivablesFundingPacketInputSchema", output: "receivablesFundingPacketOutputSchema"}},
+  {methodId: "challenge-financial-projection", executorKey: "@offroad/financial-model#prepareProjectionChallengePacket", executorVersion: "2026.10.26-v1",
+    exports: {calculate: "prepareProjectionChallengePacket", input: "projectionChallengePacketInputSchema", output: "projectionChallengePacketOutputSchema"}},
+  {methodId: "build-operating-projection", executorKey: "@offroad/financial-model#prepareOperatingProjectionPacket", executorVersion: "2026.10.26-v1",
+    exports: {calculate: "prepareOperatingProjectionPacket", input: "operatingProjectionPacketInputSchema", output: "operatingProjectionPacketOutputSchema"}},
 ] as const;
 export type CompiledMethodAdapter = (typeof compiledMethodAdapters)[number];
 export const compiledMethodIds: readonly string[] = compiledMethodAdapters.map(a => a.methodId);
