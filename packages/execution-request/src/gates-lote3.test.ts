@@ -16,9 +16,9 @@ const methods = [
   {methodId: "update-after-quarter-close", situations: ["seasonal-working-capital", "near-covenant"], packet: quarter},
 ];
 
-// The lote 3 executors are not packaged yet: until a compiled release pins them, the gates refuse the
-// request as method_unavailable and the confirmed premises wait. What the release will need is proved here:
-// the situations the premise cards ask are served and the calibration packets pass the voice gate.
+// The lote 3 executors are packaged on main (#952): the gates open over the released version, refuse any other
+// version as method_unavailable, serve the situations the premise cards ask, and the calibration packets pass
+// the voice gate.
 describe.each(methods)("gates of $methodId 2026.10.26-v1", ({methodId, situations, packet}) => {
   const method = {methodId, methodVersion: "2026.10.26-v1", manifestHash: "0".repeat(64)};
   it.each(situations)("serve the situation the premise card asks (%s)", (situationId) => {
@@ -27,8 +27,10 @@ describe.each(methods)("gates of $methodId 2026.10.26-v1", ({methodId, situation
   it("pass the voice gate over the calibration packet", () => {
     expect(auditVoice(packetSystemStrings(packet), {channel: "packet"}).filter((f) => f.severity === "block")).toEqual([]);
   });
-  it("wait for the packaged release before opening", () => {
-    expect(openExecutionGates({company, method, situationIds: [situations[0]!], referenceDate: "2026-10-26"})).toEqual({ok: false, error: "method_unavailable"});
+  it("open over the packaged release, and only over that version", () => {
+    expect(openExecutionGates({company, method, situationIds: [situations[0]!], referenceDate: "2026-10-26"})).toMatchObject({ok: true});
+    expect(openExecutionGates({company, method: {...method, methodVersion: "2026.10.23-v1"}, situationIds: [situations[0]!], referenceDate: "2026-10-26"}))
+      .toEqual({ok: false, error: "method_unavailable"});
   });
   it("refuse a situation the method does not serve", () => {
     expect(() => selectMethod({situationIds: ["receivables"], methodId, methodVersion: method.methodVersion})).toThrow("method_not_applicable_for_situation");
