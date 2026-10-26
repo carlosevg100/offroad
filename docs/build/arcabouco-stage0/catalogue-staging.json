@@ -109757,9 +109757,9 @@
       "security_definer": true
     },
     {
-      "id": "function:private.quarter_update_priors_embedded_v1(p_contract jsonb, p_payload jsonb)",
+      "id": "function:private.quarter_update_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
       "kind": "function",
-      "name": "quarter_update_priors_embedded_v1",
+      "name": "quarter_update_priors_recorded_v1",
       "grants": [
         [
           "postgres",

@@ -27737,7 +27737,7 @@
         },
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 132,
+          "line": 138,
           "anchor": "create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
           "mechanism": "direct_ddl"
         }
@@ -342932,7 +342932,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 38,
+          "line": 39,
           "anchor": "create function private.quarter_update_prior_method_v1(p_role text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -342983,11 +342983,11 @@
       "owner": "Claude, implementação do lote 3 de fichas (fechamento do trimestre sobre resultados anteriores)",
       "decision": "preservar",
       "stage": "fichas C54, resultados anteriores",
-      "reason": "Veredito de identidade de um resultado anterior: outra organização como não encontrado, outro trabalho e resultado não concluído recusados pelo nome.",
+      "reason": "Veredito de identidade de um resultado anterior: outra organização ou outro trabalho como não encontrado, sem revelar existência; resultado não concluído recusado pelo nome.",
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 49,
+          "line": 50,
           "anchor": "create function private.quarter_update_prior_identity_v1(p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text",
           "mechanism": "direct_ddl"
         }
@@ -343042,7 +343042,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 60,
+          "line": 61,
           "anchor": "create function private.quarter_update_prior_content_v1(p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,p_prior_snapshot jsonb,p_result jsonb) returns text",
           "mechanism": "direct_ddl"
         }
@@ -343097,7 +343097,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 80,
+          "line": 81,
           "anchor": "create function private.quarter_update_prior_resolve_v1(p_org uuid,p_work uuid,p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343105,13 +343105,13 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
-      "id": "function:private.quarter_update_priors_embedded_v1(p_contract jsonb, p_payload jsonb)",
+      "id": "function:private.quarter_update_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
       "kind": "function",
       "catalogues": {
         "production": {
-          "id": "function:private.quarter_update_priors_embedded_v1(p_contract jsonb, p_payload jsonb)",
+          "id": "function:private.quarter_update_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
           "kind": "function",
-          "name": "quarter_update_priors_embedded_v1",
+          "name": "quarter_update_priors_recorded_v1",
           "grants": [
             [
               "postgres",
@@ -343127,9 +343127,9 @@
           "security_definer": true
         },
         "staging": {
-          "id": "function:private.quarter_update_priors_embedded_v1(p_contract jsonb, p_payload jsonb)",
+          "id": "function:private.quarter_update_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
           "kind": "function",
-          "name": "quarter_update_priors_embedded_v1",
+          "name": "quarter_update_priors_recorded_v1",
           "grants": [
             [
               "postgres",
@@ -343148,12 +343148,12 @@
       "owner": "Claude, implementação do lote 3 de fichas (fechamento do trimestre sobre resultados anteriores)",
       "decision": "preservar",
       "stage": "fichas C54, resultados anteriores",
-      "reason": "Na verificação de proveniência, confere que cada resultado anterior embutido é a entrada guardada de uma execução concluída do mesmo trabalho.",
+      "reason": "Na verificação de proveniência, exige os resultados anteriores que o produtor v3 resolveu e registrou para a própria execução, iguais byte a byte à entrada guardada; pedido por v1 ou v2 não tem registro e é recusado.",
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 107,
-          "anchor": "create function private.quarter_update_priors_embedded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
+          "line": 109,
+          "anchor": "create function private.quarter_update_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
       ],
@@ -343217,7 +343217,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 278,
+          "line": 285,
           "anchor": "create function private.request_work_execution_producer_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343282,7 +343282,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 320,
+          "line": 330,
           "anchor": "create function public.request_work_execution_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343337,7 +343337,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 328,
+          "line": 338,
           "anchor": "create function private.quarter_update_latest_prior_v1(p_org uuid,p_work uuid,p_role text,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343402,7 +343402,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 352,
+          "line": 362,
           "anchor": "create function private.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343467,7 +343467,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 367,
+          "line": 377,
           "anchor": "create function public.quarter_update_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343532,7 +343532,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 374,
+          "line": 384,
           "anchor": "create function private.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343597,7 +343597,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 389,
+          "line": 399,
           "anchor": "create function public.worker_quarter_update_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343763,7 +343763,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 31,
+          "line": 32,
           "anchor": "create policy execution_prior_results_deny on private.execution_prior_results as restrictive for all to public using(false) with check(false);",
           "mechanism": "direct_ddl"
         }
@@ -343802,7 +343802,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 33,
+          "line": 34,
           "anchor": "create trigger execution_prior_results_immutable before update or delete on private.execution_prior_results for each row execute function private.guard_contribution_immutable_v1();",
           "mechanism": "direct_ddl"
         }
@@ -343841,7 +343841,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261026160400_lote3_quarter_update_priors.sql",
-          "line": 34,
+          "line": 35,
           "anchor": "create trigger execution_prior_results_truncate_guard before truncate on private.execution_prior_results for each statement execute function private.guard_platform_ledger_truncate_v1();",
           "mechanism": "direct_ddl"
         }

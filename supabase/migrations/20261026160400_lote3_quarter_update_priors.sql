@@ -18,7 +18,8 @@ create table private.execution_prior_results (
  prior_result_fingerprint text not null,
  created_at timestamptz not null default now(),
  constraint execution_prior_results_pkey primary key(organization_id,execution_id,role),
- constraint execution_prior_results_execution_fkey foreign key(organization_id,execution_id) references public.work_executions(organization_id,id),
+ -- Deferred: the v3 producer records the priors before the execution row exists, so the provenance walk can require them.
+ constraint execution_prior_results_execution_fkey foreign key(organization_id,execution_id) references public.work_executions(organization_id,id) deferrable initially deferred,
  constraint execution_prior_results_prior_fkey foreign key(organization_id,prior_execution_id) references public.work_executions(organization_id,id),
  constraint execution_prior_results_role_check check(role in ('weekly_cash','covenant')),
  constraint execution_prior_results_method_check check((role='weekly_cash' and prior_method_id='project-weekly-cash') or (role='covenant' and prior_method_id='measure-covenant-headroom')),
@@ -43,13 +44,13 @@ language sql immutable set search_path='' as $$
 $$;
 revoke all on function private.quarter_update_prior_method_v1(text) from public,anon,authenticated,service_role;
 
--- 3. The verdicts, over row data only. Identity first: an execution of another organization is reported
--- as not found, so a refusal never tells whether it exists; another work of the same organization,
--- and an execution without a succeeded result, are refused by name.
+-- 3. The verdicts, over row data only. Identity first: an execution of another organization or of another
+-- work is reported as not found, so a refusal never tells whether it exists outside this work; an execution
+-- without a succeeded result is refused by name.
 create function private.quarter_update_prior_identity_v1(p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text
 language sql immutable set search_path='' as $$
  select case when not coalesce(p_found,false) or p_exec_org is distinct from p_org then 'quarter_update_prior_not_found'
-  when p_exec_work is distinct from p_work then 'quarter_update_prior_other_work'
+  when p_exec_work is distinct from p_work then 'quarter_update_prior_not_found'
   when p_outcome is distinct from 'succeeded' then 'quarter_update_prior_not_completed' end;
 $$;
 revoke all on function private.quarter_update_prior_identity_v1(uuid,uuid,boolean,uuid,uuid,text) from public,anon,authenticated,service_role;
@@ -101,29 +102,34 @@ begin
 end $$;
 revoke all on function private.quarter_update_prior_resolve_v1(uuid,uuid,text,jsonb,jsonb,jsonb,uuid) from public,anon,authenticated,service_role;
 
--- 5. The payload check of the quarter close: each embedded prior equals the stored input of a succeeded
--- execution of the same work, of the method and version its role expects. Used inside the provenance walk,
--- where it may only answer true or false.
-create function private.quarter_update_priors_embedded_v1(p_contract jsonb,p_payload jsonb) returns boolean
+-- 5. The payload check of the quarter close: the execution must carry the priors the v3 producer resolved
+-- and recorded for it, and each embedded prior must be exactly the stored input of the recorded execution,
+-- of the same work, succeeded, with the recorded input and packet fingerprints. A request through v1 or v2
+-- has no recorded priors and is refused by the walk. Used inside the walk, where it only answers true or false.
+create function private.quarter_update_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean
 language plpgsql stable security definer set search_path='' as $$
-declare role text;expected jsonb;org uuid;work uuid;
+declare v_role text;expected jsonb;org uuid;work uuid;ex uuid;
 begin
- org:=(p_contract->>'organizationId')::uuid;work:=(p_contract->>'workId')::uuid;
- foreach role in array array['weekly_cash','covenant'] loop
-  expected:=private.quarter_update_prior_method_v1(role);
-  if jsonb_typeof(p_payload#>array['analysis','prior',expected->>'path']) is distinct from 'object' then return false;end if;
-  if not exists(select 1 from public.work_executions e
+ org:=(p_contract->>'organizationId')::uuid;work:=(p_contract->>'workId')::uuid;ex:=(p_contract->>'executionId')::uuid;
+ if org is null or work is null or ex is null or jsonb_typeof(p_payload#>'{analysis,prior}') is distinct from 'object'
+  or (select count(*) from jsonb_object_keys(p_payload#>'{analysis,prior}'))<>2 then return false;end if;
+ foreach v_role in array array['weekly_cash','covenant'] loop
+  expected:=private.quarter_update_prior_method_v1(v_role);
+  if not exists(select 1 from private.execution_prior_results p
+   join public.work_executions e on e.organization_id=p.organization_id and e.id=p.prior_execution_id
    join private.execution_manifests m on m.organization_id=e.organization_id and m.execution_id=e.id
    join private.execution_input_snapshots s on s.organization_id=e.organization_id and s.execution_id=e.id
    join private.execution_result_receipts r on r.organization_id=e.organization_id and r.execution_id=e.id
-   where e.organization_id=org and e.work_id=work and r.outcome='succeeded'
+   where p.organization_id=org and p.execution_id=ex and p.role=v_role and e.work_id=work and r.outcome='succeeded'
     and m.payload#>>'{method,methodId}'=expected->>'methodId' and m.payload#>>'{method,methodVersion}'=expected->>'methodVersion'
-    and r.result->>'schemaVersion'=expected->>'packet' and s.payload->'analysis'=p_payload#>array['analysis','prior',expected->>'path']) then return false;end if;
+    and p.prior_method_id=expected->>'methodId' and p.prior_method_version=expected->>'methodVersion'
+    and s.payload_fingerprint=p.prior_input_fingerprint and r.result->>'fingerprint'=p.prior_result_fingerprint
+    and s.payload->'analysis'=p_payload#>array['analysis','prior',expected->>'path']) then return false;end if;
  end loop;
- return jsonb_typeof(p_payload#>'{analysis,prior}')='object' and (select count(*) from jsonb_object_keys(p_payload#>'{analysis,prior}'))=2;
+ return true;
 exception when data_exception then return false;
 end $$;
-revoke all on function private.quarter_update_priors_embedded_v1(jsonb,jsonb) from public,anon,authenticated,service_role;
+revoke all on function private.quarter_update_priors_recorded_v1(jsonb,jsonb) from public,anon,authenticated,service_role;
 
 -- 6. The provenance walk, unchanged for every other method: the quarter close is bound to its version and
 -- packet schema, its priors are checked whole by section 5, and the walk reads the close alone. The lines
@@ -143,8 +149,8 @@ begin
  if c#>>'{method,methodId}' is null then return false;end if;
  if c#>>'{method,methodId}'='update-after-quarter-close' then -- quarter close
   if c#>>'{method,methodVersion}' is distinct from '2026.10.26-v1' or payload->>'schemaVersion' is distinct from 'quarter-update-packet-input.v1' -- quarter close
-   or not private.quarter_update_priors_embedded_v1(c,payload) then return false;end if; -- quarter close
-  -- The priors are stored inputs of earlier executions of this work, checked whole above; the walk reads the close alone. -- quarter close
+   or not private.quarter_update_priors_recorded_v1(c,payload) then return false;end if; -- quarter close
+  -- The priors are the stored inputs the v3 producer recorded for this execution, checked whole above; the walk reads the close alone. -- quarter close
   payload:=payload #- '{analysis,prior}';pending:=array[payload]; -- quarter close
  end if; -- quarter close
  if c#>>'{method,methodId}' not in ('prepare-capital-structure-decision','analyze-investment-project','compare-financing-proposals','analyze-relative-debt-cost','assess-debt-capacity','build-company-debt-table','measure-covenant-headroom','project-weekly-cash','update-after-quarter-close') then return true;end if;
@@ -273,11 +279,12 @@ end $$;
 revoke all on function private.execution_capital_payload_current_v1(jsonb,jsonb,uuid) from public,anon,authenticated,service_role;
 
 -- 7. The v3 producer, for the quarter close only: the caller's access to the work first, then every prior
--- reference resolved and refused by name, then the v2 producer unchanged, then the prior execution ids
--- pinned with the execution. A replay names the same execution only with the same priors.
+-- reference resolved and refused by name, then the prior execution ids recorded for the contract's execution,
+-- then the v2 producer unchanged, whose provenance walk requires those records. A replay names the same
+-- execution only with the same priors.
 create function private.request_work_execution_producer_v3(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
-declare c jsonb;s jsonb;org uuid;work uuid;resolved jsonb:='[]';ref jsonb;role text;expected jsonb;r jsonb;ex uuid;item jsonb;
+declare c jsonb;s jsonb;org uuid;work uuid;resolved jsonb:='[]';ref jsonb;v_role text;expected jsonb;r jsonb;ex uuid;item jsonb;
 begin
  if auth.uid() is null then raise exception 'execution_subject_required' using errcode='42501';end if;
  if p_contract_text is null or octet_length(p_contract_text)>1048576 or p_snapshot_text is null or octet_length(p_snapshot_text)>8388608
@@ -293,26 +300,29 @@ begin
  if org is null or c->>'organizationId' is distinct from org::text then raise exception 'execution_access_denied' using errcode='42501';end if;
  perform private.execution_read_access_v1(org,work);
  if jsonb_typeof(p_prior_results) is distinct from 'array' or jsonb_array_length(p_prior_results)<>2 then raise exception 'quarter_update_priors_invalid' using errcode='22023';end if;
- foreach role in array array['weekly_cash','covenant'] loop
-  expected:=private.quarter_update_prior_method_v1(role);
-  select x.v into ref from jsonb_array_elements(p_prior_results) x(v) where x.v->>'role'=role;
-  if ref is null or (select count(*) from jsonb_array_elements(p_prior_results) x(v) where x.v->>'role'=role)<>1 then raise exception 'quarter_update_priors_invalid' using errcode='22023';end if;
-  resolved:=resolved||jsonb_build_array(private.quarter_update_prior_resolve_v1(org,work,role,ref,s#>array['analysis','prior',expected->>'path'],c#>'{inputs,sources}',auth.uid()));
+ foreach v_role in array array['weekly_cash','covenant'] loop
+  expected:=private.quarter_update_prior_method_v1(v_role);
+  select x.v into ref from jsonb_array_elements(p_prior_results) x(v) where x.v->>'role'=v_role;
+  if ref is null or (select count(*) from jsonb_array_elements(p_prior_results) x(v) where x.v->>'role'=v_role)<>1 then raise exception 'quarter_update_priors_invalid' using errcode='22023';end if;
+  resolved:=resolved||jsonb_build_array(private.quarter_update_prior_resolve_v1(org,work,v_role,ref,s#>array['analysis','prior',expected->>'path'],c#>'{inputs,sources}',auth.uid()));
   ref:=null;
  end loop;
- r:=private.request_work_execution_producer_v2(p_contract_text,p_snapshot_text,p_gates_text);
- ex:=(r->>'executionId')::uuid;
- if coalesce((r->>'replayed')::boolean,false) then
-  if (select count(*) from private.execution_prior_results p join jsonb_array_elements(resolved) x(v) on x.v->>'role'=p.role
+ ex:=(c->>'executionId')::uuid;
+ if ex is null then raise exception 'execution_contract_denied' using errcode='42501';end if;
+ -- Recorded before the execution exists (the key is deferred), so the provenance walk inside the v2 producer
+ -- finds them; a replay of the same contract finds its own rows, and any other priors under it conflict.
+ for item in select value from jsonb_array_elements(resolved) loop
+  insert into private.execution_prior_results(organization_id,execution_id,role,prior_execution_id,prior_method_id,prior_method_version,prior_input_fingerprint,prior_result_fingerprint)
+  values(org,ex,item->>'role',(item->>'executionId')::uuid,item->>'methodId',item->>'methodVersion',item->>'inputFingerprint',item->>'resultFingerprint')
+  on conflict on constraint execution_prior_results_pkey do nothing;
+ end loop;
+ if (select count(*) from private.execution_prior_results p join jsonb_array_elements(resolved) x(v) on x.v->>'role'=p.role
    where p.organization_id=org and p.execution_id=ex and p.prior_execution_id=(x.v->>'executionId')::uuid
     and p.prior_input_fingerprint=x.v->>'inputFingerprint' and p.prior_result_fingerprint=x.v->>'resultFingerprint')<>2
-  then raise exception 'execution_request_conflict' using errcode='23505',detail=ex::text;end if;
- else
-  for item in select value from jsonb_array_elements(resolved) loop
-   insert into private.execution_prior_results(organization_id,execution_id,role,prior_execution_id,prior_method_id,prior_method_version,prior_input_fingerprint,prior_result_fingerprint)
-   values(org,ex,item->>'role',(item->>'executionId')::uuid,item->>'methodId',item->>'methodVersion',item->>'inputFingerprint',item->>'resultFingerprint');
-  end loop;
- end if;
+  or (select count(*) from private.execution_prior_results p where p.organization_id=org and p.execution_id=ex)<>2
+ then raise exception 'execution_request_conflict' using errcode='23505',detail=ex::text;end if;
+ r:=private.request_work_execution_producer_v2(p_contract_text,p_snapshot_text,p_gates_text);
+ if r->>'executionId' is distinct from ex::text then raise exception 'execution_request_conflict' using errcode='23505',detail=coalesce(r->>'executionId','');end if;
  return r||jsonb_build_object('priorResults',resolved);
 end $$;
 revoke all on function private.request_work_execution_producer_v3(text,text,text,jsonb) from public,anon,authenticated,service_role;

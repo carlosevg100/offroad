@@ -20,7 +20,7 @@ export function executionRequestFailure(error: {code?: string; message?: string}
   // The quarter close's prior results, named by the v3 producer before the shared refusals below.
   if (named("quarter_update_prior_rights_denied", "quarter_update_prior_source_unpinned")) return "provenance_denied";
   if (named("quarter_update_prior_fingerprint_mismatch", "quarter_update_prior_input_mismatch")) return "stale";
-  if (named("quarter_update_prior_not_found", "quarter_update_prior_other_work", "quarter_update_prior_method_mismatch", "quarter_update_prior_not_completed")) return "prior_invalid";
+  if (named("quarter_update_prior_not_found", "quarter_update_prior_method_mismatch", "quarter_update_prior_not_completed")) return "prior_invalid";
   if (named("quarter_update_priors_invalid", "quarter_update_priors_method_denied")) return "invalid";
   if (named("execution_producer_denied")) return "producer_denied";
   if (named("execution_method_unavailable", "execution_profile_ambiguous")) return "method_unavailable";

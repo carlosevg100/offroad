@@ -5,15 +5,15 @@
 begin;
 \ir support/execution_commands_fixture.sql
 
--- 1. Identity verdicts over row data: another organization is not found, another work and an
--- execution without a succeeded result are refused by name.
+-- 1. Identity verdicts over row data: another organization and another work are not found (no
+-- existence is disclosed outside this work); an execution without a succeeded result is refused by name.
 do $$
 declare o uuid:='a11b0000-0000-4000-9000-000000000001';w uuid:='a11b0000-0000-4000-9000-000000000002';x uuid:='a11b0000-0000-4000-9000-0000000000ff';
 begin
  if private.quarter_update_prior_identity_v1(o,w,true,o,w,'succeeded') is not null then raise exception 'a succeeded prior of the same work refused';end if;
  if private.quarter_update_prior_identity_v1(o,w,false,null,null,null) is distinct from 'quarter_update_prior_not_found' then raise exception 'missing prior not refused';end if;
  if private.quarter_update_prior_identity_v1(o,w,true,x,w,'succeeded') is distinct from 'quarter_update_prior_not_found' then raise exception 'cross organization prior not refused as not found';end if;
- if private.quarter_update_prior_identity_v1(o,w,true,o,x,'succeeded') is distinct from 'quarter_update_prior_other_work' then raise exception 'cross case prior not refused';end if;
+ if private.quarter_update_prior_identity_v1(o,w,true,o,x,'succeeded') is distinct from 'quarter_update_prior_not_found' then raise exception 'cross case prior not refused as not found';end if;
  if private.quarter_update_prior_identity_v1(o,w,true,o,w,'partial') is distinct from 'quarter_update_prior_not_completed' then raise exception 'partial prior not refused';end if;
  if private.quarter_update_prior_identity_v1(o,w,true,o,w,null) is distinct from 'quarter_update_prior_not_completed' then raise exception 'uncommitted prior not refused';end if;
  raise notice 'PASS: identity verdicts';
@@ -57,13 +57,13 @@ update execution_fixture set contract=jsonb_set(contract,'{inputs,sources}',json
 update execution_fixture set request=private.request_work_execution_v1('a4171000-0000-4000-9000-000000000001',contract::text,'{}');
 create temporary table prior_ref as select jsonb_build_object('role','weekly_cash','executionId',request->>'executionId','resultFingerprint',repeat('a',64)) ref from execution_fixture;
 select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','weekly_cash',ref,'{}','[]',auth.uid()) from prior_ref$q$,'quarter_update_prior_not_completed','uncommitted prior refused');
-select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-0000000000ef','weekly_cash',ref,'{}','[]',auth.uid()) from prior_ref$q$,'quarter_update_prior_other_work','an uncommitted prior of another work is refused for the work first');
+select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-0000000000ef','weekly_cash',ref,'{}','[]',auth.uid()) from prior_ref$q$,'quarter_update_prior_not_found','an uncommitted prior of another work is not found');
 update execution_fixture set claim=public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);
 select public.worker_reserve_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid) from execution_fixture;
 select public.worker_settle_execution_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'{"calculation":"synthetic"}','succeeded','calculated') from execution_fixture;
 select public.worker_commit_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"calculation":"synthetic"}','succeeded','calculated') from execution_fixture;
 select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000001',true);
-select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-0000000000ef','weekly_cash',ref,'{}','[]',auth.uid()) from prior_ref$q$,'quarter_update_prior_other_work','prior of another work refused');
+select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-0000000000ef','weekly_cash',ref,'{}','[]',auth.uid()) from prior_ref$q$,'quarter_update_prior_not_found','a committed prior of another work is not found, never named as existing');
 select pg_temp.expect_execution_command_error($q$select private.quarter_update_prior_resolve_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','weekly_cash',ref,'{}',(select contract#>'{inputs,sources}' from execution_fixture),auth.uid()) from prior_ref$q$,'quarter_update_prior_method_mismatch','committed prior of another method refused');
 -- 3b. Rights: once read is removed from the prior's source, the prior fails through its own closure, before any content is read.
 select private.set_source_rights_v1('a4171000-0000-4000-9000-000000000010',1,array['process','store','derive','export'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
@@ -78,15 +78,20 @@ end $$;
 select pg_temp.expect_execution_command_error($q$select public.request_work_execution_v3(contract::text,'{}','{}','[]') from execution_fixture$q$,'quarter_update_priors_method_denied','another method cannot use the priors door');
 
 -- 5. The provenance walk: a method it does not bind keeps its answer, and the quarter close is refused
--- unless both priors are stored inputs of succeeded executions of this work.
+-- unless the v3 producer recorded both priors for this very execution. A request through v1 or v2 carries
+-- no recorded priors, so the walk inside request_work_execution_v1 (which v2 and v3 both reach) refuses it.
 do $$
-declare c jsonb:=jsonb_build_object('organizationId','a11b0000-0000-4000-9000-000000000001','workId','a11b0000-0000-4000-9000-000000000002',
+declare c jsonb:=jsonb_build_object('organizationId','a11b0000-0000-4000-9000-000000000001','workId','a11b0000-0000-4000-9000-000000000002','executionId','a11b0000-0000-4000-9000-0000000000c5',
  'method',jsonb_build_object('methodId','update-after-quarter-close','methodVersion','2026.10.26-v1'));
 begin
  if not private.execution_capital_payload_current_v1(jsonb_build_object('method',jsonb_build_object('methodId','synthetic-execution')),'{}',auth.uid()) then raise exception 'unbound method changed answer';end if;
  if private.execution_capital_payload_current_v1(c,'{"schemaVersion":"quarter-update-packet-input.v1","analysis":{"prior":{"weeklyCash":{},"covenant":{}}}}',auth.uid()) then raise exception 'priors not stored accepted';end if;
  if private.execution_capital_payload_current_v1(jsonb_set(c,'{method,methodVersion}','"2026.10.26-v2"'),'{"schemaVersion":"quarter-update-packet-input.v1"}',auth.uid()) then raise exception 'other version accepted';end if;
- if private.quarter_update_priors_embedded_v1(c,'{"analysis":{"prior":{"weeklyCash":{},"covenant":{}}}}') then raise exception 'unstored priors accepted';end if;
+ if private.quarter_update_priors_recorded_v1(c,'{"analysis":{"prior":{"weeklyCash":{},"covenant":{}}}}') then raise exception 'priors not recorded through v3 accepted';end if;
+ -- Embedded priors equal to a stored input are not enough: the execution itself must carry the v3 record.
+ if private.quarter_update_priors_recorded_v1(c,jsonb_build_object('analysis',jsonb_build_object('prior',jsonb_build_object(
+   'weeklyCash',(select s.payload->'analysis' from private.execution_input_snapshots s limit 1),'covenant','{}'::jsonb)))) then raise exception 'equal analyses without a v3 record accepted';end if;
+ if position('execution_capital_payload_current_v1' in pg_get_functiondef('private.request_work_execution_v1(uuid,text,text)'::regprocedure))=0 then raise exception 'v1 path lost the provenance walk';end if;
  raise notice 'PASS: provenance walk binds the quarter close and leaves other methods as they were';
 end $$;
 
@@ -98,7 +103,7 @@ begin
  end loop;
  foreach f in array array['private.quarter_update_prior_method_v1(text)','private.quarter_update_prior_identity_v1(uuid,uuid,boolean,uuid,uuid,text)',
   'private.quarter_update_prior_content_v1(text,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)','private.quarter_update_prior_resolve_v1(uuid,uuid,text,jsonb,jsonb,jsonb,uuid)',
-  'private.quarter_update_priors_embedded_v1(jsonb,jsonb)','private.quarter_update_latest_prior_v1(uuid,uuid,text,uuid)'] loop
+  'private.quarter_update_priors_recorded_v1(jsonb,jsonb)','private.quarter_update_latest_prior_v1(uuid,uuid,text,uuid)'] loop
   if has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'helper exposed: %',f;end if;
  end loop;
  if has_table_privilege('authenticated','private.execution_prior_results','SELECT') or has_table_privilege('service_role','private.execution_prior_results','SELECT') then raise exception 'prior pins exposed';end if;
