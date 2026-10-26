@@ -44,6 +44,29 @@ const fichas = [
     "Quando é a semana mais apertada?",
     "Preciso sacar a conta garantida em dezembro?",
   ]},
+  {id: "C24", kind: "operating_projection", messages: [
+    "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.",
+    "Me ajuda a montar o business plan.",
+    "Só me diz como começar uma projeção.",
+    "Faz uma primeira versão com hipóteses explícitas.",
+  ]},
+  {id: "C26", kind: "projection_challenge", messages: [
+    "Que premissas você questionaria nessa projeção?",
+    "Esse plano está otimista?",
+    "Revisa a projeção que vamos mandar para o banco, sem rodar nada novo.",
+    "O que o banco vai contestar nesse business plan?",
+  ]},
+  {id: "C35", kind: "receivables_funding", messages: [
+    "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
+    "Quero antecipar recebíveis em vez de pegar linha no banco.",
+    "Quais FIDCs comprariam nossa carteira?",
+    "Vale fazer um FIDC próprio?",
+  ]},
+  {id: "C54", kind: "quarter_update", messages: [
+    "Fechou o trimestre. Atualiza tudo.",
+    "Saiu o balancete de setembro, atualiza a projeção e o covenant.",
+    "O que mudou com o resultado do terceiro trimestre?",
+  ]},
   {id: "C32", kind: "capital_strategy", messages: [
     "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?",
     "Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?",
@@ -70,6 +93,31 @@ describe("canonical ficha objective routing", () => {
     ["Calcula a folga do covenant antes de negociar o waiver.", "covenant_headroom"],
   ] as const)("lote 2 patterns leave other intents in place: %s", (message, kind) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
+  });
+
+  it.each([
+    ["O que é um FIDC?", "factual_question"],
+    ["O que é uma projeção por drivers?", "factual_question"],
+    ["Explique como funciona a antecipação de recebíveis.", "factual_question"],
+    ["Como funciona um fechamento trimestral?", "factual_question"],
+    ["Monta um deck com a projeção para o banco.", "material_preparation"],
+    ["Prepara o memorando do trimestre para o conselho.", "material_preparation"],
+    ["Compare as propostas de antecipação de recebíveis.", "proposal_comparison"],
+    ["Revise as minutas do contrato de cessão de recebíveis.", "operation_review"],
+    ["Monte a matriz de risco da antecipação de recebíveis.", "risk_matrix"],
+    ["Projete o caixa semanal considerando a antecipação da safra.", "weekly_cash"],
+    ["Quanto de dívida cabe com a projeção nova?", "debt_capacity"],
+    ["Monitore o fechamento do trimestre.", "monitoring"],
+  ] as const)("lote 3 patterns leave other intents in place: %s", (message, kind) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
+  });
+
+  it("targets the task specs of each lote 3 objective", () => {
+    const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
+    expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
+    expect(targets("Esse plano está otimista?")).toEqual(["C07"]);
+    expect(targets("Quero antecipar recebíveis em vez de pegar linha no banco.")).toEqual(["R01", "C06"]);
+    expect(targets("Fechou o trimestre. Atualiza tudo.")).toEqual(["C07", "C08"]);
   });
 
   for (const ficha of fichas) for (const message of ficha.messages) {

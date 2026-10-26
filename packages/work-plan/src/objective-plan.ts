@@ -25,6 +25,10 @@ export const workspaceObjectiveKindSchema = z.enum([
   "debt_table",
   "covenant_headroom",
   "weekly_cash",
+  "operating_projection",
+  "projection_challenge",
+  "receivables_funding",
+  "quarter_update",
   "company_analysis",
   "capital_strategy",
   "material_preparation",
@@ -270,6 +274,30 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
     sourcePlan: ["project_context", "provided_documents", "house_method"],
     analysisPlan: ["Somar o caixa por semana a partir de eventos datados", "Achar a semana mais apertada, as abaixo do mínimo e o que vence nelas", "Conciliar com a projeção mensal e mostrar o que o fechamento esconde", "Custear cada ação pelo tempo de uso e mostrar o efeito na apuração"],
     proposedDeliverable: "Fluxo de caixa semanal com a semana crítica, o calendário de vencimentos e a ação mais barata que cobre",
+  },
+  operating_projection: {
+    objectiveKind: "operating_projection", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C07"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Reproduzir o último ano pelos drivers do negócio antes de projetar", "Projetar por volume, preço, custos e prazos até o caixa disponível para a dívida", "Comparar com o orçamento e a revisão da companhia sem sobrescrever, com a causa da diferença", "Separar dado de hipótese e medir em reais as premissas que decidem"],
+    proposedDeliverable: "Projeção por driver com o último ano reproduzido, caixa disponível para a dívida, sensibilidades em reais e as perguntas que só a companhia responde",
+  },
+  projection_challenge: {
+    objectiveKind: "projection_challenge", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C07"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Ler as premissas do plano contra uma referência por drivers", "Medir o efeito isolado de cada premissa no EBITDA e no caixa, em ordem", "Confrontar cada premissa com a régua: histórico, capacidade, contratos e prazos", "Dizer a evidência que sustentaria cada uma e como apresentar o plano"],
+    proposedDeliverable: "Crítica do plano premissa a premissa, com efeito em reais, régua, evidência pedida e a recomendação de apresentação, sem rodar cenário novo",
+  },
+  receivables_funding: {
+    objectiveKind: "receivables_funding", entryJob: "capital_planning", outputTerminal: "capital_alternative_map", targetTaskIds: ["R01", "C06"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Separar da carteira bruta o que pode ser cedido, com o motivo de cada exclusão", "Ler a carteira contra cada porta, com volume, custo pelo tempo de uso e IOF", "Comparar com a linha bancária e mostrar o efeito em balanço, covenant e garantias", "Montar o plano pela porta mais barata, com prazo e condições precedentes"],
+    proposedDeliverable: "Carteira cedível, portas com volume e custo contra a linha bancária, efeitos contratuais e plano de execução com prazo",
+  },
+  quarter_update: {
+    objectiveKind: "quarter_update", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C07", "C08"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Comparar o realizado com o projetado linha a linha", "Explicar cada desvio por causa e separar o pontual do que continua", "Propagar só para as análises que dependem do dado, preservando as versões anteriores", "Dizer qual decisão muda, a ação dentro do aprovado e o que não mudou"],
+    proposedDeliverable: "Realizado contra projetado com ponte por causa, análises dependentes atualizadas, efeito nas decisões e ação proposta",
   },
   company_analysis: {
     objectiveKind: "company_analysis", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C11"],
@@ -596,7 +624,8 @@ function financialRoutingText(message: string): string {
 
 function isSpecificFinancialObjective(kind: WorkspaceObjectiveKind): boolean {
   return kind === "proposal_comparison" || kind === "relative_debt_cost" || kind === "debt_capacity"
-    || kind === "debt_table" || kind === "covenant_headroom" || kind === "weekly_cash";
+    || kind === "debt_table" || kind === "covenant_headroom" || kind === "weekly_cash"
+    || kind === "operating_projection" || kind === "projection_challenge" || kind === "receivables_funding" || kind === "quarter_update";
 }
 
 /** Interpret action/object pairs before broad audience and attachment heuristics. No case names,
@@ -613,6 +642,28 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
   if (/\b(?:comparar|compare|comparacao|recebemos|chegaram|recebi)\b.{0,120}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\b(?:qual|escolher|melhor|mais barata)\b.{0,100}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\bmais barato\b.{0,60}\bposso fechar\b/.test(text)) return "proposal_comparison";
+  // The methods of lote 3 (a projection built by driver, a projection challenged, receivables turned into
+  // working capital, a quarter close carried forward). A conceptual question, a deliverable such as a deck
+  // or a memo, a risk matrix or a draft keeps its own route.
+  const lote3Conceptual = /^(?:o que (?:e|sao|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b|\b(?:o conceito de|como funciona)\b/.test(text);
+  const lote3Other = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|slides?|minutas?|redline|matriz de riscos?)\b/.test(text);
+  if (!lote3Conceptual && !lote3Other) {
+    if (/\b(?:fech(?:ou|amos|ei)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a )?(?:trimestre|semestre|mes|exercicio|balancete)\b/.test(text)
+      || /\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b/.test(text)
+      || /\bo que mudou\b.{0,60}\b(?:trimestre|semestre|fechamento|balancete)\b/.test(text)
+      || /\brealizado\b.{0,30}\b(?:contra|versus|vs)\b.{0,30}\b(?:projetado|orcado|orcamento)\b/.test(text)) return "quarter_update";
+    if (/\b(?:antecip\w*|ced(?:er|o|emos|ida)|cessao|vend(?:er|o|emos)|descont\w*|securitiz\w*)\b.{0,40}\b(?:recebiveis|duplicatas|carteira de clientes)\b/.test(text)
+      || /\brecebiveis\b.{0,120}\b(?:financiar|financiamento|giro|safra|em vez|no lugar)\b/.test(text)
+      || /\b(?:quais|qual|que)\b.{0,20}\bfidcs?\b|\bfidcs?\b.{0,40}\b(?:proprio|compr\w*|nossa carteira)\b/.test(text)) return "receivables_funding";
+    const projectionObject = "(?:projecao|projecoes|business plan|plano de negocios|orcamento|plano(?! de (?:financiamento|captacao|acao|pagamento)))";
+    if (new RegExp(`\\b(?:questionaria|questionar|contest\\w*|atac\\w*|cortar|cortaria)\\b.{0,80}\\b${projectionObject}`).test(text)
+      || /\bpremissas?\b.{0,60}\b(?:questionaria|questionar|contestar|frageis|fracas|otimistas?|agressivas?)\b/.test(text)
+      || new RegExp(`\\b${projectionObject}\\b.{0,40}\\b(?:otimista|agressiv\\w*|factivel|defensavel|realista)\\b`).test(text)
+      || new RegExp(`\\brevis\\w*\\b.{0,40}\\b${projectionObject}`).test(text)) return "projection_challenge";
+    if (/\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|comec\w*|preciso de|ajud\w*)\b.{0,60}\b(?:projecao|projecoes|business plan|plano de negocios)\b/.test(text)
+      || /\b(?:nao temos|nao tenho|sem)\b.{0,20}\b(?:projecao|business plan|plano de negocios)\b/.test(text)
+      || /\bprimeira versao\b.{0,60}\b(?:projecao|hipoteses|premissas)\b/.test(text)) return "operating_projection";
+  }
   // The debt methods of lote 2 answer the measurement itself. A conceptual question, or a message whose
   // action is another one (compare, review, a risk matrix, a draft, proposals, strategy or paths), keeps
   // its own route even when it mentions the debt table, a covenant or weekly cash.
