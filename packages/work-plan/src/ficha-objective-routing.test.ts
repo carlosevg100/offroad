@@ -167,6 +167,43 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
   });
 
+  // Independent review, round 4, and adversarial paraphrases (debt verbs, interrogatives, file roles): lote 3 is
+  // chosen only on a positive request about the company's own projection, plan, receivables or close; anything
+  // else keeps an existing route or stays ambiguous for the conversation to ask.
+  it.each([
+    ["Revise o plano para reduzir o endividamento", "capital_strategy", "capital_strategy"],
+    ["Revise o plano para saldar a dívida existente", "capital_strategy", "capital_strategy"],
+    ["Quais são as diferenças entre um FIDC próprio e uma linha do banco?", "factual_question", "factual_question"],
+    ["Quais as diferenças de um FIDC próprio para a linha de banco?", "factual_question", "factual_question"],
+    ["Revise a projeção operacional usando o Excel anexo", "projection_challenge", "projection_challenge"],
+    ["Construa uma projeção operacional para entrega em Excel", "material_preparation", "material_preparation"],
+    ["Revise o plano de quitação da dívida com os bancos", "capital_strategy", "capital_strategy"],
+    ["Monte um plano para refinanciar a dívida de 2027", "capital_strategy", "capital_strategy"],
+    ["Construa a projeção do alongamento da dívida", "capital_strategy", "capital_strategy"],
+    ["Revise o plano de amortização antecipada", "ambiguous", "documents_to_case"],
+    ["Faça um plano para renegociar com os credores", "ambiguous", "documents_to_case"],
+    ["Revise o plano para liquidar o empréstimo do Bradesco", "ambiguous", "documents_to_case"],
+    ["Monte a projeção para reduzir a alavancagem", "ambiguous", "documents_to_case"],
+    ["Qual a diferença entre antecipar recebíveis e um FIDC?", "factual_question", "factual_question"],
+    ["Como funciona a revisão de uma projeção pelo banco?", "factual_question", "factual_question"],
+    ["Por que o banco contesta projeções otimistas?", "factual_question", "documents_to_case"],
+    ["Vale a pena antecipar recebíveis em vez de pegar linha do banco?", "factual_question", "documents_to_case"],
+    ["Quais FIDCs costumam comprar duplicatas do varejo?", "factual_question", "documents_to_case"],
+    ["O que é um fechamento trimestral bem feito?", "factual_question", "factual_question"],
+    ["Quanto um banco desconta numa projeção agressiva?", "factual_question", "documents_to_case"],
+    ["Revise a projeção com base no modelo enviado", "projection_challenge", "projection_challenge"],
+    ["Construa a projeção a partir do arquivo anexo", "operating_projection", "operating_projection"],
+    ["Monte a projeção por drivers e exporte em Excel", "material_preparation", "material_preparation"],
+    ["Revise o plano de negócios e gere um PDF", "material_preparation", "material_preparation"],
+    ["Faça a primeira versão da projeção no formato da planilha do banco", "material_preparation", "material_preparation"],
+    ["Questione as premissas do plano que está na planilha anexa", "projection_challenge", "projection_challenge"],
+    ["Nossa projeção está otimista?", "projection_challenge", "projection_challenge"],
+    ["Temos recebíveis de 40 milhões; dá para usar em vez da linha do banco?", "receivables_funding", "receivables_funding"],
+  ] as const)("conservative lote 3 routing: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);

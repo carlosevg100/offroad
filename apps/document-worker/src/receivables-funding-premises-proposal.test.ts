@@ -1,5 +1,6 @@
 import {beforeAll, describe, expect, it} from "vitest";
-import {proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
+import {createHash} from "node:crypto";
+import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
 import {buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
 import {itemKeys, stableKey} from "./lote2-premises";
@@ -110,6 +111,41 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(complete(taxed, f).facts.items[0]!.value.debtorKey).toBe("cnpj-12345678000190");
     // Sublimit groups with long shared prefixes stay apart too.
     expect(stableKey("Fundos multicedentes do gestor Alfa Nordeste")).not.toBe(stableKey("Fundos multicedentes do gestor Alfa Sudeste"));
+  });
+  it("reconciles one debtor across groups when its CNPJ is stated in only one, through the packet (independent review, round 4)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const base = {...e.items.find((i) => i.debtorCount === 1)!, amount: "3", contract: "assignable" as const, encumbrance: "free" as const, encumbranceHolder: null, releaseEvent: null,
+      registration: "registered" as const, creditTier: "standard" as const, anchorProgram: "none" as const, debtorCount: 1, debtorSetDisjoint: null};
+    e.items = [{...base, label: "Lote 1", debtorLabel: "Rede Z", debtorTaxId: "12345678000190"}, {...base, label: "Lote 2", debtorLabel: "Rede Z", debtorTaxId: null}];
+    e.options = e.options.filter((o) => o.kind === "bank_line" || o.label === "FIDC multicedente com coobrigação");
+    const c = complete(e, f);
+    expect(c.facts.items.map((i) => i.value.debtorKey)).toEqual(["cnpj-12345678000190", "cnpj-12345678000190"]);
+    // Adopted, composed and measured: one debtor, one sublimit of 3, never two.
+    const fidcVolume = (facts: ReceivablesFundingFacts) => {
+    const question = "Quero antecipar recebíveis em vez de pegar linha no banco.";
+    const uuid = (n: number) => `a0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+    const entries = proposeReceivablesFundingHypotheses(facts).map((h, n) => ({decisionId: uuid(9000 + n), slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"),
+      kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value, observationId: null, referenceValue: null, referenceDimensions: null,
+      definitionKind: "managerial", actorId: uuid(5), reason: h.reason}));
+    const snapshot = {schemaVersion: "contextual-adoption.v1", versionId: uuid(500), setId: uuid(6), workId: uuid(7), purpose: "synthetic receivables funding", contextKey: "recebiveis-giro",
+      revision: 1, previousVersionId: null, classification: "working_basis", entries};
+    const canonical = JSON.stringify(snapshot);
+    const packet = prepareReceivablesFundingPacket(composeBoundReceivablesFunding({envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")},
+      scope: {workId: uuid(7), purpose: snapshot.purpose, versionId: uuid(500)}, question}));
+    return Number(packet.result.funding!.options.find((o) => o.kind === "fidc")!.volume);
+    };
+    expect(fidcVolume(c.facts)).toBe(3);
+    // Two distinct debtors would take two sublimits: the reconciliation is what keeps it at one.
+    const two = auroraExtraction(f); two.items = [e.items[0]!, {...e.items[1]!, debtorLabel: "Rede Y"}]; two.options = e.options;
+    expect(fidcVolume(complete(two, f).facts)).toBe(6);
+  });
+  it("asks when one name carries two CNPJs or one CNPJ carries two names, never splitting nor merging", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const base = {...e.items.find((i) => i.debtorCount === 1)!};
+    e.items = [{...base, label: "Lote 1", debtorLabel: "Rede Z", debtorTaxId: "12345678000190"}, {...base, label: "Lote 2", debtorLabel: "Rede Z", debtorTaxId: "98765432000110"}];
+    expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toMatchObject({status: "missing", missing: expect.arrayContaining(["items.1.debtorTaxId", "items.2.debtorTaxId"])});
+    e.items = [{...base, label: "Lote 1", debtorLabel: "Rede Z", debtorTaxId: "12345678000190"}, {...base, label: "Lote 2", debtorLabel: "Rede W", debtorTaxId: "12345678000190"}];
+    expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toMatchObject({status: "missing", missing: expect.arrayContaining(["items.1.debtorLabel", "items.2.debtorLabel"])});
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildReceivablesFundingPremiseProposal(c.facts);

@@ -97,13 +97,29 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
   const itemIds = itemKeys(e.items.map((i) => i.label));
-  // A debtor is identified by its CNPJ when stated, otherwise by its whole normalized name with a hash: two
-  // debtors are never merged under one key, and a key that would join two distinct identities is asked.
-  const debtorOf = (i: ReceivablesFundingExtraction["items"][number]) => i.debtorTaxId !== null ? {key: `cnpj-${i.debtorTaxId}`, identity: `cnpj:${i.debtorTaxId}`}
-    : {key: stableKey(i.debtorLabel ?? i.label, 80), identity: `name:${normalizedName(i.debtorLabel ?? i.label)}`};
-  const debtorIdentities = new Map<string, string>();
-  e.items.forEach((i, k) => {const d = debtorOf(i), seen = debtorIdentities.get(d.key);
-    if (seen !== undefined && seen !== d.identity) missing.push(`items.${k + 1}.debtorLabel`); else debtorIdentities.set(d.key, d.identity);});
+  // Debtor identities are reconciled across every group before any key: the same whole normalized name with
+  // compatible CNPJs (equal, or stated in some groups only) is one debtor, keyed by its CNPJ when any group states
+  // it and otherwise by the name with a hash. The same name with two CNPJs, or one CNPJ under two names, is asked,
+  // never split into two debtors nor merged into one.
+  const nameOf = (i: ReceivablesFundingExtraction["items"][number]) => normalizedName(i.debtorLabel ?? i.label);
+  const taxesByName = new Map<string, Set<string>>(), namesByTax = new Map<string, Set<string>>();
+  for (const i of e.items) {
+    const name = nameOf(i);
+    if (!taxesByName.has(name)) taxesByName.set(name, new Set());
+    if (i.debtorTaxId !== null) {
+      taxesByName.get(name)!.add(i.debtorTaxId);
+      if (!namesByTax.has(i.debtorTaxId)) namesByTax.set(i.debtorTaxId, new Set());
+      namesByTax.get(i.debtorTaxId)!.add(name);
+    }
+  }
+  e.items.forEach((i, k) => {
+    if (taxesByName.get(nameOf(i))!.size > 1) missing.push(`items.${k + 1}.debtorTaxId`);
+    if (i.debtorTaxId !== null && namesByTax.get(i.debtorTaxId)!.size > 1) missing.push(`items.${k + 1}.debtorLabel`);
+  });
+  const debtorKeyOf = (i: ReceivablesFundingExtraction["items"][number]) => {
+    const taxes = [...taxesByName.get(nameOf(i))!];
+    return taxes.length === 1 ? `cnpj-${taxes[0]}` : stableKey(i.debtorLabel ?? i.label, 80);
+  };
   const groupIdentities = new Map<string, string>();
   e.options.forEach((o, k) => {if (o.sublimitGroup === null) return; const key = stableKey(o.sublimitGroup), seen = groupIdentities.get(key), id = normalizedName(o.sublimitGroup);
     if (seen !== undefined && seen !== id) missing.push(`options.${k + 1}.sublimitGroup`); else groupIdentities.set(key, id);});
@@ -114,7 +130,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     if (missing.length > before) return null;
     const single = i.debtorCount === 1;
     if (!single && i.debtorSetDisjoint === null) {missing.push(p + "debtorSetDisjoint"); return null;}
-    const debtor = debtorOf(i).key;
+    const debtor = debtorKeyOf(i);
     const free = i.encumbrance === "free";
     return {value: {id: itemIds[k]!, label: i.label, amount: i.amount, contract: i.contract!, encumbrance: i.encumbrance!, encumbranceHolder: free ? null : i.encumbranceHolder,
       releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier!,

@@ -671,49 +671,70 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
 
 /** The methods of lote 3: a projection built by driver (C24), a projection challenged (C26), receivables
  * turned into working capital (C35) and a quarter close carried forward (C54). Called after the specific
- * objectives of lotes 1 and 2. A first-class signal of another route vetoes all four: an explanation asked
- * anywhere in the sentence, a deliverable (deck, memo, spreadsheet, presentation), a review of an operation
- * or of a contractual or amortization plan, a capital strategy asked as such, and a comparison of external
- * financing proposals or offers. Comparing scenarios or alternatives of the projection itself, the
- * projection against the budget or the actual against the projected is part of these methods. */
+ * objectives of lotes 1 and 2 and conservative by default: a lote 3 kind is chosen only on a positive,
+ * specific request about the company's own projection, plan, receivables or quarter close. Everything else
+ * falls through to the existing routes or stays ambiguous, where the conversation asks:
+ * - the existing routes' own matchers (material, operation review, risk matrix, board, meeting, market,
+ *   company analysis, capital strategy) veto all four, leaving out only the bare subject words a ficha relies
+ *   on (covenant and waterfall for the risk matrix; financiar, divida, endividamento and capital de giro for
+ *   capital strategy);
+ * - a conceptual question (an explanation, a definition, differences between instruments) is a factual
+ *   question when it is about a lote 3 subject, and never selects a method;
+ * - an interrogative that names nothing of the company's own (no "nosso", "nessa", "temos", "proprio") selects
+ *   no method;
+ * - a plan whose purpose is managing debt (reduce, settle, pay off, restructure, renegotiate, extend,
+ *   refinance, amortize) never selects the projection or its challenge;
+ * - a file named as the source (usando, a partir de, com base em, da, do, anexo) is input; a requested format
+ *   (para entrega em, no formato, em formato, gere, exporte, em Excel) is a deliverable: material preparation;
+ * - a comparison of external financing proposals or offers is the comparison's route. */
 function inferLote3Objective(text: string): WorkspaceObjectiveKind | null {
-  // A file named as the source ("da planilha anexa", "a partir do Excel enviado") is input, not a deliverable.
-  const asked = text.replace(/\b(?:d[ao]s?|n[ao]s?|a partir d[ao]s?|com [ao]s?|pel[ao]s?|em)\s+(?:planilhas?|excel|modelos?|arquivos?|documentos?)\b(?:\s+(?:anex\w*|envia\w*|recebid\w*|que (?:mandei|enviei|anexei|segue|seguem)))?/g, " ");
-  // The existing routes' own matchers veto lote 3, so a signal they gain later is preserved without copying it.
-  // Two deliberate narrowings keep the ficha phrasings: the risk matrix's bare subjects (covenant, waterfall)
-  // and capital strategy's bare funding words (financiar, divida, endividamento, capital de giro) name what the
-  // message is about, not the action it asks for, so they are left out of the veto; every other term counts.
+  const trimmed = text.trim();
+  const subject = /\b(?:projecao|projecoes|business plan|plano|premissas|recebiveis|duplicatas|fidcs?|trimestre|balancete|fechamento|antecipa\w*|cessao)\b/.test(text);
+  const conceptual = /\b(?:explique|explica|explicar|me explique|o que (?:e|sao|significa)|como funciona|o conceito de|defina|definicao de|diferencas?)\b/.test(text);
+  if (conceptual) return subject ? "factual_question" : null;
+  // The existing routes' own matchers, so a signal they gain later is preserved without copying it.
   const riskRequest = foldedObjectivePatterns.riskMatrix.test(text.replace(/\b(?:covenants?|waterfall)\b/g, " "));
-  const strategyRequest = foldedObjectivePatterns.capitalStrategy.test(text.replace(/\b(?:financiar|divida|dividas|endividamento|capital de giro)\b/g, " "))
-    || /\b(?:reestrutur\w*|quit(?:ar|acao|e|a)|renegoci\w*|estrategi\w*|caminhos?|alongar|alongamento|refinanc\w*)\b/.test(text);
-  const otherRoute = foldedObjectivePatterns.material.test(asked) || foldedObjectivePatterns.operationReview.test(text) || riskRequest || strategyRequest
+  const strategyRequest = foldedObjectivePatterns.capitalStrategy.test(text.replace(/\b(?:financiar|divida|dividas|endividamento|capital de giro)\b/g, " "));
+  // A file the message names as its source is input, never a deliverable.
+  const asked = text.replace(/\b(?:usando|a partir d[aeo]s?|com base (?:n[ao]s?|em)|d[ao]s?|n[ao]s?|pel[ao]s?|segundo)\s+(?:(?:o|a|os|as|um|uma)\s+)?(?:planilhas?|excel|modelos?|arquivos?|documentos?|pdfs?)\b(?:\s+(?:anex\w*|envia\w*|recebid\w*|que (?:mandei|enviei|anexei|segue|seguem)))?|\b(?:planilhas?|excel|modelos?|arquivos?|pdfs?)\s+(?:anex\w*|envia\w*|recebid\w*)\b/g, " ");
+  const formatRequested = /\b(?:para entrega em|entregue em|no formato|em formato|gere|gerar|exporte|exportar|em (?:excel|planilha|pdf|pptx|powerpoint|slides?))\b/.test(asked)
+    || foldedObjectivePatterns.material.test(asked) || /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|pptx|slides?|planilha|excel|minutas?|redline)\b/.test(asked);
+  const otherRoute = foldedObjectivePatterns.operationReview.test(text) || riskRequest || strategyRequest
     || foldedObjectivePatterns.boardDecision.test(text) || foldedObjectivePatterns.meeting.test(text) || foldedObjectivePatterns.marketMapping.test(text)
     || foldedObjectivePatterns.companyAnalysis.test(text);
-  const explanation = /\b(?:explique|explica|explicar|me explique|o que (?:e|sao|significa)|como funciona|o conceito de|qual (?:e )?a diferenca entre|defina|definicao de)\b/.test(text);
-  const deliverable = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|pptx|slides?|planilha|excel|minutas?|redline)\b/.test(asked);
-  const contractual = /\bplanos?\b.{0,40}\b(?:amortiz\w*|pagamentos?|parcel\w*|contratua\w*|contrato)\b|\bamortiz\w*\b/.test(text);
   const externalComparison = /\bcompar\w*\b.{0,60}\b(?:propostas?|ofertas?|term\s*sheets?|bancos?|financiadores?|linhas? de credito|alternativas de (?:divida|financiamento|captacao|credito))\b/.test(text)
     || /\balternativas de (?:divida|financiamento|captacao|credito)\b/.test(text);
-  if (otherRoute || explanation || deliverable || contractual || externalComparison) return null;
-  // C54 needs an explicit request to carry the close forward.
+  // Managing debt (settle, pay off, restructure, renegotiate, extend, refinance, amortize) is never a lote 3 request.
+  const debtPlan = /\b(?:sald(?:ar|e)|quit\w*|reestrutur\w*|renegoci\w*|alongar|alongamento|refinanc\w*|amortiz\w*)\b|\breduz\w*\b.{0,30}\b(?:divida|endividamento|alavancagem|passivo)\b/.test(text);
+  if (otherRoute || externalComparison || debtPlan) return null;
+  const debtManagement = /\b(?:reduz\w*|reducao|sald(?:ar|o|e)|quit\w*|reestrutur\w*|renegoci\w*|along\w*|refinanc\w*|amortiz\w*|liquid(?:ar|e|o)|pag(?:ar|ue)|divida|dividas|endividamento|credores|passivo)\b/.test(text);
+  const contractual = /\bplanos?\b.{0,40}\b(?:pagamentos?|parcel\w*|contratua\w*|contrato)\b/.test(text);
+  const interrogative = /^(?:e |mas |entao )?(?:quais|qual|que|como|por que|porque|o que|quanto|quantos|quantas|quando|onde|vale a pena|sera que|e se)\b/.test(trimmed) || trimmed.endsWith("?");
+  const own = /\b(?:nossa|nosso|nossas|nossos|nessa|nesse|neste|nesta|esse|essa|este|esta|isso|tenho|temos|a gente|da empresa|da companhia|proprio|propria)\b/.test(text);
+  // C54: an explicit request to carry the close forward, or what the close changed.
   const close = /\b(?:fech(?:ou|amos|ei|amento)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a |do |da )?(?:trimestre|semestre|mes|exercicio|balancete)\b|\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b|\b(?:trimestre|balancete|fechamento)\b/.test(text);
   const update = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b/.test(text);
   if ((close && update)
     || /\bo que mudou\b.{0,60}\b(?:trimestre|semestre|fechamento|balancete)\b/.test(text)
-    || (/\brealizado\b.{0,30}\b(?:contra|versus|vs|com)\b.{0,30}\b(?:projetado|orcado|orcamento)\b/.test(text) && (update || close))) return "quarter_update";
-  // C35 weighs the company's own receivables against the bank line or asks who would buy them.
+    || (/\brealizado\b.{0,30}\b(?:contra|versus|vs|com)\b.{0,30}\b(?:projetado|orcado|orcamento)\b/.test(text) && (update || close))) return formatRequested ? "material_preparation" : "quarter_update";
+  if (interrogative && !own) return null;
+  // C35: the company's own receivables weighed against the bank line, or who would buy them.
   const instead = /\b(?:em vez|no lugar|ao inves)\b|\blinha (?:do|de|no) banco\b|\blinha bancaria\b/.test(text);
-  if ((/\brecebiveis\b|\bduplicatas\b/.test(text) && instead)
-    || /\b(?:quais|qual|que)\b.{0,20}\bfidcs?\b|\bfidcs?\b.{0,40}\b(?:proprio|compr\w*|nossa carteira)\b/.test(text)) return "receivables_funding";
-  // A plan here is a financial or business plan.
+  if ((/\b(?:recebiveis|duplicatas)\b/.test(text) && instead)
+    || /\b(?:quais|qual|que)\b.{0,20}\bfidcs?\b.{0,40}\b(?:compr\w*|nossa carteira)\b|\bfidcs?\b.{0,40}\b(?:proprio|compr\w*|nossa carteira)\b/.test(text)) return formatRequested ? "material_preparation" : "receivables_funding";
+  if (debtManagement || contractual) return null;
+  // C26: the company's own plan or projection read for where it will be challenged.
   const projectionObject = "(?:projecao|projecoes|business plan|plano de negocios|plano financeiro|orcamento|plano)";
-  if (new RegExp(`\\b(?:questionaria|questionar|contest\\w*|atac\\w*|cortar|cortaria)\\b.{0,80}\\b${projectionObject}`).test(text)
+  const challenge = new RegExp(`\\b(?:questionaria|questionar|question\\w*|contest\\w*|atac\\w*|cortar|cortaria)\\b.{0,80}\\b${projectionObject}`).test(text)
     || /\bpremissas?\b.{0,80}\b(?:questionaria|questionar|contestar|frageis|fracas|otimistas?|agressivas?)\b/.test(text)
     || new RegExp(`\\b${projectionObject}\\b.{0,40}\\b(?:otimista|agressiv\\w*|factivel|defensavel|realista)\\b`).test(text)
-    || new RegExp(`\\brevis\\w*\\b.{0,40}\\b${projectionObject}`).test(text)) return "projection_challenge";
-  if (/\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|comec\w*|preciso de|ajud\w*)\b.{0,60}\b(?:projecao|projecoes|business plan|plano de negocios)\b/.test(text)
+    || new RegExp(`\\b(?:revis\\w*|critiqu\\w*|critic\\w*)\\b.{0,40}\\b${projectionObject}`).test(text);
+  if (challenge) return formatRequested ? "material_preparation" : "projection_challenge";
+  // C24: a request to build the company's projection.
+  const build = /\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|desenvolv\w*|comec\w*|preciso de|ajud\w*)\b.{0,60}\b(?:projecao|projecoes|business plan|plano de negocios)\b/.test(text)
     || /\b(?:nao temos|nao tenho|sem)\b.{0,20}\b(?:projecao|business plan|plano de negocios)\b/.test(text)
-    || /\bprimeira versao\b.{0,60}\b(?:projecao|hipoteses|premissas)\b/.test(text)) return "operating_projection";
+    || /\bprimeira versao\b.{0,60}\b(?:projecao|hipoteses|premissas)\b/.test(text);
+  if (build) return formatRequested ? "material_preparation" : "operating_projection";
   return null;
 }
 
