@@ -18,6 +18,7 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
     needAverage: sourcedOf(f.needAverage), needPeak: sourcedOf(f.needPeak), needStartDate: sourcedOf(f.needStartDate), needEndDate: {value: f.endDate, origin: "informed", source: "fim da safra"},
     calendarDays: sourcedOf(f.calendarDays), businessDays: sourcedOf(f.businessDays), needProfile: sourcedOf(f.needProfile), annualDi: sourcedOf(f.annualDi),
     averageTermDays: sourcedOf(f.averageTermDays), lienBasketRemaining: sourcedOf(f.lienBasketRemaining),
+    dedicatedVehicleThreshold: {value: f.dedicatedVehicleThreshold.value, origin: "informed", source: "faixa informada pela tesouraria"},
     items: f.items.map((i) => {const v = i.value; return {label: v.label, origin: said(i.origin), source: i.source, amount: v.amount, contract: v.contract, encumbrance: v.encumbrance,
       encumbranceHolder: v.encumbranceHolder, releaseEvent: v.releaseEvent, originDate: v.originDate, dueDate: v.dueDate, registration: v.registration, creditTier: v.creditTier,
       anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount, debtorLabel: null, debtorSetDisjoint: v.debtorSetDisjoint};}),
@@ -35,8 +36,6 @@ const renameOf = (f: ReceivablesFundingFacts) => {
   add(f.items.map((i) => i.value)); add(f.options.map((o) => o.value));
   return new Map(pairs);
 };
-/** The calibration is in BRL millions; the house range for a dedicated vehicle is in reais, so it is compared apart. */
-const withoutThreshold = (h: ReturnType<typeof comparableHypotheses>) => h.filter((x) => !/vehicleThreshold/.test(x.fieldPath));
 const complete = (e: ReceivablesFundingExtraction, f: ReceivablesFundingFacts) => {
   const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
   if (c.status !== "complete") throw new Error(JSON.stringify(c));
@@ -58,9 +57,8 @@ describe("receivables funding premises proposed from a turn", () => {
   it("completes the Aurora facts and proposes the hypotheses the fixture proposes", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f);
     expect(c.situationId).toBe("seasonal-working-capital");
-    expect(c.housePremiseKeys).toEqual(["dedicatedVehicleThreshold"]);
-    expect(c.facts.dedicatedVehicleThreshold).toMatchObject({value: {min: "3000000", max: "5000000"}, origin: "market"});
-    expect(withoutThreshold(comparableHypotheses(proposeReceivablesFundingHypotheses(c.facts), renameOf(f)))).toEqual(withoutThreshold(comparableHypotheses(proposeReceivablesFundingHypotheses(f))));
+    expect(c.housePremiseKeys).toEqual([]);
+    expect(comparableHypotheses(proposeReceivablesFundingHypotheses(c.facts), renameOf(f))).toEqual(comparableHypotheses(proposeReceivablesFundingHypotheses(f)));
   });
   it("names every house convention it uses and never prices an option", () => {
     const f = aurora(), e = auroraExtraction(f);
@@ -71,9 +69,9 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(c.facts.calendarDays).toMatchObject({value: 166, origin: "house"});
     expect(c.facts.businessDays.origin).toBe("estimate");
     expect(c.facts.items[0]!.value).toMatchObject({creditTier: "standard", anchorProgram: "unknown"});
-    expect(c.housePremiseKeys.sort()).toEqual(["anchorProgram", "businessDays", "calendarDays", "collateral", "creditTier", "dedicatedVehicleThreshold", "saleWithoutIof"]);
-    const line = auroraExtraction(f); line.options.find((o) => o.kind === "bank_line")!.iofDaily = null; line.options[0]!.rate = null; line.annualDi = none;
-    expect(completeReceivablesFundingFacts({extraction: line, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["annualDi", "options.1.rate", "options.5.iofDaily"]});
+    expect(c.housePremiseKeys.sort()).toEqual(["anchorProgram", "businessDays", "calendarDays", "collateral", "creditTier", "saleWithoutIof"]);
+    const line = auroraExtraction(f); line.options.find((o) => o.kind === "bank_line")!.iofDaily = null; line.options[0]!.rate = null; line.annualDi = none; line.dedicatedVehicleThreshold = none;
+    expect(completeReceivablesFundingFacts({extraction: line, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["annualDi", "dedicatedVehicleThreshold", "options.1.rate", "options.5.iofDaily"]});
   });
   it("asks for the contract, the encumbrance holder and an unknown anchor in one batch", () => {
     const f = aurora(), e = auroraExtraction(f);
@@ -86,7 +84,7 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(proposal.summary).toMatchObject({situationId: "seasonal-working-capital", referenceDate: "2026-09-15"});
     expect(proposal.summary.items.every((x) => summaryGroups.includes(x.group) && summaryOrigins.includes(x.origin))).toBe(true);
     expect(proposal.summary.items.filter((x) => x.group === "premise").map((x) => [x.labelKey, x.origin])).toEqual([["needAverage", "informed"], ["needPeak", "informed"],
-      ["annualDi", "informed"], ["lienBasketRemaining", "document"], ["dedicatedVehicleThreshold", "market"]]);
+      ["annualDi", "informed"], ["lienBasketRemaining", "document"], ["dedicatedVehicleThreshold", "informed"]]);
     expect(proposal.hypotheses.every((h) => /^receivables_funding\.[0-9a-f-]{36}\.[A-Za-z0-9_.-]{1,200}$/.test(h.fieldPath))).toBe(true);
     expect(proposal).toMatchObject({methodId: "monetize-receivables-for-working-capital", methodVersion: "2026.10.26-v1"});
   });

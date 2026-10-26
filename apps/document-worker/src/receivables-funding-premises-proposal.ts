@@ -28,6 +28,8 @@ export const receivablesFundingExtractionSchema = z.strictObject({
   calendarDays: sourced(days), businessDays: sourced(days),
   needProfile: sourced(z.enum(["seasonal", "structural"])),
   annualDi: sourced(ratio), averageTermDays: sourced(days),
+  /** The monthly volume from which a dedicated vehicle starts to pay for itself, when a document or the person states it. */
+  dedicatedVehicleThreshold: sourced(z.strictObject({min: money, max: money})),
   /** What is left of the basket for liens the indenture allows, when stated. */
   lienBasketRemaining: sourced(money),
   items: z.array(z.strictObject({...item, amount: money,
@@ -54,7 +56,7 @@ export const receivablesFundingExtractionContract = {
     "Você extrai os dados que permitem dizer quanto de uma carteira de recebíveis vira caixa, com quem, a que custo e em quanto tempo, contra a linha bancária, a partir da mensagem de uma pessoa, das mensagens anteriores e de campos já extraídos de documentos (carteira por sacado, contratos com clientes, tabela de dívida, propostas, regulamentos de fundos).",
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo) ou lista vazia. Nunca estime, nunca complete, nunca invente taxa de mercado.",
     "Valores monetários em reais, sem separador de milhar (R$ 62 milhões vira 62000000). Taxas em fração (1,6% ao mês vira rate 0.016 com rateBasis monthly; CDI mais 1,2 ao ano vira rate 0.012 com rateBasis di_plus). Datas no formato AAAA-MM-DD.",
-    "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento.",
+    "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
     "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
@@ -79,8 +81,9 @@ const sale = (kind: (typeof kinds)[number]) => kind === "anchor_program" || kind
  * batch. House premises are conventions of the method and stated as such: no IOF on a sale of receivables,
  * the end of the need from its start and its days (or the days from the two dates), business days counted
  * Monday to Friday without holidays as an estimate, a debtor quality not stated as standard, an anchor
- * program not stated as unknown, a debtor set not declared disjoint, collateral not stated as unknown, and
- * the market range for a dedicated vehicle. */
+ * program not stated as unknown, a debtor set not declared disjoint and collateral not stated as unknown.
+ * The monthly volume from which a dedicated vehicle pays is asked: no public source in the repository
+ * states it, so the house never supplies it. */
 export function completeReceivablesFundingFacts(input: {extraction: ReceivablesFundingExtraction; ids: {receivablesFundingId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ReceivablesFundingFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
@@ -88,6 +91,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     di: stated(e.annualDi), term: stated(e.averageTermDays), reference: stated(e.referenceDate)};
   for (const [k, v] of [["referenceDate", need.reference], ["needAverage", need.average], ["needPeak", need.peak], ["needStartDate", need.start], ["needProfile", need.profile],
     ["annualDi", need.di], ["averageTermDays", need.term]] as const) if (!v) missing.push(k);
+  const threshold = stated(e.dedicatedVehicleThreshold);
+  if (!threshold) missing.push("dedicatedVehicleThreshold");
   const end = stated(e.needEndDate), statedDays = stated(e.calendarDays);
   if (!end && !statedDays) missing.push("needEndDate");
   if (!e.items.length) missing.push("items");
@@ -129,7 +134,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
       rolloverDays: o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral ?? "unknown", leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},
       origin: o.origin, source: citedSource(o.origin, o.source)};
   });
-  if (missing.length || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};
+  if (missing.length || !threshold || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};
   const calendarDays = statedDays ?? {value: between(need.start.value, end!.value), origin: "house" as const, source: "Dias corridos entre o início e o fim da necessidade"};
   if (!statedDays) used.push("calendarDays");
   const endDate = end?.value ?? shift(need.start.value, calendarDays.value);
@@ -139,9 +144,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   const facts = receivablesFundingFactsSchema.parse({...input.ids, perimeter: "standalone", currency: input.currency, referenceDate: need.reference.value, endDate,
     needAverage: need.average, needPeak: need.peak, needStartDate: need.start, calendarDays, businessDays: business, annualDi: need.di, averageTermDays: need.term,
     needProfile: need.profile, lienBasketRemaining: stated(e.lienBasketRemaining),
-    dedicatedVehicleThreshold: {value: {min: "3000000", max: "5000000"}, origin: "market", source: "Ponto de virada de R$ 3 a 5 milhões por mês para operação dedicada (módulo de recebíveis)"},
+    dedicatedVehicleThreshold: threshold,
     items: items.map((i) => i!), options: options.map((o) => o!)});
-  used.push("dedicatedVehicleThreshold");
   return {status: "complete", facts, situationId: need.profile.value === "seasonal" ? "seasonal-working-capital" : "structural-working-capital", housePremiseKeys: [...new Set(used)]};
 }
 
