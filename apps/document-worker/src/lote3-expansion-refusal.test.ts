@@ -2,7 +2,7 @@ import {describe, expect, it, vi} from "vitest";
 import {z} from "zod";
 
 // Each lote 3 turn hands its spec to the shared turn step; the spec is recorded and then run for real.
-const recorded = vi.hoisted(() => ({specs: [] as {logPrefix: string; expansionRefusalAsGap?: boolean; build: (facts: unknown, situationId: string) => unknown}[]}));
+const recorded = vi.hoisted(() => ({specs: [] as {logPrefix: string; expansionRefusalAsGap?: boolean; readerCheck?: unknown; build: (facts: unknown, situationId: string) => unknown}[]}));
 vi.mock("./lote2-premises", async (original) => {
   const real = await original<typeof import("./lote2-premises")>();
   return {...real, proposeLote2PremisesForTurn: async (spec: never) => { recorded.specs.push(spec); return null; }};
@@ -24,10 +24,12 @@ describe("any refusal to expand facts into hypotheses is a gap in the turn, for 
     await proposeQuarterUpdatePremisesForTurn({...base, message: "Fechou o trimestre. Atualiza tudo.", loadPriors: async () => ({weeklyCash: prior(1), covenant: prior(2)})});
     expect(recorded.specs.map((s) => [s.logPrefix, s.expansionRefusalAsGap])).toEqual([["operating_projection_premises", true], ["projection_challenge_premises", true],
       ["receivables_funding_premises", true], ["quarter_update_premises", true]]);
+    // Round 9: each also runs the method's own reader before offering the card.
+    expect(recorded.specs.map((s) => typeof s.readerCheck)).toEqual(["function", "function", "function", "function"]);
     for (const spec of recorded.specs) {
       const events: string[] = [];
       // Facts the method's expansion refuses: its proposeXHypotheses throws.
-      const turn = await proposeLote2PremisesForTurn({...spec, idName: "x", schema: z.object({turnIntent: z.string()}).loose(),
+      const turn = await proposeLote2PremisesForTurn({logPrefix: spec.logPrefix, expansionRefusalAsGap: true, idName: "x", schema: z.object({turnIntent: z.string()}).loose(),
         complete: () => ({status: "complete", facts: {}, situationId: "x", housePremiseKeys: []}), build: spec.build as never},
         {...base, entry: "cue", message: "x", extract: async () => ({turnIntent: "answers_pending"}), log: (event) => {events.push(event);}});
       expect(turn, spec.logPrefix).toEqual({forAdvisor: {status: "missing", missing: ["premisesRefused"]}, proposal: null});
@@ -41,5 +43,15 @@ describe("any refusal to expand facts into hypotheses is a gap in the turn, for 
     expect(await run(true, "quarter_update_premises_exceed_basis")).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
     expect(await run(true, "anything else")).toEqual({forAdvisor: {status: "missing", missing: ["premisesRefused"]}, proposal: null});
     expect(await run(undefined, "quarter_update_premises_exceed_basis")).toBeNull();
+  });
+  it("offers no card when the reader check names a refusal, and says what it refused", async () => {
+    const events: string[] = [];
+    const turn = await proposeLote2PremisesForTurn({logPrefix: "p", idName: "x", schema: z.object({turnIntent: z.string()}).loose(),
+      complete: () => ({status: "complete" as const, facts: {}, situationId: "x", housePremiseKeys: []}),
+      build: () => ({methodId: "m", methodVersion: "v", facts: {}, hypotheses: [], summary: {situationId: "x", referenceDate: null, items: []}, fingerprint: "f"}),
+      expansionRefusalAsGap: true, readerCheck: () => ["readerRefused.quarter_update_order_ambiguous"]},
+      {...base, entry: "cue", message: "x", extract: async () => ({turnIntent: "answers_pending"}), log: (event) => {events.push(event);}});
+    expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["readerRefused.quarter_update_order_ambiguous"]}, proposal: null});
+    expect(events).toEqual(["p.reader_refused"]);
   });
 });

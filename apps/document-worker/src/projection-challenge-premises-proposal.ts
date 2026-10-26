@@ -1,9 +1,10 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
-import {projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
+import {composeBoundProjectionChallenge, prepareProjectionChallengePacket, projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
 import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const projectionChallengePremiseMethod = {methodId: "challenge-financial-projection", methodVersion: "2026.10.26-v1"} as const;
@@ -151,6 +152,17 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
   return {status: "complete", facts, situationId: projectionChallengeSituation, housePremiseKeys: [...new Set(used)]};
 }
 
+
+/** What the method's own reader and packet would refuse after confirmation, named before the card is offered. */
+/** The method's own reader and packet over a basis, as the confirmation will run them. */
+export const projectionChallengeReader = (b: BoundBasis) => {
+  const question = "Verificação das premissas antes da confirmação";
+  return prepareProjectionChallengePacket(composeBoundProjectionChallenge({...b, question}));
+};
+export function projectionChallengeReaderGaps(facts: ProjectionChallengeFacts): string[] {
+  return readerGaps(proposeProjectionChallengeHypotheses(facts), projectionChallengeReader);
+}
+
 /** The card: the reference and the plan, each assumption, and the yardsticks the company stated. */
 export function projectionChallengeSummary(facts: ProjectionChallengeFacts): Lote2Summary {
   const row = summaryRow;
@@ -178,5 +190,5 @@ export async function proposeProjectionChallengePremisesForTurn(input: {
   if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "projection_challenge_premises", idName: "projection-challenge", expansionRefusalAsGap: true, schema: projectionChallengeExtractionSchema,
     complete: (extraction, id) => completeProjectionChallengeFacts({extraction, ids: {challengeId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildProjectionChallengePremiseProposal}, {...input, entry, projectId: input.projectId});
+    build: buildProjectionChallengePremiseProposal, readerCheck: projectionChallengeReaderGaps}, {...input, entry, projectId: input.projectId});
 }

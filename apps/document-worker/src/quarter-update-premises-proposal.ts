@@ -1,8 +1,9 @@
 import {z} from "zod";
-import {proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
+import {composeQuarterUpdateClose, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
 import {citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const quarterUpdatePremiseMethod = {methodId: "update-after-quarter-close", methodVersion: "2026.10.26-v1"} as const;
@@ -172,6 +173,8 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   const streamUpdates = e.streamUpdates.flatMap((u, k) => {
     const p = `streamUpdates.${k + 1}.`, before = missing.length, causes = u.causeLabels.map(causeOf);
     if (!streams.has(u.streamId)) missing.push(p + "streamId");
+    // One transform per stream: two for the same stream are asked, never resolved by order (independent review, round 9).
+    if (e.streamUpdates.findIndex((x) => x.streamId === u.streamId) !== k) missing.push(p + "streamId");
     if (causes.some((c) => c === null)) missing.push(p + "causeLabels");
     if ((u.kind === "scale" && u.factor === null) || (u.kind === "delay" && u.days === null)) missing.push(p + u.kind);
     if (missing.length > before) return [];
@@ -198,7 +201,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   });
   const measurements = priorMeasurements(input.priors.covenant), known = new Set(measurements.map((m) => m.id));
   let measurementIds = e.covenantMeasurementIds, measurementsChosenByHouse = false;
-  if (measurementIds.some((id) => !known.has(id))) missing.push("covenantMeasurementIds");
+  if (measurementIds.some((id) => !known.has(id)) || new Set(measurementIds).size !== measurementIds.length) missing.push("covenantMeasurementIds");
   if (!measurementIds.length && measurements.length) {
     const headline = measurements[0]!;
     measurementIds = measurements.filter((m) => m.id === headline.id || (m.role === "test" && m.date !== null && m.date === headline.date)).map((m) => m.id);
@@ -209,6 +212,10 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   const dependents = e.dependents.flatMap((d, k) => {
     const reads = d.readsLineLabels.map(lineOf);
     if (reads.some((r) => !r)) {missing.push(`dependents.${k + 1}.readsLineLabels`); return [];}
+    // Who recomputes is never absent: a dependent recomputed elsewhere names its owner, and one this close recomputes
+    // names the quantities and the scenario it reads, or it would bind to nothing and stay silently stale.
+    if (d.recomputedBy === "none" && d.owner === null) {missing.push(`dependents.${k + 1}.owner`); return [];}
+    if (d.recomputedBy !== "none" && (!d.quantities.length || d.scenario === null)) {missing.push(`dependents.${k + 1}.${d.quantities.length ? "scenario" : "quantities"}`); return [];}
     return [{value: {id: dependentIds[k]!, label: d.label, kind: d.kind, reads: reads as string[], horizonStart: d.horizonStart, horizonEnd: d.horizonEnd, recomputedBy: d.recomputedBy,
       owner: d.owner, quantities: d.quantities, definition: d.definition, scenario: d.scenario}, origin: d.origin, source: citedSource(d.origin, d.source)}];
   });
@@ -262,6 +269,16 @@ export const priorResultPins = (priors: {weeklyCash: Prior; covenant: Prior}): P
   {role: "weekly_cash", executionId: priors.weeklyCash.executionId, resultFingerprint: priors.weeklyCash.resultFingerprint},
   {role: "covenant", executionId: priors.covenant.executionId, resultFingerprint: priors.covenant.resultFingerprint}];
 
+
+/** What the method's own reader and packet would refuse after confirmation, named before the card is offered. */
+/** The method's own reader and packet over a basis, as the confirmation will run them. */
+export const quarterUpdateReader = (b: BoundBasis) => {
+  return composeQuarterUpdateClose(b);
+};
+export function quarterUpdateReaderGaps(facts: QuarterUpdateFacts): string[] {
+  return readerGaps(proposeQuarterUpdateHypotheses(facts), quarterUpdateReader);
+}
+
 /** One turn's premise step for the quarter close. Without both prior completed results of the work it proposes
  * nothing and names what is missing, before any extraction. */
 export async function proposeQuarterUpdatePremisesForTurn(input: {
@@ -288,6 +305,6 @@ export async function proposeQuarterUpdatePremisesForTurn(input: {
       if (completion.status === "complete") asked = completion.askedDependentIds;
       return completion;
     },
-    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found), asked)}, {...input, entry, projectId: input.projectId,
+    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found), asked), readerCheck: quarterUpdateReaderGaps}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({documentFields: await input.loadEvidence(), ...context})});
 }

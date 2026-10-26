@@ -207,6 +207,33 @@ describe("quarter update premises proposed from a turn", () => {
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" ? c.missing.filter((m) => m.endsWith(".label")) : null).toEqual([`lines.${e.lines.length}.label`, `facilities.${e.facilities.length}.label`]);
   });
+  it("asks two transforms of the same stream instead of offering a card the reader would refuse (independent review, round 9)", () => {
+    const e = auroraExtraction(aurora(hex("a"), hex("b"))), u = e.streamUpdates.find((x) => x.kind === "scale")!;
+    u.factor = "0.9"; e.streamUpdates.push({...u, factor: "0.7"});
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c).toEqual({status: "missing", missing: [`streamUpdates.${e.streamUpdates.length}.streamId`]});
+  });
+  it("never turns absence into zero: every optional operand of the close absent is asked or the method names it (independent review, round 9)", () => {
+    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    // No series moved, no new stream, no facility, no action, no dependent, no linked or driver line, no question:
+    // each is a legitimate none; a persisting cause left without its series is named by the method itself
+    // (structural_cause_not_in_weekly_cash, covered in financial-model quarter-update-premises.test.ts).
+    e.streamUpdates = []; e.addedStreams = []; e.facilities = []; e.steps = []; e.dependents = []; e.askedDependentLabels = []; e.covenantMeasurementIds = [];
+    for (const c of e.causes) {c.equalsDeviationOfLabel = null; c.driverLineLabel = null;}
+    const c = complete(e);
+    expect(c.housePremiseKeys.sort()).toEqual(["covenantMeasurements", "materialityFloor"]);
+    // A dependent nobody recomputes, or one bound to this close without what it reads, is asked.
+    const owners = auroraExtraction(aurora(hex("a"), hex("b"))), elsewhere = owners.dependents.findIndex((d) => d.recomputedBy === "none"),
+      here = owners.dependents.findIndex((d) => d.recomputedBy !== "none");
+    owners.dependents[elsewhere]!.owner = null; owners.dependents[here]!.scenario = null;
+    const o = completeQuarterUpdateFacts({extraction: owners, priors: priors(), ids, currency: "BRL"});
+    expect(o.status === "missing" ? [...o.missing].sort() : o).toEqual([`dependents.${elsewhere + 1}.owner`, `dependents.${here + 1}.scenario`].sort());
+    // A scale nobody stated and a structural cause without its date or nature are asked.
+    const asked = auroraExtraction(aurora(hex("a"), hex("b"))), k = asked.causes.findIndex((x) => x.classification === "structural");
+    asked.causes[k]!.until = null; asked.causes[k]!.nature = null; asked.lines[0]!.scale = asked.lines[0]!.unit === "currency" ? null : asked.lines[0]!.scale;
+    const m = completeQuarterUpdateFacts({extraction: asked, priors: priors(), ids, currency: "BRL"});
+    expect(m.status === "missing" ? m.missing : m).toEqual(expect.arrayContaining([`causes.${k + 1}.until`, `causes.${k + 1}.nature`]));
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;

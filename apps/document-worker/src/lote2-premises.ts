@@ -108,6 +108,8 @@ export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}
    * names, "tooManyItems" for the basis limit (split the analysis or narrow it) and "premisesRefused" otherwise,
    * never a dropped card. Lote 2 keeps its behaviour. */
   expansionRefusalAsGap?: boolean;
+  /** Lote 3: what the method's own reader and packet would refuse after confirmation, named now as gaps. */
+  readerCheck?: (facts: F) => string[];
 }, input: {
   entry: "cue" | "continuation"; projectId: string; message: string; recentUserMessages: string[];
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
@@ -136,6 +138,11 @@ export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}
       const missing = [/_exceed_basis$/.test(message) ? "tooManyItems" : "premisesRefused"];
       input.log(`${spec.logPrefix}.expansion_refused`, {message: message.slice(0, 200), missing});
       return {forAdvisor: {status: "missing", missing}, proposal: null};
+    }
+    const refused = spec.readerCheck?.(completed.facts) ?? [];
+    if (refused.length) {
+      input.log(`${spec.logPrefix}.reader_refused`, {missing: refused});
+      return {forAdvisor: {status: "missing", missing: refused}, proposal: null};
     }
     input.log(`${spec.logPrefix}.proposed`, {hypotheses: proposal.hypotheses.length, housePremises: completed.housePremiseKeys});
     return {forAdvisor: {status: "proposed", summary: proposal.summary, housePremises: completed.housePremiseKeys}, proposal};

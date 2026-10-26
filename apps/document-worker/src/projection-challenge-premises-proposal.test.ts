@@ -1,8 +1,9 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {buildProjectionChallengePremiseProposal, completeProjectionChallengeFacts, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises,
+import {buildProjectionChallengePremiseProposal, completeProjectionChallengeFacts, projectionChallengeReader, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises,
   type ProjectionChallengeExtraction} from "./projection-challenge-premises-proposal";
 import {itemKeys} from "./lote2-premises";
+import {readerGaps} from "./lote3-reader-check";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 let aurora: () => ProjectionChallengeFacts;
@@ -68,6 +69,20 @@ describe("projection challenge premises proposed from a turn", () => {
     expect(completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["plan.taxRate"]});
     e.reference!.taxRate = null;
     expect(completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["plan.taxRate", "reference.taxRate"]});
+  });
+  it("never turns absence into zero: every optional operand absent is a named house premise or a gap the packet states (independent review, round 9)", () => {
+    const f = aurora();
+    const e = {...auroraExtraction(f), targetPeriod: none, unitConvention: none, assumptions: [], capacityQuantity: none, capacityInvestmentInPlan: none,
+      marginCause: none, requestedReceivableDays: none, premiumOverAverage: none};
+    const c = complete(e, f);
+    expect([...c.housePremiseKeys].sort()).toEqual(["assumptions", "evidenceStatus", "rulers", "targetPeriod", "unitConvention"]);
+    // Through the method's own reader and packet: capacity not informed is a gap, never "within capacity"; the
+    // premium, the requested days and the margin cause are cross-checks that are not run (null), never zero.
+    let packet: {status: string; gaps: {operand: string; reason: string}[]; readings: {capacity: unknown; premiumMix: unknown; receivables: {requestedDays: unknown}; gap: {marginCauseStated: unknown}} | null} | undefined;
+    expect(readerGaps(proposeProjectionChallengeHypotheses(c.facts), (b) => {packet = projectionChallengeReader(b) as never;})).toEqual([]);
+    expect(packet!.gaps).toEqual([{operand: "capacity", reason: "installed_capacity_not_informed"}]);
+    expect(packet!.status).toBe("partial");
+    expect([packet!.readings!.capacity, packet!.readings!.premiumMix, packet!.readings!.receivables.requestedDays, packet!.readings!.gap.marginCauseStated]).toEqual([null, null, null, null]);
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);

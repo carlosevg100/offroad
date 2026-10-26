@@ -1,8 +1,9 @@
 import {z} from "zod";
-import {proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
+import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
 import {factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const receivablesFundingPremiseMethod = {methodId: "monetize-receivables-for-working-capital", methodVersion: "2026.10.26-v1"} as const;
@@ -44,10 +45,10 @@ export const receivablesFundingExtractionSchema = z.strictObject({
     debtorTaxId: z.string().regex(/^\d{14}$/).nullable(), debtorSetDisjoint: z.boolean().nullable()})).max(16),
   options: z.array(z.strictObject({...item, kind: z.enum(kinds), recourse: z.enum(["with_recourse", "without_recourse"]).nullable(),
     rateBasis: z.enum(["monthly", "annual", "di_plus"]).nullable(), rate: ratio.nullable(),
-    iofDaily: ratio.nullable(), iofDailyCapDays: days.nullable(), iofAdditional: ratio.nullable(), rolloverDays: days.nullable(), upfrontFee: ratio.nullable(),
+    iofDaily: ratio.nullable(), iofDailyCapDays: days.nullable(), iofAdditional: ratio.nullable(), rolloverDays: z.union([days, z.literal("none")]).nullable(), upfrontFee: ratio.nullable(),
     collateral: z.enum(["none", "receivables_assignment", "unknown"]).nullable(), leadDaysMin: days.nullable(), leadDaysMax: days.nullable(),
     maxDaysPastDue: days.nullable(), maxRemainingTermDays: days.nullable(), registrationRule: z.enum(["required", "not_required"]).nullable(),
-    minCreditTier: z.enum(["selected", "standard"]).nullable(), sublimitPerDebtor: money.nullable(), sublimitGroup: itemLabel.nullable(),
+    minCreditTier: z.enum(["selected", "standard"]).nullable(), sublimitPerDebtor: z.union([money, z.literal("none")]).nullable(), sublimitGroup: itemLabel.nullable(),
     anchorItemLabels: z.array(itemLabel).max(16)})).max(8),
 });
 export type ReceivablesFundingExtraction = z.infer<typeof receivablesFundingExtractionSchema>;
@@ -61,14 +62,15 @@ export const receivablesFundingExtractionContract = {
     "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
     "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado quando um sacado aparece em mais de um grupo, e debtorTaxId o CNPJ do sacado quando um documento o traz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
+    "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: receivablesFundingExtractionSchema,
-  schemaName: "receivables_funding_extraction_v1",
+  schemaName: "receivables_funding_extraction_v2",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "receivables-funding-extraction-2026.10.26-v1",
+  cacheKey: "receivables-funding-extraction-2026.10.26-v2",
 };
 
 const dayMs = 86400000;
@@ -147,17 +149,22 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     for (const f of ["recourse", "rateBasis", "rate", "upfrontFee", "iofDaily", "iofDailyCapDays", "iofAdditional", "collateral"] as const) if (o[f] === null) missing.push(p + f);
     if (o.kind !== "bank_line") for (const f of ["maxDaysPastDue", "maxRemainingTermDays", "registrationRule", "minCreditTier"] as const) if (o[f] === null) missing.push(p + f);
     if ((o.leadDaysMin === null) !== (o.leadDaysMax === null)) missing.push(p + "leadDays");
+    // Absence is never read as none: a rollover term or a per-debtor sublimit nobody stated is asked; "none" is stated.
+    if (o.rolloverDays === null) missing.push(p + "rolloverDays");
+    if (o.kind !== "bank_line" && o.sublimitPerDebtor === null) missing.push(p + "sublimitPerDebtor");
     const anchors = o.anchorItemLabels.map((l) => e.items.findIndex((i) => sameLabel(i.label, l)));
     if (anchors.some((x) => x < 0) || (o.kind === "anchor_program" && !anchors.length)) missing.push(p + "anchorItemLabels");
     if (missing.length > before) return null;
     return {value: {id: optionIds[k]!, label: o.label, kind: o.kind, recourse: o.recourse!,
       eligibility: o.kind === "bank_line" ? null : {maxDaysPastDue: o.maxDaysPastDue!, maxRemainingTermDays: o.maxRemainingTermDays!, registrationRule: o.registrationRule!,
-        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : stableKey(o.sublimitGroup),
+        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor === "none" ? null : o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : stableKey(o.sublimitGroup),
         anchorItemIds: anchors.map((x) => itemIds[x]!)},
       rate: {basis: o.rateBasis!, rate: o.rate!}, iofDaily: o.iofDaily!, iofDailyCapDays: o.iofDailyCapDays!, iofAdditional: o.iofAdditional!,
-      rolloverDays: o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral!, leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},
+      rolloverDays: o.rolloverDays === "none" ? null : o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral!, leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},
       origin: o.origin, source: citedSource(o.origin, o.source)};
   });
+  // An option that pledges or may pledge the receivables uses the indenture's permitted-lien basket: its remaining balance is asked, never read as unlimited.
+  if (e.options.some((o) => o.collateral !== null && o.collateral !== "none") && !stated(e.lienBasketRemaining)) missing.push("lienBasketRemaining");
   if (missing.length || !threshold || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};
   const calendarDays = statedDays ?? {value: between(need.start.value, end!.value), origin: "house" as const, source: "Dias corridos entre o início e o fim da necessidade"};
   if (!statedDays) used.push("calendarDays");
@@ -173,6 +180,17 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!parsedFacts.ok) return {status: "missing", missing: parsedFacts.missing};
   const facts = parsedFacts.facts;
   return {status: "complete", facts, situationId: need.profile.value === "seasonal" ? "seasonal-working-capital" : "structural-working-capital", housePremiseKeys: [...new Set(used)]};
+}
+
+
+/** What the method's own reader and packet would refuse after confirmation, named before the card is offered. */
+/** The method's own reader and packet over a basis, as the confirmation will run them. */
+export const receivablesFundingReader = (b: BoundBasis) => {
+  const question = "Verificação das premissas antes da confirmação";
+  return prepareReceivablesFundingPacket(composeBoundReceivablesFunding({...b, question}));
+};
+export function receivablesFundingReaderGaps(facts: ReceivablesFundingFacts): string[] {
+  return readerGaps(proposeReceivablesFundingHypotheses(facts), receivablesFundingReader);
 }
 
 /** The card: each group of the portfolio, each option, the need and the market range for a dedicated vehicle. */
@@ -202,5 +220,5 @@ export async function proposeReceivablesFundingPremisesForTurn(input: {
   if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "receivables_funding_premises", idName: "receivables-funding", expansionRefusalAsGap: true, schema: receivablesFundingExtractionSchema,
     complete: (extraction, id) => completeReceivablesFundingFacts({extraction, ids: {receivablesFundingId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildReceivablesFundingPremiseProposal}, {...input, entry, projectId: input.projectId});
+    build: buildReceivablesFundingPremiseProposal, readerCheck: receivablesFundingReaderGaps}, {...input, entry, projectId: input.projectId});
 }

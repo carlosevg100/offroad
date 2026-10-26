@@ -1,9 +1,10 @@
 import {z} from "zod";
-import {actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
+import {composeBoundOperatingProjection, prepareOperatingProjectionPacket, actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
 import {conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const operatingProjectionPremiseMethod = {methodId: "build-operating-projection", methodVersion: "2026.10.26-v1"} as const;
@@ -122,6 +123,8 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
     if (basedOn === null) missing.push(p + "basedOnLabel");
     if (s.overrides.some((o) => o.values.length !== n) || conflictingKeys(s.overrides, (o) => o.driver, (o) => o.values).size) missing.push(p + "overrides");
     if (repeatedLabels(e.scenarios.map((x) => x.label)).includes(k + 1)) missing.push(p + "label");
+    // A scenario with no rule, no override and no shock would run as the base with zero effect: its parameters are asked.
+    if (s.volumeGrowthRate === null && s.volumeFactor === null && !s.overrides.length && s.inputCostShock === null) missing.push(p + "parameters");
     const shockEnd = s.inputCostShock ? `${s.inputCostShock.fromYear}-12-31` : null;
     if (shockEnd && !periodEnds.includes(shockEnd)) missing.push(p + "inputCostShock");
     if (s.volumeFactor?.startsWith("-")) missing.push(p + "volumeFactor");
@@ -166,6 +169,17 @@ const driverLabels: Record<ProjectedOperatingDriver, string> = {volume: "Volume"
   otherVariableCostPerUnit: "Demais custos variáveis por unidade", fixedCosts: "Custos fixos", receivableDays: "Prazo de recebimento", inventoryDays: "Prazo de estoque",
   payableDays: "Prazo de pagamento", maintenanceCapex: "Capex de manutenção", leasePayments: "Arrendamentos", depreciation: "Depreciação", interestExpense: "Despesa de juros", taxRate: "Alíquota"};
 
+
+/** What the method's own reader and packet would refuse after confirmation, named before the card is offered. */
+/** The method's own reader and packet over a basis, as the confirmation will run them. */
+export const operatingProjectionReader = (b: BoundBasis) => {
+  const question = "Verificação das premissas antes da confirmação";
+  return prepareOperatingProjectionPacket(composeBoundOperatingProjection({...b, question}));
+};
+export function operatingProjectionReaderGaps(facts: OperatingProjectionFacts): string[] {
+  return readerGaps(proposeOperatingProjectionHypotheses(facts), operatingProjectionReader);
+}
+
 /** The card: the purpose, the last year and its reported figures, each driver column, each scenario and each company version. */
 export function operatingProjectionSummary(facts: OperatingProjectionFacts): Lote2Summary {
   const row = summaryRow;
@@ -198,5 +212,5 @@ export async function proposeOperatingProjectionPremisesForTurn(input: {
   if (!input.projectId || !entry) return null;
   return proposeLote2PremisesForTurn({logPrefix: "operating_projection_premises", idName: "operating-projection", expansionRefusalAsGap: true, schema: operatingProjectionExtractionSchema,
     complete: (extraction, id) => completeOperatingProjectionFacts({extraction, ids: {projectionId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildOperatingProjectionPremiseProposal}, {...input, entry, projectId: input.projectId});
+    build: buildOperatingProjectionPremiseProposal, readerCheck: operatingProjectionReaderGaps}, {...input, entry, projectId: input.projectId});
 }

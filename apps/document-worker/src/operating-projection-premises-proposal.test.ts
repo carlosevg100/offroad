@@ -137,6 +137,20 @@ describe("operating projection premises proposed from a turn", () => {
     expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
     expect(events).toEqual(["operating_projection_premises.expansion_refused"]);
   });
+  it("never turns absence into zero: every optional operand absent is asked or a named house premise (independent review, round 9)", () => {
+    const f = aurora(), base = auroraExtraction(f);
+    // A scenario described with no rule, no override and no shock is asked, never run as the base with zero effect.
+    const empty = {...base.scenarios[0]!, label: "Alta do insumo", basedOnLabel: null, volumeGrowthRate: null, volumeFactor: null, overrides: [], inputCostShock: null};
+    expect(completeOperatingProjectionFacts({extraction: {...base, scenarios: [...base.scenarios, empty]}, ids: idsOf(f), currency: "BRL"}))
+      .toEqual({status: "missing", missing: [`scenarios.${base.scenarios.length + 1}.parameters`]});
+    // Every other optional operand absent: drivers with no last-year value are asked; the rest are house premises, each named.
+    const bare = {...base, purpose: none, lastProjectedYear: none, baseColumns: [], scenarios: [], companyVersions: []};
+    expect(completeOperatingProjectionFacts({extraction: bare, ids: idsOf(f), currency: "BRL"}))
+      .toEqual({status: "missing", missing: ["baseColumns.maintenanceCapex", "baseColumns.leasePayments", "baseColumns.depreciation", "baseColumns.interestExpense"]});
+    const columns = ["maintenanceCapex", "leasePayments", "depreciation", "interestExpense"].map((driver) => ({driver: driver as never, values: ["1", "1", "1"], origin: "informed" as const, source: "CFO"}));
+    const c = completeOperatingProjectionFacts({extraction: {...bare, baseColumns: columns}, ids: idsOf(f), currency: "BRL"});
+    expect(c.status === "complete" ? [...c.housePremiseKeys].sort() : c).toEqual(["alternativesToTest", "heldDrivers", "horizon", "purpose", "taxRate"]);
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora({informed: true}), c = complete(auroraExtraction(f), f);
     const proposal = buildOperatingProjectionPremiseProposal(c.facts);

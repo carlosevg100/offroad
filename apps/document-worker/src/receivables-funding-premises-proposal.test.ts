@@ -1,9 +1,10 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {createHash} from "node:crypto";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, shouldProposeReceivablesFundingPremises,
+import {buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
 import {itemKeys, stableKey} from "./lote2-premises";
+import {readerGaps} from "./lote3-reader-check";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 let aurora: () => ReceivablesFundingFacts;
@@ -24,10 +25,10 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
       encumbranceHolder: v.encumbranceHolder, releaseEvent: v.releaseEvent, originDate: v.originDate, dueDate: v.dueDate, registration: v.registration, creditTier: v.creditTier,
       anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount, debtorLabel: null, debtorTaxId: null, debtorSetDisjoint: v.debtorSetDisjoint};}),
     options: f.options.map((o) => {const v = o.value, el = v.eligibility; return {label: v.label, origin: said(o.origin), source: o.source, kind: v.kind, recourse: v.recourse,
-      rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays,
+      rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays ?? "none",
       upfrontFee: v.upfrontFee, collateral: v.collateral, leadDaysMin: v.leadDaysMin, leadDaysMax: v.leadDaysMax, maxDaysPastDue: el?.maxDaysPastDue ?? null,
       maxRemainingTermDays: el?.maxRemainingTermDays ?? null, registrationRule: el?.registrationRule ?? null, minCreditTier: el?.minCreditTier ?? null,
-      sublimitPerDebtor: el?.sublimitPerDebtor ?? null, sublimitGroup: el?.sublimitGroup ?? null, anchorItemLabels: (el?.anchorItemIds ?? []).map(label)};}),
+      sublimitPerDebtor: el ? el.sublimitPerDebtor ?? "none" : null, sublimitGroup: el?.sublimitGroup ?? null, anchorItemLabels: (el?.anchorItemIds ?? []).map(label)};}),
   };
 }
 const idsOf = (f: ReceivablesFundingFacts) => ({receivablesFundingId: f.receivablesFundingId, entityId: f.entityId, definitionVersionId: f.definitionVersionId});
@@ -166,6 +167,25 @@ describe("receivables funding premises proposed from a turn", () => {
       projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], extract: async () => e, log: (event) => {events.push(event);}});
     expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
     expect(events).toEqual(["receivables_funding_premises.expansion_refused"]);
+  });
+  it("never turns absence into zero: an unstated rollover, sublimit or lien basket is asked; unknown lead time and concentration stay unknown (independent review, round 9)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const fidc = e.options.findIndex((o) => o.kind !== "bank_line"), line = e.options.findIndex((o) => o.collateral !== "none");
+    e.options[fidc] = {...e.options[fidc]!, rolloverDays: null, sublimitPerDebtor: null};
+    const asked = completeReceivablesFundingFacts({extraction: {...e, lienBasketRemaining: none}, ids: idsOf(f), currency: "BRL"});
+    expect(asked.status === "missing" ? [...asked.missing].sort() : asked).toEqual([`options.${fidc + 1}.rolloverDays`, `options.${fidc + 1}.sublimitPerDebtor`, ...line >= 0 ? ["lienBasketRemaining"] : []].sort());
+    // Stated as none, they are none; lead time, debtor count, largest debtor and release event absent are carried as
+    // unknown (null in the packet, the sublimit test unverified), never as zero.
+    const stated = auroraExtraction(f);
+    stated.options = stated.options.map((o) => ({...o, leadDaysMin: null, leadDaysMax: null}));
+    stated.items = stated.items.map((i) => ({...i, largestDebtorAmount: null}));
+    const c = completeReceivablesFundingFacts({extraction: stated, ids: idsOf(f), currency: "BRL"});
+    expect(c.status).toBe("complete");
+    let packet: {status: string; result: unknown} | undefined;
+    expect(readerGaps(proposeReceivablesFundingHypotheses(c.status === "complete" ? c.facts : (null as never)), (b) => {packet = receivablesFundingReader(b) as never;})).toEqual([]);
+    const text = JSON.stringify(packet!.result);
+    expect(text.includes("\"leadDays\":null")).toBe(true);
+    expect(text.includes("\"leadDays\":{\"min\":0")).toBe(false);
   });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};
