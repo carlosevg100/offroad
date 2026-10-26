@@ -176,7 +176,7 @@ export async function proposeProjectionChallengePremisesForTurn(input: {
 }) {
   const entry = input.projectId ? premiseEntry("projection_challenge", input.message, input.hasAttachments, input.recentUserMessages) : null;
   if (!input.projectId || !entry) return null;
-  return proposeLote2PremisesForTurn({logPrefix: "projection_challenge_premises", idName: "projection-challenge", schema: projectionChallengeExtractionSchema,
+  return proposeLote2PremisesForTurn({logPrefix: "projection_challenge_premises", idName: "projection-challenge", expansionRefusalAsGap: true, schema: projectionChallengeExtractionSchema,
     complete: (extraction, id) => completeProjectionChallengeFacts({extraction, ids: {challengeId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
     build: buildProjectionChallengePremiseProposal}, {...input, entry, projectId: input.projectId});
 }

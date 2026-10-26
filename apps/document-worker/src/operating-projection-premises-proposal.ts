@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
-import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -86,8 +86,11 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
   if (!actualYear) missing.push("actualYear");
   if (!revenue) missing.push("reportedRevenue");
   if (!ebitda) missing.push("reportedEbitda");
+  // A driver stated twice with different values is asked, never resolved by order (independent review, round 8).
+  const actualConflicts = conflictingKeys(e.actualDrivers, (d) => d.driver, (d) => d.value);
+  for (const k of actualConflicts) missing.push(`actual.${k}`);
   const actual = new Map<string, OperatingProjectionExtraction["actualDrivers"][number]>();
-  for (const d of e.actualDrivers) if (!actual.has(d.driver)) actual.set(d.driver, d);
+  for (const d of e.actualDrivers) if (!actual.has(d.driver) && !actualConflicts.has(d.driver)) actual.set(d.driver, d);
   for (const k of actualOperatingDriverNames) if (!actual.has(k)) missing.push(`actual.${k}`);
   if (!actualYear) return {status: "missing", missing: [...new Set(missing)]};
   const asked = stated(e.lastProjectedYear);
@@ -95,7 +98,10 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
   if (!asked || asked.value <= actualYear.value) used.push("horizon");
   if (last - actualYear.value > 40) missing.push("lastProjectedYear");
   const periodEnds = Array.from({length: Math.min(last - actualYear.value, 40)}, (_, k) => `${actualYear.value + k + 1}-12-31`), n = periodEnds.length;
-  const columns = new Map(e.baseColumns.map((c) => [c.driver, c]));
+  const columnConflicts = conflictingKeys(e.baseColumns, (c) => c.driver, (c) => c.values);
+  for (const k of columnConflicts) missing.push(`baseColumns.${k}`);
+  const columns = new Map<string, OperatingProjectionExtraction["baseColumns"][number]>();
+  for (const c of e.baseColumns) if (!columns.has(c.driver)) columns.set(c.driver, c);
   const base = projectedOperatingDriverNames.map((d) => {
     const c = columns.get(d);
     if (c) {
@@ -114,7 +120,8 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
     const p = `scenarios.${k + 1}.`, before = missing.length;
     const basedOn = s.basedOnLabel === null ? "base" : (() => {const j = e.scenarios.findIndex((x) => sameLabel(x.label, s.basedOnLabel!)); return j >= 0 && j < k ? scenarioIds[j]! : null;})();
     if (basedOn === null) missing.push(p + "basedOnLabel");
-    if (s.overrides.some((o) => o.values.length !== n)) missing.push(p + "overrides");
+    if (s.overrides.some((o) => o.values.length !== n) || conflictingKeys(s.overrides, (o) => o.driver, (o) => o.values).size) missing.push(p + "overrides");
+    if (repeatedLabels(e.scenarios.map((x) => x.label)).includes(k + 1)) missing.push(p + "label");
     const shockEnd = s.inputCostShock ? `${s.inputCostShock.fromYear}-12-31` : null;
     if (shockEnd && !periodEnds.includes(shockEnd)) missing.push(p + "inputCostShock");
     if (s.volumeFactor?.startsWith("-")) missing.push(p + "volumeFactor");
@@ -127,6 +134,7 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
       inputCostShock: s.inputCostShock && shockEnd ? fact({fromPeriodEnd: shockEnd, rate: s.inputCostShock.rate, passThroughLagMonths: s.inputCostShock.passThroughLagMonths}) : null}];
   });
   if (!e.scenarios.some((s) => s.role === "alternative")) used.push("alternativesToTest");
+  for (const k of conflictingKeys(e.companyVersions, (v) => `${v.status}.${v.year}.${v.metric}`, (v) => v.value)) missing.push(`companyVersions.${k}`);
   const versionIds = itemKeys(e.companyVersions.map((v) => v.label));
   const companyVersions = e.companyVersions.flatMap((v, k) => {
     const end = `${v.year}-12-31`;
@@ -188,7 +196,7 @@ export async function proposeOperatingProjectionPremisesForTurn(input: {
 }) {
   const entry = input.projectId ? premiseEntry("operating_projection", input.message, input.hasAttachments, input.recentUserMessages) : null;
   if (!input.projectId || !entry) return null;
-  return proposeLote2PremisesForTurn({logPrefix: "operating_projection_premises", idName: "operating-projection", schema: operatingProjectionExtractionSchema,
+  return proposeLote2PremisesForTurn({logPrefix: "operating_projection_premises", idName: "operating-projection", expansionRefusalAsGap: true, schema: operatingProjectionExtractionSchema,
     complete: (extraction, id) => completeOperatingProjectionFacts({extraction, ids: {projectionId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
     build: buildOperatingProjectionPremiseProposal}, {...input, entry, projectId: input.projectId});
 }

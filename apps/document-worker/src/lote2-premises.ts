@@ -67,6 +67,17 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
 
 /** The facts a method accepts, or what it refuses named by path (a rule of the set as a whole as "facts"):
  * a refusal becomes a gap the card asks about, never a dropped card. */
+/** The entries of a collection referenced by label whose label repeats an earlier one: a reference by that label
+ * would silently pick the first, so each repeat is asked. One-based positions. */
+export function repeatedLabels(labels: readonly string[]): number[] {
+  return labels.flatMap((label, k) => labels.slice(0, k).some((x) => sameLabel(x, label)) ? [k + 1] : []);
+}
+/** The keys stated more than once with different values: never resolved by order, always asked. */
+export function conflictingKeys<T>(items: readonly T[], key: (t: T) => string, value: (t: T) => unknown): Set<string> {
+  const seen = new Map<string, string>(), out = new Set<string>();
+  for (const t of items) { const k = key(t), v = JSON.stringify(value(t)); if (seen.has(k) && seen.get(k) !== v) out.add(k); else seen.set(k, v); }
+  return out;
+}
 export function factsOrGaps<T>(schema: z.ZodType<T>, raw: unknown): {ok: true; facts: T} | {ok: false; missing: string[]} {
   const parsed = schema.safeParse(raw);
   if (parsed.success) return {ok: true, facts: parsed.data};
@@ -93,6 +104,10 @@ export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}
   logPrefix: string; idName: string; schema: z.ZodType<E>;
   complete: (extraction: E, id: string) => Lote2Completion<F>;
   build: (facts: F, situationId: string) => Lote2Proposal;
+  /** Lote 3: a refusal to expand the facts into hypotheses (the basis limit or any other) is a gap the turn
+   * names, "tooManyItems" for the basis limit (split the analysis or narrow it) and "premisesRefused" otherwise,
+   * never a dropped card. Lote 2 keeps its behaviour. */
+  expansionRefusalAsGap?: boolean;
 }, input: {
   entry: "cue" | "continuation"; projectId: string; message: string; recentUserMessages: string[];
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>;
@@ -113,7 +128,15 @@ export async function proposeLote2PremisesForTurn<E extends {turnIntent: string}
       input.log(`${spec.logPrefix}.missing`, {missing: completed.missing});
       return {forAdvisor: {status: "missing", missing: completed.missing}, proposal: null};
     }
-    const proposal = spec.build(completed.facts, completed.situationId);
+    let proposal: Lote2Proposal;
+    try { proposal = spec.build(completed.facts, completed.situationId); }
+    catch (error) {
+      if (!spec.expansionRefusalAsGap) throw error;
+      const message = error instanceof Error ? error.message : "unknown";
+      const missing = [/_exceed_basis$/.test(message) ? "tooManyItems" : "premisesRefused"];
+      input.log(`${spec.logPrefix}.expansion_refused`, {message: message.slice(0, 200), missing});
+      return {forAdvisor: {status: "missing", missing}, proposal: null};
+    }
     input.log(`${spec.logPrefix}.proposed`, {hypotheses: proposal.hypotheses.length, housePremises: completed.housePremiseKeys});
     return {forAdvisor: {status: "proposed", summary: proposal.summary, housePremises: completed.housePremiseKeys}, proposal};
   } catch (error) {

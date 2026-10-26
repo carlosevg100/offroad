@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, factsOrGaps, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -138,6 +138,10 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     if (l.unit !== "currency") return [l.projected, l.actual].map((v, n) => lineMeasure.test(v) ? v : (missing.push(p + (n ? "actual" : "projected")), null));
     return [money(l.projected, l.scale, p + "projected", p + "scale"), money(l.actual, l.scale, p + "actual", p + "scale")];
   });
+  // A collection referenced by label never carries the same label twice: the reference would silently take the first.
+  for (const [name, labels] of [["lines", e.lines.map((x) => x.label)], ["causes", e.causes.map((x) => x.label)], ["addedStreams", e.addedStreams.map((x) => x.label)],
+    ["facilities", e.facilities.map((x) => x.label)], ["dependents", e.dependents.map((x) => x.label)]] as const)
+    for (const k of repeatedLabels(labels)) missing.push(`${name}.${k}.label`);
   const lineIds = itemKeys(e.lines.map((l) => l.label));
   const lineOf = (label: string | null) => {
     if (label === null) return null;
@@ -278,7 +282,7 @@ export async function proposeQuarterUpdatePremisesForTurn(input: {
   const found = {weeklyCash: priors.weeklyCash!, covenant: priors.covenant!};
   const context = {priorWeeklyCash: {streams: priorStreams(found.weeklyCash)}, priorCovenant: {measurements: priorMeasurements(found.covenant)}};
   let asked: string[] = [];
-  return proposeLote2PremisesForTurn({logPrefix: "quarter_update_premises", idName: "quarter-update", schema: quarterUpdateExtractionSchema,
+  return proposeLote2PremisesForTurn({logPrefix: "quarter_update_premises", idName: "quarter-update", expansionRefusalAsGap: true, schema: quarterUpdateExtractionSchema,
     complete: (extraction, id) => {
       const completion = completeQuarterUpdateFacts({extraction, priors: found, ids: {updateId: id, entityId: id, definitionVersionId: id}, currency: "BRL"});
       if (completion.status === "complete") asked = completion.askedDependentIds;

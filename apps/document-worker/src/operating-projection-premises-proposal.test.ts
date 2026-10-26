@@ -1,5 +1,5 @@
 import {beforeAll, describe, expect, it} from "vitest";
-import {proposeOperatingProjectionHypotheses, type OperatingProjectionFacts} from "@offroad/financial-model";
+import {operatingProjectionDriverUnits, proposeOperatingProjectionHypotheses, type OperatingProjectionFacts} from "@offroad/financial-model";
 import {buildOperatingProjectionPremiseProposal, completeOperatingProjectionFacts, proposeOperatingProjectionPremisesForTurn, shouldProposeOperatingProjectionPremises,
   type OperatingProjectionExtraction} from "./operating-projection-premises-proposal";
 import {itemKeys} from "./lote2-premises";
@@ -101,6 +101,41 @@ describe("operating projection premises proposed from a turn", () => {
       missing: ["reportedEbitda", "actual.fixedCosts", "baseColumns.interestExpense", "scenarios.1.basedOnLabel"]});
     const noYear = auroraExtraction(f); noYear.actualYear = none;
     expect(completeOperatingProjectionFacts({extraction: noYear, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["actualYear"]});
+  });
+  it("asks for a driver stated twice with different values, in either order, never picking one (independent review, round 8)", () => {
+    const f = aurora(), base = auroraExtraction(f), volume = base.baseColumns.find((c) => c.driver === "volume")!;
+    const other = {...volume, values: volume.values.map((v) => String(Number(v) * 2)), source: "outra planilha"};
+    for (const columns of [[...base.baseColumns, other], [other, ...base.baseColumns]]) {
+      const c = completeOperatingProjectionFacts({extraction: {...base, baseColumns: columns}, ids: idsOf(f), currency: "BRL"});
+      expect(c).toEqual({status: "missing", missing: ["baseColumns.volume"]});
+    }
+    // The same column stated twice with the same values is one fact.
+    expect(completeOperatingProjectionFacts({extraction: {...base, baseColumns: [...base.baseColumns, {...volume}]}, ids: idsOf(f), currency: "BRL"}).status).toBe("complete");
+    const actual = {...base.actualDrivers[0]!, value: String(Number(base.actualDrivers[0]!.value) + 1)};
+    expect(completeOperatingProjectionFacts({extraction: {...base, actualDrivers: [...base.actualDrivers, actual]}, ids: idsOf(f), currency: "BRL"}))
+      .toEqual({status: "missing", missing: [`actual.${actual.driver}`]});
+    const scenario = base.scenarios.find((x) => x.overrides.length)!, k = base.scenarios.indexOf(scenario);
+    const twice = {...scenario, overrides: [...scenario.overrides, {...scenario.overrides[0]!, values: scenario.overrides[0]!.values.map((v) => String(Number(v) + 1))}]};
+    expect(completeOperatingProjectionFacts({extraction: {...base, scenarios: base.scenarios.map((x, n) => n === k ? twice : x)}, ids: idsOf(f), currency: "BRL"}))
+      .toEqual({status: "missing", missing: [`scenarios.${k + 1}.overrides`]});
+    if (base.companyVersions.length) {
+      const v = base.companyVersions[0]!, clash = {...v, label: "Outra versão", value: String(Number(v.value) + 1)};
+      expect(completeOperatingProjectionFacts({extraction: {...base, companyVersions: [...base.companyVersions, clash]}, ids: idsOf(f), currency: "BRL"}))
+        .toEqual({status: "missing", missing: [`companyVersions.${v.status}.${v.year}.${v.metric}`]});
+    }
+  });
+  it("names the basis limit as a gap in the turn instead of dropping the card (independent review, round 8)", async () => {
+    const f = aurora(), e = auroraExtraction(f), n = e.baseColumns[0]!.values.length;
+    const drivers = Object.keys(operatingProjectionDriverUnits) as OperatingProjectionExtraction["baseColumns"][number]["driver"][];
+    e.scenarios = Array.from({length: 10}, (_, k) => ({label: `Cenário ${k + 1}`, origin: "informed" as const, source: "cenário", role: "alternative" as const, basedOnLabel: null,
+      volumeGrowthRate: null, volumeFactor: null, inputCostShock: null,
+      overrides: drivers.map((driver) => ({driver, values: e.baseColumns.find((c) => c.driver === driver)?.values ?? Array.from({length: n}, () => "1")}))}));
+    expect(completeOperatingProjectionFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toMatchObject({status: "complete"});
+    const events: string[] = [];
+    const turn = await proposeOperatingProjectionPremisesForTurn({message: "Me ajuda a montar o business plan.", hasAttachments: false, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], extract: async () => e, log: (event) => {events.push(event);}});
+    expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
+    expect(events).toEqual(["operating_projection_premises.expansion_refused"]);
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora({informed: true}), c = complete(auroraExtraction(f), f);

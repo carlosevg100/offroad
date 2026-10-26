@@ -156,6 +156,22 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(proposal.hypotheses.every((h) => /^receivables_funding\.[0-9a-f-]{36}\.[A-Za-z0-9_.-]{1,200}$/.test(h.fieldPath))).toBe(true);
     expect(proposal).toMatchObject({methodId: "monetize-receivables-for-working-capital", methodVersion: "2026.10.26-v1"});
   });
+  it("names the basis limit as a gap in the turn instead of dropping the card: 16 groups and 5 options (independent review, round 8)", async () => {
+    const e = auroraExtraction(aurora());
+    e.items = Array.from({length: 16}, (_, k) => ({...e.items[k % e.items.length]!, label: k < e.items.length ? e.items[k]!.label : `Grupo ${k + 1}`}));
+    e.options = Array.from({length: 5}, (_, k) => ({...e.options[k % e.options.length]!, label: k < e.options.length ? e.options[k]!.label : `Opção ${k + 1}`}));
+    expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(aurora()), currency: "BRL"})).toMatchObject({status: "complete"});
+    const events: string[] = [];
+    const turn = await proposeReceivablesFundingPremisesForTurn({message: "Quero antecipar recebíveis em vez de pegar linha no banco.", hasAttachments: false, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], extract: async () => e, log: (event) => {events.push(event);}});
+    expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
+    expect(events).toEqual(["receivables_funding_premises.expansion_refused"]);
+  });
+  it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
+    const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};
+    const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(aurora()), currency: "BRL"});
+    expect(c.status === "missing" && c.missing.includes("items.2.label")).toBe(true);
+  });
   it("proposes only when the extraction reads the turn as answering", async () => {
     const earlier = ["Quero antecipar recebíveis em vez de pegar linha no banco."];
     for (const intent of nonAnswering)

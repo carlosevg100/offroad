@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -96,6 +96,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!end && !statedDays) missing.push("needEndDate");
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
+  // Options name their anchor items by label: an item label stated twice is asked, never resolved to the first.
+  for (const k of repeatedLabels(e.items.map((i) => i.label))) missing.push(`items.${k}.label`);
   const itemIds = itemKeys(e.items.map((i) => i.label));
   // Debtor identities are reconciled across every group before any key: the same whole normalized name with
   // compatible CNPJs (equal, or stated in some groups only) is one debtor, keyed by its CNPJ when any group states
@@ -198,7 +200,7 @@ export async function proposeReceivablesFundingPremisesForTurn(input: {
 }) {
   const entry = input.projectId ? premiseEntry("receivables_funding", input.message, input.hasAttachments, input.recentUserMessages) : null;
   if (!input.projectId || !entry) return null;
-  return proposeLote2PremisesForTurn({logPrefix: "receivables_funding_premises", idName: "receivables-funding", schema: receivablesFundingExtractionSchema,
+  return proposeLote2PremisesForTurn({logPrefix: "receivables_funding_premises", idName: "receivables-funding", expansionRefusalAsGap: true, schema: receivablesFundingExtractionSchema,
     complete: (extraction, id) => completeReceivablesFundingFacts({extraction, ids: {receivablesFundingId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
     build: buildReceivablesFundingPremiseProposal}, {...input, entry, projectId: input.projectId});
 }

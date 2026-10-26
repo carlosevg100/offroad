@@ -191,6 +191,22 @@ describe("quarter update premises proposed from a turn", () => {
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" && c.missing.includes("facts")).toBe(true);
   });
+  it("names the basis limit as a gap in the turn instead of dropping the card: 20 dependents (independent review, round 8)", async () => {
+    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    e.dependents = Array.from({length: 20}, (_, k) => ({...e.dependents[k % e.dependents.length]!, label: k < e.dependents.length ? e.dependents[k]!.label : `Dependente ${k + 1}`}));
+    expect(completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"})).toMatchObject({status: "complete"});
+    const events: string[] = [];
+    const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo.", hasAttachments: true, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => e, log: (event) => {events.push(event);}});
+    expect(turn).toEqual({forAdvisor: {status: "missing", missing: ["tooManyItems"]}, proposal: null});
+    expect(events).toEqual(["quarter_update_premises.expansion_refused"]);
+  });
+  it("asks for a label stated twice in a collection referenced by label (independent review, round 8)", () => {
+    const e = auroraExtraction(aurora(hex("a"), hex("b")));
+    e.lines.push({...e.lines[0]!, actual: "999"}); e.facilities.push({...e.facilities[0]!});
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c.status === "missing" ? c.missing.filter((m) => m.endsWith(".label")) : null).toEqual([`lines.${e.lines.length}.label`, `facilities.${e.facilities.length}.label`]);
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;
