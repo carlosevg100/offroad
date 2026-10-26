@@ -36,9 +36,12 @@ describe.each(methods)("gates of $methodId 2026.10.26-v1", ({methodId, situation
 });
 
 describe("the quarter close over one basis", () => {
-  it("has no single-basis composer: the request waits as method_unavailable", () => {
-    const basis = {profile: {method: {methodId: "update-after-quarter-close"}}} as never;
-    expect(composeMethodExecutionRequest({basis, ask: {question: "Fechou o trimestre.", objectives: [], asOf: "2026-10-26", situationIds: ["near-covenant"]},
-      ids: {executionId: "", requestId: "", processingRunId: "", snapshotId: ""}})).toEqual({ok: false, error: "method_unavailable"});
+  const basis = {profile: {method: {methodId: "update-after-quarter-close"}}} as never;
+  const ask = {question: "Fechou o trimestre.", objectives: [], asOf: "2026-10-26", situationIds: ["near-covenant"]};
+  const ids = {executionId: "", requestId: "", processingRunId: "", snapshotId: ""};
+  it("refuses by name without both prior results", () => {
+    expect(composeMethodExecutionRequest({basis, ask, ids})).toEqual({ok: false, error: "priors_missing"});
+    const prior = {executionId: "e", inputSnapshot: "{}", resultFingerprint: "f".repeat(64), sources: []};
+    expect(composeMethodExecutionRequest({basis, ask, ids, priors: {weeklyCash: prior, covenant: null}})).toEqual({ok: false, error: "priors_missing"});
   });
 });

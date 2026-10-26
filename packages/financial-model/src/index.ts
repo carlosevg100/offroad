@@ -116,3 +116,4 @@ export * from "./quarter-update-results";
 export * from "./quarter-update-packet";
 export * from "./quarter-update-premises";
 export * from "./quarter-update-composer";
+export * from "./quarter-update-stored-priors";
