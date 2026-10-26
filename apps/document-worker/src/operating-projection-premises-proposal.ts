@@ -72,20 +72,13 @@ export const operatingProjectionExtractionContract = {
 };
 
 type Origin = OperatingProjectionFacts["base"][number]["origins"][number];
-/** The house stresses run when nobody described an alternative: the main input 15% dearer from the second
- * projected year with pass-through in six months and without it in the year, and volume 2% lower each year. */
-const houseStresses = (second: string) => [
-  {id: "casa-insumo-repasse-6m", label: "Insumo principal +15%, repasse em seis meses", shock: {fromPeriodEnd: second, rate: "0.15", passThroughLagMonths: 6}},
-  {id: "casa-insumo-sem-repasse", label: "Insumo principal +15%, sem repasse no ano", shock: {fromPeriodEnd: second, rate: "0.15", passThroughLagMonths: 12}},
-  {id: "casa-volume-menor", label: "Volume 2% menor ao ano", factor: "0.98"},
-] as const;
-
 /** Turns the extraction into the facts the method needs. The last year and its reported figures are
  * required: without them nothing can be rebuilt, so the proposal waits and the reply asks for them in one
  * batch. House premises are conventions of the method and stated as such: the purpose when none was said,
  * three projected years, a commercial year and a 0.5% calibration tolerance, the nominal income tax rate,
- * an operating driver nobody projected held at the last year's level as an estimate, and the stresses
- * above when no alternative was described. Capex, leases, depreciation and interest are never assumed. */
+ * and an operating driver nobody projected held at the last year's level as an estimate. Capex, leases,
+ * depreciation and interest are never assumed. Alternatives come only from what the person described; with
+ * none, the reply asks which alternatives to test (`alternativesToTest`) and the house supplies no number. */
 export function completeOperatingProjectionFacts(input: {extraction: OperatingProjectionExtraction; ids: {projectionId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<OperatingProjectionFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
@@ -133,12 +126,7 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
       overrides: s.overrides.map((o) => ({driver: o.driver, values: o.values, origin: s.origin, source})),
       inputCostShock: s.inputCostShock && shockEnd ? fact({fromPeriodEnd: shockEnd, rate: s.inputCostShock.rate, passThroughLagMonths: s.inputCostShock.passThroughLagMonths}) : null}];
   });
-  if (!e.scenarios.some((s) => s.role === "alternative") && n >= 2) {
-    used.push("stresses");
-    for (const h of houseStresses(periodEnds[1]!)) scenarios.push({id: h.id, label: h.label, role: "alternative", basedOn: "base",
-      volumeGrowthRate: null, volumeFactor: "factor" in h ? {value: h.factor, origin: "house", source: "Estresse padrão da casa"} : null, overrides: [],
-      inputCostShock: "shock" in h ? {value: {...h.shock}, origin: "house", source: "Estresse padrão da casa"} : null});
-  }
+  if (!e.scenarios.some((s) => s.role === "alternative")) used.push("alternativesToTest");
   const versionIds = itemKeys(e.companyVersions.map((v) => v.label));
   const companyVersions = e.companyVersions.flatMap((v, k) => {
     const end = `${v.year}-12-31`;

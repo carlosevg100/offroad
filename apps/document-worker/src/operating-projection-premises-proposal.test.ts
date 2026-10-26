@@ -71,7 +71,7 @@ describe("operating projection premises proposed from a turn", () => {
     expect(c.housePremiseKeys).toEqual([]);
     expect(values(comparableHypotheses(proposeOperatingProjectionHypotheses(c.facts), renameOf(f)), renameOf(f))).toEqual(values(comparableHypotheses(proposeOperatingProjectionHypotheses(f))));
   });
-  it("builds a first version from the last year alone, holding what nobody projected and naming every house premise", () => {
+  it("builds a first version from the last year alone, holding what nobody projected, supplying no stress and naming every house premise", () => {
     const f = aurora(), e = auroraExtraction(f);
     e.baseColumns = e.baseColumns.filter((b) => ["maintenanceCapex", "leasePayments", "depreciation", "interestExpense"].includes(b.driver));
     e.scenarios = []; e.purpose = none; e.lastProjectedYear = none;
@@ -80,8 +80,10 @@ describe("operating projection premises proposed from a turn", () => {
     const volume = c.facts.base.find((b) => b.driver === "volume")!;
     expect([volume.values, volume.origins]).toEqual([["105", "105", "105"], ["estimate", "estimate", "estimate"]]);
     expect(c.facts.base.find((b) => b.driver === "taxRate")!.origins).toEqual(["house", "house", "house"]);
-    expect(c.facts.scenarios.map((s) => [s.id, s.role])).toEqual([["casa-insumo-repasse-6m", "alternative"], ["casa-insumo-sem-repasse", "alternative"], ["casa-volume-menor", "alternative"]]);
-    expect(c.housePremiseKeys.sort()).toEqual(["heldDrivers", "horizon", "purpose", "stresses", "taxRate"]);
+    // No alternative described: the house supplies no stress and the reply asks which alternatives to test.
+    expect(c.facts.scenarios).toEqual([]);
+    expect(proposeOperatingProjectionHypotheses(c.facts).some((h) => /\.scenario\./.test(h.fieldPath) || /shock|volumeFactor/.test(h.fieldPath))).toBe(false);
+    expect(c.housePremiseKeys.sort()).toEqual(["alternativesToTest", "heldDrivers", "horizon", "purpose", "taxRate"]);
   });
   it("asks for what nobody stated in one batch instead of assuming it", () => {
     const f = aurora(), e = auroraExtraction(f);

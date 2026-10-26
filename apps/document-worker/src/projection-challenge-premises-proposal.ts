@@ -86,9 +86,10 @@ const same = (a: string | readonly string[], b: string | readonly string[]) => A
 /** Turns the extraction into the facts the method needs. The plan, the reference and the years are required:
  * without them nothing can be read, so the proposal waits and the reply asks for them in one batch. House
  * premises are conventions of the method and stated as such: the last year as the target, a commercial year,
- * the units as the plan writes them, the nominal income tax rate, the yardstick and the evidence of each
+ * the units as the plan writes them, the yardstick and the evidence of each
  * assumption, an assumption not presented as documented, and one assumption per group of drivers that differ
- * when the plan describes none. No number of the plan or of the reference is assumed. */
+ * when the plan describes none. No number of the plan or of the reference is assumed, the tax rate included:
+ * a case without its rate is asked, never filled and never attributed to the case's document. */
 export function completeProjectionChallengeFacts(input: {extraction: ProjectionChallengeExtraction; ids: {challengeId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ProjectionChallengeFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
@@ -100,11 +101,10 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
     if (!c) {missing.push(name); return null;}
     const before = missing.length;
     for (const d of periodDrivers) if (c[d] === null || (n && c[d]!.length !== n)) missing.push(`${name}.${d}`);
-    for (const d of caseDrivers) if (c[d] === null && d !== "taxRate") missing.push(`${name}.${d}`);
+    for (const d of caseDrivers) if (c[d] === null) missing.push(`${name}.${d}`);
     if (missing.length > before) return null;
-    if (c.taxRate === null) used.push("taxRate");
-    const value = {...Object.fromEntries(periodDrivers.map((d) => [d, [...c[d]!]])), ...Object.fromEntries(caseDrivers.map((d) => [d, c[d] ?? "0.34"]))};
-    return {value, origin: c.origin, source: citedSource(c.origin, c.source) + (c.taxRate === null ? "; alíquota nominal de IR e CSLL" : "")};
+    const value = {...Object.fromEntries(periodDrivers.map((d) => [d, [...c[d]!]])), ...Object.fromEntries(caseDrivers.map((d) => [d, c[d]!]))};
+    return {value, origin: c.origin, source: citedSource(c.origin, c.source)};
   };
   const plan = kase("plan", e.plan), reference = kase("reference", e.reference);
   const asked = stated(e.targetPeriod);

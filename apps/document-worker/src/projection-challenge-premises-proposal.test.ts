@@ -60,6 +60,13 @@ describe("projection challenge premises proposed from a turn", () => {
     e.reference = null; e.plan!.fixedCosts = null; e.assumptions[1]!.drivers = ["quantity"];
     expect(completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["plan.fixedCosts", "reference", "assumptions.drivers"]});
   });
+  it("asks for a tax rate the plan does not state instead of filling one under the plan's document (independent review, round 1)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    e.plan!.taxRate = null;
+    expect(completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["plan.taxRate"]});
+    e.reference!.taxRate = null;
+    expect(completeProjectionChallengeFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["plan.taxRate", "reference.taxRate"]});
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);
     expect(proposal.summary).toMatchObject({situationId: "stable-business-high-conversion", referenceDate: "2028-12-31"});

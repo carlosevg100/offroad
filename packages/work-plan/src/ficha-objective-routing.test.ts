@@ -109,6 +109,24 @@ describe("canonical ficha objective routing", () => {
     ["Quanto de dívida cabe com a projeção nova?", "debt_capacity"],
     ["Monitore o fechamento do trimestre.", "monitoring"],
     ["Quero comparar alternativas de dívida com recebíveis para financiar a expansão.", "capital_strategy"],
+    // Independent review, round 1: the requested object and action keep their routes.
+    ["Monte a projeção de caixa semanal até dezembro", "weekly_cash"],
+    ["Faça uma projeção do caixa semana a semana", "weekly_cash"],
+    ["Elabore uma planilha de projeção operacional", "material_preparation"],
+    ["Fechamos o trimestre; monte a tabela de dívida com os saldos atuais", "debt_table"],
+    ["Chegou o balancete. Calcule a folga dos covenants na data de teste", "covenant_headroom"],
+    ["Revise o plano de amortização da operação existente", "operation_review"],
+    ["Revise o plano de pagamento do contrato", "operation_review"],
+    ["Compare as propostas do Itaú e do Santander", "proposal_comparison"],
+    ["Fechou o trimestre.", "ambiguous"],
+    // Comparing inside a method's own work keeps that method.
+    ["Construa a projeção por drivers, comparando-a ao orçamento da companhia", "operating_projection"],
+    ["Compare o realizado contra o projetado e atualize as análises após o fechamento do trimestre", "quarter_update"],
+    ["Compare as premissas do plano com a referência histórica e aponte quais são otimistas", "projection_challenge"],
+    ["Fechamos o trimestre, atualiza o caixa e o covenant", "quarter_update"],
+    ["Revise o plano de negócios que vai ao banco", "projection_challenge"],
+    ["Esse plano financeiro está otimista?", "projection_challenge"],
+    ["Monte a projeção do business plan com hipóteses explícitas", "operating_projection"],
   ] as const)("lote 3 patterns leave other intents in place: %s", (message, kind) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
   });
