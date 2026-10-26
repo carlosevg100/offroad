@@ -1,13 +1,18 @@
 {
   "source": "Mensagem direta do fundador nesta tarefa, 23 de outubro de 2026, autorizando publicar e preparar em produção a ativação das fichas do lote 2",
   "author": "Carlos Eduardo Vasques Galves",
-  "scope": "Preparação em produção da ativação do método measure-covenant-headroom 2026.10.23-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "scope": "Preparação em produção da ativação do método measure-covenant-headroom 2026.10.23-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), e, por ato posterior, liberação da capacidade para todas as organizações. Não aprova outro método nem efeito externo.",
   "release": "measure-covenant-headroom-2026.10.23-v1",
   "manifestHash": "729794a4dd27c16f15abae1986b414c966f369f49e3b27b3e24197fe9b68bc67",
   "acts": [
     {
       "verbatim": "Aprovo o conteúdo profissional do lote 2 (C10, C12, C18) e autorizo publicar os métodos, capturar os executores, registrar os perfis, aplicar as migrações do roteador e da ponte e construir a ponte da conversa, com as capacidades desligadas até a liberação final.",
       "recordedAt": "2026-10-23T19:55:45Z"
+    },
+    {
+      "verbatim": "Libero para uso as fichas C10, C12 e C18 (tabela de dívida, folga de covenant e caixa semanal), versão 2026.10.23-v1, para todos os clientes.",
+      "recordedAt": "2026-10-26T10:59:54.546688+00:00",
+      "effect": "Capacidade method.measure-covenant-headroom.2026.10.23-v1 liberada com exposição universal em produção, após a fusão das PRs 945, 946 e 947 e a verificação do deploy da web e do worker no commit 727677f1. Perfil e9808371-10b4-5e5f-9cff-6ae12cfcd6b6."
     }
   ]
 }

@@ -4,7 +4,7 @@
 - Ponte da conversa: o roteador reconhece debt_table, covenant_headroom e weekly_cash (frases das fichas); os fatos com origem viram premissas adotadas e cada composer remonta a entrada do pacote só da base confirmada, reproduzindo a calibração das fichas; o worker propõe as premissas (uma etapa por turno, faltas em lote, a extração classifica se a mensagem responde à pergunta pendente pelo turnIntent); cartão compartilhado com rótulos da casa traduzidos; resultados como revisões com blocos TS e SQL iguais chave a chave; páginas de resultado; resposta citada.
 - Migrações em staging e produção com statements idênticos: lote2_payload_provenance (produção 20261023204746), lote2_financial_objectives (produção 20261023221614), lote2_bridge (produção 20261023221825); advisors de segurança sem achados.
 - Sete rodadas de revisão independente até a aprovação; orçamento do turno do brief de 2,15 para 2,40 USD por causa das extrações de 16 mil tokens.
-- Falta: a liberação final das três capacidades, pedida em separado ao fundador.
+- Liberação final em 26/10/2026 por ato do fundador: as três capacidades em exposição universal, depois das PRs 945, 946 e 947 (zod 4.6.6) e da verificação do deploy da web e do worker no commit 727677f1.
 
 ## 2026-10-23: lote 2 de fichas testado, bloco da dívida (C10, C12, C18)
 
