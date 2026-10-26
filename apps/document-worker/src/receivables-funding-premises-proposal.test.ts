@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
 import {receivablesFundingContradictions, buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, receivablesFundingReaderGaps, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
-import {itemKeys, stableKey, statedLabel} from "./lote2-premises";
+import {documentKey, itemKeys, stableKey} from "./lote2-premises";
 import {readerGaps} from "./lote3-reader-check";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
@@ -40,7 +40,7 @@ const renameOf = (f: ReceivablesFundingFacts) => {
   // Debtor keys identify the whole name; the fixture keys each debtor by its group id.
   const ids = itemKeys(f.items.map((i) => i.value.label));
   // A single debtor keys by its name; a set of debtors by its own record (source and position, no anchor in the fixture).
-  f.items.forEach((i, k) => pairs.push([i.value.debtorCount === 1 ? stableKey(i.value.label, 80) : stableKey(`conjunto ${statedLabel(i.source)} posicao ${ids[k]}`, 80), i.value.debtorKey]));
+  f.items.forEach((i, k) => pairs.push([i.value.debtorCount === 1 ? stableKey(i.value.label, 80) : documentKey("conjunto", [i.source, null, ids[k]!]), i.value.debtorKey]));
   for (const o of f.options) if (o.value.eligibility?.sublimitGroup) pairs.push([stableKey(o.value.eligibility.sublimitGroup), o.value.eligibility.sublimitGroup]);
   return new Map(pairs);
 };
@@ -352,6 +352,18 @@ describe("receivables funding premises proposed from a turn", () => {
     // Without the disjoint declaration, whether the two sets share debtors is asked.
     const unstated = completeReceivablesFundingFacts({extraction: {...e, items: groups(null), options}, ids: idsOf(f), currency: "BRL"});
     expect(unstated.status === "missing" ? unstated.missing : unstated).toEqual(["items.1.debtorSetDisjoint", "items.2.debtorSetDisjoint"]);
+  });
+  it("two sets at 'Clientes-A'!A2 and 'Clientes A'!A2 are two sets: card proposed with 12 assignable (independent review, round 22)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const varejo = {...e.items.find((i) => (i.debtorCount ?? 0) > 1)!, label: "Varejo", amount: "6", debtorCount: 2, largestDebtorAmount: null, debtorLabel: null, debtorTaxId: null,
+      source: "carteira.xlsx", encumbrance: "free" as const, encumbranceHolder: null, releaseEvent: null, contract: "assignable" as const, debtorSetDisjoint: true};
+    const c = completeReceivablesFundingFacts({extraction: {...e, items: [{...varejo, anchor: "'Clientes-A'!A2"}, {...varejo, anchor: "'Clientes A'!A2"}],
+      options: e.options.filter((o) => o.kind !== "anchor_program")}, ids: idsOf(f), currency: "BRL"});
+    if (c.status !== "complete") throw new Error(JSON.stringify(c));
+    expect(new Set(c.facts.items.map((i) => i.value.debtorKey)).size).toBe(2);
+    let packet: {readings: unknown} | undefined;
+    expect(readerGaps(proposeReceivablesFundingHypotheses(c.facts), (b) => {packet = receivablesFundingReader(b) as never;})).toEqual([]);
+    expect(JSON.stringify(packet!.readings)).toContain('"assignable":"12"');
   });
   it("a stated CNPJ alone identifies the debtor; names conflict only when stated (independent review, round 16)", () => {
     const f = aurora(), e = auroraExtraction(f), base = e.items.find((i) => i.debtorCount === 1)!;

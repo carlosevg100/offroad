@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {canonicalJson, statedLabel, withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {canonicalJson, documentKey, statedLabel, withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -111,7 +111,7 @@ export function optionsByIdentity(options: ReceivablesFundingExtraction["options
       continue;
     }
     if (!same.length) {kept.push(o); continue;}
-    const reading = same.filter((x) => p === null && provider(x) === null && x.anchor !== null && o.anchor !== null && statedLabel(x.anchor) === statedLabel(o.anchor)
+    const reading = same.filter((x) => p === null && provider(x) === null && x.anchor !== null && o.anchor !== null && x.anchor.trim() === o.anchor.trim()
       && (x.source ?? "").trim() === (o.source ?? "").trim());
     if (reading.some((x) => terms(x) === terms(o))) continue;
     kept.push(o);
@@ -207,7 +207,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     // A group of several debtors is a set identified by the group's own record identity (source and anchor, or its
     // position when no anchor is stated), never by its descriptive label: two "Varejo" groups at two borderô rows are
     // two sets; whether they share debtors is the stated debtorSetDisjoint (round 21).
-    if (i.debtorCount !== 1) return stableKey(`conjunto ${statedLabel(i.source)} ${i.anchor === null ? `posicao ${itemIds[k]}` : statedLabel(i.anchor)}`, 80);
+    if (i.debtorCount !== 1) return documentKey("conjunto", i.anchor === null ? [i.source, null, itemIds[k]!] : [i.source, i.anchor]);
     if (i.debtorTaxId !== null) return `cnpj-${i.debtorTaxId}`;
     const name = nameOf(i), taxes = name === null ? [] : [...taxesByName.get(name)!];
     if (taxes.length === 1) return `cnpj-${taxes[0]}`;

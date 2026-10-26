@@ -57,6 +57,12 @@ export function itemKeys(labels: readonly string[], max = 30): string[] {
 }
 /** The normalized identity of a name: case, accents, punctuation and spacing folded, nothing truncated. */
 export const normalizedName = (name: string) => foldCue(name).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+/** A key for a document tuple (source, anchor, role): the sha256 of the exact stated strings, only outer whitespace
+ * trimmed, serialized as a JSON array; the readable prefix is cosmetic only (round 22). */
+export function documentKey(prefix: string, parts: readonly (string | null)[]): string {
+  const hash = createHash("sha256").update(JSON.stringify(parts.map((x) => x === null ? null : x.trim()))).digest("hex").slice(0, 24);
+  return `${prefix}-${hash}`;
+}
 /** A key that identifies a whole name, not a truncated slug: a readable prefix of the full normalized name and
  * a hash of all of it, so two names that share a long prefix never meet in one key. Used where a key is an
  * identity the method groups by (a debtor, a sublimit group), not a position in one list. */
@@ -148,9 +154,11 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
     const asked = new Set<number>();
     function parts(t: Record<string, unknown>) {
       const {origin: _origin, source, anchor, ...content} = t;
-      const sourceKey = typeof source === "string" ? statedLabel(source) : null, roleKey = role === undefined ? "" : statedLabel(String(t[role] ?? ""));
-      return {value: canonicalJson(content), where: role === undefined ? sourceKey : `${roleKey}\u0000${sourceKey ?? ""}`,
-        anchor: typeof anchor === "string" && anchor.trim() ? statedLabel(anchor) : null};
+      // A document tuple is compared by its exact stated strings, only outer whitespace trimmed: 'Clientes-A'!A2 and
+      // 'Clientes A'!A2 are two anchors (round 22).
+      const exact = (v: unknown) => typeof v === "string" ? v.trim() : null;
+      return {value: canonicalJson(content), where: JSON.stringify(role === undefined ? [exact(source)] : [exact(t[role]), exact(source)]),
+        anchor: typeof anchor === "string" && anchor.trim() ? anchor.trim() : null};
     }
     const keep = (t: Record<string, unknown>, p: ReturnType<typeof parts>) => {kept.push(t); keys.push(p); origins.push(new Set([t.origin])); firsts.push(t);};
     for (const t of extraction[name] as Record<string, unknown>[]) {
