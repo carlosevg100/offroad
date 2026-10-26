@@ -118,6 +118,18 @@ describe("quarter update result (C54)", () => {
     const html = renderToStaticMarkup(await QuarterUpdateResult({locale: "pt-BR", view}));
     expect(html).toContain("antes 7,5 na de 21/12/2026; agora 4,4 na de 21/12/2026");
   });
+  it("states coverage only as the packet records it: a need within the limit drawn after the critical week does not cover (independent review, round 2)", async () => {
+    const topUp = {facilityId: "conta-garantida", limit: "10", needExceedsLimit: false, fullLimitMinimum: {weekStart: "2026-12-21", closing: "12"}, fullLimitCovers: false};
+    for (const locale of ["pt-BR", "en-US"] as const) {
+      const html = renderToStaticMarkup(await QuarterUpdateResult({locale, view: {...quarter, framing: {...quarter.framing, topUp}}}));
+      expect(html).not.toContain("cobre a necessidade"); expect(html).not.toContain("covers the need");
+      expect(html).toContain(locale === "pt-BR" ? "não cobre a semana mais apertada" : "does not cover the tightest week");
+    }
+    const covers = renderToStaticMarkup(await QuarterUpdateResult({locale: "pt-BR", view: {...quarter, framing: {...quarter.framing, topUp: {...topUp, fullLimitCovers: true}}}}));
+    expect(covers).toContain("no mínimo ou acima dele");
+    const exceeds = renderToStaticMarkup(await QuarterUpdateResult({locale: "pt-BR", view: {...quarter, framing: {...quarter.framing, topUp: {...topUp, needExceedsLimit: true}}}}));
+    expect(exceeds).toContain("passa o limite");
+  });
   it("speaks the viewer's locale", async () => {
     const html = renderToStaticMarkup(await QuarterUpdateResult({locale: "en-US", view: quarter}));
     expect(html).toContain(en.App.workExecutions.quarterUpdate.title); expect(html).toContain("2.29x");

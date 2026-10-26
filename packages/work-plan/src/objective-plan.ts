@@ -600,6 +600,11 @@ function inferObjectiveKind(message: string, hasAttachments: boolean): Workspace
   if (foldedObjectivePatterns.informationOrganization.test(text)) return "information_organization";
   const financialObjective = inferSpecificFinancialObjective(message);
   if (financialObjective) return financialObjective;
+  // The four methods of lote 3 are considered only after every existing specific objective, and only when
+  // the message does not ask for an explanation, a deliverable, a review of an operation or a contract,
+  // or a capital strategy; those keep their own routes with their signals unchanged.
+  const lote3 = inferLote3Objective(text);
+  if (lote3) return lote3;
   if (/^(?:o que (?:e|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b/i.test(financialRoutingText(message))) return "factual_question";
   // A meeting request that asks for an approach, a script or questions is meeting preparation even
   // when it also mentions material: the brief comes first and material only after it is confirmed.
@@ -642,39 +647,6 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
   if (/\b(?:comparar|compare|comparacao|recebemos|chegaram|recebi)\b.{0,120}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\b(?:qual|escolher|melhor|mais barata)\b.{0,100}\b(?:propostas|term\s*sheets|ofertas)\b/.test(text)
     || /\bmais barato\b.{0,60}\bposso fechar\b/.test(text)) return "proposal_comparison";
-  // The methods of lote 3 (a projection built by driver, a projection challenged, receivables turned into
-  // working capital, a quarter close carried forward). A conceptual question, a deliverable such as a deck,
-  // a memo or a spreadsheet, a risk matrix, a draft or a comparison of offers, proposals or alternatives
-  // keeps its own route. Comparing inside a method's own work (the projection against the budget, the
-  // actual against the projected, the plan against the reference) does not veto it.
-  const lote3Conceptual = /^(?:o que (?:e|sao|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b|\b(?:o conceito de|como funciona)\b/.test(text);
-  const lote3Other = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|slides?|minutas?|redline|matriz de riscos?)\b/.test(text)
-    || /\bcompar\w*\b.{0,60}\b(?:propostas?|ofertas?|alternativas|opcoes|caminhos|term\s*sheets?)\b/.test(text)
-    || /\balternativas de (?:divida|financiamento|captacao|credito)\b/.test(text);
-  if (!lote3Conceptual && !lote3Other) {
-    // The quarter close needs an explicit request to carry it forward; a mere mention of the close does
-    // not override another requested action (a debt table, a covenant measurement).
-    const close = /\b(?:fech(?:ou|amos|ei|amento)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a |do |da )?(?:trimestre|semestre|mes|exercicio|balancete)\b|\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b|\b(?:trimestre|balancete|fechamento)\b/.test(text);
-    const update = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b/.test(text);
-    if ((close && update)
-      || /\bo que mudou\b.{0,60}\b(?:trimestre|semestre|fechamento|balancete)\b/.test(text)
-      || (/\brealizado\b.{0,30}\b(?:contra|versus|vs|com)\b.{0,30}\b(?:projetado|orcado|orcamento)\b/.test(text) && (update || close))) return "quarter_update";
-    if (/\b(?:antecip\w*|ced(?:er|o|emos|ida)|cessao|vend(?:er|o|emos)|descont\w*|securitiz\w*)\b.{0,40}\b(?:recebiveis|duplicatas|carteira de clientes)\b/.test(text)
-      || /\brecebiveis\b.{0,120}\b(?:financiar|financiamento|giro|safra|em vez|no lugar)\b/.test(text)
-      || /\b(?:quais|qual|que)\b.{0,20}\bfidcs?\b|\bfidcs?\b.{0,40}\b(?:proprio|compr\w*|nossa carteira)\b/.test(text)) return "receivables_funding";
-    // A plan here is a financial or business plan, never an amortization, payment or contractual plan.
-    const projectionObject = "(?:projecao|projecoes|business plan|plano de negocios|plano financeiro|orcamento|plano(?!s? de (?!negocios\\b))(?! contratual))";
-    if (new RegExp(`\\b(?:questionaria|questionar|contest\\w*|atac\\w*|cortar|cortaria)\\b.{0,80}\\b${projectionObject}`).test(text)
-      || /\bpremissas?\b.{0,80}\b(?:questionaria|questionar|contestar|frageis|fracas|otimistas?|agressivas?)\b/.test(text)
-      || new RegExp(`\\b${projectionObject}\\b.{0,40}\\b(?:otimista|agressiv\\w*|factivel|defensavel|realista)\\b`).test(text)
-      || new RegExp(`\\brevis\\w*\\b.{0,40}\\b${projectionObject}`).test(text)) return "projection_challenge";
-    // A weekly cash projection and a projection spreadsheet keep their own routes.
-    const weekly = /\b(?:caixa semanal|semana a semana|fluxo (?:de caixa )?semanal|semanal)\b/.test(text);
-    const sheet = /\b(?:planilha|excel|modelo em excel)\b/.test(text);
-    if (!weekly && !sheet && (/\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|comec\w*|preciso de|ajud\w*)\b.{0,60}\b(?:projecao|projecoes|business plan|plano de negocios)\b/.test(text)
-      || /\b(?:nao temos|nao tenho|sem)\b.{0,20}\b(?:projecao|business plan|plano de negocios)\b/.test(text)
-      || /\bprimeira versao\b.{0,60}\b(?:projecao|hipoteses|premissas)\b/.test(text))) return "operating_projection";
-  }
   // The debt methods of lote 2 answer the measurement itself. A conceptual question, or a message whose
   // action is another one (compare, review, a risk matrix, a draft, proposals, strategy or paths), keeps
   // its own route even when it mentions the debt table, a covenant or weekly cash.
@@ -694,6 +666,45 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
     || /\bendividamento\b.{0,20}\batualizado\b/.test(text)
     || /\bquanto (?:a gente|a empresa|a companhia|nos) (?:deve|devemos)\b/.test(text)
     || /\bextra(?:i|ia|ir|ia)\b.{0,40}\bdivida\b/.test(text)) return "debt_table";
+  return null;
+}
+
+/** The methods of lote 3: a projection built by driver (C24), a projection challenged (C26), receivables
+ * turned into working capital (C35) and a quarter close carried forward (C54). Called after the specific
+ * objectives of lotes 1 and 2. A first-class signal of another route vetoes all four: an explanation asked
+ * anywhere in the sentence, a deliverable (deck, memo, spreadsheet, presentation), a review of an operation
+ * or of a contractual or amortization plan, a capital strategy asked as such, and a comparison of external
+ * financing proposals or offers. Comparing scenarios or alternatives of the projection itself, the
+ * projection against the budget or the actual against the projected is part of these methods. */
+function inferLote3Objective(text: string): WorkspaceObjectiveKind | null {
+  const explanation = /\b(?:explique|explica|explicar|me explique|o que (?:e|sao|significa)|como funciona|o conceito de|qual (?:e )?a diferenca entre|defina|definicao de)\b/.test(text);
+  const deliverable = foldedObjectivePatterns.material.test(text)
+    || /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|pptx|slides?|planilha|excel|minutas?|redline)\b/.test(text);
+  const contractual = foldedObjectivePatterns.operationReview.test(text)
+    || /\bplanos?\b.{0,40}\b(?:amortiz\w*|pagamentos?|parcel\w*|contratua\w*|contrato)\b|\bamortiz\w*\b/.test(text);
+  const strategy = /\b(?:estrategi\w*|caminhos?|alongar|alongamento|refinanc\w*|matriz de riscos?)\b/.test(text);
+  const externalComparison = /\bcompar\w*\b.{0,60}\b(?:propostas?|ofertas?|term\s*sheets?|bancos?|financiadores?|linhas? de credito|alternativas de (?:divida|financiamento|captacao|credito))\b/.test(text)
+    || /\balternativas de (?:divida|financiamento|captacao|credito)\b/.test(text);
+  if (explanation || deliverable || contractual || strategy || externalComparison) return null;
+  // C54 needs an explicit request to carry the close forward.
+  const close = /\b(?:fech(?:ou|amos|ei|amento)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a |do |da )?(?:trimestre|semestre|mes|exercicio|balancete)\b|\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b|\b(?:trimestre|balancete|fechamento)\b/.test(text);
+  const update = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b/.test(text);
+  if ((close && update)
+    || /\bo que mudou\b.{0,60}\b(?:trimestre|semestre|fechamento|balancete)\b/.test(text)
+    || (/\brealizado\b.{0,30}\b(?:contra|versus|vs|com)\b.{0,30}\b(?:projetado|orcado|orcamento)\b/.test(text) && (update || close))) return "quarter_update";
+  // C35 weighs the company's own receivables against the bank line or asks who would buy them.
+  const instead = /\b(?:em vez|no lugar|ao inves)\b|\blinha (?:do|de|no) banco\b|\blinha bancaria\b/.test(text);
+  if ((/\brecebiveis\b|\bduplicatas\b/.test(text) && instead)
+    || /\b(?:quais|qual|que)\b.{0,20}\bfidcs?\b|\bfidcs?\b.{0,40}\b(?:proprio|compr\w*|nossa carteira)\b/.test(text)) return "receivables_funding";
+  // A plan here is a financial or business plan.
+  const projectionObject = "(?:projecao|projecoes|business plan|plano de negocios|plano financeiro|orcamento|plano)";
+  if (new RegExp(`\\b(?:questionaria|questionar|contest\\w*|atac\\w*|cortar|cortaria)\\b.{0,80}\\b${projectionObject}`).test(text)
+    || /\bpremissas?\b.{0,80}\b(?:questionaria|questionar|contestar|frageis|fracas|otimistas?|agressivas?)\b/.test(text)
+    || new RegExp(`\\b${projectionObject}\\b.{0,40}\\b(?:otimista|agressiv\\w*|factivel|defensavel|realista)\\b`).test(text)
+    || new RegExp(`\\brevis\\w*\\b.{0,40}\\b${projectionObject}`).test(text)) return "projection_challenge";
+  if (/\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|comec\w*|preciso de|ajud\w*)\b.{0,60}\b(?:projecao|projecoes|business plan|plano de negocios)\b/.test(text)
+    || /\b(?:nao temos|nao tenho|sem)\b.{0,20}\b(?:projecao|business plan|plano de negocios)\b/.test(text)
+    || /\bprimeira versao\b.{0,60}\b(?:projecao|hipoteses|premissas)\b/.test(text)) return "operating_projection";
   return null;
 }
 

@@ -3348,7 +3348,7 @@
         "capacityWithInvestment": "Installed capacity of {maximum}; the plan exceeds it in {period}, with the capacity investment in the plan.",
         "capacityWithin": "Installed capacity of {maximum}; the plan stays within it.",
         "source": "Source: {source}.",
-        "noCapacity": "Installed capacity not reported; it is the first question.",
+        "noCapacity": "Installed capacity not stated; it is among the open questions.",
         "receivables": "Plan receivable days of {days}; each day is worth {perDay} of cash.",
         "requestedDays": "At the {days} days customers ask for, cash changes by {cash}.",
         "premiumMix": "For price to come from mix, the premium line ({premium} above average) needs to reach {share} of volume at the target, about {perPeriod} more per period.",
@@ -3453,7 +3453,7 @@
         },
         "questions": "What can change the plan",
         "questionCodes": {
-          "anchor_program_of_restricted_debtor": "Does {item} run a supplier finance program? If so, {amount} becomes the cheapest source, on the debtor's risk.",
+          "anchor_program_of_restricted_debtor": "Does {item} run a supplier finance program? The answer decides {amount} of the portfolio.",
           "anchor_program_terms": "What are the terms of {item}'s program (rate, onboarding time, limit per supplier)? It involves {amount}.",
           "duplicata_registration_capability": "Does your system already issue book-entry duplicatas? It conditions {amount}."
         },
@@ -3541,10 +3541,10 @@
         "shortfall": "Shortfall to the minimum: from {prior} to {updated}.",
         "closingAtHorizon": "Balance at the end of the horizon: from {prior} to {updated}.",
         "topUpExceeds": "The need exceeds the {limit} limit of the {facility}; even using the whole limit, the tightest week closes at {closing}.",
-        "topUpCovers": "The {facility}, with a {limit} limit, covers the need.",
+        "topUpCovers": "Drawing the {limit} limit of the {facility} when the packet draws it, the tightest week closes at {closing} in the week of {week}, at or above the minimum.",
         "action": "Proposed action",
         "withinApproved": "Within what was already approved.",
-        "outsideApproved": "Outside what was approved; it needs a new decision.",
+        "outsideApproved": "Outside what was approved.",
         "actionCovers": "With the action, the tightest week closes at {closing} in the week of {week}.",
         "actionDoesNotCover": "The action does not cover the shortfall.",
         "covenant": "Covenant under each definition",
@@ -3622,7 +3622,8 @@
           "financing_cost_comparison": "It does not compare financing costs.",
           "third_party_distribution": "It sends nothing to third parties.",
           "credit_approval": "It is not a credit approval."
-        }
+        },
+        "topUpLate": "The need fits within the {limit} limit of the {facility}, but the recorded draw does not cover the tightest week: even with the whole limit, it closes at {closing} in the week of {week}, below the minimum."
       }
     },
     "overview": "Overview",

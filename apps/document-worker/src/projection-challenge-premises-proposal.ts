@@ -110,13 +110,13 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
   const asked = stated(e.targetPeriod);
   if (asked && periods && periods.value.indexOf(asked.value) < 1) missing.push("targetPeriod");
   // Each assumption names the drivers it moves; a driver belongs to one. With none described, one per group of drivers that differ.
-  let terms = e.assumptions.map((a) => ({label: a.label, origin: a.origin, source: citedSource(a.origin, a.source), drivers: [...new Set(a.drivers)],
+  let terms = e.assumptions.map((a) => ({label: a.label, origin: a.origin as "document" | "informed" | "house", source: citedSource(a.origin, a.source), drivers: [...new Set(a.drivers)],
     ruler: a.ruler, evidence: a.evidence, evidenceStatus: a.evidenceStatus}));
   if (new Set(terms.flatMap((t) => t.drivers)).size !== terms.flatMap((t) => t.drivers).length) missing.push("assumptions.drivers");
   if (!terms.length && plan && reference) {
     const differ = (d: Driver) => !same((plan.value as Record<string, string | string[]>)[d]!, (reference.value as Record<string, string | string[]>)[d]!);
     const groups: Driver[][] = [...periodDrivers.map((d) => [d] as Driver[]), [...caseDrivers]].map((g) => g.filter(differ)).filter((g) => g.length);
-    terms = groups.map((g) => ({label: rulerOf(g[0]!).label, origin: "informed" as const, source: "Premissa que difere da referência, agrupada pela casa", drivers: g,
+    terms = groups.map((g) => ({label: rulerOf(g[0]!).label, origin: "house" as const, source: "Premissa que difere da referência, agrupada pela casa", drivers: g,
       ruler: null, evidence: [], evidenceStatus: null}));
     used.push("assumptions");
     if (!terms.length) missing.push("assumptions");

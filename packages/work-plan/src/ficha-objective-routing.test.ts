@@ -76,7 +76,17 @@ const fichas = [
   ]},
 ] as const;
 
+import originMainRouting from "./routing-regression.origin-main.json";
+
 describe("canonical ficha objective routing", () => {
+  // Every routing test phrase of lotes 1 and 2 (all strings of the work-plan tests at origin/main), with and
+  // without attachments, keeps the kind origin/main gave it: lote 3 never takes an existing route.
+  it("keeps every lote 1 and lote 2 routing phrase on its origin/main kind", () => {
+    const changed = (originMainRouting as {message: string; hasAttachments: boolean; kind: string}[])
+      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
+    expect(changed).toEqual([]);
+  });
+
   it.each([
     ["O que é caixa semanal?", "factual_question"],
     ["O que é uma tabela de dívida?", "factual_question"],
@@ -127,6 +137,15 @@ describe("canonical ficha objective routing", () => {
     ["Revise o plano de negócios que vai ao banco", "projection_challenge"],
     ["Esse plano financeiro está otimista?", "projection_challenge"],
     ["Monte a projeção do business plan com hipóteses explícitas", "operating_projection"],
+    // Independent review, round 2.
+    ["Atualize a tabela de dívida com o balancete do trimestre", "debt_table"],
+    ["Refaça o cálculo da folga do covenant com o balancete do trimestre", "covenant_headroom"],
+    ["Monte uma projeção do caixa até dezembro", "weekly_cash"],
+    ["Revise o plano para amortizar a operação existente", "operation_review"],
+    ["Prepare uma planilha para revisar a projeção operacional", "material_preparation"],
+    ["Me explique o que é cessão de recebíveis", "factual_question"],
+    ["Construa uma projeção por drivers e compare as alternativas de volume e preço", "operating_projection"],
+    ["Compare os cenários de alta e de base da projeção do plano e diga quais premissas são otimistas", "projection_challenge"],
   ] as const)("lote 3 patterns leave other intents in place: %s", (message, kind) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
   });

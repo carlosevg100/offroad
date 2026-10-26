@@ -51,6 +51,8 @@ describe("projection challenge premises proposed from a turn", () => {
     e.assumptions = []; e.targetPeriod = none; e.unitConvention = none;
     const c = complete(e, f);
     expect(c.facts.assumptions.map((a) => a.term.value.drivers)).toEqual([["quantity"], ["netUnitPrice"], ["fixedCosts"], ["receivableDays", "maintenanceCapex"]]);
+    // Grouped by the house, so the terms carry the house origin (independent review, round 2).
+    expect(c.facts.assumptions.every((a) => a.term.origin === "house")).toBe(true);
     expect(c.facts.assumptions.every((a) => a.ruler.origin === "house" && a.evidenceStatus.value === "not_presented")).toBe(true);
     expect(c.facts.targetPeriodId).toMatchObject({value: "2028", origin: "house"});
     expect(c.housePremiseKeys.sort()).toEqual(["assumptions", "evidenceStatus", "rulers", "targetPeriod", "unitConvention"]);

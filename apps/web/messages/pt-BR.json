@@ -3348,7 +3348,7 @@
         "capacityWithInvestment": "Capacidade instalada de {maximum}; o plano passa dela em {period}, com o investimento de capacidade no plano.",
         "capacityWithin": "Capacidade instalada de {maximum}; o plano fica dentro dela.",
         "source": "Fonte: {source}.",
-        "noCapacity": "Capacidade instalada não informada; é a primeira pergunta.",
+        "noCapacity": "Capacidade instalada não informada; está entre as perguntas abertas.",
         "receivables": "Prazo de recebimento do plano de {days} dias; cada dia vale {perDay} de caixa.",
         "requestedDays": "Com os {days} dias que os clientes pedem, o caixa muda em {cash}.",
         "premiumMix": "Para o preço vir do mix, a linha premium ({premium} acima da média) precisa chegar a {share} do volume no alvo, cerca de {perPeriod} a mais por período.",
@@ -3453,7 +3453,7 @@
         },
         "questions": "O que pode mudar o plano",
         "questionCodes": {
-          "anchor_program_of_restricted_debtor": "{item} tem programa de antecipação a fornecedores? Se tiver, {amount} passam a ser a fonte mais barata, no risco do sacado.",
+          "anchor_program_of_restricted_debtor": "{item} tem programa de antecipação a fornecedores? A resposta decide {amount} da carteira.",
           "anchor_program_terms": "Quais as condições do programa de {item} (taxa, prazo de adesão, limite por fornecedor)? Envolve {amount}.",
           "duplicata_registration_capability": "O sistema de vocês já emite duplicata escritural? Condiciona {amount}."
         },
@@ -3541,10 +3541,10 @@
         "shortfall": "Falta para o mínimo: de {prior} para {updated}.",
         "closingAtHorizon": "Saldo no fim do horizonte: de {prior} para {updated}.",
         "topUpExceeds": "A necessidade passa o limite de {limit} da {facility}; mesmo usando todo o limite, a semana mais apertada fecha em {closing}.",
-        "topUpCovers": "A {facility}, com limite de {limit}, cobre a necessidade.",
+        "topUpCovers": "Usando o limite de {limit} da {facility} quando o pacote o saca, a semana mais apertada fecha em {closing} na de {week}, no mínimo ou acima dele.",
         "action": "Ação proposta",
         "withinApproved": "Dentro do que já foi aprovado.",
-        "outsideApproved": "Fora do que foi aprovado; precisa de nova decisão.",
+        "outsideApproved": "Fora do que foi aprovado.",
         "actionCovers": "Com a ação, a semana mais apertada fecha em {closing} na de {week}.",
         "actionDoesNotCover": "A ação não cobre a falta.",
         "covenant": "Covenant em cada definição",
@@ -3622,7 +3622,8 @@
           "financing_cost_comparison": "Não compara custo de financiamento.",
           "third_party_distribution": "Não envia nada a terceiros.",
           "credit_approval": "Não é aprovação de crédito."
-        }
+        },
+        "topUpLate": "A necessidade cabe no limite de {limit} da {facility}, mas o saque registrado não cobre a semana mais apertada: mesmo com todo o limite, ela fecha em {closing} na de {week}, abaixo do mínimo."
       }
     },
     "overview": "Visão geral",

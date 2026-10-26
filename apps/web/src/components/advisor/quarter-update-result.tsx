@@ -65,9 +65,15 @@ export async function QuarterUpdateResult({locale, view}: {locale: string; view:
         updated: mi(framing.tightestWeek.updated.closing), updatedWeek: day(framing.tightestWeek.updated.weekStart)})}</strong></p>
       {framing.shortfallToMinimum ? <p>{t("shortfall", {prior: mi(framing.shortfallToMinimum.prior), updated: mi(framing.shortfallToMinimum.updated)})}</p> : null}
       {framing.closingAtHorizon ? <p>{t("closingAtHorizon", {prior: mi(framing.closingAtHorizon.prior), updated: mi(framing.closingAtHorizon.updated)})}</p> : null}
+      {/* Coverage follows what the packet records: the need against the limit, and whether the whole limit,
+          drawn when the packet draws it, keeps the tightest week at the minimum (fullLimitCovers). */}
       {framing.topUp ? <p>{framing.topUp.needExceedsLimit
         ? t("topUpExceeds", {facility: framing.topUp.facilityId, limit: mi(framing.topUp.limit), closing: mi(framing.topUp.fullLimitMinimum.closing)})
-        : t("topUpCovers", {facility: framing.topUp.facilityId, limit: mi(framing.topUp.limit)})}</p> : null}
+        : framing.topUp.fullLimitCovers
+        ? t("topUpCovers", {facility: framing.topUp.facilityId, limit: mi(framing.topUp.limit), closing: mi(framing.topUp.fullLimitMinimum.closing),
+          week: day(framing.topUp.fullLimitMinimum.weekStart)})
+        : t("topUpLate", {facility: framing.topUp.facilityId, limit: mi(framing.topUp.limit), closing: mi(framing.topUp.fullLimitMinimum.closing),
+          week: day(framing.topUp.fullLimitMinimum.weekStart)})}</p> : null}
     </> : null}
 
     {action.steps.length ? <>
@@ -126,7 +132,7 @@ export async function QuarterUpdateResult({locale, view}: {locale: string; view:
       <ul>{view.openQuestions.map((q) => <li key={q.causeId}>{q.question}</li>)}</ul>
     </> : null}
 
-    {framing.priorVersionsKept !== null ? <p>{t("kept")}</p> : null}
+    {framing.priorVersionsKept === true && framing.sentToThirdParties === false ? <p>{t("kept")}</p> : null}
 
     <h3>{t("gaps")}</h3>
     {view.informationGaps.length ? <ul>{view.informationGaps.map((g, n) => <li key={n}><code>{g.operand}</code>: {known("gapReasons", g.reason)}</li>)}</ul> : <p>{t("noGaps")}</p>}

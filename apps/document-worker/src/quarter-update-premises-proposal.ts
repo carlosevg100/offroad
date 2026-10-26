@@ -158,12 +158,12 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
       : {value: {facilityId: facilityIds[f]!, mode: "residual" as const, date: s.date!}, origin: s.origin, source}];
   });
   const measurements = priorMeasurements(input.priors.covenant), known = new Set(measurements.map((m) => m.id));
-  let measurementIds = e.covenantMeasurementIds;
+  let measurementIds = e.covenantMeasurementIds, measurementsChosenByHouse = false;
   if (measurementIds.some((id) => !known.has(id))) missing.push("covenantMeasurementIds");
   if (!measurementIds.length && measurements.length) {
     const headline = measurements[0]!;
     measurementIds = measurements.filter((m) => m.id === headline.id || (m.role === "test" && m.date !== null && m.date === headline.date)).map((m) => m.id);
-    used.push("covenantMeasurements");
+    used.push("covenantMeasurements"); measurementsChosenByHouse = true;
   }
   if (!measurementIds.length) missing.push("covenantMeasurementIds");
   const dependentIds = itemKeys(e.dependents.map((d) => d.label));
@@ -183,7 +183,9 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     carry: {value: {cashLineId: cashId, ebitdaLineId: ebitdaId}, origin: cash!.origin, source: cash!.source},
     bridges: [...bridges.entries()].map(([lineId, causes]) => ({lineId, causes})),
     streamUpdates, materialityFloor: {value: "1000", origin: "house", source: "R$ 1 mil, piso de materialidade do efeito semanal"},
-    addedStreams, covenant: {value: {measurementIds}, origin: "document", source: "Medições do teste de covenant registrado"}, facilities, steps, dependents});
+    addedStreams, covenant: measurementsChosenByHouse
+      ? {value: {measurementIds}, origin: "house", source: "Medições do teste registrado na data da apuração principal, escolhidas pela casa"}
+      : {value: {measurementIds}, origin: "informed", source: "Medições do teste registrado citadas na conversa"}, facilities, steps, dependents});
   return {status: "complete", facts, situationId: quarterUpdateSituation, housePremiseKeys: [...new Set(used)]};
 }
 

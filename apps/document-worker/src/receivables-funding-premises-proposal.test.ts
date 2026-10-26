@@ -60,18 +60,30 @@ describe("receivables funding premises proposed from a turn", () => {
     expect(c.housePremiseKeys).toEqual([]);
     expect(comparableHypotheses(proposeReceivablesFundingHypotheses(c.facts), renameOf(f))).toEqual(comparableHypotheses(proposeReceivablesFundingHypotheses(f)));
   });
-  it("names every house convention it uses and never prices an option", () => {
+  it("names every house convention it uses and never adopts a value the source does not state", () => {
     const f = aurora(), e = auroraExtraction(f);
     e.calendarDays = none; e.businessDays = none;
-    e.items[0]!.creditTier = null; e.items[0]!.anchorProgram = null;
-    const fidc = e.options.find((o) => o.kind === "fidc")!; fidc.iofDaily = null; fidc.iofDailyCapDays = null; fidc.iofAdditional = null; fidc.collateral = null;
     const c = complete(e, f);
     expect(c.facts.calendarDays).toMatchObject({value: 166, origin: "house"});
     expect(c.facts.businessDays.origin).toBe("estimate");
-    expect(c.facts.items[0]!.value).toMatchObject({creditTier: "standard", anchorProgram: "unknown"});
-    expect(c.housePremiseKeys.sort()).toEqual(["anchorProgram", "businessDays", "calendarDays", "collateral", "creditTier", "saleWithoutIof"]);
+    expect(c.housePremiseKeys.sort()).toEqual(["businessDays", "calendarDays"]);
     const line = auroraExtraction(f); line.options.find((o) => o.kind === "bank_line")!.iofDaily = null; line.options[0]!.rate = null; line.annualDi = none; line.dedicatedVehicleThreshold = none;
     expect(completeReceivablesFundingFacts({extraction: line, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing", missing: ["annualDi", "dedicatedVehicleThreshold", "options.1.rate", "options.5.iofDaily"]});
+  });
+  it("asks for the IOF of a documented FIDC option instead of adopting zero under its document (independent review, round 2)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const k = e.options.findIndex((o) => o.kind === "fidc");
+    Object.assign(e.options[k]!, {origin: "document", source: "regulamento-fidc.pdf", iofDaily: null, iofDailyCapDays: null, iofAdditional: null});
+    expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing",
+      missing: [`options.${k + 1}.iofDaily`, `options.${k + 1}.iofDailyCapDays`, `options.${k + 1}.iofAdditional`]});
+  });
+  it("asks for debtor quality, anchor program, the disjoint debtor set and collateral instead of filling them under the source", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    e.items[0]!.creditTier = null; e.items[0]!.anchorProgram = null;
+    const multi = e.items.findIndex((i) => i.debtorCount !== 1); e.items[multi]!.debtorSetDisjoint = null;
+    e.options[0]!.collateral = null;
+    expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing",
+      missing: ["items.1.creditTier", "items.1.anchorProgram", `items.${multi + 1}.debtorSetDisjoint`, "options.1.collateral"]});
   });
   it("asks for the contract, the encumbrance holder and an unknown anchor in one batch", () => {
     const f = aurora(), e = auroraExtraction(f);

@@ -93,6 +93,8 @@ describe("quarter update premises proposed from a turn", () => {
     const c = complete(e);
     expect(c.facts.covenant.value.measurementIds).toEqual(["dez26-base", "dez26-adverso", "dez26-gerencial"]);
     expect(c.housePremiseKeys).toContain("covenantMeasurements");
+    // Chosen by the house, so recorded under the house, never under the recorded result (independent review, round 2).
+    expect(c.facts.covenant.origin).toBe("house");
   });
   it("asks for what nobody stated in one batch, and refuses a stream or a measurement the prior results do not carry", () => {
     const e = auroraExtraction(aurora(hex("a"), hex("b")));

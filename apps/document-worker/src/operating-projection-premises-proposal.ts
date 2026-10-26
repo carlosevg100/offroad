@@ -133,7 +133,7 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
     if (!periodEnds.includes(end)) {missing.push(`companyVersions.${k + 1}.year`); return [];}
     const source = citedSource(v.origin, v.source);
     return [{id: versionIds[k]!, label: v.label, version: {value: {status: v.status, periodEnd: end, metric: v.metric, value: v.value}, origin: v.origin, source},
-      cause: v.cause === null ? {value: null, origin: v.origin, source: "A companhia não explicou a diferença"} : {value: v.cause, origin: v.origin, source}}];
+      cause: v.cause === null ? {value: null, origin: "house" as const, source: "A companhia não explicou a diferença; a causa é perguntada"} : {value: v.cause, origin: v.origin, source}}];
   });
   if (missing.length || !revenue || !ebitda) return {status: "missing", missing: [...new Set(missing)]};
   const said = stated(e.purpose);

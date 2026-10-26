@@ -74,16 +74,13 @@ const shift = (iso: string, n: number) => new Date(Date.parse(`${iso}T00:00:00Z`
 const between = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / dayMs);
 /** Monday to Friday from the start, for the stated number of calendar days; holidays are not known here. */
 const weekdays = (start: string, n: number) => Array.from({length: n}, (_, k) => new Date(Date.parse(`${start}T00:00:00Z`) + k * dayMs).getUTCDay()).filter((d) => d !== 0 && d !== 6).length;
-const sale = (kind: (typeof kinds)[number]) => kind === "anchor_program" || kind === "fidc";
 
-/** Turns the extraction into the facts the method needs. The portfolio, the need and every option's price
- * are the company's or its documents': nothing nobody stated is assumed, and the reply asks for it in one
- * batch. House premises are conventions of the method and stated as such: no IOF on a sale of receivables,
- * the end of the need from its start and its days (or the days from the two dates), business days counted
- * Monday to Friday without holidays as an estimate, a debtor quality not stated as standard, an anchor
- * program not stated as unknown, a debtor set not declared disjoint and collateral not stated as unknown.
- * The monthly volume from which a dedicated vehicle pays is asked: no public source in the repository
- * states it, so the house never supplies it. */
+/** Turns the extraction into the facts the method needs. The portfolio, the need and every option's terms,
+ * IOF included, are the company's or its documents': a value no source states is never adopted under that
+ * source's origin, so the reply asks for it in one batch. House premises carry their own origin and are
+ * stated as such: the days of use from the two dates (or the end from the start and the days), and business
+ * days counted Monday to Friday without holidays as an estimate. The monthly volume from which a dedicated
+ * vehicle pays is asked: no public source in the repository states it. */
 export function completeReceivablesFundingFacts(input: {extraction: ReceivablesFundingExtraction; ids: {receivablesFundingId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ReceivablesFundingFacts> {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
@@ -100,38 +97,35 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   const itemIds = itemKeys(e.items.map((i) => i.label));
   const items = e.items.map((i, k) => {
     const p = `items.${k + 1}.`, before = missing.length;
-    for (const f of ["contract", "encumbrance", "originDate", "dueDate", "registration"] as const) if (i[f] === null) missing.push(p + f);
+    for (const f of ["contract", "encumbrance", "originDate", "dueDate", "registration", "creditTier", "anchorProgram"] as const) if (i[f] === null) missing.push(p + f);
     if (i.encumbrance !== null && i.encumbrance !== "free" && i.encumbranceHolder === null) missing.push(p + "encumbranceHolder");
     if (missing.length > before) return null;
-    if (i.creditTier === null) used.push("creditTier");
-    if (i.anchorProgram === null) used.push("anchorProgram");
     const single = i.debtorCount === 1;
-    if (!single && i.debtorSetDisjoint === null) used.push("debtorSetDisjoint");
+    if (!single && i.debtorSetDisjoint === null) {missing.push(p + "debtorSetDisjoint"); return null;}
     const debtor = i.debtorLabel === null ? itemIds[k]! : itemKeys([i.debtorLabel])[0]!;
     const free = i.encumbrance === "free";
     return {value: {id: itemIds[k]!, label: i.label, amount: i.amount, contract: i.contract!, encumbrance: i.encumbrance!, encumbranceHolder: free ? null : i.encumbranceHolder,
-      releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier ?? "standard",
-      anchorProgram: i.anchorProgram ?? "unknown", debtorCount: i.debtorCount, largestDebtorAmount: i.largestDebtorAmount, debtorKey: debtor,
-      debtorSetDisjoint: single ? null : i.debtorSetDisjoint ?? false}, origin: i.origin, source: citedSource(i.origin, i.source)};
+      releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier!,
+      anchorProgram: i.anchorProgram!, debtorCount: i.debtorCount, largestDebtorAmount: i.largestDebtorAmount, debtorKey: debtor,
+      debtorSetDisjoint: single ? null : i.debtorSetDisjoint!}, origin: i.origin, source: citedSource(i.origin, i.source)};
   });
   const optionIds = itemKeys(e.options.map((o) => o.label));
   const options = e.options.map((o, k) => {
-    const p = `options.${k + 1}.`, before = missing.length, lends = !sale(o.kind);
-    for (const f of ["recourse", "rateBasis", "rate", "upfrontFee"] as const) if (o[f] === null) missing.push(p + f);
-    if (lends) for (const f of ["iofDaily", "iofDailyCapDays", "iofAdditional"] as const) if (o[f] === null) missing.push(p + f);
+    const p = `options.${k + 1}.`, before = missing.length;
+    // IOF is asked for every option the documents or the person do not price, a sale of receivables included:
+    // a value the source does not state is never adopted under the source's origin.
+    for (const f of ["recourse", "rateBasis", "rate", "upfrontFee", "iofDaily", "iofDailyCapDays", "iofAdditional", "collateral"] as const) if (o[f] === null) missing.push(p + f);
     if (o.kind !== "bank_line") for (const f of ["maxDaysPastDue", "maxRemainingTermDays", "registrationRule", "minCreditTier"] as const) if (o[f] === null) missing.push(p + f);
     if ((o.leadDaysMin === null) !== (o.leadDaysMax === null)) missing.push(p + "leadDays");
     const anchors = o.anchorItemLabels.map((l) => e.items.findIndex((i) => sameLabel(i.label, l)));
     if (anchors.some((x) => x < 0) || (o.kind === "anchor_program" && !anchors.length)) missing.push(p + "anchorItemLabels");
     if (missing.length > before) return null;
-    if (!lends && o.iofDaily === null) used.push("saleWithoutIof");
-    if (o.collateral === null) used.push("collateral");
     return {value: {id: optionIds[k]!, label: o.label, kind: o.kind, recourse: o.recourse!,
       eligibility: o.kind === "bank_line" ? null : {maxDaysPastDue: o.maxDaysPastDue!, maxRemainingTermDays: o.maxRemainingTermDays!, registrationRule: o.registrationRule!,
         minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : itemKeys([o.sublimitGroup])[0]!,
         anchorItemIds: anchors.map((x) => itemIds[x]!)},
-      rate: {basis: o.rateBasis!, rate: o.rate!}, iofDaily: o.iofDaily ?? "0", iofDailyCapDays: o.iofDailyCapDays ?? 0, iofAdditional: o.iofAdditional ?? "0",
-      rolloverDays: o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral ?? "unknown", leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},
+      rate: {basis: o.rateBasis!, rate: o.rate!}, iofDaily: o.iofDaily!, iofDailyCapDays: o.iofDailyCapDays!, iofAdditional: o.iofAdditional!,
+      rolloverDays: o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral!, leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},
       origin: o.origin, source: citedSource(o.origin, o.source)};
   });
   if (missing.length || !threshold || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};

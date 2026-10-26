@@ -85,6 +85,13 @@ describe("operating projection premises proposed from a turn", () => {
     expect(proposeOperatingProjectionHypotheses(c.facts).some((h) => /\.scenario\./.test(h.fieldPath) || /shock|volumeFactor/.test(h.fieldPath))).toBe(false);
     expect(c.housePremiseKeys.sort()).toEqual(["alternativesToTest", "heldDrivers", "horizon", "purpose", "taxRate"]);
   });
+  it("records a cause nobody stated under the house, never under the version's document (independent review, round 2)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    e.companyVersions[0]!.cause = null;
+    const c = complete(e, f);
+    expect(c.facts.companyVersions[0]!.cause).toMatchObject({value: null, origin: "house"});
+    expect(c.facts.companyVersions[0]!.version.origin).toBe("document");
+  });
   it("asks for what nobody stated in one batch instead of assuming it", () => {
     const f = aurora(), e = auroraExtraction(f);
     e.reportedEbitda = none; e.actualDrivers = e.actualDrivers.filter((d) => d.driver !== "fixedCosts");
