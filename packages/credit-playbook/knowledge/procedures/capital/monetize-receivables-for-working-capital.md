@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: receivables-funding-packet.v1
 unit_test_files: [packages/financial-model/src/receivables-funding-packet.test.ts, packages/financial-model/src/receivables-funding-runs.test.ts, packages/financial-model/src/receivables-funding-premises.test.ts, packages/financial-core/src/receivables-funding.test.ts]
-gold_case_ids: [gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-approval-promise, program-buys-a-debtor-without-a-program, policy-override-to-take-encumbered-receivables, sale-carrying-collateral, discount-without-recourse, bank-line-with-portfolio-eligibility, rate-without-a-declared-period, encumbrance-without-holder, peak-below-average-need, largest-debtor-above-its-bucket, figure-read-in-another-scenario]
+gold_case_ids: [gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-approval-promise, program-buys-a-debtor-without-a-program, policy-override-to-take-encumbered-receivables, sale-carrying-collateral, discount-without-recourse, bank-line-with-portfolio-eligibility, rate-without-a-declared-period, encumbrance-without-holder, peak-below-average-need, largest-debtor-above-its-bucket, largest-debtor-cannot-hold-its-bucket, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:gross-portfolio-is-not-assignable]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -70,12 +70,12 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 # Cálculos determinísticos
 - Elegibilidade pelo núcleo de elegibilidade de carteira: atraso, prazo remanescente, cessão permitida, ônus e registro. Registro ausente é condição precedente; os outros motivos excluem.
 - Programa do próprio cliente compra só esse cliente e dispensa a anuência; sacado com programa ativo vai pelo programa e não é oferecido às outras portas.
-- Sublimite por sacado: um sacado fica no menor entre o saldo e o sublimite; um grupo pulverizado só é provado dentro do sublimite pelo maior sacado, senão o volume é teto.
+- Sublimite por sacado: um sacado fica no menor entre o saldo e o sublimite; um grupo pulverizado só é provado dentro do sublimite pelo maior sacado, senão o volume é teto. Grupo maior que o número de sacados vezes o maior saldo é dado contraditório e é recusado.
 - Cedível = soma, por grupo, do maior volume que alguma porta de venda compra; bruta = cedível + excluída, sem resíduo.
 - Taxa mensal: fator (1 + taxa) elevado a dias corridos sobre 30; ano efetivo = (1 + taxa) elevado a 12, menos 1. DI mais spread: (1 + DI) vezes (1 + spread), elevado a dias úteis sobre 252. Spread sobre o DI = (1 + taxa anual) sobre (1 + DI), menos 1.
-- Custo = juros pelo tempo de uso + IOF diário com teto mais IOF adicional a cada desembolso (rolagem renova o desembolso) + comissão.
+- Custo = juros pelo tempo de uso + IOF diário sobre os dias de cada desembolso, com teto, + IOF adicional por desembolso + comissão. Desembolsos inteiros: rolagem iniciada dentro do tempo de uso é um desembolso e paga o IOF adicional inteiro; o último pode ser mais curto (180 dias com rolagem de 50 são quatro desembolsos de 50, 50, 50 e 30 dias).
 - Coobrigação mantém o valor como passivo e soma à dívida medida; venda sem regresso sai do balanço. Venda não é garantia real (confirmar com o jurídico); crédito com cessão usa a cesta da negative pledge.
-- Plano: portas pela ordem de custo, cada uma só com grupos que nenhuma mais barata tomou, até o pico; linha bancária como reserva. Início = data da necessidade menos o maior prazo das portas do plano.
+- Plano: portas pela ordem de custo; cada porta compra, grupo a grupo, o menor entre o que ela aceita, o saldo ainda não vendido do grupo e o que falta para o pico, e mostra a capacidade que tinha; a última recebe só o que cobre o pico; linha bancária como reserva. Início = data da necessidade menos o maior prazo das portas do plano.
 - Volume cedível por mês = maior volume de FIDC vezes 30 sobre o prazo médio; necessidade sazonal não leva a operação dedicada.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
@@ -113,7 +113,7 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 
 # Exemplos
 ## Bom
-- Da carteira de R$ 62 milhões, cerca de R$ 25 milhões podem ser vendidos hoje: R$ 19,8 milhões da rede A têm vedação de cessão, R$ 12 milhões estão cedidos ao Bradesco até o pré-pagamento e R$ 2,2 milhões estão vencidos. Para R$ 17 milhões por seis meses, o FIDC com coobrigação custa perto de R$ 1,75 milhão contra R$ 1,82 milhão da linha; a rede A tem programa de antecipação a fornecedores?
+- Da carteira de R$ 62 milhões, cerca de R$ 25 milhões podem ser vendidos hoje. Ficam fora R$ 37 milhões: R$ 19,8 milhões da rede A têm vedação de cessão, R$ 12 milhões estão cedidos ao Bradesco até o pré-pagamento, R$ 2,2 milhões estão vencidos e R$ 1,5 milhão de cada uma das redes E e F passa do sublimite de R$ 3 milhões por sacado. Para R$ 17 milhões por seis meses, o FIDC com coobrigação custa perto de R$ 1,75 milhão contra R$ 1,82 milhão da linha; a rede A tem programa de antecipação a fornecedores?
 ## Ruim
 - "Com R$ 60 milhões de carteira, vocês levantam algo próximo desse valor, a 1,5% a 3% ao mês." (carteira bruta como cedível, sem comparar com a linha)
 - "Recomendo montar um FIDC próprio." (veículo próprio para necessidade sazonal)
@@ -124,9 +124,9 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 - packages/financial-model/src/receivables-funding-packet.test.ts: leitor adotado e pacote.
 - packages/financial-model/src/receivables-funding-premises.test.ts: premissas, composição e ida e volta.
 ## Gold
-- gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default
+- gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, promessa de aprovação fabricada, programa comprando cliente sem programa, política tentando aceitar recebível onerado, venda com garantia, desconto sem regresso, linha com elegibilidade de carteira, taxa sem período declarado, ônus sem credor, pico abaixo da média, maior sacado acima do grupo, número lido em outro cenário.
+- Base adulterada, resultado livre no pedido, concessão fabricada, promessa de aprovação fabricada, programa comprando cliente sem programa, política tentando aceitar recebível onerado, venda com garantia, desconto sem regresso, linha com elegibilidade de carteira, taxa sem período declarado, ônus sem credor, pico abaixo da média, maior sacado acima do grupo, grupo maior que os sacados comportam, número lido em outro cenário.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C35 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -135,6 +135,7 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 ## Hierarquia
 - Carteira por sacado e relatório de contas a receber; contratos dos clientes; tabela de dívida com cessões e cesta da escritura; critérios e faixas do módulo de recebíveis.
 - Ficha C35 e seu oráculo como calibração independente, nunca como dado de outra companhia. O oráculo libera 90% das redes C e D depois do pré-pagamento; o método aplica o mesmo sublimite e devolve um teto.
+- Reprodução: com as mesmas entradas do oráculo, risco sacado B e os dois FIDCs ficam dentro de R$ 0,02 milhão. A linha reproduz dentro da tolerância com entrada diferente: IOF diário sobre 180 dias, contra 182 no oráculo (R$ 0,003 milhão a menos). O desconto difere por convenção: o oráculo cobra 3,6 rolagens fracionárias; o método cobra quatro desembolsos inteiros, R$ 1,99 milhão contra R$ 1,96 milhão, sem mudar a ordem das portas.
 ## Regras
 - Nenhum valor de calibração vira parâmetro de produção.
 - Cada número do pacote abre até o operando adotado, sua origem e sua versão.
@@ -5120,7 +5121,13 @@ Com coobrigação o risco fica com a cedente e o valor tende a ficar no passivo;
                                           "draws": {
                                             "required": true,
                                             "value": {
-                                              "type": "string"
+                                              "type": "integer"
+                                            }
+                                          },
+                                          "iofDays": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "integer"
                                             }
                                           },
                                           "interest": {
@@ -5335,6 +5342,12 @@ Com coobrigação o risco fica com a cedente e o valor tende a ficar no passivo;
                                         "type": "object",
                                         "fields": {
                                           "optionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "capacity": {
                                             "required": true,
                                             "value": {
                                               "type": "string"
@@ -5857,6 +5870,12 @@ Com coobrigação o risco fica com a cedente e o valor tende a ficar no passivo;
                             "type": "object",
                             "fields": {
                               "optionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "capacity": {
                                 "required": true,
                                 "value": {
                                   "type": "string"

@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: quarter-update-packet.v1
 unit_test_files: [packages/financial-model/src/quarter-update-packet.test.ts, packages/financial-model/src/quarter-update-premises.test.ts, packages/financial-model/src/quarter-update-runs.test.ts, packages/financial-core/src/quarter-update.test.ts]
-gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-near-2-32-and-policy-headroom-near-3-7, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, booked-without-propagation-is-a-gap, absent-actual-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
+gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, absent-actual-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, series-moved-outside-persistence, balance-shift-on-ebitda, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:bridges-sum-exactly-to-the-deviations]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -37,7 +37,7 @@ gold_run_ids: [update-after-quarter-close-2026-10-26-v1-gold]
 Dizer ao CFO, depois do fechamento de um trimestre, o que mudou contra o projetado, por quê, e se alguma decisão ou compromisso ficou em risco: cada desvio explicado por causa até o valor exato, o que é pontual separado do que persiste, e a propagação só das causas que persistem para o caixa semanal, o covenant e a projeção, com a versão anterior preservada.
 
 # Produto
-Pacote de atualização do trimestre: realizado contra projetado linha a linha; ponte do EBITDA e do caixa por causa, que soma o desvio exato, com o resíduo não explicado nomeado; cada causa classificada como de calendário (pontual no trimestre) ou estrutural até uma data; o caixa do fechamento levado ao saldo inicial do caixa semanal e as séries movidas pelas causas estruturais; a semana mais apertada antes e depois, a necessidade até o mínimo contra o limite da linha que completa as semanas e o efeito do limite inteiro; a ação dentro do que já está aprovado, em passos (saque fixo que substitui o planejado e saque residual dimensionado pelo que ainda falta); o teste de covenant medido de novo na mesma data, com a folga por limite antes e depois; o EBITDA dos doze meses até o teste antes e depois; quais análises, planos e materiais foram atualizados, quais não mudaram e qual material ficou desatualizado; as decisões que mudam e a pergunta que muda o diagnóstico.
+Pacote de atualização do trimestre: realizado contra projetado linha a linha; ponte do EBITDA e do caixa por causa, que soma o desvio exato, com o resíduo não explicado nomeado; cada causa classificada como de calendário (pontual no trimestre) ou estrutural até uma data, e a estrutural como fluxo (recorre a cada período, como um custo sem repasse) ou como mudança de saldo (como o prazo de recebimento, que baixa o caixa uma vez e o mantém mais baixo); o caixa do fechamento levado uma vez ao saldo inicial do caixa semanal e ao caixa do teste, e as séries movidas pelas causas estruturais só no período em que persistem; a semana mais apertada antes e depois, a necessidade até o mínimo contra o limite da linha que completa as semanas, o efeito do limite inteiro e a ação dentro do que já está aprovado, em passos (saque fixo que substitui o planejado e saque residual dimensionado pelo que ainda falta); o teste de covenant medido de novo em cada definição lida (a da escritura e, quando o conselho adotou, a gerencial), com a definição por trás de cada folga; o EBITDA do ano antes e depois; quais análises, planos e materiais foram atualizados, quais não mudaram e qual material ficou desatualizado; as decisões que mudam e a pergunta que muda o diagnóstico.
 
 # Quando ativar
 - Fechou o trimestre ou o mês e o pedido é atualizar projeção, caixa, covenant ou plano.
@@ -54,7 +54,8 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - A explicação de cada desvio pela controladoria, com a classificação de cada causa e, para as estruturais, até quando persistem; sem ela, a causa fica como interpretação a confirmar.
 - A versão anterior adotada do caixa semanal e do teste de covenant, identificadas pela base em que foram adotadas.
 - As séries do caixa semanal que as causas estruturais movem, refeitas com o dado do fechamento.
-- O efeito de cada causa estrutural no EBITDA e no caixa até a data do teste.
+- Para cada causa estrutural, se é fluxo ou mudança de saldo e até quando persiste; o efeito à frente no EBITDA e no caixa é calculado a partir disso, nunca informado à parte.
+- A definição de EBITDA de cada limite: a da escritura e, para a política do conselho, a gerencial quando adotada.
 - Linhas aprovadas ou contratadas com o limite e a fonte da aprovação (ata, contrato).
 - O mapa do que depende do fechamento: análises, planos e materiais, o que cada um lê e o horizonte.
 
@@ -65,7 +66,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 4. [human_judgment] Classificar :: Calendário ou estrutural até uma data, com a base da classificação | evidence: documento ou interpretação declarada
 5. [deterministic] Propagar ao caixa semanal :: Caixa do fechamento no saldo inicial; séries movidas só pelas causas estruturais; versão anterior medida de novo e mantida | evidence: versão anterior e séries adotadas
 6. [deterministic] Dimensionar a ação :: Necessidade contra o limite; passos dentro do aprovado; caso de cada passo | evidence: linhas aprovadas adotadas
-7. [deterministic] Propagar ao covenant e à projeção :: EBITDA e caixa do fechamento e efeitos estruturais até a data do teste; folga por limite antes e depois | evidence: versão anterior do teste adotada
+7. [deterministic] Propagar ao covenant e à projeção :: EBITDA e caixa do fechamento uma vez; fluxos estruturais pelo período em que persistem até a data do teste; folga por limite e por definição antes e depois | evidence: versão anterior do teste adotada
 8. [deterministic] Dependências :: Atualizado, sem mudança ou desatualizado por aquilo que cada item lê no seu horizonte | evidence: mapa de dependências adotado
 9. [human_judgment] Devolver :: O que mudou, por quê, o que fica, o que muda nas decisões, a ação, o que não mudou e a pergunta | evidence: base autorizada, fontes e versões
 
@@ -73,11 +74,13 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Desvio = realizado menos projetado, por linha.
 - Ponte: soma das causas de cada linha; resíduo = desvio menos a soma. Resíduo diferente de zero vira lacuna nomeada na linha e nunca é distribuído entre as causas.
 - Causa que é o desvio de outra linha (EBITDA abaixo dentro da ponte do caixa) tem de ser igual a esse desvio, exatamente.
-- Causa de calendário não tem data de fim e não move a projeção; causa estrutural tem data de fim depois do fechamento e precisa mover alguma coisa à frente (série do caixa semanal ou efeito no teste); se não move, vira lacuna.
-- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais; a versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
+- Causa de calendário não tem data de fim e não move a projeção além do que o realizado já leva aos saldos; causa estrutural tem data de fim depois do fechamento e é fluxo ou mudança de saldo. Mudança de saldo pertence à ponte do caixa.
+- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. A série só pode mudar depois do fechamento e até a data de fim da causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor; sem série ou com efeito nulo ou de sinal oposto, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
 - Necessidade = mínimo menos o menor saldo semanal, nunca negativa; comparada ao limite da linha que completa as semanas; o limite inteiro é medido como caso próprio.
 - Ação: passos em ordem; o passo fixo saca uma série nova que substitui a planejada; o passo residual saca, na data adotada, a necessidade que ainda resta. Cada passo é comparado ao limite aprovado.
-- Covenant atualizado = mesma medição da versão anterior com EBITDA reportado acrescido do desvio de EBITDA do trimestre e dos efeitos estruturais até a data, e caixa acrescido do desvio de caixa e dos efeitos estruturais; o trimestre precisa estar dentro dos doze meses do teste. A medição de núcleo é a do método de folga de covenant.
+- Efeito à frente de uma causa estrutural, por medição: fluxo = valor do trimestre × dias entre o dia seguinte ao fechamento e o menor entre a data de fim e a data do teste ÷ dias do trimestre; entra no EBITDA quando a causa está na ponte do EBITDA e no caixa sempre. Mudança de saldo = zero à frente: o saldo já está no desvio de caixa do fechamento, levado uma vez, e continua mais baixo enquanto a causa persiste.
+- Covenant atualizado = cada medição adotada da versão anterior (a da escritura e a gerencial) com EBITDA reportado acrescido do desvio de EBITDA do trimestre e dos efeitos à frente, e caixa acrescido do desvio de caixa e dos efeitos à frente; o trimestre precisa estar dentro dos doze meses do teste. A medição de núcleo é a do método de folga de covenant. Cada folga diz em qual definição foi medida.
+- Divergência declarada do oráculo da ficha C54: o oráculo baixa o caixa de dezembro pelo desvio do trimestre (R$ 1,7 milhão) e de novo pelos R$ 2,1 milhões do prazo das redes. Os R$ 2,1 milhões já estão dentro do desvio de R$ 1,7 milhão; o prazo de 54 dias mantém o saldo mais baixo, mas não absorve outros R$ 2,1 milhões no quarto trimestre. O método leva a mudança de saldo uma vez. A leitura do oráculo (2,32x e folga de R$ 3,7 milhões) fica só como contraste registrado nas corridas.
 - Dependência atualizada quando lê uma linha com desvio dentro do seu horizonte, ou uma linha movida por causa estrutural no período até a data de fim; sem isso, sem mudança. Recalcular o que não foi movido é recusado. Material para terceiros cujo horizonte termina antes do fechamento e que lê linha com desvio fica desatualizado.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
@@ -87,7 +90,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Oferecer a versão atualizada de um material desatualizado, sem enviá-la.
 
 # Perguntas que mudam o trabalho
-- O prazo maior das redes é prazo negociado ou atraso? Se for atraso, a causa é de crédito e o tratamento muda.
+- O prazo maior das redes é prazo negociado ou atraso? Se for atraso, a causa é de crédito e o tratamento muda. Mudança de saldo classificada por interpretação sempre leva a pergunta; sem ela, o pacote fica parcial.
 - O repasse do custo do insumo tem data negociada?
 - A antecipação de estoque volta em que mês?
 
@@ -101,6 +104,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 # Stop conditions
 - Número sem contribuição adotada vira lacuna; a atualização não é montada com valor presumido.
 - Atualização que nomeia outra versão anterior que não a recebida é recusada.
+- Causa estrutural sem efeito no caixa semanal, mudança de saldo por interpretação sem a pergunta e dependência movida sem recálculo deixam o pacote parcial, com a lacuna nomeada.
 - O pacote não fecha a contabilidade, não atribui causas por conta própria, não compara custo de financiamento, não envia material a terceiros, não aprova crédito e não publica nem altera a base.
 
 # Outputs
@@ -115,7 +119,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 
 # Exemplos
 ## Bom
-- O trimestre fechou com EBITDA R$ 0,4 milhão abaixo do projetado e caixa R$ 1,7 milhão abaixo. No EBITDA, o volume somou R$ 0,5 milhão, o trigo sem repasse tirou R$ 0,6 milhão e frete e energia, R$ 0,3 milhão. No caixa, as redes pagando em 54 dias tiraram R$ 2,1 milhões e a antecipação de estoque, R$ 1,6 milhão; impostos e outros compensaram R$ 2,4 milhões. A antecipação de estoque é de calendário; o prazo e o trigo foram tratados como estruturais até dezembro. A semana de 21 de dezembro cai de R$ 7,5 milhões para cerca de R$ 4,2 milhões; para manter R$ 15 milhões faltam cerca de R$ 10,8 milhões, acima dos R$ 10 milhões da conta garantida. Dentro do aprovado, usar cerca de R$ 23 milhões dos programas das redes no lugar da linha de R$ 17 milhões e sacar cerca de R$ 4,8 milhões da conta garantida. O covenant de dezembro vai de 2,20x para cerca de 2,32x na definição da escritura e a folga até a política cai de R$ 6,2 milhões para cerca de R$ 3,7 milhões de EBITDA. Não mudaram a tabela de dívida, o plano de 2027 e a análise da linha de embalagem; o material da sondagem fica desatualizado e a versão com setembro é oferecida, sem envio. Os 54 dias são prazo negociado ou atraso?
+- O trimestre fechou com EBITDA R$ 0,4 milhão abaixo do projetado e caixa R$ 1,7 milhão abaixo. No EBITDA, o volume somou R$ 0,5 milhão, o trigo sem repasse tirou R$ 0,6 milhão e frete e energia, R$ 0,3 milhão. No caixa, as redes pagando em 54 dias tiraram R$ 2,1 milhões e a antecipação de estoque, R$ 1,6 milhão; impostos e outros compensaram R$ 2,4 milhões. A antecipação de estoque é de calendário; o trigo foi tratado como custo que continua até dezembro e o prazo como saldo que fica mais baixo até dezembro. Dezembro: a semana de 21 de dezembro cai de R$ 7,5 milhões para cerca de R$ 4,4 milhões; para manter R$ 15 milhões faltam cerca de R$ 10,6 milhões, acima dos R$ 10 milhões da conta garantida, que sozinha deixaria a semana em R$ 14,4 milhões. Dentro do aprovado, usar R$ 23 milhões dos programas das redes no lugar da linha de R$ 17 milhões e sacar cerca de R$ 4,6 milhões da conta garantida. Covenant de dezembro: pela definição da escritura, vai de 2,20x para cerca de 2,29x e a folga até a política de 2,5x cai de R$ 6,2 milhões para cerca de R$ 4,3 milhões de EBITDA; pela definição gerencial que o conselho adotou para a política, vai de 2,04x para cerca de 2,12x, com folga de cerca de R$ 8,3 milhões. O EBITDA de 2026 vai de R$ 54,5 milhões para cerca de R$ 53,5 milhões. Não mudaram a tabela de dívida, o plano de 2027 e a análise da linha de embalagem; o material da sondagem fica desatualizado e a versão com setembro é oferecida, sem envio. Os 54 dias são prazo negociado ou atraso?
 ## Ruim
 - "O trimestre fechou próximo do projetado. As análises foram atualizadas." (esconde que dezembro passou a precisar de mais que a conta garantida)
 - "Refiz todas as análises com os números de setembro." (refaz o que não depende do dado e perde a comparação entre versões)
@@ -125,9 +129,9 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - packages/financial-core/src/quarter-update.test.ts: núcleo contra o oráculo da ficha, com os núcleos de caixa semanal e de covenant compostos.
 - packages/financial-model/src/quarter-update-packet.test.ts e packages/financial-model/src/quarter-update-premises.test.ts: leitor adotado sobre três bases, pacote e ida e volta das premissas.
 ## Gold
-- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-near-2-32-and-policy-headroom-near-3-7, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, booked-without-propagation-is-a-gap, absent-actual-is-a-gap-not-a-default.
+- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, absent-actual-is-a-gap-not-a-default.
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série movida fora do período em que a causa persiste, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C54 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -135,7 +139,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 # Evidência
 ## Hierarquia
 - Balancete e gerencial do trimestre; explicação da controladoria; atas do conselho e contratos das linhas; versões anteriores adotadas do caixa semanal e do covenant.
-- Ficha C54 e seu oráculo, sobre os oráculos da C18 e da C12, como calibração independente, nunca como dado de outra companhia.
+- Ficha C54 e seu oráculo, sobre os oráculos da C18 e da C12, como calibração independente, nunca como dado de outra companhia. Duas diferenças declaradas: o prazo das redes não é absorvido de novo no teste de dezembro (decisão da revisão r1), e as séries do caixa semanal só mudam depois do fechamento, porque setembro já está no caixa realizado; por isso a semana de 21 de dezembro fica em cerca de R$ 4,4 milhões, e não R$ 4,2 milhões.
 ## Regras
 - Nenhum valor de calibração vira parâmetro de produção.
 - Cada número do pacote abre até o operando adotado, sua origem e sua versão; a versão anterior abre até a sua própria base.
@@ -148,8 +152,8 @@ Conteúdo profissional pendente de aprovação do fundador para esta versão. Re
 O CFO quer saber se o trimestre muda alguma decisão. Um desvio pequeno no resultado pode apertar uma semana à frente quando a causa persiste; um desvio grande pode não mudar nada quando é de calendário.
 
 ## N2. Árvore de decisão
-- Desvios explicados e só de calendário: dizer que nada à frente muda e listar o que não mudou.
-- Causa estrutural: propagar ao que depende dela e dizer qual decisão muda.
+- Desvios explicados e só de calendário: o realizado entra uma vez nos saldos (caixa e EBITDA dos doze meses) e é propagado; o que não muda é o que vem à frente além disso. Dizer isso e listar o que não mudou.
+- Causa estrutural: propagar ao caixa semanal, ao covenant e à projeção pelo período em que persiste e dizer qual decisão muda. Mudança de saldo por interpretação: perguntar o diagnóstico (prazo negociado ou atraso).
 - Necessidade acima do limite aprovado: propor a ação dentro do aprovado antes de qualquer pedido novo.
 - Resíduo sem causa: nomear e pedir a explicação antes de propagar.
 
@@ -166,10 +170,11 @@ Fato (o fechamento e as pontes), leitura (o que persiste e o que isso faz em dez
 1. O que mudou, em duas linhas: EBITDA e caixa contra o projetado.
 2. Por quê: a ponte por causa.
 3. O que é pontual e o que fica, até quando.
-4. O que isso muda: dezembro, covenant, projeção e material.
-5. A ação dentro do aprovado.
-6. O que não mudou, em uma linha.
-7. A pergunta que muda o diagnóstico.
+4. Dezembro: a semana mais apertada, a necessidade contra o limite e a ação dentro do aprovado.
+5. Covenant: por definição (escritura e gerencial), com a definição por trás de cada folga.
+6. Projeção: o EBITDA do ano antes e depois; material desatualizado oferecido, sem envio.
+7. O que não mudou, em uma linha.
+8. A pergunta que muda o diagnóstico.
 
 ## T2. Peças
 Ponte do EBITDA e do caixa em cascata, um elemento em foco, fundo branco, sem vermelho; quadro antes e depois do que depende do fechamento.
@@ -186,7 +191,7 @@ Material para terceiros é marcado desatualizado e a versão nova é oferecida; 
 
 # Qualidade
 ## Q1. Teste do MD
-A ponte fecha no centavo? Cada causa tem classificação e data? Dezembro foi medido de novo? A decisão que muda foi dita? O que não mudou cabe em uma linha? A pergunta é a que muda o diagnóstico? Um MD de mercado assinaria?
+A ponte fecha no centavo? Cada causa tem classificação e data? O prazo foi levado uma vez só? Dezembro foi medido de novo? Cada folga diz a definição? A decisão que muda foi dita? O que não mudou cabe em uma linha? A pergunta é a que muda o diagnóstico? Um MD de mercado assinaria?
 
 ## Q2. Verificação
 Corridas gold, adversarial e de consistência reexecutadas a cada versão; revisão técnica independente; aprovação de conteúdo registrada; conversa real pela interface antes de declarar a demanda atendida.
@@ -292,7 +297,7 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
         "currency": "BRL"
       },
       "evidence": [],
-      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO CFO quer saber se o trimestre muda alguma decisão. Um desvio pequeno no resultado pode apertar uma semana à frente quando a causa persiste; um desvio grande pode não mudar nada quando é de calendário.\n\nN2. Árvore de decisão\n- Desvios explicados e só de calendário: dizer que nada à frente muda e listar o que não mudou.\n- Causa estrutural: propagar ao que depende dela e dizer qual decisão muda.\n- Necessidade acima do limite aprovado: propor a ação dentro do aprovado antes de qualquer pedido novo.\n- Resíduo sem causa: nomear e pedir a explicação antes de propagar.\n\nN3. Suficiência por conclusão\n- Para a ponte: realizado, projetado e a explicação de cada causa.\n- Para a propagação: as versões anteriores e o efeito de cada causa estrutural.\n- Para a ação: os limites aprovados e a fonte. O que faltar vira lacuna declarada.\n\nN4. Voz e três níveis de afirmação\nFato (o fechamento e as pontes), leitura (o que persiste e o que isso faz em dezembro) e recomendação (a ação dentro do aprovado) separados. Sem veredito binário e sem certeza sobre o banco."
+      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO CFO quer saber se o trimestre muda alguma decisão. Um desvio pequeno no resultado pode apertar uma semana à frente quando a causa persiste; um desvio grande pode não mudar nada quando é de calendário.\n\nN2. Árvore de decisão\n- Desvios explicados e só de calendário: o realizado entra uma vez nos saldos (caixa e EBITDA dos doze meses) e é propagado; o que não muda é o que vem à frente além disso. Dizer isso e listar o que não mudou.\n- Causa estrutural: propagar ao caixa semanal, ao covenant e à projeção pelo período em que persiste e dizer qual decisão muda. Mudança de saldo por interpretação: perguntar o diagnóstico (prazo negociado ou atraso).\n- Necessidade acima do limite aprovado: propor a ação dentro do aprovado antes de qualquer pedido novo.\n- Resíduo sem causa: nomear e pedir a explicação antes de propagar.\n\nN3. Suficiência por conclusão\n- Para a ponte: realizado, projetado e a explicação de cada causa.\n- Para a propagação: as versões anteriores e o efeito de cada causa estrutural.\n- Para a ação: os limites aprovados e a fonte. O que faltar vira lacuna declarada.\n\nN4. Voz e três níveis de afirmação\nFato (o fechamento e as pontes), leitura (o que persiste e o que isso faz em dezembro) e recomendação (a ação dentro do aprovado) separados. Sem veredito binário e sem certeza sobre o banco."
     },
     {
       "id": "quarter-update.packet",
@@ -4048,6 +4053,67 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                             ]
                                           }
                                         },
+                                        "nature": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "union",
+                                            "variants": [
+                                              {
+                                                "type": "object",
+                                                "fields": {
+                                                  "decisionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "definitionVersionId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "definitionKind": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "reported",
+                                                        "managerial",
+                                                        "contractual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "missingReason": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        },
                                         "basis": {
                                           "required": true,
                                           "value": {
@@ -4483,132 +4549,12 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                           "value": {
                             "type": "object",
                             "fields": {
-                              "measurementId": {
-                                "required": true,
-                                "value": {
-                                  "type": "string"
-                                }
-                              },
-                              "effects": {
+                              "measurementIds": {
                                 "required": true,
                                 "value": {
                                   "type": "array",
                                   "items": {
-                                    "type": "object",
-                                    "fields": {
-                                      "causeId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "ebitda": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "object",
-                                          "fields": {
-                                            "decisionId": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "union",
-                                                "variants": [
-                                                  {
-                                                    "type": "string"
-                                                  },
-                                                  {
-                                                    "type": "null"
-                                                  }
-                                                ]
-                                              }
-                                            },
-                                            "definitionVersionId": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "definitionKind": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "reported",
-                                                  "managerial",
-                                                  "contractual"
-                                                ]
-                                              }
-                                            },
-                                            "missingReason": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "union",
-                                                "variants": [
-                                                  {
-                                                    "type": "string"
-                                                  },
-                                                  {
-                                                    "type": "null"
-                                                  }
-                                                ]
-                                              }
-                                            }
-                                          }
-                                        }
-                                      },
-                                      "cash": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "object",
-                                          "fields": {
-                                            "decisionId": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "union",
-                                                "variants": [
-                                                  {
-                                                    "type": "string"
-                                                  },
-                                                  {
-                                                    "type": "null"
-                                                  }
-                                                ]
-                                              }
-                                            },
-                                            "definitionVersionId": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "string"
-                                              }
-                                            },
-                                            "definitionKind": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "enum",
-                                                "values": [
-                                                  "reported",
-                                                  "managerial",
-                                                  "contractual"
-                                                ]
-                                              }
-                                            },
-                                            "missingReason": {
-                                              "required": true,
-                                              "value": {
-                                                "type": "union",
-                                                "variants": [
-                                                  {
-                                                    "type": "string"
-                                                  },
-                                                  {
-                                                    "type": "null"
-                                                  }
-                                                ]
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
+                                    "type": "string"
                                   }
                                 }
                               }
@@ -7200,6 +7146,24 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                                 ]
                                               }
                                             },
+                                            "nature": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "union",
+                                                "variants": [
+                                                  {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "flow",
+                                                      "balance"
+                                                    ]
+                                                  },
+                                                  {
+                                                    "type": "null"
+                                                  }
+                                                ]
+                                              }
+                                            },
                                             "basis": {
                                               "required": true,
                                               "value": {
@@ -7295,6 +7259,24 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                         ]
                                       }
                                     },
+                                    "nature": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "enum",
+                                            "values": [
+                                              "flow",
+                                              "balance"
+                                            ]
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "until": {
                                       "required": true,
                                       "value": {
@@ -7318,10 +7300,60 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                         }
                                       }
                                     },
-                                    "covenant": {
+                                    "weeklyEffect": {
                                       "required": true,
                                       "value": {
-                                        "type": "boolean"
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "fractionAhead": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "ebitdaAhead": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "cashAhead": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
                                       }
                                     }
                                   }
@@ -8615,10 +8647,13 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                               "value": {
                                 "type": "object",
                                 "fields": {
-                                  "measurementId": {
+                                  "measurementIds": {
                                     "required": true,
                                     "value": {
-                                      "type": "string"
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     }
                                   },
                                   "prior": {
@@ -9439,86 +9474,131 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                       }
                                     }
                                   },
-                                  "effects": {
+                                  "measurements": {
                                     "required": true,
                                     "value": {
                                       "type": "array",
                                       "items": {
                                         "type": "object",
                                         "fields": {
-                                          "causeId": {
+                                          "id": {
                                             "required": true,
                                             "value": {
                                               "type": "string"
                                             }
                                           },
-                                          "ebitda": {
+                                          "label": {
                                             "required": true,
                                             "value": {
                                               "type": "string"
                                             }
                                           },
-                                          "cash": {
+                                          "scenario": {
                                             "required": true,
                                             "value": {
                                               "type": "string"
                                             }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
-                                  "trailingEbitda": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "object",
-                                      "fields": {
-                                        "prior": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "updated": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "string"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
-                                  "ratio": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "object",
-                                      "fields": {
-                                        "prior": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
+                                          },
+                                          "effects": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "causeId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "nature": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "flow",
+                                                        "balance"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "fraction": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "ebitda": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "cash": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
                                               }
-                                            ]
-                                          }
-                                        },
-                                        "updated": {
-                                          "required": true,
-                                          "value": {
-                                            "type": "union",
-                                            "variants": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
+                                            }
+                                          },
+                                          "trailingEbitda": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "prior": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "updated": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                }
                                               }
-                                            ]
+                                            }
+                                          },
+                                          "ratio": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "object",
+                                              "fields": {
+                                                "prior": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "updated": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "string"
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
                                           }
                                         }
                                       }
@@ -9644,7 +9724,9 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                         "type": "enum",
                                         "values": [
                                           "unexplained_residual",
-                                          "structural_cause_not_propagated",
+                                          "structural_cause_not_in_weekly_cash",
+                                          "structural_cause_weekly_effect_inconsistent",
+                                          "structural_cause_question_missing",
                                           "affected_not_recomputed"
                                         ]
                                       }
@@ -9659,6 +9741,37 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                           "type": "null"
                         }
                       ]
+                    }
+                  },
+                  "covenantDefinitions": {
+                    "required": true,
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "fields": {
+                          "limitId": {
+                            "required": true,
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "definition": {
+                            "required": true,
+                            "value": {
+                              "type": "union",
+                              "variants": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
                     }
                   },
                   "exclusions": {
@@ -9824,6 +9937,42 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                 "value": {
                                   "type": "date"
                                 }
+                              },
+                              "nature": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "flow",
+                                    "balance"
+                                  ]
+                                }
+                              },
+                              "weeklyEffect": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "ebitdaAhead": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "cashAhead": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
                               }
                             }
                           }
@@ -9835,6 +9984,29 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                           "type": "array",
                           "items": {
                             "type": "string"
+                          }
+                        }
+                      },
+                      "balanceShiftsCarriedOnce": {
+                        "required": true,
+                        "value": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "causeId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "amount": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              }
+                            }
                           }
                         }
                       },
@@ -10082,75 +10254,104 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                         "value": {
                           "type": "object",
                           "fields": {
-                            "measurementId": {
-                              "required": true,
-                              "value": {
-                                "type": "string"
-                              }
-                            },
-                            "ratio": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "prior": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "updated": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "union",
-                                      "variants": [
-                                        {
-                                          "type": "string"
-                                        },
-                                        {
-                                          "type": "null"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "trailingEbitda": {
-                              "required": true,
-                              "value": {
-                                "type": "object",
-                                "fields": {
-                                  "prior": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "updated": {
-                                    "required": true,
-                                    "value": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "byLimit": {
+                            "measurements": {
                               "required": true,
                               "value": {
                                 "type": "array",
                                 "items": {
                                   "type": "object",
                                   "fields": {
+                                    "measurementId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionRead": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "ratio": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "prior": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "updated": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "trailingEbitda": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "prior": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "updated": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "headroom": {
+                              "required": true,
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "measurementId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionRead": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
                                     "limitId": {
                                       "required": true,
                                       "value": {
@@ -10164,6 +10365,20 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                         "values": [
                                           "contractual",
                                           "board_policy"
+                                        ]
+                                      }
+                                    },
+                                    "limitDefinition": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
                                         ]
                                       }
                                     },
@@ -10210,6 +10425,26 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                 "items": {
                                   "type": "string"
                                 }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "projectedEbitda": {
+                        "required": true,
+                        "value": {
+                          "type": "object",
+                          "fields": {
+                            "prior": {
+                              "required": true,
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "updated": {
+                              "required": true,
+                              "value": {
+                                "type": "string"
                               }
                             }
                           }

@@ -44,7 +44,7 @@ describe("C35 premises proposed from facts with origin, adopted, composed and me
     expect(p.gaps.map((g) => g.reason)).toEqual(["largest_debtor_not_informed", "largest_debtor_not_informed"]);
     const r = p.readings!;
     expect([r.assignable, r.plan.at(-1)!.cumulative, r.bankLineReserve]).toEqual(["25", "25", "linha-giro"]);
-    expect(r.options.map((o) => [o.id, n(o.cost, 2)])).toEqual([["risco-sacado-b", "1.33"], ["fidc-com-coobrigacao", "1.75"], ["linha-giro", "1.82"], ["desconto-bancario", "1.96"], ["fidc-sem-coobrigacao", "2.08"]]);
+    expect(r.options.map((o) => [o.id, n(o.cost, 2)])).toEqual([["risco-sacado-b", "1.33"], ["fidc-com-coobrigacao", "1.75"], ["linha-giro", "1.82"], ["desconto-bancario", "1.99"], ["fidc-sem-coobrigacao", "2.08"]]);
   });
   it("declares an absent mandatory operand missing and leaves an absent optional one null", () => {
     const a = adopt(auroraReceivablesFundingFacts());

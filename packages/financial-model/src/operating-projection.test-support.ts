@@ -22,7 +22,8 @@ export const auroraCause = "A revisão de julho supõe repasse integral do trigo
 export const periodEnds = ["2026-12-31", "2027-12-31", "2028-12-31"];
 type Scenario = {id: string; label: string; role: "alternative" | "informed"; basedOn: string; growth?: [string, Origin]; factor?: [string, Origin];
   overrides?: [ProjectedOperatingDriver, string[], Origin][]; shock?: [string, string, string, Origin]};
-export type AuroraOptions = {informed?: boolean; cause?: boolean; fixedCosts2025?: string};
+/** `history` sets the adopted origin of the actual year: drivers, reported revenue and reported EBITDA (all documents by default). */
+export type AuroraOptions = {informed?: boolean; cause?: boolean; fixedCosts2025?: string; history?: {drivers?: Origin; revenue?: Origin; ebitda?: Origin}};
 export function auroraScenarios(o: AuroraOptions = {}): Scenario[] {
   return [
     {id: "trigo-repasse-6m", label: "Trigo +15% em 2027, repasse em seis meses", role: "alternative", basedOn: "base", shock: ["2027-12-31", "0.15", "6", "house"]},
@@ -59,7 +60,10 @@ export function auroraProjectionBasis(o: AuroraOptions = {}) {
     conventions: {dayCountBasis: txt("convention.dayCountBasis", "convention", "360"), calibrationTolerance: num("convention.calibrationTolerance", "ratio", "0.005")},
     actual: {periodStart: c("actual.periodStart", "date", {type: "date", value: "2025-01-01"}), periodEnd: c("actual.periodEnd", "date", {type: "date", value: "2025-12-31"}),
       drivers: Object.fromEntries(Object.entries(actual).map(([k, v]) => [k, num(`actual.${k}`, operatingProjectionDriverUnits[k as ProjectedOperatingDriver], v)])),
-      reportedRevenue: num("actual.reportedRevenue", "currency", "420"), reportedEbitda: num("actual.reportedEbitda", "currency", "52")},
+      reportedRevenue: num("actual.reportedRevenue", "currency", "420"), reportedEbitda: num("actual.reportedEbitda", "currency", "52"),
+      origins: Object.fromEntries([...Object.keys(auroraActual).map((k) => [k, o.history?.drivers ?? "document"]),
+        ["reportedRevenue", o.history?.revenue ?? "document"], ["reportedEbitda", o.history?.ebitda ?? "document"]]
+        .map(([k, v]) => [k, txt(`actual.${k}.origin`, "origin", v!)]))},
     base: {drivers, origins},
     scenarios: auroraScenarios(o).map((s) => {
       const p = `scenario.${s.id}.`, sc = s.id;
@@ -86,13 +90,14 @@ export function auroraProjectionBasis(o: AuroraOptions = {}) {
 export function auroraProjectionFacts(o: AuroraOptions = {}): OperatingProjectionFacts {
   const doc = <T>(value: T, source: string) => ({value, origin: "document" as const, source});
   const house = <T>(value: T, source: string) => ({value, origin: "house" as const, source});
+  const as = <T>(value: T, origin: Origin | undefined, source: string) => ({value, origin: origin ?? "document" as Origin, source});
   const actual = {...auroraActual, ...o.fixedCosts2025 ? {fixedCosts: o.fixedCosts2025} : {}};
   return {projectionId: id(4700), entityId: id(1), perimeter: "standalone", currency: "BRL", definitionVersionId: id(3),
     purpose: {value: "Discutir o financiamento com bancos: caixa disponível para a dívida e o que pode dar errado", origin: "informed", source: "pedido do CFO"},
     conventions: {dayCountBasis: house("360" as const, "Prazos médios em ano comercial"), calibrationTolerance: house("0.005", "Reproduzir o último ano auditado em até 0,5%")},
     actual: {periodStart: "2025-01-01", periodEnd: "2025-12-31",
-      drivers: doc(actual, "Gerencial e custo de produção de 2025"), reportedRevenue: doc("420", "Demonstrações auditadas de 2025"),
-      reportedEbitda: doc("52", "Demonstrações auditadas de 2025, EBITDA da CVM 156")},
+      drivers: as(actual, o.history?.drivers, "Gerencial e custo de produção de 2025"), reportedRevenue: as("420", o.history?.revenue, "Demonstrações de 2025"),
+      reportedEbitda: as("52", o.history?.ebitda, "Demonstrações de 2025, EBITDA da CVM 156")},
     periodEnds,
     base: projectedOperatingDriverNames.map((driver) => ({driver, values: auroraDrivers[driver],
       origins: three(auroraDriverOrigins[driver]) as Origin[], source: "Primeira versão por driver calibrada no histórico"})),

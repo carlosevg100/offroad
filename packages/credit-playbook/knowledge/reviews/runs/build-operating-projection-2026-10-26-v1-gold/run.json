@@ -16,8 +16,8 @@
     "exportName": "buildOperatingProjectionRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T12:41:53.058Z",
-    "finishedAt": "2026-10-26T12:41:53.172Z"
+    "startedAt": "2026-10-26T13:13:14.703Z",
+    "finishedAt": "2026-10-26T13:13:14.839Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -25,148 +25,164 @@
       "id": "first-version-in-the-first-turn",
       "expectation": "{\"status\":\"prepared_for_human_review\",\"projected\":true,\"years\":3}",
       "observed": "{\"status\":\"prepared_for_human_review\",\"projected\":true,\"years\":3}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "reproduces-the-last-audited-year",
       "expectation": "{\"revenue\":420,\"ebitda\":52,\"reproduces\":true}",
       "observed": "{\"revenue\":420,\"ebitda\":52,\"reproduces\":true}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "base-by-driver-2026-to-2028",
       "expectation": "{\"revenue\":[440.75,463.65,486],\"ebitda\":[54.5,56.6,58.8],\"margin\":[12.4,12.2,12.1]}",
       "observed": "{\"revenue\":[440.75,463.65,486],\"ebitda\":[54.5,56.6,58.8],\"margin\":[12.4,12.2,12.1]}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "ebitda-within-five-percent-of-the-answer-key",
       "expectation": "[true,true,true]",
       "observed": "[true,true,true]",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "cash-available-near-sixty-percent-of-ebitda",
       "expectation": "{\"cash\":[33.1,33.4,34.9],\"conversion\":[61,59,59],\"workingCapital\":[2.9,3.2,3.1]}",
       "observed": "{\"cash\":[33.1,33.4,34.9],\"conversion\":[61,59,59],\"workingCapital\":[2.9,3.2,3.1]}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "budget-and-revision-side-by-side-with-the-cause",
       "expectation": "[[\"orcamento\",\"approved\",\"58\",3.49,true],[\"revisao-julho\",\"under_review\",\"55.5\",0.99,true]]",
       "observed": "[[\"orcamento\",\"approved\",\"58\",3.49,true],[\"revisao-julho\",\"under_review\",\"55.5\",0.99,true]]",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "sensitivities-in-reais-2027",
       "expectation": "{\"price\":4.64,\"inputCost\":1.14,\"receivableDay\":1.29}",
       "observed": "{\"price\":4.64,\"inputCost\":1.14,\"receivableDay\":1.29}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "wheat-shock-with-six-month-pass-through",
       "expectation": "{\"ebitda\":48.1,\"cash\":26.5,\"price\":4.293}",
       "observed": "{\"ebitda\":48.1,\"cash\":26.5,\"price\":4.293}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "wheat-shock-without-pass-through-in-the-year",
       "expectation": "{\"ebitda\":[54.5,39.5,58.8],\"cash2027\":22.1}",
       "observed": "{\"ebitda\":[54.5,39.5,58.8],\"cash2027\":22.1}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "volume-two-percent-lower",
       "expectation": "{\"ebitda\":53.8,\"cash\":31.6}",
       "observed": "{\"ebitda\":53.8,\"cash\":31.6}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "assumptions-kept-apart-from-data",
-      "expectation": "{\"data\":\"2025-12-31\",\"projectedAreAssumptions\":true}",
-      "observed": "{\"data\":\"2025-12-31\",\"projectedAreAssumptions\":true}",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "expectation": "{\"data\":\"2025-12-31\",\"dataAreDocuments\":true,\"projectedAreAssumptions\":true}",
+      "observed": "{\"data\":\"2025-12-31\",\"dataAreDocuments\":true,\"projectedAreAssumptions\":true}",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
+      "passed": true
+    },
+    {
+      "id": "estimated-informed-and-house-history-is-not-data",
+      "expectation": "{\"reproduces\":true,\"documented\":false,\"historyData\":0,\"origins\":[\"estimate\",\"informed\",\"house\"]}",
+      "observed": "{\"reproduces\":true,\"documented\":false,\"historyData\":0,\"origins\":[\"estimate\",\"informed\",\"house\"]}",
+      "inputFingerprint": "716987eac9709ff5b4326a89c85437189e21dec3f0b4abec55878b337ac3b801",
+      "outputFingerprint": "0cd4c22e9e5039176f494d47008f0ac64e099f757e054501593133e904a88450",
+      "passed": true
+    },
+    {
+      "id": "scenario-changes-carry-their-origin",
+      "expectation": "{\"informado\":[[\"volumeGrowthRate\",\"informed\",\"assumption\"],[\"receivableDays\",\"informed\",\"assumption\"]],\"shock\":[[\"inputCostShock\",\"informed\",\"assumption\"]]}",
+      "observed": "{\"informado\":[[\"volumeGrowthRate\",\"informed\",\"assumption\"],[\"receivableDays\",\"informed\",\"assumption\"]],\"shock\":[[\"inputCostShock\",\"informed\",\"assumption\"]]}",
+      "inputFingerprint": "b86948c39506aaabb0202a668733260553a09f043d3fa60cb6db760abdfc2e56",
+      "outputFingerprint": "f0bd2a9a06f7f424ad33cf8b7b6d159eabc3ff09847ea22db2ffe1a507074173",
       "passed": true
     },
     {
       "id": "at-most-three-questions-volume-pass-through-receivable-days",
       "expectation": "[\"volume\",\"pass_through\",\"receivable_days\"]",
       "observed": "[\"volume\",\"pass_through\",\"receivable_days\"]",
-      "inputFingerprint": "19128eed2758b274a0eb3ece39284a4ac887a9da7f550dd41fde9a4a1d1e733d",
-      "outputFingerprint": "755a857cd23b1f05e57dbf495e4e97fec6ee8c0182ce0ef041f8d443edaad167",
+      "inputFingerprint": "259375d04e23217b7633fb5ef6c01b87edcacbf8eddea2e1189e02b4c0b7ec5f",
+      "outputFingerprint": "ed36a0317dd08b0a9d9052794cb86600b7eca82fe111231910eaeb19ba1e2559",
       "passed": true
     },
     {
       "id": "turn-two-informed-drivers",
       "expectation": "{\"ebitda\":[55.3,58.4,61.7],\"questions\":[]}",
       "observed": "{\"ebitda\":[55.3,58.4,61.7],\"questions\":[]}",
-      "inputFingerprint": "127c01e68495af7e72a073099a2c41fa1f7f08e7314c85a5de0ae4fb650bcc9b",
-      "outputFingerprint": "f74b77a3d3e5b17e5d53801dacfb10a4e0f0482a0bf7cf07a5b6f05e58b375fc",
+      "inputFingerprint": "b86948c39506aaabb0202a668733260553a09f043d3fa60cb6db760abdfc2e56",
+      "outputFingerprint": "f0bd2a9a06f7f424ad33cf8b7b6d159eabc3ff09847ea22db2ffe1a507074173",
       "passed": true
     },
     {
       "id": "turn-two-sixty-day-receivables-drain-cash",
       "expectation": "{\"workingCapital\":15.6,\"baseWorkingCapital\":2.9,\"cash\":21,\"effect\":12.7}",
       "observed": "{\"workingCapital\":15.6,\"baseWorkingCapital\":2.9,\"cash\":21,\"effect\":12.7}",
-      "inputFingerprint": "127c01e68495af7e72a073099a2c41fa1f7f08e7314c85a5de0ae4fb650bcc9b",
-      "outputFingerprint": "f74b77a3d3e5b17e5d53801dacfb10a4e0f0482a0bf7cf07a5b6f05e58b375fc",
+      "inputFingerprint": "b86948c39506aaabb0202a668733260553a09f043d3fa60cb6db760abdfc2e56",
+      "outputFingerprint": "f0bd2a9a06f7f424ad33cf8b7b6d159eabc3ff09847ea22db2ffe1a507074173",
       "passed": true
     },
     {
       "id": "turn-two-wheat-shock-with-four-month-pass-through",
       "expectation": "{\"ebitda\":52.6,\"cash\":27.7}",
       "observed": "{\"ebitda\":52.6,\"cash\":27.7}",
-      "inputFingerprint": "127c01e68495af7e72a073099a2c41fa1f7f08e7314c85a5de0ae4fb650bcc9b",
-      "outputFingerprint": "f74b77a3d3e5b17e5d53801dacfb10a4e0f0482a0bf7cf07a5b6f05e58b375fc",
+      "inputFingerprint": "b86948c39506aaabb0202a668733260553a09f043d3fa60cb6db760abdfc2e56",
+      "outputFingerprint": "f0bd2a9a06f7f424ad33cf8b7b6d159eabc3ff09847ea22db2ffe1a507074173",
       "passed": true
     },
     {
       "id": "projection-withheld-when-the-last-year-is-not-reproduced",
       "expectation": "{\"status\":\"framed\",\"reproduces\":false,\"projected\":null}",
       "observed": "{\"status\":\"framed\",\"reproduces\":false,\"projected\":null}",
-      "inputFingerprint": "42ed397983ef4fe617cf87b980fbec85428ed14a8136e0912e288357a37d2327",
-      "outputFingerprint": "da206e426614a9d673dc1d4dea9a9cbb4940f82ba3494fc8db41998f9722f6aa",
+      "inputFingerprint": "45b77ef540ed8f1afd8dcdccd4a66c3f65371bc4c9e64170e22348d15e0e4db1",
+      "outputFingerprint": "f8806665a9c73ba6d3f7c4089522fb05a1bda2b05c61482ae2397785e663bc4b",
       "passed": true
     },
     {
       "id": "unexplained-difference-is-an-open-question",
       "expectation": "{\"status\":\"partial\",\"open\":[\"orcamento\",\"revisao-julho\"],\"companyValues\":[\"58\",\"55.5\"]}",
       "observed": "{\"status\":\"partial\",\"open\":[\"orcamento\",\"revisao-julho\"],\"companyValues\":[\"58\",\"55.5\"]}",
-      "inputFingerprint": "272dc3411cfcdc0f9797e42e0b22afbc65edd4979aab05547b7368cbb62a1525",
-      "outputFingerprint": "d67e2924b5c732dc12ab7b8cbb24dff70b886180c4e7e5ed381eb0c81cbdada2",
+      "inputFingerprint": "94ddf4a8cee47313837399e3579e87ba9c604b47e08b1a9d37a13e94df732ac4",
+      "outputFingerprint": "ca08d90cc3957f23f3d3235acb86baf52dd52c2044218350de16d630054722ff",
       "passed": true
     },
     {
       "id": "absent-driver-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"framed\",\"gap\":true}",
       "observed": "{\"status\":\"framed\",\"gap\":true}",
-      "inputFingerprint": "a9f2f486dd0c1959411a20c48ff0c9ba7423ab9deb3663dfb636c9995cfbdb0f",
-      "outputFingerprint": "571bc19f6e8709f37c73aff017c78da4088fd675e443e044cab82126ed549bf6",
+      "inputFingerprint": "e939cae197d8d03fd04bbf8b17454c66d8149436585a51a4e580eebf3483f499",
+      "outputFingerprint": "941541b6c71c2c180903726506bba4e11b9ba2dd34024a03f3cee1dea3c8c407",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "6f925663dea70cc9f3b4e885285285e9d982a0cbe104f3ca3ee682ddc6617d38",
+  "evidenceFingerprint": "2dc719575af7d08ce732801d59b3e816bf52b0e4baa48fe9289c92ce6a18a759",
   "notes": "Synthetic deterministic execution calibrated on ficha C24. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

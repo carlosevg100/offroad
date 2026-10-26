@@ -3,11 +3,13 @@ import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {prepareQuarterUpdatePacket, quarterUpdatePacketOutputSchema, type QuarterUpdatePacketInput} from "./quarter-update-packet";
 import {calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
-import {auroraQuarterUpdateBasis} from "./quarter-update.test-support";
+import {auroraDearerInputs, auroraQuarterUpdateBasis} from "./quarter-update.test-support";
+import {measureCovenantHeadroom} from "@offroad/financial-core";
 import {analysisTestId} from "./adopted-analysis.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic
-// calibrations of ficha C54 (modelo_c54.py over modelo_c18.py and modelo_c12.py), never production parameters.
+// calibrations of ficha C54 (modelo_c54.py over modelo_c18.py and modelo_c12.py), never production parameters. The method
+// departs from the oracle on one point, decided after review r1: receivable days are carried once in the closed cash.
 const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const D = Decimal.clone({precision: 60});
 const r = (v: string | null | undefined, p = 1) => v == null ? null : new D(v).toDecimalPlaces(p).toNumber();
@@ -43,21 +45,37 @@ function goldCases(): Case[] {
     reuse("bridges-sum-exactly-to-the-deviations", [["ebitda", "-0.4", "0"], ["caixa", "-1.7", "0"]], (p) => p.readings!.bridges.map((b) => [b.lineId, b.deviation, b.residual])),
     reuse("each-cause-in-the-oracle-bridge", [["ebitda", [["volume", 0.5], ["trigo", -0.6], ["frete-energia", -0.3]]], ["caixa", [["ebitda-abaixo", -0.4], ["prazo-redes", -2.1], ["estoque-trigo", -1.6], ["impostos-outros", 2.4]]]],
       (p) => p.readings!.bridges.map((b) => [b.lineId, b.causes.map((c) => [c.id, r(c.amount)])])),
-    reuse("stock-is-calendar-terms-and-wheat-structural-until-december", {calendar: ["volume", "frete-energia", "ebitda-abaixo", "estoque-trigo", "impostos-outros"], structural: [["trigo", "2026-12-31"], ["prazo-redes", "2026-12-31"]]},
-      (p) => ({calendar: p.readings!.oneOff, structural: p.readings!.persisting.map((c) => [c.causeId, c.until])})),
-    reuse("worst-december-week-near-4-2", {prior: ["2026-12-21", 7.5], updated: ["2026-12-21", 4.2], near: true},
+    reuse("stock-is-calendar-terms-and-wheat-structural-until-december", {calendar: ["volume", "frete-energia", "ebitda-abaixo", "estoque-trigo", "impostos-outros"],
+      structural: [["trigo", "2026-12-31", "flow"], ["prazo-redes", "2026-12-31", "balance"]]},
+      (p) => ({calendar: p.readings!.oneOff, structural: p.readings!.persisting.map((c) => [c.causeId, c.until, c.nature])})),
+    // Weekly figures differ slightly from the oracle's 4.2 and 10.8: the series move only after the close, since September is already in the closed cash.
+    reuse("worst-december-week-near-4-2", {prior: ["2026-12-21", 7.5], updated: ["2026-12-21", 4.4], near: true},
       (p) => ({prior: [p.readings!.tightestWeek.prior.weekStart, r(p.readings!.tightestWeek.prior.closing)], updated: [p.readings!.tightestWeek.updated.weekStart, r(p.readings!.tightestWeek.updated.closing)],
         near: near(p.readings!.tightestWeek.updated.closing, "4.2", "0.5")})),
-    reuse("december-need-above-the-overdraft-limit", {need: 10.8, limit: 10, exceeds: true, withFullLimit: 14.2, covers: false},
+    reuse("december-need-above-the-overdraft-limit", {need: 10.6, limit: 10, exceeds: true, withFullLimit: 14.4, covers: false},
       (p) => ({need: r(p.readings!.shortfallToMinimum.updated), limit: r(p.readings!.topUp!.limit), exceeds: p.readings!.topUp!.needExceedsLimit,
         withFullLimit: r(p.readings!.topUp!.fullLimitMinimum.closing), covers: p.readings!.topUp!.fullLimitCovers})),
-    reuse("action-within-what-is-approved", {steps: [["programas-redes", 23, true], ["conta-garantida", 4.8, true]], withinApproved: true, covers: true, smallerDraw: true},
+    reuse("action-within-what-is-approved", {steps: [["programas-redes", 23, true], ["conta-garantida", 4.6, true]], withinApproved: true, covers: true, smallerDraw: true},
       (p) => ({steps: p.readings!.action.steps.map((s) => [s.facilityId, r(s.amount), s.withinLimit]), withinApproved: p.readings!.action.withinApproved, covers: p.readings!.action.covers,
         smallerDraw: new D(p.readings!.action.steps[1]!.amount).lt(p.readings!.topUp!.limit)})),
-    reuse("december-covenant-near-2-32-and-policy-headroom-near-3-7", {ratio: [2.2, 2.32], policy: [6.2, 3.7], breach: false},
-      (p) => ({ratio: [r(p.readings!.covenant.ratio.prior, 2), r(p.readings!.covenant.ratio.updated, 2)],
-        policy: (({prior, updated}) => [r(prior), r(updated)])(p.readings!.covenant.byLimit.find((l) => l.limitId === "politica")!.ebitdaHeadroom), breach: p.readings!.covenant.anyBreach})),
-    reuse("projection-2026-ebitda-propagated", [54.5, 53.5], (p) => [r(p.readings!.covenant.trailingEbitda.prior), r(p.readings!.covenant.trailingEbitda.updated)]),
+    reuse("december-covenant-by-each-definition", {indenture: {ratio: [2.2, 2.29], policy: [6.2, 4.3]}, managerial: {ratio: [2.04, 2.12], policy: [10.2, 8.3]}, breach: false},
+      (p) => {
+        const c = p.readings!.covenant, ratio = (id: string) => (({prior, updated}) => [r(prior, 2), r(updated, 2)])(c.measurements.find((m) => m.measurementId === id)!.ratio);
+        const policy = (id: string) => (({prior, updated}) => [r(prior), r(updated)])(c.headroom.find((h) => h.measurementId === id && h.limitId === "politica")!.ebitdaHeadroom);
+        return {indenture: {ratio: ratio("dez26-base"), policy: policy("dez26-base")}, managerial: {ratio: ratio("dez26-gerencial"), policy: policy("dez26-gerencial")}, breach: c.anyBreach};
+      }),
+    (() => {
+      // The ficha's oracle absorbs the 2.1 of receivable days a second time in December (2.32x, 3.7); the method carries it once, inside the closed 1.7.
+      const input = base(), p = prepareQuarterUpdatePacket(input), prior = p.result.update!.covenant.prior.measurements.find((m) => m.id === "dez26-base")!;
+      const oracle = measureCovenantHeadroom({currency: "BRL", readingDate: "2026-09-30", effects: [], limits: p.result.update!.covenant.prior.limits,
+        measurements: [{id: prior.id, label: prior.label, date: prior.date, scenario: prior.scenario, role: "test", debt: prior.debt, unrealizedEbitda: null, adjustments: prior.adjustments,
+          limitIds: prior.tests.map((t) => t.limitId), reportedEbitda: "53.5", cash: new D(prior.cash).minus("1.7").minus("2.1").toFixed()}]}).measurements[0]!;
+      const observed = JSON.stringify({method: r(p.readings!.covenant.measurements[0]!.ratio.updated, 2), oracle: r(oracle.ratio, 2),
+        oraclePolicy: r(oracle.tests.find((t) => t.limitId === "politica")!.ebitdaHeadroom), carriedOnce: p.readings!.balanceShiftsCarriedOnce.map((c) => c.causeId)});
+      const expectation = JSON.stringify({method: 2.29, oracle: 2.32, oraclePolicy: 3.7, carriedOnce: ["prazo-redes"]});
+      return {id: "oracle-second-absorption-kept-as-contrast", expectation, observed, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(p), passed: expectation === observed};
+    })(),
+    reuse("projection-2026-ebitda-propagated", [54.5, 53.5], (p) => [r(p.readings!.projectedEbitda.prior), r(p.readings!.projectedEbitda.updated)]),
     reuse("decisions-that-change-are-named", ["short_term_financing", "covenant_headroom", "third_party_material"], (p) => p.readings!.decisionsChanged),
     reuse("what-did-not-change-in-one-line", {updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"], unchanged: ["tabela-divida", "plano-2027", "linha-embalagem"]},
       (p) => ({updated: p.readings!.updated, unchanged: p.readings!.unchanged})),
@@ -72,10 +90,17 @@ function goldCases(): Case[] {
     observe("deviation-without-cause-is-a-named-residual", packetInput((f) => f.set("cause.impostos-outros.amount", {type: "number", value: "2"})),
       {status: "partial", residual: "0.4", gap: true}, (p) => ({status: p.status, residual: p.readings!.bridges.find((b) => b.lineId === "caixa")!.residual,
         gap: p.gaps.some((g) => g.operand.endsWith(".bridge.caixa") && g.reason === "unexplained_residual")})),
-    observe("booked-without-propagation-is-a-gap", packetInput(undefined, (i) => {
-      i.analysis.update.streamUpdates = i.analysis.update.streamUpdates.filter((u) => u.streamId !== "insumos");
-      i.analysis.update.covenant.effects = i.analysis.update.covenant.effects.filter((e) => e.causeId !== "trigo");
-    }), {status: "partial", gap: true}, (p) => ({status: p.status, gap: p.gaps.some((g) => g.operand.endsWith(".cause.trigo") && g.reason === "structural_cause_not_propagated")})),
+    observe("structural-cause-without-weekly-effect-is-a-gap", packetInput(undefined, (i) => {i.analysis.update.streamUpdates = [];}),
+      {status: "partial", gaps: ["trigo", "prazo-redes"], projected: 53.5}, (p) => ({status: p.status,
+        gaps: p.gaps.filter((g) => g.reason === "structural_cause_not_in_weekly_cash").map((g) => g.operand.split(".").at(-1)), projected: r(p.readings!.projectedEbitda.updated)})),
+    observe("persistence-date-bounds-every-effect", packetInput((f) => {
+      f.set("cause.trigo.until", {type: "date", value: "2026-10-03"});
+      f.set("streamUpdate.insumos.amounts", {type: "list", value: auroraDearerInputs("2026-10-03").amounts});
+    }), {ebitdaAhead: -0.0196, weekly: -0.058, projected: 54.08}, (p) => {const c = p.readings!.persisting.find((x) => x.causeId === "trigo")!;
+      return {ebitdaAhead: r(c.ebitdaAhead, 4), weekly: r(c.weeklyEffect, 3), projected: r(p.readings!.projectedEbitda.updated, 2)};}),
+    observe("open-diagnosis-without-question-is-a-gap", packetInput((f) => {
+      (f.input as unknown as {bridges: {causes: {id: string; question: unknown}[]}[]}).bridges[1]!.causes.find((x) => x.id === "prazo-redes")!.question = null;
+    }), {status: "partial", gap: true}, (p) => ({status: p.status, gap: p.gaps.some((g) => g.operand.endsWith(".cause.prazo-redes") && g.reason === "structural_cause_question_missing")})),
     (() => {
       const i = packetInput();
       i.analysis.update.lines = i.analysis.update.lines.map((l) => l.id === "caixa" ? {...l, actual: {...l.actual, decisionId: null, missingReason: "Caixa de 30/set não informado"}} : l);
@@ -93,17 +118,16 @@ function adversarialCases(): Case[] {
     ["update-of-another-version", () => packetInput((f) => f.set("prior.weeklyCash.fingerprint", {type: "text", value: "0".repeat(64)})), "quarter_update_prior_version_mismatch"],
     ["prior-of-another-company", () => {const i = packetInput(); i.analysis.prior.weeklyCash = {...i.analysis.prior.weeklyCash, entityId: analysisTestId(2)}; return i;}, "quarter_update_prior_context_mismatch"],
     ["linked-cause-off-its-deviation", () => packetInput((f) => f.set("cause.ebitda-abaixo.amount", {type: "number", value: "-0.5"})), "quarter_update_linked_cause_mismatch"],
-    ["calendar-cause-moves-the-projection", () => packetInput((f) => {
-      const ebitda = f.contribute("effect.estoque-trigo.ebitda", "currency", {type: "number", value: "0"}), cash = f.contribute("effect.estoque-trigo.cash", "currency", {type: "number", value: "1.6"});
-      (f.input as {covenant: {effects: unknown[]}}).covenant.effects.push({causeId: "estoque-trigo", ebitda, cash});
-    }), "quarter_update_calendar_cause_propagated"],
+    ["calendar-cause-moves-the-projection", () => {const i = packetInput(); i.analysis.update.streamUpdates[1] = {...i.analysis.update.streamUpdates[1]!, causeIds: ["estoque-trigo"]}; return i;}, "quarter_update_calendar_cause_propagated"],
+    ["series-moved-outside-persistence", () => packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2026-10-03"})), "quarter_update_series_outside_persistence"],
+    ["balance-shift-on-ebitda", () => packetInput((f) => f.set("cause.trigo.nature", {type: "text", value: "balance"})), "quarter_update_balance_cause_off_cash"],
     ["structural-cause-without-an-end", () => packetInput((f) => f.set("cause.volume.classification", {type: "text", value: "structural"})), "quarter_update_structural_cause_end"],
     ["recomputing-what-did-not-move", () => packetInput((f) => f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection"})), "quarter_update_recomputes_unaffected"],
     ["series-updated-without-change", () => packetInput((f) => {
       const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
       f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map(() => "5.8")});
     }), "quarter_update_stream_update_without_change"],
-    ["quarter-outside-the-test-period", () => {const i = packetInput(); i.analysis.update.covenant.measurementId = "dez27-base"; return i;}, "quarter_update_quarter_outside_test_period"],
+    ["quarter-outside-the-test-period", () => {const i = packetInput(); i.analysis.update.covenant.measurementIds = ["dez27-base"]; return i;}, "quarter_update_quarter_outside_test_period"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("line.ebitda.actual"))!.dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

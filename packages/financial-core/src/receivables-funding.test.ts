@@ -27,10 +27,12 @@ describe("receivables funding", () => {
   });
   it("costs every option for the same amount and time in use, IOF where it applies", () => {
     expect(r.ranking.map(x => [x.id, n(x.total, 2)])).toEqual([["risco-sacado-b", "1.33"], ["fidc-com-coobrigacao", "1.75"], ["linha-giro", "1.82"],
-      ["desconto-bancario", "1.96"], ["fidc-sem-coobrigacao", "2.08"]]);
+      ["desconto-bancario", "1.99"], ["fidc-sem-coobrigacao", "2.08"]]);
     expect(r.options.map(x => [x.id, x.iofApplies])).toEqual([["risco-sacado-b", false], ["fidc-com-coobrigacao", false], ["fidc-sem-coobrigacao", false],
       ["desconto-bancario", true], ["linha-giro", true]]);
-    expect(n(o("desconto-bancario").cost.draws)).toBe("3.6");
+    // Whole draws: 180 days rolled every 50 are four draws (50, 50, 50, 30); the oracle's 3.6 understates the additional IOF.
+    expect([o("desconto-bancario").cost.draws, o("desconto-bancario").cost.iofDays, n(o("desconto-bancario").cost.iof, 5)]).toEqual([4, 180, "0.50932"]);
+    expect([o("linha-giro").cost.draws, o("linha-giro").cost.iofDays]).toEqual([1, 180]);
   });
   it("converts monthly rates to annual effective before comparing with the DI", () => {
     expect([n(String(Number(o("fidc-com-coobrigacao").rates.annualEffective) * 100)), n(String(Number(o("fidc-com-coobrigacao").rates.spreadOverDi) * 100))]).toEqual(["21.0", "5.3"]);
@@ -46,7 +48,7 @@ describe("receivables funding", () => {
       ["linha-giro", "liability", "17", "uses_basket_if_collateralized", false]]);
   });
   it("fills the peak from the cheapest option, keeps the line as reserve and dates the start", () => {
-    expect(r.plan).toEqual({steps: [{optionId: "risco-sacado-b", amount: "3.7", cumulative: "3.7"}, {optionId: "fidc-com-coobrigacao", amount: "21.3", cumulative: "25"}],
+    expect(r.plan).toEqual({steps: [{optionId: "risco-sacado-b", capacity: "3.7", amount: "3.7", cumulative: "3.7"}, {optionId: "fidc-com-coobrigacao", capacity: "21.3", amount: "21.3", cumulative: "25"}],
       covered: "25", coversPeak: true, reserve: "linha-giro"});
     expect(r.timing).toEqual({startBy: "2026-09-16", slackDays: 1, leadDaysMax: 30, conditionsPrecedent: [{code: "duplicata_registration", amount: "21.3"}]});
     expect(r.questions.map(q => [q.code, q.itemId])).toEqual([["anchor_program_of_restricted_debtor", "rede-a"], ["duplicata_registration_capability", null]]);
@@ -57,7 +59,9 @@ describe("receivables funding", () => {
   });
   it("reorders the plan when the restricted debtor's own program is confirmed", () => {
     const a = assessReceivablesFunding(programA());
-    expect(a.plan.steps.map(s => [s.optionId, s.cumulative])).toEqual([["risco-sacado-b", "3.7"], ["risco-sacado-a", "23.5"], ["fidc-com-coobrigacao", "44.8"]]);
+    // The last option is allocated only what covers the peak; its capacity stays visible.
+    expect(a.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["risco-sacado-b", "3.7", "3.7", "3.7"], ["risco-sacado-a", "19.8", "19.8", "23.5"],
+      ["fidc-com-coobrigacao", "21.3", "1.5", "25"]]);
     expect(a.questions.map(q => q.code)).toEqual(["duplicata_registration_capability"]);
     // The program's terms are still to be asked: without its lead time the start date is a gap, not a guess.
     expect([a.timing.startBy, a.gaps.at(-1)]).toEqual([null, {item: "option.risco-sacado-a.leadDays", reason: "lead_time_not_informed"}]);
@@ -82,5 +86,23 @@ describe("receivables funding", () => {
     expect(known.options[1]!.byItem.find(b => b.itemId === "varejo-demais")).toMatchObject({retained: "11.3", sublimitVerified: true});
     const over = assessReceivablesFunding(withItem("varejo-demais", {debtorCount: 280, largestDebtorAmount: "5"}));
     expect(over.options[1]!.byItem.find(b => b.itemId === "varejo-demais")).toMatchObject({retained: "9.3", sublimitVerified: false});
+  });
+  it("charges the additional IOF on each actual draw", () => {
+    const short = assessReceivablesFunding({...base, calendarDays: 51, businessDays: 36});
+    const d = short.options.find(x => x.id === "desconto-bancario")!.cost;
+    expect([d.draws, d.iofDays, n(d.iof, 6)]).toEqual([2, 51, "0.200294"]);
+  });
+  it("refuses a largest debtor that cannot hold the bucket", () => {
+    expect(() => assessReceivablesFunding(withItem("varejo-demais", {debtorCount: 2, largestDebtorAmount: "1"}))).toThrow("receivables_funding_largest_debtor");
+    // Coherent data still meets the count times sublimit ceiling.
+    const two = assessReceivablesFunding(withItem("varejo-demais", {debtorCount: 4, largestDebtorAmount: "2.9"}));
+    expect(two.options[1]!.byItem.find(b => b.itemId === "varejo-demais")).toMatchObject({retained: "11.3", sublimitVerified: true});
+  });
+  it("keeps what one buyer leaves for the next one", () => {
+    const one = {...base.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const};
+    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap}});
+    const r = assessReceivablesFunding({...base, items: [one], options: [fund("barato", "0.01", "2"), fund("caro", "0.02", "3"), base.options[4]!], needAverage: "3", needPeak: "3"});
+    expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["caro", "3", "1", "3"]]);
+    expect(r.plan.coversPeak).toBe(true);
   });
 });

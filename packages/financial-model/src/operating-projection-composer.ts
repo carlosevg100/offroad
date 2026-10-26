@@ -3,7 +3,7 @@ import {readContextualBasis, type AdoptionBasisEntry} from "@offroad/reconciliat
 import {actualOperatingDriverNames, projectedOperatingDriverNames, type ProjectedOperatingDriver} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema} from "./adopted-debt-inputs";
 import {hasUnitScale} from "./adopted-input-scale";
-import {operatingProjectionDriverUnits} from "./adopted-operating-projection-drivers";
+import {actualOperatingItems, operatingProjectionDriverUnits} from "./adopted-operating-projection-drivers";
 import {operatingProjectionPacketInputSchema, type OperatingProjectionPacketInput} from "./operating-projection-packet";
 
 const text = z.string().trim().min(1).max(2000);
@@ -96,7 +96,8 @@ export function composeBoundOperatingProjection(raw: unknown): OperatingProjecti
     conventions: {dayCountBasis: at("convention.dayCountBasis", "convention", "text"), calibrationTolerance: at("convention.calibrationTolerance", "ratio", "number")},
     actual: {periodStart: at("actual.periodStart", "date", "date"), periodEnd: select("actual.periodEnd", top, "date", "date"),
       drivers: drivers(actualOperatingDriverNames, (k) => `actual.${k}`, (k) => operatingProjectionDriverUnits[k], "number"),
-      reportedRevenue: at("actual.reportedRevenue", "currency", "number"), reportedEbitda: at("actual.reportedEbitda", "currency", "number")},
+      reportedRevenue: at("actual.reportedRevenue", "currency", "number"), reportedEbitda: at("actual.reportedEbitda", "currency", "number"),
+      origins: Object.fromEntries(actualOperatingItems.map((k) => [k, at(`actual.${k}.origin`, "origin", "text")]))},
     base: {drivers: drivers(projectedOperatingDriverNames, (k) => `base.${k}`, (k) => operatingProjectionDriverUnits[k], "list"),
       origins: drivers(projectedOperatingDriverNames, (k) => `base.${k}.origins`, () => "origin", "list")},
     scenarios, companyVersions};

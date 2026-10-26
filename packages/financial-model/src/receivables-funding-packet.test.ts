@@ -22,7 +22,7 @@ describe("receivables funding packet", () => {
     const r = packet().readings!;
     expect(r.options.map((o) => [o.id, o.volume, n(o.cost, 2), o.iofApplies, o.balanceSheet])).toEqual([
       ["risco-sacado-b", "3.7", "1.33", false, "derecognized"], ["fidc-com-coobrigacao", "21.3", "1.75", false, "tends_to_remain_as_liability"],
-      ["linha-giro", null, "1.82", true, "liability"], ["desconto-bancario", "24.3", "1.96", true, "liability"], ["fidc-sem-coobrigacao", "10", "2.08", false, "derecognized"]]);
+      ["linha-giro", null, "1.82", true, "liability"], ["desconto-bancario", "24.3", "1.99", true, "liability"], ["fidc-sem-coobrigacao", "10", "2.08", false, "derecognized"]]);
     expect(r.plan.map((s) => [s.optionId, s.cumulative])).toEqual([["risco-sacado-b", "3.7"], ["fidc-com-coobrigacao", "25"]]);
     expect([r.bankLineReserve, r.startBy, r.slackDays, r.dedicatedVehicle.reading]).toEqual(["linha-giro", "2026-09-16", 1, "not_for_seasonal_need"]);
     expect(r.questions.map((q) => q.code)).toEqual(["anchor_program_of_restricted_debtor", "duplicata_registration_capability"]);

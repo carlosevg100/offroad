@@ -19,10 +19,11 @@ describe("recorded quarter update evaluations", () => {
     expect(records.get(quarterUpdateRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "bridges-sum-exactly-to-the-deviations", "each-cause-in-the-oracle-bridge", "stock-is-calendar-terms-and-wheat-structural-until-december",
       "worst-december-week-near-4-2", "december-need-above-the-overdraft-limit", "action-within-what-is-approved",
-      "december-covenant-near-2-32-and-policy-headroom-near-3-7", "projection-2026-ebitda-propagated", "decisions-that-change-are-named",
+      "december-covenant-by-each-definition", "oracle-second-absorption-kept-as-contrast", "projection-2026-ebitda-propagated", "decisions-that-change-are-named",
       "what-did-not-change-in-one-line", "question-negotiated-terms-or-late-payment", "stale-material-offered-never-sent", "prior-version-kept-as-released",
-      "deviation-without-cause-is-a-named-residual", "booked-without-propagation-is-a-gap", "absent-actual-is-a-gap-not-a-default"]);
-    expect(records.get(quarterUpdateRunIds.adversarial)!.cases).toHaveLength(13);
+      "deviation-without-cause-is-a-named-residual", "structural-cause-without-weekly-effect-is-a-gap", "persistence-date-bounds-every-effect",
+      "open-diagnosis-without-question-is-a-gap", "absent-actual-is-a-gap-not-a-default"]);
+    expect(records.get(quarterUpdateRunIds.adversarial)!.cases).toHaveLength(15);
     expect(records.get(quarterUpdateRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

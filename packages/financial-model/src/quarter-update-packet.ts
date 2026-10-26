@@ -32,15 +32,24 @@ export const quarterUpdatePacketOutputSchema = z.strictObject({
     deviations: z.array(z.strictObject({lineId: key, projected: decimal, actual: decimal, deviation: decimal})).max(24),
     bridges: z.array(z.strictObject({lineId: key, deviation: decimal, residual: decimal,
       causes: z.array(z.strictObject({id: key, label: text, amount: decimal, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable()})).max(12)})).max(8),
-    persisting: z.array(z.strictObject({causeId: key, until: z.iso.date()})).max(96), oneOff: z.array(key).max(96),
+    persisting: z.array(z.strictObject({causeId: key, until: z.iso.date(), nature: z.enum(["flow", "balance"]), weeklyEffect: decimal.nullable(), ebitdaAhead: decimal, cashAhead: decimal})).max(96),
+    oneOff: z.array(key).max(96),
+    /** A balance shift (receivable days) is already inside the closed cash and is carried once; it is never absorbed again ahead.
+     * The ficha C54 oracle absorbs it a second time in the December test; this method does not. */
+    balanceShiftsCarriedOnce: z.array(z.strictObject({causeId: key, amount: decimal})).max(96),
     tightestWeek: beforeAfter(week), shortfallToMinimum: beforeAfter(decimal), closingAtHorizon: beforeAfter(decimal),
     /** The facility that tops up the weeks: whether the need now exceeds its limit and where its whole limit leaves the tightest week. */
     topUp: z.strictObject({facilityId: key, limit: decimal, needExceedsLimit: z.boolean(), fullLimitMinimum: week, fullLimitCovers: z.boolean()}).nullable(),
     action: z.strictObject({steps: z.array(z.strictObject({facilityId: key, amount: decimal, limit: decimal, withinLimit: z.boolean()})).max(4),
       withinApproved: z.boolean(), covers: z.boolean().nullable(), minimumAfter: week.nullable()}),
-    covenant: z.strictObject({measurementId: key, ratio: beforeAfter(decimal.nullable()), trailingEbitda: beforeAfter(decimal),
-      byLimit: z.array(z.strictObject({limitId: key, kind: z.enum(["contractual", "board_policy"]), ebitdaHeadroom: beforeAfter(decimal), breached: z.boolean()})).max(8),
+    /** One reading per definition: the indenture's and, when the board adopted it, the managerial one; each headroom names the definition it is measured on. */
+    covenant: z.strictObject({
+      measurements: z.array(z.strictObject({measurementId: key, definitionRead: text, ratio: beforeAfter(decimal.nullable()), trailingEbitda: beforeAfter(decimal)})).max(8),
+      headroom: z.array(z.strictObject({measurementId: key, definitionRead: text, limitId: key, kind: z.enum(["contractual", "board_policy"]), limitDefinition: text.nullable(),
+        ebitdaHeadroom: beforeAfter(decimal), breached: z.boolean()})).max(16),
       anyBreach: z.boolean(), notUpdated: z.array(key).max(24)}),
+    /** The year's EBITDA as the leading test reads it (the trailing twelve months at the test date). */
+    projectedEbitda: beforeAfter(decimal),
     decisionsChanged: z.array(z.enum(decisions)).max(3),
     updated: z.array(key).max(16), unchanged: z.array(key).max(16), stale: z.array(key).max(16), affectedNotRecomputed: z.array(key).max(16),
     openQuestions: z.array(z.strictObject({causeId: key, question: text})).max(96),
@@ -58,8 +67,11 @@ export type QuarterUpdatePacket = z.infer<typeof quarterUpdatePacketOutputSchema
  * cash explained by cause to the exact deviation, the residual named; what is one-off and what persists
  * until a date; the weekly cash and the covenant test measured again on the prior versions, kept beside
  * the update; whether the need now exceeds the facility that tops up the weeks; the action within what
- * is approved; which dependents were updated, which did not change and which material is stale; and the
- * question that changes the diagnosis. Deterministic; it never sends a material to a third party. */
+ * is approved; the covenant by each definition read, indenture and managerial, with the definition behind
+ * each headroom; which dependents were updated, which did not change and which material is stale; and the
+ * question that changes the diagnosis. A balance shift is carried once in the closed cash: unlike the ficha
+ * C54 oracle, it is not absorbed again in the December test. Deterministic; it never sends a material to a
+ * third party. */
 export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
   const input = quarterUpdatePacketInputSchema.parse(raw);
   const result = adoptedQuarterUpdateOutputSchema.parse(calculateAdoptedQuarterUpdate(input.analysis));
@@ -69,12 +81,13 @@ export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
     const residualStep = u.action.steps.find((s) => s.mode === "residual"), full = u.action.fullLimit[0];
     const topUp = residualStep && full ? {facilityId: residualStep.facilityId, limit: residualStep.limit,
       needExceedsLimit: new Exact(u.weekly.tightest.updated.shortfallToMinimum).gt(residualStep.limit), fullLimitMinimum: full.minimum, fullLimitCovers: full.covers} : null;
-    const target = (h: typeof u.covenant.prior) => h.measurements.find((m) => m.id === u.covenant.measurementId)!;
-    const before = target(u.covenant.prior), after = target(u.covenant.updated);
-    const byLimit = after.tests.map((t) => ({limitId: t.limitId, kind: t.kind, breached: t.breached,
-      ebitdaHeadroom: {prior: before.tests.find((x) => x.limitId === t.limitId)!.ebitdaHeadroom, updated: t.ebitdaHeadroom}}));
-    const least = (rows: {ebitdaHeadroom: string}[]) => rows.reduce<Decimal | null>((m, r) => m === null || new Exact(r.ebitdaHeadroom).lt(m) ? new Exact(r.ebitdaHeadroom) : m, null);
-    const lessHeadroom = (() => {const a = least(before.tests), b = least(after.tests); return a !== null && b !== null && b.lt(a);})();
+    const definitions = new Map(result.covenantDefinitions.map((d) => [d.limitId, d.definition]));
+    const headroom = u.covenant.measurements.flatMap((m) => {
+      const before = u.covenant.prior.measurements.find((x) => x.id === m.id)!, after = u.covenant.updated.measurements.find((x) => x.id === m.id)!;
+      return after.tests.map((t) => ({measurementId: m.id, definitionRead: m.label, limitId: t.limitId, kind: t.kind, limitDefinition: definitions.get(t.limitId) ?? null, breached: t.breached,
+        ebitdaHeadroom: {prior: before.tests.find((x) => x.limitId === t.limitId)!.ebitdaHeadroom, updated: t.ebitdaHeadroom}}));
+    });
+    const lessHeadroom = headroom.some((h) => new Exact(h.ebitdaHeadroom.updated).lt(h.ebitdaHeadroom.prior));
     const needGrew = new Exact(u.weekly.tightest.updated.shortfallToMinimum).gt(u.weekly.tightest.prior.shortfallToMinimum);
     const by = (status: string) => u.dependents.filter((d) => d.status === status).map((d) => d.id);
     const last = u.action.steps[u.action.steps.length - 1];
@@ -82,7 +95,9 @@ export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
       deviations: u.lines.map((l) => ({lineId: l.id, projected: l.projected, actual: l.actual, deviation: l.deviation})),
       bridges: u.bridges.map((b) => ({lineId: b.lineId, deviation: b.deviation, residual: b.residual,
         causes: b.causes.map((c) => ({id: c.id, label: c.label, amount: c.amount, classification: c.classification, until: c.until}))})),
-      persisting: causes.filter((c) => c.classification === "structural").map((c) => ({causeId: c.id, until: c.until!})),
+      persisting: u.propagation.filter((p) => p.classification === "structural").map((p) => ({causeId: p.causeId, until: p.until!, nature: p.nature!,
+        weeklyEffect: p.weeklyEffect, ebitdaAhead: p.ebitdaAhead!, cashAhead: p.cashAhead!})),
+      balanceShiftsCarriedOnce: causes.filter((c) => c.nature === "balance").map((c) => ({causeId: c.id, amount: c.amount})),
       oneOff: causes.filter((c) => c.classification === "calendar").map((c) => c.id),
       tightestWeek: {prior: {weekStart: u.weekly.tightest.prior.weekStart, closing: u.weekly.tightest.prior.closing},
         updated: {weekStart: u.weekly.tightest.updated.weekStart, closing: u.weekly.tightest.updated.closing}},
@@ -90,8 +105,9 @@ export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
       closingAtHorizon: u.weekly.closing, topUp,
       action: {steps: u.action.steps.map((s) => ({facilityId: s.facilityId, amount: s.amount, limit: s.limit, withinLimit: s.withinLimit})),
         withinApproved: u.action.withinApproved, covers: u.action.covers, minimumAfter: last ? last.minimum : null},
-      covenant: {measurementId: u.covenant.measurementId, ratio: u.covenant.ratio, trailingEbitda: u.covenant.trailingEbitda, byLimit,
-        anyBreach: u.covenant.updated.anyBreach, notUpdated: u.covenant.measurementsNotUpdated},
+      covenant: {measurements: u.covenant.measurements.map((m) => ({measurementId: m.id, definitionRead: m.label, ratio: m.ratio, trailingEbitda: m.trailingEbitda})),
+        headroom, anyBreach: u.covenant.updated.anyBreach, notUpdated: u.covenant.measurementsNotUpdated},
+      projectedEbitda: u.covenant.measurements[0]!.trailingEbitda,
       // A decision changes when the need grows, the headroom shrinks or a material sent before the close no longer carries the closed figures.
       decisionsChanged: [...needGrew ? ["short_term_financing" as const] : [], ...lessHeadroom ? ["covenant_headroom" as const] : [], ...by("stale").length ? ["third_party_material" as const] : []],
       updated: by("updated"), unchanged: by("unchanged"), stale: by("stale"), affectedNotRecomputed: by("affected_not_recomputed"),

@@ -27,9 +27,9 @@ const named = (kind: string) => new RegExp(`^${kind}\\.(${k})\\.[A-Za-z]+$`);
 
 /** Composes the quarter update packet input from the three bases alone. The prior weekly cash and
  * covenant test are composed by their own released composers, untouched; the close carries one
- * analysis (`quarter_update.<analysis>.`) whose lines, causes, series, effects, facilities, steps and
+ * analysis (`quarter_update.<analysis>.`) whose lines, causes, series, facilities, steps and
  * dependents are every id the adopted order lists or a field path names, listed ones first. Structure
- * (line unit, the bridge of each cause, linked lines, the causes of each series, the test updated,
+ * (line unit, the bridge of each cause, linked lines, the causes of each series, the tests updated,
  * each step) is one adopted value or the composition refuses by name. Every operand is selected by
  * field path, scenario, unit and type in the analysis' own dimensions; an absent operand, or one
  * adopted twice for the same slot, is declared missing with its reason. No number is supplied here. */
@@ -85,7 +85,7 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
     const p = `cause.${id}.`;
     return {lineId: one(p + "lineId", "quarter_update_cause_bridge"), cause: {id, equalsDeviationOf: maybe(p + "equalsDeviationOf", "quarter_update_cause_link"),
       driverLineId: maybe(p + "driverLineId", "quarter_update_cause_driver"), label: select(p + "label", "text", "text"), amount: select(p + "amount", "currency", "number"),
-      classification: select(p + "classification", "convention", "text"), until: optional(p + "until", "date", "date"), basis: select(p + "basis", "convention", "text"),
+      classification: select(p + "classification", "convention", "text"), until: optional(p + "until", "date", "date"), nature: optional(p + "nature", "convention", "text"), basis: select(p + "basis", "convention", "text"),
       question: optional(p + "question", "text", "text")}};
   });
   const bridgeOrder = z.array(keyOf).parse(meta("order.bridges", "list", "quarter_update_order", false) ?? []);
@@ -100,7 +100,6 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
     const p = `added.${id}.`;
     return {id, label: select(p + "label", "text", "text"), dates: select(p + "dates", "date", "list"), amounts: select(p + "amounts", "currency", "list")};
   });
-  const effects = keys("effect", "order.effects").map((causeId) => ({causeId, ebitda: select(`effect.${causeId}.ebitda`, "currency", "number"), cash: select(`effect.${causeId}.cash`, "currency", "number")}));
   const facilities = keys("facility", "order.facilities").map((id) => {
     const p = `facility.${id}.`;
     return {id, label: select(p + "label", "text", "text"), limit: select(p + "limit", "currency", "number"), source: select(p + "source", "text", "text")};
@@ -116,17 +115,17 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
     return {id, label: select(p + "label", "text", "text"), kind: select(p + "kind", "convention", "text"), reads: select(p + "reads", "identity", "list"),
       horizonStart: select(p + "horizonStart", "date", "date"), horizonEnd: select(p + "horizonEnd", "date", "date"), recomputedBy: select(p + "recomputedBy", "convention", "text")};
   });
-  const measurementId = one("covenant.measurementId", "quarter_update_covenant_measurement");
+  const measurementIds = z.array(keyOf).min(1).parse(meta("covenant.measurementIds", "list", "quarter_update_covenant_measurement", true));
   const update = {envelope: input.update.envelope, scope: input.update.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,
     openingDate: d.periodStart!, endDate: d.periodEnd!, numericInterpretations: [], analysisId, scenario: sc,
     priorWeeklyFingerprint: select("prior.weeklyCash.fingerprint", "identity", "text"), priorCovenantFingerprint: select("prior.covenant.fingerprint", "identity", "text"),
     lines, carry: {cashLineId: one("carry.cashLineId", "quarter_update_carry"), ebitdaLineId: one("carry.ebitdaLineId", "quarter_update_carry")},
-    bridges, streamUpdates, addedStreams, covenant: {measurementId, effects}, facilities, steps, dependents};
+    bridges, streamUpdates, addedStreams, covenant: {measurementIds}, facilities, steps, dependents};
   // A missing operand carries the lowest resolved definition so the reference is stable; the executor ignores it.
   const borrowed = [...definitions].sort((a, b) => a.definitionVersionId < b.definitionVersionId ? -1 : 1)[0];
   if (borrowed) for (const m of missing) {m.definitionVersionId = borrowed.definitionVersionId; m.definitionKind = borrowed.definitionKind;}
   // The prior versions are composed by their own composers, exactly as they were adopted.
   const weeklyCash = composeBoundWeeklyCash({...input.prior.weeklyCash, question: input.question}).analysis;
-  const covenant = composeBoundCovenantHeadroom({...input.prior.covenant, question: input.question, headlineMeasurementId: measurementId}).analysis;
+  const covenant = composeBoundCovenantHeadroom({...input.prior.covenant, question: input.question, headlineMeasurementId: measurementIds[0]!}).analysis;
   return quarterUpdatePacketInputSchema.parse({schemaVersion: "quarter-update-packet-input.v1", question: input.question, analysis: {prior: {weeklyCash, covenant}, update}});
 }

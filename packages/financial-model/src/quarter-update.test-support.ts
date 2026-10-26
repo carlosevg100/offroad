@@ -1,7 +1,7 @@
 import type {AdoptedQuarterUpdateInput, QuarterUpdateAnalyses} from "./adopted-quarter-update";
 import {analysisTestBasis, analysisTestId as id} from "./adopted-analysis.test-support";
 import {auroraWeeklyCashBasis} from "./weekly-cash.test-support";
-import {auroraCovenantBasis} from "./covenant-headroom.test-support";
+import {auroraCovenantBasis, auroraCovenantFacts} from "./covenant-headroom.test-support";
 import {auroraWeeklyCash} from "./weekly-cash-streams.test-support";
 
 /** Aurora Alimentos, close of 3T26 read on 15/out/2026 (ficha C54, synthetic). The prior versions are the
@@ -20,9 +20,18 @@ function receipts(days: number) {
       if (day >= at(2026, 9, 14) && day <= at(2027, 1, 3)) events.push([iso(day), money(v / length)]);
     }
   }
+  return events;
+}
+/** The prior series outside the persistence window (after the close, until the cause ends) and the updated one inside it. */
+function persistingOnly(prior: [string, string][], updated: [string, string][], until: string) {
+  const inside = (d: string) => d > "2026-09-30" && d <= until;
+  const events = [...prior.filter(([d]) => !inside(d)), ...updated.filter(([d]) => inside(d))].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   return {dates: events.map(([d]) => d), amounts: events.map(([, v]) => v)};
 }
-const inputs = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
+const inputs = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!, priorInputs = inputs.dates.map((d, n) => [d, inputs.amounts[n]!] as [string, string]);
+/** Receivable days at 54 and wheat 3% dearer from the close to the end of the persistence date; the prior series outside. */
+export const auroraReceipts = (until = "2026-12-31") => persistingOnly(receipts(50), receipts(54), until);
+export const auroraDearerInputs = (until = "2026-12-31") => persistingOnly(priorInputs, priorInputs.map(([d]) => [d, "5.858"]), until);
 type Origin = "document" | "informed" | "house" | "estimate";
 /** The facts of the close, each with where it came from. */
 export const auroraClose = {
@@ -37,24 +46,24 @@ export const auroraClose = {
   carry: {cashLineId: "caixa", ebitdaLineId: "ebitda"},
   bridges: [
     {lineId: "ebitda", causes: [
-      {id: "volume", label: "Volume 1% acima", amount: "0.5", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "interpretation" as const, question: null, origin: "informed" as Origin},
-      {id: "trigo", label: "Trigo 3% mais caro desde agosto, sem repasse ainda", amount: "-0.6", classification: "structural" as const, until: "2026-12-31", equalsDeviationOf: null, driverLineId: "trigo", basis: "interpretation" as const, question: null, origin: "informed" as Origin},
-      {id: "frete-energia", label: "Frete e energia", amount: "-0.3", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "interpretation" as const, question: null, origin: "informed" as Origin},
+      {id: "volume", label: "Volume 1% acima", amount: "0.5", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, nature: null as "flow" | "balance" | null, basis: "interpretation" as const, question: null, origin: "informed" as Origin},
+      {id: "trigo", label: "Trigo 3% mais caro desde agosto, sem repasse ainda", amount: "-0.6", classification: "structural" as const, until: "2026-12-31", equalsDeviationOf: null, driverLineId: "trigo", nature: "flow" as "flow" | "balance" | null, basis: "interpretation" as const, question: null, origin: "informed" as Origin},
+      {id: "frete-energia", label: "Frete e energia", amount: "-0.3", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, nature: null as "flow" | "balance" | null, basis: "interpretation" as const, question: null, origin: "informed" as Origin},
     ]},
     {lineId: "caixa", causes: [
-      {id: "ebitda-abaixo", label: "EBITDA abaixo", amount: "-0.4", classification: "calendar" as const, until: null, equalsDeviationOf: "ebitda", driverLineId: null, basis: "document" as const, question: null, origin: "document" as Origin},
-      {id: "prazo-redes", label: "Redes pagando em 54 dias (prazo médio de 50)", amount: "-2.1", classification: "structural" as const, until: "2026-12-31", equalsDeviationOf: null, driverLineId: "prazo", basis: "interpretation" as const,
+      {id: "ebitda-abaixo", label: "EBITDA abaixo", amount: "-0.4", classification: "calendar" as const, until: null, equalsDeviationOf: "ebitda", driverLineId: null, nature: null as "flow" | "balance" | null, basis: "document" as const, question: null, origin: "document" as Origin},
+      {id: "prazo-redes", label: "Redes pagando em 54 dias (prazo médio de 50)", amount: "-2.1", classification: "structural" as const, until: "2026-12-31", equalsDeviationOf: null, driverLineId: "prazo", nature: "balance" as "flow" | "balance" | null, basis: "interpretation" as const,
         question: "Os 54 dias das redes são prazo negociado ou atraso?", origin: "informed" as Origin},
-      {id: "estoque-trigo", label: "Estoque de trigo antecipado em setembro", amount: "-1.6", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "document" as const, question: null, origin: "document" as Origin},
-      {id: "impostos-outros", label: "Impostos e outros", amount: "2.4", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "interpretation" as const, question: null, origin: "document" as Origin},
+      {id: "estoque-trigo", label: "Estoque de trigo antecipado em setembro", amount: "-1.6", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, nature: null as "flow" | "balance" | null, basis: "document" as const, question: null, origin: "document" as Origin},
+      {id: "impostos-outros", label: "Impostos e outros", amount: "2.4", classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, nature: null as "flow" | "balance" | null, basis: "interpretation" as const, question: null, origin: "document" as Origin},
     ]},
   ],
   streamUpdates: [
-    {streamId: "recebimentos", causeIds: ["prazo-redes"], ...receipts(54)},
-    {streamId: "insumos", causeIds: ["trigo"], dates: [...inputs.dates], amounts: inputs.amounts.map(() => "5.858")},
+    {streamId: "recebimentos", causeIds: ["prazo-redes"], ...auroraReceipts()},
+    {streamId: "insumos", causeIds: ["trigo"], ...auroraDearerInputs()},
   ],
   addedStreams: [{id: "programas-redes", label: "Programas de antecipação das redes A e B", dates: ["2026-10-15"], amounts: ["23"]}],
-  covenant: {measurementId: "dez26-base", effects: [{causeId: "trigo", ebitda: "-0.6", cash: "0"}, {causeId: "prazo-redes", ebitda: "0", cash: "-2.1"}]},
+  covenant: {measurementIds: ["dez26-base", "dez26-gerencial"]},
   facilities: [
     {id: "programas-redes", label: "Programas das redes A e B", limit: "23", source: "Deliberação do conselho de 30/set"},
     {id: "conta-garantida", label: "Conta garantida", limit: "10", source: "Contrato da conta garantida"},
@@ -74,9 +83,29 @@ export const auroraClose = {
   ],
 };
 
+const policyDefinition = "EBITDA gerencial: CVM 156 com os ajustes da administração, sem descontar arrendamentos (ata de 30/set)";
+const definitionRead = {base: "Definição da escritura (CVM 156 menos arrendamentos)", managerial: "Definição gerencial adotada pelo conselho"};
+/** The prior December test (C12) with the policy's managerial definition written, measured on the indenture and on the board's managerial EBITDA. */
+export function auroraPriorCovenantBasis() {
+  const b = auroraCovenantBasis({policyDefinition});
+  const m = (b.input as unknown as {measurements: {id: string; label: string}[]}).measurements;
+  m.find((x) => x.id === "dez26-base")!.label = definitionRead.base;
+  const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => b.contribute(p + path, "currency", {type: "number", value}, sc);
+  m.push({id: "dez26-gerencial", label: definitionRead.managerial, role: "test", limitIds: ["politica"], scenario: sc, date: b.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
+    debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null} as never);
+  return b;
+}
+export function auroraPriorCovenantFacts() {
+  const f = auroraCovenantFacts({policyDefinition});
+  f.measurements = f.measurements.map((x) => x.value.id === "dez26-base" ? {...x, value: {...x.value, label: definitionRead.base}} : x);
+  f.measurements.push({value: {id: "dez26-gerencial", label: definitionRead.managerial, role: "test", scenario: "gerencial_dez", date: "2026-12-31", debt: "128.66666667", cash: "15.45720186",
+    reportedEbitda: "55.5", limitIds: ["politica"], adjustments: [], unrealizedEbitda: null}, origin: "informed", source: "plano trimestral da companhia pela definição gerencial"});
+  return f;
+}
+
 /** The close as adopted contributions, on its own basis, naming the two prior bases by fingerprint. */
 export function auroraQuarterUpdateBasis() {
-  const c = auroraClose, weekly = auroraWeeklyCashBasis(), covenant = auroraCovenantBasis();
+  const c = auroraClose, weekly = auroraWeeklyCashBasis(), covenant = auroraPriorCovenantBasis();
   const prior = {weeklyCash: weekly.seal(), covenant: covenant.seal()};
   const f = analysisTestBasis(`quarter_update.${id(90)}.`, c.quarterStart, c.quarterEnd);
   const num = (p: string, unit: string, value: string) => f.contribute(p, unit, {type: "number", value});
@@ -90,10 +119,10 @@ export function auroraQuarterUpdateBasis() {
     carry: c.carry,
     bridges: c.bridges.map((b) => ({lineId: b.lineId, causes: b.causes.map((x) => {const p = `cause.${x.id}.`; return {id: x.id, equalsDeviationOf: x.equalsDeviationOf, driverLineId: x.driverLineId,
       label: text(p + "label", x.label), amount: num(p + "amount", "currency", x.amount), classification: text(p + "classification", x.classification, "convention"),
-      until: x.until === null ? null : date(p + "until", x.until), basis: text(p + "basis", x.basis, "convention"), question: x.question === null ? null : text(p + "question", x.question)};})})),
+      until: x.until === null ? null : date(p + "until", x.until), nature: x.nature === null ? null : text(p + "nature", x.nature, "convention"), basis: text(p + "basis", x.basis, "convention"), question: x.question === null ? null : text(p + "question", x.question)};})})),
     streamUpdates: c.streamUpdates.map((u) => ({streamId: u.streamId, causeIds: u.causeIds, dates: list(`streamUpdate.${u.streamId}.dates`, "date", u.dates), amounts: list(`streamUpdate.${u.streamId}.amounts`, "currency", u.amounts)})),
     addedStreams: c.addedStreams.map((s) => ({id: s.id, label: text(`added.${s.id}.label`, s.label), dates: list(`added.${s.id}.dates`, "date", s.dates), amounts: list(`added.${s.id}.amounts`, "currency", s.amounts)})),
-    covenant: {measurementId: c.covenant.measurementId, effects: c.covenant.effects.map((e) => ({causeId: e.causeId, ebitda: num(`effect.${e.causeId}.ebitda`, "currency", e.ebitda), cash: num(`effect.${e.causeId}.cash`, "currency", e.cash)}))},
+    covenant: {measurementIds: c.covenant.measurementIds},
     facilities: c.facilities.map((x) => ({id: x.id, label: text(`facility.${x.id}.label`, x.label), limit: num(`facility.${x.id}.limit`, "currency", x.limit), source: text(`facility.${x.id}.source`, x.source)})),
     steps: c.steps.map((s) => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: date(`step.${s.facilityId}.date`, s.date)}),
     dependents: c.dependents.map((d) => {const p = `dependent.${d.id}.`; return {id: d.id, label: text(p + "label", d.label), kind: text(p + "kind", d.kind, "convention"),

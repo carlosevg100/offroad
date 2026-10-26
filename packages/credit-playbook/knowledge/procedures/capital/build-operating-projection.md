@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: operating-projection-packet.v1
 unit_test_files: [packages/financial-model/src/operating-projection-packet.test.ts, packages/financial-model/src/operating-projection-runs.test.ts, packages/financial-model/src/operating-projection-premises.test.ts, packages/financial-core/src/operating-projection.test.ts]
-gold_case_ids: [first-version-in-the-first-turn, reproduces-the-last-audited-year, base-by-driver-2026-to-2028, ebitda-within-five-percent-of-the-answer-key, cash-available-near-sixty-percent-of-ebitda, budget-and-revision-side-by-side-with-the-cause, sensitivities-in-reais-2027, wheat-shock-with-six-month-pass-through, wheat-shock-without-pass-through-in-the-year, volume-two-percent-lower, assumptions-kept-apart-from-data, at-most-three-questions-volume-pass-through-receivable-days, turn-two-informed-drivers, turn-two-sixty-day-receivables-drain-cash, turn-two-wheat-shock-with-four-month-pass-through, projection-withheld-when-the-last-year-is-not-reproduced, unexplained-difference-is-an-open-question, absent-driver-is-a-gap-not-a-default]
+gold_case_ids: [first-version-in-the-first-turn, reproduces-the-last-audited-year, base-by-driver-2026-to-2028, ebitda-within-five-percent-of-the-answer-key, cash-available-near-sixty-percent-of-ebitda, budget-and-revision-side-by-side-with-the-cause, sensitivities-in-reais-2027, wheat-shock-with-six-month-pass-through, wheat-shock-without-pass-through-in-the-year, volume-two-percent-lower, assumptions-kept-apart-from-data, estimated-informed-and-house-history-is-not-data, scenario-changes-carry-their-origin, at-most-three-questions-volume-pass-through-receivable-days, turn-two-informed-drivers, turn-two-sixty-day-receivables-drain-cash, turn-two-wheat-shock-with-four-month-pass-through, projection-withheld-when-the-last-year-is-not-reproduced, unexplained-difference-is-an-open-question, absent-driver-is-a-gap-not-a-default]
 adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, single-growth-rate-instead-of-drivers, company-version-built-by-the-house, scenario-based-on-a-later-scenario, two-volume-rules-in-one-scenario, shock-from-a-period-not-projected, pass-through-lag-beyond-a-year, driver-column-shorter-than-the-horizon, negative-volume, duplicate-scenario, scenario-reuses-the-base-scenario-key, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:first-version-in-the-first-turn]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -51,7 +51,7 @@ Pacote de projeção: reprodução do último ano pelos drivers, com a diferenç
 - Desafiar a projeção que a companhia já tem é a demanda de questionar projeção.
 
 # Inputs mínimos e substitutos
-- Último ano: volume, preço líquido, custo do insumo por unidade, demais custos variáveis por unidade, custos fixos, prazos de recebimento, estoque e pagamento; receita e EBITDA reportados.
+- Último ano: volume, preço líquido, custo do insumo por unidade, demais custos variáveis por unidade, custos fixos, prazos de recebimento, estoque e pagamento; receita e EBITDA reportados; a origem de cada um.
 - Anos projetados: os mesmos drivers, mais capex de manutenção, arrendamentos, depreciação, juros e alíquota, cada um com a sua origem.
 - Orçamento aprovado e revisões da companhia, com a causa da diferença quando conhecida.
 - Cenários: choque do insumo com a regra de repasse, prazo, volume.
@@ -62,7 +62,7 @@ Pacote de projeção: reprodução do último ano pelos drivers, com a diferenç
 3. [deterministic] Projetar por driver :: Receita, custos, EBITDA, giro por prazos, imposto e caixa disponível para a dívida, ano a ano, pelo motor operacional | evidence: drivers adotados
 4. [deterministic] Comparar com a companhia :: Orçamento e revisão lado a lado, diferença e equivalente em preço, sem substituir | evidence: versões adotadas da companhia
 5. [deterministic] Sensibilidades e cenários :: Preço, insumo com regra de repasse, prazo e volume, em reais, contra o cenário de referência | evidence: cenários adotados
-6. [deterministic] Separar dado de hipótese :: Origem de cada driver em cada ano; o último ano é dado | evidence: base adotada
+6. [deterministic] Separar dado de hipótese :: Origem adotada de cada operando, do último ano e de cada ano projetado, e de cada mudança dos cenários; só documento é dado | evidence: base adotada
 7. [human_judgment] Causa da diferença :: Por que a projeção difere do orçamento e da revisão | evidence: balancetes e realizado do ano
 8. [human_judgment] Devolver e perguntar :: Primeira versão, o que pesa e até três perguntas que mudam o número | evidence: base autorizada, pacote e lacunas
 
@@ -75,7 +75,7 @@ Pacote de projeção: reprodução do último ano pelos drivers, com a diferenç
 - Cenário muda só o que declara sobre o cenário de referência: crescimento de volume a partir do último ano ou fator de volume, colunas inteiras de drivers e o choque do insumo, nessa ordem.
 - Sensibilidades: 1% de preço = receita x 1%; 1% de insumo sem repasse = volume x insumo por unidade x 1%; 1 dia de recebimento = receita / base de dias.
 - Comparação: diferença = valor da companhia - valor projetado; equivalente em preço = diferença / volume.
-- Reprodução: diferença relativa de receita e de EBITDA do último ano até a tolerância adotada; fora dela, nada é projetado.
+- Reprodução: diferença relativa de receita e de EBITDA do último ano até a tolerância adotada; fora dela, nada é projetado. A reprodução prova a aritmética, não a origem: o último ano só é dado, e só é histórico documentado, quando cada operando tem origem documento.
 - Precisão: aritmética decimal de alta precisão; os operandos entregues ao motor operacional são arredondados a oito casas, e é o único arredondamento.
 
 # Julgamentos permitidos
@@ -105,7 +105,7 @@ Pacote de projeção: reprodução do último ano pelos drivers, com a diferenç
 - schemaVersion (string, required): Versão do pacote | values: operating-projection-packet.v1
 - status (enum, required): Suficiência do pacote | values: framed, partial, prepared_for_human_review
 - result (object, required): Reprodução do último ano, projeção por driver, cenários, sensibilidades, comparações, origens e perguntas abertas
-- readings (object, required): Reprodução, base, comparações com causa, sensibilidades, cenários, maior redução de caixa, quadro de dados e hipóteses e perguntas
+- readings (object, required): Reprodução com a origem do reportado, base, comparações com causa, sensibilidades, cenários com a origem de cada mudança, maior redução de caixa, quadro de dados e hipóteses e perguntas
 - exclusions (array, required): Recomendação de financiamento, serviço da dívida, aprovação de crédito, liberação de método
 - grantsExecution (boolean, required): Sempre falso
 - grantsPublication (boolean, required): Sempre falso
@@ -123,7 +123,7 @@ Pacote de projeção: reprodução do último ano pelos drivers, com a diferenç
 - packages/financial-model/src/operating-projection-packet.test.ts: leitor adotado e pacote.
 - packages/financial-model/src/operating-projection-premises.test.ts: premissas, base adotada, composição e pacote de ida e volta.
 ## Gold
-- first-version-in-the-first-turn, reproduces-the-last-audited-year, base-by-driver-2026-to-2028, ebitda-within-five-percent-of-the-answer-key, cash-available-near-sixty-percent-of-ebitda, budget-and-revision-side-by-side-with-the-cause, sensitivities-in-reais-2027, wheat-shock-with-six-month-pass-through, wheat-shock-without-pass-through-in-the-year, volume-two-percent-lower, assumptions-kept-apart-from-data, at-most-three-questions-volume-pass-through-receivable-days, turn-two-informed-drivers, turn-two-sixty-day-receivables-drain-cash, turn-two-wheat-shock-with-four-month-pass-through, projection-withheld-when-the-last-year-is-not-reproduced, unexplained-difference-is-an-open-question, absent-driver-is-a-gap-not-a-default.
+- first-version-in-the-first-turn, reproduces-the-last-audited-year, base-by-driver-2026-to-2028, ebitda-within-five-percent-of-the-answer-key, cash-available-near-sixty-percent-of-ebitda, budget-and-revision-side-by-side-with-the-cause, sensitivities-in-reais-2027, wheat-shock-with-six-month-pass-through, wheat-shock-without-pass-through-in-the-year, volume-two-percent-lower, assumptions-kept-apart-from-data, estimated-informed-and-house-history-is-not-data, scenario-changes-carry-their-origin, at-most-three-questions-volume-pass-through-receivable-days, turn-two-informed-drivers, turn-two-sixty-day-receivables-drain-cash, turn-two-wheat-shock-with-four-month-pass-through, projection-withheld-when-the-last-year-is-not-reproduced, unexplained-difference-is-an-open-question, absent-driver-is-a-gap-not-a-default.
 ## Adversarial
 - Base adulterada, resultado livre no pedido, concessão fabricada, taxa única no lugar de drivers, versão da companhia feita pela casa, cenário baseado em cenário posterior, duas regras de volume, choque em período não projetado, defasagem acima de um ano, coluna mais curta que o horizonte, volume negativo, cenário duplicado, cenário com a chave da base, número lido em outro cenário.
 ## Aceitação
@@ -152,7 +152,7 @@ O CFO precisa de uma projeção que se sustente diante de um banco: quanto caixa
 - A companhia corrige premissas: registrar como informadas, preservar a versão anterior e destacar o que mais mudou o caixa.
 
 ## N3. Suficiência por conclusão
-- Para o primeiro ano: volume, preço líquido, custo do insumo e demais custos por unidade, custos fixos, prazos.
+- Para o último ano: volume, preço líquido, custo do insumo e demais custos por unidade, custos fixos, prazos.
 - Para o caixa disponível: capex de manutenção, arrendamentos, depreciação, juros e alíquota.
 - Para a comparação: o valor da companhia e a causa da diferença.
 
@@ -166,7 +166,7 @@ Fato (o que as demonstrações e o gerencial dizem), leitura (o que a projeção
 3. Receita, EBITDA e caixa disponível para a dívida por ano.
 4. A comparação com o orçamento e a revisão, com a causa.
 5. As premissas que decidem e quanto valem, em reais.
-6. O que é hipótese e o que é dado.
+6. O que é hipótese e o que é dado, pela origem de cada operando, inclusive o último ano e as mudanças dos cenários.
 7. Até três perguntas que mudam o número.
 
 ## T2. Peças
@@ -180,11 +180,11 @@ Nenhuma projeção é entregue sem reproduzir o último ano pelos mesmos drivers
 O orçamento e a revisão da companhia são da companhia: comparados, nunca substituídos.
 
 ## R3. Origem
-Cada driver de cada ano carrega a sua origem; só documento é dado.
+Cada operando de cada ano, o último ano incluído, e cada mudança de cenário carregam a sua origem; só documento é dado. Último ano estimado, informado ou da casa é mostrado como tal, nunca como histórico auditado.
 
 # Qualidade
 ## Q1. Teste do MD
-A projeção segue o mecanismo do negócio? Reproduz o último ano? O caixa disponível está depois de impostos, giro, manutenção e arrendamentos? O orçamento ficou intacto, com a causa da diferença? As sensibilidades estão em reais? Hipótese e dado estão separados? São no máximo três perguntas?
+A projeção segue o mecanismo do negócio? Reproduz o último ano? O caixa disponível está depois de impostos, giro, manutenção e arrendamentos? O orçamento ficou intacto, com a causa da diferença? As sensibilidades estão em reais? Hipótese e dado estão separados pela origem, também no último ano? São no máximo três perguntas?
 
 ## Q2. Verificação
 Corridas gold, adversarial e de consistência reexecutadas a cada versão; revisão técnica independente; aprovação de conteúdo registrada; conversa real pela interface antes de publicar.
@@ -290,7 +290,7 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
         "currency": "BRL"
       },
       "evidence": [],
-      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO CFO precisa de uma projeção que se sustente diante de um banco: quanto caixa a companhia gera para servir dívida e o que pode dar errado. A primeira versão sai do que a companhia já tem, segue o mecanismo do negócio e mostra que reproduz o último ano.\n\nN2. Árvore de decisão\n- Há drivers do último ano e ele é reproduzido: entregar a primeira versão no primeiro turno, com premissas visíveis.\n- O último ano não é reproduzido: não projetar; mostrar a diferença e o driver que falta conciliar.\n- Há orçamento ou revisão da companhia: manter lado a lado, dizer a diferença e a causa; sem causa, perguntar.\n- A companhia corrige premissas: registrar como informadas, preservar a versão anterior e destacar o que mais mudou o caixa.\n\nN3. Suficiência por conclusão\n- Para o primeiro ano: volume, preço líquido, custo do insumo e demais custos por unidade, custos fixos, prazos.\n- Para o caixa disponível: capex de manutenção, arrendamentos, depreciação, juros e alíquota.\n- Para a comparação: o valor da companhia e a causa da diferença.\n\nN4. Voz e três níveis de afirmação\nFato (o que as demonstrações e o gerencial dizem), leitura (o que a projeção mostra e o que pesa) e premissa (o que é hipótese nossa ou da companhia) separados. Sem recomendar o financiamento e sem certeza sobre o banco."
+      "text": "Narrativa\nN1. A decisão que organiza o trabalho\nO CFO precisa de uma projeção que se sustente diante de um banco: quanto caixa a companhia gera para servir dívida e o que pode dar errado. A primeira versão sai do que a companhia já tem, segue o mecanismo do negócio e mostra que reproduz o último ano.\n\nN2. Árvore de decisão\n- Há drivers do último ano e ele é reproduzido: entregar a primeira versão no primeiro turno, com premissas visíveis.\n- O último ano não é reproduzido: não projetar; mostrar a diferença e o driver que falta conciliar.\n- Há orçamento ou revisão da companhia: manter lado a lado, dizer a diferença e a causa; sem causa, perguntar.\n- A companhia corrige premissas: registrar como informadas, preservar a versão anterior e destacar o que mais mudou o caixa.\n\nN3. Suficiência por conclusão\n- Para o último ano: volume, preço líquido, custo do insumo e demais custos por unidade, custos fixos, prazos.\n- Para o caixa disponível: capex de manutenção, arrendamentos, depreciação, juros e alíquota.\n- Para a comparação: o valor da companhia e a causa da diferença.\n\nN4. Voz e três níveis de afirmação\nFato (o que as demonstrações e o gerencial dizem), leitura (o que a projeção mostra e o que pesa) e premissa (o que é hipótese nossa ou da companhia) separados. Sem recomendar o financiamento e sem certeza sobre o banco."
     },
     {
       "id": "projection.packet",
@@ -1361,6 +1361,544 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
                                       "type": "null"
                                     }
                                   ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "origins": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "volume": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "netUnitPrice": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "inputCostPerUnit": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "otherVariableCostPerUnit": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "fixedCosts": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "receivableDays": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "inventoryDays": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "payableDays": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "reportedRevenue": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "reportedEbitda": {
+                                "required": true,
+                                "value": {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
                                 }
                               }
                             }
@@ -6321,6 +6859,55 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
                     "value": {
                       "type": "object",
                       "fields": {
+                        "actual": {
+                          "required": true,
+                          "value": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "fields": {
+                                "item": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "volume",
+                                      "netUnitPrice",
+                                      "inputCostPerUnit",
+                                      "otherVariableCostPerUnit",
+                                      "fixedCosts",
+                                      "receivableDays",
+                                      "inventoryDays",
+                                      "payableDays",
+                                      "reportedRevenue",
+                                      "reportedEbitda"
+                                    ]
+                                  }
+                                },
+                                "origin": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "enum",
+                                        "values": [
+                                          "document",
+                                          "informed",
+                                          "house",
+                                          "estimate"
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
                         "base": {
                           "required": true,
                           "value": {
@@ -6666,6 +7253,52 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
                               "value": {
                                 "type": "boolean"
                               }
+                            },
+                            "reportedRevenueOrigin": {
+                              "required": true,
+                              "value": {
+                                "type": "union",
+                                "variants": [
+                                  {
+                                    "type": "enum",
+                                    "values": [
+                                      "document",
+                                      "informed",
+                                      "house",
+                                      "estimate"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "reportedEbitdaOrigin": {
+                              "required": true,
+                              "value": {
+                                "type": "union",
+                                "variants": [
+                                  {
+                                    "type": "enum",
+                                    "values": [
+                                      "document",
+                                      "informed",
+                                      "house",
+                                      "estimate"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "documented": {
+                              "required": true,
+                              "value": {
+                                "type": "boolean"
+                              }
                             }
                           }
                         }
@@ -6898,6 +7531,53 @@ Quando um insumo pesa e chega ao preço com atraso, a margem do ano do choque de
                                           "required": true,
                                           "value": {
                                             "type": "string"
+                                          }
+                                        },
+                                        "changes": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "fields": {
+                                                "item": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "origin": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "union",
+                                                    "variants": [
+                                                      {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "document",
+                                                          "informed",
+                                                          "house",
+                                                          "estimate"
+                                                        ]
+                                                      },
+                                                      {
+                                                        "type": "null"
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "nature": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "enum",
+                                                    "values": [
+                                                      "data",
+                                                      "assumption"
+                                                    ]
+                                                  }
+                                                }
+                                              }
+                                            }
                                           }
                                         },
                                         "rows": {

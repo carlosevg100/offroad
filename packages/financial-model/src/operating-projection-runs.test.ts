@@ -19,8 +19,9 @@ describe("recorded operating projection evaluations", () => {
     expect(records.get(operatingProjectionRunIds.gold)!.cases.map((c) => c.id)).toEqual([
       "first-version-in-the-first-turn", "reproduces-the-last-audited-year", "base-by-driver-2026-to-2028", "ebitda-within-five-percent-of-the-answer-key",
       "cash-available-near-sixty-percent-of-ebitda", "budget-and-revision-side-by-side-with-the-cause", "sensitivities-in-reais-2027",
-      "wheat-shock-with-six-month-pass-through", "wheat-shock-without-pass-through-in-the-year", "volume-two-percent-lower", "assumptions-kept-apart-from-data",
-      "at-most-three-questions-volume-pass-through-receivable-days", "turn-two-informed-drivers", "turn-two-sixty-day-receivables-drain-cash",
+      "wheat-shock-with-six-month-pass-through", "wheat-shock-without-pass-through-in-the-year", "volume-two-percent-lower", "assumptions-kept-apart-from-data", "estimated-informed-and-house-history-is-not-data", "scenario-changes-carry-their-origin",
+      "at-most-three-questions-volume-pass-through-receivable-days",
+      "turn-two-informed-drivers", "turn-two-sixty-day-receivables-drain-cash",
       "turn-two-wheat-shock-with-four-month-pass-through", "projection-withheld-when-the-last-year-is-not-reproduced", "unexplained-difference-is-an-open-question",
       "absent-driver-is-a-gap-not-a-default"]);
     expect(records.get(operatingProjectionRunIds.adversarial)!.cases).toHaveLength(14);

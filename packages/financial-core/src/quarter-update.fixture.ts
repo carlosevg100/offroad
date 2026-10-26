@@ -12,7 +12,7 @@ const plus = (d: Date, days: number) => new Date(d.getTime() + days * 86400000);
 const money = (v: number) => v.toFixed(8).replace(/\.?0+$/, "");
 
 /** Receipts of a daily billing collected after the given days, inside the C18 horizon. */
-export function auroraReceipts(days: number) {
+function receiptsAfter(days: number) {
   const billing: Record<number, number> = {7: 36.5, 8: 37, 9: 37.5, 10: 38, 11: 41, 12: 42};
   const events: [string, string][] = [];
   for (const [mm, v] of Object.entries(billing)) {
@@ -22,12 +22,22 @@ export function auroraReceipts(days: number) {
       if (day >= at(2026, 9, 14) && day <= at(2027, 1, 3)) events.push([iso(day), money(v / length)]);
     }
   }
+  return events;
+}
+/** The prior series outside the persistence window (after the close, until the cause ends) and the updated one inside it. */
+export function persistingOnly(prior: [string, string][], updated: [string, string][], close: string, until: string) {
+  const inside = (d: string) => d > close && d <= until;
+  const events = [...prior.filter(([d]) => !inside(d)), ...updated.filter(([d]) => inside(d))].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   return {dates: events.map(([d]) => d), amounts: events.map(([, v]) => v)};
 }
-/** Input purchases with wheat (about a third of them) 3% dearer: 5.8 x 1.01 a week. */
-export function auroraDearerInputs() {
-  const s = auroraWeeklyCash.streams.find(x => x.id === "insumos")!;
-  return {dates: [...s.dates], amounts: s.amounts.map(() => "5.858")};
+/** Receivable days at 54 from the close to the end of December; the 50-day series stands outside that window. */
+export function auroraReceipts(until = "2026-12-31") {
+  return persistingOnly(receiptsAfter(50), receiptsAfter(54), "2026-09-30", until);
+}
+/** Input purchases with wheat (about a third of them) 3% dearer, 5.8 x 1.01 a week, while the cause persists. */
+export function auroraDearerInputs(until = "2026-12-31") {
+  const s = auroraWeeklyCash.streams.find(x => x.id === "insumos")!, prior = s.dates.map((d, n) => [d, s.amounts[n]!] as [string, string]);
+  return persistingOnly(prior, prior.map(([d]) => [d, "5.858"]), "2026-09-30", until);
 }
 export const auroraPriorCovenant: CovenantHeadroomInput = {
   currency: "BRL", readingDate: "2026-09-15",
@@ -36,15 +46,18 @@ export const auroraPriorCovenant: CovenantHeadroomInput = {
     {id: "politica", label: "Política do conselho: até 2,5x", kind: "board_policy", status: "in_force", maximumRatio: "2.5", source: "Ata do conselho de março", testDates: ["2026-12-31", "2027-12-31"]},
   ],
   measurements: [
-    {id: "dez26-base", label: "dez26-base", date: "2026-12-31", scenario: "base", role: "test", debt: "128.66666667", cash: "15.45720186", reportedEbitda: "54.5",
+    {id: "dez26-base", label: "Definição da escritura (CVM 156 menos arrendamentos)", date: "2026-12-31", scenario: "base", role: "test", debt: "128.66666667", cash: "15.45720186", reportedEbitda: "54.5",
       adjustments: [{label: "Pagamentos de arrendamento", amount: "-3"}], unrealizedEbitda: "26", limitIds: ["aditamento", "politica"]},
     {id: "dez27-base", label: "dez27-base", date: "2027-12-31", scenario: "base", role: "test", debt: "120", cash: "20.67860248", reportedEbitda: "56.6",
       adjustments: [{label: "Pagamentos de arrendamento", amount: "-3"}], unrealizedEbitda: null, limitIds: ["aditamento", "politica"]},
+    // The board measures its policy on managerial EBITDA (CVM 156 plus about 1 of management adjustments, leases not deducted).
+    {id: "dez26-gerencial", label: "Definição gerencial adotada pelo conselho", date: "2026-12-31", scenario: "gerencial", role: "test", debt: "128.66666667", cash: "15.45720186",
+      reportedEbitda: "55.5", adjustments: [], unrealizedEbitda: null, limitIds: ["politica"]},
   ],
   effects: [],
 };
 const cause = (id: string, label: string, amount: string, o: Partial<QuarterUpdateInput["bridges"][number]["causes"][number]> = {}) =>
-  ({id, label, amount, classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "interpretation" as const, question: null, ...o});
+  ({id, label, amount, classification: "calendar" as const, until: null, equalsDeviationOf: null, driverLineId: null, basis: "interpretation" as const, nature: null, question: null, ...o});
 export const auroraQuarterUpdate: QuarterUpdateInput = {
   currency: "BRL", quarterStart: "2026-07-01", quarterEnd: "2026-09-30",
   lines: [
@@ -57,12 +70,12 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
   bridges: [
     {lineId: "ebitda", causes: [
       cause("volume", "Volume 1% acima", "0.5"),
-      cause("trigo", "Trigo 3% mais caro desde agosto, sem repasse ainda", "-0.6", {classification: "structural", until: "2026-12-31", driverLineId: "trigo"}),
+      cause("trigo", "Trigo 3% mais caro desde agosto, sem repasse ainda", "-0.6", {classification: "structural", until: "2026-12-31", driverLineId: "trigo", nature: "flow"}),
       cause("frete-energia", "Frete e energia", "-0.3"),
     ]},
     {lineId: "caixa", causes: [
       cause("ebitda-abaixo", "EBITDA abaixo", "-0.4", {equalsDeviationOf: "ebitda"}),
-      cause("prazo-redes", "Redes pagando em 54 dias (prazo médio de 50)", "-2.1", {classification: "structural", until: "2026-12-31", driverLineId: "prazo",
+      cause("prazo-redes", "Redes pagando em 54 dias (prazo médio de 50)", "-2.1", {classification: "structural", until: "2026-12-31", driverLineId: "prazo", nature: "balance",
         question: "Os 54 dias das redes são prazo negociado ou atraso?"}),
       cause("estoque-trigo", "Estoque de trigo antecipado em setembro", "-1.6", {basis: "document"}),
       cause("impostos-outros", "Impostos e outros", "2.4"),
@@ -72,15 +85,12 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
   prior: {weeklyCash: auroraWeeklyCash, covenant: auroraPriorCovenant},
   weekly: {
     updates: [
-      {streamId: "recebimentos", causeIds: ["prazo-redes"], ...auroraReceipts(54)},
+      {streamId: "recebimentos", causeIds: ["prazo-redes"], ...auroraReceipts()},
       {streamId: "insumos", causeIds: ["trigo"], ...auroraDearerInputs()},
     ],
     added: [{id: "programas-redes", label: "Programas de antecipação das redes A e B", category: "operating", direction: "inflow", obligation: null, dates: ["2026-10-15"], amounts: ["23"]}],
   },
-  covenant: {measurementId: "dez26-base", effects: [
-    {causeId: "trigo", ebitda: "-0.6", cash: "0"},
-    {causeId: "prazo-redes", ebitda: "0", cash: "-2.1"},
-  ]},
+  covenant: {measurementIds: ["dez26-base", "dez26-gerencial"]},
   facilities: [
     {id: "programas-redes", label: "Programas das redes A e B", limit: "23", source: "Deliberação do conselho de 30/set"},
     {id: "conta-garantida", label: "Conta garantida", limit: "10", source: "Contrato da conta garantida"},

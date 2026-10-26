@@ -18,7 +18,9 @@ type Origin = {origin: (typeof origins)[number]; source: string};
 const line = z.strictObject({id: key, label: text, unit: z.enum(["currency", "days", "ratio"]), projected: measure, actual: measure});
 /** A cause of one bridged deviation: one-off (calendar) or persisting until a date (structural). */
 const cause = z.strictObject({id: key, label: text, amount: money, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
-  equalsDeviationOf: key.nullable(), driverLineId: key.nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable()});
+  equalsDeviationOf: key.nullable(), driverLineId: key.nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable(),
+  /** A structural flow recurs each period; a structural balance shift is carried once in the closed cash. Null for a calendar cause. */
+  nature: z.enum(["flow", "balance"]).nullable()});
 const series = {dates: z.array(z.iso.date()).min(1).max(2000), amounts: z.array(unsignedMoney).min(1).max(2000)};
 const step = z.discriminatedUnion("mode", [
   z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).min(1).max(8)}),
@@ -38,7 +40,8 @@ export const quarterUpdateFactsSchema = z.strictObject({
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(fact(cause)).min(1).max(12)})).min(2).max(8),
   streamUpdates: z.array(fact(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), ...series}))).max(16),
   addedStreams: z.array(fact(z.strictObject({id: key, label: text, ...series}))).max(4),
-  covenant: fact(z.strictObject({measurementId: key, effects: z.array(z.strictObject({causeId: key, ebitda: money, cash: money})).max(12)})),
+  /** The prior test measurements the close updates, the leading one first; their effects are derived, never stated. */
+  covenant: fact(z.strictObject({measurementIds: z.array(key).min(1).max(8)})),
   facilities: z.array(fact(z.strictObject({id: key, label: text, limit: unsignedMoney, source: text}))).max(8),
   steps: z.array(fact(step)).max(4),
   dependents: z.array(fact(dependent)).max(16),
@@ -59,6 +62,9 @@ export const quarterUpdateFactsSchema = z.strictObject({
       causes.set(c.id, c);
       if ((c.classification === "structural") !== (c.until !== null)) fail(`Cause ${c.id}: a structural cause persists until a date; a calendar cause has none`);
       if (c.until !== null && c.until <= f.quarterEnd) fail(`Cause ${c.id} must persist past the close`);
+      if ((c.classification === "structural") !== (c.nature !== null)) fail(`Cause ${c.id}: only a structural cause is a flow or a balance shift`);
+      if (c.classification === "structural" && b.lineId !== cashLineId && b.lineId !== ebitdaLineId) fail(`Cause ${c.id}: a structural cause belongs to the cash or the EBITDA bridge`);
+      if (c.nature === "balance" && b.lineId !== cashLineId) fail(`Cause ${c.id}: a balance shift belongs to the cash bridge`);
       if (!known(c.equalsDeviationOf) || !known(c.driverLineId) || c.equalsDeviationOf === b.lineId) fail(`Cause ${c.id} names a line the close does not carry`);
     }
   }
@@ -68,7 +74,7 @@ export const quarterUpdateFactsSchema = z.strictObject({
     if (!u.causeIds.every(structural)) fail(`Stream ${u.streamId} must be moved by structural causes of the close`);
   }
   for (const {value: s} of f.addedStreams) if (s.dates.length !== s.amounts.length) fail(`Stream ${s.id} must have one amount per date`);
-  if (!f.covenant.value.effects.every((e) => structural(e.causeId))) fail("Only a structural cause moves the covenant test ahead");
+  if (new Set(f.covenant.value.measurementIds).size !== f.covenant.value.measurementIds.length) fail("Duplicate covenant measurement");
   const facilities = new Set(f.facilities.map((x) => x.value.id));
   if (facilities.size !== f.facilities.length) fail("Duplicate facility");
   if (new Set(f.steps.map((s) => s.value.facilityId)).size !== f.steps.length || f.steps.some((s) => !facilities.has(s.value.facilityId))) fail("Each step draws once on a facility of the close");
@@ -84,7 +90,7 @@ export const maxQuarterUpdateHypotheses = 256;
 
 /** The hypotheses one confirmation adopts for the close: every figure, date, classification, series,
  * effect, limit and dependent the adopted reader reads, plus the structure it receives as given (line
- * units, the bridge of each cause, linked and driver lines, the causes of each series, the test updated,
+ * units, the bridge of each cause, linked and driver lines, the causes of each series, the tests updated,
  * the steps and the order of everything), so the packet is composed from the basis alone. The prior
  * versions are named by fingerprint and stay on their own bases. Deterministic; nothing is calculated here. */
 export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis[] {
@@ -115,6 +121,7 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
     txt(p + "label", "text", v.label, r); num(p + "amount", "currency", v.amount, r);
     txt(p + "classification", "convention", v.classification, r); txt(p + "basis", "convention", v.basis, r);
     if (v.until !== null) date(p + "until", v.until, r);
+    if (v.nature !== null) txt(p + "nature", "convention", v.nature, r);
     if (v.question !== null) txt(p + "question", "text", v.question, r);
     if (v.equalsDeviationOf !== null) txt(p + "equalsDeviationOf", "identity", v.equalsDeviationOf, r);
     if (v.driverLineId !== null) txt(p + "driverLineId", "identity", v.driverLineId, r);
@@ -127,10 +134,7 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
     const v = s.value, p = `added.${v.id}.`, r = why(s);
     txt(p + "label", "text", v.label, r); list(p + "dates", "date", v.dates, r); list(p + "amounts", "currency", v.amounts, r);
   }
-  txt("covenant.measurementId", "identity", f.covenant.value.measurementId, why(f.covenant));
-  for (const e of f.covenant.value.effects) {
-    num(`effect.${e.causeId}.ebitda`, "currency", e.ebitda, why(f.covenant)); num(`effect.${e.causeId}.cash`, "currency", e.cash, why(f.covenant));
-  }
+  list("covenant.measurementIds", "identity", f.covenant.value.measurementIds, why(f.covenant));
   for (const x of f.facilities) {
     const v = x.value, p = `facility.${v.id}.`, r = why(x);
     txt(p + "label", "text", v.label, r); num(p + "limit", "currency", v.limit, r); txt(p + "source", "text", v.source, r);
@@ -151,7 +155,6 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
   list("order.causes", "identity", f.bridges.flatMap((b) => b.causes.map((c) => c.value.id)), house("Ordem das causas como informada"));
   if (f.streamUpdates.length) list("order.streamUpdates", "identity", f.streamUpdates.map((u) => u.value.streamId), house("Ordem das séries atualizadas como informada"));
   if (f.addedStreams.length) list("order.added", "identity", f.addedStreams.map((s) => s.value.id), house("Ordem das séries novas como informada"));
-  if (f.covenant.value.effects.length) list("order.effects", "identity", f.covenant.value.effects.map((e) => e.causeId), house("Ordem dos efeitos como informada"));
   if (f.facilities.length) list("order.facilities", "identity", f.facilities.map((x) => x.value.id), house("Ordem das linhas aprovadas como informada"));
   if (f.steps.length) list("order.steps", "identity", f.steps.map((s) => s.value.facilityId), house("Ordem dos passos da ação como proposta"));
   if (f.dependents.length) list("order.dependents", "identity", f.dependents.map((d) => d.value.id), house("Ordem das dependências como informada"));

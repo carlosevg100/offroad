@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
-import {actualOperatingDriverNames, financialCoreVersion} from "@offroad/financial-core";
+import {financialCoreVersion} from "@offroad/financial-core";
 import {adoptedDriverProjectionInputSchema, calculateAdoptedDriverProjection} from "./adopted-operating-projection-drivers";
 import {adoptedDriverProjectionOutputSchema} from "./operating-projection-results";
 
@@ -26,7 +26,9 @@ export const operatingProjectionPacketOutputSchema = z.strictObject({
   /** What the answer must say, in order. */
   readings: z.strictObject({
     purpose: text.nullable(),
-    calibration: z.strictObject({periodId: key, reportedRevenue: decimal, modeledRevenue: decimal, reportedEbitda: decimal, modeledEbitda: decimal, reproduces: z.boolean()}),
+    /** Reproducing the actual year proves arithmetic; `documented` says whether every actual operand is a document. */
+    calibration: z.strictObject({periodId: key, reportedRevenue: decimal, modeledRevenue: decimal, reportedEbitda: decimal, modeledEbitda: decimal, reproduces: z.boolean(),
+      reportedRevenueOrigin: origin.nullable(), reportedEbitdaOrigin: origin.nullable(), documented: z.boolean()}),
     projected: z.strictObject({
       base: z.array(z.strictObject({periodId: key, revenue: decimal, ebitda: decimal, margin: decimal.nullable(), changeInWorkingCapital: decimal,
         cashAvailableForDebt: decimal, conversion: decimal.nullable()})).min(1).max(40),
@@ -35,10 +37,12 @@ export const operatingProjectionPacketOutputSchema = z.strictObject({
       sensitivities: z.array(z.strictObject({periodId: key, ebitdaPerOnePercentPrice: decimal, ebitdaLossPerOnePercentInputCost: decimal,
         workingCapitalPerReceivableDay: decimal})).min(1).max(40),
       scenarios: z.array(z.strictObject({id: key, role: z.enum(["alternative", "informed"]), basedOn: key,
+        /** What the scenario changes and where each change comes from; only a document is data. */
+        changes: z.array(z.strictObject({item: key, origin: origin.nullable(), nature: z.enum(["data", "assumption"])})).max(16),
         rows: z.array(z.strictObject({periodId: key, ebitda: decimal, margin: decimal.nullable(), cashAvailableForDebt: decimal, effects})).min(1).max(40)})).max(12),
       largestCashReduction: z.strictObject({scenarioId: key, periodId: key, cashEffect: decimal, workingCapitalChangeEffect: decimal}).nullable(),
     }).nullable(),
-    /** Data and assumptions kept apart: the actual year is data; each projected driver keeps its adopted origin. */
+    /** Data and assumptions kept apart: every actual and projected operand keeps its adopted origin; only a document is data. */
     ledger: z.array(z.strictObject({driver: key, periodId: key, origin: origin.nullable(), nature: z.enum(["data", "assumption"])})).max(1024),
     questions: z.array(z.enum(operatingProjectionQuestions)).max(3),
     openQuestions: z.array(key).max(12),
@@ -51,6 +55,7 @@ export const operatingProjectionPacketOutputSchema = z.strictObject({
 });
 export type OperatingProjectionPacket = z.infer<typeof operatingProjectionPacketOutputSchema>;
 const answered = (o: string | null | undefined) => o === "informed" || o === "document";
+const nature = (o: string | null) => o === "document" ? "data" as const : "assumption" as const;
 
 /** A projection by driver for a stated purpose: the last actual year rebuilt from its drivers, the base by
  * year with cash available for debt, the company's own budget and revision side by side with the cause
@@ -66,9 +71,13 @@ export function prepareOperatingProjectionPacket(raw: unknown): OperatingProject
     const c = r.calibration, p = r.projection, roles = new Map(input.analysis.scenarios.map((s) => [s.id, s.role]));
     const causes = new Map(result.companyVersions.map((v) => [v.versionId, v.cause]));
     const periodIds = r.projection?.base.map((x) => x.periodId) ?? [];
-    const ledger = [...actualOperatingDriverNames.map((driver) => ({driver, periodId: c.periodId, origin: null, nature: "data" as const})),
-      ...result.origins.base.flatMap((b) => (b.origins ?? []).map((o, i) => ({driver: b.driver, periodId: periodIds[i] ?? String(i), origin: o,
-        nature: o === "document" ? "data" as const : "assumption" as const})))];
+    const ledger = [...result.origins.actual.map((a) => ({driver: a.item, periodId: c.periodId, origin: a.origin, nature: nature(a.origin)})),
+      ...result.origins.base.flatMap((b) => (b.origins ?? []).map((o, i) => ({driver: b.driver, periodId: periodIds[i] ?? String(i), origin: o, nature: nature(o)})))];
+    const actualOrigin = (item: string) => result.origins.actual.find((a) => a.item === item)?.origin ?? null;
+    const changes = new Map(result.origins.scenarios.map((s) => [s.scenarioId, [
+      ...s.volumeGrowthRate ? [{item: "volumeGrowthRate", origin: s.volumeGrowthRate}] : [], ...s.volumeFactor ? [{item: "volumeFactor", origin: s.volumeFactor}] : [],
+      ...s.overrides.map((o) => ({item: o.driver, origin: o.origin})), ...s.inputCostShock ? [{item: "inputCostShock", origin: s.inputCostShock}] : []]
+      .map((x) => ({...x, nature: nature(x.origin)}))]));
     const informed = result.origins.scenarios.filter((s) => roles.get(s.scenarioId) === "informed");
     const baseOf = (d: string) => result.origins.base.find((b) => b.driver === d)?.origins ?? [];
     const questions = operatingProjectionQuestions.filter((q) => q === "volume"
@@ -77,7 +86,8 @@ export function prepareOperatingProjectionPacket(raw: unknown): OperatingProject
         : !(baseOf("receivableDays").every(answered) || informed.some((s) => s.overrides.some((o) => o.driver === "receivableDays" && answered(o.origin)))));
     return {purpose: result.purpose,
       calibration: {periodId: c.periodId, reportedRevenue: c.reportedRevenue, modeledRevenue: c.modeledRevenue, reportedEbitda: c.reportedEbitda,
-        modeledEbitda: c.modeledEbitda, reproduces: c.reproduces},
+        modeledEbitda: c.modeledEbitda, reproduces: c.reproduces, reportedRevenueOrigin: actualOrigin("reportedRevenue"),
+        reportedEbitdaOrigin: actualOrigin("reportedEbitda"), documented: result.origins.actual.every((a) => a.origin === "document")},
       projected: p ? {
         base: p.base.map((x) => ({periodId: x.periodId, revenue: x.revenue, ebitda: x.ebitda, margin: x.margin, changeInWorkingCapital: x.changeInWorkingCapital,
           cashAvailableForDebt: x.cashAvailableForDebt, conversion: x.conversion})),
@@ -85,7 +95,7 @@ export function prepareOperatingProjectionPacket(raw: unknown): OperatingProject
           projectedValue: x.projectedValue, difference: x.difference, unitPriceEquivalent: x.unitPriceEquivalent, cause: causes.get(x.id) ?? null})),
         sensitivities: p.sensitivities.map((x) => ({periodId: x.periodId, ebitdaPerOnePercentPrice: x.ebitdaPerOnePercentPrice,
           ebitdaLossPerOnePercentInputCost: x.ebitdaLossPerOnePercentInputCost, workingCapitalPerReceivableDay: x.workingCapitalPerReceivableDay})),
-        scenarios: p.scenarios.map((s) => ({id: s.id, role: s.role, basedOn: s.basedOn,
+        scenarios: p.scenarios.map((s) => ({id: s.id, role: s.role, basedOn: s.basedOn, changes: changes.get(s.id) ?? [],
           rows: s.rows.map((x) => ({periodId: x.periodId, ebitda: x.ebitda, margin: x.margin, cashAvailableForDebt: x.cashAvailableForDebt, effects: x.effects}))})),
         largestCashReduction: p.largestCashReduction} : null,
       ledger, questions, openQuestions: result.openQuestions.map((q) => q.versionId)};

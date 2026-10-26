@@ -42,6 +42,7 @@ describe("C24 premises proposed from facts with origin, adopted, composed and pr
     ["the CFO's answers", {informed: true}],
     ["an unexplained difference", {cause: false}],
     ["a last year that is not reproduced", {fixedCosts2025: "70"}],
+    ["estimated, informed and house history", {history: {drivers: "estimate", revenue: "informed", ebitda: "house"}}],
   ] as [string, AuroraOptions][])("reproduces the hand-built basis with %s", (_, o) => {
     expect(content(packetOf(auroraProjectionFacts(o)))).toEqual(content(reference(o)));
   });

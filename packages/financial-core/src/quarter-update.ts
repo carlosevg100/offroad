@@ -20,6 +20,10 @@ export type QuarterUpdateCause = {
   driverLineId: string | null;
   /** Whether the classification is read from a document or is an interpretation the company may correct. */
   basis: "document" | "interpretation";
+  /** A structural flow recurs each period (an input price without pass-through); a structural balance shift
+   * (receivable days) lowers a balance once and keeps it lower, so it is carried once in the closed cash and
+   * never absorbed again ahead. Null for a calendar cause. */
+  nature: "flow" | "balance" | null;
   question: string | null;
 };
 export type QuarterUpdateBridge = {lineId: string; causes: readonly QuarterUpdateCause[]};
@@ -45,8 +49,9 @@ export type QuarterUpdateInput = {
   /** The prior versions exactly as adopted; they are measured again as they stand and never overwritten. */
   prior: {weeklyCash: WeeklyCashInput; covenant: CovenantHeadroomInput};
   weekly: {updates: readonly QuarterUpdateStreamUpdate[]; added: readonly WeeklyCashStream[]};
-  /** The test measurement the close updates, and what each structural cause still does to it until the test date. */
-  covenant: {measurementId: string; effects: readonly {causeId: string; ebitda: string; cash: string}[]};
+  /** The test measurements the close updates (one per definition read: indenture, the board's managerial); the first leads.
+   * What each structural cause still does to them is derived here from its own amount and persistence, never adopted. */
+  covenant: {measurementIds: readonly string[]};
   facilities: readonly QuarterUpdateFacility[];
   steps: readonly QuarterUpdateStep[];
   dependents: readonly QuarterUpdateDependent[];
@@ -68,12 +73,18 @@ const key = (value: string) => {if (typeof value !== "string" || !/^[a-z0-9][a-z
 const out = (v: Decimal) => v.toDecimalPlaces(20).toFixed();
 const overlaps = (a0: string, a1: string, b0: string, b1: string) => a0 <= b1 && b0 <= a1;
 const sum = (values: Decimal[]) => values.reduce((s, v) => s.plus(v), new Exact(0));
+const dayCount = (from: string, to: string) => (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000 + 1;
+export type QuarterUpdateGapReason = "unexplained_residual" | "structural_cause_not_in_weekly_cash" | "structural_cause_weekly_effect_inconsistent"
+  | "structural_cause_question_missing" | "affected_not_recomputed";
 
 /** What the quarter changed and what it changes ahead. Actual against projected line by line; each
  * bridged deviation explained by causes that must sum to it exactly, the unexplained residual named
  * and never spread; each cause one-off or structural until a date. The closed cash and EBITDA carry
- * into the prior projection, and only the structural causes move it further: the weekly cash and
- * the covenant test are measured again by their released kernels on the prior version plus what
+ * into the prior projection once, and only the structural causes move it further, inside their
+ * persistence window: a flow runs at its quarterly amount for the days it persists until the test, a
+ * balance shift (receivable days) is carried once and never absorbed again, and each one must move the
+ * weekly cash the same way or it is a named gap. The weekly cash and the covenant tests (one per
+ * definition read) are measured again by their released kernels on the prior version plus what
  * changed, with the prior version kept beside the update. The action is sized within the approved
  * facilities: fixed draws first, then the residual draw the weeks still need. Every dependent
  * analysis, plan or material is updated, unchanged or stale by what it reads, never redone. */
@@ -98,7 +109,7 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
 
   // Bridges: causes sum to the deviation exactly; what does not is a residual named on the line.
   const causes = new Map<string, QuarterUpdateCause & {lineId: string; value: Decimal}>();
-  const gaps: {item: string; reason: "unexplained_residual" | "structural_cause_not_propagated" | "affected_not_recomputed"}[] = [];
+  const gaps: {item: string; reason: QuarterUpdateGapReason}[] = [];
   if (new Set(input.bridges.map(b => b.lineId)).size !== input.bridges.length) throw new Error("quarter_update_duplicate_bridge");
   if (![cashLineId, ebitdaLineId].every(id => input.bridges.some(b => b.lineId === id))) throw new Error("quarter_update_carry_line_without_bridge");
   const bridges = input.bridges.map(b => {
@@ -108,9 +119,16 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     const rows = b.causes.map(c => {
       key(c.id); if (causes.has(c.id)) throw new Error("quarter_update_duplicate_cause");
       text(c.label, "quarter_update_label_required");
-      if (c.classification === "calendar") {if (c.until !== null) throw new Error("quarter_update_calendar_cause_with_end");}
-      else if (c.classification === "structural") {if (c.until === null || date(c.until) <= qe) throw new Error("quarter_update_structural_cause_end");}
-      else throw new Error("quarter_update_classification");
+      if (c.classification === "calendar") {
+        if (c.until !== null) throw new Error("quarter_update_calendar_cause_with_end");
+        if (c.nature !== null) throw new Error("quarter_update_cause_nature");
+      } else if (c.classification === "structural") {
+        if (c.until === null || date(c.until) <= qe) throw new Error("quarter_update_structural_cause_end");
+        if (c.nature !== "flow" && c.nature !== "balance") throw new Error("quarter_update_cause_nature");
+        // Only the carried lines move the projection; a balance shift is a cash balance.
+        if (b.lineId !== cashLineId && b.lineId !== ebitdaLineId) throw new Error("quarter_update_structural_cause_off_carry");
+        if (c.nature === "balance" && b.lineId !== cashLineId) throw new Error("quarter_update_balance_cause_off_cash");
+      } else throw new Error("quarter_update_classification");
       if (c.basis !== "document" && c.basis !== "interpretation") throw new Error("quarter_update_cause_basis");
       if (c.question !== null) text(c.question, "quarter_update_question_required");
       if (c.driverLineId !== null) line(c.driverLineId);
@@ -120,7 +138,9 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
         if (!value.eq(line(c.equalsDeviationOf).deviation)) throw new Error("quarter_update_linked_cause_mismatch");
       }
       causes.set(c.id, {...c, lineId: b.lineId, value});
-      return {id: c.id, label: c.label, amount: out(value), classification: c.classification, until: c.until, basis: c.basis, question: c.question,
+      // A balance shift read by interpretation leaves its diagnosis open (agreed terms or late payment): the question is part of the answer.
+      if (c.classification === "structural" && c.nature === "balance" && c.basis === "interpretation" && c.question === null) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_question_missing"});
+      return {id: c.id, label: c.label, amount: out(value), classification: c.classification, until: c.until, nature: c.nature, basis: c.basis, question: c.question,
         equalsDeviationOf: c.equalsDeviationOf, driverLineId: c.driverLineId};
     });
     const explained = sum(b.causes.map(c => causes.get(c.id)!.value)), residual = l.deviation.minus(explained);
@@ -139,11 +159,9 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   const informed = priorWeekly.cases.find(c => c.role === "informed");
   if (!informed) throw new Error("quarter_update_prior_without_informed_case");
   const priorStreams = new Map(priorWeekly.streams.map(s => [s.id, s]));
-  const propagated = new Map<string, {streams: string[]; covenant: boolean}>();
-  const mark = (causeId: string, stream: string | null) => {
-    const p = propagated.get(causeId) ?? {streams: [], covenant: false};
-    if (stream === null) p.covenant = true; else p.streams.push(stream);
-    propagated.set(causeId, p);
+  const inWeekly = new Map<string, {streams: string[]; effect: Decimal}>();
+  const byDate = (dates: readonly string[], amounts: readonly string[]) => {
+    const m = new Map<string, Decimal>(); dates.forEach((d, n) => m.set(d, (m.get(d) ?? new Exact(0)).plus(amount(amounts[n]!)))); return m;
   };
   if (new Set(input.weekly.updates.map(u => u.streamId)).size !== input.weekly.updates.length) throw new Error("quarter_update_duplicate_stream_update");
   const updated = new Map(priorStreams);
@@ -151,11 +169,22 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     const prior = priorStreams.get(u.streamId);
     if (!prior) throw new Error("quarter_update_unknown_stream");
     if (!u.causeIds.length || new Set(u.causeIds).size !== u.causeIds.length) throw new Error("quarter_update_stream_update_without_cause");
-    u.causeIds.forEach(id => {structural(id); mark(id, u.streamId);});
+    const named = u.causeIds.map(structural);
     if (!u.dates.length || u.dates.length !== u.amounts.length) throw new Error("quarter_update_stream_series");
     u.dates.forEach(date); u.amounts.forEach(amount);
     const same = u.dates.length === prior.dates.length && u.dates.every((d, n) => d === prior.dates[n] && amount(u.amounts[n]!).eq(amount(prior.amounts[n]!)));
     if (same) throw new Error("quarter_update_stream_update_without_change");
+    // A series moves only while its causes persist: before the close the actual already holds it, after the end the cause is gone.
+    const until = named.reduce((m, c) => c.until! > m ? c.until! : m, qe);
+    const before = byDate(prior.dates, prior.amounts), after = byDate(u.dates, u.amounts);
+    let effect = new Exact(0);
+    for (const d of new Set([...before.keys(), ...after.keys()])) {
+      const change = (after.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
+      if (change.isZero()) continue;
+      if (d <= qe || d > until) throw new Error("quarter_update_series_outside_persistence");
+      effect = effect.plus(prior.direction === "inflow" ? change : change.neg());
+    }
+    for (const c of named) {const w = inWeekly.get(c.id) ?? {streams: [], effect: new Exact(0)}; inWeekly.set(c.id, {streams: [...w.streams, u.streamId], effect: w.effect.plus(effect)});}
     updated.set(u.streamId, {...prior, dates: [...u.dates], amounts: [...u.amounts]});
   }
   const added = new Set<string>();
@@ -224,27 +253,44 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   const stepRows = steps.map(s => ({...s, minimum: at(s.caseId).minimum, covers: at(s.caseId).weeksBelowMinimum.length === 0}));
   const last = stepRows[stepRows.length - 1];
 
-  // Covenant: the prior test as it stands, and the same test with the close carried and the structural causes ahead.
-  const target = priorCovenant.measurements.find(m => m.id === input.covenant.measurementId);
-  if (!target || target.role !== "test") throw new Error("quarter_update_unknown_measurement");
-  // The closed quarter must sit inside the twelve months the test reads.
-  if (target.date < qe || qs <= `${Number(target.date.slice(0, 4)) - 1}${target.date.slice(4)}`) throw new Error("quarter_update_quarter_outside_test_period");
-  if (new Set(input.covenant.effects.map(e => e.causeId)).size !== input.covenant.effects.length) throw new Error("quarter_update_duplicate_effect");
-  const effects = input.covenant.effects.map(e => {structural(e.causeId); mark(e.causeId, null); return {causeId: e.causeId, ebitda: amount(e.ebitda), cash: amount(e.cash)};});
-  const ebitdaAhead = sum(effects.map(e => e.ebitda)), cashAhead = sum(effects.map(e => e.cash));
-  const updatedMeasurement: CovenantMeasurement = {...target, scenario: `${target.scenario}_atualizado`,
-    label: `${target.label} (atualizado pelo fechamento de ${qe})`,
-    reportedEbitda: out(amount(target.reportedEbitda).plus(ebitdaDeviation).plus(ebitdaAhead)),
-    cash: out(amount(target.cash).plus(cashDeviation).plus(cashAhead)),
-    // The reverse test belonged to the prior reading date; it is not carried into the update.
-    unrealizedEbitda: null};
+  // Covenant: the prior tests as they stand, and the same tests with the close carried and the structural causes ahead.
+  const ids = input.covenant.measurementIds;
+  if (!ids.length || new Set(ids).size !== ids.length) throw new Error("quarter_update_unknown_measurement");
+  const targets = ids.map(id => {
+    const m = priorCovenant.measurements.find(x => x.id === id);
+    if (!m || m.role !== "test") throw new Error("quarter_update_unknown_measurement");
+    // The closed quarter must sit inside the twelve months the test reads.
+    if (m.date < qe || qs <= `${Number(m.date.slice(0, 4)) - 1}${m.date.slice(4)}`) throw new Error("quarter_update_quarter_outside_test_period");
+    return m;
+  });
+  const quarterDays = dayCount(qs, qe);
+  const structuralCauses = [...causes.values()].filter(c => c.classification === "structural");
+  /** Each structural flow still runs at its quarterly amount for the days it persists until the test date; a balance shift is carried once. */
+  const ahead = (m: CovenantMeasurement) => structuralCauses.map(c => {
+    const end = c.until! < m.date ? c.until! : m.date, fraction = c.nature === "flow" ? new Exact(dayCount(shift(qe, 1), end)).div(quarterDays) : new Exact(0);
+    const flow = c.value.mul(fraction);
+    return {causeId: c.id, nature: c.nature!, fraction: out(fraction), ebitda: out(c.lineId === ebitdaLineId ? flow : new Exact(0)), cash: out(flow)};
+  });
+  const updatedMeasurements = targets.map(m => {
+    const e = ahead(m);
+    const measurement: CovenantMeasurement = {...m, scenario: `${m.scenario}_atualizado`, label: `${m.label} (atualizado pelo fechamento de ${qe})`,
+      reportedEbitda: out(amount(m.reportedEbitda).plus(ebitdaDeviation).plus(sum(e.map(x => amount(x.ebitda))))),
+      cash: out(amount(m.cash).plus(cashDeviation).plus(sum(e.map(x => amount(x.cash))))),
+      // The reverse test belonged to the prior reading date; it is not carried into the update.
+      unrealizedEbitda: null};
+    return {measurement, effects: e};
+  });
   const readingDate = priorCovenant.readingDate > qe ? priorCovenant.readingDate : qe;
   const covenantPrior = measureCovenantHeadroom(priorCovenant);
-  const covenantUpdated = measureCovenantHeadroom({...priorCovenant, readingDate, measurements: [updatedMeasurement], effects: []});
-  const mPrior = covenantPrior.measurements.find(m => m.id === target.id)!, mNow = covenantUpdated.measurements[0]!;
+  const covenantUpdated = measureCovenantHeadroom({...priorCovenant, readingDate, measurements: updatedMeasurements.map(u => u.measurement), effects: []});
+  const lead = updatedMeasurements[0]!.effects;
 
-  // A structural cause that moves nothing ahead was only booked, not propagated.
-  for (const c of causes.values()) if (c.classification === "structural" && !propagated.has(c.id)) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_not_propagated"});
+  // A structural cause reaches every recomputation: the projection and the covenant by derivation, the weekly cash by a series it moves the same way.
+  for (const c of structuralCauses) {
+    const w = inWeekly.get(c.id);
+    if (!w) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_not_in_weekly_cash"});
+    else if (w.effect.isZero() || w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
+  }
 
   // Dependents: affected by what they read over their horizon, never recomputed when nothing they read moved.
   const forwardUntil = (lineId: string) => [...causes.values()].filter(c => c.classification === "structural" && (c.lineId === lineId || c.driverLineId === lineId))
@@ -271,8 +317,11 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   return {schemaVersion: "quarter-update.v1" as const, version: quarterUpdateVersion, currency: input.currency, quarterStart: qs, quarterEnd: qe,
     lines: [...lines.values()].map(l => ({id: l.id, label: l.label, unit: l.unit, projected: l.projected, actual: l.actual, deviation: out(l.deviation)})),
     bridges,
-    propagation: [...causes.values()].map(c => ({causeId: c.id, classification: c.classification, until: c.until,
-      streams: propagated.get(c.id)?.streams ?? [], covenant: propagated.get(c.id)?.covenant ?? false})),
+    propagation: [...causes.values()].map(c => {
+      const e = lead.find(x => x.causeId === c.id), w = inWeekly.get(c.id);
+      return {causeId: c.id, classification: c.classification, nature: c.nature, until: c.until, streams: w?.streams ?? [],
+        weeklyEffect: w ? out(w.effect) : null, fractionAhead: e?.fraction ?? null, ebitdaAhead: e?.ebitda ?? null, cashAhead: e?.cash ?? null};
+    }),
     weekly: {prior: weeklyPrior, updated: weeklyUpdated,
       carriedOpening: {prior: out(amount(priorWeekly.openingCash)), deviation: out(cashDeviation), updated: out(openingUpdated)},
       tightest: {prior: {...priorInformed.minimum, shortfallToMinimum: priorInformed.shortfallToMinimum},
@@ -280,12 +329,14 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
       closing: {prior: priorInformed.closing, updated: informedNow.closing}},
     action: {steps: stepRows, fullLimit: fullLimit.map(f => ({...f, minimum: at(f.caseId).minimum, covers: at(f.caseId).weeksBelowMinimum.length === 0})),
       withinApproved: stepRows.every(s => s.withinLimit), covers: last ? last.covers : null},
-    covenant: {measurementId: target.id, prior: covenantPrior, updated: covenantUpdated,
+    covenant: {measurementIds: [...ids], prior: covenantPrior, updated: covenantUpdated,
       carried: {ebitda: out(ebitdaDeviation), cash: out(cashDeviation)},
-      effects: effects.map(e => ({causeId: e.causeId, ebitda: out(e.ebitda), cash: out(e.cash)})),
-      trailingEbitda: {prior: mPrior.reportedEbitda, updated: mNow.reportedEbitda},
-      ratio: {prior: mPrior.ratio, updated: mNow.ratio},
-      measurementsNotUpdated: priorCovenant.measurements.filter(m => m.id !== target.id).map(m => m.id),
+      measurements: updatedMeasurements.map(u => {
+        const before = covenantPrior.measurements.find(m => m.id === u.measurement.id)!, now = covenantUpdated.measurements.find(m => m.id === u.measurement.id)!;
+        return {id: now.id, label: before.label, scenario: before.scenario, effects: u.effects,
+          trailingEbitda: {prior: before.reportedEbitda, updated: now.reportedEbitda}, ratio: {prior: before.ratio, updated: now.ratio}};
+      }),
+      measurementsNotUpdated: priorCovenant.measurements.filter(m => !ids.includes(m.id)).map(m => m.id),
       effectsNotUpdated: priorCovenant.effects.map(e => e.id)},
     dependents, gaps};
 }

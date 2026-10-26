@@ -126,6 +126,8 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     if (i.largestDebtorAmount !== null) {
       const largest = amount(i.largestDebtorAmount);
       if (!largest.gt(0) || largest.gt(value) || i.debtorCount === 1) throw new Error("receivables_funding_largest_debtor");
+      // The bucket cannot hold more than its debtors at the largest balance each: contradictory data is refused, not capped.
+      if (i.debtorCount !== null && value.gt(largest.mul(i.debtorCount))) throw new Error("receivables_funding_largest_debtor");
     }
     items.set(i.id, {...i, value});
   }
@@ -190,7 +192,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     if (cap === null) return {retained: i.value, verified: true};
     if (i.debtorCount === 1) return {retained: Decimal.min(i.value, cap), verified: true};
     const largest = i.largestDebtorAmount === null ? null : new Exact(i.largestDebtorAmount);
-    if (largest !== null && largest.lte(cap)) return {retained: i.value, verified: true};
+    if (largest !== null && largest.lte(cap)) return {retained: i.debtorCount === null ? i.value : Decimal.min(i.value, cap.mul(i.debtorCount)), verified: true};
     let bound = i.value.minus(largest === null ? 0 : Decimal.max(largest.minus(cap), 0));
     if (i.debtorCount !== null) bound = Decimal.min(bound, cap.mul(i.debtorCount));
     return {retained: bound, verified: false};
@@ -209,10 +211,13 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
       factor = annual.plus(1).pow(new Exact(businessDays).div(252));
     }
     const spread = new Exact(spreadOverIndex({annualRate: annual.toFixed(), annualIndex: di.toFixed()}).value);
-    const draws = o.rolloverDays === null ? new Exact(1) : new Exact(calendarDays).div(o.rolloverDays);
-    const drawDays = o.rolloverDays ?? calendarDays;
+    // Whole draws: a rollover started inside the time in use is a draw and pays the additional IOF in full;
+    // daily IOF runs on the days each draw is in use, the last one possibly shorter, each capped.
+    const draws = o.rolloverDays === null ? 1 : Math.ceil(calendarDays / o.rolloverDays);
+    const term = o.rolloverDays ?? calendarDays;
+    const iofDays = Array.from({length: draws}, (_, n) => Math.min(term, calendarDays - n * term, o.iofDailyCapDays)).reduce((a, b) => a + b, 0);
     const interest = needAverage.mul(factor.minus(1));
-    const iof = needAverage.mul(amount(o.iofDaily).mul(Math.min(drawDays, o.iofDailyCapDays)).plus(amount(o.iofAdditional))).mul(draws);
+    const iof = needAverage.mul(amount(o.iofDaily).mul(iofDays).plus(amount(o.iofAdditional).mul(draws)));
     const fee = needAverage.mul(amount(o.upfrontFee));
     const total = interest.plus(iof).plus(fee);
     const period = total.div(needAverage);
@@ -225,7 +230,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     return {id: o.id, label: o.label, kind: o.kind, recourse: o.recourse, indicative: true as const,
       volume: volume === null ? null : out(volume), volumeVerified: byItem.every(b => b.sublimitVerified), byItem,
       rates: {basis: o.rate.basis, quoted: out(rate), annualEffective: out(annual), monthlyEquivalent: out(monthly), spreadOverDi: out(spread)},
-      cost: {amount: out(needAverage), calendarDays, businessDays, draws: out(draws), interest: out(interest), iof: out(iof), fee: out(fee), total: out(total),
+      cost: {amount: out(needAverage), calendarDays, businessDays, draws, iofDays, interest: out(interest), iof: out(iof), fee: out(fee), total: out(total),
         allInPeriod: out(period), allInAnnual: out(period.plus(1).pow(new Exact(252).div(businessDays)).minus(1))},
       iofApplies: iof.gt(0), coversAverage: volume === null ? null : volume.gte(needAverage), coversPeak: volume === null ? null : volume.gte(needPeak),
       /** A sale with recourse tends to stay on the balance sheet as a liability; without recourse it leaves it. */
@@ -266,18 +271,26 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     return {itemId: i.id, amount: out(i.value), holder: i.encumbranceHolder!, releaseEvent: i.releaseEvent!, assignableAfterRelease: out(best.value), verified: best.verified};
   });
 
-  // Plan: the cheapest options first, each taking only buckets no cheaper option took, until the peak is filled.
-  const allocated = new Set<string>(), plan: {optionId: string; amount: string; cumulative: string}[] = [];
+  // Plan: the cheapest options first. Each takes, bucket by bucket, the least of what it buys, what is
+  // still unsold in the bucket and what is still missing to the peak; capacity is what it could take.
+  const unsold = new Map([...items.values()].map(i => [i.id, i.value]));
+  const plan: {optionId: string; capacity: string; amount: string; cumulative: string}[] = [];
   let cumulative = new Exact(0);
   for (const r of ranked) {
     if (cumulative.gte(needPeak)) break;
     const c = costed.find(x => x.id === r.id)!;
     if (c.kind === "bank_line") continue;
-    let add = new Exact(0);
-    for (const b of c.byItem) if (new Exact(b.retained).gt(0) && !allocated.has(b.itemId)) {add = add.plus(b.retained); allocated.add(b.itemId);}
+    let add = new Exact(0), capacity = new Exact(0);
+    for (const b of c.byItem) {
+      const free = Decimal.min(new Exact(b.retained), unsold.get(b.itemId)!);
+      if (!free.gt(0)) continue;
+      capacity = capacity.plus(free);
+      const take = Decimal.min(free, needPeak.minus(cumulative).minus(add));
+      if (take.gt(0)) {add = add.plus(take); unsold.set(b.itemId, unsold.get(b.itemId)!.minus(take));}
+    }
     if (!add.gt(0)) continue;
     cumulative = cumulative.plus(add);
-    plan.push({optionId: c.id, amount: out(add), cumulative: out(cumulative)});
+    plan.push({optionId: c.id, capacity: out(capacity), amount: out(add), cumulative: out(cumulative)});
   }
   const leads = plan.map(p => costed.find(c => c.id === p.optionId)!.leadDays);
   // Without the lead time of every planned option the start date is not stated.

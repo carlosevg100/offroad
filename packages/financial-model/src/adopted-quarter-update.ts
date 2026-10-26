@@ -22,10 +22,11 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   lines: z.array(z.strictObject({id: key, unit: z.enum(["currency", "days", "ratio"]), label: selection, projected: selection, actual: selection})).min(1).max(24),
   carry: z.strictObject({cashLineId: key, ebitdaLineId: key}),
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(z.strictObject({id: key, equalsDeviationOf: key.nullable(), driverLineId: key.nullable(),
-    label: selection, amount: selection, classification: selection, until: selection.nullable(), basis: selection, question: selection.nullable()})).min(1).max(12)})).min(2).max(8),
+    label: selection, amount: selection, classification: selection, until: selection.nullable(), nature: selection.nullable(), basis: selection, question: selection.nullable()})).min(1).max(12)})).min(2).max(8),
   streamUpdates: z.array(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), dates: selection, amounts: selection})).max(16),
   addedStreams: z.array(z.strictObject({id: key, label: selection, dates: selection, amounts: selection})).max(4),
-  covenant: z.strictObject({measurementId: key, effects: z.array(z.strictObject({causeId: key, ebitda: selection, cash: selection})).max(12)}),
+  /** The test measurements the close updates, the leading one first; what the causes do to them is derived, never adopted. */
+  covenant: z.strictObject({measurementIds: z.array(key).min(1).max(8)}),
   facilities: z.array(z.strictObject({id: key, label: selection, limit: selection, source: selection})).max(8),
   steps: z.array(z.discriminatedUnion("mode", [
     z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).max(8)}),
@@ -84,7 +85,7 @@ function priorCovenantInput(h: NonNullable<ReturnType<typeof calculateAdoptedCov
 
 /** The quarter update over three adopted bases: the prior weekly cash and the prior covenant test are
  * read by their own released readers, untouched; the close (lines, causes and their classification,
- * the updated series, the effects until the test, the facilities and the dependents) is read from its
+ * the updated series, the facilities and the dependents) is read from its
  * own basis, which must name the prior versions by fingerprint. Nothing of the prior is re-adopted. */
 export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const {prior, update: input} = quarterUpdateAnalysesSchema.parse(raw), prefix = `quarter_update.${input.analysisId}.`, sc = input.scenario;
@@ -92,7 +93,7 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const weekly = calculateAdoptedWeeklyCash(prior.weeklyCash), covenant = calculateAdoptedCovenantHeadroom(prior.covenant);
   const lineUnit = new Map(input.lines.map(l => [l.id, l.unit]));
   const monetary = [...input.lines.filter(l => l.unit === "currency").flatMap(l => [l.projected, l.actual]), ...input.bridges.flatMap(b => b.causes.map(c => c.amount)),
-    ...input.streamUpdates.map(u => u.amounts), ...input.addedStreams.map(s => s.amounts), ...input.covenant.effects.flatMap(e => [e.ebitda, e.cash]), ...input.facilities.map(f => f.limit)];
+    ...input.streamUpdates.map(u => u.amounts), ...input.addedStreams.map(s => s.amounts), ...input.facilities.map(f => f.limit)];
   const b = createAnalysisBinding(input, monetary);
   let complete = true;
   const need = <T>(v: T | null): T => {if (v === null) complete = false; return v as T;};
@@ -112,6 +113,7 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
       label: need(read(c.label, p + "label", "text", "text", words)), amount: need(read(c.amount, p + "amount", "currency", "number", analysisAmount)),
       classification: need(read(c.classification, p + "classification", "convention", "text", z.enum(["calendar", "structural"]))),
       until: c.until === null ? null : need(read(c.until, p + "until", "date", "date", z.iso.date())),
+      nature: c.nature === null ? null : need(read(c.nature, p + "nature", "convention", "text", z.enum(["flow", "balance"]))),
       basis: need(read(c.basis, p + "basis", "convention", "text", z.enum(["document", "interpretation"]))),
       question: c.question === null ? null : need(read(c.question, p + "question", "text", "text", words))};
   })}));
@@ -120,8 +122,6 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const added = input.addedStreams.map(s => {const p = `added.${s.id}.`; return {id: s.id, label: need(read(s.label, p + "label", "text", "text", words)),
     category: "operating" as const, direction: "inflow" as const, obligation: null,
     dates: need(read(s.dates, p + "dates", "date", "list", z.array(z.iso.date()).min(1).max(2000))), amounts: need(read(s.amounts, p + "amounts", "currency", "list", z.array(unsigned).min(1).max(2000)))};});
-  const effects = input.covenant.effects.map(e => {const p = `effect.${e.causeId}.`; return {causeId: e.causeId,
-    ebitda: need(read(e.ebitda, p + "ebitda", "currency", "number", analysisAmount)), cash: need(read(e.cash, p + "cash", "currency", "number", analysisAmount))};});
   const facilities = input.facilities.map(f => {const p = `facility.${f.id}.`; return {id: f.id, label: need(read(f.label, p + "label", "text", "text", words)),
     limit: need(read(f.limit, p + "limit", "currency", "number", unsigned)), source: need(read(f.source, p + "source", "text", "text", words))};});
   const steps = input.steps.map(s => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: need(read(s.date, `step.${s.facilityId}.date`, "date", "date", z.iso.date()))});
@@ -133,7 +133,7 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const kernelInput: QuarterUpdateInput | null = complete && priorComplete ? {currency: input.currency, quarterStart: input.openingDate, quarterEnd: input.endDate,
     lines, bridges, carry: input.carry,
     prior: {weeklyCash: priorWeeklyInput(prior.weeklyCash, weekly), covenant: priorCovenantInput(covenant.headroom!)},
-    weekly: {updates, added}, covenant: {measurementId: input.covenant.measurementId, effects}, facilities, steps, dependents} : null;
+    weekly: {updates, added}, covenant: {measurementIds: input.covenant.measurementIds}, facilities, steps, dependents} : null;
   const update = kernelInput ? updateAfterQuarterClose(kernelInput) : null;
   const reference = (r: {analysisId: string; basisFingerprint: string; fingerprint: string}, done: boolean) =>
     ({analysisId: r.analysisId, basisFingerprint: r.basisFingerprint, resultFingerprint: r.fingerprint, complete: done});
@@ -142,6 +142,8 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const payload = {schemaVersion: "adopted-quarter-update.v1" as const, financialCoreVersion, scope: input.scope, analysisId: input.analysisId,
     entityId: input.entityId, perimeter: input.perimeter, currency: input.currency, basisFingerprint: input.envelope.fingerprint,
     prior: {weeklyCash: reference(weekly, weekly.weekly !== null), covenant: reference(covenant, covenant.headroom !== null)}, update,
+    // Which written definition each limit is measured on, as the prior covenant adopted it.
+    covenantDefinitions: covenant.definitions,
     gaps, bindings: b.bindings, normalization: b.normalization, contributions: [...b.used.values()],
     status: update ? "partial_composition" as const : "missing_inputs" as const,
     derivedDependencies: [{result: "quarter_update", decisionIds: [...b.used.keys()]}],

@@ -19,6 +19,8 @@ export const operatingProjectionDriverUnits: Record<ProjectedOperatingDriver, st
   interestExpense: "currency", taxRate: "ratio"};
 const selectors = <K extends string>(keys: readonly K[]) => z.strictObject(Object.fromEntries(keys.map((k) => [k, selection])) as Record<K, typeof selection>);
 const sourced = z.strictObject({value: selection, origin: selection});
+/** Items of the actual year whose origin is adopted one by one. */
+export const actualOperatingItems = [...actualOperatingDriverNames, "reportedRevenue", "reportedEbitda"] as const;
 
 export const adoptedDriverProjectionInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: scenarioKey,
@@ -26,8 +28,9 @@ export const adoptedDriverProjectionInputSchema = adoptedAnalysisContextSchema.s
   purpose: selection,
   periodEnds: selection,
   conventions: z.strictObject({dayCountBasis: selection, calibrationTolerance: selection}),
+  /** The actual year's operands and the adopted origin of each; reproducing them proves arithmetic, not origin. */
   actual: z.strictObject({periodStart: selection, periodEnd: selection, drivers: selectors(actualOperatingDriverNames),
-    reportedRevenue: selection, reportedEbitda: selection}),
+    reportedRevenue: selection, reportedEbitda: selection, origins: selectors(actualOperatingItems)}),
   /** Each base column has a parallel list of origins, one per projected year. */
   base: z.strictObject({drivers: selectors(projectedOperatingDriverNames), origins: selectors(projectedOperatingDriverNames)}),
   scenarios: z.array(z.strictObject({id: key, label, role: z.enum(["alternative", "informed"]), basedOn: key, scenario: scenarioKey,
@@ -47,7 +50,8 @@ type Origin = z.infer<typeof origin>;
 const nextDay = (d: string) => new Date(Date.parse(`${d}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
 
 /** Projection by driver over one adopted basis. Every driver, convention, scenario rule and company
- * version is an adopted contribution, each with its adopted origin; the actual year is data by role.
+ * version is an adopted contribution, each with its adopted origin, the actual year included: only a
+ * document origin is data, and reproducing the actual year proves arithmetic, not origin.
  * A company version must come from the company (document or informed) and is compared, never replaced;
  * a difference without a stated cause is an open question. A missing operand is a gap; when any is
  * missing no projection is computed. */
@@ -75,6 +79,7 @@ export function calculateAdoptedDriverProjection(raw: unknown) {
     [k, need(read(a.drivers[k], `actual.${k}`, top, operatingProjectionDriverUnits[k], "number", operand))])) as Record<(typeof actualOperatingDriverNames)[number], string>;
   const reportedRevenue = need(read(a.reportedRevenue, "actual.reportedRevenue", top, "currency", "number", signedOperand));
   const reportedEbitda = need(read(a.reportedEbitda, "actual.reportedEbitda", top, "currency", "number", signedOperand));
+  const actualOrigins = actualOperatingItems.map((item) => ({item, origin: need(read(a.origins[item], `actual.${item}.origin`, top, "origin", "text", origin))}));
   const baseDrivers = Object.fromEntries(projectedOperatingDriverNames.map((k) =>
     [k, need(read(input.base.drivers[k], `base.${k}`, top, operatingProjectionDriverUnits[k], "list", z.array(schemaOf(k)).min(1).max(40)))])) as Record<ProjectedOperatingDriver, string[]>;
   const baseOrigins = Object.fromEntries(projectedOperatingDriverNames.map((k) =>
@@ -125,7 +130,7 @@ export function calculateAdoptedDriverProjection(raw: unknown) {
       inputCostShock: s.inputCostShock && {fromPeriodId: s.inputCostShock.fromPeriodId!, rate: s.inputCostShock.rate, passThroughLagMonths: Number(s.inputCostShock.passThroughLagMonths)}})),
     companyVersions: companyVersions.map((v) => ({id: v.id, label: v.label, status: v.status, periodId: v.periodId!, metric: v.metric, value: v.value}))} : null;
   const projection = kernelInput ? buildDriverOperatingProjection(kernelInput) : null;
-  const origins = {base: projectedOperatingDriverNames.map((driver) => ({driver, origins: baseOrigins[driver]})),
+  const origins = {actual: actualOrigins, base: projectedOperatingDriverNames.map((driver) => ({driver, origins: baseOrigins[driver]})),
     scenarios: scenarios.map((s) => ({scenarioId: s.id, volumeGrowthRate: s.volumeGrowthRate?.origin ?? null, volumeFactor: s.volumeFactor?.origin ?? null,
       overrides: s.overrides.map((o) => ({driver: o.driver, origin: o.origin})), inputCostShock: s.inputCostShock?.origin ?? null}))};
   const payload = {schemaVersion: "adopted-operating-projection.v1" as const, financialCoreVersion, scope: input.scope, analysisId: input.analysisId,

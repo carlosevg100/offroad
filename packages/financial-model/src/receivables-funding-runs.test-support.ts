@@ -37,6 +37,21 @@ const programA = () => {
       rate: {basis: "di_plus", rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]});
 };
 const near = (v: string, oracle: number, tolerance: number) => new D(v).minus(oracle).abs().lte(tolerance);
+/** One debtor of R$ 5 mi, a peak of 3, a cheaper fund capped at 2 and a dearer one at 3 (review repro). */
+const unsoldBalance = () => {
+  const k = auroraReceivablesFunding(), fund = k.options[1]!;
+  const one = {...k.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const};
+  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap}});
+  return auroraReceivablesFundingBasis({...k, items: [one], options: [at("fundo-barato", "0.01", "2"), at("fundo-caro", "0.02", "3"), k.options[4]!], needAverage: "3", needPeak: "3"});
+};
+/** The varejo bucket with a debtor count and a largest debtor adopted together. */
+const withDebtors = (count: string, largest: string) => {
+  let ids: string[] = [];
+  return packetInput((f) => {ids = [f.contribute("item.varejo-demais.debtorCount", "count", {type: "number", value: count}).decisionId!,
+    f.contribute("item.varejo-demais.largestDebtorAmount", "currency", {type: "number", value: largest}).decisionId!];},
+  (i) => {const s = (decisionId: string) => ({decisionId, definitionVersionId: i.analysis.items[6]!.amount.definitionVersionId, definitionKind: "managerial" as const, missingReason: null});
+    i.analysis.items[6] = {...i.analysis.items[6]!, debtorCount: s(ids[0]!), largestDebtorAmount: s(ids[1]!)};});
+};
 
 function goldCases(): Case[] {
   const base = () => packetInput(), packet = prepareReceivablesFundingPacket(base());
@@ -52,10 +67,15 @@ function goldCases(): Case[] {
       (p) => p.readings!.exclusions.map((e) => [e.itemId, r(e.amount), e.reasons])),
     reuse("options-sized-by-eligibility-and-sublimit", {riscoSacadoB: 3.7, fidcWithRecourse: 21.3, fidcWithoutRecourse: 10},
       (p) => ({riscoSacadoB: r(option(p, "risco-sacado-b").volume), fidcWithRecourse: r(option(p, "fidc-com-coobrigacao").volume), fidcWithoutRecourse: r(option(p, "fidc-sem-coobrigacao").volume)})),
-    reuse("cost-for-the-time-in-use-against-the-bank-line", [["risco-sacado-b", 1.33, true], ["fidc-com-coobrigacao", 1.75, true], ["linha-giro", 1.82, true], ["desconto-bancario", 1.96, true], ["fidc-sem-coobrigacao", 2.08, true]],
+    // Same inputs as the oracle reproduce within R$ 0.02 mi: the B program and both FIDCs. The line reproduces within tolerance on
+    // different inputs (daily IOF on 180 days, the oracle 182). The discount differs by convention: whole draws, see the next case.
+    reuse("cost-for-the-time-in-use-against-the-bank-line", [["risco-sacado-b", 1.33, true], ["fidc-com-coobrigacao", 1.75, true], ["linha-giro", 1.82, true], ["desconto-bancario", 1.99, false], ["fidc-sem-coobrigacao", 2.08, true]],
       (p) => p.readings!.options.map((o) => [o.id, r(o.cost, 2), near(o.cost, ({"risco-sacado-b": 1.33, "fidc-com-coobrigacao": 1.75, "linha-giro": 1.82, "desconto-bancario": 1.96, "fidc-sem-coobrigacao": 2.08} as Record<string, number>)[o.id]!, 0.02)])),
-    reuse("iof-where-it-applies", {withIof: ["linha-giro", "desconto-bancario"], discountDraws: 3.6},
-      (p) => ({withIof: p.readings!.options.filter((o) => o.iofApplies).map((o) => o.id), discountDraws: r(p.result.funding!.options.find((o) => o.id === "desconto-bancario")!.cost.draws)})),
+    reuse("iof-where-it-applies", {withIof: ["linha-giro", "desconto-bancario"], lineIofDays: 180, oracleLineIofDays: 182},
+      (p) => ({withIof: p.readings!.options.filter((o) => o.iofApplies).map((o) => o.id), lineIofDays: p.result.funding!.options.find((o) => o.id === "linha-giro")!.cost.iofDays, oracleLineIofDays: 182})),
+    // The oracle charges 3.6 rollovers; a rollover started inside the six months is a draw, so four pay the additional IOF.
+    reuse("discount-iof-on-whole-draws", {draws: 4, iofDays: 180, iof: 0.50932, oracleIof: 0.48348},
+      (p) => {const c = p.result.funding!.options.find((o) => o.id === "desconto-bancario")!.cost; return {draws: c.draws, iofDays: c.iofDays, iof: r(c.iof, 5), oracleIof: r(new D(17).mul("0.0079").mul("3.6").toFixed(), 5)};}),
     reuse("monthly-rates-converted-before-comparing", {"1,6% a.m.": [21, 5.3], "1,9% a.m.": [25.3, 9.1]},
       (p) => ({"1,6% a.m.": [r(new D(option(p, "fidc-com-coobrigacao").annualEffective).mul(100).toFixed()), r(new D(option(p, "fidc-com-coobrigacao").spreadOverDi).mul(100).toFixed())],
         "1,9% a.m.": [r(new D(option(p, "fidc-sem-coobrigacao").annualEffective).mul(100).toFixed()), r(new D(option(p, "fidc-sem-coobrigacao").spreadOverDi).mul(100).toFixed())]})),
@@ -74,8 +94,11 @@ function goldCases(): Case[] {
         buyers: p.readings!.process.buyers, named: p.readings!.process.buyersNamed, approval: p.readings!.process.approvalPromised})),
     reuse("no-dedicated-vehicle-for-a-seasonal-need", {monthly: 12.8, reading: "not_for_seasonal_need"}, (p) => ({monthly: r(p.readings!.dedicatedVehicle.monthlyAssignable), reading: p.readings!.dedicatedVehicle.reading})),
     observe("retailer-a-program-reorders-the-plan", packetInput(undefined, undefined, programA),
-      {plan: [["risco-sacado-b", 3.7], ["risco-sacado-a", 23.5], ["fidc-com-coobrigacao", 44.8]], questions: ["duplicata_registration_capability"], startBy: null},
-      (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.cumulative)]), questions: p.readings!.questions.map((q) => q.code), startBy: p.readings!.startBy})),
+      {plan: [["risco-sacado-b", 3.7, 3.7, 3.7], ["risco-sacado-a", 19.8, 19.8, 23.5], ["fidc-com-coobrigacao", 21.3, 1.5, 25]], questions: ["duplicata_registration_capability"], startBy: null},
+      (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), questions: p.readings!.questions.map((q) => q.code), startBy: p.readings!.startBy})),
+    observe("unsold-balance-goes-to-the-next-buyer", packetInput(undefined, undefined, unsoldBalance),
+      {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 1, 3]], coversPeak: true},
+      (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak})),
     // The oracle releases 90% of the R$ 12 mi; the method applies the same R$ 3 mi sublimit to the two retailers and states the result as an upper bound.
     reuse("encumbered-bucket-released-under-the-same-sublimit", [["redes-c-d", 12, "pré-pagamento da CCB do Bradesco", 6, false]],
       (p) => p.readings!.releases.map((x) => [x.itemId, r(x.amount), x.releaseEvent, r(x.assignableAfterRelease), x.verified])),
@@ -112,6 +135,7 @@ function adversarialCases(): Case[] {
     ["peak-below-average-need", () => packetInput((f) => {entry(f, "needPeak").value = {type: "number", value: "10"};}), "receivables_funding_need"],
     ["largest-debtor-above-its-bucket", () => packetInput((f) => {f.contribute("item.varejo-demais.largestDebtorAmount", "currency", {type: "number", value: "12"});},
       (i) => {i.analysis.items[6] = {...i.analysis.items[6]!, largestDebtorAmount: {decisionId: auroraLast(i), definitionVersionId: i.analysis.items[6]!.amount.definitionVersionId, definitionKind: "managerial", missingReason: null}};}), "receivables_funding_largest_debtor"],
+    ["largest-debtor-cannot-hold-its-bucket", () => withDebtors("2", "1"), "receivables_funding_largest_debtor"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {entry(f, "item.rede-b.amount").dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

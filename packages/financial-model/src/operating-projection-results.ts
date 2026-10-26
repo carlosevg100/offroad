@@ -60,7 +60,8 @@ export const driverOperatingProjectionOutputSchema = z.strictObject({schemaVersi
   }).nullable()});
 export const adoptedDriverProjectionOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-operating-projection.v1"),
   analysisId: z.uuid(), perimeter: text, purpose: text.nullable(), projection: driverOperatingProjectionOutputSchema.nullable(),
-  origins: z.strictObject({base: z.array(z.strictObject({driver, origins: z.array(origin).max(40).nullable()})).length(13),
+  origins: z.strictObject({actual: z.array(z.strictObject({item: z.enum(["volume", "netUnitPrice", "inputCostPerUnit", "otherVariableCostPerUnit", "fixedCosts", "receivableDays", "inventoryDays", "payableDays", "reportedRevenue", "reportedEbitda"]), origin: origin.nullable()})).length(10),
+    base: z.array(z.strictObject({driver, origins: z.array(origin).max(40).nullable()})).length(13),
     scenarios: z.array(z.strictObject({scenarioId: version, volumeGrowthRate: origin.nullable(), volumeFactor: origin.nullable(),
       overrides: z.array(z.strictObject({driver, origin: origin.nullable()})).max(13), inputCostShock: origin.nullable()})).max(12)}),
   companyVersions: z.array(z.strictObject({versionId: version, origin: origin.nullable(), cause: text.nullable()})).max(12),

@@ -33,7 +33,8 @@ export const receivablesFundingPacketOutputSchema = z.strictObject({
       cost: decimal, differenceToBankLine: decimal.nullable(), annualEffective: decimal, spreadOverDi: decimal, iofApplies: z.boolean(),
       balanceSheet: z.enum(["derecognized", "tends_to_remain_as_liability", "liability"]), measuredDebtAdded: decimal,
       lien: z.enum(["not_a_guarantee_confirm_with_counsel", "uses_basket", "uses_basket_if_collateralized", "none"]), coversAverage: z.boolean().nullable()})).max(8),
-    plan: z.array(z.strictObject({optionId: key, amount: decimal, cumulative: decimal})).max(8), planCoversPeak: z.boolean(),
+    /** Each step: what the option could still buy, and what it is allocated to reach the peak. */
+    plan: z.array(z.strictObject({optionId: key, capacity: decimal, amount: decimal, cumulative: decimal})).max(8), planCoversPeak: z.boolean(),
     /** The bank line stays in negotiation until the first funding: it is the reserve, not the first step. */
     bankLineReserve: key.nullable(),
     startBy: z.iso.date().nullable(), slackDays: z.number().int().nullable(),

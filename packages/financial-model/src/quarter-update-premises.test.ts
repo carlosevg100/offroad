@@ -7,9 +7,8 @@ import {prepareQuarterUpdatePacket} from "./quarter-update-packet";
 import {proposeQuarterUpdateHypotheses} from "./quarter-update-premises";
 import {proposeWeeklyCashHypotheses} from "./weekly-cash-premises";
 import {proposeCovenantHeadroomHypotheses} from "./covenant-headroom-premises";
-import {auroraQuarterUpdateBasis, auroraQuarterUpdateFacts} from "./quarter-update.test-support";
+import {auroraPriorCovenantFacts, auroraQuarterUpdateBasis, auroraQuarterUpdateFacts} from "./quarter-update.test-support";
 import {auroraWeeklyCashFacts} from "./weekly-cash.test-support";
-import {auroraCovenantFacts} from "./covenant-headroom.test-support";
 import {analysisTestId as id} from "./adopted-analysis.test-support";
 
 const question = "Fechou o trimestre. Atualiza tudo.";
@@ -28,7 +27,7 @@ function adopt(hypotheses: ProposedHypothesis[], start: number) {
 /** The two prior versions adopted by their own premises, and the close adopted on a third basis that names them. */
 function bases(edit: (facts: ReturnType<typeof auroraQuarterUpdateFacts>) => void = () => undefined) {
   const weeklyCash = envelopeOf(adopt(proposeWeeklyCashHypotheses(auroraWeeklyCashFacts()), 9000), 501, "synthetic weekly cash");
-  const covenant = envelopeOf(adopt(proposeCovenantHeadroomHypotheses(auroraCovenantFacts()), 9400), 502, "synthetic covenant headroom");
+  const covenant = envelopeOf(adopt(proposeCovenantHeadroomHypotheses(auroraPriorCovenantFacts()), 9400), 502, "synthetic covenant headroom");
   const facts = auroraQuarterUpdateFacts(weeklyCash.envelope.fingerprint, covenant.envelope.fingerprint); edit(facts);
   const entries = adopt(proposeQuarterUpdateHypotheses(facts), 9700);
   return {weeklyCash, covenant, entries, update: envelopeOf(entries, 503, "synthetic quarter update")};
@@ -57,11 +56,18 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     expect(p.status).toBe("framed");
     expect(p.gaps.some((g) => g.operand.endsWith(".line.caixa.actual") && g.reason.startsWith("No contribution adopted for line.caixa.actual"))).toBe(true);
   });
+  it("review r1: removing the weekly series of the structural causes through the full path is a gap", () => {
+    const b = bases((f) => {f.streamUpdates = [];});
+    const p = packetOf(b);
+    expect(p.status).toBe("partial");
+    expect(p.gaps.filter((g) => g.reason === "structural_cause_not_in_weekly_cash")).toHaveLength(2);
+    expect(Number(p.readings!.projectedEbitda.updated).toFixed(1)).toBe("53.5");
+  });
   it("refuses a composition whose structure is missing, by name", () => {
     const b = bases(), without = (suffix: string) => ({...b, update: envelopeOf(b.entries.filter((e) => !e.fieldPath.endsWith(suffix)), 503, "synthetic quarter update")});
     expect(() => packetOf(without(".cause.trigo.lineId"))).toThrow("quarter_update_cause_bridge_missing");
     expect(() => packetOf(without(".line.prazo.unit"))).toThrow("quarter_update_line_unit_missing");
-    expect(() => packetOf(without(".covenant.measurementId"))).toThrow("quarter_update_covenant_measurement_missing");
+    expect(() => packetOf(without(".covenant.measurementIds"))).toThrow("quarter_update_covenant_measurement_missing");
   });
   it("refuses inconsistent facts before proposing premises", () => {
     const fp = "a".repeat(64);
@@ -71,6 +77,10 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     expect(() => proposeQuarterUpdateHypotheses(calendarMoves)).toThrow("must be moved by structural causes");
     const noCashBridge = auroraQuarterUpdateFacts(fp, fp); noCashBridge.bridges = [noCashBridge.bridges[0]!, {...noCashBridge.bridges[0]!, lineId: "receita"}];
     expect(() => proposeQuarterUpdateHypotheses(noCashBridge)).toThrow("Cash and EBITDA each need one bridge");
+    const natureless = auroraQuarterUpdateFacts(fp, fp); natureless.bridges[0]!.causes[1]!.value.nature = null;
+    expect(() => proposeQuarterUpdateHypotheses(natureless)).toThrow("only a structural cause is a flow or a balance shift");
+    const balanceOnEbitda = auroraQuarterUpdateFacts(fp, fp); balanceOnEbitda.bridges[0]!.causes[1]!.value.nature = "balance";
+    expect(() => proposeQuarterUpdateHypotheses(balanceOnEbitda)).toThrow("a balance shift belongs to the cash bridge");
     const precise = auroraQuarterUpdateFacts(fp, fp); precise.bridges[0]!.causes[0]!.value.amount = "0.123456789";
     expect(() => proposeQuarterUpdateHypotheses(precise)).toThrow();
   });

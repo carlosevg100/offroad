@@ -99,6 +99,10 @@ export function proposeOperatingProjectionHypotheses(raw: unknown): ProposedHypo
   for (const k of actualOperatingDriverNames) num(`actual.${k}`, operatingProjectionDriverUnits[k], f.actual.drivers.value[k], why(f.actual.drivers));
   num("actual.reportedRevenue", "currency", f.actual.reportedRevenue.value, why(f.actual.reportedRevenue));
   num("actual.reportedEbitda", "currency", f.actual.reportedEbitda.value, why(f.actual.reportedEbitda));
+  // The origin of every actual operand is adopted: reproducing the year proves arithmetic, not that the figures are documents.
+  for (const k of actualOperatingDriverNames) txt(`actual.${k}.origin`, "origin", f.actual.drivers.origin, why(f.actual.drivers));
+  txt("actual.reportedRevenue.origin", "origin", f.actual.reportedRevenue.origin, why(f.actual.reportedRevenue));
+  txt("actual.reportedEbitda.origin", "origin", f.actual.reportedEbitda.origin, why(f.actual.reportedEbitda));
   for (const b of f.base) {
     const reason = `Origem: ${[...new Set(b.origins)].map((o) => originLabel[o]).join(", ")}. ${b.source}`;
     list(`base.${b.driver}`, operatingProjectionDriverUnits[b.driver], b.values, reason);

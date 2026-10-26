@@ -16,9 +16,9 @@
     "exportName": "buildReceivablesFundingRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T12:43:01.973Z",
-    "finishedAt": "2026-10-26T12:43:02.138Z",
-    "commit": "930087c5d543e0a573150fc5978ebc52f889d91c"
+    "startedAt": "2026-10-26T13:13:25.077Z",
+    "finishedAt": "2026-10-26T13:13:25.239Z",
+    "commit": "63799d0c38e4a842a723b49fcbe3e7340a8d70be"
   },
   "modelCalls": 0,
   "cases": [
@@ -127,6 +127,14 @@
       "passed": true
     },
     {
+      "id": "largest-debtor-cannot-hold-its-bucket",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e2aa714d76c81d602230411ef0a122736c18a8484a994b918879e51ded2775c6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "figure-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -136,6 +144,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "74486ed80d3bdd61de9ef5b6229b62767025c5c12909180df7f8d1e9d0431be9",
+  "evidenceFingerprint": "42b200ff05859819c90f5f5d121718b765d08e69ee41adf6d825f7fd830b3191",
   "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
