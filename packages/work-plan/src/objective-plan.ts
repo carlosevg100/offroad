@@ -712,7 +712,8 @@ function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
   const trimmed = text.trim();
   const open = existing === "ambiguous" || existing === "documents_to_case";
   const vetoed = conceptualMarker.test(text) || debtObject.test(text);
-  if (!vetoed) for (const e of lote3FichaExceptions) if ((existing === e.from || open) && e.pattern.test(trimmed)) return e.to;
+  if (!vetoed) for (const e of lote3FichaExceptions) if ((existing === e.from || open) && e.pattern.test(trimmed)
+    && !(e.to === "receivables_funding" && receivablesRefusal.test(text))) return e.to;
   if (!open) return existing;
   return lote3Upgrade(text) ?? existing;
 }
@@ -722,14 +723,29 @@ function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
 /** C24: the operating projection, by drivers, annual, of results, revenue and EBITDA, the business plan. */
 const operatingProjectionObject = /\b(?:projec(?:ao|oes) (?:operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)|business plan|plano de negocios)\b/;
 /** C26: the financial projection, the business plan, the premises of the projection or plan, the plan going to the bank. */
-const challengedObject = /\b(?:projec(?:ao|oes) (?:financeira|operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)|business plan|plano de negocios|premissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) (?:projec(?:ao|oes)|plano|business plan|plano de negocios)|(?:projecao|plano) que (?:vamos|vou|iremos|a gente vai) (?:mandar|enviar|levar|apresentar))\b/;
+const challengedObject = /\b(?:projec(?:ao|oes) (?:financeira|operaciona(?:l|is)|por drivers|anua(?:l|is)|de resultados?|da dre|de receitas?(?: e (?:do |de )?ebitda)?|do ebitda)|business plan|plano financeiro|plano de negocios|premissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) (?:projec(?:ao|oes)|plano financeiro|business plan|plano de negocios)|(?:projecao|plano) que (?:vamos|vou|iremos|a gente vai) (?:mandar|enviar|levar|apresentar))\b/;
+/** "As premissas do plano" with the plan unqualified: the financial plan only when the message also names the
+ * projection, revenue, EBITDA or margin; "plano de saúde", "plano de segurança" and any other qualified plan never. */
+const barePlanPremises = /\bpremissas (?:d[ao]s?|dess[ae]s?|ness[ae]s?|nossas?|desse|deste|desta) plano(?=\s*(?:[.!?;,]|$)|\s+(?:que|e|para|com|sem|antes|atual|novo)\b)/;
+const financialTerm = /\b(?:projec(?:ao|oes)|receitas?|ebitda|margens?)\b/;
 /** A projection named alone, with nothing after it but the end of the request. */
 const bareProjection = /\bprojec(?:ao|oes)\s*(?:[.!?;]|$)/;
 /** Objects next to a projection or a plan that no lote 3 projection method serves. */
 const neighbourObject = /\b(?:cobranca|vencimentos?|duplicatas|carteira|semanal|semana a semana|semanas|recebiveis|balancete|calendario|cronograma|lancamentos?|estoques?|vendas do mes|metas? comerciais?|orcamento de marketing)\b|\bprojec(?:ao|oes) d[eoa]s? (?:caixa|fluxo)\b|\bfluxo de caixa\b/;
 /** C54: an update of the company's analyses after the close; never the accounting close itself or its calendar. */
-const analysisUpdate = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b(?: (?:a|o|as|os|tambem|todas?|todos?|e|minhas|nossas?|nossos?))*\s*\b(?:tudo|projec(?:ao|oes)|covenants?|caixa|analises?|indicadores|numeros)\b/;
-const accountingClose = /\b(?:lancamentos?|ajustes?|fechamento contabil|contabilidade|contabeis|contabil|calendario|cronograma|conciliac\w*|provis\w*)\b|\b(?:refa\w*|refaz\w*|atualiz\w*|corrig\w*|revis\w*)\b(?: (?:o|a))?\s*\bbalancete\b/;
+const analysisUpdate = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b(?: (?:a|o|as|os|tambem|todas?|todos?|e|minhas|nossas?|nossos?))*\s*\b(?:tudo|projec(?:ao|oes)|covenants?|caixa|analises?)\b/;
+/** The accounting close is its own object and wins: the balancete as the object of any verb, its numbers, balances
+ * or values, corrections, entries, adjustments, reconciliations, provisions and the close calendar. */
+const accountingClose = /\b(?:lancamentos?|ajustes?|fechamento contabil|contabilidade|contabeis|contabil|calendario|cronograma|conciliac\w*|provis\w*|corrig\w*|correc\w*|saldos?|valores)\b|\b(?:numeros|contas|linhas)\b.{0,12}\bbalancete\b|\b(?!(?:saiu|chegou|chegaram|recebemos|fechou|fechamos|fechei|com|no|do|pelo|pela|segundo|usando|e|o|a|ao|veio|temos|tenho|recebi)\b)[a-z]+\b(?: (?:o|a|os|as|um|uma|novo|nosso|todo))? balancete\b/;
+
+/** C24 "primeira versão": the generic ficha phrasing itself, or a first version whose clause names a projection object. */
+function firstVersion(text: string): boolean {
+  if (/^(?:faz|faca|fazer|monta|monte|cria|crie|elabora|elabore) (?:uma|a) primeira versao com (?:hipoteses|premissas) explicitas[.!]*$/.test(text.trim())) return true;
+  return text.split(/[.;!?]/).some((clause) => /\bprimeira versao\b/.test(clause)
+    && new RegExp(`(?:${operatingProjectionObject.source}|\\bprojec(?:ao|oes)\\b)`).test(clause));
+}
+/** C35 never on a refusal or on a request only to record something. */
+const receivablesRefusal = /\b(?:nao|nunca|jamais|sem|recus\w*)\b|\b(?:registr(?:e|a|ar)|anot(?:e|a|ar))\b/;
 
 /** Inside the upgrade, conservative: a lote 3 kind only on a positive, specific request about one of the
  * named objects of the company's own. A conceptual question, an interrogative naming nothing of the company's
@@ -762,21 +778,22 @@ function lote3Upgrade(text: string): WorkspaceObjectiveKind | null {
   // stays where lotes 1 and 2 leave it.
   const receivablesUse = /\b(?:recebiveis|duplicatas)\b/.test(text) && (/\b(?:em vez|no lugar|ao inves)\b.{0,40}\blinha\b/.test(text)
     || /\b(?:antecip\w*|ced(?:er|emos|a)|cessao de|financiar com)\b.{0,20}\b(?:os |nossos |de |dos )?(?:recebiveis|duplicatas)\b.{0,60}\b(?:em vez|no lugar|ao inves|alternativa (?:a|ao)|substituir)\b/.test(text));
-  if (!debtObject.test(text) && !/\b(?:cobranca|vencimentos?|inadimplencia|provisao)\b/.test(text)
+  if (!debtObject.test(text) && !receivablesRefusal.test(text) && !/\b(?:cobranca|vencimentos?|inadimplencia|provisao)\b/.test(text)
     && (receivablesUse || /\bfidcs?\b.{0,40}\bcompr\w*\b.{0,30}\bnossa carteira\b/.test(text))) return route("receivables_funding");
   if (/\bplanos?\b.{0,40}\b(?:pagamentos?|parcel\w*|contratua\w*|contrato)\b/.test(text) || debtObject.test(text) || neighbourObject.test(text)) return null;
   // C26: reviewing, questioning or contesting one of the challenged objects, or asking whether it is optimistic.
   const challengeVerb = /\b(?:questionaria|questionar|question\w*|contest\w*|atac\w*|cortar|cortaria|revis\w*|critiqu\w*|critic\w*)\b/;
   const challenged = new RegExp(`(?:${challengedObject.source}|${bareProjection.source})`);
+  const planPremises = barePlanPremises.test(asked) && financialTerm.test(text);
   const verdict = /\b(?:otimista|otimistas|agressiv\w*|factivel|defensavel|realista)\b/;
   if (new RegExp(`${challengeVerb.source}.{0,40}(?:${challengedObject.source}|${bareProjection.source})`).test(asked)
     || new RegExp(`(?:${challengedObject.source}|\\bprojec(?:ao|oes)\\b)\\s+(?:esta|e|parece|ficou|estao|sao)\\s+(?:muito |bem |um pouco )?${verdict.source}`).test(text)
-    || (/\bpremissas?\b/.test(text) && challenged.test(asked) && (challengeVerb.test(text) || verdict.test(text)))) return route("projection_challenge");
+    || (/\bpremissas?\b/.test(text) && (challenged.test(asked) || planPremises) && (challengeVerb.test(text) || verdict.test(text)))) return route("projection_challenge");
   // C24: building one of the operating projection objects, or a first version, or none existing yet.
   const buildVerb = /\b(?:constru\w*|mont\w*|fa(?:z|ca|zer)|cri(?:a|ar|e)|elabor\w*|desenvolv\w*|preciso de|ajud\w*)\b/;
   if (new RegExp(`${buildVerb.source}.{0,60}(?:${operatingProjectionObject.source}|${bareProjection.source})`).test(asked)
     || /\b(?:nao temos|nao tenho|sem)\b.{0,10}\b(?:projecao|business plan|plano de negocios)\b/.test(text)
-    || new RegExp(`${buildVerb.source}.{0,20}\\bprimeira versao\\b(?:\\s*(?:[.!?;]|$)| com (?:hipoteses|premissas)| d[ao] (?:projecao|business plan|plano de negocios))`).test(text)) return route("operating_projection");
+    || firstVersion(text)) return route("operating_projection");
   return null;
 }
 

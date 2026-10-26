@@ -9809,7 +9809,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -10109,7 +10109,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -10144,7 +10144,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5ec804107c559db6c9fdf51f23c14669295d3d1cfb9d15ca745c22d0a9da360b"
+          "hash": "ef4433d5e1a67af1fa2f705ff077c8a8c2768adaef7a46a755f9d8d671915d5d"
         },
         "evidence": [
           {
@@ -10170,7 +10170,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "4dad80fbe00a157615ffd99bf62064f9a42ee2e11d73c7c54472ad6ba5b8927e"
+    "manifestHash": "ee8e28bf7f94927f3be39eb23f07a27454415a9b5f57ef9d6b559c67461b299a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17454,7 +17454,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -17762,7 +17762,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -17797,7 +17797,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "261686140d5ce0c07260c0cf54b8e1cbb029d2ebbc5fc50c332ea94e92852ef6"
+          "hash": "f49dbbfb6ff983a4d044209984e360ae225868b3ee4fac4afd9033baebb32bfc"
         },
         "evidence": [
           {
@@ -17823,7 +17823,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "adda06ee13dd1592d8022c6c5d5d1a33bb6d8859046e9d1a13cd0954dfcda85b"
+    "manifestHash": "db221f7f0f6b53654579a7a2794cc9d8d1f1a304d7c7f1288fed4c5e4827a056"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -23018,7 +23018,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -23318,7 +23318,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -23353,7 +23353,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "07ea5c488ed4fb16b2096739c421f4a23a69a3264409cb45f1541d3b35b838e8"
+          "hash": "cbe3354b23e5753143d198b7121cfe84b40b5a2b8a26f27194494de4a13eb42f"
         },
         "evidence": [
           {
@@ -23379,7 +23379,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "25d05a37d6c9cddf376becfdd108360df925716e42c53c92feb09f3a26258380"
+    "manifestHash": "cf7a3aa9c6ddd3b0254388424ba350e9417ec6219258ca454829eb0c2d7d3c07"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -30365,7 +30365,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -30665,7 +30665,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -30700,7 +30700,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "75bdcdb16a358e7e3a1cb7b72406f8837dff0a02e12845d7d22321072b8522c5"
+          "hash": "a1a821f1ec82fbe54f2e286fc46e023c9a4de4a2830f4b18cbb159bd559542e3"
         },
         "evidence": [
           {
@@ -30726,7 +30726,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "e417c7a7f6ca078f444bcbfcea5f5a1ad8d08a368d805ddf110389a428b218e6"
+    "manifestHash": "5a9bd0f26085008a991ccad0497ac4b346fdda2f3e3ed06d878c5175d81a06b6"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -39792,7 +39792,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -40092,7 +40092,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -40127,7 +40127,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "e2d3746015333a1a49ef6bdbc2169ff2afdc0d49a40b68adbd2ed71a0d4e05bc"
+          "hash": "e181c086b0ac0aadb5956c5edcf10bc70342dd48a65f2da777fad8eb8e1bc47a"
         },
         "evidence": [
           {
@@ -47334,7 +47334,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -47634,7 +47634,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -47669,7 +47669,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "74eab554de433ee59081f81f6703e96926a772ff99f4135fa3d8808580e8db3b"
+          "hash": "2a3eb0c002fabe2664d9f70fd404cbfc031fce32fcbb0b99b877212f27ed1721"
         },
         "evidence": [
           {
@@ -56664,7 +56664,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -56964,7 +56964,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -56999,7 +56999,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "1bb0f8fb0424bdbb1495672bd5474f52db6dee4f04e55067d323636dc88c085c"
+          "hash": "465366e4194f84270a000442a2618e97bb7b9d420d259d157190898849c309fd"
         },
         "evidence": [
           {
@@ -57025,7 +57025,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "1397a431a70d1ccd16ec5a0eae235526128a08a5779293ed68086f470a256173"
+    "manifestHash": "63e0852f9e8d97af765679e783c315643b98ae5daf9ce960351e8baa159d6298"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -62276,7 +62276,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -62576,7 +62576,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -62611,7 +62611,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "268822c802c2870c69750d32cec7e0af446eac1ae179a67abc58fdb31d0f85ba"
+          "hash": "cedb2af94b7931ada7dd23fe8b88884ae6dd81e92feb6ca275702d30f07b1733"
         },
         "evidence": [
           {
@@ -62637,7 +62637,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "bd2765007c39d9b27a1f45a15a13a4ed5301a85bd704970a3fcabb38c801c4d9"
+    "manifestHash": "ca29b819f9adaaf79ca001587924c8d5349fb4a3357e1bed7c9c680dec553245"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -70220,7 +70220,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -70532,7 +70532,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -70567,7 +70567,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "521ac6abc5636df359043514f6e750428ca6db2b335dd304317dc4f6265c1d83"
+          "hash": "c63e9f430812c92249feb37bb5f3acd07f91355d4bbfce0ce11cde2d4f84d2dd"
         },
         "evidence": [
           {
@@ -94345,7 +94345,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -94645,7 +94645,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -94680,7 +94680,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "d0ffa4cde8d4d522f5025dd83b476fecaf09fb8bbf9d943c07a67a71c2ce57a7"
+          "hash": "59717199a060eecd7ef2693498685f86f207e686bcd6c8213bd340418ec726bd"
         },
         "evidence": [
           {
@@ -94706,7 +94706,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "3dc7ada3f0a86a041d421fa356f2f45fb021032a3659a85b22ad680dbdbfd770"
+    "manifestHash": "4c10d81e59ec353c4e9d46b494cff923d1be6f0c3b709c087896edd88b0416f1"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -100467,7 +100467,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -100775,7 +100775,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -100810,7 +100810,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "b7bcc1be2e020dd62c6ab3a9800fd5ad6e74296240b6248cd64db7ddd48a88d6"
+          "hash": "66fb2ef1c7c6ad595c8fcb88ecccc7fe5b4f67396f10932d9c02df06c1c5bc4b"
         },
         "evidence": [
           {
@@ -100836,7 +100836,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "4e95e3410568b81c77c633f247a938fa434937640ec63a2b503181d71ee6e7d4"
+    "manifestHash": "497763af90c146a97f8b6e757298181c9bb2d049f25abe5db80073537393b53f"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -113131,11 +113131,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.test.ts",
-              "hash": "828ee867930141241867e48574ec991ec159700c198f4b68da66e8fcf466c2b5"
+              "hash": "ca908b99f9e41a60534d4bdfa3a1c469884ab494576a10e8c9993d07cc8e1fc2"
             },
             {
               "path": "packages/financial-model/src/quarter-update-premises.ts",
-              "hash": "2c3ac9291697365f683d9eb16eec781b122354bc1f389471d24976a65cbe4d29"
+              "hash": "bdacae07cde9b8c54472c0e294b82e35005d776938ed63ad83356796303624ab"
             },
             {
               "path": "packages/financial-model/src/quarter-update-results.ts",
@@ -113439,7 +113439,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
-              "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+              "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
             },
             {
               "path": "packages/work-plan/src/output-terminal.ts",
@@ -113474,7 +113474,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "6466ef65b686565d237dea1f94b7bdb61396f67219c04f1bfc3308016a8be72e"
+          "hash": "abbfbb49dcf25b7d945bc1bf853cdcb2bc2744a42f787a10a71ca0de24b9f238"
         },
         "evidence": [
           {
@@ -113564,7 +113564,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113572,7 +113572,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "51a93792cd6d6477b46b3517658745fc27a735fa6ee2d078144183a8c1fbc854"
+    "manifestHash": "0c9bb0de782744443fe11f2877a61bd22337c302c9193efde540601346998c76"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -113636,7 +113636,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113644,7 +113644,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "c9354230a8c26295629c235b76c1d0ef8bb5fe89c8301ee20beb7ddf8127ab05"
+    "manifestHash": "984f4f39b12be10666d3a31d71171bfeceff66f0ed7b9faa16e5d705b05d045a"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -113708,7 +113708,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113716,7 +113716,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "18ab644231bd542088d81ed73d3e06b09dbef220d8c376f6212b070bf6d89148"
+    "manifestHash": "92462c024fd3d75019fe97c9b09d792c0d97093c6d06ea462feb4a47de05f1a5"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -113780,7 +113780,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113788,7 +113788,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "87d2f18002c712c5db015ee24edd754697066e567be1618a77b26d693f8e2f8c"
+    "manifestHash": "b1c88f26e642074302b67818106fd00c703158261f45754bd8732c003b3b1862"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -113852,7 +113852,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113860,7 +113860,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "ceebdbfe65d19dbc1d4af066850052799f670d083f5374412dc91d9903c1493c"
+    "manifestHash": "da949cb264ec8ccd857dbb0e4d79f9a999e3eb151a2d278a2f96fb76068f0735"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -113924,7 +113924,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -113932,7 +113932,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "6ab646d57aef438aa8760386d50241acd74954095a1dbe9a4854cc5d9acf6b02"
+    "manifestHash": "6125db17e5ce21f008747e3cd83b50b2138289461ea56b6253c4ed744b3964cc"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -114080,7 +114080,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -114088,7 +114088,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "12251976312dfcc938ba1c06603ccf218444c8c131e0d6f6bf23d748bd24f383"
+    "manifestHash": "6a6e293545d4127c388bb1f1b59adb81532625b193b712ac9ac771bb337fb583"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -114152,7 +114152,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -114160,7 +114160,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "839d473ed7636059a4f8e589b4afca0de95adcd4087df95b031efb9764603a36"
+    "manifestHash": "eb1d3bc923fa07b7adeaa7b13ba4be91b1e60334d81a691ef9ddece059efb02e"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -114224,7 +114224,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -114232,7 +114232,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "507038e55bb4a47674079facc837f7ea114f006baa11a3364b75194d4ad73a1d"
+    "manifestHash": "fbbf543b39267eb0dc3bbd31a9a7ec74917f1c5f979f921264814791a0d52192"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -114296,7 +114296,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37"
+      "sourceClosureHash": "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3"
     },
     "evidence": [
       {
@@ -114304,12 +114304,12 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "d5b48e2f4d2daf342d555041b41c67fe42e0e5699a715d8b21fa0dc507feed49"
+    "manifestHash": "91f068563fa5be5d5352fa0d359f25aa9e18bff74ea59cd67bcc35c0642d2ff6"
   }
 ];
 
 export const procedureExecutorSourceClosures = {
-  "ade69d8d4f9efbb4fb3007f0a2a24bce80a5a32d85b26f156a2b033fa8404a37": [
+  "774d6dda23774e7ce4a68aca8774fb62ed0d36bb73c1f8444ccd6acc491158f3": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "88043ee9dd9f2530aa04f1a5069e605ce8ef886cfe8345bbd0be995968cba709"
@@ -115072,7 +115072,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/work-plan/src/objective-plan.ts",
-      "hash": "45e3264ad48975ceb0158210cdde9d7c2cf23750f25482f12be7adc35633db6a"
+      "hash": "6ab297ee22dfe418d63bbd71529249ebad44277f6d665d40a8a657827a2d98f2"
     },
     {
       "path": "packages/work-plan/src/output-terminal.ts",

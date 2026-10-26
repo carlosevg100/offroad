@@ -195,7 +195,9 @@ describe("canonical ficha objective routing", () => {
     ["Monte a projeção por drivers e exporte em Excel", "material_preparation", "material_preparation"],
     ["Revise o plano de negócios e gere um PDF", "material_preparation", "material_preparation"],
     ["Faça a primeira versão da projeção no formato da planilha do banco", "material_preparation", "material_preparation"],
-    ["Questione as premissas do plano que está na planilha anexa", "projection_challenge", "projection_challenge"],
+    // Round 7: an unqualified plan counts as the financial plan only when the message names the projection, revenue, EBITDA or margin.
+    ["Questione as premissas do plano que está na planilha anexa", "ambiguous", "documents_to_case"],
+    ["Questione as premissas do plano, principalmente receita e EBITDA", "projection_challenge", "projection_challenge"],
     ["Nossa projeção está otimista?", "factual_question", "projection_challenge"],
     ["Temos recebíveis de 40 milhões; dá para usar em vez da linha do banco?", "factual_question", "receivables_funding"],
   ] as const)("conservative lote 3 routing: %s", (message, plain, attached) => {
@@ -334,6 +336,43 @@ describe("canonical ficha objective routing", () => {
     ["Faz uma primeira versão com hipóteses explícitas.", "operating_projection", "operating_projection"],
     ["Revise o plano de negócios", "projection_challenge", "projection_challenge"],
   ] as const)("named object of the closed list routes: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
+  // Independent review, round 7, and own paraphrases per item: (a) the balancete, its numbers, balances or values
+  // are the accounting object and win over C54; (b) "premissas do plano" only for the financial plan; (c) "primeira
+  // versão" only as the generic ficha or with a projection object in its clause; (d) C35 never on a refusal or a
+  // request only to record.
+  it.each([
+    ["Atualize os números do balancete para corrigir os saldos", "ambiguous", "documents_to_case"],
+    ["Atualize os números do balancete com os valores corrigidos pelo contador", "ambiguous", "documents_to_case"],
+    ["Corrija o balancete do trimestre e atualize a projeção", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre, ajuste os saldos do balancete", "ambiguous", "documents_to_case"],
+    ["Refaça os valores do balancete do trimestre", "ambiguous", "documents_to_case"],
+    ["Revise as contas do balancete do trimestre", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre e o balancete, atualiza tudo", "quarter_update", "quarter_update"],
+    ["Saiu o balancete do trimestre, atualiza o caixa e o covenant", "risk_matrix", "risk_matrix"],
+    ["Revise as premissas do plano de saúde dos nossos funcionários", "ambiguous", "documents_to_case"],
+    ["Questione as premissas do plano de segurança do trabalho", "ambiguous", "documents_to_case"],
+    ["Revise as premissas do plano de marketing", "ambiguous", "documents_to_case"],
+    ["Questione as premissas do plano de expansão de lojas", "capital_strategy", "capital_strategy"],
+    ["Revise as premissas do plano financeiro", "projection_challenge", "projection_challenge"],
+    ["Questione as premissas do plano de negócios", "projection_challenge", "projection_challenge"],
+    ["Revise as premissas do plano que vamos mandar ao banco", "projection_challenge", "projection_challenge"],
+    ["Crie a primeira versão com premissas para a política de descontos comerciais", "ambiguous", "documents_to_case"],
+    ["Faça uma primeira versão com hipóteses do orçamento de marketing", "ambiguous", "documents_to_case"],
+    ["Monte a primeira versão do manual de crédito", "ambiguous", "documents_to_case"],
+    ["Faça a primeira versão da projeção por drivers", "operating_projection", "operating_projection"],
+    ["Monte uma primeira versão da projeção operacional com hipóteses explícitas", "operating_projection", "operating_projection"],
+    ["Faz uma primeira versão com hipóteses explícitas.", "operating_projection", "operating_projection"],
+    ["Só registre que não vamos usar recebíveis em vez da linha do banco", "ambiguous", "documents_to_case"],
+    ["Não quero ceder nossos recebíveis em vez da linha do banco", "ambiguous", "documents_to_case"],
+    ["Anote que a gente prefere recebíveis em vez da linha do banco", "ambiguous", "documents_to_case"],
+    ["Nunca vamos antecipar recebíveis em vez de usar a linha do banco", "ambiguous", "documents_to_case"],
+    ["Recuse a ideia de usar recebíveis em vez da linha do banco", "ambiguous", "documents_to_case"],
+    ["Quero antecipar recebíveis em vez de pegar linha no banco.", "receivables_funding", "receivables_funding"],
+  ] as const)("round 7: %s", (message, plain, attached) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
