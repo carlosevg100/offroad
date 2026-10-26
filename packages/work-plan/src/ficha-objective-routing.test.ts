@@ -243,6 +243,101 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 6: each reproduction keeps the route origin/main gives it (exceptions anchored to the
+  // whole ficha construction and vetoed by a conceptual marker or a contractual object; promotions only on a
+  // named object of the method's closed list).
+  it.each([
+    ["O que o banco vai contestar nesse plano de amortização contratual?", "factual_question", "documents_to_case"],
+    ["Vale fazer um FIDC próprio? Só quero entender o conceito por enquanto.", "factual_question", "documents_to_case"],
+    ["Refaça o balancete do trimestre incluindo os lançamentos de ajuste", "ambiguous", "documents_to_case"],
+    ["Atualize o calendário do fechamento do trimestre", "ambiguous", "documents_to_case"],
+    ["Revise o plano de cobrança dos nossos recebíveis", "ambiguous", "documents_to_case"],
+    ["Revise a projeção do caixa semana a semana", "ambiguous", "documents_to_case"],
+    ["Construa a projeção de vencimentos das duplicatas da nossa carteira", "ambiguous", "documents_to_case"],
+  ] as const)("round 6 reproduction keeps its origin/main route: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+  // Negative paraphrases from neighbouring objects (collection, maturities, accounting close, calendar,
+  // amortization, concept): none takes the method's kind, and each keeps the route the existing rules give it.
+  const neighbours = {
+    operating_projection: [
+    ["Construa a projeção de vencimentos das duplicatas", "ambiguous", "documents_to_case"],
+    ["Monte a projeção da carteira de recebíveis", "ambiguous", "documents_to_case"],
+    ["Faça a projeção do caixa semanal", "weekly_cash", "weekly_cash"],
+    ["Monte a projeção de cobrança do trimestre", "ambiguous", "documents_to_case"],
+    ["Construa a projeção de amortização do empréstimo", "ambiguous", "documents_to_case"],
+    ["Me ajuda a montar a projeção das parcelas do contrato", "ambiguous", "documents_to_case"],
+    ["Monte o calendário do fechamento", "ambiguous", "documents_to_case"],
+    ["Construa a projeção do balancete de dezembro", "ambiguous", "documents_to_case"],
+    ["Quero entender o conceito de projeção por drivers", "ambiguous", "documents_to_case"],
+    ["Monte a projeção de inadimplência da carteira", "ambiguous", "documents_to_case"],
+    ["Faça uma primeira versão do contrato de cessão", "ambiguous", "documents_to_case"],
+    ["Monte a projeção para reduzir a alavancagem", "ambiguous", "documents_to_case"],
+    ["Construa um plano de cobrança para os recebíveis", "ambiguous", "documents_to_case"],
+    ],
+    projection_challenge: [
+    ["Revise o plano de cobrança", "ambiguous", "documents_to_case"],
+    ["Revise o plano de recebíveis da safra", "ambiguous", "documents_to_case"],
+    ["Revise o plano de amortização", "ambiguous", "documents_to_case"],
+    ["Revise o plano de pagamento dos fornecedores", "ambiguous", "documents_to_case"],
+    ["Questione a projeção do caixa semana a semana", "weekly_cash", "weekly_cash"],
+    ["Revise a projeção de vencimentos da carteira", "ambiguous", "documents_to_case"],
+    ["Conteste o calendário do fechamento", "ambiguous", "documents_to_case"],
+    ["Revise o balancete do trimestre", "ambiguous", "documents_to_case"],
+    ["Nosso plano de cobrança está otimista?", "factual_question", "documents_to_case"],
+    ["Só quero entender o conceito de premissa otimista no business plan", "ambiguous", "documents_to_case"],
+    ["Revise a projeção de duplicatas a receber", "ambiguous", "documents_to_case"],
+    ["Revise o plano", "ambiguous", "documents_to_case"],
+    ],
+    quarter_update: [
+    ["Refaça o balancete do trimestre", "ambiguous", "documents_to_case"],
+    ["Atualize o calendário do fechamento do trimestre", "ambiguous", "documents_to_case"],
+    ["Faça os lançamentos de ajuste do fechamento do trimestre", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre, atualize a contabilidade", "ambiguous", "documents_to_case"],
+    ["Fechamos o trimestre; refaça a conciliação bancária", "ambiguous", "documents_to_case"],
+    ["Atualize o cronograma do fechamento contábil", "ambiguous", "documents_to_case"],
+    ["Saiu o balancete, revise os lançamentos", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre. O que é um fechamento bem feito?", "factual_question", "documents_to_case"],
+    ["Fechou o trimestre, atualize o plano de amortização", "ambiguous", "documents_to_case"],
+    ["Atualize as provisões do fechamento do trimestre", "ambiguous", "documents_to_case"],
+    ["Corrija o balancete do trimestre", "ambiguous", "documents_to_case"],
+    ["Fechou o trimestre, refaça o cronograma de pagamentos", "ambiguous", "documents_to_case"],
+    ],
+    receivables_funding: [
+    ["Revise a cobrança dos recebíveis", "ambiguous", "documents_to_case"],
+    ["Monte o calendário de vencimentos das duplicatas", "ambiguous", "documents_to_case"],
+    ["Antecipar recebíveis em vez da linha do banco: o que significa?", "factual_question", "documents_to_case"],
+    ["Explique um FIDC próprio em vez da linha do banco", "factual_question", "documents_to_case"],
+    ["Vale fazer um FIDC próprio para amortizar a dívida?", "capital_strategy", "capital_strategy"],
+    ["Quais FIDCs comprariam nossa carteira de dívida?", "capital_strategy", "capital_strategy"],
+    ["Recebíveis em vez da linha do banco para quitar o empréstimo", "ambiguous", "documents_to_case"],
+    ["Organize a carteira de recebíveis", "ambiguous", "documents_to_case"],
+    ["Qual a inadimplência da carteira em vez da linha do banco?", "factual_question", "documents_to_case"],
+    ["Quero entender recebíveis em vez de linha do banco", "ambiguous", "documents_to_case"],
+    ["Preciso antecipar os recebíveis da safra", "ambiguous", "documents_to_case"],
+    ["Cobrança dos recebíveis em vez de linha do banco", "ambiguous", "documents_to_case"],
+    ],
+  } as const;
+  for (const [kind, cases] of Object.entries(neighbours)) it.each(cases.map((c) => [...c] as [string, string, string]))(`neighbouring object is not ${kind}: %s`, (message, plain, attached) => {
+    for (const hasAttachments of [false, true]) expect(compileObjectiveToPlan({message, hasAttachments}).objectiveKind).not.toBe(kind);
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+  it.each([
+    ["Revise a projeção financeira que vamos mandar ao banco", "projection_challenge", "projection_challenge"],
+    ["Questione as premissas do business plan", "projection_challenge", "projection_challenge"],
+    ["Construa a projeção operacional por drivers", "operating_projection", "operating_projection"],
+    ["Monte a projeção de receita e EBITDA", "operating_projection", "operating_projection"],
+    ["Quero ceder recebíveis em vez de usar a linha do banco", "receivables_funding", "receivables_funding"],
+    ["Quais FIDCs comprariam nossa carteira de duplicatas?", "receivables_funding", "receivables_funding"],
+    ["Faz uma primeira versão com hipóteses explícitas.", "operating_projection", "operating_projection"],
+    ["Revise o plano de negócios", "projection_challenge", "projection_challenge"],
+  ] as const)("named object of the closed list routes: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
