@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -39,7 +39,9 @@ export const receivablesFundingExtractionSchema = z.strictObject({
     creditTier: z.enum(["selected", "standard"]).nullable(), anchorProgram: z.enum(["active", "none", "unknown"]).nullable(),
     debtorCount: z.number().int().min(1).max(1000000).nullable(), largestDebtorAmount: money.nullable(),
     /** The debtor these receivables are owed by, when one debtor spans several groups; null names the group itself. */
-    debtorLabel: itemLabel.nullable(), debtorSetDisjoint: z.boolean().nullable()})).max(16),
+    debtorLabel: itemLabel.nullable(),
+    /** The debtor's CNPJ when a document states it: the debtor's identity before any name. */
+    debtorTaxId: z.string().regex(/^\d{14}$/).nullable(), debtorSetDisjoint: z.boolean().nullable()})).max(16),
   options: z.array(z.strictObject({...item, kind: z.enum(kinds), recourse: z.enum(["with_recourse", "without_recourse"]).nullable(),
     rateBasis: z.enum(["monthly", "annual", "di_plus"]).nullable(), rate: ratio.nullable(),
     iofDaily: ratio.nullable(), iofDailyCapDays: days.nullable(), iofAdditional: ratio.nullable(), rolloverDays: days.nullable(), upfrontFee: ratio.nullable(),
@@ -57,7 +59,7 @@ export const receivablesFundingExtractionContract = {
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo) ou lista vazia. Nunca estime, nunca complete, nunca invente taxa de mercado.",
     "Valores monetários em reais, sem separador de milhar (R$ 62 milhões vira 62000000). Taxas em fração (1,6% ao mês vira rate 0.016 com rateBasis monthly; CDI mais 1,2 ao ano vira rate 0.012 com rateBasis di_plus). Datas no formato AAAA-MM-DD.",
     "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
-    "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado.",
+    "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado quando um sacado aparece em mais de um grupo, e debtorTaxId o CNPJ do sacado quando um documento o traz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
@@ -95,6 +97,16 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
   const itemIds = itemKeys(e.items.map((i) => i.label));
+  // A debtor is identified by its CNPJ when stated, otherwise by its whole normalized name with a hash: two
+  // debtors are never merged under one key, and a key that would join two distinct identities is asked.
+  const debtorOf = (i: ReceivablesFundingExtraction["items"][number]) => i.debtorTaxId !== null ? {key: `cnpj-${i.debtorTaxId}`, identity: `cnpj:${i.debtorTaxId}`}
+    : {key: stableKey(i.debtorLabel ?? i.label, 80), identity: `name:${normalizedName(i.debtorLabel ?? i.label)}`};
+  const debtorIdentities = new Map<string, string>();
+  e.items.forEach((i, k) => {const d = debtorOf(i), seen = debtorIdentities.get(d.key);
+    if (seen !== undefined && seen !== d.identity) missing.push(`items.${k + 1}.debtorLabel`); else debtorIdentities.set(d.key, d.identity);});
+  const groupIdentities = new Map<string, string>();
+  e.options.forEach((o, k) => {if (o.sublimitGroup === null) return; const key = stableKey(o.sublimitGroup), seen = groupIdentities.get(key), id = normalizedName(o.sublimitGroup);
+    if (seen !== undefined && seen !== id) missing.push(`options.${k + 1}.sublimitGroup`); else groupIdentities.set(key, id);});
   const items = e.items.map((i, k) => {
     const p = `items.${k + 1}.`, before = missing.length;
     for (const f of ["contract", "encumbrance", "originDate", "dueDate", "registration", "creditTier", "anchorProgram"] as const) if (i[f] === null) missing.push(p + f);
@@ -102,7 +114,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     if (missing.length > before) return null;
     const single = i.debtorCount === 1;
     if (!single && i.debtorSetDisjoint === null) {missing.push(p + "debtorSetDisjoint"); return null;}
-    const debtor = i.debtorLabel === null ? itemIds[k]! : itemKeys([i.debtorLabel])[0]!;
+    const debtor = debtorOf(i).key;
     const free = i.encumbrance === "free";
     return {value: {id: itemIds[k]!, label: i.label, amount: i.amount, contract: i.contract!, encumbrance: i.encumbrance!, encumbranceHolder: free ? null : i.encumbranceHolder,
       releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier!,
@@ -122,7 +134,7 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     if (missing.length > before) return null;
     return {value: {id: optionIds[k]!, label: o.label, kind: o.kind, recourse: o.recourse!,
       eligibility: o.kind === "bank_line" ? null : {maxDaysPastDue: o.maxDaysPastDue!, maxRemainingTermDays: o.maxRemainingTermDays!, registrationRule: o.registrationRule!,
-        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : itemKeys([o.sublimitGroup])[0]!,
+        minCreditTier: o.minCreditTier!, sublimitPerDebtor: o.sublimitPerDebtor, sublimitGroup: o.sublimitGroup === null ? null : stableKey(o.sublimitGroup),
         anchorItemIds: anchors.map((x) => itemIds[x]!)},
       rate: {basis: o.rateBasis!, rate: o.rate!}, iofDaily: o.iofDaily!, iofDailyCapDays: o.iofDailyCapDays!, iofAdditional: o.iofAdditional!,
       rolloverDays: o.rolloverDays, upfrontFee: o.upfrontFee!, collateral: o.collateral!, leadDaysMin: o.leadDaysMin, leadDaysMax: o.leadDaysMax},

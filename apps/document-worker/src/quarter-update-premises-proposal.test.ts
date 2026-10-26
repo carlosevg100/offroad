@@ -1,7 +1,7 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeQuarterUpdateHypotheses, type QuarterUpdateFacts} from "@offroad/financial-model";
 import {buildQuarterUpdatePremiseProposal, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
-  shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction} from "./quarter-update-premises-proposal";
+  shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction, priorResultPins} from "./quarter-update-premises-proposal";
 import {itemKeys} from "./lote2-premises";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
 import weeklyPacket from "../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
@@ -104,13 +104,18 @@ describe("quarter update premises proposed from a turn", () => {
       missing: ["cashLineLabel", "causes.1.until", "streamUpdates.1.streamId", "covenantMeasurementIds"]});
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
-    const c = complete(auroraExtraction(aurora(hex("a"), hex("b")))), proposal = buildQuarterUpdatePremiseProposal(c.facts);
+    const c = complete(auroraExtraction(aurora(hex("a"), hex("b")))), pins = priorResultPins(priors()), proposal = buildQuarterUpdatePremiseProposal(c.facts, pins);
     expect(proposal.summary).toMatchObject({situationId: "near-covenant", referenceDate: "2026-09-30"});
     expect(proposal.summary.items.every((x) => summaryGroups.includes(x.group) && summaryOrigins.includes(x.origin))).toBe(true);
     expect(proposal.summary.items.slice(0, 2).map((x) => x.labelKey)).toEqual(["priorWeeklyCash", "priorCovenant"]);
     expect(proposal.hypotheses.length).toBeLessThanOrEqual(256);
     expect(proposal.hypotheses.every((h) => /^quarter_update\.[0-9a-f-]{36}\.[A-Za-z0-9_.-]{1,200}$/.test(h.fieldPath))).toBe(true);
-    expect(buildQuarterUpdatePremiseProposal(c.facts).fingerprint).toBe(proposal.fingerprint);
+    expect(buildQuarterUpdatePremiseProposal(c.facts, pins).fingerprint).toBe(proposal.fingerprint);
+    // The card pins the exact prior executions it shows; other results with the same basis make another card (independent review, round 3).
+    expect(proposal.summary.priorResults).toEqual([{role: "weekly_cash", executionId: priors().weeklyCash.executionId, resultFingerprint: priors().weeklyCash.resultFingerprint},
+      {role: "covenant", executionId: priors().covenant.executionId, resultFingerprint: priors().covenant.resultFingerprint}]);
+    const other = buildQuarterUpdatePremiseProposal(c.facts, [{...pins[0]!, executionId: "a0000000-0000-4000-8000-000000000099", resultFingerprint: hex("9")}, pins[1]!]);
+    expect(other.fingerprint).not.toBe(proposal.fingerprint);
     expect(proposal).toMatchObject({methodId: "update-after-quarter-close", methodVersion: "2026.10.26-v1"});
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {

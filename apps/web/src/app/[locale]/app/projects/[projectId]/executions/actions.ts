@@ -1,10 +1,11 @@
 "use server";
 
+import {checkQuarterUpdatePins, type PriorResultPins} from "@/lib/execution/quarter-update-pins";
 import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {revalidatePath} from "next/cache";
 import {composeCapitalExecutionRequest, composeMethodExecutionRequest, executionContractBasisSchema, quarterUpdateMethodId, type ExecutionContractBasis,
-  type QuarterUpdatePrior, type QuarterUpdatePriors} from "@offroad/execution-request";
+  type QuarterUpdatePriors} from "@offroad/execution-request";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
@@ -139,11 +140,6 @@ const sourcePin = z.object({resourceId: z.uuid(), sourceVersionId: z.uuid(), con
 const priorSchema = z.object({executionId: z.uuid(), methodId: z.string(), methodVersion: z.string(), inputSnapshot: z.string().min(2), inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin), committedAt: z.string()}).loose();
 const priorsSchema = z.object({weeklyCash: priorSchema.nullable(), covenant: priorSchema.nullable()}).loose();
-/** The fingerprint of the basis a stored prior input was composed on. */
-const envelopeOf = (prior: QuarterUpdatePrior) => {
-  try { return z.object({analysis: z.object({envelope: z.object({fingerprint: z.string()}).loose()}).loose()}).loose().parse(JSON.parse(prior.inputSnapshot)).analysis.envelope.fingerprint; }
-  catch { return null; }
-};
 
 /** The person confirms the premises the conversation proposed. The company the dossier names as
  * its subject and the work's premise definition give every hypothesis its identity; the database
@@ -173,6 +169,7 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   // The quarter close updates the prior completed weekly cash and covenant results of this work; it is
   // refused before anything is written when one is missing, and superseded when the card named other versions.
   let priors: QuarterUpdatePriors | undefined;
+  let pins: PriorResultPins | undefined;
   if (proposal.data.method_id === quarterUpdateMethodId) {
     const read = await supabase.rpc("quarter_update_prior_results_v1", {p_work_id: projectId});
     if (read.error) return failure(read.error);
@@ -182,7 +179,9 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
     if (missing.length) return {ok: false, error: "priors_missing", missing};
     priors = {weeklyCash: found.data.weeklyCash!, covenant: found.data.covenant!};
     const facts = proposal.data.facts && typeof proposal.data.facts === "object" ? proposal.data.facts as Record<string, {value?: unknown} | undefined> : {};
-    if (facts.priorWeeklyFingerprint?.value !== envelopeOf(priors.weeklyCash!) || facts.priorCovenantFingerprint?.value !== envelopeOf(priors.covenant!)) return {ok: false, error: "superseded"};
+    const pinned = checkQuarterUpdatePins(summary, facts, priors);
+    if (!pinned.ok) return {ok: false, error: "superseded"};
+    pins = pinned.pins;
   }
   const dossiers = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).in("resource_id", [projectId, proposal.data.intake_session_id]);
   if (dossiers.error || !dossiers.data?.length) return {ok: false, error: "company_unregistered"};
@@ -219,9 +218,12 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!composed.ok) return composed.error === "method_unavailable" ? {ok: true, versionId, executionId: null, calculation: "pending_release"}
     : composed.error === "provenance_denied" || composed.error === "composition_invalid" ? failure({code: "22023"}) : refused(composed.error);
   // Only the quarter close names prior results, through the v3 producer; every other method keeps v2.
+  // The request names exactly the prior executions the card pinned.
+  if (composed.priorResults && (!pins || composed.priorResults.length !== 2 || composed.priorResults.some((r, k) => r.role !== pins![k]!.role
+    || r.executionId !== pins![k]!.executionId || r.resultFingerprint !== pins![k]!.resultFingerprint))) return {ok: false, error: "superseded"};
   const requested = composed.priorResults
     ? await supabase.rpc("request_work_execution_v3", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText,
-      p_prior_results: composed.priorResults})
+      p_prior_results: pins!})
     : await supabase.rpc("request_work_execution_v2", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText});
   if (requested.error) {
     if (requested.error.code === "23505" && requested.error.message.includes("execution_request_conflict")) {

@@ -1143,7 +1143,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
-      "sha256": "4cfc8fd51f74c194c6e7f560f8ff6feeb8106f39c353370a5cea70948898df00",
+      "sha256": "7c10d2fabe88d22ea1cc2a8184561b884b59556e5c98a5f578f7c3575212c184",
       "entrypoint": true,
       "rpcs": [
         "confirm_work_premise_proposal_v1",

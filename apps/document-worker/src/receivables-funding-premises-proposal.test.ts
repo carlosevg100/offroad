@@ -2,7 +2,7 @@ import {beforeAll, describe, expect, it} from "vitest";
 import {proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
 import {buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
-import {itemKeys} from "./lote2-premises";
+import {itemKeys, stableKey} from "./lote2-premises";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins, turnWithIntent} from "./lote2-premises.test-support";
 
 let aurora: () => ReceivablesFundingFacts;
@@ -21,7 +21,7 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
     dedicatedVehicleThreshold: {value: f.dedicatedVehicleThreshold.value, origin: "informed", source: "faixa informada pela tesouraria"},
     items: f.items.map((i) => {const v = i.value; return {label: v.label, origin: said(i.origin), source: i.source, amount: v.amount, contract: v.contract, encumbrance: v.encumbrance,
       encumbranceHolder: v.encumbranceHolder, releaseEvent: v.releaseEvent, originDate: v.originDate, dueDate: v.dueDate, registration: v.registration, creditTier: v.creditTier,
-      anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount, debtorLabel: null, debtorSetDisjoint: v.debtorSetDisjoint};}),
+      anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount, debtorLabel: null, debtorTaxId: null, debtorSetDisjoint: v.debtorSetDisjoint};}),
     options: f.options.map((o) => {const v = o.value, el = v.eligibility; return {label: v.label, origin: said(o.origin), source: o.source, kind: v.kind, recourse: v.recourse,
       rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays,
       upfrontFee: v.upfrontFee, collateral: v.collateral, leadDaysMin: v.leadDaysMin, leadDaysMax: v.leadDaysMax, maxDaysPastDue: el?.maxDaysPastDue ?? null,
@@ -34,6 +34,9 @@ const renameOf = (f: ReceivablesFundingFacts) => {
   const pairs: [string, string][] = [];
   const add = (items: {label: string; id: string}[]) => itemKeys(items.map((x) => x.label)).forEach((k, n) => pairs.push([k, items[n]!.id]));
   add(f.items.map((i) => i.value)); add(f.options.map((o) => o.value));
+  // Debtor keys identify the whole name; the fixture keys each debtor by its group id.
+  for (const i of f.items) pairs.push([stableKey(i.value.label, 80), i.value.debtorKey]);
+  for (const o of f.options) if (o.value.eligibility?.sublimitGroup) pairs.push([stableKey(o.value.eligibility.sublimitGroup), o.value.eligibility.sublimitGroup]);
   return new Map(pairs);
 };
 const complete = (e: ReceivablesFundingExtraction, f: ReceivablesFundingFacts) => {
@@ -90,6 +93,23 @@ describe("receivables funding premises proposed from a turn", () => {
     e.items[0]!.contract = null; e.items[1]!.encumbranceHolder = null; e.options[0]!.anchorItemLabels = ["Rede Z"];
     expect(completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"})).toEqual({status: "missing",
       missing: ["items.1.contract", "items.2.encumbranceHolder", "options.1.anchorItemLabels"]});
+  });
+  it("never merges two debtors whose names share a long prefix, keys a CNPJ as itself and asks for a key that would join two identities (independent review, round 3)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    const base = e.items.find((i) => i.debtorCount === 1)!;
+    e.items = [{...base, label: "Distribuidora Brasileira de Alimentos Nordeste Ltda", amount: "3000000"}, {...base, label: "Distribuidora Brasileira de Alimentos Sudeste Ltda", amount: "3000000"}];
+    e.options = e.options.filter((o) => o.kind !== "anchor_program");
+    const c = complete(e, f), keys = c.facts.items.map((i) => i.value.debtorKey);
+    expect(new Set(keys).size).toBe(2);
+    // The same debtor named in two groups keeps one key; a stated CNPJ is the identity.
+    const same = auroraExtraction(f); same.items = [{...base, label: "Lote 1", debtorLabel: "Rede Z"}, {...base, label: "Lote 2", debtorLabel: "Rede Z"}];
+    same.options = same.options.filter((o) => o.kind !== "anchor_program");
+    expect(new Set(complete(same, f).facts.items.map((i) => i.value.debtorKey)).size).toBe(1);
+    const taxed = auroraExtraction(f); taxed.items = [{...base, label: "Rede Z", debtorTaxId: "12345678000190"}];
+    taxed.options = taxed.options.filter((o) => o.kind !== "anchor_program");
+    expect(complete(taxed, f).facts.items[0]!.value.debtorKey).toBe("cnpj-12345678000190");
+    // Sublimit groups with long shared prefixes stay apart too.
+    expect(stableKey("Fundos multicedentes do gestor Alfa Nordeste")).not.toBe(stableKey("Fundos multicedentes do gestor Alfa Sudeste"));
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildReceivablesFundingPremiseProposal(c.facts);

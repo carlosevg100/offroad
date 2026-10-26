@@ -1,0 +1,1562 @@
+[
+{
+"message": "Analise a companhia e a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a projeção operacional",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e a projeção operacional",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Analise a companhia e o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Compare as propostas para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a projeção operacional",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para a projeção operacional",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "proposal_comparison"
+},
+{
+"message": "Compare as propostas para o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "proposal_comparison"
+},
+{
+"message": "Elabore uma planilha com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a projeção operacional",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com a projeção operacional",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Elabore uma planilha com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Explique como funciona a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a projeção operacional",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona a projeção operacional",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Explique como funciona o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "factual_question"
+},
+{
+"message": "Faça o diagnóstico da empresa com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a projeção operacional",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com a projeção operacional",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "company_analysis"
+},
+{
+"message": "Faça o diagnóstico da empresa com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "company_analysis"
+},
+{
+"message": "Faça um memo sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a projeção operacional",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre a projeção operacional",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Faça um memo sobre o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a projeção operacional",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com a projeção operacional",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Gere um teaser com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Levantamento de mercado para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a projeção operacional",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para a projeção operacional",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "market_mapping"
+},
+{
+"message": "Levantamento de mercado para o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "market_mapping"
+},
+{
+"message": "Leve ao comitê a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a projeção operacional",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê a projeção operacional",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Leve ao comitê o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Liste os riscos e mitigantes de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a projeção operacional",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de a projeção operacional",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Liste os riscos e mitigantes de o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a projeção operacional",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para a projeção operacional",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "ambiguous"
+},
+{
+"message": "Mapeie o mercado de debêntures e os preços para o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique a projeção operacional",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique a projeção operacional",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Me explique o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "factual_question"
+},
+{
+"message": "Me explique o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "documents_to_case"
+},
+{
+"message": "Monte a matriz de risco de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a projeção operacional",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de a projeção operacional",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte a matriz de risco de o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte o roteiro da reunião sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a projeção operacional",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre a projeção operacional",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte o roteiro da reunião sobre o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Monte um deck com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a projeção operacional",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com a projeção operacional",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um deck com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Monte um mapa de riscos para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a projeção operacional",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para a projeção operacional",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "risk_matrix"
+},
+{
+"message": "Monte um mapa de riscos para o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "risk_matrix"
+},
+{
+"message": "Planeje a captação com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a projeção operacional",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com a projeção operacional",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje a captação com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a projeção operacional",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com a projeção operacional",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Planeje o alongamento da dívida com o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Prepare a decisão do conselho sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a projeção operacional",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre a projeção operacional",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a decisão do conselho sobre o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "board_decision"
+},
+{
+"message": "Prepare a reunião com o banco sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a projeção operacional",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre a projeção operacional",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare a reunião com o banco sobre o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "meeting_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a projeção operacional",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre a projeção operacional",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "material_preparation"
+},
+{
+"message": "Prepare uma apresentação sobre o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "material_preparation"
+},
+{
+"message": "Refinanciar a dívida usando a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a projeção operacional",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando a projeção operacional",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Refinanciar a dívida usando o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise a operação de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a projeção operacional",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de a projeção operacional",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise a operação de o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a projeção operacional",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de a projeção operacional",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Revise o contrato de o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a projeção operacional",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e a projeção operacional",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "capital_strategy"
+},
+{
+"message": "Revise o plano de reestruturação da dívida e o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "capital_strategy"
+},
+{
+"message": "Teste a estrutura de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a antecipação de recebíveis em vez da linha do banco",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a atualização após o fechamento do trimestre",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a atualização após o fechamento do trimestre",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a primeira versão da projeção com hipóteses",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a primeira versão da projeção com hipóteses",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a projeção operacional",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de a projeção operacional",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de as premissas otimistas do plano",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de as premissas otimistas do plano",
+"hasAttachments": true,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de o plano de negócios que vai ao banco",
+"hasAttachments": false,
+"kind": "operation_review"
+},
+{
+"message": "Teste a estrutura de o plano de negócios que vai ao banco",
+"hasAttachments": true,
+"kind": "operation_review"
+}
+]

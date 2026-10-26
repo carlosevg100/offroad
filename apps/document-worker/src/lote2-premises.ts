@@ -27,7 +27,9 @@ export type Lote2SummaryItem = {
 /** One card row; `labelKey` names a house-written label so the card can translate it. */
 export const summaryRow = (group: Lote2SummaryItem["group"], label: string, x: {origin: Lote2Origin; source: string}, labelKey: string | null = null): Lote2SummaryItem =>
   ({group, label, labelKey, origin: x.origin, source: x.source});
-export type Lote2Summary = {situationId: string; referenceDate: string | null; items: Lote2SummaryItem[]};
+/** The prior results a quarter close card was proposed over, pinned by execution and packet fingerprint. */
+export type PriorResultPin = {role: "weekly_cash" | "covenant"; executionId: string; resultFingerprint: string};
+export type Lote2Summary = {situationId: string; referenceDate: string | null; items: Lote2SummaryItem[]; priorResults?: PriorResultPin[]};
 
 /** A stated fact keeps its origin; its source defaults to where it came from when the extraction did not cite it. */
 export const stated = <T>(f: Sourced<T>) => f.value === null || f.origin === null ? null
@@ -44,6 +46,16 @@ export function itemKeys(labels: readonly string[], max = 30): string[] {
     used.add(k);
     return k;
   });
+}
+/** The normalized identity of a name: case, accents, punctuation and spacing folded, nothing truncated. */
+export const normalizedName = (name: string) => foldCue(name).replace(/[^a-z0-9]+/g, " ").trim();
+/** A key that identifies a whole name, not a truncated slug: a readable prefix of the full normalized name and
+ * a hash of all of it, so two names that share a long prefix never meet in one key. Used where a key is an
+ * identity the method groups by (a debtor, a sublimit group), not a position in one list. */
+export function stableKey(name: string, max = 40): string {
+  const full = normalizedName(name) || "item", hash = createHash("sha256").update(full).digest("hex").slice(0, 12);
+  const prefix = full.replace(/ /g, "-").slice(0, max - hash.length - 1).replace(/-+$/, "") || "k";
+  return `${prefix}-${hash}`;
 }
 /** Matches a label the extraction repeats to the item it names, ignoring case and accents. */
 export const sameLabel = (a: string, b: string) => foldCue(a).replace(/\s+/g, " ").trim() === foldCue(b).replace(/\s+/g, " ").trim();

@@ -677,15 +677,24 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
  * financing proposals or offers. Comparing scenarios or alternatives of the projection itself, the
  * projection against the budget or the actual against the projected is part of these methods. */
 function inferLote3Objective(text: string): WorkspaceObjectiveKind | null {
+  // A file named as the source ("da planilha anexa", "a partir do Excel enviado") is input, not a deliverable.
+  const asked = text.replace(/\b(?:d[ao]s?|n[ao]s?|a partir d[ao]s?|com [ao]s?|pel[ao]s?|em)\s+(?:planilhas?|excel|modelos?|arquivos?|documentos?)\b(?:\s+(?:anex\w*|envia\w*|recebid\w*|que (?:mandei|enviei|anexei|segue|seguem)))?/g, " ");
+  // The existing routes' own matchers veto lote 3, so a signal they gain later is preserved without copying it.
+  // Two deliberate narrowings keep the ficha phrasings: the risk matrix's bare subjects (covenant, waterfall)
+  // and capital strategy's bare funding words (financiar, divida, endividamento, capital de giro) name what the
+  // message is about, not the action it asks for, so they are left out of the veto; every other term counts.
+  const riskRequest = foldedObjectivePatterns.riskMatrix.test(text.replace(/\b(?:covenants?|waterfall)\b/g, " "));
+  const strategyRequest = foldedObjectivePatterns.capitalStrategy.test(text.replace(/\b(?:financiar|divida|dividas|endividamento|capital de giro)\b/g, " "))
+    || /\b(?:reestrutur\w*|quit(?:ar|acao|e|a)|renegoci\w*|estrategi\w*|caminhos?|alongar|alongamento|refinanc\w*)\b/.test(text);
+  const otherRoute = foldedObjectivePatterns.material.test(asked) || foldedObjectivePatterns.operationReview.test(text) || riskRequest || strategyRequest
+    || foldedObjectivePatterns.boardDecision.test(text) || foldedObjectivePatterns.meeting.test(text) || foldedObjectivePatterns.marketMapping.test(text)
+    || foldedObjectivePatterns.companyAnalysis.test(text);
   const explanation = /\b(?:explique|explica|explicar|me explique|o que (?:e|sao|significa)|como funciona|o conceito de|qual (?:e )?a diferenca entre|defina|definicao de)\b/.test(text);
-  const deliverable = foldedObjectivePatterns.material.test(text)
-    || /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|pptx|slides?|planilha|excel|minutas?|redline)\b/.test(text);
-  const contractual = foldedObjectivePatterns.operationReview.test(text)
-    || /\bplanos?\b.{0,40}\b(?:amortiz\w*|pagamentos?|parcel\w*|contratua\w*|contrato)\b|\bamortiz\w*\b/.test(text);
-  const strategy = /\b(?:estrategi\w*|caminhos?|alongar|alongamento|refinanc\w*|matriz de riscos?)\b/.test(text);
+  const deliverable = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|pptx|slides?|planilha|excel|minutas?|redline)\b/.test(asked);
+  const contractual = /\bplanos?\b.{0,40}\b(?:amortiz\w*|pagamentos?|parcel\w*|contratua\w*|contrato)\b|\bamortiz\w*\b/.test(text);
   const externalComparison = /\bcompar\w*\b.{0,60}\b(?:propostas?|ofertas?|term\s*sheets?|bancos?|financiadores?|linhas? de credito|alternativas de (?:divida|financiamento|captacao|credito))\b/.test(text)
     || /\balternativas de (?:divida|financiamento|captacao|credito)\b/.test(text);
-  if (explanation || deliverable || contractual || strategy || externalComparison) return null;
+  if (otherRoute || explanation || deliverable || contractual || externalComparison) return null;
   // C54 needs an explicit request to carry the close forward.
   const close = /\b(?:fech(?:ou|amos|ei|amento)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a |do |da )?(?:trimestre|semestre|mes|exercicio|balancete)\b|\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b|\b(?:trimestre|balancete|fechamento)\b/.test(text);
   const update = /\b(?:atualiz\w*|refaz\w*|refa(?:ca|zer)|propag\w*)\b/.test(text);

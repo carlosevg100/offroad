@@ -77,12 +77,22 @@ const fichas = [
 ] as const;
 
 import originMainRouting from "./routing-regression.origin-main.json";
+import foldedProbes from "./routing-regression.folded-probes.origin-main.json";
 
 describe("canonical ficha objective routing", () => {
   // Every routing test phrase of lotes 1 and 2 (all strings of the work-plan tests at origin/main), with and
   // without attachments, keeps the kind origin/main gave it: lote 3 never takes an existing route.
   it("keeps every lote 1 and lote 2 routing phrase on its origin/main kind", () => {
     const changed = (originMainRouting as {message: string; hasAttachments: boolean; kind: string}[])
+      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
+    expect(changed).toEqual([]);
+  });
+  // Each signal of the existing folded patterns (risk matrix, material, operation review, board, meeting, market,
+  // company analysis, capital strategy) and explanation requests, joined to each lote 3 object, keeps the kind
+  // origin/main gave it whenever origin/main gave it a route: lote 3 never takes a request another route owns.
+  it("keeps every folded-pattern probe on its origin/main route", () => {
+    const changed = (foldedProbes as {message: string; hasAttachments: boolean; kind: string}[])
+      .filter((row) => row.kind !== "ambiguous" && row.kind !== "documents_to_case")
       .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
     expect(changed).toEqual([]);
   });
@@ -146,6 +156,13 @@ describe("canonical ficha objective routing", () => {
     ["Me explique o que é cessão de recebíveis", "factual_question"],
     ["Construa uma projeção por drivers e compare as alternativas de volume e preço", "operating_projection"],
     ["Compare os cenários de alta e de base da projeção do plano e diga quais premissas são otimistas", "projection_challenge"],
+    // Independent review, round 3.
+    ["Revise o plano de reestruturação da dívida existente", "capital_strategy"],
+    ["Revise o plano para quitar a dívida existente", "capital_strategy"],
+    ["Monte um mapa de riscos para a projeção operacional", "risk_matrix"],
+    ["Revise a projeção financeira da planilha anexa", "projection_challenge"],
+    ["Construa a projeção por drivers a partir do Excel enviado", "operating_projection"],
+    ["Elabore uma planilha com a projeção por drivers", "material_preparation"],
   ] as const)("lote 3 patterns leave other intents in place: %s", (message, kind) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
   });

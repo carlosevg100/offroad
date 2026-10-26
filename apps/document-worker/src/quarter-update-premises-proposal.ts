@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
 import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
-  summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises} from "./lote2-premises";
+  summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
 /** The method these premises feed, pinned to its implemented version. */
@@ -189,10 +189,11 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   return {status: "complete", facts, situationId: quarterUpdateSituation, housePremiseKeys: [...new Set(used)]};
 }
 
-/** The card: the prior versions, each line, each cause, the facilities and the dependents, and the materiality floor. */
-export function quarterUpdateSummary(facts: QuarterUpdateFacts): Lote2Summary {
+/** The card: the prior versions, each line, each cause, the facilities and the dependents, and the materiality floor.
+ * The exact prior executions shown are pinned on the card, so confirmation never silently moves to other results. */
+export function quarterUpdateSummary(facts: QuarterUpdateFacts, priorResults: PriorResultPin[]): Lote2Summary {
   const row = summaryRow;
-  return {situationId: quarterUpdateSituation, referenceDate: facts.quarterEnd, items: [
+  return {situationId: quarterUpdateSituation, referenceDate: facts.quarterEnd, priorResults, items: [
     row("premise", "Caixa semanal anterior", facts.priorWeeklyFingerprint, "priorWeeklyCash"),
     row("premise", "Teste de covenant anterior", facts.priorCovenantFingerprint, "priorCovenant"),
     ...facts.lines.map((l) => row("line", l.value.label, l)),
@@ -203,9 +204,13 @@ export function quarterUpdateSummary(facts: QuarterUpdateFacts): Lote2Summary {
   ]};
 }
 
-export function buildQuarterUpdatePremiseProposal(facts: QuarterUpdateFacts) {
-  return fingerprintedProposal(quarterUpdatePremiseMethod, facts, proposeQuarterUpdateHypotheses(facts), quarterUpdateSummary(facts));
+export function buildQuarterUpdatePremiseProposal(facts: QuarterUpdateFacts, priorResults: PriorResultPin[]) {
+  return fingerprintedProposal(quarterUpdatePremiseMethod, facts, proposeQuarterUpdateHypotheses(facts), quarterUpdateSummary(facts, priorResults));
 }
+/** The pins of the priors a card is proposed over, weekly cash first. */
+export const priorResultPins = (priors: {weeklyCash: Prior; covenant: Prior}): PriorResultPin[] => [
+  {role: "weekly_cash", executionId: priors.weeklyCash.executionId, resultFingerprint: priors.weeklyCash.resultFingerprint},
+  {role: "covenant", executionId: priors.covenant.executionId, resultFingerprint: priors.covenant.resultFingerprint}];
 
 /** One turn's premise step for the quarter close. Without both prior completed results of the work it proposes
  * nothing and names what is missing, before any extraction. */
@@ -228,6 +233,6 @@ export async function proposeQuarterUpdatePremisesForTurn(input: {
   const context = {priorWeeklyCash: {streams: priorStreams(found.weeklyCash)}, priorCovenant: {measurements: priorMeasurements(found.covenant)}};
   return proposeLote2PremisesForTurn({logPrefix: "quarter_update_premises", idName: "quarter-update", schema: quarterUpdateExtractionSchema,
     complete: (extraction, id) => completeQuarterUpdateFacts({extraction, priors: found, ids: {updateId: id, entityId: id, definitionVersionId: id}, currency: "BRL"}),
-    build: buildQuarterUpdatePremiseProposal}, {...input, entry, projectId: input.projectId,
+    build: (facts) => buildQuarterUpdatePremiseProposal(facts, priorResultPins(found))}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({documentFields: await input.loadEvidence(), ...context})});
 }
