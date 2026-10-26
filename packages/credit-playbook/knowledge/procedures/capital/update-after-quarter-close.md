@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: quarter-update-packet.v1
 unit_test_files: [packages/financial-model/src/quarter-update-packet.test.ts, packages/financial-model/src/quarter-update-premises.test.ts, packages/financial-model/src/quarter-update-runs.test.ts, packages/financial-core/src/quarter-update.test.ts]
-gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-transform-with-noise-is-no-propagation, managerial-reading-not-updated-by-the-indenture-result, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, series-moved-outside-persistence, balance-shift-on-ebitda, series-shared-by-two-causes, series-outside-the-scenario-used, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
+gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-or-near-identity-factor-is-immaterial, managerial-reading-not-updated-by-the-indenture-result, reduction-per-future-payment-is-opposite-to-the-cause, opposite-factor-keeps-the-weekly-cash-affected, materiality-floor-declared, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, balance-shift-on-ebitda, series-shared-by-two-causes, series-outside-the-scenario-used, structural-cause-without-an-end, recomputing-what-did-not-move, adopted-series-instead-of-the-transform, quarter-outside-the-test-period, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:bridges-sum-exactly-to-the-deviations]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -53,7 +53,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Balancete e gerencial do trimestre com as linhas projetadas e realizadas (receita, EBITDA, caixa no fim do trimestre, prazo médio de recebimento, custo dos principais insumos).
 - A explicação de cada desvio pela controladoria, com a classificação de cada causa e, para as estruturais, até quando persistem; sem ela, a causa fica como interpretação a confirmar.
 - A versão anterior adotada do caixa semanal e do teste de covenant, identificadas pela base em que foram adotadas.
-- As séries do caixa semanal que as causas estruturais movem, refeitas com o dado do fechamento.
+- A transformação que cada causa estrutural aplica a uma série do caixa semanal (fator ou dias de atraso) e o piso absoluto de materialidade na escala da base.
 - Para cada causa estrutural, se é fluxo ou mudança de saldo e até quando persiste; o efeito à frente no EBITDA e no caixa é calculado a partir disso, nunca informado à parte.
 - A definição de EBITDA de cada limite: a da escritura e, para a política do conselho, a gerencial quando adotada.
 - Linhas aprovadas ou contratadas com o limite e a fonte da aprovação (ata, contrato).
@@ -75,7 +75,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Ponte: soma das causas de cada linha; resíduo = desvio menos a soma. Resíduo diferente de zero vira lacuna nomeada na linha e nunca é distribuído entre as causas.
 - Causa que é o desvio de outra linha (EBITDA abaixo dentro da ponte do caixa) tem de ser igual a esse desvio, exatamente.
 - Causa de calendário não tem data de fim e não move a projeção além do que o realizado já leva aos saldos; causa estrutural tem data de fim depois do fechamento e é fluxo ou mudança de saldo. Mudança de saldo pertence à ponte do caixa.
-- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. Cada série atualizada pertence a uma única causa e a uma série do cenário informado; série atribuída a duas causas, ou fora do cenário usado, é recusada. A série só pode mudar depois do fechamento e até a data de fim da sua causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada série declara a transformação da sua causa: valores multiplicados por um fator (custo do insumo) ou eventos adiados por um número de dias (prazo de recebimento, que precisa ser o desvio da linha de prazo). A série adotada tem de ser essa transformação da série anterior dentro da janela, com tolerância de R$ 0,000001 por data; cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor. O efeito considerado é o da transformação declarada, nunca o ruído da série adotada: fator 1, atraso de zero dias ou efeito dentro da tolerância não é propagação. Sem série, com efeito nulo, de sinal oposto ou fora da transformação declarada, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
+- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries movidas pelas causas estruturais. O método não aceita série propagada adotada: deriva cada série aplicando à série anterior a transformação da sua causa (valores multiplicados por um fator, como o custo do insumo, ou eventos adiados por um número de dias, como o prazo de recebimento, que precisa ser o desvio da linha de prazo), só depois do fechamento e até a data de fim da causa. Cada série pertence a uma única causa e a uma série do cenário informado; série atribuída a duas causas, fora do cenário usado ou diferente da derivada é recusada. A causa só propaga se o efeito derivado no caixa da janela tiver o sinal da causa e magnitude de pelo menos o maior entre o piso absoluto (R$ 1 mil na escala da base) e 1% do valor da causa; abaixo disso, lacuna de efeito imaterial; com sinal oposto, lacuna de efeito inconsistente. O piso fica declarado no pacote. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado.
 - Necessidade = mínimo menos o menor saldo semanal, nunca negativa; comparada ao limite da linha que completa as semanas; o limite inteiro é medido como caso próprio.
 - Ação: passos em ordem; o passo fixo saca uma série nova que substitui a planejada; o passo residual saca, na data adotada, a necessidade que ainda resta. Cada passo é comparado ao limite aprovado.
 - Efeito à frente de uma causa estrutural, por medição: fluxo = valor do trimestre × dias entre o dia seguinte ao fechamento e o menor entre a data de fim e a data do teste ÷ dias do trimestre; entra no EBITDA quando a causa está na ponte do EBITDA e no caixa sempre. Mudança de saldo = zero à frente: o saldo já está no desvio de caixa do fechamento, levado uma vez, e continua mais baixo enquanto a causa persiste.
@@ -132,9 +132,9 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - packages/financial-core/src/quarter-update.test.ts: núcleo contra o oráculo da ficha, com os núcleos de caixa semanal e de covenant compostos.
 - packages/financial-model/src/quarter-update-packet.test.ts e packages/financial-model/src/quarter-update-premises.test.ts: leitor adotado sobre três bases, pacote e ida e volta das premissas.
 ## Gold
-- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-transform-with-noise-is-no-propagation, managerial-reading-not-updated-by-the-indenture-result, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default.
+- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-or-near-identity-factor-is-immaterial, managerial-reading-not-updated-by-the-indenture-result, reduction-per-future-payment-is-opposite-to-the-cause, opposite-factor-keeps-the-weekly-cash-affected, materiality-floor-declared, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default.
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série movida fora do período em que a causa persiste, série atribuída a duas causas, série fora do cenário usado, dependência declarada recalculada sem nada movido, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série adotada no lugar da transformação, série atribuída a duas causas, série fora do cenário usado, dependência declarada recalculada sem nada movido, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C54 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -4366,112 +4366,6 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                       }
                                     }
                                   }
-                                },
-                                "dates": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "object",
-                                    "fields": {
-                                      "decisionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      },
-                                      "definitionVersionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "definitionKind": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "reported",
-                                            "managerial",
-                                            "contractual"
-                                          ]
-                                        }
-                                      },
-                                      "missingReason": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    }
-                                  }
-                                },
-                                "amounts": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "object",
-                                    "fields": {
-                                      "decisionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      },
-                                      "definitionVersionId": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "string"
-                                        }
-                                      },
-                                      "definitionKind": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "enum",
-                                          "values": [
-                                            "reported",
-                                            "managerial",
-                                            "contractual"
-                                          ]
-                                        }
-                                      },
-                                      "missingReason": {
-                                        "required": true,
-                                        "value": {
-                                          "type": "union",
-                                          "variants": [
-                                            {
-                                              "type": "string"
-                                            },
-                                            {
-                                              "type": "null"
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    }
-                                  }
                                 }
                               }
                             }
@@ -4962,6 +4856,59 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                   }
                                 }
                               ]
+                            }
+                          }
+                        },
+                        "materialityFloor": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "decisionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "definitionVersionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "definitionKind": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "reported",
+                                    "managerial",
+                                    "contractual"
+                                  ]
+                                }
+                              },
+                              "missingReason": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
                             }
                           }
                         },
@@ -7362,6 +7309,26 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                 "type": "date"
                               }
                             },
+                            "materiality": {
+                              "required": true,
+                              "value": {
+                                "type": "object",
+                                "fields": {
+                                  "absolute": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "relative": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            },
                             "lines": {
                               "required": true,
                               "value": {
@@ -7655,6 +7622,20 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                       }
                                     },
                                     "weeklyEffect": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "materialityFloor": {
                                       "required": true,
                                       "value": {
                                         "type": "union",
@@ -10174,6 +10155,7 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                           "unexplained_residual",
                                           "structural_cause_not_in_weekly_cash",
                                           "structural_cause_weekly_effect_inconsistent",
+                                          "structural_cause_effect_immaterial",
                                           "structural_cause_series_not_matching_factor",
                                           "structural_cause_question_missing",
                                           "affected_not_recomputed"
@@ -10411,6 +10393,12 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                   ]
                                 }
                               },
+                              "materialityFloor": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
                               "ebitdaAhead": {
                                 "required": true,
                                 "value": {
@@ -10422,6 +10410,26 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                 "value": {
                                   "type": "string"
                                 }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "materiality": {
+                        "required": true,
+                        "value": {
+                          "type": "object",
+                          "fields": {
+                            "absolute": {
+                              "required": true,
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "relative": {
+                              "required": true,
+                              "value": {
+                                "type": "string"
                               }
                             }
                           }

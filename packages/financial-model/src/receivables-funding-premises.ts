@@ -28,7 +28,7 @@ const item = z.strictObject({
 const option = z.strictObject({
   id: key, label: text, kind: z.enum(receivablesFundingOptionKinds), recourse: z.enum(["with_recourse", "without_recourse"]),
   eligibility: z.strictObject({maxDaysPastDue: days, maxRemainingTermDays: days, registrationRule: z.enum(["required", "not_required"]),
-    minCreditTier: z.enum(["selected", "standard"]), sublimitPerDebtor: money.nullable(), anchorItemIds: z.array(key).max(16)}).nullable(),
+    minCreditTier: z.enum(["selected", "standard"]), sublimitPerDebtor: money.nullable(), sublimitGroup: key.nullable(), anchorItemIds: z.array(key).max(16)}).nullable(),
   rate: z.strictObject({basis: z.enum(["monthly", "annual", "di_plus"]), rate: ratio}),
   iofDaily: ratio, iofDailyCapDays: days, iofAdditional: ratio, rolloverDays: days.nullable(), upfrontFee: ratio,
   collateral: z.enum(["none", "receivables_assignment", "unknown"]), leadDaysMin: days.nullable(), leadDaysMax: days.nullable(),
@@ -137,6 +137,7 @@ export function proposeReceivablesFundingHypotheses(raw: unknown): ProposedHypot
       txt(p + "registrationRule", "convention", e.registrationRule, r);
       txt(p + "minCreditTier", "convention", e.minCreditTier, r);
       if (e.sublimitPerDebtor !== null) num(p + "sublimitPerDebtor", "currency", e.sublimitPerDebtor, r);
+      if (e.sublimitGroup !== null) txt(p + "sublimitGroup", "identity", e.sublimitGroup, r);
       if (e.anchorItemIds.length) add(p + "anchorItemIds", "identity", {type: "list", value: e.anchorItemIds}, r);
     }
   }

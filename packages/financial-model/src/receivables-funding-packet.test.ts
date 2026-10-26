@@ -46,4 +46,16 @@ describe("receivables funding packet", () => {
       .result.funding!.options.find((o) => o.id === "desconto-bancario")!.cost;
     expect([30, 50, 51].map((d) => {const c = at(d); return [c.draws, c.iofDays, n(c.iof, 6)];})).toEqual([[1, 30, "0.106420"], [1, 50, "0.134300"], [2, 51, "0.200294"]]);
   });
+  it("allocates lots of one debtor with different maturities by exact flow through the adopted reader, in any order", () => {
+    const k = auroraReceivablesFunding(), short = {...k.items[3]!, id: "curto", label: "Sacado, lote curto", amount: "3", dueDate: "2026-10-15", creditTier: "standard" as const, registration: "registered" as const, debtorKey: "sacado-unico"};
+    const long = {...short, id: "longo", label: "Sacado, lote longo", amount: "2", dueDate: "2027-01-15"};
+    const fund = (id: string, rate: string, cap: string, term: number) => ({...k.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate},
+      eligibility: {...k.options[1]!.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null, maxRemainingTermDays: term}});
+    for (const items of [[short, long], [long, short], [{...short, id: "curto-1", amount: "1"}, long, {...short, id: "curto-2", amount: "2"}]]) {
+      const p = prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question, analysis: auroraReceivablesFundingBasis({...k, items,
+        options: [fund("barato", "0.01", "2", 180), fund("restrito", "0.02", "3", 60), k.options[4]!], needAverage: "5", needPeak: "5"}).seal()});
+      expect([p.readings!.assignable, p.readings!.exclusions, p.readings!.planCoversPeak]).toEqual(["5", [], true]);
+      expect(p.readings!.plan.map((s) => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["restrito", "3", "3", "5"]]);
+    }
+  });
 });

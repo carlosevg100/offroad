@@ -31,9 +31,10 @@ export type QuarterUpdateBridge = {lineId: string; causes: readonly QuarterUpdat
 /** How the cause moves the series inside its window: every amount scaled by a factor (an input price), or every event
  * delayed by a number of days (receivable days). The adopted series must equal the transform of the prior one. */
 export type QuarterUpdateTransform = {kind: "scale"; factor: string} | {kind: "delay"; days: number};
-export type QuarterUpdateStreamUpdate = {streamId: string; causeIds: readonly string[]; transform: QuarterUpdateTransform; dates: readonly string[]; amounts: readonly string[]};
-/** Tolerance per date between the adopted series and the transform of the prior one, in currency units. */
-export const quarterUpdateSeriesTolerance = "0.000001";
+/** A series moved by one cause: the method derives it from the prior series; a series given by the caller must equal the derived one. */
+export type QuarterUpdateStreamUpdate = {streamId: string; causeIds: readonly string[]; transform: QuarterUpdateTransform; dates?: readonly string[]; amounts?: readonly string[]};
+/** The share of the cause's own amount below which its derived weekly effect is immaterial. */
+export const quarterUpdateRelativeMateriality = "0.01";
 /** An approved facility: the limit approved or contracted, and where the approval is written. */
 export type QuarterUpdateFacility = {id: string; label: string; limit: string; source: string};
 /** One step of the proposed action, in order: a fixed draw replacing planned streams, or a draw sized to what is still missing. */
@@ -68,6 +69,8 @@ export type QuarterUpdateInput = {
   facilities: readonly QuarterUpdateFacility[];
   steps: readonly QuarterUpdateStep[];
   dependents: readonly QuarterUpdateDependent[];
+  /** R$ 1,000 expressed in the basis's own units (0.001 when figures are in millions): the absolute materiality floor. */
+  materialityFloor: string;
 };
 
 function date(value: string) {
@@ -88,7 +91,7 @@ const overlaps = (a0: string, a1: string, b0: string, b1: string) => a0 <= b1 &&
 const sum = (values: Decimal[]) => values.reduce((s, v) => s.plus(v), new Exact(0));
 const dayCount = (from: string, to: string) => (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000 + 1;
 export type QuarterUpdateGapReason = "unexplained_residual" | "structural_cause_not_in_weekly_cash" | "structural_cause_weekly_effect_inconsistent"
-  | "structural_cause_series_not_matching_factor" | "structural_cause_question_missing" | "affected_not_recomputed";
+  | "structural_cause_effect_immaterial" | "structural_cause_series_not_matching_factor" | "structural_cause_question_missing" | "affected_not_recomputed";
 
 /** What the quarter changed and what it changes ahead. Actual against projected line by line; each
  * bridged deviation explained by causes that must sum to it exactly, the unexplained residual named
@@ -187,40 +190,35 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     // Only a series of the scenario actually used can carry a cause into the weekly cash.
     if (!informed.streamIds.includes(u.streamId)) throw new Error("quarter_update_series_outside_scenario");
     const named = u.causeIds.map(structural);
-    if (!u.dates.length || u.dates.length !== u.amounts.length) throw new Error("quarter_update_stream_series");
-    u.dates.forEach(date); u.amounts.forEach(amount);
-    const same = u.dates.length === prior.dates.length && u.dates.every((d, n) => d === prior.dates[n] && amount(u.amounts[n]!).eq(amount(prior.amounts[n]!)));
-    if (same) throw new Error("quarter_update_stream_update_without_change");
-    // A series moves only while its causes persist: before the close the actual already holds it, after the end the cause is gone.
-    const until = named[0]!.until!;
-    const before = byDate(prior.dates, prior.amounts), after = byDate(u.dates, u.amounts);
-    for (const d of new Set([...before.keys(), ...after.keys()])) {
-      const change = (after.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
-      if (!change.isZero() && (d <= qe || d > until)) throw new Error("quarter_update_series_outside_persistence");
-    }
-    // The adopted series must be the cause's own transform of the prior series, inside the window, within the tolerance.
-    const inside = (d: string) => d > qe && d <= until, expected = new Map([...before].filter(([d]) => !inside(d)));
+    // The updated series is derived here: the cause's transform applied to the prior series inside its own window
+    // (after the close, until the cause ends, within the horizon). Nothing adopted can add noise to it.
+    const until = named[0]!.until!, before = byDate(prior.dates, prior.amounts);
+    const inside = (d: string) => d > qe && d <= until && d <= weeklyEnd, derived = new Map([...before].filter(([d]) => !inside(d)));
     if (u.transform.kind === "scale") {
       const factor = amount(u.transform.factor); if (!factor.gt(0)) throw new Error("quarter_update_transform");
-      for (const [d, v] of before) if (inside(d)) expected.set(d, v.mul(factor));
+      for (const [d, v] of before) if (inside(d)) derived.set(d, v.mul(factor));
     } else if (u.transform.kind === "delay") {
       if (!Number.isInteger(u.transform.days) || u.transform.days === 0 || Math.abs(u.transform.days) > 366) throw new Error("quarter_update_transform");
-      for (const [d, v] of before) {const to = shift(d, u.transform.days); if (inside(to)) expected.set(to, (expected.get(to) ?? new Exact(0)).plus(v));}
+      for (const [d, v] of before) {const to = shift(d, u.transform.days); if (inside(to)) derived.set(to, (derived.get(to) ?? new Exact(0)).plus(v));}
     } else throw new Error("quarter_update_transform");
-    const tolerance = new Exact(quarterUpdateSeriesTolerance);
-    // The effect is the transform's own, never the adopted noise: an identity transform moves nothing.
+    const dates = [...derived.keys()].filter(d => !derived.get(d)!.isZero()).sort();
+    const series = {dates, amounts: dates.map(d => out(derived.get(d)!))};
+    // A series supplied by the caller must be exactly the derived one.
+    if (u.dates !== undefined || u.amounts !== undefined) {
+      const given = byDate(u.dates ?? [], u.amounts ?? []);
+      if ((u.dates ?? []).length !== (u.amounts ?? []).length || given.size !== dates.length || dates.some(d => !given.get(d)?.eq(derived.get(d)!))) throw new Error("quarter_update_series_not_derived");
+    }
     let effect = new Exact(0);
-    for (const d of new Set([...expected.keys(), ...before.keys()])) {
-      const change = (expected.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
+    for (const d of new Set([...derived.keys(), ...before.keys()])) {
+      const change = (derived.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
       effect = effect.plus(prior.direction === "inflow" ? change : change.neg());
     }
-    let matches = [...new Set([...expected.keys(), ...after.keys()])].every(d => (after.get(d) ?? new Exact(0)).minus(expected.get(d) ?? new Exact(0)).abs().lte(tolerance));
     // A delay measured by a line in days must be that line's deviation.
     const driver = named[0]!.driverLineId === null ? null : line(named[0]!.driverLineId);
-    if (u.transform.kind === "delay" && driver?.unit === "days" && !driver.deviation.eq(u.transform.days)) matches = false;
+    const matches = !(u.transform.kind === "delay" && driver?.unit === "days" && !driver.deviation.eq(u.transform.days));
     for (const c of named) {const w = inWeekly.get(c.id) ?? {streams: [], effect: new Exact(0), matches: true};
       inWeekly.set(c.id, {streams: [...w.streams, u.streamId], effect: w.effect.plus(effect), matches: w.matches && matches});}
-    updated.set(u.streamId, {...prior, dates: [...u.dates], amounts: [...u.amounts]});
+    updated.set(u.streamId, {...prior, ...series});
   }
   const added = new Set<string>();
   for (const s of input.weekly.added) {
@@ -321,13 +319,18 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   const lead = updatedMeasurements[0]!.effects;
 
   // A structural cause reaches every recomputation: the projection and the covenant by derivation, the weekly cash by a series it moves the same way.
+  // A cause propagates only if its derived effect is at least the larger of the absolute floor and 1% of its own amount.
+  const absoluteFloor = amount(input.materialityFloor);
+  if (!absoluteFloor.gt(0)) throw new Error("quarter_update_materiality_floor");
+  const floorOf = (c: {value: Decimal}) => Decimal.max(absoluteFloor, c.value.abs().mul(quarterUpdateRelativeMateriality));
   for (const c of structuralCauses) {
     const w = inWeekly.get(c.id);
     if (!w) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_not_in_weekly_cash"});
-    else if (w.effect.abs().lte(quarterUpdateSeriesTolerance) || w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
+    else if (!w.effect.isZero() && w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
+    else if (w.effect.abs().lt(floorOf(c))) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_effect_immaterial"});
     else if (!w.matches) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_series_not_matching_factor"});
   }
-  const weeklyReasons: QuarterUpdateGapReason[] = ["structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent", "structural_cause_series_not_matching_factor"];
+  const weeklyReasons: QuarterUpdateGapReason[] = ["structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent", "structural_cause_effect_immaterial", "structural_cause_series_not_matching_factor"];
   const weeklyPropagated = structuralCauses.every(c => !gaps.some(g => g.item === `cause.${c.id}` && weeklyReasons.includes(g.reason)));
 
   // Dependents: affected by what they read over their horizon, never recomputed when nothing they read moved.
@@ -378,12 +381,13 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   });
 
   return {schemaVersion: "quarter-update.v1" as const, version: quarterUpdateVersion, currency: input.currency, quarterStart: qs, quarterEnd: qe,
+    materiality: {absolute: out(absoluteFloor), relative: quarterUpdateRelativeMateriality},
     lines: [...lines.values()].map(l => ({id: l.id, label: l.label, unit: l.unit, projected: l.projected, actual: l.actual, deviation: out(l.deviation)})),
     bridges,
     propagation: [...causes.values()].map(c => {
       const e = lead.find(x => x.causeId === c.id), w = inWeekly.get(c.id);
       return {causeId: c.id, classification: c.classification, nature: c.nature, until: c.until, streams: w?.streams ?? [],
-        weeklyEffect: w ? out(w.effect) : null, fractionAhead: e?.fraction ?? null, ebitdaAhead: e?.ebitda ?? null, cashAhead: e?.cash ?? null};
+        weeklyEffect: w ? out(w.effect) : null, materialityFloor: c.classification === "structural" ? out(floorOf(c)) : null, fractionAhead: e?.fraction ?? null, ebitdaAhead: e?.ebitda ?? null, cashAhead: e?.cash ?? null};
     }),
     weekly: {prior: weeklyPrior, updated: weeklyUpdated,
       carriedOpening: {prior: out(amount(priorWeekly.openingCash)), deviation: out(cashDeviation), updated: out(openingUpdated)},

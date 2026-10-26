@@ -3,7 +3,7 @@ import {describe, expect, it} from "vitest";
 import {buildWeeklyCash} from "./weekly-cash";
 import {measureCovenantHeadroom} from "./covenant-headroom";
 import {updateAfterQuarterClose, type QuarterUpdateInput} from "./quarter-update";
-import {auroraDearerInputs, auroraQuarterUpdate as base} from "./quarter-update.fixture";
+import {auroraDearerInputs, auroraQuarterUpdate as base, auroraReceipts} from "./quarter-update.fixture";
 
 const n = (v: string | null | undefined, p = 1) => Number(v).toFixed(p);
 const withBridge = (lineId: string, edit: (c: QuarterUpdateInput["bridges"][number]["causes"]) => QuarterUpdateInput["bridges"][number]["causes"]): QuarterUpdateInput =>
@@ -72,21 +72,14 @@ describe("update after the quarter close", () => {
     expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_not_in_weekly_cash"}, {item: "cause.prazo-redes", reason: "structural_cause_not_in_weekly_cash"},
       {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
     expect(n(r.covenant.measurements[0]!.trailingEbitda.updated)).toBe("53.5");
-    const cheaper = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map((a, k) => x.dates[k]! > "2026-09-30" ? "5.7" : a)} : x);
-    // The effect is the declared transform's; a series that departs from it is the gap.
-    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_series_not_matching_factor"},
-      {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
   });
   it("review r1: effects are bounded by the persistence window", () => {
-    const short = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2026-10-03"} : x));
-    expect(() => updateAfterQuarterClose(short)).toThrow("quarter_update_series_outside_persistence");
-    const bounded = updateAfterQuarterClose({...short, weekly: {...short.weekly, updates: short.weekly.updates.map(x => x.streamId === "insumos" ? {...x, ...auroraDearerInputs("2026-10-03")} : x)}});
+    const bounded = updateAfterQuarterClose(withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2026-10-03"} : x)));
     const trigo = bounded.propagation.find(p => p.causeId === "trigo")!;
     expect([n(trigo.fractionAhead, 4), n(trigo.ebitdaAhead, 4), n(trigo.weeklyEffect, 3)]).toEqual(["0.0326", "-0.0196", "-0.058"]);
     expect(n(bounded.covenant.measurements[0]!.trailingEbitda.updated, 2)).toBe("54.08");
-    // A series moved before the close is already in the actual.
-    const early = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map(() => "5.858")} : x);
-    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: early}})).toThrow("quarter_update_series_outside_persistence");
+    // Under the floor of 1% of the cause (0.006), one dearer week is still material (0.058).
+    expect(bounded.gaps).toEqual([]);
   });
   it("review r2: one cause per series, inside the scenario used, bounded by its own window", () => {
     const shared = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, causeIds: ["trigo", "prazo-redes"]} : x);
@@ -111,22 +104,26 @@ describe("update after the quarter close", () => {
     expect(u.dependents.find(d => d.id === "covenant-dez26")!.result).toEqual({kind: "covenant", id: "dez26-base", start: "2026-01-01", end: "2026-12-31", scenario: "base",
       definition: "Definição da escritura (CVM 156 menos arrendamentos)", produces: ["covenant_ratio", "covenant_headroom"]});
   });
-  it("review r3: a series must be the adopted factor applied to the prior one, or the weekly cash is not updated", () => {
-    const tiny = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: base.prior.weeklyCash.streams.find(s => s.id === "insumos")!.amounts.map((a, k) => k === 3 ? "5.80000001" : a)} : x);
-    const r = updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: tiny}});
-    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_series_not_matching_factor"}, {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
-    expect(r.dependents.find(d => d.id === "caixa-semanal")!.status).toBe("affected_not_recomputed");
+  it("review r5: the series is derived from the transform; a supplied series must equal it exactly", () => {
+    const given = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, ...auroraDearerInputs()} : x.streamId === "recebimentos" ? {...x, ...auroraReceipts()} : x);
+    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: given}}).weekly.updated).toEqual(u.weekly.updated);
+    const noisy = given.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts!.map((a, k) => k === 5 ? new Decimal(a).plus("0.00000001").toFixed() : a)} : x);
+    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: noisy}})).toThrow("quarter_update_series_not_derived");
     const days = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 3}} : x);
     expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: days}}).gaps[0]).toEqual({item: "cause.prazo-redes", reason: "structural_cause_series_not_matching_factor"});
   });
-  it("review r4: an identity transform or noise inside the tolerance is no propagation", () => {
-    const prior = base.prior.weeklyCash.streams.find(s => s.id === "insumos")!;
-    const noise = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, transform: {kind: "scale" as const, factor: "1"}, dates: [...prior.dates], amounts: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)} : x);
-    const r = updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: noise}});
-    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"}, {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
-    expect(r.propagation.find(p => p.causeId === "trigo")!.weeklyEffect).toBe("0");
-    const receipts = base.prior.weeklyCash.streams.find(s => s.id === "recebimentos")!;
-    const still = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 0}, dates: [...receipts.dates], amounts: receipts.amounts.map((a, k) => k === 30 ? new Decimal(a).plus("0.00000001").toFixed() : a)} : x);
+  it("review r4 and r5: an identity, a near-identity or an opposite transform is no propagation", () => {
+    const withFactor = (factor: string) => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, transform: {kind: "scale" as const, factor}} : x)}});
+    for (const factor of ["1", "1.00000002"]) {
+      const r = withFactor(factor);
+      expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_effect_immaterial"}, {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
+    }
+    // 0.0000008 less per future payment is an effect of the opposite sign to the cause.
+    expect(withFactor("0.99999986").gaps[0]).toEqual({item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"});
+    expect(withFactor("0.99").gaps[0]).toEqual({item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"});
+    expect(u.propagation.filter(p => p.materialityFloor !== null).map(p => [p.causeId, p.materialityFloor])).toEqual([["trigo", "0.006"], ["prazo-redes", "0.021"]]);
+    expect(u.materiality).toEqual({absolute: "0.001", relative: "0.01"});
+    const still = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 0}} : x);
     expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: still}})).toThrow("quarter_update_transform");
   });
   it("review r4: a driver line is an input, never a product, and a dependent keeps its own definition and scenario", () => {
@@ -152,8 +149,6 @@ describe("update after the quarter close", () => {
     expect(() => updateAfterQuarterClose(withBridge("caixa", c => c.map(x => x.id === "ebitda-abaixo" ? {...x, amount: "-0.5"} : x)))).toThrow("quarter_update_linked_cause_mismatch");
     expect(() => updateAfterQuarterClose(withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: null} : x)))).toThrow("quarter_update_structural_cause_end");
     expect(() => updateAfterQuarterClose(withBridge("ebitda", c => c.map(x => x.id === "volume" ? {...x, until: "2026-12-31"} : x)))).toThrow("quarter_update_calendar_cause_with_end");
-    const prior = base.prior.weeklyCash.streams.find(s => s.id === "insumos")!;
-    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, dates: [...prior.dates], amounts: [...prior.amounts]} : x)}})).toThrow("quarter_update_stream_update_without_change");
     expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: [...base.weekly.updates, {streamId: "inventado", causeIds: ["trigo"], transform: {kind: "scale" as const, factor: "1.01"}, dates: ["2026-10-01"], amounts: ["1"]}]}})).toThrow("quarter_update_unknown_stream");
     expect(() => updateAfterQuarterClose({...base, covenant: {measurementIds: ["dez27-base"]}})).toThrow("quarter_update_quarter_outside_test_period");
     expect(() => updateAfterQuarterClose({...base, bridges: base.bridges.filter(b => b.lineId !== "caixa")})).toThrow("quarter_update_carry_line_without_bridge");

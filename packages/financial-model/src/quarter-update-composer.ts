@@ -97,8 +97,7 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
     const p = `streamUpdate.${streamId}.`;
     const kind = meta(p + "transformKind", "text", "quarter_update_stream_transform", false), unit = kind === "delay" ? "days" : "ratio";
     return {streamId, causeIds: z.array(keyOf).parse(meta(p + "causeIds", "list", "quarter_update_stream_causes", true)),
-      transformKind: select(p + "transformKind", "convention", "text"), transformValue: select(p + "transformValue", unit, "number"),
-      dates: select(p + "dates", "date", "list"), amounts: select(p + "amounts", "currency", "list")};
+      transformKind: select(p + "transformKind", "convention", "text"), transformValue: select(p + "transformValue", unit, "number")};
   });
   const addedStreams = keys("added", "order.added").map((id) => {
     const p = `added.${id}.`;
@@ -125,7 +124,7 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
     openingDate: d.periodStart!, endDate: d.periodEnd!, numericInterpretations: [], analysisId, scenario: sc,
     priorWeeklyFingerprint: select("prior.weeklyCash.fingerprint", "identity", "text"), priorCovenantFingerprint: select("prior.covenant.fingerprint", "identity", "text"),
     lines, carry: {cashLineId: one("carry.cashLineId", "quarter_update_carry"), ebitdaLineId: one("carry.ebitdaLineId", "quarter_update_carry")},
-    bridges, streamUpdates, addedStreams, covenant: {measurementIds}, facilities, steps, dependents};
+    bridges, streamUpdates, addedStreams, covenant: {measurementIds}, facilities, steps, dependents, materialityFloor: select("materialityFloor", "currency", "number")};
   // A missing operand carries the lowest resolved definition so the reference is stable; the executor ignores it.
   const borrowed = [...definitions].sort((a, b) => a.definitionVersionId < b.definitionVersionId ? -1 : 1)[0];
   if (borrowed) for (const m of missing) {m.definitionVersionId = borrowed.definitionVersionId; m.definitionKind = borrowed.definitionKind;}

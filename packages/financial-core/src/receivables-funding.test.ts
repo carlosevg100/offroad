@@ -100,7 +100,7 @@ describe("receivables funding", () => {
   });
   it("keeps what one buyer leaves for the next one", () => {
     const one = {...base.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const};
-    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap}});
+    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null}});
     const r = assessReceivablesFunding({...base, items: [one], options: [fund("barato", "0.01", "2"), fund("caro", "0.02", "3"), base.options[4]!], needAverage: "3", needPeak: "3"});
     expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["caro", "3", "1", "3"]]);
     expect(r.plan.coversPeak).toBe(true);
@@ -126,7 +126,7 @@ describe("receivables funding", () => {
   });
   it("keeps the same headroom for a debtor in one lot or several after a partial purchase", () => {
     const one = {...base.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const, debtorKey: "sacado-unico"};
-    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap}});
+    const fund = (id: string, rate: string, cap: string) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null}});
     const whole = {...base, items: [one], options: [fund("barato", "0.01", "2"), fund("caro", "0.02", "3"), base.options[4]!], needAverage: "4", needPeak: "4"};
     const lots = {...whole, items: [{...one, id: "lote-1", amount: "2.5"}, {...one, id: "lote-2", amount: "2.5"}]};
     for (const x of [whole, lots]) {
@@ -145,5 +145,29 @@ describe("receivables funding", () => {
   it("allows a rollover term longer, equal or shorter than the time in use", () => {
     const at = (calendarDays: number) => assessReceivablesFunding({...base, calendarDays, businessDays: Math.round(calendarDays * 0.7)}).options.find(x => x.id === "desconto-bancario")!.cost;
     expect([30, 50, 51].map(d => {const c = at(d); return [c.draws, c.iofDays, n(c.iof, 6)];})).toEqual([[1, 30, "0.106420"], [1, 50, "0.134300"], [2, 51, "0.200294"]]);
+  });
+  it("allocates lots of different maturities by exact flow, whatever their order or subdivision", () => {
+    const one = {...base.items[3]!, id: "curto", label: "Sacado, lote curto", amount: "3", dueDate: "2026-10-15", creditTier: "standard" as const, registration: "registered" as const, debtorKey: "sacado-unico"};
+    const long = {...one, id: "longo", label: "Sacado, lote longo", amount: "2", dueDate: "2027-01-15"};
+    const fund = (id: string, rate: string, cap: string, term: number) => ({...base.options[1]!, id, label: id, rate: {basis: "monthly" as const, rate},
+      eligibility: {...base.options[1]!.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null, maxRemainingTermDays: term}});
+    const options = [fund("barato", "0.01", "2", 180), fund("restrito", "0.02", "3", 60), base.options[4]!];
+    const cases = [[one, long], [long, one], [{...one, id: "curto-1", amount: "1"}, long, {...one, id: "curto-2", amount: "2"}],
+      [{...long, id: "longo-b", amount: "0.5"}, {...one, id: "curto-z"}, {...long, id: "longo-a", amount: "1.5"}]];
+    for (const items of cases) {
+      const r = assessReceivablesFunding({...base, items, options, needAverage: "5", needPeak: "5"});
+      expect([r.portfolio.assignable, r.portfolio.excluded]).toEqual(["5", "0"]);
+      expect(r.plan.steps.map(s => [s.optionId, s.capacity, s.amount, s.cumulative])).toEqual([["barato", "2", "2", "2"], ["restrito", "3", "3", "5"]]);
+      expect(r.plan.coversPeak).toBe(true);
+      // The cheap fund takes the long lot it alone accepts; the restrictive one the short lot.
+      expect(r.portfolio.items.filter(i => i.itemId.startsWith("longo")).reduce((v, i) => v + Number(i.assignable), 0)).toBe(2);
+    }
+  });
+  it("shares the sublimit only within a declared group, and the group states one sublimit", () => {
+    expect(() => assessReceivablesFunding({...base, options: base.options.map(o => o.id === "fidc-sem-coobrigacao" ? {...o, eligibility: {...o.eligibility!, sublimitPerDebtor: "4"}} : o)}))
+      .toThrow("receivables_funding_sublimit_group");
+    // Two independent funds each give their own sublimit: retailer E is sold in full across them.
+    const apart = assessReceivablesFunding({...base, options: base.options.map(o => o.kind === "fidc" ? {...o, eligibility: {...o.eligibility!, sublimitGroup: null}} : o)});
+    expect([apart.portfolio.assignable, apart.portfolio.items.find(i => i.itemId === "rede-e")!.assignable]).toEqual(["28", "4.5"]);
   });
 });

@@ -36,7 +36,11 @@ export const quarterUpdatePacketOutputSchema = z.strictObject({
     deviations: z.array(z.strictObject({lineId: key, projected: decimal, actual: decimal, deviation: decimal})).max(24),
     bridges: z.array(z.strictObject({lineId: key, deviation: decimal, residual: decimal,
       causes: z.array(z.strictObject({id: key, label: text, amount: decimal, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable()})).max(12)})).max(8),
-    persisting: z.array(z.strictObject({causeId: key, until: z.iso.date(), nature: z.enum(["flow", "balance"]), weeklyEffect: decimal.nullable(), ebitdaAhead: decimal, cashAhead: decimal})).max(96),
+    persisting: z.array(z.strictObject({causeId: key, until: z.iso.date(), nature: z.enum(["flow", "balance"]), weeklyEffect: decimal.nullable(), materialityFloor: decimal,
+      ebitdaAhead: decimal, cashAhead: decimal})).max(96),
+    /** The weekly series are derived from the prior ones by each cause's transform; a cause propagates only if its derived effect
+     * reaches the larger of the absolute floor (R$ 1,000 in the basis's units) and the relative share of its own amount. */
+    materiality: z.strictObject({absolute: decimal, relative: decimal}),
     oneOff: z.array(key).max(96),
     /** A balance shift (receivable days) is already inside the closed cash and is carried once; it is never absorbed again ahead.
      * The ficha C54 oracle absorbs it a second time in the December test; this method does not. */
@@ -102,7 +106,8 @@ export function prepareQuarterUpdatePacket(raw: unknown): QuarterUpdatePacket {
       bridges: u.bridges.map((b) => ({lineId: b.lineId, deviation: b.deviation, residual: b.residual,
         causes: b.causes.map((c) => ({id: c.id, label: c.label, amount: c.amount, classification: c.classification, until: c.until}))})),
       persisting: u.propagation.filter((p) => p.classification === "structural").map((p) => ({causeId: p.causeId, until: p.until!, nature: p.nature!,
-        weeklyEffect: p.weeklyEffect, ebitdaAhead: p.ebitdaAhead!, cashAhead: p.cashAhead!})),
+        weeklyEffect: p.weeklyEffect, materialityFloor: p.materialityFloor!, ebitdaAhead: p.ebitdaAhead!, cashAhead: p.cashAhead!})),
+      materiality: u.materiality,
       balanceShiftsCarriedOnce: causes.filter((c) => c.nature === "balance").map((c) => ({causeId: c.id, amount: c.amount})),
       oneOff: causes.filter((c) => c.classification === "calendar").map((c) => c.id),
       tightestWeek: {prior: {weekStart: u.weekly.tightest.prior.weekStart, closing: u.weekly.tightest.prior.closing},

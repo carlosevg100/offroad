@@ -17,7 +17,7 @@ const k = "[a-z0-9][a-z0-9-]{0,39}";
 const analysisPath = new RegExp(`^receivables_funding\\.(${uuid})\\.`);
 const itemPath = new RegExp(`^item\\.(${k})\\.[A-Za-z]+$`);
 const optionPath = new RegExp(`^option\\.(${k})\\.[A-Za-z]+$`);
-const eligibilityFields = ["maxDaysPastDue", "maxRemainingTermDays", "registrationRule", "minCreditTier", "sublimitPerDebtor", "anchorItemIds"];
+const eligibilityFields = ["maxDaysPastDue", "maxRemainingTermDays", "registrationRule", "minCreditTier", "sublimitPerDebtor", "sublimitGroup", "anchorItemIds"];
 
 /** Composes the receivables funding packet input from the working basis alone. The basis carries
  * one analysis (`receivables_funding.<analysis>.`); its buckets and options are every id the
@@ -86,7 +86,8 @@ export function composeBoundReceivablesFunding(raw: unknown): ReceivablesFunding
       leadDaysMin: optional(p + "leadDaysMin", "days", "number"), leadDaysMax: optional(p + "leadDaysMax", "days", "number"),
       eligibility: eligible ? {maxDaysPastDue: select(p + "maxDaysPastDue", "days", "number"), maxRemainingTermDays: select(p + "maxRemainingTermDays", "days", "number"),
         registrationRule: select(p + "registrationRule", "convention", "text"), minCreditTier: select(p + "minCreditTier", "convention", "text"),
-        sublimitPerDebtor: optional(p + "sublimitPerDebtor", "currency", "number"), anchorItemIds: optional(p + "anchorItemIds", "identity", "list")} : null};
+        sublimitPerDebtor: optional(p + "sublimitPerDebtor", "currency", "number"),
+        sublimitGroup: optional(p + "sublimitGroup", "identity", "text"), anchorItemIds: optional(p + "anchorItemIds", "identity", "list")} : null};
   });
   const analysis = {envelope: input.envelope, scope: input.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!, openingDate: d.periodStart!, endDate: d.periodEnd!,
     numericInterpretations: [], analysisId, scenario: sc,

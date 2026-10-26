@@ -16,9 +16,9 @@
     "exportName": "buildReceivablesFundingRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T14:25:44.040Z",
-    "finishedAt": "2026-10-26T14:25:44.284Z",
-    "commit": "66d477e3b782c9324faee878667eb09850781c30"
+    "startedAt": "2026-10-26T14:45:06.290Z",
+    "finishedAt": "2026-10-26T14:45:06.543Z",
+    "commit": "349ba71ecdd9a1537598c2b074b65ee7b2a6a923"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,204 +26,228 @@
       "id": "gross-portfolio-is-not-assignable",
       "expectation": "{\"gross\":62,\"assignable\":25,\"nearTwentyFive\":true}",
       "observed": "{\"gross\":62,\"assignable\":25,\"nearTwentyFive\":true}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "every-exclusion-carries-its-reason",
       "expectation": "[[\"rede-a\",19.8,[\"not_assignable\"]],[\"redes-c-d\",12,[\"encumbered\"]],[\"rede-e\",1.5,[\"debtor_sublimit\"]],[\"rede-f\",1.5,[\"debtor_sublimit\"]],[\"vencidos\",2.2,[\"past_due\"]]]",
       "observed": "[[\"rede-a\",19.8,[\"not_assignable\"]],[\"redes-c-d\",12,[\"encumbered\"]],[\"rede-e\",1.5,[\"debtor_sublimit\"]],[\"rede-f\",1.5,[\"debtor_sublimit\"]],[\"vencidos\",2.2,[\"past_due\"]]]",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "options-sized-by-eligibility-and-sublimit",
       "expectation": "{\"riscoSacadoB\":3.7,\"fidcWithRecourse\":21.3,\"fidcWithoutRecourse\":10}",
       "observed": "{\"riscoSacadoB\":3.7,\"fidcWithRecourse\":21.3,\"fidcWithoutRecourse\":10}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "cost-for-the-time-in-use-against-the-bank-line",
       "expectation": "[[\"risco-sacado-b\",1.33,true],[\"fidc-com-coobrigacao\",1.75,true],[\"linha-giro\",1.82,true],[\"desconto-bancario\",1.99,false],[\"fidc-sem-coobrigacao\",2.08,true]]",
       "observed": "[[\"risco-sacado-b\",1.33,true],[\"fidc-com-coobrigacao\",1.75,true],[\"linha-giro\",1.82,true],[\"desconto-bancario\",1.99,false],[\"fidc-sem-coobrigacao\",2.08,true]]",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "iof-where-it-applies",
       "expectation": "{\"withIof\":[\"linha-giro\",\"desconto-bancario\"],\"lineIofDays\":180,\"oracleLineIofDays\":182}",
       "observed": "{\"withIof\":[\"linha-giro\",\"desconto-bancario\"],\"lineIofDays\":180,\"oracleLineIofDays\":182}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "discount-iof-on-whole-draws",
       "expectation": "{\"draws\":4,\"iofDays\":180,\"iof\":0.50932,\"oracleIof\":0.48348}",
       "observed": "{\"draws\":4,\"iofDays\":180,\"iof\":0.50932,\"oracleIof\":0.48348}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "monthly-rates-converted-before-comparing",
       "expectation": "{\"1,6% a.m.\":[21,5.3],\"1,9% a.m.\":[25.3,9.1]}",
       "observed": "{\"1,6% a.m.\":[21,5.3],\"1,9% a.m.\":[25.3,9.1]}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "recourse-on-the-balance-sheet-and-the-covenant",
       "expectation": "[[\"fidc-com-coobrigacao\",\"tends_to_remain_as_liability\",17],[\"fidc-sem-coobrigacao\",\"derecognized\",0],[\"risco-sacado-b\",\"derecognized\",0]]",
       "observed": "[[\"fidc-com-coobrigacao\",\"tends_to_remain_as_liability\",17],[\"fidc-sem-coobrigacao\",\"derecognized\",0],[\"risco-sacado-b\",\"derecognized\",0]]",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "sale-is-not-a-guarantee-under-the-negative-pledge",
       "expectation": "{\"sales\":[\"not_a_guarantee_confirm_with_counsel\"],\"line\":\"uses_basket_if_collateralized\",\"lineFitsBasket\":false}",
       "observed": "{\"sales\":[\"not_a_guarantee_confirm_with_counsel\"],\"line\":\"uses_basket_if_collateralized\",\"lineFitsBasket\":false}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "asks-about-retailer-a-program",
       "expectation": "[[\"anchor_program_of_restricted_debtor\",\"rede-a\",19.8],[\"duplicata_registration_capability\",null,21.3]]",
       "observed": "[[\"anchor_program_of_restricted_debtor\",\"rede-a\",19.8],[\"duplicata_registration_capability\",null,21.3]]",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "fifteen-to-thirty-days-with-registration-as-condition-precedent",
       "expectation": "{\"fidcLead\":{\"min\":15,\"max\":30},\"startBy\":\"2026-09-16\",\"slackDays\":1,\"conditions\":[[\"duplicata_registration\",21.3]]}",
       "observed": "{\"fidcLead\":{\"min\":15,\"max\":30},\"startBy\":\"2026-09-16\",\"slackDays\":1,\"conditions\":[[\"duplicata_registration\",21.3]]}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "several-buyers-and-the-bank-line-as-reserve",
       "expectation": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"fidc-com-coobrigacao\",25]],\"coversPeak\":true,\"reserve\":\"linha-giro\",\"buyers\":\"several_in_parallel\",\"named\":false,\"approval\":false}",
       "observed": "{\"plan\":[[\"risco-sacado-b\",3.7],[\"fidc-com-coobrigacao\",25]],\"coversPeak\":true,\"reserve\":\"linha-giro\",\"buyers\":\"several_in_parallel\",\"named\":false,\"approval\":false}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "no-dedicated-vehicle-for-a-seasonal-need",
       "expectation": "{\"monthly\":12.8,\"reading\":\"not_for_seasonal_need\"}",
       "observed": "{\"monthly\":12.8,\"reading\":\"not_for_seasonal_need\"}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "retailer-a-program-reorders-the-plan",
       "expectation": "{\"plan\":[[\"risco-sacado-b\",3.7,3.7,3.7],[\"risco-sacado-a\",19.8,19.8,23.5],[\"fidc-com-coobrigacao\",21.3,1.5,25]],\"questions\":[\"duplicata_registration_capability\"],\"startBy\":null}",
       "observed": "{\"plan\":[[\"risco-sacado-b\",3.7,3.7,3.7],[\"risco-sacado-a\",19.8,19.8,23.5],[\"fidc-com-coobrigacao\",21.3,1.5,25]],\"questions\":[\"duplicata_registration_capability\"],\"startBy\":null}",
-      "inputFingerprint": "c8c4fe153bb05e03f51bdf0321f4a5b7faf3122dafe4ab8f3051beba8534acb2",
-      "outputFingerprint": "0a31d5afde92580ae1fd4fb98d17d13be5ac8e578925431b9d6310635b02cf18",
+      "inputFingerprint": "c11e1d7358438823eb3f1d6588475479e30ea1bec17db5a74a89e651dc74fbb8",
+      "outputFingerprint": "6040ab64a40c1b080f2164b4e2d3ab50e6fe76e38a820dba3c7777d1a03279df",
       "passed": true
     },
     {
       "id": "one-debtor-split-across-lots-shares-the-sublimit",
       "expectation": "{\"lots\":[[\"rede-e-lote-1\",2.5,0],[\"rede-e-lote-2\",0.5,1.5]],\"fidc\":21.3,\"assignable\":25,\"gaps\":[\"largest_debtor_not_informed\",\"largest_debtor_not_informed\"]}",
       "observed": "{\"lots\":[[\"rede-e-lote-1\",2.5,0],[\"rede-e-lote-2\",0.5,1.5]],\"fidc\":21.3,\"assignable\":25,\"gaps\":[\"largest_debtor_not_informed\",\"largest_debtor_not_informed\"]}",
-      "inputFingerprint": "d9ebe39326905526061c42b3ef14d856bcc58fcba3d58e1311d369a4d9bb8414",
-      "outputFingerprint": "7d4f3367e915711fa2fd10371a5e155154624d3f2e953edad23315595ee6c79d",
+      "inputFingerprint": "7fcfd7a84fdc9fd18a1198ee09a2c604fc8bd17d932e784e89a53e49db35f6b9",
+      "outputFingerprint": "6ba6793d0ed5ade50180bc6d7a08836222c1a581feade3ed7ae01a05e4fbf7c7",
       "passed": true
     },
     {
       "id": "one-lot-keeps-headroom-after-a-partial-purchase",
       "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
       "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
-      "inputFingerprint": "48eb1071ce5ba22896ca9e336da2cb686d4daa271268ed55c70fcb90b1ce3896",
-      "outputFingerprint": "4a78d37277d024da79262a680928fc2d2724946f07f19c64e5fc022c8c15f9fc",
+      "inputFingerprint": "69823d33df9b48b6ba8e3f16ebce4ad9eca1f9e5c0e6fed55aee3b2aa12f6ace",
+      "outputFingerprint": "5fa2c0f3875a9ba6b1b441c5845822f29534a04c67ca3bb481ac5e80792b9415",
       "passed": true
     },
     {
       "id": "split-lots-keep-headroom-after-a-partial-purchase",
       "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
       "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,2,4]],\"coversPeak\":true}",
-      "inputFingerprint": "8c35fdbb42e3a72a2928e601be74fb364aec7f4795fb2816ffa4e8582174fe3e",
-      "outputFingerprint": "710609cebc917a270dbede2e7d2d0a64ddb0d4516e5e7204ef20663e421bc5dd",
+      "inputFingerprint": "3faa580e5a58a1cc7ee0f2eb1f6652754ac05523c0cee0538cacb11ae8c2eb2b",
+      "outputFingerprint": "d3c34092fe6b43562ce7d7e3b1e0380460c3b6695d8633900847d9e0119c40b9",
+      "passed": true
+    },
+    {
+      "id": "lots-of-different-maturities-short-first-cover-the-peak",
+      "expectation": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "observed": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "inputFingerprint": "6e58e393a601fca203b2ac0507ed8584760bbec789208fe23a0ac0b754605b6a",
+      "outputFingerprint": "c8708d6e1747641ffddcf427723cd9240f0d3181f075b1cdb9c1e7e6d1e6a28c",
+      "passed": true
+    },
+    {
+      "id": "lots-of-different-maturities-long-first-cover-the-peak",
+      "expectation": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "observed": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "inputFingerprint": "d7886b1f998590754ebc158b0154e189caa2b08b37c29bc3ab840a77e3d02605",
+      "outputFingerprint": "9e8d9d609a7c1e15670f1fab853ca91d9c173d5c709f0aa16efd08db8e5a7241",
+      "passed": true
+    },
+    {
+      "id": "lots-of-different-maturities-subdivided-cover-the-peak",
+      "expectation": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "observed": "{\"assignable\":5,\"excluded\":[],\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-restrito\",3,3,5]],\"coversPeak\":true}",
+      "inputFingerprint": "fcd4fbe6f01aabbd7e43407b92fad1f31dba0d2a90607ba5c35a629a41aaf7fc",
+      "outputFingerprint": "835ea973bff68506883ef0813701d973bf545847facd29a4f0e35c3bd645d4b6",
       "passed": true
     },
     {
       "id": "lot-fully-cut-by-the-sublimit-keeps-its-reason",
       "expectation": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
       "observed": "{\"lot\":[\"rede-e-lote-2\",1.5,[\"debtor_sublimit\"]],\"assignable\":25,\"everyExclusionHasAReason\":true}",
-      "inputFingerprint": "ba546713fb6d2a93e411698400dcd2976ccc9a1fe1d1202ec428155c389278d3",
-      "outputFingerprint": "4f88766390228417f9381b68329717e272f76ec60cdf14095781a3188bd5080d",
+      "inputFingerprint": "51765410e3572f5c62570ec7d5726ff0244d28ef9f81ee6e5c71dab8f1b9f3e3",
+      "outputFingerprint": "e5ec10082e913f44b1bdf0d26baef5b40ae504df83b8cdb55618b35ada521238",
       "passed": true
     },
     {
       "id": "discount-iof-with-30-days-in-use-and-a-50-day-term",
       "expectation": "{\"draws\":1,\"iofDays\":30,\"iof\":0.10642}",
       "observed": "{\"draws\":1,\"iofDays\":30,\"iof\":0.10642}",
-      "inputFingerprint": "a7394de130c9ba861c94763b7636b7a863c51142e980f273493dc59feea7f818",
-      "outputFingerprint": "ed9417f2b8405b2cbcb60a47ce66ded5d345d6415c89733f9a66481ccd079051",
+      "inputFingerprint": "5d8a24207359aaa06a383638a35fd9eb6aa9b3a9cea1013912bcf3e86de6002c",
+      "outputFingerprint": "973367ee231c3afdbcb343c64b3937ced22aada21879e0c476523d89dd789a3e",
       "passed": true
     },
     {
       "id": "discount-iof-with-50-days-in-use-and-a-50-day-term",
       "expectation": "{\"draws\":1,\"iofDays\":50,\"iof\":0.1343}",
       "observed": "{\"draws\":1,\"iofDays\":50,\"iof\":0.1343}",
-      "inputFingerprint": "d246233c9b89dc20b9ea56a944a492e1b6379fc26ef004e5cf0ed6d5e81e879c",
-      "outputFingerprint": "adbb4fd7d98479fac66cd33a3cda177243d6e944107e064389dc91ed232d9308",
+      "inputFingerprint": "55a27b3044dd42002428829415bae7226c765e479a2cd3746905dfa3be6c5893",
+      "outputFingerprint": "54fd423e7df6e18281e58031b5ef64a81b0fbe50d4313ffbc3c2be06338332a2",
       "passed": true
     },
     {
       "id": "discount-iof-with-51-days-in-use-and-a-50-day-term",
       "expectation": "{\"draws\":2,\"iofDays\":51,\"iof\":0.200294}",
       "observed": "{\"draws\":2,\"iofDays\":51,\"iof\":0.200294}",
-      "inputFingerprint": "0c715269fa6be0b3099b941674d073d24488a63404c1cde27ed2647f6ae9a19e",
-      "outputFingerprint": "0f69b45aa9a5c5e0ea1c1d3869986e2aa97b598ea83a7d358e9f1db19807c84f",
+      "inputFingerprint": "640db47caef070e70b1e0fe13eac4d4a5537a82aa9acd04dcca15e02b9e66272",
+      "outputFingerprint": "f5793ae5404f2072e411eb79b5f4a790fa23393328698b8d3b8a2e3070331f2d",
       "passed": true
     },
     {
       "id": "unsold-balance-goes-to-the-next-buyer",
       "expectation": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,1,3]],\"coversPeak\":true}",
       "observed": "{\"plan\":[[\"fundo-barato\",2,2,2],[\"fundo-caro\",3,1,3]],\"coversPeak\":true}",
-      "inputFingerprint": "f09b32a5feda407c67e849d840d83860da45101495517056cd143776e037608d",
-      "outputFingerprint": "e3377ae89fcff37844578fa2ae443e8c28d603d071f48c1681c0d3c373d7f556",
+      "inputFingerprint": "2f747e7d8384856db841da8c83a03c89019c600ca778d7c8391d03813829b46e",
+      "outputFingerprint": "02590dda59c1d60dc4d59c248e956bc5729a5bfdf499c8092c986bc4a970b3de",
       "passed": true
     },
     {
       "id": "encumbered-bucket-released-under-the-same-sublimit",
       "expectation": "[[\"redes-c-d\",12,\"pré-pagamento da CCB do Bradesco\",6,false]]",
       "observed": "[[\"redes-c-d\",12,\"pré-pagamento da CCB do Bradesco\",6,false]]",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "largest-debtor-unknown-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"partial\",\"gaps\":[\"item.varejo-selecionado.largestDebtorAmount\",\"item.varejo-demais.largestDebtorAmount\"]}",
       "observed": "{\"status\":\"partial\",\"gaps\":[\"item.varejo-selecionado.largestDebtorAmount\",\"item.varejo-demais.largestDebtorAmount\"]}",
-      "inputFingerprint": "01939bba1a4cb2b40b3c34af2135610a2ebdc5fe2c566f40a357e94932be3923",
-      "outputFingerprint": "a837f10ae2f824afa9b7899a9ae864d33e16d067b8e126869d0db7092888aa3e",
+      "inputFingerprint": "b9bd5581b556105dd17e2156ac883e162b223c06d9af40df8213ded6df6b8025",
+      "outputFingerprint": "0f7b2959b5d71b1755f379dd55f3995489054ac882214ab390a9635d50b14588",
       "passed": true
     },
     {
       "id": "absent-peak-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"framed\",\"gap\":true}",
       "observed": "{\"status\":\"framed\",\"gap\":true}",
-      "inputFingerprint": "9e0fe901ba235c8f7153a425abe84a08c998ab44cd0e609043d5c6c1a5e5e9e5",
-      "outputFingerprint": "1be73c9c35158b0c5cbbd14e4ea9e16e02ff174fd7c8f5fd7e2c4a664b5319c8",
+      "inputFingerprint": "1686273c7423615e44e9527e429be59444f7376ed812ed76f2ce41fd19f963b6",
+      "outputFingerprint": "0e0c354d75b3a5d6c0b0c60842dcdecf6501b9a38077359a98b8a3c355b98a4b",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "52c877baed1561bc02d691040758855c8e4734e11ba794fec94caab8919c57ce",
+  "evidenceFingerprint": "f9c03cb377d6d77bafbd6f5a4f00c6e14b481aba6af87c2e21aab825b50076b8",
   "notes": "Synthetic deterministic execution calibrated on ficha C35. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

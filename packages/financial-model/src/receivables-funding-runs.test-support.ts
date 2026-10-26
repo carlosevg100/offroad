@@ -41,7 +41,7 @@ const near = (v: string, oracle: number, tolerance: number) => new D(v).minus(or
 const unsoldBalance = () => {
   const k = auroraReceivablesFunding(), fund = k.options[1]!;
   const one = {...k.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const};
-  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap}});
+  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null}});
   return auroraReceivablesFundingBasis({...k, items: [one], options: [at("fundo-barato", "0.01", "2"), at("fundo-caro", "0.02", "3"), k.options[4]!], needAverage: "3", needPeak: "3"});
 };
 /** Retailer E's R$ 4.5 mi split into two lots of the same debtor (review repro): the sublimit is the debtor's, not the lot's. */
@@ -53,9 +53,21 @@ const splitDebtor = () => {
 const partialPurchase = (split: boolean) => () => {
   const k = auroraReceivablesFunding(), fund = k.options[1]!;
   const one = {...k.items[3]!, id: "unico", label: "Sacado único", amount: "5", creditTier: "standard" as const, registration: "registered" as const, debtorKey: "sacado-unico"};
-  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap}});
+  const at = (id: string, rate: string, cap: string) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate}, eligibility: {...fund.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null}});
   return auroraReceivablesFundingBasis({...k, items: split ? [{...one, id: "lote-1", amount: "2.5"}, {...one, id: "lote-2", amount: "2.5"}] : [one],
     options: [at("fundo-barato", "0.01", "2"), at("fundo-caro", "0.02", "3"), k.options[4]!], needAverage: "4", needPeak: "4"});
+};
+/** One debtor in a short lot of 3 and a long lot of 2; a cheap fund takes up to 180 days with a sublimit of 2, a
+ * restrictive one up to 60 days with 3; peak 5 (review repro). The arrangement of the lots must not change the result. */
+const maturities = (arrangement: "short-first" | "long-first" | "subdivided") => () => {
+  const k = auroraReceivablesFunding(), fund = k.options[1]!;
+  const short = {...k.items[3]!, id: "curto", label: "Sacado, lote curto", amount: "3", dueDate: "2026-10-15", creditTier: "standard" as const, registration: "registered" as const, debtorKey: "sacado-unico"};
+  const long = {...short, id: "longo", label: "Sacado, lote longo", amount: "2", dueDate: "2027-01-15"};
+  const at = (id: string, rate: string, cap: string, term: number) => ({...fund, id, label: id, rate: {basis: "monthly" as const, rate},
+    eligibility: {...fund.eligibility!, sublimitPerDebtor: cap, sublimitGroup: null, maxRemainingTermDays: term}});
+  const items = arrangement === "short-first" ? [short, long] : arrangement === "long-first" ? [long, short]
+    : [{...long, id: "longo-b", amount: "0.5"}, {...short, id: "curto-1", amount: "1"}, {...long, id: "longo-a", amount: "1.5"}, {...short, id: "curto-2", amount: "2"}];
+  return auroraReceivablesFundingBasis({...k, items, options: [at("fundo-barato", "0.01", "2", 180), at("fundo-restrito", "0.02", "3", 60), k.options[4]!], needAverage: "5", needPeak: "5"});
 };
 /** Retailer E in lots of 3 and 1.5: the second is fully cut by the debtor's sublimit (review repro). */
 const fullCut = () => {
@@ -121,6 +133,9 @@ function goldCases(): Case[] {
     ...[false, true].map((split) => observe(split ? "split-lots-keep-headroom-after-a-partial-purchase" : "one-lot-keeps-headroom-after-a-partial-purchase",
       packetInput(undefined, undefined, partialPurchase(split)), {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 2, 4]], coversPeak: true},
       (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak}))),
+    ...(["short-first", "long-first", "subdivided"] as const).map((arrangement) => observe(`lots-of-different-maturities-${arrangement}-cover-the-peak`,
+      packetInput(undefined, undefined, maturities(arrangement)), {assignable: 5, excluded: [], plan: [["fundo-barato", 2, 2, 2], ["fundo-restrito", 3, 3, 5]], coversPeak: true},
+      (p) => ({assignable: r(p.readings!.assignable), excluded: p.readings!.exclusions, plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak}))),
     observe("lot-fully-cut-by-the-sublimit-keeps-its-reason", packetInput(undefined, undefined, fullCut),
       {lot: ["rede-e-lote-2", 1.5, ["debtor_sublimit"]], assignable: 25, everyExclusionHasAReason: true},
       (p) => {const x = p.readings!.exclusions.find((e) => e.itemId === "rede-e-lote-2")!;
@@ -160,7 +175,7 @@ function adversarialCases(): Case[] {
       return packetInput((f) => {const p = "option.linha-giro.";
         eligibility = {maxDaysPastDue: f.contribute(p + "maxDaysPastDue", "days", {type: "number", value: "0"}), maxRemainingTermDays: f.contribute(p + "maxRemainingTermDays", "days", {type: "number", value: "180"}),
           registrationRule: f.contribute(p + "registrationRule", "convention", {type: "text", value: "not_required"}), minCreditTier: f.contribute(p + "minCreditTier", "convention", {type: "text", value: "standard"}),
-          sublimitPerDebtor: null, anchorItemIds: null};},
+          sublimitPerDebtor: null, sublimitGroup: null, anchorItemIds: null};},
       (i) => {i.analysis.options[4] = {...i.analysis.options[4]!, eligibility: eligibility as never};});
     }, "receivables_funding_option_eligibility"],
     ["rate-without-a-declared-period", () => packetInput((f) => {entry(f, "option.fidc-com-coobrigacao.rateBasis").value = {type: "text", value: "nominal"};}), "invalid_value"],
@@ -171,6 +186,7 @@ function adversarialCases(): Case[] {
     ["largest-debtor-cannot-hold-its-bucket", () => withDebtors("2", "1"), "receivables_funding_largest_debtor"],
     ["debtor-key-shared-by-a-bucket-and-a-named-debtor", () => packetInput((f) => {entry(f, "item.varejo-demais.debtorKey").value = {type: "text", value: "rede-e"};}), "receivables_funding_debtor_key_conflict"],
     ["lots-of-one-debtor-with-different-contracts", () => packetInput((f) => {entry(f, "item.rede-f.debtorKey").value = {type: "text", value: "rede-a"};}), "receivables_funding_debtor_lots_inconsistent"],
+    ["one-sublimit-group-with-two-sublimits", () => packetInput((f) => {entry(f, "option.fidc-sem-coobrigacao.sublimitPerDebtor").value = {type: "number", value: "4"};}), "receivables_funding_sublimit_group"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {entry(f, "item.rede-b.amount").dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];
   return attempts.map(([id, build, message]) => {

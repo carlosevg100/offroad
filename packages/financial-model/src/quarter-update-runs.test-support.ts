@@ -3,7 +3,7 @@ import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {prepareQuarterUpdatePacket, quarterUpdatePacketOutputSchema, type QuarterUpdatePacketInput} from "./quarter-update-packet";
 import {calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
-import {auroraDearerInputs, auroraQuarterUpdateBasis} from "./quarter-update.test-support";
+import {auroraQuarterUpdateBasis} from "./quarter-update.test-support";
 import {measureCovenantHeadroom} from "@offroad/financial-core";
 import {analysisTestId} from "./adopted-analysis.test-support";
 import {auroraWeeklyCash} from "./weekly-cash-streams.test-support";
@@ -96,7 +96,6 @@ function goldCases(): Case[] {
         gaps: p.gaps.filter((g) => g.reason === "structural_cause_not_in_weekly_cash").map((g) => g.operand.split(".").at(-1)), projected: r(p.readings!.projectedEbitda.updated)})),
     observe("persistence-date-bounds-every-effect", packetInput((f) => {
       f.set("cause.trigo.until", {type: "date", value: "2026-10-03"});
-      f.set("streamUpdate.insumos.amounts", {type: "list", value: auroraDearerInputs("2026-10-03").amounts});
     }), {ebitdaAhead: -0.0196, weekly: -0.058, projected: 54.08}, (p) => {const c = p.readings!.persisting.find((x) => x.causeId === "trigo")!;
       return {ebitdaAhead: r(c.ebitdaAhead, 4), weekly: r(c.weeklyEffect, 3), projected: r(p.readings!.projectedEbitda.updated, 2)};}),
     observe("open-diagnosis-without-question-is-a-gap", packetInput((f) => {
@@ -123,27 +122,21 @@ function goldCases(): Case[] {
     }), {status: "prepared_for_human_review", updated: ["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"],
       ownedElsewhere: ["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal", "dre-semanal"]},
       (p) => ({status: p.status, updated: p.readings!.updated, ownedElsewhere: p.readings!.ownedElsewhere.map((x) => x.dependentId)})),
-    observe("identity-transform-with-noise-is-no-propagation", packetInput((f) => {
-      const prior = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
-      f.set("streamUpdate.insumos.transformValue", {type: "number", value: "1"});
-      f.set("streamUpdate.insumos.dates", {type: "list", value: [...prior.dates]});
-      f.set("streamUpdate.insumos.amounts", {type: "list", value: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)});
-    }), {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
+    observe("identity-or-near-identity-factor-is-immaterial", packetInput((f) => f.set("streamUpdate.insumos.transformValue", {type: "number", value: "1.00000002"})),
+      {status: "partial", reasons: ["structural_cause_effect_immaterial", "affected_not_recomputed"], weeklyUpdated: false},
       (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
     observe("managerial-reading-not-updated-by-the-indenture-result", packetInput((f) => f.set("dependent.covenant-dez26-gerencial.recomputedBy", {type: "text", value: "covenant:dez26-base"}),
       (i) => {i.analysis.update.covenant.measurementIds = ["dez26-base"]; i.askedDependentIds = ["covenant-dez26-gerencial"];}),
       {status: "partial", updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"], reasons: ["asked_dependent_not_recomputed"]},
       (p) => ({status: p.status, updated: p.readings!.updated, reasons: p.gaps.map((g) => g.reason)})),
-    observe("token-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
-      const prior = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
-      f.set("streamUpdate.insumos.amounts", {type: "list", value: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)});
-    }), {status: "partial", reasons: ["structural_cause_series_not_matching_factor", "affected_not_recomputed"], weeklyUpdated: false},
+    observe("reduction-per-future-payment-is-opposite-to-the-cause", packetInput((f) => f.set("streamUpdate.insumos.transformValue", {type: "number", value: "0.99999986"})),
+      {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
       (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
-    observe("inconsistent-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
-      const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
-      f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map((d) => d > "2026-09-30" ? "5.7" : "5.8")});
-    }), {status: "partial", reasons: ["structural_cause_series_not_matching_factor", "affected_not_recomputed"], weeklyUpdated: false},
+    observe("opposite-factor-keeps-the-weekly-cash-affected", packetInput((f) => f.set("streamUpdate.insumos.transformValue", {type: "number", value: "0.99"})),
+      {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
       (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
+    reuse("materiality-floor-declared", {materiality: {absolute: "0.001", relative: "0.01"}, floors: [["trigo", "0.006"], ["prazo-redes", "0.021"]]},
+      (p) => ({materiality: p.readings!.materiality, floors: p.readings!.persisting.map((c) => [c.causeId, c.materialityFloor])})),
     observe("named-dependent-owned-elsewhere-makes-the-packet-partial", packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2027-03-31"}), (i) => {i.askedDependentIds = ["plano-2027"];}),
       {status: "partial", reasons: ["asked_dependent_not_recomputed"]}, (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason)})),
     (() => {
@@ -164,26 +157,19 @@ function adversarialCases(): Case[] {
     ["prior-of-another-company", () => {const i = packetInput(); i.analysis.prior.weeklyCash = {...i.analysis.prior.weeklyCash, entityId: analysisTestId(2)}; return i;}, "quarter_update_prior_context_mismatch"],
     ["linked-cause-off-its-deviation", () => packetInput((f) => f.set("cause.ebitda-abaixo.amount", {type: "number", value: "-0.5"})), "quarter_update_linked_cause_mismatch"],
     ["calendar-cause-moves-the-projection", () => {const i = packetInput(); i.analysis.update.streamUpdates[1] = {...i.analysis.update.streamUpdates[1]!, causeIds: ["estoque-trigo"]}; return i;}, "quarter_update_calendar_cause_propagated"],
-    ["series-moved-outside-persistence", () => packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2026-10-03"})), "quarter_update_series_outside_persistence"],
     ["balance-shift-on-ebitda", () => packetInput((f) => f.set("cause.trigo.nature", {type: "text", value: "balance"})), "quarter_update_balance_cause_off_cash"],
     ["series-shared-by-two-causes", () => packetInput((f) => {
       f.set("cause.trigo.until", {type: "date", value: "2026-10-01"});
       (f.input as unknown as {streamUpdates: {causeIds: string[]}[]}).streamUpdates[1]!.causeIds = ["trigo", "prazo-redes"];
     }), "quarter_update_series_shared_by_causes"],
     ["series-outside-the-scenario-used", () => packetInput((f) => {
-      const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
-      const dates = f.contribute("streamUpdate.safra-30.dates", "date", {type: "list", value: [...harvest.dates]});
-      const amounts = f.contribute("streamUpdate.safra-30.amounts", "currency", {type: "list", value: harvest.amounts.map((a) => new D(a).plus("0.01").toFixed())});
       const transformKind = f.contribute("streamUpdate.safra-30.transformKind", "convention", {type: "text", value: "scale"});
       const transformValue = f.contribute("streamUpdate.safra-30.transformValue", "ratio", {type: "number", value: "1.01"});
-      (f.input as unknown as {streamUpdates: unknown[]}).streamUpdates = [{streamId: "safra-30", causeIds: ["trigo"], transformKind, transformValue, dates, amounts}];
+      (f.input as unknown as {streamUpdates: unknown[]}).streamUpdates = [{streamId: "safra-30", causeIds: ["trigo"], transformKind, transformValue}];
     }), "quarter_update_series_outside_scenario"],
     ["structural-cause-without-an-end", () => packetInput((f) => f.set("cause.volume.classification", {type: "text", value: "structural"})), "quarter_update_structural_cause_end"],
     ["recomputing-what-did-not-move", () => packetInput((f) => f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection:2027"})), "quarter_update_recomputes_unaffected"],
-    ["series-updated-without-change", () => packetInput((f) => {
-      const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
-      f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map(() => "5.8")});
-    }), "quarter_update_stream_update_without_change"],
+    ["adopted-series-instead-of-the-transform", () => {const i = packetInput(); (i.analysis.update.streamUpdates[1] as unknown as {amounts: unknown}).amounts = i.analysis.update.streamUpdates[1]!.transformValue; return i;}, "Unrecognized key"],
     ["quarter-outside-the-test-period", () => {const i = packetInput(); i.analysis.update.covenant.measurementIds = ["dez27-base"]; return i;}, "quarter_update_quarter_outside_test_period"],
     ["figure-read-in-another-scenario", () => packetInput((f) => {f.entries.find((x) => x.fieldPath.endsWith("line.ebitda.actual"))!.dimensions.scenario = "adverse";}), "analysis_basis_context_mismatch"],
   ];

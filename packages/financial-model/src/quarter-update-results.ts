@@ -8,14 +8,14 @@ const date = z.iso.date(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const week = z.strictObject({weekStart: date, closing: decimal});
 
 export const quarterUpdateOutputSchema = z.strictObject({schemaVersion: z.literal("quarter-update.v1"), version, currency: z.string().regex(/^[A-Z]{3}$/),
-  quarterStart: date, quarterEnd: date,
+  quarterStart: date, quarterEnd: date, materiality: z.strictObject({absolute: decimal, relative: decimal}),
   lines: z.array(z.strictObject({id: version, label: text, unit: z.enum(["currency", "days", "ratio"]), projected: decimal, actual: decimal, deviation: decimal})).min(1).max(24),
   bridges: z.array(z.strictObject({lineId: version, label: text, projected: decimal, actual: decimal, deviation: decimal,
     causes: z.array(z.strictObject({id: version, label: text, amount: decimal, classification: z.enum(["calendar", "structural"]), until: date.nullable(),
       nature: z.enum(["flow", "balance"]).nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable(), equalsDeviationOf: version.nullable(), driverLineId: version.nullable()})).min(1).max(12),
     explained: decimal, residual: decimal})).min(2).max(8),
   propagation: z.array(z.strictObject({causeId: version, classification: z.enum(["calendar", "structural"]), nature: z.enum(["flow", "balance"]).nullable(), until: date.nullable(),
-    streams: z.array(version).max(64), weeklyEffect: decimal.nullable(), fractionAhead: decimal.nullable(), ebitdaAhead: decimal.nullable(), cashAhead: decimal.nullable()})).max(96),
+    streams: z.array(version).max(64), weeklyEffect: decimal.nullable(), materialityFloor: decimal.nullable(), fractionAhead: decimal.nullable(), ebitdaAhead: decimal.nullable(), cashAhead: decimal.nullable()})).max(96),
   weekly: z.strictObject({prior: weeklyCashOutputSchema, updated: weeklyCashOutputSchema,
     carriedOpening: z.strictObject({prior: decimal, deviation: decimal, updated: decimal}),
     tightest: z.strictObject({prior: week.extend({shortfallToMinimum: decimal}), updated: week.extend({shortfallToMinimum: decimal})}),
@@ -38,7 +38,7 @@ export const quarterUpdateOutputSchema = z.strictObject({schemaVersion: z.litera
       produces: z.array(version).max(8)}).nullable(),
     owner: text.nullable(), sentToThirdParties: z.literal(false)})).max(24),
   gaps: z.array(z.strictObject({item: text, reason: z.enum(["unexplained_residual", "structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent",
-    "structural_cause_series_not_matching_factor", "structural_cause_question_missing", "affected_not_recomputed"])})).max(64)});
+    "structural_cause_effect_immaterial", "structural_cause_series_not_matching_factor", "structural_cause_question_missing", "affected_not_recomputed"])})).max(64)});
 
 export const quarterUpdateExclusions = ["accounting_close", "cause_attribution", "financing_cost_comparison", "third_party_distribution", "credit_approval", "method_release"] as const;
 /** The prior version an update reads, by identity: its basis, its result and whether it was complete. */

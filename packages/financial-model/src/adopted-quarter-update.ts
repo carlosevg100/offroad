@@ -23,7 +23,7 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   carry: z.strictObject({cashLineId: key, ebitdaLineId: key}),
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(z.strictObject({id: key, equalsDeviationOf: key.nullable(), driverLineId: key.nullable(),
     label: selection, amount: selection, classification: selection, until: selection.nullable(), nature: selection.nullable(), basis: selection, question: selection.nullable()})).min(1).max(12)})).min(2).max(8),
-  streamUpdates: z.array(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transformKind: selection, transformValue: selection, dates: selection, amounts: selection})).max(16),
+  streamUpdates: z.array(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transformKind: selection, transformValue: selection})).max(16),
   addedStreams: z.array(z.strictObject({id: key, label: selection, dates: selection, amounts: selection})).max(4),
   /** The test measurements the close updates, the leading one first; what the causes do to them is derived, never adopted. */
   covenant: z.strictObject({measurementIds: z.array(key).min(1).max(8)}),
@@ -31,6 +31,8 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   steps: z.array(z.discriminatedUnion("mode", [
     z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).max(8)}),
     z.strictObject({facilityId: key, mode: z.literal("residual"), date: selection})])).max(4),
+  /** R$ 1,000 in the basis's own units: the absolute materiality floor of a cause's weekly effect. */
+  materialityFloor: selection,
   dependents: z.array(z.strictObject({id: key, label: selection, kind: selection, reads: selection, horizonStart: selection, horizonEnd: selection, recomputedBy: selection, owner: selection.nullable(),
     /** Economic identity: the quantities it consumes and the definition and scenario they are measured on. */
     quantities: selection, definition: selection.nullable(), scenario: selection.nullable()})).max(24),
@@ -95,7 +97,7 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const weekly = calculateAdoptedWeeklyCash(prior.weeklyCash), covenant = calculateAdoptedCovenantHeadroom(prior.covenant);
   const lineUnit = new Map(input.lines.map(l => [l.id, l.unit]));
   const monetary = [...input.lines.filter(l => l.unit === "currency").flatMap(l => [l.projected, l.actual]), ...input.bridges.flatMap(b => b.causes.map(c => c.amount)),
-    ...input.streamUpdates.map(u => u.amounts), ...input.addedStreams.map(s => s.amounts), ...input.facilities.map(f => f.limit)];
+    ...input.addedStreams.map(s => s.amounts), ...input.facilities.map(f => f.limit), input.materialityFloor];
   const b = createAnalysisBinding(input, monetary);
   let complete = true;
   const need = <T>(v: T | null): T => {if (v === null) complete = false; return v as T;};
@@ -123,8 +125,9 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
     const kind = need(read(u.transformKind, p + "transformKind", "convention", "text", z.enum(["scale", "delay"])));
     const value = kind === null ? null : kind === "scale" ? need(read(u.transformValue, p + "transformValue", "ratio", "number", ratio)) : need(read(u.transformValue, p + "transformValue", "days", "number", z.string().regex(/^-?\d{1,3}$/)));
     const transform = kind === "scale" ? {kind, factor: value as string} : {kind: "delay" as const, days: Number(value)};
-    return {streamId: u.streamId, causeIds: u.causeIds, transform,
-    dates: need(read(u.dates, p + "dates", "date", "list", z.array(z.iso.date()).min(1).max(2000))), amounts: need(read(u.amounts, p + "amounts", "currency", "list", z.array(unsigned).min(1).max(2000)))};});
+    // The updated series is derived by the kernel from the prior one; it is never adopted.
+    return {streamId: u.streamId, causeIds: u.causeIds, transform};});
+  const materialityFloor = need(read(input.materialityFloor, "materialityFloor", "currency", "number", unsigned));
   const added = input.addedStreams.map(s => {const p = `added.${s.id}.`; return {id: s.id, label: need(read(s.label, p + "label", "text", "text", words)),
     category: "operating" as const, direction: "inflow" as const, obligation: null,
     dates: need(read(s.dates, p + "dates", "date", "list", z.array(z.iso.date()).min(1).max(2000))), amounts: need(read(s.amounts, p + "amounts", "currency", "list", z.array(unsigned).min(1).max(2000)))};});
@@ -143,7 +146,7 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const kernelInput: QuarterUpdateInput | null = complete && priorComplete ? {currency: input.currency, quarterStart: input.openingDate, quarterEnd: input.endDate,
     lines, bridges, carry: input.carry,
     prior: {weeklyCash: priorWeeklyInput(prior.weeklyCash, weekly), covenant: priorCovenantInput(covenant.headroom!)},
-    weekly: {updates, added}, covenant: {measurementIds: input.covenant.measurementIds}, facilities, steps, dependents} : null;
+    weekly: {updates, added}, covenant: {measurementIds: input.covenant.measurementIds}, facilities, steps, dependents, materialityFloor} : null;
   const update = kernelInput ? updateAfterQuarterClose(kernelInput) : null;
   const reference = (r: {analysisId: string; basisFingerprint: string; fingerprint: string}, done: boolean) =>
     ({analysisId: r.analysisId, basisFingerprint: r.basisFingerprint, resultFingerprint: r.fingerprint, complete: done});

@@ -75,7 +75,7 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
   it("review r2 F2: a series outside the scenario used does not carry a cause", () => {
     const harvest = auroraWeeklyCash.streams.find((s) => s.id === "safra-30")!;
     const b = bases((f) => {
-      f.streamUpdates = [{value: {streamId: "safra-30", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"}, dates: [...harvest.dates], amounts: harvest.amounts.map((a) => new Decimal(a).plus("0.01").toFixed())},
+      f.streamUpdates = [{value: {streamId: "safra-30", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"} },
         origin: "estimate", source: "série fora do cenário informado"}];
     });
     expect(() => packetOf(b)).toThrow("quarter_update_series_outside_scenario");
@@ -98,25 +98,15 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     expect(p.readings!.updated).toEqual(["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"]);
     expect(p.readings!.ownedElsewhere.map((x) => x.dependentId)).toEqual(["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal"]);
   });
-  it("review r3: an inconsistent or token weekly propagation keeps the weekly cash affected and the packet partial", () => {
-    const tiny = bases((f) => {
-      const s = f.streamUpdates[1]!.value; s.amounts = auroraWeeklyCash.streams.find((x) => x.id === "insumos")!.amounts.map((a, k) => k === 3 ? "5.80000001" : a);
-    });
-    const p = packetOf(tiny);
-    expect(p.status).toBe("partial");
-    expect(p.readings!.updated).not.toContain("caixa-semanal");
-    expect(p.gaps.map((g) => g.reason)).toEqual(["structural_cause_series_not_matching_factor", "affected_not_recomputed"]);
-    const cheaper = bases((f) => {const s = f.streamUpdates[1]!.value; s.amounts = s.amounts.map((a, k) => s.dates[k]! > "2026-09-30" ? "5.7" : a);});
-    const q = packetOf(cheaper);
-    expect(q.readings!.affectedNotRecomputed).toContain("caixa-semanal");
-    expect(q.gaps.map((g) => g.reason)).toEqual(["structural_cause_series_not_matching_factor", "affected_not_recomputed"]);
-  });
-  it("review r4: an identity transform with noise inside the tolerance does not update the weekly cash", () => {
-    const prior = auroraWeeklyCash.streams.find((x) => x.id === "insumos")!;
-    const p = packetOf(bases((f) => {const s = f.streamUpdates[1]!.value; s.transform = {kind: "scale", factor: "1"}; s.dates = [...prior.dates]; s.amounts = prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a);}));
-    expect(p.status).toBe("partial");
-    expect(p.gaps.map((g) => g.reason)).toEqual(["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"]);
-    expect(p.readings!.updated).not.toContain("caixa-semanal");
+  it("review r5: a near-identity factor, a reduction per future payment or an opposite factor does not propagate", () => {
+    const withFactor = (factor: string) => packetOf(bases((f) => {f.streamUpdates[1]!.value.transform = {kind: "scale", factor};}));
+    for (const [factor, reason] of [["1", "structural_cause_effect_immaterial"], ["1.00000002", "structural_cause_effect_immaterial"],
+      ["0.99999986", "structural_cause_weekly_effect_inconsistent"], ["0.99", "structural_cause_weekly_effect_inconsistent"]] as const) {
+      const p = withFactor(factor);
+      expect([factor, p.status, p.gaps.map((g) => g.reason)]).toEqual([factor, "partial", [reason, "affected_not_recomputed"]]);
+      expect(p.readings!.updated).not.toContain("caixa-semanal");
+    }
+    expect(packetOf(bases()).readings!.materiality).toEqual({absolute: "0.001", relative: "0.01"});
   });
   it("review r4: an EBITDA statement bound to the weekly cash through a driver line is not updated, and asking for it makes the packet partial", () => {
     const b = bases((f) => {

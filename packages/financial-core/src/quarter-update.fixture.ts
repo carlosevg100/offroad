@@ -85,8 +85,8 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
   prior: {weeklyCash: auroraWeeklyCash, covenant: auroraPriorCovenant},
   weekly: {
     updates: [
-      {streamId: "recebimentos", causeIds: ["prazo-redes"], transform: {kind: "delay", days: 4}, ...auroraReceipts()},
-      {streamId: "insumos", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"}, ...auroraDearerInputs()},
+      {streamId: "recebimentos", causeIds: ["prazo-redes"], transform: {kind: "delay", days: 4}},
+      {streamId: "insumos", causeIds: ["trigo"], transform: {kind: "scale", factor: "1.01"}},
     ],
     added: [{id: "programas-redes", label: "Programas de antecipação das redes A e B", category: "operating", direction: "inflow", obligation: null, dates: ["2026-10-15"], amounts: ["23"]}],
   },
@@ -99,6 +99,8 @@ export const auroraQuarterUpdate: QuarterUpdateInput = {
     {facilityId: "programas-redes", mode: "fixed", streamId: "programas-redes", replacesStreamIds: ["linha-17"]},
     {facilityId: "conta-garantida", mode: "residual", date: "2026-12-14"},
   ],
+  // R$ 1,000 in millions.
+  materialityFloor: "0.001",
   dependents: [
     {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis", reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash", quantities: ["cash_balance_by_week"], definition: null, scenario: "linha-17", owner: null},
     {id: "covenant-dez26", label: "Covenant de dezembro de 2026, definição da escritura", kind: "analysis", reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-base", quantities: ["covenant_ratio", "covenant_headroom"], definition: "Definição da escritura (CVM 156 menos arrendamentos)", scenario: "base", owner: null},

@@ -36,6 +36,9 @@ export type ReceivablesFundingEligibility = {
   minCreditTier: "selected" | "standard";
   /** Per debtor; null when the option states no sublimit. */
   sublimitPerDebtor: string | null;
+  /** Options that are products of the same buyers (a fund with or without recourse) share one sublimit
+   * per debtor; null when the option's sublimit is its own. */
+  sublimitGroup: string | null;
   /** Anchor programs only: the debtors whose own program this is. */
   anchorItemIds: readonly string[];
 };
@@ -167,6 +170,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
       int(e.maxDaysPastDue, 0, 3660, "receivables_funding_policy"); int(e.maxRemainingTermDays, 1, 3660, "receivables_funding_policy");
       if (!["required", "not_required"].includes(e.registrationRule) || !["selected", "standard"].includes(e.minCreditTier)) throw new Error("receivables_funding_policy");
       if (e.sublimitPerDebtor !== null && !amount(e.sublimitPerDebtor).gt(0)) throw new Error("receivables_funding_policy");
+      if (e.sublimitGroup !== null && (typeof e.sublimitGroup !== "string" || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(e.sublimitGroup))) throw new Error("receivables_funding_sublimit_group");
       if ((o.kind === "anchor_program") !== (e.anchorItemIds.length > 0)) throw new Error("receivables_funding_anchor_items");
       if (new Set(e.anchorItemIds).size !== e.anchorItemIds.length) throw new Error("receivables_funding_anchor_items");
       // A program is the debtor's own: it buys only that debtor, and only while the program is active.
@@ -179,6 +183,13 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     return o;
   });
   const anchored = new Set(options.flatMap(o => o.eligibility?.anchorItemIds ?? []));
+  // Options of one sublimit group share the sublimit, so they must state the same one.
+  const groupCap = new Map<string, string | null>();
+  for (const o of options) if (o.eligibility?.sublimitGroup) {
+    const g = o.eligibility.sublimitGroup, cap = o.eligibility.sublimitPerDebtor === null ? null : amount(o.eligibility.sublimitPerDebtor).toFixed();
+    if (groupCap.has(g) && groupCap.get(g) !== cap) throw new Error("receivables_funding_sublimit_group");
+    groupCap.set(g, cap);
+  }
   // A program buys the debtor, not one lot of it: every lot of an anchored debtor is named by the same program.
   for (const o of options) for (const id of o.eligibility?.anchorItemIds ?? []) {
     if (byKey.get(items.get(id)!.debtorKey)!.some(l => !o.eligibility!.anchorItemIds.includes(l.id))) throw new Error("receivables_funding_debtor_lots_inconsistent");
@@ -204,24 +215,25 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
       if (tierRank[i.creditTier] > tierRank[e.minCreditTier]) reasons.push("credit_tier_outside_policy");
       return {i, offered, reasons, curable: c.reasons.filter(r => curable.includes(r)), eligible: reasons.length ? new Exact(0) : i.value};
     });
-    // One debtor's eligible lots share one sublimit, filled in the order of the lots.
+    // One debtor's eligible lots share one sublimit, filled in the canonical order of the lot ids, never the array order.
     const room = new Map<string, Decimal>();
-    return tested.map(t => {
+    const byId = new Map([...tested].sort((a, b) => (a.i.id < b.i.id ? -1 : 1)).map(t => {
       const base = {itemId: t.i.id, offered: t.offered, reasons: t.reasons, curable: t.curable};
-      if (!t.eligible.gt(0)) return {...base, retained: "0", sublimitVerified: true, unverifiedBy: [] as Unverified[], sublimitExcess: "0"};
-      let retained: Decimal, unverifiedBy: Unverified[] = [];
+      if (!t.eligible.gt(0)) return {...base, retained: "0", sublimitVerified: true, unverifiedBy: [] as Unverified[], sublimitExcess: "0", bound: null as Decimal | null};
+      let retained: Decimal, unverifiedBy: Unverified[] = [], bound: Decimal | null = null;
       if (t.i.debtorCount === 1) {
         const left = room.get(t.i.debtorKey) ?? cap;
         retained = left === null ? t.eligible : Decimal.min(t.eligible, left);
         if (left !== null) room.set(t.i.debtorKey, left.minus(retained));
       } else {
         const b = bucket(t.i, cap);
-        retained = b.retained; if (!b.verified) unverifiedBy.push("largest_debtor");
+        retained = b.retained; bound = b.retained; if (!b.verified) unverifiedBy.push("largest_debtor");
         // Without a declared disjoint set, a debtor of the bucket may hold lots elsewhere: the sublimit is not proved.
         if (cap !== null && t.i.debtorSetDisjoint === false) unverifiedBy.push("debtor_set_overlap");
       }
-      return {...base, retained: out(retained), sublimitVerified: !unverifiedBy.length, unverifiedBy, sublimitExcess: out(t.eligible.minus(retained))};
-    });
+      return {...base, retained: out(retained), sublimitVerified: !unverifiedBy.length, unverifiedBy, sublimitExcess: out(t.eligible.minus(retained)), bound};
+    }).map(r => [r.itemId, r]));
+    return tested.map(t => byId.get(t.i.id)!);
   }
   /** Several debtors are proved within the sublimit only by the largest one; otherwise the volume is
    * an upper bound (count times sublimit, less the known excess). */
@@ -232,6 +244,77 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     let bound = i.value.minus(largest === null ? 0 : Decimal.max(largest.minus(cap), 0));
     if (i.debtorCount !== null) bound = Decimal.min(bound, cap.mul(i.debtorCount));
     return {retained: bound, verified: false};
+  }
+
+  /** Exact, order-independent allocation of lots to options: a minimum-cost flow by successive
+   * shortest paths (Bellman-Ford on residual costs, Decimal throughout). Source to each lot (its
+   * balance); lot to the sublimit node of each option that accepts it (cost: the option's cost per
+   * unit for the time in use); sublimit node per (sublimit group or option, debtor key) to the sink
+   * (the per-debtor sublimit, a bucket's declared bound, unbounded without a sublimit). Nodes and
+   * edges are built in the canonical order of lot ids and option ids, and a tie keeps the first path
+   * found in that order, so the result never depends on the order of the arrays. */
+  function allocate(list: readonly (ReceivablesFundingItem & {value: Decimal})[], chosen: readonly ReceivablesFundingOption[], unitCost: Map<string, Decimal>, limit: Decimal | null,
+    later: ReadonlySet<string> = new Set()) {
+    type Edge = {to: number; cap: Decimal; cost: Decimal; rev: number; option: string | null; lot: string | null};
+    const graph: Edge[][] = [[], []], S = 0, T = 1, nodes = new Map<string, number>();
+    const node = (key: string) => {let n = nodes.get(key); if (n === undefined) {n = graph.length; graph.push([]); nodes.set(key, n);} return n;};
+    const edge = (from: number, to: number, cap: Decimal, cost: Decimal, option: string | null = null, lot: string | null = null) => {
+      graph[from]!.push({to, cap, cost, rev: graph[to]!.length, option, lot});
+      graph[to]!.push({to: from, cap: new Exact(0), cost: cost.neg(), rev: graph[from]!.length - 1, option: null, lot: null});
+    };
+    const lots = [...list].sort((a, b) => (a.id < b.id ? -1 : 1)), opts = [...chosen].sort((a, b) => (a.id < b.id ? -1 : 1));
+    const takes = new Map(opts.map(o => [o.id, new Map(takeAll(o, list).map(t => [t.itemId, t]))]));
+    const unbounded = gross.plus(1);
+    for (const i of lots) {
+      const l = node(`lot|${i.id}`);
+      // Lots offered later enter only after the others are allocated: an augmenting path never passes the
+      // source twice, so what the others carry is kept and the later lots add only what they bring.
+      edge(S, l, later.has(i.id) ? new Exact(0) : i.value, new Exact(0));
+      for (const o of opts) {
+        const t = takes.get(o.id)!.get(i.id)!;
+        if (!t.offered || t.reasons.length) continue;
+        const e = o.eligibility!, scope = e.sublimitGroup ?? `option:${o.id}`, key = `cap|${scope}|${i.debtorKey}`, fresh = !nodes.has(key), d = node(key);
+        if (fresh) edge(d, T, i.debtorCount !== 1 ? t.bound ?? unbounded : e.sublimitPerDebtor === null ? unbounded : amount(e.sublimitPerDebtor), new Exact(0));
+        edge(l, d, i.value, unitCost.get(o.id)!, o.id, i.id);
+      }
+    }
+    let total = new Exact(0);
+    for (let phase = later.size ? 0 : 1; phase < 2; phase++) {
+    if (phase === 1) for (const i of lots) if (later.has(i.id)) graph[S]!.find(e => e.to === nodes.get(`lot|${i.id}`))!.cap = i.value;
+    for (;;) {
+      if (limit !== null && total.gte(limit)) break;
+      const dist: (Decimal | null)[] = graph.map(() => null), via: ([number, number] | null)[] = graph.map(() => null);
+      dist[S] = new Exact(0);
+      for (let pass = 0, changed = true; changed && pass < graph.length; pass++) {
+        changed = false;
+        for (let u = 0; u < graph.length; u++) {
+          const du = dist[u]; if (du === null || du === undefined) continue;
+          graph[u]!.forEach((e, k) => {
+            if (!e.cap.gt(0)) return;
+            const nd = du.plus(e.cost);
+            if (dist[e.to] === null || nd.lt(dist[e.to]!)) {dist[e.to] = nd; via[e.to] = [u, k]; changed = true;}
+          });
+        }
+      }
+      if (dist[T] === null) break;
+      let push = limit === null ? null as Decimal | null : limit.minus(total);
+      for (let v = T; v !== S; v = via[v]![0]) {const [u, k] = via[v]!, c = graph[u]![k]!.cap; push = push === null ? c : Decimal.min(push, c);}
+      for (let v = T; v !== S; v = via[v]![0]) {
+        const [u, k] = via[v]!, e = graph[u]![k]!;
+        e.cap = e.cap.minus(push!); graph[e.to]![e.rev]!.cap = graph[e.to]![e.rev]!.cap.plus(push!);
+      }
+      total = total.plus(push!);
+    }
+    }
+    const byOption = new Map<string, Decimal>(), byLot = new Map<string, Decimal>(), byPair = new Map<string, Decimal>();
+    for (const edges of graph) for (const e of edges) if (e.option !== null) {
+      const used = graph[e.to]![e.rev]!.cap;
+      if (!used.gt(0)) continue;
+      byOption.set(e.option, (byOption.get(e.option) ?? new Exact(0)).plus(used));
+      byLot.set(e.lot!, (byLot.get(e.lot!) ?? new Exact(0)).plus(used));
+      byPair.set(`${e.option}|${e.lot}`, used);
+    }
+    return {total, byOption, byLot, byPair, takes};
   }
 
   const di1 = di.plus(1);
@@ -258,7 +341,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     const fee = needAverage.mul(amount(o.upfrontFee));
     const total = interest.plus(iof).plus(fee);
     const period = total.div(needAverage);
-    const byItem = o.eligibility ? takeAll(o, [...items.values()]) : [];
+    const byItem = o.eligibility ? takeAll(o, [...items.values()]).map(({bound: _bound, ...b}) => b) : [];
     const volume = o.eligibility ? byItem.reduce((s, b) => s.plus(b.retained), new Exact(0)) : null;
     const sale = saleKinds.includes(o.kind);
     const liability = !sale || o.recourse === "with_recourse";
@@ -281,11 +364,15 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
   const ranked = [...costed].sort((a, b) => new Exact(a.cost.total).cmp(b.cost.total) || (a.id < b.id ? -1 : 1))
     .map(c => ({id: c.id, total: c.cost.total, differenceToBankLine: line === null ? null : out(new Exact(c.cost.total).minus(line.cost.total))}));
 
-  // What can be sold: per bucket, the most any sale option takes; the rest is excluded with every reason the options gave.
+  // What can be sold: the maximum flow of the portfolio through the sale options, each lot's
+  // remainder excluded with the reason that binds it.
+  const unitCost = new Map(costed.map(c => [c.id, new Exact(c.cost.allInPeriod)]));
+  const saleOptions = options.filter(o => saleKinds.includes(o.kind));
+  const sold = allocate([...items.values()], saleOptions, unitCost, null);
   const sales = costed.filter(c => saleKinds.includes(c.kind));
   const portfolio = [...items.values()].map(i => {
     const takes = sales.map(s => s.byItem.find(b => b.itemId === i.id)!).filter(b => b.offered);
-    const best = takes.reduce((m, b) => new Exact(b.retained).gt(m) ? new Exact(b.retained) : m, new Exact(0));
+    const best = sold.byLot.get(i.id) ?? new Exact(0);
     // The reasons no sale option overcomes; when each option fails for its own reason, all of them.
     const common = [...new Set(takes.flatMap(b => b.reasons))].filter(r => takes.every(b => b.reasons.includes(r)));
     // A lot some option accepts is cut only by the debtor sublimit, even when the cut leaves nothing of it.
@@ -294,60 +381,51 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     if (!takes.length) reasons.push("not_offered_to_any_sale_option");
     const excluded = i.value.minus(best);
     return {itemId: i.id, label: i.label, amount: out(i.value), assignable: out(best), excluded: out(excluded), reasons: excluded.gt(0) ? reasons : [],
-      curable: [...new Set(takes.filter(b => new Exact(b.retained).gt(0)).flatMap(b => b.curable))].sort(),
+      curable: [...new Set(best.gt(0) ? takes.filter(b => !b.reasons.length).flatMap(b => b.curable) : [])].sort(),
       encumbranceHolder: i.encumbranceHolder, releaseEvent: i.releaseEvent};
   });
   const assignable = portfolio.reduce((s, p) => s.plus(p.assignable), new Exact(0));
   const excludedTotal = portfolio.reduce((s, p) => s.plus(p.excluded), new Exact(0));
-  if (!assignable.plus(excludedTotal).eq(gross)) throw new Error("receivables_funding_reconciliation");
+  if (!assignable.plus(excludedTotal).eq(gross) || !assignable.eq(sold.total)) throw new Error("receivables_funding_reconciliation");
 
-  // After a release, the encumbered bucket is tested as free by the same options: an upper bound until it is.
+  // After a release, every lot freed by the same event is tested as free by the same options, after the
+  // lots already sold: what each brings is what the portfolio gains, an upper bound until proved.
+  const events = [...new Set([...items.values()].filter(i => i.encumbrance !== "free" && i.releaseEvent !== null).map(i => i.releaseEvent!))].sort();
+  const freedBy = new Map(events.map(ev => {
+    const list = [...items.values()].map(x => x.encumbrance !== "free" && x.releaseEvent === ev ? {...x, encumbrance: "free" as const} : x);
+    const ids = new Set(list.filter((x, n) => x !== [...items.values()][n]).map(x => x.id));
+    return [ev, {list, flow: allocate(list, saleOptions, unitCost, null, ids)}];
+  }));
   const releases = [...items.values()].filter(i => i.encumbrance !== "free" && i.releaseEvent !== null).map(i => {
-    const freed = {...i, encumbrance: "free" as const};
-    const list = [...items.values()].map(x => x.id === i.id ? freed : x);
-    const best = options.filter(o => saleKinds.includes(o.kind)).map(o => takeAll(o, list).find(b => b.itemId === i.id)!)
-      .reduce((m, b) => new Exact(b.retained).gt(m.value) ? {value: new Exact(b.retained), verified: b.sublimitVerified} : m, {value: new Exact(0), verified: true});
-    return {itemId: i.id, amount: out(i.value), holder: i.encumbranceHolder!, releaseEvent: i.releaseEvent!, assignableAfterRelease: out(best.value), verified: best.verified};
+    const {list, flow} = freedBy.get(i.releaseEvent!)!;
+    const verified = saleOptions.every(o => takeAll(o, list).find(b => b.itemId === i.id)!.sublimitVerified);
+    return {itemId: i.id, amount: out(i.value), holder: i.encumbranceHolder!, releaseEvent: i.releaseEvent!, assignableAfterRelease: out(flow.byLot.get(i.id) ?? new Exact(0)), verified};
   });
 
-  // Plan: the cheapest options first. Each option's capacity is recomputed on what is still unsold: a
-  // named debtor's accepted lots share the option's own sublimit, so a balance bought in part earlier
-  // keeps the same headroom whether it sits in one lot or several; a bucket keeps its bound. Each option
-  // takes the least of its capacity per lot and what is still missing to the peak.
-  const unsold = new Map([...items.values()].map(i => [i.id, i.value]));
+  // Plan: the minimum-cost flow up to the peak through every option that buys or discounts the portfolio;
+  // each step shows the option's own capacity and what it is allocated. The bank line is the reserve.
+  const planned = allocate([...items.values()], options.filter(o => o.eligibility !== null), unitCost, needPeak);
   const plan: {optionId: string; capacity: string; amount: string; cumulative: string}[] = [];
   let cumulative = new Exact(0);
   for (const r of ranked) {
-    if (cumulative.gte(needPeak)) break;
-    const c = costed.find(x => x.id === r.id)!;
-    if (c.kind === "bank_line") continue;
-    let add = new Exact(0), capacity = new Exact(0);
-    const cap = options.find(o => o.id === c.id)!.eligibility!.sublimitPerDebtor;
-    const headroom = new Map<string, Decimal>();
-    for (const b of c.byItem) {
-      const i = items.get(b.itemId)!;
-      let free: Decimal;
-      if (i.debtorCount === 1) {
-        if (!b.offered || b.reasons.length) continue;
-        const left = headroom.get(i.debtorKey) ?? (cap === null ? null : new Exact(cap));
-        free = left === null ? unsold.get(b.itemId)! : Decimal.min(unsold.get(b.itemId)!, left);
-        if (left !== null) headroom.set(i.debtorKey, left.minus(free));
-      } else free = Decimal.min(new Exact(b.retained), unsold.get(b.itemId)!);
-      if (!free.gt(0)) continue;
-      capacity = capacity.plus(free);
-      const take = Decimal.min(free, needPeak.minus(cumulative).minus(add));
-      if (take.gt(0)) {add = add.plus(take); unsold.set(b.itemId, unsold.get(b.itemId)!.minus(take));}
-    }
-    if (!add.gt(0)) continue;
+    const add = planned.byOption.get(r.id);
+    if (!add?.gt(0)) continue;
     cumulative = cumulative.plus(add);
-    plan.push({optionId: c.id, capacity: out(capacity), amount: out(add), cumulative: out(cumulative)});
+    // Capacity: the option's own volume, bounded by its allocation plus what the plan leaves unsold in lots it accepts.
+    const c = costed.find(x => x.id === r.id)!;
+    const unsold = c.byItem.filter(t => t.offered && !t.reasons.length).reduce((v, t) => v.plus(items.get(t.itemId)!.value.minus(planned.byLot.get(t.itemId) ?? 0)), new Exact(0));
+    plan.push({optionId: r.id, capacity: out(Decimal.min(new Exact(c.volume!), add.plus(unsold))), amount: out(add), cumulative: out(cumulative)});
   }
   const leads = plan.map(p => costed.find(c => c.id === p.optionId)!.leadDays);
   // Without the lead time of every planned option the start date is not stated.
   const planLead = leads.length && leads.every(l => l !== null) ? Math.max(...leads.map(l => l!.max)) : null;
   const startBy = planLead === null ? null : addDays(input.needStartDate, -planLead);
+  // A condition precedent covers what the plan actually buys through an option that requires it.
   const curableByCode = new Map<string, Decimal>();
-  for (const p of portfolio) for (const r of p.curable) curableByCode.set(r, (curableByCode.get(r) ?? new Exact(0)).plus(p.assignable));
+  for (const [pair, used] of planned.byPair) {
+    const [optionId, lotId] = pair.split("|") as [string, string];
+    for (const r of new Set(planned.takes.get(optionId)!.get(lotId)!.curable)) curableByCode.set(r, (curableByCode.get(r) ?? new Exact(0)).plus(used));
+  }
 
   const fidcVolumes = costed.filter(c => c.kind === "fidc").map(c => new Exact(c.volume!));
   const turnover = fidcVolumes.length ? Decimal.max(...fidcVolumes).mul(30).div(averageTermDays) : new Exact(0);

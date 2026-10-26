@@ -23,7 +23,7 @@ export const adoptedReceivablesFundingInputSchema = adoptedAnalysisContextSchema
     iofDaily: selection, iofDailyCapDays: selection, iofAdditional: selection, rolloverDays: optional, upfrontFee: selection, collateral: selection,
     leadDaysMin: optional, leadDaysMax: optional,
     eligibility: z.strictObject({maxDaysPastDue: selection, maxRemainingTermDays: selection, registrationRule: selection, minCreditTier: selection,
-      sublimitPerDebtor: optional, anchorItemIds: optional}).nullable()})).min(1).max(8),
+      sublimitPerDebtor: optional, sublimitGroup: optional, anchorItemIds: optional}).nullable()})).min(1).max(8),
 }).refine(i => i.endDate > i.openingDate, "Invalid horizon")
   .refine(i => new Set(i.items.map(x => x.id)).size === i.items.length, "Duplicate item")
   .refine(i => new Set(i.options.map(x => x.id)).size === i.options.length, "Duplicate option");
@@ -74,6 +74,7 @@ export function calculateAdoptedReceivablesFunding(raw: unknown) {
         registrationRule: read(e.registrationRule, p + "registrationRule", "convention", "text", z.enum(["required", "not_required"])),
         minCreditTier: read(e.minCreditTier, p + "minCreditTier", "convention", "text", z.enum(["selected", "standard"])),
         sublimitPerDebtor: maybe(e.sublimitPerDebtor, p + "sublimitPerDebtor", "currency", "number", unsigned),
+        sublimitGroup: maybe(e.sublimitGroup, p + "sublimitGroup", "identity", "text", key),
         anchorItemIds: maybe(e.anchorItemIds, p + "anchorItemIds", "identity", "list", z.array(key).min(1).max(16)) ?? []}};
   });
   const kernelInput: ReceivablesFundingInput = {currency: input.currency, referenceDate: input.openingDate, items, options,

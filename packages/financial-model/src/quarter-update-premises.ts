@@ -44,7 +44,10 @@ export const quarterUpdateFactsSchema = z.strictObject({
   lines: z.array(fact(line)).min(1).max(24),
   carry: fact(z.strictObject({cashLineId: key, ebitdaLineId: key})),
   bridges: z.array(z.strictObject({lineId: key, causes: z.array(fact(cause)).min(1).max(12)})).min(2).max(8),
-  streamUpdates: z.array(fact(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transform, ...series}))).max(16),
+  /** Series moved by one cause each: the method derives them from the prior weekly cash by the transform. */
+  streamUpdates: z.array(fact(z.strictObject({streamId: key, causeIds: z.array(key).min(1).max(8), transform}))).max(16),
+  /** R$ 1,000 in the basis's own units (0.001 when figures are in millions). */
+  materialityFloor: fact(unsignedMoney),
   addedStreams: z.array(fact(z.strictObject({id: key, label: text, ...series}))).max(4),
   /** The prior test measurements the close updates, the leading one first; their effects are derived, never stated. */
   covenant: fact(z.strictObject({measurementIds: z.array(key).min(1).max(8)})),
@@ -76,7 +79,6 @@ export const quarterUpdateFactsSchema = z.strictObject({
   }
   const structural = (id: string) => causes.get(id)?.classification === "structural";
   for (const {value: u} of f.streamUpdates) {
-    if (u.dates.length !== u.amounts.length) fail(`Stream ${u.streamId} must have one amount per date`);
     if (!u.causeIds.every(structural)) fail(`Stream ${u.streamId} must be moved by structural causes of the close`);
   }
   for (const {value: s} of f.addedStreams) if (s.dates.length !== s.amounts.length) fail(`Stream ${s.id} must have one amount per date`);
@@ -132,9 +134,10 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
     if (v.equalsDeviationOf !== null) txt(p + "equalsDeviationOf", "identity", v.equalsDeviationOf, r);
     if (v.driverLineId !== null) txt(p + "driverLineId", "identity", v.driverLineId, r);
   }
+  num("materialityFloor", "currency", f.materialityFloor.value, why(f.materialityFloor));
   for (const u of f.streamUpdates) {
     const v = u.value, p = `streamUpdate.${v.streamId}.`, r = why(u);
-    list(p + "causeIds", "identity", v.causeIds, r); list(p + "dates", "date", v.dates, r); list(p + "amounts", "currency", v.amounts, r);
+    list(p + "causeIds", "identity", v.causeIds, r);
     txt(p + "transformKind", "convention", v.transform.kind, r);
     if (v.transform.kind === "scale") num(p + "transformValue", "ratio", v.transform.factor, r); else num(p + "transformValue", "days", String(v.transform.days), r);
   }

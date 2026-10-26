@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: receivables-funding-packet.v1
 unit_test_files: [packages/financial-model/src/receivables-funding-packet.test.ts, packages/financial-model/src/receivables-funding-runs.test.ts, packages/financial-model/src/receivables-funding-premises.test.ts, packages/financial-core/src/receivables-funding.test.ts]
-gold_case_ids: [gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, one-debtor-split-across-lots-shares-the-sublimit, one-lot-keeps-headroom-after-a-partial-purchase, split-lots-keep-headroom-after-a-partial-purchase, lot-fully-cut-by-the-sublimit-keeps-its-reason, discount-iof-with-30-days-in-use-and-a-50-day-term, discount-iof-with-50-days-in-use-and-a-50-day-term, discount-iof-with-51-days-in-use-and-a-50-day-term, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-approval-promise, program-buys-a-debtor-without-a-program, policy-override-to-take-encumbered-receivables, sale-carrying-collateral, discount-without-recourse, bank-line-with-portfolio-eligibility, rate-without-a-declared-period, encumbrance-without-holder, peak-below-average-need, largest-debtor-above-its-bucket, largest-debtor-cannot-hold-its-bucket, debtor-key-shared-by-a-bucket-and-a-named-debtor, lots-of-one-debtor-with-different-contracts, figure-read-in-another-scenario]
+gold_case_ids: [gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, one-debtor-split-across-lots-shares-the-sublimit, one-lot-keeps-headroom-after-a-partial-purchase, split-lots-keep-headroom-after-a-partial-purchase, lots-of-different-maturities-short-first-cover-the-peak, lots-of-different-maturities-long-first-cover-the-peak, lots-of-different-maturities-subdivided-cover-the-peak, lot-fully-cut-by-the-sublimit-keeps-its-reason, discount-iof-with-30-days-in-use-and-a-50-day-term, discount-iof-with-50-days-in-use-and-a-50-day-term, discount-iof-with-51-days-in-use-and-a-50-day-term, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-approval-promise, program-buys-a-debtor-without-a-program, policy-override-to-take-encumbered-receivables, sale-carrying-collateral, discount-without-recourse, bank-line-with-portfolio-eligibility, rate-without-a-declared-period, encumbrance-without-holder, peak-below-average-need, largest-debtor-above-its-bucket, largest-debtor-cannot-hold-its-bucket, debtor-key-shared-by-a-bucket-and-a-named-debtor, lots-of-one-debtor-with-different-contracts, one-sublimit-group-with-two-sublimits, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:gross-portfolio-is-not-assignable]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -71,11 +71,11 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 - Elegibilidade pelo núcleo de elegibilidade de carteira: atraso, prazo remanescente, cessão permitida, ônus e registro. Registro ausente é condição precedente; os outros motivos excluem.
 - Programa do próprio cliente compra só esse cliente e dispensa a anuência; sacado com programa ativo vai pelo programa e não é oferecido às outras portas.
 - Sublimite por sacado: um sacado fica no menor entre o saldo e o sublimite; um grupo pulverizado só é provado dentro do sublimite pelo maior sacado, senão o volume é teto. Grupo maior que o número de sacados vezes o maior saldo é dado contraditório e é recusado. Lote que alguma porta aceita e que o sublimite corta, mesmo por inteiro, fica excluído pelo motivo sublimite do sacado; toda exclusão tem motivo. Cada sacado nomeado tem uma chave canônica (documento ou chave de registro); os lotes de um mesmo sacado somam a exposição antes do sublimite, dentro de cada porta. Grupo pulverizado tem a chave do seu conjunto de sacados, que não pode ser de outro item, e declara se o conjunto é disjunto dos demais; sem a declaração, o sublimite não é provado e o volume é teto com lacuna. Lotes de um sacado com contrato ou programa diferentes, ou programa que nomeia só um dos lotes, são recusados.
-- Cedível = soma, por grupo, do maior volume que alguma porta de venda compra; bruta = cedível + excluída, sem resíduo.
+- Cedível = fluxo máximo da carteira pelas portas de venda, numa rede: origem para cada lote (o saldo), lote para cada porta que o aceita (custo por unidade no tempo de uso), nó de sublimite por grupo de sublimite ou porta e por sacado para o destino (o sublimite, o teto declarado do grupo pulverizado, sem limite quando não há sublimite). Portas que são produtos dos mesmos compradores (FIDC com e sem coobrigação) dividem um sublimite por sacado e declaram o mesmo valor. O resultado não depende da ordem dos lotes nem da subdivisão: nós e arestas seguem a ordem canônica dos ids e o empate fica com o primeiro caminho nessa ordem. Bruta = cedível + excluída, sem resíduo; o saldo não alocado de cada lote leva o motivo que o prende.
 - Taxa mensal: fator (1 + taxa) elevado a dias corridos sobre 30; ano efetivo = (1 + taxa) elevado a 12, menos 1. DI mais spread: (1 + DI) vezes (1 + spread), elevado a dias úteis sobre 252. Spread sobre o DI = (1 + taxa anual) sobre (1 + DI), menos 1.
 - Custo = juros pelo tempo de uso + IOF diário sobre os dias de cada desembolso, com teto, + IOF adicional por desembolso + comissão. Desembolsos inteiros: rolagem iniciada dentro do tempo de uso é um desembolso e paga o IOF adicional inteiro; o último pode ser mais curto (180 dias com rolagem de 50 são quatro desembolsos de 50, 50, 50 e 30 dias). Prazo de rolagem maior que o tempo de uso é um desembolso só: IOF diário sobre os dias usados e IOF adicional inteiro (30 dias com rolagem de 50 sobre 17 dão IOF de 0,10642).
 - Coobrigação mantém o valor como passivo e soma à dívida medida; venda sem regresso sai do balanço. Venda não é garantia real (confirmar com o jurídico); crédito com cessão usa a cesta da negative pledge.
-- Plano: portas pela ordem de custo; a capacidade de cada porta é recalculada sobre o saldo ainda não vendido, com o sublimite da própria porta aplicado por sacado (o mesmo saldo dá a mesma folga num lote ou em vários, depois de compras parciais anteriores); cada porta compra o menor entre essa capacidade e o que falta para o pico, e mostra a capacidade que tinha; a última recebe só o que cobre o pico; linha bancária como reserva. Início = data da necessidade menos o maior prazo das portas do plano.
+- Plano: fluxo de custo mínimo até o pico pelas portas que compram ou descontam a carteira (caminhos mínimos sucessivos, Bellman-Ford sobre custos residuais, aritmética decimal); cada passo mostra o que a porta recebe e a sua capacidade (o volume próprio, limitado ao que recebe mais o saldo que o plano deixa nos lotes que ela aceita); linha bancária como reserva para o que faltar. Início = data da necessidade menos o maior prazo das portas do plano. Condição precedente de registro cobre o que o plano compra por porta que exige registro. Liberação de ônus: lotes do mesmo evento são liberados juntos e entram depois dos lotes já vendidos; cada um mostra o que acrescenta.
 - Volume cedível por mês = maior volume de FIDC vezes 30 sobre o prazo médio; necessidade sazonal não leva a operação dedicada.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
@@ -124,9 +124,9 @@ Pacote de recebíveis para giro: carteira bruta, cedível e excluída com o moti
 - packages/financial-model/src/receivables-funding-packet.test.ts: leitor adotado e pacote.
 - packages/financial-model/src/receivables-funding-premises.test.ts: premissas, composição e ida e volta.
 ## Gold
-- gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, one-debtor-split-across-lots-shares-the-sublimit, one-lot-keeps-headroom-after-a-partial-purchase, split-lots-keep-headroom-after-a-partial-purchase, lot-fully-cut-by-the-sublimit-keeps-its-reason, discount-iof-with-30-days-in-use-and-a-50-day-term, discount-iof-with-50-days-in-use-and-a-50-day-term, discount-iof-with-51-days-in-use-and-a-50-day-term, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default
+- gross-portfolio-is-not-assignable, every-exclusion-carries-its-reason, options-sized-by-eligibility-and-sublimit, cost-for-the-time-in-use-against-the-bank-line, iof-where-it-applies, discount-iof-on-whole-draws, monthly-rates-converted-before-comparing, recourse-on-the-balance-sheet-and-the-covenant, sale-is-not-a-guarantee-under-the-negative-pledge, asks-about-retailer-a-program, fifteen-to-thirty-days-with-registration-as-condition-precedent, several-buyers-and-the-bank-line-as-reserve, no-dedicated-vehicle-for-a-seasonal-need, retailer-a-program-reorders-the-plan, one-debtor-split-across-lots-shares-the-sublimit, one-lot-keeps-headroom-after-a-partial-purchase, split-lots-keep-headroom-after-a-partial-purchase, lots-of-different-maturities-short-first-cover-the-peak, lots-of-different-maturities-long-first-cover-the-peak, lots-of-different-maturities-subdivided-cover-the-peak, lot-fully-cut-by-the-sublimit-keeps-its-reason, discount-iof-with-30-days-in-use-and-a-50-day-term, discount-iof-with-50-days-in-use-and-a-50-day-term, discount-iof-with-51-days-in-use-and-a-50-day-term, unsold-balance-goes-to-the-next-buyer, encumbered-bucket-released-under-the-same-sublimit, largest-debtor-unknown-is-a-gap-not-a-default, absent-peak-is-a-gap-not-a-default
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, promessa de aprovação fabricada, programa comprando cliente sem programa, política tentando aceitar recebível onerado, venda com garantia, desconto sem regresso, linha com elegibilidade de carteira, taxa sem período declarado, ônus sem credor, pico abaixo da média, maior sacado acima do grupo, grupo maior que os sacados comportam, chave de sacado repetida entre grupo e sacado nomeado, lotes de um sacado com contratos diferentes, número lido em outro cenário.
+- Base adulterada, resultado livre no pedido, concessão fabricada, promessa de aprovação fabricada, programa comprando cliente sem programa, política tentando aceitar recebível onerado, venda com garantia, desconto sem regresso, linha com elegibilidade de carteira, taxa sem período declarado, ônus sem credor, pico abaixo da média, maior sacado acima do grupo, grupo maior que os sacados comportam, chave de sacado repetida entre grupo e sacado nomeado, lotes de um sacado com contratos diferentes, grupo de sublimite com dois sublimites, número lido em outro cenário.
 ## Aceitação
 - Reproduzir o caso de calibração pelo oráculo independente sem alterar seus scripts.
 - Executar a conversa da ficha C35 turno a turno pela interface real; guardar plano, versões, cálculo, resposta, custo e latência.
@@ -2887,6 +2887,67 @@ Com coobrigação o risco fica com a cedente e o valor tende a ficar no passivo;
                                       }
                                     },
                                     "sublimitPerDebtor": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "object",
+                                            "fields": {
+                                              "decisionId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "definitionVersionId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "definitionKind": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "enum",
+                                                  "values": [
+                                                    "reported",
+                                                    "managerial",
+                                                    "contractual"
+                                                  ]
+                                                }
+                                              },
+                                              "missingReason": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "sublimitGroup": {
                                       "required": true,
                                       "value": {
                                         "type": "union",

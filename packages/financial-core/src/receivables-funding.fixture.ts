@@ -9,7 +9,9 @@ const current = {originDate: "2026-09-15", dueDate: "2026-11-04", registration: 
 // Each named debtor is keyed by itself; each bucket's debtor set is declared disjoint from the named debtors and the other buckets.
 const item = (patch: Partial<ReceivablesFundingItem> & Pick<ReceivablesFundingItem, "id" | "label" | "amount">): ReceivablesFundingItem =>
   ({...current, debtorKey: patch.id, debtorSetDisjoint: patch.debtorCount === 1 ? null : true, ...patch});
-const policy = {maxDaysPastDue: 0, maxRemainingTermDays: 180, registrationRule: "required" as const, minCreditTier: "standard" as const, sublimitPerDebtor: "3", anchorItemIds: [] as string[]};
+const policy = {maxDaysPastDue: 0, maxRemainingTermDays: 180, registrationRule: "required" as const, minCreditTier: "standard" as const, sublimitPerDebtor: "3", sublimitGroup: null as string | null, anchorItemIds: [] as string[]};
+// Both FIDC products are sold to the same multicedente funds, which give a new cedent one sublimit per debtor.
+const fidc = {...policy, sublimitGroup: "fidc-multicedente"};
 const noIof = {iofDaily: "0", iofDailyCapDays: 0, iofAdditional: "0", rolloverDays: null, upfrontFee: "0", collateral: "none" as const};
 
 export const auroraReceivablesItems: ReceivablesFundingItem[] = [
@@ -25,9 +27,9 @@ export const auroraReceivablesItems: ReceivablesFundingItem[] = [
 export const auroraReceivablesOptions: ReceivablesFundingOption[] = [
   {id: "risco-sacado-b", label: "Risco sacado da rede B", kind: "anchor_program", recourse: "without_recourse",
     eligibility: {...policy, registrationRule: "not_required", sublimitPerDebtor: null, anchorItemIds: ["rede-b"]}, rate: {basis: "di_plus", rate: "0.012"}, ...noIof, leadDaysMin: 10, leadDaysMax: 30},
-  {id: "fidc-com-coobrigacao", label: "FIDC multicedente com coobrigação", kind: "fidc", recourse: "with_recourse", eligibility: policy,
+  {id: "fidc-com-coobrigacao", label: "FIDC multicedente com coobrigação", kind: "fidc", recourse: "with_recourse", eligibility: fidc,
     rate: {basis: "monthly", rate: "0.016"}, ...noIof, upfrontFee: "0.003", leadDaysMin: 15, leadDaysMax: 30},
-  {id: "fidc-sem-coobrigacao", label: "FIDC multicedente sem coobrigação", kind: "fidc", recourse: "without_recourse", eligibility: {...policy, minCreditTier: "selected"},
+  {id: "fidc-sem-coobrigacao", label: "FIDC multicedente sem coobrigação", kind: "fidc", recourse: "without_recourse", eligibility: {...fidc, minCreditTier: "selected"},
     rate: {basis: "monthly", rate: "0.019"}, ...noIof, upfrontFee: "0.003", leadDaysMin: 15, leadDaysMax: 30},
   {id: "desconto-bancario", label: "Desconto bancário com rolagem", kind: "bank_discount", recourse: "with_recourse",
     eligibility: {...policy, registrationRule: "not_required", sublimitPerDebtor: null}, rate: {basis: "di_plus", rate: "0.028"},

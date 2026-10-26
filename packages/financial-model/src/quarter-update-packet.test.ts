@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {prepareQuarterUpdatePacket} from "./quarter-update-packet";
-import {auroraDearerInputs, auroraQuarterUpdateBasis} from "./quarter-update.test-support";
+import {auroraQuarterUpdateBasis} from "./quarter-update.test-support";
 import {calculateAdoptedWeeklyCash} from "./adopted-weekly-cash";
 
 const question = "Fechou o trimestre. Atualiza tudo.";
@@ -59,15 +59,12 @@ describe("quarter update packet", {timeout: 180000}, () => {
     expect(p.gaps.filter((g) => g.reason === "structural_cause_not_in_weekly_cash").map((g) => g.operand.split(".").at(-1))).toEqual(["trigo", "prazo-redes"]);
     expect(n(p.readings!.projectedEbitda.updated)).toBe("53.5");
   });
-  it("review r1: a persistence date before the moved series is refused, and a consistent one bounds every effect", () => {
-    const b = auroraQuarterUpdateBasis();
-    b.set("cause.trigo.until", {type: "date", value: "2026-10-03"});
-    expect(() => packet(b)).toThrow("quarter_update_series_outside_persistence");
+  it("review r1: the persistence date bounds every effect, the weekly series included", () => {
     const c = auroraQuarterUpdateBasis();
     c.set("cause.trigo.until", {type: "date", value: "2026-10-03"});
-    c.set("streamUpdate.insumos.amounts", {type: "list", value: auroraDearerInputs("2026-10-03").amounts});
-    const r = packet(c).readings!;
+    const p = packet(c), r = p.readings!;
     expect(n(r.persisting.find((x) => x.causeId === "trigo")!.ebitdaAhead, 4)).toBe("-0.0196");
+    expect(n(r.persisting.find((x) => x.causeId === "trigo")!.weeklyEffect, 3)).toBe("-0.058");
     expect(n(r.projectedEbitda.updated, 2)).toBe("54.08");
   });
   it("review r1: an open receivable-days diagnosis without its question is a gap", () => {
