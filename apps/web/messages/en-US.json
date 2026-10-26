@@ -2711,7 +2711,9 @@
         "voice_blocked": "A text the system wrote for this request did not pass the voice filter. The request was not sent.",
         "gates_invalid": "The request checks are not in the format the server requires. The execution was not requested.",
         "gates_blocked": "The server refused the request because a check was blocked.",
-        "gates_mismatch": "The request checks do not match what the server computed for this basis. Try again."
+        "gates_mismatch": "The request checks do not match what the server computed for this basis. Try again.",
+        "priors_missing": "To update the quarter, the prior completed results of this work are missing: the weekly cash and the covenant headroom.",
+        "prior_invalid": "A prior result the quarter update uses is not from this work, not from the expected method or not completed. The execution was not requested."
       },
       "unverified": {
         "title": "Unverified sources:",
@@ -8195,6 +8197,11 @@
         "title": "Premises to fund working capital with receivables",
         "lead": "I read the portfolio against each option with these groups, options and conditions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
         "cases": "How much of the portfolio can be sold and why the rest cannot, each option's volume and cost for the same time in use against the bank line, the balance sheet and security effects, the plan and when to start."
+      },
+      "quarterUpdate": {
+        "title": "Premises to update the quarter",
+        "lead": "I update the weekly cash and the covenant with this close, each premise with its origin, over the prior versions, which are kept. Confirm to calculate, or correct it in the conversation and I redo it.",
+        "cases": "Actual against projected, the EBITDA and cash bridges by cause, what is one-off and what persists and until when, the tightest week and the covenant before and after, the action within what is approved, which decision changes and what did not change."
       }
     },
     "groups": {
@@ -8213,7 +8220,11 @@
       "version": "Company versions",
       "assumption": "Plan assumptions",
       "item": "Portfolio groups",
-      "option": "Funding options"
+      "option": "Funding options",
+      "line": "Close lines",
+      "cause": "Causes of the deviations",
+      "facility": "Approved facilities",
+      "dependent": "Dependent analyses and materials"
     },
     "origins": {
       "document": "Document",
@@ -8232,7 +8243,12 @@
     "superseded": "Replaced by a more recent proposal in this conversation.",
     "errors": {
       "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
-      "unavailable": "I could not confirm now. Try again."
+      "unavailable": "I could not confirm now. Try again.",
+      "priorsMissing": "To update the quarter I need the prior completed result of this work: {which}.",
+      "priors": {
+        "weeklyCash": "weekly cash",
+        "covenant": "covenant headroom"
+      }
     },
     "houseLabels": {
       "leaseView": "Including leases",
@@ -8274,7 +8290,10 @@
       "needPeak": "Peak need",
       "annualDi": "Annual DI",
       "lienBasketRemaining": "Free room in the lien basket",
-      "dedicatedVehicleThreshold": "Volume that justifies a dedicated vehicle"
+      "dedicatedVehicleThreshold": "Volume that justifies a dedicated vehicle",
+      "priorWeeklyCash": "Prior weekly cash",
+      "priorCovenant": "Prior covenant test",
+      "materialityFloor": "Materiality floor"
     }
   }
 }

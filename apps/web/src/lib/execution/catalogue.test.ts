@@ -12,6 +12,7 @@ const requestErrors: Record<ExecutionRequestError, true> = {
   invalid: true, stale: true, denied: true, producer_denied: true, method_unavailable: true, basis_denied: true, provenance_denied: true, conflict: true, unavailable: true,
   gates_invalid: true, gates_blocked: true, gates_mismatch: true,
   company_unregistered: true, situation_required: true, situation_unknown: true, method_not_applicable: true, selection_invalid: true, voice_blocked: true,
+  priors_missing: true, prior_invalid: true,
 };
 const notEvaluated: Record<Extract<WorkExecutionMdTest, {evaluated: false}>["reason"], true> = {gates_not_recorded: true, gates_unverified: true, evaluation_failed: true, pins_mismatch: true};
 const keys = (node: object) => Object.keys(node).sort();

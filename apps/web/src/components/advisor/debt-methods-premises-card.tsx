@@ -9,8 +9,7 @@ import {z} from "zod";
 import {confirmPremiseProposal} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
 import {CompanyRegistration} from "./company-registration";
 
-/** The premise methods of lote 2 and lote 3 that share this card, by the key of their copy. The quarter
- * close (lote 3) has no premise proposal yet and so no card. */
+/** The premise methods of lote 2 and lote 3 that share this card, by the key of their copy. */
 export const debtPremiseMethods = {
   "build-company-debt-table": "debtTable",
   "measure-covenant-headroom": "covenantHeadroom",
@@ -18,12 +17,13 @@ export const debtPremiseMethods = {
   "build-operating-projection": "operatingProjection",
   "challenge-financial-projection": "projectionChallenge",
   "monetize-receivables-for-working-capital": "receivablesFunding",
+  "update-after-quarter-close": "quarterUpdate",
 } as const;
 export type DebtPremiseMethodId = keyof typeof debtPremiseMethods;
 export const isDebtPremiseMethod = (id: string | undefined | null): id is DebtPremiseMethodId => typeof id === "string" && Object.hasOwn(debtPremiseMethods, id);
 
 const groups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action",
-  "driver", "scenario", "version", "assumption", "item", "option", "case", "premise"] as const;
+  "driver", "scenario", "version", "assumption", "item", "option", "line", "cause", "facility", "dependent", "case", "premise"] as const;
 /** The summary the worker writes for these methods; anything else is not read. */
 const summarySchema = z.object({
   situationId: z.string(),
@@ -49,7 +49,7 @@ export function DebtMethodsPremisesCard({locale, projectId, methodId, proposal}:
   const format = useFormatter();
   const lock = useRef(false);
   const ids = useRef({requestId: crypto.randomUUID(), definitionRequestId: crypto.randomUUID()});
-  const [state, setState] = useState<{kind: "idle" | "busy" | "pending_release" | "requested" | "error"; executionId?: string | null; error?: string}>({kind: "idle"});
+  const [state, setState] = useState<{kind: "idle" | "busy" | "pending_release" | "requested" | "error"; executionId?: string | null; error?: string; missing?: string[]}>({kind: "idle"});
   const method = debtPremiseMethods[methodId];
   const parsed = summarySchema.safeParse(proposal.summary);
   const summary = parsed.success ? parsed.data : null;
@@ -59,7 +59,7 @@ export function DebtMethodsPremisesCard({locale, projectId, methodId, proposal}:
     try {
       const result = await confirmPremiseProposal({locale, projectId, proposalId: proposal.id, fingerprint: proposal.fingerprint, ...ids.current});
       if (result.ok) setState({kind: result.calculation, executionId: result.executionId});
-      else setState({kind: "error", error: result.error});
+      else setState({kind: "error", error: result.error, missing: "missing" in result ? result.missing : undefined});
     } catch {
       setState({kind: "error", error: "unavailable"});
     } finally {
@@ -90,7 +90,10 @@ export function DebtMethodsPremisesCard({locale, projectId, methodId, proposal}:
         {state.kind === "busy" ? <><LoaderCircle aria-hidden="true" className="spin" size={13} />{t("confirming")}</> : t("confirm")}
       </button> : null}
     {state.kind === "error" ? <p role="alert" className="investment-premises-card__error">{state.error === "company_unregistered" ? t("errors.companyUnregistered")
-      : state.error === "superseded" ? t("superseded") : t("errors.unavailable")}</p> : null}
+      : state.error === "superseded" ? t("superseded")
+      // The quarter close needs the prior completed weekly cash and covenant results of this work.
+      : state.error === "priors_missing" ? t("errors.priorsMissing", {which: (state.missing ?? []).map((k) => t(`errors.priors.${k}`)).join(", ")})
+      : t("errors.unavailable")}</p> : null}
     {state.kind === "error" && state.error === "company_unregistered" ? <CompanyRegistration locale={locale} projectId={projectId} onRegistered={confirm} /> : null}
   </section>;
 }

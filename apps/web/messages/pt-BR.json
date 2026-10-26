@@ -2711,7 +2711,9 @@
         "voice_blocked": "Um texto que o sistema escreveu para este pedido não passou no filtro de voz. O pedido não foi enviado.",
         "gates_invalid": "As verificações do pedido não estão no formato que o servidor exige. A execução não foi pedida.",
         "gates_blocked": "O servidor recusou o pedido porque uma verificação estava bloqueada.",
-        "gates_mismatch": "As verificações do pedido não conferem com o que o servidor calculou para esta base. Tente de novo."
+        "gates_mismatch": "As verificações do pedido não conferem com o que o servidor calculou para esta base. Tente de novo.",
+        "priors_missing": "Para atualizar o trimestre faltam os resultados anteriores concluídos deste trabalho: o caixa semanal e a folga de covenant.",
+        "prior_invalid": "Um resultado anterior que a atualização do trimestre usa não é deste trabalho, não é do método esperado ou não foi concluído. A execução não foi pedida."
       },
       "unverified": {
         "title": "Fontes sem verificação:",
@@ -8195,6 +8197,11 @@
         "title": "Premissas para financiar o giro com recebíveis",
         "lead": "Leio a carteira contra cada porta com estes grupos, portas e condições, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
         "cases": "Quanto da carteira pode ser cedido e por quê o resto não, o volume e o custo de cada porta pelo mesmo tempo de uso contra a linha do banco, o efeito em balanço e garantias, o plano e quando começar."
+      },
+      "quarterUpdate": {
+        "title": "Premissas para atualizar o trimestre",
+        "lead": "Atualizo o caixa semanal e o covenant com este fechamento, cada premissa com a origem, sobre as versões anteriores que ficam preservadas. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Realizado contra projetado, a ponte do EBITDA e do caixa por causa, o que é pontual e o que continua até quando, a pior semana e o covenant antes e depois, a ação dentro do aprovado, qual decisão muda e o que não mudou."
       }
     },
     "groups": {
@@ -8213,7 +8220,11 @@
       "version": "Versões da companhia",
       "assumption": "Premissas do plano",
       "item": "Grupos da carteira",
-      "option": "Portas de financiamento"
+      "option": "Portas de financiamento",
+      "line": "Linhas do fechamento",
+      "cause": "Causas dos desvios",
+      "facility": "Linhas aprovadas",
+      "dependent": "Análises e materiais dependentes"
     },
     "origins": {
       "document": "Documento",
@@ -8232,7 +8243,12 @@
     "superseded": "Substituídas por uma proposta mais recente nesta conversa.",
     "errors": {
       "companyUnregistered": "Para calcular, a companhia precisa estar cadastrada no dossiê deste trabalho.",
-      "unavailable": "Não consegui confirmar agora. Tente de novo."
+      "unavailable": "Não consegui confirmar agora. Tente de novo.",
+      "priorsMissing": "Para atualizar o trimestre preciso do resultado anterior concluído deste trabalho: {which}.",
+      "priors": {
+        "weeklyCash": "caixa semanal",
+        "covenant": "folga de covenant"
+      }
     },
     "houseLabels": {
       "leaseView": "Com arrendamentos",
@@ -8274,7 +8290,10 @@
       "needPeak": "Pico da necessidade",
       "annualDi": "CDI anual",
       "lienBasketRemaining": "Saldo livre da exceção de garantias",
-      "dedicatedVehicleThreshold": "Volume que justifica operação dedicada"
+      "dedicatedVehicleThreshold": "Volume que justifica operação dedicada",
+      "priorWeeklyCash": "Caixa semanal anterior",
+      "priorCovenant": "Teste de covenant anterior",
+      "materialityFloor": "Piso de materialidade"
     }
   }
 }

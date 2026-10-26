@@ -3,7 +3,8 @@
 import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {revalidatePath} from "next/cache";
-import {composeCapitalExecutionRequest, composeMethodExecutionRequest, executionContractBasisSchema, type ExecutionContractBasis} from "@offroad/execution-request";
+import {composeCapitalExecutionRequest, composeMethodExecutionRequest, executionContractBasisSchema, quarterUpdateMethodId, type ExecutionContractBasis,
+  type QuarterUpdatePrior, type QuarterUpdatePriors} from "@offroad/execution-request";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
@@ -71,6 +72,7 @@ const debtTableSituations = ["refinancing", "near-covenant", "restructuring"];
 const capacitySituations = ["capex-infrastructure", "structural-working-capital", "stable-business-high-conversion", "near-covenant"];
 const projectionSituations = ["stable-business-high-conversion", "structural-working-capital", "capex-infrastructure"];
 const receivablesFundingSituations = ["seasonal-working-capital", "structural-working-capital"];
+const quarterUpdateSituations = ["near-covenant", "seasonal-working-capital"];
 const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
   "analyze-investment-project": {key: "investment.premises",
     text: "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.",
@@ -123,9 +125,25 @@ const premiseMethods: Record<string, {key: string; text: string; ask: (summary: 
       ? {question: "Quanto da carteira vira caixa, com quem, a que custo e em quanto tempo, contra a linha do banco?",
         objectives: ["Separar a carteira cedível com o motivo de cada exclusão, ler cada porta com volume e custo pelo tempo de uso, comparar com a linha bancária e montar o plano com prazo e condições"],
         situationIds: [summary.situationId]} : null},
+  [quarterUpdateMethodId]: {key: "quarter-update.premises",
+    text: "Realizado do trimestre, causas de cada desvio, séries atualizadas, linhas aprovadas e análises dependentes confirmados pela pessoa na conversa: documento, informado, premissa da casa ou estimativa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && quarterUpdateSituations.includes(summary.situationId)
+      ? {question: "O que o fechamento do trimestre mudou e qual decisão ficou em risco?",
+        objectives: ["Explicar cada desvio por causa, separar o pontual do que continua, atualizar o caixa semanal e o covenant sobre as versões anteriores preservadas, dizer qual decisão muda, a ação dentro do aprovado e o que não mudou"],
+        situationIds: [summary.situationId]} : null},
 };
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};
-type PremiseFailure = {ok: false; error: ExecutionRequestError | "company_unregistered" | "superseded"};
+type PremiseFailure = {ok: false; error: ExecutionRequestError | "company_unregistered" | "superseded"; missing?: ("weeklyCash" | "covenant")[]};
+
+const sourcePin = z.object({resourceId: z.uuid(), sourceVersionId: z.uuid(), contentHash: z.string().regex(/^[a-f0-9]{64}$/), rightsRevision: z.string().regex(/^[0-9]+$/)}).strict();
+const priorSchema = z.object({executionId: z.uuid(), methodId: z.string(), methodVersion: z.string(), inputSnapshot: z.string().min(2), inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin), committedAt: z.string()}).loose();
+const priorsSchema = z.object({weeklyCash: priorSchema.nullable(), covenant: priorSchema.nullable()}).loose();
+/** The fingerprint of the basis a stored prior input was composed on. */
+const envelopeOf = (prior: QuarterUpdatePrior) => {
+  try { return z.object({analysis: z.object({envelope: z.object({fingerprint: z.string()}).loose()}).loose()}).loose().parse(JSON.parse(prior.inputSnapshot)).analysis.envelope.fingerprint; }
+  catch { return null; }
+};
 
 /** The person confirms the premises the conversation proposed. The company the dossier names as
  * its subject and the work's premise definition give every hypothesis its identity; the database
@@ -143,7 +161,7 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!parsed.success) return failure({code: "22023"});
   const {locale, projectId, proposalId, fingerprint, requestId, definitionRequestId} = parsed.data;
   const {supabase, organization} = await requireWorkspace(locale);
-  const proposal = await supabase.from("work_premise_proposals").select("id, capital_project_id, intake_session_id, status, fingerprint, method_id, summary")
+  const proposal = await supabase.from("work_premise_proposals").select("id, capital_project_id, intake_session_id, status, fingerprint, method_id, summary, facts")
     .eq("organization_id", organization.id).eq("id", proposalId).eq("capital_project_id", projectId).maybeSingle();
   if (!proposal.data) return failure({code: "42501"});
   if (proposal.data.status === "superseded" || proposal.data.fingerprint !== fingerprint) return {ok: false, error: "superseded"};
@@ -152,6 +170,20 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   const ask = method?.ask(summary) ?? null;
   if (!method || !ask) return failure({code: "22023"});
   const premiseDefinitionKey = method.key, premiseDefinitionText = method.text;
+  // The quarter close updates the prior completed weekly cash and covenant results of this work; it is
+  // refused before anything is written when one is missing, and superseded when the card named other versions.
+  let priors: QuarterUpdatePriors | undefined;
+  if (proposal.data.method_id === quarterUpdateMethodId) {
+    const read = await supabase.rpc("quarter_update_prior_results_v1", {p_work_id: projectId});
+    if (read.error) return failure(read.error);
+    const found = priorsSchema.safeParse(read.data);
+    if (!found.success) return failure(null);
+    const missing = ([["weeklyCash", found.data.weeklyCash], ["covenant", found.data.covenant]] as const).filter(([, p]) => !p).map(([k]) => k);
+    if (missing.length) return {ok: false, error: "priors_missing", missing};
+    priors = {weeklyCash: found.data.weeklyCash!, covenant: found.data.covenant!};
+    const facts = proposal.data.facts && typeof proposal.data.facts === "object" ? proposal.data.facts as Record<string, {value?: unknown} | undefined> : {};
+    if (facts.priorWeeklyFingerprint?.value !== envelopeOf(priors.weeklyCash!) || facts.priorCovenantFingerprint?.value !== envelopeOf(priors.covenant!)) return {ok: false, error: "superseded"};
+  }
   const dossiers = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).in("resource_id", [projectId, proposal.data.intake_session_id]);
   if (dossiers.error || !dossiers.data?.length) return {ok: false, error: "company_unregistered"};
   const now = new Date().toISOString();
@@ -183,10 +215,14 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!basis.success || basis.data.workId !== projectId || basis.data.versionId !== versionId || basis.data.purpose !== capitalDecisionPurpose) return failure({code: "22023"});
   const composed = composeMethodExecutionRequest({basis: basis.data,
     ask: {...ask, asOf: now.slice(0, 10)},
-    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}});
+    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}, ...priors ? {priors} : {}});
   if (!composed.ok) return composed.error === "method_unavailable" ? {ok: true, versionId, executionId: null, calculation: "pending_release"}
     : composed.error === "provenance_denied" || composed.error === "composition_invalid" ? failure({code: "22023"}) : refused(composed.error);
-  const requested = await supabase.rpc("request_work_execution_v2", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText});
+  // Only the quarter close names prior results, through the v3 producer; every other method keeps v2.
+  const requested = composed.priorResults
+    ? await supabase.rpc("request_work_execution_v3", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText,
+      p_prior_results: composed.priorResults})
+    : await supabase.rpc("request_work_execution_v2", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText});
   if (requested.error) {
     if (requested.error.code === "23505" && requested.error.message.includes("execution_request_conflict")) {
       const prior = z.uuid().safeParse(requested.error.details ?? "");

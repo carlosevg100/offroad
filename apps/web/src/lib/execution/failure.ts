@@ -4,7 +4,9 @@ import type {ExecutionGateRefusal} from "@offroad/execution-request";
 export type {ExecutionGateRefusal};
 
 export type ExecutionRequestError = "invalid" | "stale" | "denied" | "producer_denied" | "method_unavailable" | "basis_denied" | "provenance_denied" | "conflict" | "unavailable"
-  | "gates_invalid" | "gates_blocked" | "gates_mismatch" | ExecutionGateRefusal;
+  | "gates_invalid" | "gates_blocked" | "gates_mismatch" | ExecutionGateRefusal
+  /** The quarter close: a prior result it names is missing, not of this work and method, or not completed. */
+  | "priors_missing" | "prior_invalid";
 
 /** The database names its refusal in the message; the SQLSTATE alone does not separate a
  * missing producer grant from a missing work access. A contract the server no longer accepts
@@ -15,6 +17,11 @@ export type ExecutionRequestError = "invalid" | "stale" | "denied" | "producer_d
 export function executionRequestFailure(error: {code?: string; message?: string} | null | undefined): ExecutionRequestError {
   const message = error?.message ?? "";
   const named = (...names: string[]) => names.some(name => message.includes(name));
+  // The quarter close's prior results, named by the v3 producer before the shared refusals below.
+  if (named("quarter_update_prior_rights_denied", "quarter_update_prior_source_unpinned")) return "provenance_denied";
+  if (named("quarter_update_prior_fingerprint_mismatch", "quarter_update_prior_input_mismatch")) return "stale";
+  if (named("quarter_update_prior_not_found", "quarter_update_prior_other_work", "quarter_update_prior_method_mismatch", "quarter_update_prior_not_completed")) return "prior_invalid";
+  if (named("quarter_update_priors_invalid", "quarter_update_priors_method_denied")) return "invalid";
   if (named("execution_producer_denied")) return "producer_denied";
   if (named("execution_method_unavailable", "execution_profile_ambiguous")) return "method_unavailable";
   if (named("execution_gates_invalid")) return "gates_invalid";

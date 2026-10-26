@@ -87,10 +87,22 @@ describe("debt methods premises card", () => {
     const read = render("pt-BR", {...proposal, summary: challenge}, "challenge-financial-projection");
     for (const text of [card.methods.projectionChallenge.title, card.groups.assumption, card.houseLabels.planCase]) expect(read).toContain(text);
   });
+  it("shows the quarter close's lines, causes, facilities and dependents with the prior versions it updates", () => {
+    const summary = {situationId: "near-covenant", referenceDate: "2026-09-30", items: [
+      {group: "line", label: "Caixa em 30/set", labelKey: null, origin: "document", source: "balancete-set26.xlsx"},
+      {group: "cause", label: "Redes pagando em 54 dias", labelKey: null, origin: "informed", source: "Mensagem"},
+      {group: "facility", label: "Conta garantida", labelKey: null, origin: "document", source: "contrato"},
+      {group: "dependent", label: "Material da sondagem", labelKey: null, origin: "house", source: "casa"},
+      {group: "premise", label: "Caixa semanal anterior", labelKey: "priorWeeklyCash", origin: "document", source: "Resultado registrado"},
+    ]};
+    const html = render("pt-BR", {...proposal, summary}, "update-after-quarter-close");
+    for (const text of [card.methods.quarterUpdate.title, card.groups.line, card.groups.cause, card.groups.facility, card.groups.dependent, card.houseLabels.priorWeeklyCash])
+      expect(html).toContain(text);
+    expect(render("en-US", {...proposal, summary}, "update-after-quarter-close")).toContain(en.DebtMethodsPremisesCard.houseLabels.priorWeeklyCash);
+  });
   it("recognizes only the lote 2 and lote 3 premise methods", () => {
     expect(["build-company-debt-table", "measure-covenant-headroom", "project-weekly-cash", "build-operating-projection", "challenge-financial-projection",
-      "monetize-receivables-for-working-capital"].every(isDebtPremiseMethod)).toBe(true);
-    expect(isDebtPremiseMethod("update-after-quarter-close")).toBe(false);
+      "monetize-receivables-for-working-capital", "update-after-quarter-close"].every(isDebtPremiseMethod)).toBe(true);
     expect(isDebtPremiseMethod("assess-debt-capacity")).toBe(false); expect(isDebtPremiseMethod(undefined)).toBe(false); expect(isDebtPremiseMethod("toString")).toBe(false);
   });
 });

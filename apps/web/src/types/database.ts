@@ -12780,6 +12780,10 @@ export type Database = {
         }
         Returns: string
       }
+      quarter_update_prior_results_v1: {
+        Args: { p_work_id: string }
+        Returns: Json
+      }
       record_definition_version_v1: {
         Args: {
           p_contract_anchor: Json
@@ -13092,6 +13096,15 @@ export type Database = {
         Args: {
           p_contract_text: string
           p_gates_text: string
+          p_snapshot_text: string
+        }
+        Returns: Json
+      }
+      request_work_execution_v3: {
+        Args: {
+          p_contract_text: string
+          p_gates_text: string
+          p_prior_results: Json
           p_snapshot_text: string
         }
         Returns: Json
