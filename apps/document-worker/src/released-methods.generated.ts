@@ -62,5 +62,33 @@ export const releasedMethodArtifacts = [
     "methodVersion": "2026.10.23-v1",
     "manifestHash": "b7e135f7e60457bfd79f19817a064f1d69bf7301c1f7efcefed736e771362fb1",
     "artifactHash": "14b5f154b813dc13c490a6348a3b2ca4c2dd644f44c516d70f526fcdd2465869"
+  },
+  {
+    "platformReleaseId": "build-operating-projection-2026.10.26-v1",
+    "methodId": "build-operating-projection",
+    "methodVersion": "2026.10.26-v1",
+    "manifestHash": "4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a",
+    "artifactHash": "eca3de4b44264398c63a2f759819ec7d62f5c866317eb32bb05c90777736a032"
+  },
+  {
+    "platformReleaseId": "challenge-financial-projection-2026.10.26-v1",
+    "methodId": "challenge-financial-projection",
+    "methodVersion": "2026.10.26-v1",
+    "manifestHash": "1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64",
+    "artifactHash": "76aab409bfdcf742a8680d917fc7dea9b55275360d361ef0ed31196faff9692a"
+  },
+  {
+    "platformReleaseId": "monetize-receivables-for-working-capital-2026.10.26-v1",
+    "methodId": "monetize-receivables-for-working-capital",
+    "methodVersion": "2026.10.26-v1",
+    "manifestHash": "40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5",
+    "artifactHash": "7d390993cefe37d43766bbb91b0d138eb54f4b2ce7a6086b80788423e827e0e7"
+  },
+  {
+    "platformReleaseId": "update-after-quarter-close-2026.10.26-v1",
+    "methodId": "update-after-quarter-close",
+    "methodVersion": "2026.10.26-v1",
+    "manifestHash": "f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729",
+    "artifactHash": "e4961292d9ef18e94e0d47011edd8a7f32788eb952e121e0c4f78e5169341f89"
   }
 ] as const;

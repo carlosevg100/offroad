@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "monetize-receivables-for-working-capital-2026.10.26-v1",
+    "artifactHash": "7d390993cefe37d43766bbb91b0d138eb54f4b2ce7a6086b80788423e827e0e7",
+    "profileFingerprint": "3a1562afd31d669258143de9bf7313fe4a05d8c37e6fcab3243b46470cf69483"
+  },
+  "subjectCommit": "763d21fe44c8531309f7437bb98343e2192e71de",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-26T20:27:29Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5",
+    "manifestFileHash": "eb15f4aa9cb5ab29031b5a1e4916ff3163b1c8b302a551b4d451019c9f079489",
+    "canonicalProfileTextSha256": "e90edadbdf00217962ab36ecbc7e9d4bafe8ff75e11b83be083e4db48f8ff17f",
+    "canonicalProfileTextBytes": 1478,
+    "reviewedWorktreeHead": "763d21fe44c8531309f7437bb98343e2192e71de",
+    "originMainHead": "4f71c387cbc1dd408780204fb6c0a43f340c303c",
+    "checksPerformed": [
+      "Confirmado por git merge-base --is-ancestor que sourceCommit 4f71c387cbc1dd408780204fb6c0a43f340c303c é ancestral de HEAD 763d21fe44c8531309f7437bb98343e2192e71de.",
+      "SHA-256 dos bytes do snapshot: 53e9d1b8ae8889adb1d6ae554d525b0d4a29e5dea710c70d192fc66420a1167c. Manifest no sourceCommit e no worktree: eb15f4aa9cb5ab29031b5a1e4916ff3163b1c8b302a551b4d451019c9f079489.",
+      "Recalculados no sourceCommit todos os 407 executorSources, 9 fontes do compilador, 5 evidências e 2 parseOnlySources; todos coincidem com os pins do lock. Conferidos também os conteúdos do snapshot pelo build.",
+      "Executado node packages/credit-playbook/scripts/build-released-executors.mjs com saída 0. Duas reconstruções adicionais independentes produziram bytes idênticos ao artefato instalado: 1712481 bytes, SHA-256 7d390993cefe37d43766bbb91b0d138eb54f4b2ce7a6086b80788423e827e0e7.",
+      "Conferida a entrada de apps/document-worker/src/released-methods.generated.ts: release monetize-receivables-for-working-capital-2026.10.26-v1, método monetize-receivables-for-working-capital, versão 2026.10.26-v1, manifestHash e artifactHash corretos.",
+      "Derivado o manifest com deriveExecutionProfile e serializado com executionCanonicalText. Comparação byte a byte com o arquivo externo profile-monetize-receivables-for-working-capital.txt: igualdade, 1478 bytes, SHA-256 e90edadbdf00217962ab36ecbc7e9d4bafe8ff75e11b83be083e4db48f8ff17f.",
+      "Recalculado o fingerprint interno sobre o perfil sem fingerprint: 3a1562afd31d669258143de9bf7313fe4a05d8c37e6fcab3243b46470cf69483, igual ao lock. Conferidos os blobs e SHA-256 do adapter em HEAD e o último commit e blob do helper de serialização.",
+      "Política confirmada: grantsExecution=false; maxModelCalls=0; maxCostMicrousd=0; orçamento original com maxCostMinorUnits=0; allowedEffects=[read_only]; tools=[]; exatamente um executor @offroad/financial-model#prepareReceivablesFundingPacket, versão 2026.10.26-v1; componente receivables-funding.packet.",
+      "Em apps/document-worker, npx vitest run src/released-lote3-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts: saída 0, 4 arquivos e 25 testes aprovados, duração 5.11 s. Transporte de banco simulado por mocks; nenhum banco acessado.",
+      "Lida 20261026200000_lote3_payload_provenance.sql: vincula monetize-receivables-for-working-capital a 2026.10.26-v1, manifestHash 40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5 e receivables-funding-packet-input.v1; método nulo retorna false.",
+      "Comparada a migração com 20261023204746_lote2_payload_provenance.sql: removidos somente comentários e as quatro inclusões do lote 3, o SQL restante é idêntico. Preservados os ramos capital, investment, lote 1 e lote 2. Confirmados ausência de newline final e MD5 3e22266fb1c3bffab961020bccbfbf71.",
+      "git status --porcelain=v1 vazio e git diff / git diff --cached com saída 0 após build e testes; nenhum arquivo rastreado modificado. Revisão estritamente local, sem acesso a banco de dados."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado na revisão técnica independente do perfil e do executor empacotado. Identidades, hashes, serialização canônica, limites e reconstrução determinística conferem; os 25 testes passaram. A migração preserva o comportamento dos ramos anteriores. A revisão foi local, sem acesso a banco de dados, e não constitui aprovação humana nem autorização de execução."
+}

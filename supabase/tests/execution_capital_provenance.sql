@@ -27,6 +27,24 @@ do $$declare f capital_provenance_fixture; changed text;begin
  f.p:=jsonb_set(f.p,'{decision,envelope}',jsonb_build_object('canonical',changed,'fingerprint',encode(extensions.digest(changed,'sha256'),'hex')));
  perform pg_temp.check_capital_provenance(f.c,f.p,false,'rehashed invented basis bytes denied');
 end $$;
+select pg_temp.check_capital_provenance(c #- '{method,methodId}',p,false,'execution without a method identity refused') from capital_provenance_fixture;
+-- Lote 3 methods are bound to their exact version, manifest and payload schema.
+do $$declare f capital_provenance_fixture; m record; pinned jsonb; payload jsonb;begin
+ select * into strict f from capital_provenance_fixture;
+ for m in select * from (values
+  ('build-operating-projection','4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a','operating-projection-packet-input.v1'),
+  ('challenge-financial-projection','1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64','projection-challenge-packet-input.v1'),
+  ('monetize-receivables-for-working-capital','40acfbd4ff347ee89baad9310dacefc9c73c9d501a13241c0a4d0b3ebd23b3e5','receivables-funding-packet-input.v1'),
+  ('update-after-quarter-close','f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729','quarter-update-packet-input.v1')) x(id,hash,schema) loop
+  pinned:=jsonb_set(f.c,'{method}',jsonb_build_object('methodId',m.id,'methodVersion','2026.10.26-v1','manifestHash',m.hash));
+  payload:=jsonb_set(f.p,'{schemaVersion}',to_jsonb(m.schema));
+  perform pg_temp.check_capital_provenance(pinned,payload,true,m.id||' pinned identity with exact basis accepted');
+  perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,methodVersion}','"2026.10.23-v1"'),payload,false,m.id||' other version denied');
+  perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,manifestHash}',to_jsonb(repeat('0',64))),payload,false,m.id||' other manifest denied');
+  perform pg_temp.check_capital_provenance(pinned,f.p,false,m.id||' other payload schema denied');
+  perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{inputs,adoptions}','[]'),payload,false,m.id||' omitted decision denied');
+ end loop;
+end $$;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('anchor',jsonb_build_object('sourceVersionId',gen_random_uuid(),'locator','Synthetic hidden clause')),false,'source hidden in nested anchor denied') from capital_provenance_fixture;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('recommendation',jsonb_build_object('basisDecisionIds',jsonb_build_array(gen_random_uuid()))),false,'recommendation decision omitted from pins denied') from capital_provenance_fixture;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('selection',jsonb_build_object('decisionId',null,'definitionVersionId',gen_random_uuid(),'missingReason','Synthetic gap')),false,'missing value does not authorize an unknown definition') from capital_provenance_fixture;

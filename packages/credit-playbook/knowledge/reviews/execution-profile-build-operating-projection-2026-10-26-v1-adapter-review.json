@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "build-operating-projection-2026.10.26-v1",
+    "artifactHash": "eca3de4b44264398c63a2f759819ec7d62f5c866317eb32bb05c90777736a032",
+    "profileFingerprint": "279259bb37e6d3f1690e7b9a2bc9cb68687df680766b56737bf1c6ca9864a4bf"
+  },
+  "subjectCommit": "763d21fe44c8531309f7437bb98343e2192e71de",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-26T20:28:16.570Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a",
+    "manifestFileHash": "a2ad16f4a98800bf84e21a6b0e90218c710b1ef04c5e8eca32b7d743d90f9522",
+    "canonicalProfileTextSha256": "f69c03949b5b2644067d9849270c208376c0abadfeaad9919fefa49a45180b19",
+    "canonicalProfileTextBytes": 1442,
+    "reviewedWorktreeHead": "763d21fe44c8531309f7437bb98343e2192e71de",
+    "originMainHead": "4f71c387cbc1dd408780204fb6c0a43f340c303c",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit 4f71c387cbc1dd408780204fb6c0a43f340c303c como ancestral de HEAD; origin/main aponta para esse sourceCommit.",
+      "Snapshot de 24675941 bytes: SHA-256 80308796de5d9f764a099510eda2fcb78fe35a5478c749717687bd80a3b107c0, igual ao snapshotHash; sourceCommit interno confere.",
+      "Verificados com git show todos os 407 executorSources, 9 compiler.sources, 5 evidence e 2 parseOnlySources: hashes correspondem aos bytes no sourceCommit e ao conteúdo pinned do snapshot.",
+      "Manifesto no sourceCommit: SHA-256 a2ad16f4a98800bf84e21a6b0e90218c710b1ef04c5e8eca32b7d743d90f9522, igual ao manifestFileHash. Bytes atuais e pinned são idênticos; deriveExecutionProfile validou manifestHash e hashes internos.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com código 0 em Node 24.19.0. Segunda reconstrução pela função original rebuildReleasedExecutor produziu os mesmos 1684788 bytes; SHA-256 eca3de4b44264398c63a2f759819ec7d62f5c866317eb32bb05c90777736a032.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada para build-operating-projection-2026.10.26-v1, com methodId, methodVersion, manifestHash e artifactHash corretos.",
+      "deriveExecutionProfile e executionCanonicalText produziram texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote3-2026-10-26/perfil/profile-build-operating-projection.txt: 1442 bytes, SHA-256 f69c03949b5b2644067d9849270c208376c0abadfeaad9919fefa49a45180b19.",
+      "Fingerprint recalculado sobre o perfil sem o campo fingerprint: 279259bb37e6d3f1690e7b9a2bc9cb68687df680766b56737bf1c6ca9864a4bf, igual ao perfil e ao lock.",
+      "Política confirmada: grantsExecution=false; maxModelCalls=0; maxCostMinorUnits=0; maxCostMicrousd=0; allowedTools=[]; tools=[]; maximumEffect=none; allowedEffects=[read_only]; maxDurationMs=31000. Exatamente um executor @offroad/financial-model#prepareOperatingProjectionPacket, versão 2026.10.26-v1, componente projection.packet.",
+      "Em apps/document-worker, npx vitest run src/released-lote3-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts passou: 4 arquivos, 25 testes, código 0. Transporte RPC da fila simulado; nenhum banco acessado.",
+      "Leitura de supabase/migrations/20261026200000_lote3_payload_provenance.sql: recusa método nulo e vincula build-operating-projection a 2026.10.26-v1, manifestHash 4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a e operating-projection-packet-input.v1 com IS DISTINCT FROM.",
+      "Diff e comparação programática com 20261023204746_lote2_payload_provenance.sql: removidos comentários e as quatro inclusões no despacho e novos ramos, o SQL restante é idêntico. Capital, investimento, lote 1, lote 2 e verificações compartilhadas preservam comportamento. Migração com 14009 bytes, sem newline final, MD5 3e22266fb1c3bffab961020bccbfbf71.",
+      "Blobs e SHA-256 do adaptador obtidos de HEAD; último commit e blob do serializador obtidos com git log e git rev-parse. Fontes atuais correspondem a HEAD. git status --short permaneceu vazio; nenhum arquivo rastreado alterado e nenhum banco acessado.",
+      "JSON final validado por adapterReviewSchema.parse em comando node executado em packages/credit-playbook, importando diretamente src/review-record.ts."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico revisado, sem achados. Origem, pins, reconstrução determinística, identidade do pacote, perfil canônico e política conferem. Os 25 testes solicitados passaram. A migração preserva o comportamento anterior e apresenta os vínculos, a recusa de método nulo e os bytes esperados. Revisão da migração exclusivamente estática, sem acesso a banco. Esta revisão não concede autorização de execução."
+}

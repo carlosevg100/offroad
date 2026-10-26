@@ -2784,6 +2784,16 @@
       "name": "lote2_bridge",
       "version": "20261023221527",
       "statements_md5": "cefbe7849ed9c9ac62734f462c46d2b1"
+    },
+    {
+      "name": "lote3_payload_provenance",
+      "version": "20261026203012",
+      "statements_md5": "3e22266fb1c3bffab961020bccbfbf71"
+    },
+    {
+      "name": "worker_claim_executor_list_bound",
+      "version": "20261026215616",
+      "statements_md5": "febe2894d773b331c5630dc5789003ab"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",

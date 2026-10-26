@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "update-after-quarter-close-2026.10.26-v1",
+    "artifactHash": "e4961292d9ef18e94e0d47011edd8a7f32788eb952e121e0c4f78e5169341f89",
+    "profileFingerprint": "f514229fd739708e4b707aa168d8f5f0e8424b3a862505a58553f2e7771d9389"
+  },
+  "subjectCommit": "763d21fe44c8531309f7437bb98343e2192e71de",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-26T20:27:13Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729",
+    "manifestFileHash": "1fa6508aa036de7b46b9ce4ac5b09507acee5c0151f8a3994c5a8ba071d01a09",
+    "canonicalProfileTextSha256": "7155eca5bf2df594b1e8c3bc96ed6ba4ab8c8182a82c526f4a0b21ebabfc4516",
+    "canonicalProfileTextBytes": 1440,
+    "reviewedWorktreeHead": "763d21fe44c8531309f7437bb98343e2192e71de",
+    "originMainHead": "4f71c387cbc1dd408780204fb6c0a43f340c303c",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit 4f71c387cbc1dd408780204fb6c0a43f340c303c como ancestral de HEAD 763d21fe44c8531309f7437bb98343e2192e71de.",
+      "SHA-256 dos bytes do snapshot: 8f39fb24eb7c13d5bf7405ceb4b3ae093165c22af445510bc3bab32e564a38e9, igual ao snapshotHash do lock; sourceCommit do snapshot também confere.",
+      "SHA-256 do manifesto no sourceCommit e no worktree: 1fa6508aa036de7b46b9ce4ac5b09507acee5c0151f8a3994c5a8ba071d01a09. Todos os 407 executorSources conferem com git show no sourceCommit e com os bytes do snapshot; também conferidos 9 pins do compilador, 5 de evidências e 2 parseOnlySources.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs executado duas vezes com sucesso em Node 24.19.0. Artefatos idênticos byte a byte, 1734262 bytes, SHA-256 e4961292d9ef18e94e0d47011edd8a7f32788eb952e121e0c4f78e5169341f89, igual ao artifactHash do lock.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada da release com methodId update-after-quarter-close, methodVersion 2026.10.26-v1, manifestHash e artifactHash corretos. Manifesto empacotado idêntico ao manifesto fonte.",
+      "deriveExecutionProfile e executionCanonicalText executados a partir das fontes do adaptador em HEAD. Comparação byte a byte com /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote3-2026-10-26/perfil/profile-update-after-quarter-close.txt passou: 1440 bytes, SHA-256 7155eca5bf2df594b1e8c3bc96ed6ba4ab8c8182a82c526f4a0b21ebabfc4516.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: f514229fd739708e4b707aa168d8f5f0e8424b3a862505a58553f2e7771d9389, igual ao lock. A derivação também validou manifestHash, hashes de componentes, compilador e executor.",
+      "Política confirmada: grantsExecution=false; maxModelCalls=0; maxCostMicrousd=0; orçamento original com custo e chamadas zero; allowedEffects=[read_only]; tools=[]; allowedTools=[]; maximumEffect=none. Exatamente um executor, @offroad/financial-model#prepareQuarterUpdatePacket, versão 2026.10.26-v1; selectedComponentId=quarter-update.packet.",
+      "Em apps/document-worker, sob Node 24.19.0: npx vitest run src/released-lote3-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts. Exit 0: 4 arquivos passaram, 25 testes passaram, duração 3.46 s; transporte de banco simulado.",
+      "Leitura estática de supabase/migrations/20261026200000_lote3_payload_provenance.sql confirmou vínculo de update-after-quarter-close à versão 2026.10.26-v1, manifestHash f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729 e schema quarter-update-packet-input.v1; methodId nulo retorna false. Arquivo com 14009 bytes, sem newline final, MD5 3e22266fb1c3bffab961020bccbfbf71.",
+      "Comparação com 20261023204746_lote2_payload_provenance.sql: removidos apenas comentários e as quatro inclusões do lote 3, o SQL restante é idêntico. Ramos de capital, investimento, lote 1 e lote 2, validações de proveniência e revogação de privilégios preservados.",
+      "Blobs, SHA-256 do adaptador e último commit do helper obtidos diretamente do Git em HEAD; fontes locais do adaptador e helper idênticas aos blobs. origin/main registrado sem atualização remota. git status --short vazio e git diff, inclusive staged, sem alterações após build e testes. Nenhum banco acessado.",
+      "JSON final validado em packages/credit-playbook com adapterReviewSchema.parse por node --input-type=module; schema estrito, sem chaves adicionais."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico solicitado. Identidades, hashes, reconstrução determinística, perfil canônico, política restritiva e 25 testes conferem. A migration preserva o comportamento anterior e vincula corretamente o novo método. Revisão estática do SQL, sem acesso a banco de dados; aplicação e ativação em produção não foram verificadas."
+}

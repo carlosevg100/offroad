@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "challenge-financial-projection-2026.10.26-v1",
+    "artifactHash": "76aab409bfdcf742a8680d917fc7dea9b55275360d361ef0ed31196faff9692a",
+    "profileFingerprint": "2d976b2869af07c1be2fca2b1fbbe7241679c02209e7a7e9a4617a396e666c2d"
+  },
+  "subjectCommit": "763d21fe44c8531309f7437bb98343e2192e71de",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-26T20:27:26.773Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64",
+    "manifestFileHash": "9c6cd03a640a173a2cd7b5778a9c5c92bcfe82437db4bd166abd023989559143",
+    "canonicalProfileTextSha256": "d07f3943e9327fb903bb986564fead0504890d62e62a3f8e806e8dcbbf41e705",
+    "canonicalProfileTextBytes": 1460,
+    "reviewedWorktreeHead": "763d21fe44c8531309f7437bb98343e2192e71de",
+    "originMainHead": "4f71c387cbc1dd408780204fb6c0a43f340c303c",
+    "checksPerformed": [
+      "Schema adapterReviewSchema lido primeiro. Identidades Git obtidas em HEAD; adaptador e serializador locais correspondem aos blobs. Worktree limpo antes e depois, nenhum arquivo rastreado alterado e nenhum banco acessado.",
+      "git merge-base --is-ancestor confirmou sourceCommit 4f71c387cbc1dd408780204fb6c0a43f340c303c como ancestral de HEAD. Todos os 407 executorSources, 9 pins do compilador, 5 de evidência e 2 parseOnlySources conferem com os bytes no commit e no snapshot.",
+      "SHA-256 do snapshot recalculado: 92f72d4f8c6979fe8d7c903a991a918ecae0a6a0322b5ac5d96ce14af2f130b5. Manifesto no sourceCommit, snapshot e worktree idênticos; manifestFileHash confere com o lock. manifestHash recalculado sobre o conteúdo canônico sem esse campo confere.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com exit 0. Duas reconstruções adicionais em memória produziram bytes idênticos entre si e ao CJS instalado: 1696022 bytes, SHA-256 76aab409bfdcf742a8680d917fc7dea9b55275360d361ef0ed31196faff9692a.",
+      "apps/document-worker/src/released-methods.generated.ts coincide integralmente com o índice dos locks, conforme validado pelo build. A entrada challenge-financial-projection-2026.10.26-v1 tem methodId, methodVersion, manifestHash e artifactHash corretos, sem duplicação.",
+      "deriveExecutionProfile aplicado ao manifesto e executionCanonicalText ao perfil: igualdade byte a byte com /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote3-2026-10-26/perfil/profile-challenge-financial-projection.txt. SHA-256 d07f3943e9327fb903bb986564fead0504890d62e62a3f8e806e8dcbbf41e705; 1460 bytes UTF-8.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: 2d976b2869af07c1be2fca2b1fbbe7241679c02209e7a7e9a4617a396e666c2d, igual ao lock. grantsExecution=false, maxModelCalls=0, maxCostMicrousd=0, tools=[], allowedEffects=[read_only]. Manifesto com custo zero, nenhum tool e maximumEffect=none.",
+      "Exatamente um executor no manifesto: @offroad/financial-model#prepareProjectionChallengePacket, versão 2026.10.26-v1; componente selecionado projection-challenge.packet; duração máxima 31000 ms.",
+      "Em apps/document-worker, npx vitest run src/released-lote3-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts: 4 arquivos e 25 testes aprovados, exit 0, duração 3.83 s. Cobrem paridade do pacote, entradas inválidas, identidades indisponíveis, perfis, artefatos e transporte simulado.",
+      "20261026200000_lote3_payload_provenance.sql recusa methodId nulo e vincula challenge-financial-projection à versão 2026.10.26-v1, manifestHash 1180b9a1e88f3e9bf0857f0f98232fac2cdd34c7496388c9d61f2a2580c2ff64 e schema projection-challenge-packet-input.v1. Arquivo sem newline final; MD5 3e22266fb1c3bffab961020bccbfbf71.",
+      "Comparação integral com 20261023204746_lote2_payload_provenance.sql: removidos comentários e somente as quatro adições do lote 3, o restante é idêntico. Capital, investimento, lote 1 e lote 2 preservam vínculos, limites, proveniência e privilégios. Verificação estática, sem executar SQL.",
+      "JSON final validado com adapterReviewSchema.parse por comando node executado em packages/credit-playbook."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado tecnicamente no escopo revisado. Fontes fixadas, hashes, reconstrução determinística, identidade instalada, perfil canônico, política e vinculação SQL conferem. Os 25 testes passaram. Nenhum arquivo rastreado foi alterado e nenhum banco foi acessado. A revisão não comprova registro ou implantação e não concede autorização de execução."
+}
