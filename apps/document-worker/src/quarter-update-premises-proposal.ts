@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {citedSource, extractedOrigin, factsOrGaps, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -39,8 +39,23 @@ export function priorMeasurements(prior: Prior): {id: string; label: string; rol
   return [...all].sort((a, b) => rank(a) - rank(b));
 }
 
-const signed = z.string().regex(/^-?\d{1,15}(?:\.\d{1,8})?$/);
-const unsigned = z.string().regex(/^\d{1,15}(?:\.\d{1,8})?$/);
+/** An amount as written, in the scale the document or the conversation states; the bridge checks its size. */
+const signed = z.string().regex(/^-?\d{1,40}(?:\.\d{1,40})?$/);
+const unsigned = z.string().regex(/^\d{1,40}(?:\.\d{1,40})?$/);
+/** The scale an amount is written in: reais, thousands or millions of reais; null when nobody stated it. */
+const scale = z.enum(["reais", "milhares", "milhoes"]).nullable();
+export type AmountScale = NonNullable<z.infer<typeof scale>>;
+/** The basis of the close is in reais: the prior weekly cash and covenant results it updates were adopted in reais. */
+const basisMoney = /^-?\d{1,24}(?:\.\d{1,8})?$/;
+const lineMeasure = /^-?\d{1,6}(?:\.\d{1,8})?$/;
+/** An amount written in a scale, in reais, exactly: the decimal point moves, no floating point is involved. */
+export function amountInReais(value: string, from: AmountScale): string {
+  const negative = value.startsWith("-"), [whole, fraction = ""] = value.replace(/^-/, "").split(".");
+  const shift = from === "milhoes" ? 6 : from === "milhares" ? 3 : 0, digits = whole! + fraction.padEnd(shift, "0"), point = whole!.length + shift;
+  const integer = digits.slice(0, point).replace(/^0+(?=\d)/, "") || "0", decimals = digits.slice(point).replace(/0+$/, "");
+  const out = decimals ? `${integer}.${decimals}` : integer;
+  return negative && /[1-9]/.test(out) ? `-${out}` : out;
+}
 const item = {label: itemLabel, origin: extractedOrigin, source: itemSource};
 const text = z.string().trim().min(1).max(500);
 
@@ -49,17 +64,17 @@ export const quarterUpdateExtractionSchema = z.strictObject({
   turnIntent: z.enum(turnIntents),
   quarterStart: sourced(z.iso.date()), quarterEnd: sourced(z.iso.date()),
   /** Each line of the close, projected and actual, in reais, days or a fraction. */
-  lines: z.array(z.strictObject({...item, unit: z.enum(["currency", "days", "ratio"]), projected: signed, actual: signed})).max(24),
+  lines: z.array(z.strictObject({...item, unit: z.enum(["currency", "days", "ratio"]), scale, projected: signed, actual: signed})).max(24),
   cashLineLabel: sourced(itemLabel), ebitdaLineLabel: sourced(itemLabel),
   /** Each cause of a deviation, on the line it explains. */
-  causes: z.array(z.strictObject({...item, lineLabel: itemLabel, amount: signed, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
+  causes: z.array(z.strictObject({...item, lineLabel: itemLabel, amount: signed, scale, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
     nature: z.enum(["flow", "balance"]).nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable(),
     equalsDeviationOfLabel: itemLabel.nullable(), driverLineLabel: itemLabel.nullable()})).max(48),
   /** A prior weekly stream a persisting cause moves: amounts scaled by a factor, or events delayed by days. */
   streamUpdates: z.array(z.strictObject({streamId: z.string().min(1).max(40), causeLabels: z.array(itemLabel).min(1).max(8), kind: z.enum(["scale", "delay"]),
     factor: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable(), days: z.number().int().min(-366).max(366).nullable(), origin: extractedOrigin, source: itemSource})).max(16),
-  addedStreams: z.array(z.strictObject({...item, events: z.array(z.strictObject({date: z.iso.date(), amount: unsigned})).min(1).max(2000)})).max(4),
-  facilities: z.array(z.strictObject({...item, limit: unsigned, approval: text})).max(8),
+  addedStreams: z.array(z.strictObject({...item, scale, events: z.array(z.strictObject({date: z.iso.date(), amount: unsigned})).min(1).max(2000)})).max(4),
+  facilities: z.array(z.strictObject({...item, limit: unsigned, scale, approval: text})).max(8),
   steps: z.array(z.strictObject({facilityLabel: itemLabel, mode: z.enum(["fixed", "residual"]), addedStreamLabel: itemLabel.nullable(),
     replacesStreamIds: z.array(z.string().min(1).max(40)).max(8), date: z.iso.date().nullable(), origin: extractedOrigin, source: itemSource})).max(4),
   covenantMeasurementIds: z.array(z.string().min(1).max(40)).max(8),
@@ -75,7 +90,7 @@ export const quarterUpdateExtractionContract = {
   system: [
     "Você extrai os dados do fechamento de um trimestre para atualizar o caixa semanal e o teste de covenant que a companhia já tem, a partir da mensagem de uma pessoa, das mensagens anteriores, de campos já extraídos de documentos (balancete, gerencial do trimestre) e dos resultados anteriores registrados (priorWeeklyCash com os fluxos e priorCovenant com as medições).",
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo) ou lista vazia. Nunca estime, nunca complete, nunca atribua uma causa que ninguém deu.",
-    "Valores monetários em reais, sem separador de milhar (R$ 1,7 milhão vira 1700000), com sinal quando são desvios ou causas. Prazos em dias. Variações em fração (3% vira 0.03). Datas no formato AAAA-MM-DD.",
+    "Valores monetários como estão escritos, com ponto decimal e sem separador de milhar, e em scale a escala em que o documento ou a conversa os dá: reais, milhares ou milhoes (R$ 1,25 milhão vira 1.25 com milhoes; R$ 1.250 mil vira 1250 com milhares; R$ 1.250.000 vira 1250000 com reais). Nunca converta de uma escala para outra. Se a escala não estiver dita nem no documento nem na conversa, scale é null. Em linhas em dias ou em fração, scale é null. Com sinal quando são desvios ou causas. Prazos em dias. Variações em fração (3% vira 0.03). Datas no formato AAAA-MM-DD.",
     "lines são as linhas do fechamento com o projetado e o realizado (receita, EBITDA, caixa, prazo médio, custo do insumo); cashLineLabel e ebitdaLineLabel dizem qual linha é o caixa e qual é o EBITDA.",
     "causes explicam cada desvio na linha que explicam (lineLabel): calendar quando volta sozinho, structural quando continua até uma data (until), com nature flow quando se repete a cada período e balance quando é um saldo deslocado uma vez; basis document quando o documento mostra, interpretation quando é leitura de alguém; question é a pergunta que muda o diagnóstico, quando houver. equalsDeviationOfLabel quando a causa é o desvio de outra linha (por exemplo o EBITDA abaixo na ponte do caixa); driverLineLabel é a linha que mede a causa.",
     "streamUpdates dizem como uma causa estrutural move um fluxo do caixa semanal anterior: streamId é um id de priorWeeklyCash.streams; scale multiplica os valores por factor, delay atrasa os eventos em days.",
@@ -86,10 +101,10 @@ export const quarterUpdateExtractionContract = {
     turnIntentInstruction,
   ].join("\n"),
   schema: quarterUpdateExtractionSchema,
-  schemaName: "quarter_update_extraction_v2",
+  schemaName: "quarter_update_extraction_v3",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 16_000,
-  cacheKey: "quarter-update-extraction-2026.10.26-v2",
+  cacheKey: "quarter-update-extraction-2026.10.26-v3",
 };
 
 export const quarterUpdateSituation = "near-covenant";
@@ -106,10 +121,23 @@ export type QuarterUpdateCompletion = (Extract<Lote2Completion<QuarterUpdateFact
 export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtraction; priors: {weeklyCash: Prior; covenant: Prior};
   ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): QuarterUpdateCompletion {
   const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // Every amount is carried in reais, the units of the prior results. An amount whose scale nobody stated is
+  // asked, never guessed; one that does not fit the basis after the exact conversion is named, never dropped.
+  const money = (value: string, from: AmountScale | null, path: string, scalePath: string, fits = basisMoney): string | null => {
+    if (from === null) { missing.push(scalePath); return null; }
+    const out = amountInReais(value, from);
+    if (!fits.test(out)) { missing.push(path); return null; }
+    return out;
+  };
   const start = stated(e.quarterStart), end = stated(e.quarterEnd);
   if (!start) missing.push("quarterStart");
   if (!end) missing.push("quarterEnd");
   if (!e.lines.length) missing.push("lines");
+  const lineValues = e.lines.map((l, k) => {
+    const p = `lines.${k + 1}.`;
+    if (l.unit !== "currency") return [l.projected, l.actual].map((v, n) => lineMeasure.test(v) ? v : (missing.push(p + (n ? "actual" : "projected")), null));
+    return [money(l.projected, l.scale, p + "projected", p + "scale"), money(l.actual, l.scale, p + "actual", p + "scale")];
+  });
   const lineIds = itemKeys(e.lines.map((l) => l.label));
   const lineOf = (label: string | null) => {
     if (label === null) return null;
@@ -129,8 +157,9 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     if (driver === undefined) missing.push(p + "driverLineLabel");
     if ((c.classification === "structural") !== (c.until !== null)) missing.push(p + "until");
     if ((c.classification === "structural") !== (c.nature !== null)) missing.push(p + "nature");
-    if (!line || equals === undefined || driver === undefined) return;
-    bridges.set(line, [...bridges.get(line) ?? [], {value: {id: causeIds[k]!, label: c.label, amount: c.amount, classification: c.classification, until: c.until,
+    const amount = money(c.amount, c.scale, p + "amount", p + "scale");
+    if (!line || equals === undefined || driver === undefined || amount === null) return;
+    bridges.set(line, [...bridges.get(line) ?? [], {value: {id: causeIds[k]!, label: c.label, amount, classification: c.classification, until: c.until,
       equalsDeviationOf: equals, driverLineId: driver, basis: c.basis, question: c.question, nature: c.nature}, origin: c.origin, source: citedSource(c.origin, c.source)}]);
   });
   for (const [id, name] of [[cashId, "cash"], [ebitdaId, "ebitda"]] as const) if (id && !bridges.has(id)) missing.push(`causes.${name}`);
@@ -146,10 +175,12 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
       origin: u.origin, source: citedSource(u.origin, u.source)}];
   });
   const addedIds = itemKeys(e.addedStreams.map((s) => s.label));
-  const addedStreams = e.addedStreams.map((s, k) => ({value: {id: addedIds[k]!, label: s.label, dates: s.events.map((x) => x.date), amounts: s.events.map((x) => x.amount)},
+  const addedStreams = e.addedStreams.map((s, k) => ({value: {id: addedIds[k]!, label: s.label, dates: s.events.map((x) => x.date),
+    amounts: s.events.map((x, n) => money(x.amount, s.scale, `addedStreams.${k + 1}.events.${n + 1}.amount`, `addedStreams.${k + 1}.scale`, /^\d{1,24}(?:\.\d{1,8})?$/) ?? "0")},
     origin: s.origin, source: citedSource(s.origin, s.source)}));
   const facilityIds = itemKeys(e.facilities.map((f) => f.label));
-  const facilities = e.facilities.map((f, k) => ({value: {id: facilityIds[k]!, label: f.label, limit: f.limit, source: f.approval}, origin: f.origin, source: citedSource(f.origin, f.source)}));
+  const facilities = e.facilities.map((f, k) => ({value: {id: facilityIds[k]!, label: f.label,
+    limit: money(f.limit, f.scale, `facilities.${k + 1}.limit`, `facilities.${k + 1}.scale`, /^\d{1,24}(?:\.\d{1,8})?$/) ?? "0", source: f.approval}, origin: f.origin, source: citedSource(f.origin, f.source)}));
   const steps = e.steps.flatMap((s, k) => {
     const p = `steps.${k + 1}.`, before = missing.length;
     const f = e.facilities.findIndex((x) => sameLabel(x.label, s.facilityLabel)), a = s.addedStreamLabel === null ? -1 : e.addedStreams.findIndex((x) => sameLabel(x.label, s.addedStreamLabel!));
@@ -187,16 +218,19 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   if (missing.length || !start || !end || !cashId || !ebitdaId) return {status: "missing", missing: [...new Set(missing)]};
   used.push("materialityFloor");
   const {weeklyCash, covenant} = input.priors;
-  const facts = quarterUpdateFactsSchema.parse({...input.ids, perimeter: "standalone", currency: input.currency, quarterStart: start.value, quarterEnd: end.value,
+  const parsed = factsOrGaps(quarterUpdateFactsSchema, {...input.ids, perimeter: "standalone", currency: input.currency, quarterStart: start.value, quarterEnd: end.value,
     priorWeeklyFingerprint: {value: weeklyCash.envelopeFingerprint, origin: "document", source: `Resultado registrado do caixa semanal (execução ${short(weeklyCash.executionId)})`},
     priorCovenantFingerprint: {value: covenant.envelopeFingerprint, origin: "document", source: `Resultado registrado da folga de covenant (execução ${short(covenant.executionId)})`},
-    lines: e.lines.map((l, k) => ({value: {id: lineIds[k]!, label: l.label, unit: l.unit, projected: l.projected, actual: l.actual}, origin: l.origin, source: citedSource(l.origin, l.source)})),
+    lines: e.lines.map((l, k) => ({value: {id: lineIds[k]!, label: l.label, unit: l.unit, projected: lineValues[k]![0]!, actual: lineValues[k]![1]!}, origin: l.origin, source: citedSource(l.origin, l.source)})),
     carry: {value: {cashLineId: cashId, ebitdaLineId: ebitdaId}, origin: cash!.origin, source: cash!.source},
     bridges: [...bridges.entries()].map(([lineId, causes]) => ({lineId, causes})),
     streamUpdates, materialityFloor: {value: "1000", origin: "house", source: "R$ 1 mil, piso de materialidade do efeito semanal"},
     addedStreams, covenant: measurementsChosenByHouse
       ? {value: {measurementIds}, origin: "house", source: "Medições do teste registrado na data da apuração principal, escolhidas pela casa"}
       : {value: {measurementIds}, origin: "informed", source: "Medições do teste registrado citadas na conversa"}, facilities, steps, dependents});
+  // What the method refuses is named for the card, never dropped.
+  if (!parsed.ok) return {status: "missing", missing: parsed.missing};
+  const facts = parsed.facts;
   return {status: "complete", facts, situationId: quarterUpdateSituation, housePremiseKeys: [...new Set(used)], askedDependentIds};
 }
 

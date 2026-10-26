@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -141,13 +141,15 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
   if (!said) used.push("purpose");
   const drivers = actualOperatingDriverNames.map((k) => actual.get(k)!);
   const driversOrigin = drivers.every((d) => d.origin === "document") ? "document" as const : "informed" as const;
-  const facts = operatingProjectionFactsSchema.parse({...input.ids, perimeter: "standalone", currency: input.currency, purpose,
+  const parsedFacts = factsOrGaps(operatingProjectionFactsSchema, {...input.ids, perimeter: "standalone", currency: input.currency, purpose,
     conventions: {dayCountBasis: {value: "360", origin: "house", source: "Prazos médios em ano comercial"},
       calibrationTolerance: {value: "0.005", origin: "house", source: "Reproduzir o último ano em até 0,5% antes de projetar"}},
     actual: {periodStart: `${actualYear.value}-01-01`, periodEnd: `${actualYear.value}-12-31`,
       drivers: {value: Object.fromEntries(drivers.map((d) => [d.driver, d.value])), origin: driversOrigin, source: [...new Set(drivers.map((d) => citedSource(d.origin, d.source)))].join("; ").slice(0, 2000)},
       reportedRevenue: revenue, reportedEbitda: ebitda},
     periodEnds, base: base.map((b) => b!), scenarios, companyVersions});
+  if (!parsedFacts.ok) return {status: "missing", missing: parsedFacts.missing};
+  const facts = parsedFacts.facts;
   return {status: "complete", facts, situationId: operatingProjectionSituation, housePremiseKeys: [...new Set(used)]};
 }
 

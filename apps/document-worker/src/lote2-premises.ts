@@ -65,6 +65,15 @@ export const sameLabel = (a: string, b: string) => foldCue(a).replace(/\s+/g, " 
 type UnboundHypothesis = Omit<ProposedHypothesis, "dimensions"> & {dimensions: Omit<ProposedHypothesis["dimensions"], "entityId" | "definitionVersionId"> & {entityId: null; definitionVersionId: null}};
 export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: string; housePremiseKeys: string[]} | {status: "missing"; missing: string[]};
 
+/** The facts a method accepts, or what it refuses named by path (a rule of the set as a whole as "facts"):
+ * a refusal becomes a gap the card asks about, never a dropped card. */
+export function factsOrGaps<T>(schema: z.ZodType<T>, raw: unknown): {ok: true; facts: T} | {ok: false; missing: string[]} {
+  const parsed = schema.safeParse(raw);
+  if (parsed.success) return {ok: true, facts: parsed.data};
+  return {ok: false, missing: [...new Set(parsed.error.issues.map((i) =>
+    i.path.filter((x) => x !== "value").map((x) => typeof x === "number" ? String(x + 1) : String(x)).join(".") || "facts"))]};
+}
+
 /** The proposal body and the fingerprint the confirmation checks. Hypotheses carry no entity or
  * definition identity: the confirmation binds them to the work. */
 export function fingerprintedProposal<F>(method: {methodId: string; methodVersion: string}, facts: F, hypotheses: ProposedHypothesis[], summary: Lote2Summary) {

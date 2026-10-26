@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
+import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -140,12 +140,14 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
       evidenceStatus: t.evidenceStatus === null ? {value: "not_presented" as const, origin: "house" as const, source: "Nenhum documento apresentado ainda"}
         : {value: t.evidenceStatus, origin: t.origin, source: t.source}};
   });
-  const facts = projectionChallengeFactsSchema.parse({...input.ids, perimeter: "standalone", currency: input.currency,
+  const parsedFacts = factsOrGaps(projectionChallengeFactsSchema, {...input.ids, perimeter: "standalone", currency: input.currency,
     openingDate: `${periods.value[0]}-01-01`, endDate: `${target.value}-12-31`, scenario: "plano", referenceScenario: "referencia", planScenario: "plano",
     periodIds: periods, targetPeriodId: target, dayBasis: {value: "360", origin: "house", source: "Ano comercial de 360 dias para giro por prazos"},
     unitConvention: units, reference, plan, assumptions,
     capacity: capacity && investment ? {maximumQuantity: capacity, investmentInPlan: investment, source: {value: capacity.source, origin: capacity.origin, source: capacity.source}} : null,
     marginCause: stated(e.marginCause), requestedReceivableDays: stated(e.requestedReceivableDays), premiumOverAverage: stated(e.premiumOverAverage)});
+  if (!parsedFacts.ok) return {status: "missing", missing: parsedFacts.missing};
+  const facts = parsedFacts.facts;
   return {status: "complete", facts, situationId: projectionChallengeSituation, housePremiseKeys: [...new Set(used)]};
 }
 

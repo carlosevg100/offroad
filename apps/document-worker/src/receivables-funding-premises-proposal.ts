@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 
@@ -163,11 +163,13 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   if (!end) used.push("needEndDate");
   const business = stated(e.businessDays) ?? {value: weekdays(need.start.value, calendarDays.value), origin: "estimate" as const, source: "Dias de segunda a sexta no prazo de uso, sem feriados"};
   if (!stated(e.businessDays)) used.push("businessDays");
-  const facts = receivablesFundingFactsSchema.parse({...input.ids, perimeter: "standalone", currency: input.currency, referenceDate: need.reference.value, endDate,
+  const parsedFacts = factsOrGaps(receivablesFundingFactsSchema, {...input.ids, perimeter: "standalone", currency: input.currency, referenceDate: need.reference.value, endDate,
     needAverage: need.average, needPeak: need.peak, needStartDate: need.start, calendarDays, businessDays: business, annualDi: need.di, averageTermDays: need.term,
     needProfile: need.profile, lienBasketRemaining: stated(e.lienBasketRemaining),
     dedicatedVehicleThreshold: threshold,
     items: items.map((i) => i!), options: options.map((o) => o!)});
+  if (!parsedFacts.ok) return {status: "missing", missing: parsedFacts.missing};
+  const facts = parsedFacts.facts;
   return {status: "complete", facts, situationId: need.profile.value === "seasonal" ? "seasonal-working-capital" : "structural-working-capital", housePremiseKeys: [...new Set(used)]};
 }
 

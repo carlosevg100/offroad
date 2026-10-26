@@ -151,3 +151,16 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     expect(() => proposeQuarterUpdateHypotheses(precise)).toThrow();
   });
 });
+
+describe("the units of a quarter close line (independent review, round 7)", () => {
+  const hex = (c: string) => c.repeat(64);
+  it("takes a currency line in the units of the prior results, reais included, and keeps days and ratios within six digits", () => {
+    const facts = auroraQuarterUpdateFacts(hex("a"), hex("b"));
+    const currency = facts.lines.find((l) => l.value.unit === "currency")!;
+    currency.value.projected = "1250000"; currency.value.actual = "1200000";
+    expect(() => proposeQuarterUpdateHypotheses(facts)).not.toThrow();
+    const other = facts.lines.find((l) => l.value.unit !== "currency")!;
+    other.value.actual = "1250000";
+    expect(() => proposeQuarterUpdateHypotheses(facts)).toThrow(/six integer digits/);
+  });
+});

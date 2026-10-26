@@ -1,8 +1,9 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeQuarterUpdateHypotheses, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {buildQuarterUpdatePremiseProposal, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
+import {amountInReais, buildQuarterUpdatePremiseProposal, completeQuarterUpdateFacts, priorMeasurements, priorStreams, proposeQuarterUpdatePremisesForTurn,
   shouldProposeQuarterUpdatePremises, type QuarterUpdateExtraction, priorResultPins} from "./quarter-update-premises-proposal";
-import {itemKeys} from "./lote2-premises";
+import {factsOrGaps, itemKeys} from "./lote2-premises";
+import {z} from "zod";
 import {comparableHypotheses, financialModelFixture, nonAnswering, summaryGroups, summaryOrigins} from "./lote2-premises.test-support";
 import weeklyPacket from "../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
 
@@ -28,16 +29,16 @@ function auroraExtraction(f: QuarterUpdateFacts): QuarterUpdateExtraction {
   const causeLabel = (id: string) => causes.find((x) => x.c.value.id === id)!.c.value.label;
   return {turnIntent: "answers_pending",
     quarterStart: {value: f.quarterStart, origin: "document", source: "balancete"}, quarterEnd: {value: f.quarterEnd, origin: "document", source: "balancete"},
-    lines: f.lines.map((l) => ({label: l.value.label, origin: said(l.origin), source: l.source, unit: l.value.unit, projected: l.value.projected, actual: l.value.actual})),
+    lines: f.lines.map((l) => ({label: l.value.label, origin: said(l.origin), source: l.source, unit: l.value.unit, scale: l.value.unit === "currency" ? "reais" as const : null, projected: l.value.projected, actual: l.value.actual})),
     cashLineLabel: {value: lineLabel(f.carry.value.cashLineId)!, origin: "document", source: "balancete"},
     ebitdaLineLabel: {value: lineLabel(f.carry.value.ebitdaLineId)!, origin: "document", source: "balancete"},
-    causes: causes.map(({c, lineId}) => ({label: c.value.label, origin: said(c.origin), source: c.source, lineLabel: lineLabel(lineId)!, amount: c.value.amount,
+    causes: causes.map(({c, lineId}) => ({label: c.value.label, origin: said(c.origin), source: c.source, lineLabel: lineLabel(lineId)!, amount: c.value.amount, scale: "reais" as const,
       classification: c.value.classification, until: c.value.until, nature: c.value.nature, basis: c.value.basis, question: c.value.question,
       equalsDeviationOfLabel: lineLabel(c.value.equalsDeviationOf), driverLineLabel: lineLabel(c.value.driverLineId)})),
     streamUpdates: f.streamUpdates.map((u) => ({streamId: u.value.streamId, causeLabels: u.value.causeIds.map(causeLabel), kind: u.value.transform.kind,
       factor: u.value.transform.kind === "scale" ? u.value.transform.factor : null, days: u.value.transform.kind === "delay" ? u.value.transform.days : null, origin: "informed", source: u.source})),
-    addedStreams: f.addedStreams.map((s) => ({label: s.value.label, origin: "informed", source: s.source, events: s.value.dates.map((date, k) => ({date, amount: s.value.amounts[k]!}))})),
-    facilities: f.facilities.map((x) => ({label: x.value.label, origin: said(x.origin), source: x.source, limit: x.value.limit, approval: x.value.source})),
+    addedStreams: f.addedStreams.map((s) => ({label: s.value.label, origin: "informed", source: s.source, scale: "reais" as const, events: s.value.dates.map((date, k) => ({date, amount: s.value.amounts[k]!}))})),
+    facilities: f.facilities.map((x) => ({label: x.value.label, origin: said(x.origin), source: x.source, limit: x.value.limit, scale: "reais" as const, approval: x.value.source})),
     steps: f.steps.map((s) => {
       const facilityLabel = f.facilities.find((x) => x.value.id === s.value.facilityId)!.value.label;
       return s.value.mode === "fixed"
@@ -136,6 +137,59 @@ describe("quarter update premises proposed from a turn", () => {
     const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo e também o plano de 2027.", hasAttachments: true, recentUserMessages: [],
       projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => e, log: () => {}});
     expect(turn?.proposal?.summary.askedDependentIds).toEqual([planId]);
+  });
+  it("converts each amount from the scale it was written in to reais exactly", () => {
+    expect([amountInReais("1250000", "reais"), amountInReais("1.25", "milhoes"), amountInReais("1250", "milhares")]).toEqual(["1250000", "1250000", "1250000"]);
+    expect([amountInReais("-0.4", "milhoes"), amountInReais("0.0001", "milhares"), amountInReais("007.50", "reais"), amountInReais("-0.000", "milhoes")]).toEqual(["-400000", "0.1", "7.5", "0"]);
+    expect(amountInReais("12345678901234567890.123456789", "milhoes")).toBe("12345678901234567890123456.789");
+  });
+  it("carries a close in reais from R$ 1 million up, in any stated scale, and asks the scale nobody stated (independent review, round 7)", async () => {
+    const f = aurora(hex("a"), hex("b"));
+    const written = (scale: "reais" | "milhares" | "milhoes", divisor: number) => {
+      const e = auroraExtraction(f);
+      const cash = e.lines.findIndex((l) => l.unit === "currency");
+      // The reviewer's close: projected R$ 1.25 million and actual R$ 1.2 million on the first currency line.
+      e.lines[cash]!.projected = String(1250000 / divisor); e.lines[cash]!.actual = String(1200000 / divisor); e.lines[cash]!.scale = scale;
+      return {e, cash};
+    };
+    for (const [scale, divisor] of [["reais", 1], ["milhoes", 1e6], ["milhares", 1e3]] as const) {
+      const {e, cash} = written(scale, divisor), c = complete(e);
+      expect([c.facts.lines[cash]!.value.projected, c.facts.lines[cash]!.value.actual], scale).toEqual(["1250000", "1200000"]);
+    }
+    // Through the turn the card is proposed: nothing fails and nothing is dropped.
+    const events: string[] = [];
+    const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo.", hasAttachments: true, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => written("reais", 1).e, log: (event) => {events.push(event);}});
+    expect([turn?.forAdvisor.status, events]).toEqual(["proposed", ["quarter_update_premises.proposed"]]);
+    // A scale nobody stated is asked, never guessed.
+    const unknown = written("reais", 1); unknown.e.lines[unknown.cash]!.scale = null; unknown.e.causes[0]!.scale = null;
+    expect(completeQuarterUpdateFacts({extraction: unknown.e, priors: priors(), ids, currency: "BRL"})).toEqual({status: "missing", missing: [`lines.${unknown.cash + 1}.scale`, "causes.1.scale"]});
+  });
+  it("names an amount the basis cannot carry instead of dropping the card (independent review, round 7)", async () => {
+    const f = aurora(hex("a"), hex("b")), e = auroraExtraction(f), cash = e.lines.findIndex((l) => l.unit === "currency"), days = e.lines.findIndex((l) => l.unit !== "currency");
+    e.lines[cash]!.actual = "1".repeat(20); e.lines[cash]!.scale = "milhoes";
+    e.causes[0]!.amount = "0.123456789"; e.causes[0]!.scale = "reais";
+    if (days >= 0) e.lines[days]!.projected = "1250000";
+    const expected = [`lines.${cash + 1}.actual`, ...days >= 0 ? [`lines.${days + 1}.projected`] : [], "causes.1.amount"].sort();
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c.status).toBe("missing");
+    expect(c.status === "missing" ? [...c.missing].sort() : null).toEqual(expected);
+    const events: string[] = [];
+    const turn = await proposeQuarterUpdatePremisesForTurn({message: "Fechou o trimestre. Atualiza tudo.", hasAttachments: true, recentUserMessages: [],
+      projectId: "a0000000-0000-4000-8000-000000000001", loadEvidence: async () => [], loadPriors: async () => priors(), extract: async () => e, log: (event) => {events.push(event);}});
+    expect(turn?.forAdvisor.status).toBe("missing");
+    expect(events).not.toContain("quarter_update_premises.failed");
+  });
+  it("names what any lote 3 facts schema refuses, by path, for the card (C24, C26, C35 and C54 share it)", () => {
+    const schema = z.strictObject({lines: z.array(z.strictObject({value: z.strictObject({amount: z.string().regex(/^\d{1,3}$/)})}))}).refine((f) => f.lines.length > 1);
+    expect(factsOrGaps(schema, {lines: [{value: {amount: "1"}}, {value: {amount: "12345"}}]})).toEqual({ok: false, missing: ["lines.2.amount"]});
+    expect(factsOrGaps(schema, {lines: [{value: {amount: "1"}}]})).toEqual({ok: false, missing: ["facts"]});
+    expect(factsOrGaps(schema, {lines: [{value: {amount: "1"}}, {value: {amount: "2"}}]})).toMatchObject({ok: true});
+  });
+  it("names a rule of the close the method refuses instead of failing the turn", () => {
+    const e = auroraExtraction(aurora(hex("a"), hex("b"))); e.ebitdaLineLabel = {...e.cashLineLabel};
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    expect(c.status === "missing" && c.missing.includes("facts")).toBe(true);
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
