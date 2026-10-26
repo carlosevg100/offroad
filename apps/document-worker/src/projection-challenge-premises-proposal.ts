@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundProjectionChallenge, prepareProjectionChallengePacket, projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {unsourcedFields, factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
+import {withoutRepeats, unsourcedFields, factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -104,7 +104,8 @@ export function projectionChallengeContradictions(e: ProjectionChallengeExtracti
  * a case without its rate is asked, never filled and never attributed to the case's document. */
 export function completeProjectionChallengeFacts(input: {extraction: ProjectionChallengeExtraction; ids: {challengeId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ProjectionChallengeFacts> {
-  const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
+  const e = {...input.extraction, assumptions: withoutRepeats(input.extraction.assumptions)}, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).

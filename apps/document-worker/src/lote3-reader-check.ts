@@ -1,5 +1,6 @@
 import {createHash} from "node:crypto";
 import type {ProposedHypothesis} from "@offroad/financial-model";
+import {canonicalJson} from "./lote2-premises";
 
 /** A basis as the method's own reader receives it. */
 export type BoundBasis = {envelope: {canonical: string; fingerprint: string}; scope: {workId: string; purpose: string; versionId: string}};
@@ -27,7 +28,7 @@ export function inMemoryBasis(hypotheses: readonly ProposedHypothesis[], version
 export function readerGaps(hypotheses: readonly ProposedHypothesis[], run: (basis: BoundBasis) => unknown): string[] {
   const slots = new Map<string, string>(), conflicts = new Set<string>(), kept: ProposedHypothesis[] = [];
   for (const h of hypotheses) {
-    const slot = `${h.fieldPath}\u0000${h.dimensions.scenario}`, value = JSON.stringify(h.value);
+    const slot = `${h.fieldPath}\u0000${h.dimensions.scenario}`, value = canonicalJson(h.value);
     if (!slots.has(slot)) {slots.set(slot, value); kept.push(h);}
     else if (slots.get(slot) !== value) conflicts.add(`conflictingSlot.${h.fieldPath.split(".").slice(2).join(".")}`);
   }

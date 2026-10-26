@@ -78,11 +78,33 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
 export function repeatedLabels(labels: readonly string[]): number[] {
   return labels.flatMap((label, k) => labels.slice(0, k).some((x) => sameLabel(x, label)) ? [k + 1] : []);
 }
-/** The keys stated more than once with different values: never resolved by order, always asked. */
+/** A numeric string by its exact decimal value (107.5 and 107.5000 are one value); anything else unchanged. */
+export function canonicalDecimal(v: string): string {
+  if (!/^-?\d+(?:\.\d+)?$/.test(v)) return v;
+  const negative = v.startsWith("-"), [whole, fraction = ""] = v.replace(/^-/, "").split(".");
+  const integer = whole!.replace(/^0+(?=\d)/, ""), decimals = fraction.replace(/0+$/, ""), out = decimals ? `${integer}.${decimals}` : integer;
+  return negative && /[1-9]/.test(out) ? `-${out}` : out;
+}
+/** A value as canonical text, numeric strings compared by exact decimal value at any depth. */
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_k, v: unknown) => typeof v === "string" ? canonicalDecimal(v) : v);
+}
+/** The keys stated more than once with different values: never resolved by order, always asked. Values are
+ * compared by exact decimal value, never by how the number is written (independent review, round 13). */
 export function conflictingKeys<T>(items: readonly T[], key: (t: T) => string, value: (t: T) => unknown): Set<string> {
   const seen = new Map<string, string>(), out = new Set<string>();
-  for (const t of items) { const k = key(t), v = JSON.stringify(value(t)); if (seen.has(k) && seen.get(k) !== v) out.add(k); else seen.set(k, v); }
+  for (const t of items) { const k = key(t), v = canonicalJson(value(t)); if (seen.has(k) && seen.get(k) !== v) out.add(k); else seen.set(k, v); }
   return out;
+}
+/** A list without the entries that repeat an earlier one exactly, by value: the same record stated twice is one record. */
+export function withoutRepeats<T>(items: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((t) => {
+    // Where it was read does not make it another record: origin and source are left out of the comparison.
+    const {origin: _o, source: _s, ...content} = t as Record<string, unknown>;
+    const v = canonicalJson(content);
+    if (seen.has(v)) return false; seen.add(v); return true;
+  });
 }
 export function factsOrGaps<T>(schema: z.ZodType<T>, raw: unknown): {ok: true; facts: T} | {ok: false; missing: string[]} {
   const parsed = schema.safeParse(raw);

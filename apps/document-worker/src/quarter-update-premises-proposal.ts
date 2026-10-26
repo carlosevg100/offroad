@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {composeQuarterUpdateFromStoredPriors, prepareQuarterUpdatePacket, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {withoutRepeats, unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -145,7 +145,8 @@ export type QuarterUpdateCompletion = (Extract<Lote2Completion<QuarterUpdateFact
   | Extract<Lote2Completion<QuarterUpdateFacts>, {status: "missing"}>;
 export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtraction; priors: {weeklyCash: Prior; covenant: Prior};
   ids: {updateId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}): QuarterUpdateCompletion {
-  const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
+  const e = {...input.extraction, lines: withoutRepeats(input.extraction.lines), causes: withoutRepeats(input.extraction.causes), streamUpdates: withoutRepeats(input.extraction.streamUpdates), addedStreams: withoutRepeats(input.extraction.addedStreams), facilities: withoutRepeats(input.extraction.facilities), steps: withoutRepeats(input.extraction.steps), dependents: withoutRepeats(input.extraction.dependents)}, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).

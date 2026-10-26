@@ -1,7 +1,7 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {createHash} from "node:crypto";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {receivablesFundingContradictions, buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, shouldProposeReceivablesFundingPremises,
+import {receivablesFundingContradictions, buildReceivablesFundingPremiseProposal, completeReceivablesFundingFacts, proposeReceivablesFundingPremisesForTurn, receivablesFundingReader, receivablesFundingReaderGaps, shouldProposeReceivablesFundingPremises,
   type ReceivablesFundingExtraction} from "./receivables-funding-premises-proposal";
 import {itemKeys, stableKey} from "./lote2-premises";
 import {readerGaps} from "./lote3-reader-check";
@@ -17,7 +17,7 @@ const sourcedOf = <T>(f: {value: T; origin: string; source: string} | null) => f
 function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtraction {
   const label = (id: string) => f.items.find((i) => i.value.id === id)!.value.label;
   return {turnIntent: "answers_pending", referenceDate: {value: f.referenceDate, origin: "document", source: "posição da carteira"},
-    needAverage: sourcedOf(f.needAverage), needPeak: sourcedOf(f.needPeak), needStartDate: sourcedOf(f.needStartDate), needEndDate: {value: f.endDate, origin: "informed", source: "fim da safra"},
+    needAverage: sourcedOf(f.needAverage), needPeak: sourcedOf(f.needPeak), needStartDate: sourcedOf(f.needStartDate), needEndDate: {value: f.endDate, origin: "informed", source: "fim da safra"}, useEndDate: none,
     calendarDays: sourcedOf(f.calendarDays), businessDays: sourcedOf(f.businessDays), needProfile: sourcedOf(f.needProfile), annualDi: sourcedOf(f.annualDi),
     averageTermDays: sourcedOf(f.averageTermDays), lienBasketRemaining: sourcedOf(f.lienBasketRemaining),
     dedicatedVehicleThreshold: {value: f.dedicatedVehicleThreshold.value, origin: "informed", source: "faixa informada pela tesouraria"},
@@ -236,6 +236,38 @@ describe("receivables funding premises proposed from a turn", () => {
       const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
       expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
     }
+  });
+  it("never refuses a coherent boundary: each contradiction rule passes its equal or single case (independent review, round 13)", () => {
+    const f = aurora();
+    const cases: [string, (e: ReceivablesFundingExtraction) => void][] = [
+      ["peak equal to average", (e) => {e.needPeak = {...e.needPeak, value: e.needAverage.value};}],
+      ["due on the origin date", (e) => {e.items[0] = {...e.items[0]!, dueDate: e.items[0]!.originDate};}],
+      ["origin on the reference date", (e) => {e.items[0] = {...e.items[0]!, originDate: e.referenceDate.value};}],
+      ["single debtor with largest equal to the lot", (e) => {const i = e.items.findIndex((x) => x.debtorCount === 1); e.items[i] = {...e.items[i]!, largestDebtorAmount: e.items[i]!.amount};}],
+      ["largest times count equal to the lot", (e) => {const i = e.items.findIndex((x) => x.debtorCount === 2); e.items[i] = {...e.items[i]!, largestDebtorAmount: String(Number(e.items[i]!.amount) / 2)};}],
+      ["vehicle band of one value", (e) => {e.dedicatedVehicleThreshold = {...e.dedicatedVehicleThreshold, value: {min: "4", max: "4.0000"}};}],
+      ["lead days of one value", (e) => {e.options[1] = {...e.options[1]!, leadDaysMin: 20, leadDaysMax: 20};}],
+      ["business days equal to calendar days", (e) => {e.businessDays = {...e.businessDays, value: e.calendarDays.value};}],
+      ["end of use consistent with the length", (e) => {e.useEndDate = {value: "2027-04-14", origin: "informed", source: "tesouraria"};}],
+    ];
+    for (const [name, edit] of cases) {
+      const e = auroraExtraction(f); edit(e);
+      expect(receivablesFundingContradictions(e), name).toEqual([]);
+      const c = completeReceivablesFundingFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
+      expect(c.status, name).toBe("complete");
+      expect(receivablesFundingReaderGaps(c.status === "complete" ? c.facts : (null as never)), name).toEqual([]);
+    }
+  });
+  it("compares the period of use with like: start, end of use and length; the end of the need is another fact (independent review, round 13)", () => {
+    const f = aurora(), e = auroraExtraction(f);
+    // The reviewer's case: start 16/10/2026, end of use 31/03/2027 and 30 calendar days disagree, so the length is asked.
+    e.needStartDate = {...e.needStartDate, value: "2026-10-16"}; e.useEndDate = {value: "2027-03-31", origin: "informed", source: "tesouraria"}; e.calendarDays = {...e.calendarDays, value: 30};
+    expect(receivablesFundingContradictions(e)).toEqual(["calendarDays"]);
+    // Two of the three derive the third: no stated length, the 166 days between the dates are the period of use.
+    const derived = completeReceivablesFundingFacts({extraction: {...e, calendarDays: none, businessDays: none}, ids: idsOf(f), currency: "BRL"});
+    expect(derived.status === "complete" ? derived.facts.calendarDays.value : derived).toBe(166);
+    // The calibration states the end of the need (31/03/2027) and 180 days of use: different facts, both kept.
+    expect(receivablesFundingContradictions(auroraExtraction(f))).toEqual([]);
   });
   it("asks for an item label stated twice instead of anchoring an option to the first (independent review, round 8)", () => {
     const e = auroraExtraction(aurora()); e.items[1] = {...e.items[1]!, label: e.items[0]!.label.toUpperCase()};

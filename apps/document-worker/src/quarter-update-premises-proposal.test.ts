@@ -198,7 +198,7 @@ describe("quarter update premises proposed from a turn", () => {
   });
   it("asks for a label stated twice in a collection referenced by label (independent review, round 8)", () => {
     const e = auroraExtraction(aurora(W, C));
-    e.lines.push({...e.lines[0]!, actual: "999"}); e.facilities.push({...e.facilities[0]!});
+    e.lines.push({...e.lines[0]!, actual: "999"}); e.facilities.push({...e.facilities[0]!, limit: "999"});
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "missing" ? c.missing.filter((m) => m.endsWith(".label")) : null).toEqual([`lines.${e.lines.length}.label`, `facilities.${e.facilities.length}.label`]);
   });
@@ -274,6 +274,18 @@ describe("quarter update premises proposed from a turn", () => {
       expect(quarterUpdateContradictions(e), name).toEqual([key]);
       const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
       expect(c.status === "missing" && c.missing.includes(key), name).toBe(true);
+    }
+  });
+  it("never refuses a coherent boundary of its contradiction rules (independent review, round 13)", () => {
+    for (const [name, edit] of [
+      ["persisting to the day after the quarter", (e: QuarterUpdateExtraction) => {const k = e.causes.findIndex((c) => c.classification === "structural"); e.causes[k]!.until = "2026-10-01";}],
+      ["a one-day dependent horizon", (e: QuarterUpdateExtraction) => {e.dependents[0]!.horizonEnd = e.dependents[0]!.horizonStart;}],
+      ["a one-day quarter", (e: QuarterUpdateExtraction) => {e.quarterStart = {...e.quarterStart, value: "2026-09-29"};}],
+      ["two equal transforms of one stream are one", (e: QuarterUpdateExtraction) => {const u = e.streamUpdates.find((x) => x.kind === "scale")!; e.streamUpdates.push({...u, factor: `${u.factor}000`, source: "outra fonte"});}],
+    ] as const) {
+      const e = auroraExtraction(aurora(W, C)); edit(e);
+      expect(quarterUpdateContradictions(e), name).toEqual([]);
+      if (name.startsWith("two equal")) expect(complete(e).facts.streamUpdates.length, name).toBe(complete(auroraExtraction(aurora(W, C))).facts.streamUpdates.length);
     }
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {

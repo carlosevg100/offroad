@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {withoutRepeats, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -27,6 +27,8 @@ export const receivablesFundingExtractionSchema = z.strictObject({
   /** The date of the portfolio position. */
   referenceDate: sourced(z.iso.date()),
   needAverage: sourced(money), needPeak: sourced(money), needStartDate: sourced(z.iso.date()), needEndDate: sourced(z.iso.date()),
+  /** The last day the money is used (repaid or no longer drawn): the end of the period of use, not of the need. */
+  useEndDate: sourced(z.iso.date()),
   calendarDays: sourced(days), businessDays: sourced(days),
   needProfile: sourced(z.enum(["seasonal", "structural"])),
   annualDi: sourced(ratio), averageTermDays: sourced(days),
@@ -60,7 +62,7 @@ export const receivablesFundingExtractionContract = {
     "Você extrai os dados que permitem dizer quanto de uma carteira de recebíveis vira caixa, com quem, a que custo e em quanto tempo, contra a linha bancária, a partir da mensagem de uma pessoa, das mensagens anteriores e de campos já extraídos de documentos (carteira por sacado, contratos com clientes, tabela de dívida, propostas, regulamentos de fundos).",
     "Extraia somente o que foi dito ou o que está em documento. Se não estiver, devolva null (em value, origin e source, ou no campo) ou lista vazia. Nunca estime, nunca complete, nunca invente taxa de mercado.",
     "Valores monetários em reais, sem separador de milhar (R$ 62 milhões vira 62000000). Taxas em fração (1,6% ao mês vira rate 0.016 com rateBasis monthly; CDI mais 1,2 ao ano vira rate 0.012 com rateBasis di_plus). Datas no formato AAAA-MM-DD.",
-    "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba, calendarDays e businessDays o prazo de uso, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
+    "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba (o fim da safra, o horizonte da análise), useEndDate o último dia em que o dinheiro é usado (quando é pago ou deixa de ser sacado), calendarDays e businessDays o prazo de uso, do início ao fim do uso, em dias corridos e úteis; o fim do uso pode ser diferente do fim da necessidade, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
     "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado quando um sacado aparece em mais de um grupo, e debtorTaxId o CNPJ do sacado quando um documento o traz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
     "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. sublimitGroup é o nome do grupo de compradores que divide o sublimite com outras opções (por exemplo os mesmos cotistas em dois produtos FIDC), \"none\" quando foi dito que a opção tem compradores próprios e null quando ninguém disse. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
@@ -68,10 +70,10 @@ export const receivablesFundingExtractionContract = {
     turnIntentInstruction,
   ].join("\n"),
   schema: receivablesFundingExtractionSchema,
-  schemaName: "receivables_funding_extraction_v3",
+  schemaName: "receivables_funding_extraction_v4",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "receivables-funding-extraction-2026.10.26-v3",
+  cacheKey: "receivables-funding-extraction-2026.10.26-v4",
 };
 
 const dayMs = 86400000;
@@ -86,6 +88,11 @@ export function receivablesFundingContradictions(e: ReceivablesFundingExtraction
   const average = e.needAverage.value, peak = e.needPeak.value, start = e.needStartDate.value, end = e.needEndDate.value, band = e.dedicatedVehicleThreshold.value;
   if (average !== null && peak !== null && d(peak).lt(d(average))) out.push("needPeak");
   if (start !== null && end !== null && end <= start) out.push("needEndDate");
+  // The period of use: its start, its end and its length in calendar days are one fact stated three ways. When the
+  // three are stated and disagree, the length is asked; the end of the need is another concept and is not compared.
+  const useEnd = e.useEndDate.value, days = e.calendarDays.value;
+  if (start !== null && useEnd !== null && useEnd <= start) out.push("useEndDate");
+  else if (start !== null && useEnd !== null && days !== null && between(start, useEnd) !== days) out.push("calendarDays");
   if (band !== null && d(band.min).gt(d(band.max))) out.push("dedicatedVehicleThreshold");
   const reference = e.referenceDate.value;
   e.items.forEach((i, k) => {
@@ -116,7 +123,8 @@ export function receivablesFundingContradictions(e: ReceivablesFundingExtraction
  * vehicle pays is asked: no public source in the repository states it. */
 export function completeReceivablesFundingFacts(input: {extraction: ReceivablesFundingExtraction; ids: {receivablesFundingId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<ReceivablesFundingFacts> {
-  const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
+  const e = {...input.extraction, items: withoutRepeats(input.extraction.items), options: withoutRepeats(input.extraction.options)}, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -127,8 +135,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     ["annualDi", need.di], ["averageTermDays", need.term]] as const) if (!v) missing.push(k);
   const threshold = stated(e.dedicatedVehicleThreshold);
   if (!threshold) missing.push("dedicatedVehicleThreshold");
-  const end = stated(e.needEndDate), statedDays = stated(e.calendarDays);
-  if (!end && !statedDays) missing.push("needEndDate");
+  const end = stated(e.needEndDate), statedDays = stated(e.calendarDays), useEnd = stated(e.useEndDate);
+  if (!end && !statedDays && !useEnd) missing.push("needEndDate");
   if (!e.items.length) missing.push("items");
   if (!e.options.length) missing.push("options");
   // Options name their anchor items by label: an item label stated twice is asked, never resolved to the first.
@@ -171,7 +179,9 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
     const free = i.encumbrance === "free";
     return {value: {id: itemIds[k]!, label: i.label, amount: i.amount, contract: i.contract!, encumbrance: i.encumbrance!, encumbranceHolder: free ? null : i.encumbranceHolder,
       releaseEvent: free ? null : i.releaseEvent, originDate: i.originDate!, dueDate: i.dueDate!, registration: i.registration!, creditTier: i.creditTier!,
-      anchorProgram: i.anchorProgram!, debtorCount: i.debtorCount, largestDebtorAmount: i.largestDebtorAmount, debtorKey: debtor,
+      anchorProgram: i.anchorProgram!, debtorCount: i.debtorCount,
+      // One debtor whose largest amount equals the lot says nothing more than the lot: carried as the reader expects it (round 13).
+      largestDebtorAmount: single && i.largestDebtorAmount !== null && new Decimal(i.largestDebtorAmount).eq(new Decimal(i.amount)) ? null : i.largestDebtorAmount, debtorKey: debtor,
       debtorSetDisjoint: single ? null : i.debtorSetDisjoint!}, origin: i.origin, source: citedSource(i.origin, i.source)};
   });
   const optionIds = itemKeys(e.options.map((o) => o.label));
@@ -203,12 +213,14 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   // An option that pledges or may pledge the receivables uses the indenture's permitted-lien basket: its remaining balance is asked, never read as unlimited.
   if (e.options.some((o) => o.collateral !== null && o.collateral !== "none") && !stated(e.lienBasketRemaining)) missing.push("lienBasketRemaining");
   // Business days stated beyond the calendar days of use are asked, never reconciled by choosing one.
-  const statedBusiness = stated(e.businessDays), calendarSpan = statedDays?.value ?? (end && need.start ? between(need.start.value, end.value) : null);
+  const statedBusiness = stated(e.businessDays), calendarSpan = statedDays?.value ?? (useEnd && need.start ? between(need.start.value, useEnd.value) : end && need.start ? between(need.start.value, end.value) : null);
   if (statedBusiness && calendarSpan !== null && statedBusiness.value > calendarSpan) missing.push("businessDays");
   if (missing.length || !threshold || !need.reference || !need.average || !need.peak || !need.start || !need.profile || !need.di || !need.term) return {status: "missing", missing: [...new Set(missing)]};
-  const calendarDays = statedDays ?? {value: between(need.start.value, end!.value), origin: "house" as const, source: "Dias corridos entre o início e o fim da necessidade"};
-  if (!statedDays) used.push("calendarDays");
-  const endDate = end?.value ?? shift(need.start.value, calendarDays.value);
+  // Two of start, end of use and length stated derive the third; with no end of use, the house reads the use as the whole need.
+  const calendarDays = statedDays ?? (useEnd ? {value: between(need.start.value, useEnd.value), origin: useEnd.origin, source: `Dias corridos entre o início e o fim do uso (${useEnd.source})`}
+    : {value: between(need.start.value, end!.value), origin: "house" as const, source: "Dias corridos entre o início e o fim da necessidade"});
+  if (!statedDays && !useEnd) used.push("calendarDays");
+  const endDate = end?.value ?? useEnd?.value ?? shift(need.start.value, calendarDays.value);
   if (!end) used.push("needEndDate");
   const business = stated(e.businessDays) ?? {value: weekdays(need.start.value, calendarDays.value), origin: "estimate" as const, source: "Dias de segunda a sexta no prazo de uso, sem feriados"};
   if (!stated(e.businessDays)) used.push("businessDays");

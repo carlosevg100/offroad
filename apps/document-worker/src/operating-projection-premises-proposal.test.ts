@@ -119,9 +119,10 @@ describe("operating projection premises proposed from a turn", () => {
     expect(completeOperatingProjectionFacts({extraction: {...base, scenarios: base.scenarios.map((x, n) => n === k ? twice : x)}, ids: idsOf(f), currency: "BRL"}))
       .toEqual({status: "missing", missing: [`scenarios.${k + 1}.overrides`]});
     if (base.companyVersions.length) {
-      const v = base.companyVersions[0]!, clash = {...v, label: "Outra versão", value: String(Number(v.value) + 1)};
+      // One version (same label) stated with two values is asked (round 13: identity is the version's label).
+      const v = base.companyVersions[0]!, clash = {...v, value: String(Number(v.value) + 1)};
       expect(completeOperatingProjectionFacts({extraction: {...base, companyVersions: [...base.companyVersions, clash]}, ids: idsOf(f), currency: "BRL"}))
-        .toEqual({status: "missing", missing: [`companyVersions.${v.status}.${v.year}.${v.metric}`]});
+        .toEqual({status: "missing", missing: [`companyVersions.${base.companyVersions.length + 1}`]});
     }
   });
   it("names the basis limit as a gap in the turn instead of dropping the card (independent review, round 8)", async () => {
@@ -178,6 +179,26 @@ describe("operating projection premises proposed from a turn", () => {
       expect(operatingProjectionContradictions(e), key).toEqual([key]);
       const c = completeOperatingProjectionFacts({extraction: e, ids: idsOf(f), currency: "BRL"});
       expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
+    }
+  });
+  it("keeps two company versions with their own labels and compares numbers by value; boundaries pass (independent review, round 13)", () => {
+    const f = aurora(), base = auroraExtraction(f), year = base.actualYear.value!;
+    // The original budget and the approved revision, both approved EBITDA of the same year, are two versions.
+    const budget = {label: "Orçamento original", origin: "document" as const, source: "orçamento", status: "approved" as const, year: year + 1, metric: "ebitda" as const, value: "50", cause: null};
+    const revision = {...budget, label: "Revisão aprovada", value: "47"};
+    const two = completeOperatingProjectionFacts({extraction: {...base, companyVersions: [budget, revision]}, ids: idsOf(f), currency: "BRL"});
+    expect(two.status === "complete" ? two.facts.companyVersions.length : two).toBe(2);
+    // 107.5 and 107.5000 are one value: two columns that differ only in their decimals are one column.
+    const volume = base.baseColumns.find((c) => c.driver === "volume")!;
+    const padded = {...volume, values: volume.values.map((v) => v.includes(".") ? `${v}000` : `${v}.000`), source: "outra planilha"};
+    expect(completeOperatingProjectionFacts({extraction: {...base, baseColumns: [...base.baseColumns, padded]}, ids: idsOf(f), currency: "BRL"}).status).toBe("complete");
+    // Boundaries of the contradiction rules.
+    for (const [name, edit] of [
+      ["version in the first projected year", (e: OperatingProjectionExtraction) => {e.companyVersions = [{...budget, year: year + 1}];}],
+      ["shock from the first projected year", (e: OperatingProjectionExtraction) => {e.scenarios[0] = {...e.scenarios[0]!, inputCostShock: {fromYear: year + 1, rate: "0.1", passThroughLagMonths: 0}};}],
+    ] as const) {
+      const e = auroraExtraction(f); edit(e);
+      expect(operatingProjectionContradictions(e), name).toEqual([]);
     }
   });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {

@@ -105,6 +105,18 @@ describe("projection challenge premises proposed from a turn", () => {
       expect(c.status === "missing" && c.missing.includes(key), key).toBe(true);
     }
   });
+  it("never refuses a coherent boundary of its contradiction rules (independent review, round 13)", () => {
+    const f = aurora();
+    for (const [name, edit] of [
+      ["tax rate of exactly one", (e: ProjectionChallengeExtraction) => {e.plan = {...e.plan!, taxRate: "1.000"};}],
+      ["capacity with its investment", (e: ProjectionChallengeExtraction) => {e.capacityQuantity = {value: "1", origin: "informed", source: "CFO"}; e.capacityInvestmentInPlan = {value: true, origin: "informed", source: "CFO"};}],
+      ["small positive premium", (e: ProjectionChallengeExtraction) => {e.premiumOverAverage = {value: "0.00000001", origin: "informed", source: "CFO"};}],
+      ["documented with its evidence", (e: ProjectionChallengeExtraction) => {e.assumptions[0] = {...e.assumptions[0]!, evidenceStatus: "documented", evidence: ["contrato"]};}],
+    ] as const) {
+      const e = auroraExtraction(f); edit(e);
+      expect(projectionChallengeContradictions(e), name).toEqual([]);
+    }
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);
     expect(proposal.summary).toMatchObject({situationId: "stable-business-high-conversion", referenceDate: "2028-12-31"});

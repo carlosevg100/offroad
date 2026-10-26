@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {composeBoundOperatingProjection, prepareOperatingProjectionPacket, actualOperatingItems, operatingProjectionDriverUnits, operatingProjectionFactsSchema, proposeOperatingProjectionHypotheses,
   type OperatingProjectionFacts} from "@offroad/financial-model";
-import {unsourcedFields, conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {normalizedName, withoutRepeats, unsourcedFields, conflictingKeys, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -94,7 +94,8 @@ export function operatingProjectionContradictions(e: OperatingProjectionExtracti
  * none, the reply asks which alternatives to test (`alternativesToTest`) and the house supplies no number. */
 export function completeOperatingProjectionFacts(input: {extraction: OperatingProjectionExtraction; ids: {projectionId: string; entityId: string; definitionVersionId: string}; currency: "BRL"}):
   Lote2Completion<OperatingProjectionFacts> {
-  const e = input.extraction, missing: string[] = [], used: string[] = [];
+  // The same record stated twice (by value, wherever it was read) is one record; positions in gaps count after this.
+  const e = {...input.extraction, scenarios: withoutRepeats(input.extraction.scenarios), companyVersions: withoutRepeats(input.extraction.companyVersions), actualDrivers: withoutRepeats(input.extraction.actualDrivers), baseColumns: withoutRepeats(input.extraction.baseColumns)}, missing: string[] = [], used: string[] = [];
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -155,7 +156,10 @@ export function completeOperatingProjectionFacts(input: {extraction: OperatingPr
       inputCostShock: s.inputCostShock && shockEnd ? fact({fromPeriodEnd: shockEnd, rate: s.inputCostShock.rate, passThroughLagMonths: s.inputCostShock.passThroughLagMonths}) : null}];
   });
   if (!e.scenarios.some((s) => s.role === "alternative")) used.push("alternativesToTest");
-  for (const k of conflictingKeys(e.companyVersions, (v) => `${v.status}.${v.year}.${v.metric}`, (v) => v.value)) missing.push(`companyVersions.${k}`);
+  // A company version is identified by its label: the original budget and an approved revision are two versions; one
+  // version stated with two values is asked (independent review, round 13).
+  const versionConflicts = conflictingKeys(e.companyVersions, (v) => normalizedName(v.label), (v) => ({status: v.status, year: v.year, metric: v.metric, value: v.value, cause: v.cause}));
+  e.companyVersions.forEach((v, k) => {if (versionConflicts.has(normalizedName(v.label)) && e.companyVersions.findIndex((x) => normalizedName(x.label) === normalizedName(v.label)) !== k) missing.push(`companyVersions.${k + 1}`);});
   const versionIds = itemKeys(e.companyVersions.map((v) => v.label));
   const companyVersions = e.companyVersions.flatMap((v, k) => {
     const end = `${v.year}-12-31`;
