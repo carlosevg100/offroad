@@ -68,8 +68,12 @@ import {debtCapacityExtractionContract, proposeDebtCapacityPremisesForTurn, shou
 import {debtTableExtractionContract, proposeDebtTablePremisesForTurn, shouldProposeDebtTablePremises} from "./debt-table-premises-proposal";
 import {covenantHeadroomExtractionContract, proposeCovenantHeadroomPremisesForTurn, shouldProposeCovenantHeadroomPremises} from "./covenant-headroom-premises-proposal";
 import {proposeWeeklyCashPremisesForTurn, shouldProposeWeeklyCashPremises, weeklyCashExtractionContract} from "./weekly-cash-premises-proposal";
+import {operatingProjectionExtractionContract, proposeOperatingProjectionPremisesForTurn, shouldProposeOperatingProjectionPremises} from "./operating-projection-premises-proposal";
+import {projectionChallengeExtractionContract, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises} from "./projection-challenge-premises-proposal";
+import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
 
-export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "investment";
+export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash"
+  | "operating_projection" | "projection_challenge" | "receivables_funding" | "investment";
 /** The one premise step a turn may run. The compiled objective decides first: a message that compiles
  * to one premise method runs that method's step, subject to its own cue. Otherwise, in precedence:
  * offers for the same need are compared; a capacity question is measured; a debt table is built;
@@ -82,6 +86,9 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
     case "debt_table": return own("debt_table", shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages));
     case "covenant_headroom": return own("covenant_headroom", shouldProposeCovenantHeadroomPremises(message, hasAttachments, earlierUserMessages));
     case "weekly_cash": return own("weekly_cash", shouldProposeWeeklyCashPremises(message, hasAttachments, earlierUserMessages));
+    case "operating_projection": return own("operating_projection", shouldProposeOperatingProjectionPremises(message, hasAttachments, earlierUserMessages));
+    case "projection_challenge": return own("projection_challenge", shouldProposeProjectionChallengePremises(message, hasAttachments, earlierUserMessages));
+    case "receivables_funding": return own("receivables_funding", shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages));
     default: break;
   }
   if (shouldProposeFinancingComparisonPremises(message, hasAttachments)) return "comparison";
@@ -89,6 +96,9 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
   if (shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages)) return "debt_table";
   if (shouldProposeCovenantHeadroomPremises(message, hasAttachments, earlierUserMessages)) return "covenant_headroom";
   if (shouldProposeWeeklyCashPremises(message, hasAttachments, earlierUserMessages)) return "weekly_cash";
+  if (shouldProposeOperatingProjectionPremises(message, hasAttachments, earlierUserMessages)) return "operating_projection";
+  if (shouldProposeProjectionChallengePremises(message, hasAttachments, earlierUserMessages)) return "projection_challenge";
+  if (shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages)) return "receivables_funding";
   return "investment";
 }
 
@@ -328,6 +338,31 @@ Rules:
   after the user confirms. Never state a balance, the tightest week or which action is cheaper before
   the calculation exists. When its status is missing, ask for the missing items in one short list,
   each with the reason.
+- projectionPremises is the premise proposal for a projection by driver. When proposed, the purpose, the
+  last actual year with its reported figures, each driver column, each scenario and each company version
+  appear in a card below your reply, each with its origin. Give the reading first: the projection follows
+  the mechanism of the business (volume times net price, the main input apart from the other variable
+  costs and the fixed costs, cash from the result through the days with customers, inventory and
+  suppliers), it must rebuild the last actual year before projecting, the company's budget is compared and
+  never replaced, and which house premises you are using and why, and that the numbers come after the
+  user confirms. Never state a revenue, an EBITDA or a cash figure before the calculation exists. Ask at
+  most the three things only the company knows (volume plans, how long the input cost takes to reach the
+  price, whether customers ask for longer terms). When its status is missing, ask for the missing items in
+  one short list, each with the reason.
+- challengePremises is the premise proposal for a projection challenge. When proposed, the reference by
+  drivers, the plan, each assumption and the yardsticks appear in a card below your reply, each with its
+  origin. Give the reading first: each assumption will be measured alone against the reference, in order
+  of its effect, with the yardstick and the evidence that would sustain it, and no scenario is run and no
+  model rebuilt, and that the numbers come after the user confirms. Never state a gap or an effect before
+  the calculation exists. When its status is missing, ask for the missing items in one short list, each
+  with the reason; a missing reference is a projection by drivers to build first.
+- receivablesPremises is the premise proposal for receivables as working capital. When proposed, each group
+  of the portfolio, each option and the need appear in a card below your reply, each with its origin. Give
+  the reading first: the gross portfolio is not what can be sold, each exclusion will carry its reason, each
+  option is costed for the same amount and time with rates converted, the bank line is compared and kept
+  as the reserve, and no buyer is named or contacted, and that the numbers come after the user confirms.
+  Never state an assignable amount, a cost or a rate before the calculation exists. When its status is
+  missing, ask for the missing items in one short list, each with the reason.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -660,6 +695,18 @@ export async function processAgentOperationBriefJob(
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
           metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
         })).output});
+    const lote3 = (step: PremiseStep, contract: {task: string}) => premiseStep !== step ? null : async (text: string) => (await gateway.complete({
+      ...contract as typeof operatingProjectionExtractionContract,
+      input: [{type: "text", text}],
+      dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+      metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
+    })).output;
+    const projectionExtract = lote3("operating_projection", operatingProjectionExtractionContract);
+    const projection = !projectionExtract ? null : await proposeOperatingProjectionPremisesForTurn({...lote2Input, extract: projectionExtract});
+    const challengeExtract = lote3("projection_challenge", projectionChallengeExtractionContract);
+    const challenge = !challengeExtract ? null : await proposeProjectionChallengePremisesForTurn({...lote2Input, extract: challengeExtract});
+    const receivablesExtract = lote3("receivables_funding", receivablesFundingExtractionContract);
+    const receivables = !receivablesExtract ? null : await proposeReceivablesFundingPremisesForTurn({...lote2Input, extract: receivablesExtract});
     const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
@@ -717,6 +764,9 @@ export async function processAgentOperationBriefJob(
               debtTablePremises: debtTable?.forAdvisor ?? null,
               covenantPremises: covenant?.forAdvisor ?? null,
               weeklyCashPremises: weeklyCash?.forAdvisor ?? null,
+              projectionPremises: projection?.forAdvisor ?? null,
+              challengePremises: challenge?.forAdvisor ?? null,
+              receivablesPremises: receivables?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -832,7 +882,8 @@ export async function processAgentOperationBriefJob(
         });
       }
     }
-    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal ?? null;
+    const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal
+      ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? null;
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
@@ -845,6 +896,9 @@ export async function processAgentOperationBriefJob(
       debtTablePremises: debtTable?.forAdvisor.status,
       covenantPremises: covenant?.forAdvisor.status,
       weeklyCashPremises: weeklyCash?.forAdvisor.status,
+      projectionPremises: projection?.forAdvisor.status,
+      challengePremises: challenge?.forAdvisor.status,
+      receivablesPremises: receivables?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

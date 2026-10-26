@@ -13,10 +13,12 @@ export const extractedAmount = z.string().regex(/^\d{1,15}(?:\.\d{1,8})?$/);
 export const itemLabel = z.string().trim().min(1).max(300);
 export const itemSource = z.string().trim().min(1).max(400);
 
-export type Lote2Origin = "document" | "informed" | "house" | "estimate";
-/** The card contract the conversation renders for every lote 2 proposal. */
+/** Where a premise came from; `market` is a market range the house adopts (receivables funding, lote 3). */
+export type Lote2Origin = "document" | "informed" | "house" | "estimate" | "market";
+/** The card contract the conversation renders for every lote 2 and lote 3 proposal. */
 export type Lote2SummaryItem = {
-  group: "instrument" | "credit_line" | "obligation" | "view" | "limit" | "measurement" | "stream" | "action" | "case" | "premise";
+  group: "instrument" | "credit_line" | "obligation" | "view" | "limit" | "measurement" | "stream" | "action" | "case" | "premise"
+    | "driver" | "scenario" | "version" | "assumption" | "item" | "option";
   label: string;
   /** A stable catalog key when the house wrote the label; null when the label is the person's or a document's. */
   labelKey: string | null;

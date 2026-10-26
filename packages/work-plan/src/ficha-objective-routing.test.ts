@@ -108,6 +108,7 @@ describe("canonical ficha objective routing", () => {
     ["Projete o caixa semanal considerando a antecipação da safra.", "weekly_cash"],
     ["Quanto de dívida cabe com a projeção nova?", "debt_capacity"],
     ["Monitore o fechamento do trimestre.", "monitoring"],
+    ["Quero comparar alternativas de dívida com recebíveis para financiar a expansão.", "capital_strategy"],
   ] as const)("lote 3 patterns leave other intents in place: %s", (message, kind) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(kind);
   });

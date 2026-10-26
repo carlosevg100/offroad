@@ -644,9 +644,9 @@ function inferSpecificFinancialObjective(message: string): WorkspaceObjectiveKin
     || /\bmais barato\b.{0,60}\bposso fechar\b/.test(text)) return "proposal_comparison";
   // The methods of lote 3 (a projection built by driver, a projection challenged, receivables turned into
   // working capital, a quarter close carried forward). A conceptual question, a deliverable such as a deck
-  // or a memo, a risk matrix or a draft keeps its own route.
+  // or a memo, a risk matrix, a draft or a comparison of alternatives keeps its own route.
   const lote3Conceptual = /^(?:o que (?:e|sao|significa)|explique (?:o conceito|a definicao|como funciona)|qual (?:e )?a diferenca entre|como funciona)\b|\b(?:o conceito de|como funciona)\b/.test(text);
-  const lote3Other = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|slides?|minutas?|redline|matriz de riscos?)\b/.test(text);
+  const lote3Other = /\b(?:deck|apresentacao|teaser|memo|memorando|pitch|powerpoint|slides?|minutas?|redline|matriz de riscos?|compar\w*|alternativas)\b/.test(text);
   if (!lote3Conceptual && !lote3Other) {
     if (/\b(?:fech(?:ou|amos|ei)|encerr(?:ou|amos))\b.{0,20}\b(?:o |a )?(?:trimestre|semestre|mes|exercicio|balancete)\b/.test(text)
       || /\b(?:saiu|chegou|chegaram|recebemos)\b.{0,12}\b(?:o |a )?(?:balancete|fechamento|gerencial do (?:trimestre|mes))\b/.test(text)

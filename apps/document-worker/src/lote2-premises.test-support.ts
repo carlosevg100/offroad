@@ -17,8 +17,9 @@ export function comparableHypotheses(hypotheses: readonly Comparable[], rename: 
     .sort((a, b) => a.fieldPath.localeCompare(b.fieldPath) || a.scenario.localeCompare(b.scenario));
 }
 
-export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise"];
-export const summaryOrigins = ["document", "informed", "house", "estimate"];
+export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise",
+  "driver", "scenario", "version", "assumption", "item", "option"];
+export const summaryOrigins = ["document", "informed", "house", "estimate", "market"];
 
 type TurnInput = {message: string; hasAttachments: boolean; recentUserMessages: string[]; projectId: string | null;
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>; log: (event: string, detail: Record<string, unknown>) => void};
