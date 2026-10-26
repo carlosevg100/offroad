@@ -25,7 +25,7 @@ function auroraExtraction(f: ReceivablesFundingFacts): ReceivablesFundingExtract
       encumbranceHolder: v.encumbranceHolder, releaseEvent: v.releaseEvent, originDate: v.originDate, dueDate: v.dueDate, registration: v.registration, creditTier: v.creditTier,
       anchorProgram: v.anchorProgram, debtorCount: v.debtorCount, largestDebtorAmount: v.largestDebtorAmount,
       debtorLabel: v.debtorCount === 1 ? v.label : null, debtorTaxId: null, debtorSetDisjoint: v.debtorSetDisjoint, anchor: null};}),
-    options: f.options.map((o) => {const v = o.value, el = v.eligibility; return {label: v.label, origin: said(o.origin), source: o.source, kind: v.kind, recourse: v.recourse,
+    options: f.options.map((o) => {const v = o.value, el = v.eligibility; return {label: v.label, origin: said(o.origin), source: o.source, provider: null, anchor: null, kind: v.kind, recourse: v.recourse,
       rateBasis: v.rate.basis, rate: v.rate.rate, iofDaily: v.iofDaily, iofDailyCapDays: v.iofDailyCapDays, iofAdditional: v.iofAdditional, rolloverDays: v.rolloverDays ?? "none",
       upfrontFee: v.upfrontFee, collateral: v.collateral, leadDaysMin: v.leadDaysMin, leadDaysMax: v.leadDaysMax, maxDaysPastDue: el?.maxDaysPastDue ?? null,
       maxRemainingTermDays: el?.maxRemainingTermDays ?? null, registrationRule: el?.registrationRule ?? null, minCreditTier: el?.minCreditTier ?? null,
@@ -297,6 +297,26 @@ describe("receivables funding premises proposed from a turn", () => {
     // The same anchor in another borderô is another row.
     const other = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot, amount: "7", source: "borderô 102"}]}, ids: idsOf(f), currency: "BRL"});
     expect(other.status === "complete" ? other.facts.items.length : other).toBe(n + 2);
+  });
+  it("option identity: provider and label; one offer read with two rates is asked, two funds with equal terms are two (independent review, round 17)", () => {
+    const f = aurora(), e = auroraExtraction(f), n = e.options.length, fidc = e.options.find((o) => o.kind === "fidc")!;
+    const offer = {...fidc, label: "FIDC Alfa", source: "proposta de 10/10", sublimitGroup: "none" as const};
+    const run = (options: ReceivablesFundingExtraction["options"]) => completeReceivablesFundingFacts({extraction: {...e, options: [...e.options, ...options]}, ids: idsOf(f), currency: "BRL"});
+    // The same offer of one provider read with two rates: asked, never two options.
+    const rates = run([{...offer, provider: "Gestora Alfa"}, {...offer, provider: "Gestora Alfa", rate: "0.021", source: "e-mail do gestor"}]);
+    expect(rates.status === "missing" ? rates.missing : rates).toEqual([`options.${n + 2}.terms`]);
+    // Without a provider, the same label from another source is asked.
+    const unnamed = run([{...offer, provider: null}, {...offer, provider: null, rate: "0.021", source: "e-mail do gestor"}]);
+    expect(unnamed.status === "missing" ? unnamed.missing : unnamed).toEqual([`options.${n + 2}.duplicateOf`]);
+    // Two funds with the same label and terms, from two providers: two options.
+    const funds = run([{...offer, provider: "Gestora Alfa"}, {...offer, provider: "Gestora Beta"}]);
+    expect(funds.status === "complete" ? funds.facts.options.length : funds).toBe(n + 2);
+    // The same reading twice (same provider, label and terms; or same source and anchor without provider): one option.
+    expect((run([{...offer, provider: "Gestora Alfa"}, {...offer, provider: "Gestora Alfa", source: "cópia"}]) as {facts?: {options: unknown[]}}).facts?.options.length).toBe(n + 1);
+    expect((run([{...offer, provider: null, anchor: "p. 2"}, {...offer, provider: null, anchor: "p. 2"}]) as {facts?: {options: unknown[]}}).facts?.options.length).toBe(n + 1);
+    // Same source and anchor, other terms, no provider: the same page read inconsistently, asked.
+    const page = run([{...offer, provider: null, anchor: "p. 2"}, {...offer, provider: null, anchor: "p. 2", rate: "0.021"}]);
+    expect(page.status === "missing" ? page.missing : page).toEqual([`options.${n + 2}.anchor`]);
   });
   it("a stated CNPJ alone identifies the debtor; names conflict only when stated (independent review, round 16)", () => {
     const f = aurora(), e = auroraExtraction(f), base = e.items.find((i) => i.debtorCount === 1)!;

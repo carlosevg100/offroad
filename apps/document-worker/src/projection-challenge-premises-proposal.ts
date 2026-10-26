@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundProjectionChallenge, prepareProjectionChallengePacket, projectionChallengeDriverUnits, projectionChallengeFactsSchema, proposeProjectionChallengeHypotheses, type ProjectionChallengeFacts} from "@offroad/financial-model";
-import {withRecordIdentity, unsourcedFields, factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
+import {repeatedLabels, withRecordIdentity, unsourcedFields, factsOrGaps, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -132,6 +132,8 @@ export function completeProjectionChallengeFacts(input: {extraction: ProjectionC
   let terms = e.assumptions.map((a) => ({label: a.label, origin: a.origin as "document" | "informed" | "house", source: citedSource(a.origin, a.source), drivers: [...new Set(a.drivers)],
     ruler: a.ruler, evidence: a.evidence, evidenceStatus: a.evidenceStatus}));
   if (new Set(terms.flatMap((t) => t.drivers)).size !== terms.flatMap((t) => t.drivers).length) missing.push("assumptions.drivers");
+  // One label is one assumption: the same label with other drivers or terms is asked, never two assumptions (round 17).
+  for (const k of repeatedLabels(e.assumptions.map((x) => x.label))) missing.push(`assumptions.${k}.label`);
   if (!terms.length && plan && reference) {
     const differ = (d: Driver) => !same((plan.value as Record<string, string | string[]>)[d]!, (reference.value as Record<string, string | string[]>)[d]!);
     const groups: Driver[][] = [...periodDrivers.map((d) => [d] as Driver[]), [...caseDrivers]].map((g) => g.filter(differ)).filter((g) => g.length);

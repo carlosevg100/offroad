@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {z} from "zod";
 import {composeBoundReceivablesFunding, prepareReceivablesFundingPacket, proposeReceivablesFundingHypotheses, receivablesFundingFactsSchema, type ReceivablesFundingFacts} from "@offroad/financial-model";
-import {statedLabel, withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
+import {canonicalJson, statedLabel, withRecordIdentity, unsourcedFields, factsOrGaps, repeatedLabels, citedSource, extractedOrigin, fingerprintedProposal, itemKeys, itemLabel, itemSource, normalizedName, proposeLote2PremisesForTurn, sameLabel, sourced, stableKey, stated,
   summaryRow, type Lote2Completion, type Lote2Summary} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -48,7 +48,12 @@ export const receivablesFundingExtractionSchema = z.strictObject({
     anchor: z.string().trim().min(1).max(200).nullable(),
     /** The debtor's CNPJ when a document states it: the debtor's identity before any name. */
     debtorTaxId: z.string().regex(/^\d{14}$/).nullable(), debtorSetDisjoint: z.boolean().nullable()})).max(16),
-  options: z.array(z.strictObject({...item, kind: z.enum(kinds), recourse: z.enum(["with_recourse", "without_recourse"]).nullable(),
+  options: z.array(z.strictObject({...item,
+    /** Who offers it (the fund, its CNPJ, the bank), when stated; part of the option's identity. */
+    provider: itemLabel.nullable(),
+    /** Where the offer was read (page, clause, row), when stated. */
+    anchor: z.string().trim().min(1).max(200).nullable(),
+    kind: z.enum(kinds), recourse: z.enum(["with_recourse", "without_recourse"]).nullable(),
     rateBasis: z.enum(["monthly", "annual", "di_plus"]).nullable(), rate: ratio.nullable(),
     iofDaily: ratio.nullable(), iofDailyCapDays: days.nullable(), iofAdditional: ratio.nullable(), rolloverDays: z.union([days, z.literal("none")]).nullable(), upfrontFee: ratio.nullable(),
     collateral: z.enum(["none", "receivables_assignment", "unknown"]).nullable(), leadDaysMin: days.nullable(), leadDaysMax: days.nullable(),
@@ -67,15 +72,16 @@ export const receivablesFundingExtractionContract = {
     "referenceDate é a data da posição da carteira. A necessidade: needAverage é o uso médio, needPeak o pico, needStartDate quando o dinheiro precisa entrar, needEndDate quando a necessidade acaba (o fim da safra, o horizonte da análise), useEndDate o último dia em que o dinheiro é usado (quando é pago ou deixa de ser sacado), calendarDays e businessDays o prazo de uso, do início ao fim do uso, em dias corridos e úteis; o fim do uso pode ser diferente do fim da necessidade, needProfile seasonal (safra, sazonal) ou structural. annualDi é o CDI anual usado na conta; averageTermDays o prazo médio de recebimento. dedicatedVehicleThreshold é a faixa de volume cedido por mês a partir da qual uma operação dedicada se paga, só quando um documento ou a pessoa a der.",
     "items: cada grupo da carteira (um sacado grande, um conjunto de sacados, os vencidos), com o valor, se o contrato permite ceder (assignable) ou proíbe sem anuência, se está livre, cedido ou empenhado e a quem, o evento que libera, as datas de emissão e vencimento, o registro da duplicata, a qualidade de crédito do sacado (selected para os de melhor crédito), se o sacado tem programa de antecipação a fornecedores, o número de sacados e o maior sacado; debtorLabel é o nome do sacado sempre que o grupo tem um só sacado (e o nome do sacado comum quando um sacado aparece em mais de um grupo), nunca o nome do lote; debtorTaxId é o CNPJ do sacado quando um documento o traz; anchor é onde o grupo foi lido (linha, página ou célula do borderô ou do documento), null quando a fonte não diz.",
     "options: cada porta (programa de antecipação de um cliente, FIDC, desconto bancário, linha bancária) como a proposta ou o regulamento escreve: coobrigação, taxa, IOF, comissão, prazo até o primeiro desembolso e os critérios de elegibilidade (atraso máximo, prazo máximo, registro, qualidade de crédito mínima, sublimite por sacado e o grupo de fundos que o compartilha, e os grupos da carteira de um programa de cliente).",
+    "provider é quem oferece cada porta (o nome do fundo, o CNPJ, o banco), null quando não está dito; anchor é onde a proposta foi lida (página, cláusula, linha), null quando a fonte não diz.",
     "rolloverDays é o prazo de cada renovação da linha; sublimitPerDebtor é o limite por sacado. Nos dois, \"none\" quando a proposta ou o regulamento diz que não há (sem renovação, sem sublimite) e null quando ninguém disse; nunca troque um pelo outro. sublimitGroup é o nome do grupo de compradores que divide o sublimite com outras opções (por exemplo os mesmos cotistas em dois produtos FIDC), \"none\" quando foi dito que a opção tem compradores próprios e null quando ninguém disse. lienBasketRemaining é o saldo livre da exceção de garantias da escritura, quando a tabela de dívida ou a pessoa o dá.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: receivablesFundingExtractionSchema,
-  schemaName: "receivables_funding_extraction_v5",
+  schemaName: "receivables_funding_extraction_v6",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 10_000,
-  cacheKey: "receivables-funding-extraction-2026.10.26-v5",
+  cacheKey: "receivables-funding-extraction-2026.10.26-v6",
 };
 
 const dayMs = 86400000;
@@ -83,6 +89,36 @@ const shift = (iso: string, n: number) => new Date(Date.parse(`${iso}T00:00:00Z`
 const between = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / dayMs);
 /** Monday to Friday from the start, for the stated number of calendar days; holidays are not known here. */
 const weekdays = (start: string, n: number) => Array.from({length: n}, (_, k) => new Date(Date.parse(`${start}T00:00:00Z`) + k * dayMs).getUTCDay()).filter((d) => d !== 0 && d !== 6).length;
+
+/** Option identity (independent review, round 17). An option is identified by its provider (the fund, its CNPJ, the
+ * bank) and its label, as stated. The same provider and label with the same terms is one option read twice (merged);
+ * with different terms it is asked (`options.N.terms`), never two options; different providers are different options
+ * even with equal label and terms. Without a provider, the same label read again is merged only when it is the same
+ * reading (same source, same anchor, same terms); the same source and anchor with other terms is asked
+ * (`options.N.anchor`); anything else, another source or no anchor, is asked (`options.N.duplicateOf`). */
+export function optionsByIdentity(options: ReceivablesFundingExtraction["options"], missing: string[]): ReceivablesFundingExtraction["options"] {
+  const kept: ReceivablesFundingExtraction["options"] = [];
+  const terms = (o: ReceivablesFundingExtraction["options"][number]) => {const {origin: _o, source: _s, anchor: _a, provider: _p, ...rest} = o; return canonicalJson(rest);};
+  const provider = (o: ReceivablesFundingExtraction["options"][number]) => o.provider === null ? null : statedLabel(o.provider);
+  for (const o of options) {
+    const same = kept.filter((x) => statedLabel(x.label) === statedLabel(o.label));
+    const p = provider(o);
+    if (p !== null && same.every((x) => provider(x) !== null)) {
+      const one = same.filter((x) => provider(x) === p);
+      if (one.some((x) => terms(x) === terms(o))) continue;
+      kept.push(o);
+      if (one.length) missing.push(`options.${kept.length}.terms`);
+      continue;
+    }
+    if (!same.length) {kept.push(o); continue;}
+    const reading = same.filter((x) => p === null && provider(x) === null && x.anchor !== null && o.anchor !== null && statedLabel(x.anchor) === statedLabel(o.anchor)
+      && (x.source ?? "").trim() === (o.source ?? "").trim() && x.origin === o.origin);
+    if (reading.some((x) => terms(x) === terms(o))) continue;
+    kept.push(o);
+    missing.push(reading.length ? `options.${kept.length}.anchor` : `options.${kept.length}.duplicateOf`);
+  }
+  return kept;
+}
 
 /** Contradictions inside one record of a receivables funding turn, each named by its field. */
 export function receivablesFundingContradictions(e: ReceivablesFundingExtraction): string[] {
@@ -128,7 +164,8 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
   // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
   const missing: string[] = [], used: string[] = [];
-  const {e, ambiguous} = withRecordIdentity(input.extraction, {keyed: ["options"], countable: ["items"]}, missing);
+  const identified = withRecordIdentity(input.extraction, {keyed: [], countable: ["items"]}, missing), ambiguous = identified.ambiguous;
+  const e = {...identified.e, options: optionsByIdentity(identified.e.options, missing)};
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).

@@ -117,6 +117,11 @@ describe("projection challenge premises proposed from a turn", () => {
       expect(projectionChallengeContradictions(e), name).toEqual([]);
     }
   });
+  it("one label is one assumption: the same label with other drivers is asked (independent review, round 17)", () => {
+    const f = aurora(), e = auroraExtraction(f), a0 = e.assumptions[0]!, a1 = e.assumptions[1]!;
+    const c = completeProjectionChallengeFacts({extraction: {...e, assumptions: [a0, {...a1, label: a0.label}, ...e.assumptions.slice(2)]}, ids: idsOf(f), currency: "BRL"});
+    expect(c.status === "missing" && c.missing.includes("assumptions.2.label")).toBe(true);
+  });
   it("builds the card summary, field paths the store accepts and a stable fingerprint", () => {
     const f = aurora(), c = complete(auroraExtraction(f), f), proposal = buildProjectionChallengePremiseProposal(c.facts);
     expect(proposal.summary).toMatchObject({situationId: "stable-business-high-conversion", referenceDate: "2028-12-31"});
