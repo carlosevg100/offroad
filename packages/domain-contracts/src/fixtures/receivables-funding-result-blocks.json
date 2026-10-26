@@ -1,0 +1,397 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "partial",
+      "question": "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
+      "currency": "BRL",
+      "referenceDate": "2026-09-15",
+      "need": {
+        "average": "17",
+        "peak": "25",
+        "startDate": "2026-10-16",
+        "calendarDays": 180,
+        "businessDays": 126,
+        "profile": "seasonal"
+      },
+      "gross": "62",
+      "assignable": "25",
+      "assignableShare": "0.40322580645161290323",
+      "planCoversPeak": true,
+      "bankLineReserve": "linha-giro",
+      "startBy": "2026-09-16",
+      "slackDays": 1,
+      "conditionsPrecedent": [
+        {
+          "code": "duplicata_registration",
+          "amount": "21.3"
+        }
+      ],
+      "dedicatedVehicle": {
+        "monthlyAssignable": "12.78",
+        "reading": "not_for_seasonal_need"
+      },
+      "process": {
+        "buyers": "several_in_parallel",
+        "buyersNamed": false,
+        "buyersContacted": false,
+        "approvalPromised": false
+      }
+    },
+    "claims": [
+      {
+        "claimId": "assignable",
+        "kind": "calculation",
+        "value": "25",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "portfolio",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "itemId": "rede-a",
+          "label": "Rede A (maior cliente)",
+          "amount": "19.8",
+          "assignable": "0",
+          "excluded": "19.8",
+          "reasons": [
+            "not_assignable"
+          ],
+          "curable": [],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "redes-c-d",
+          "label": "Redes C e D",
+          "amount": "12",
+          "assignable": "0",
+          "excluded": "12",
+          "reasons": [
+            "encumbered"
+          ],
+          "curable": [],
+          "encumbranceHolder": "Bradesco",
+          "releaseEvent": "pré-pagamento da CCB do Bradesco"
+        },
+        {
+          "itemId": "rede-b",
+          "label": "Rede B",
+          "amount": "3.7",
+          "assignable": "3.7",
+          "excluded": "0",
+          "reasons": [],
+          "curable": [],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "rede-e",
+          "label": "Rede E",
+          "amount": "4.5",
+          "assignable": "3",
+          "excluded": "1.5",
+          "reasons": [
+            "debtor_sublimit"
+          ],
+          "curable": [
+            "registration_missing"
+          ],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "rede-f",
+          "label": "Rede F",
+          "amount": "4.5",
+          "assignable": "3",
+          "excluded": "1.5",
+          "reasons": [
+            "debtor_sublimit"
+          ],
+          "curable": [
+            "registration_missing"
+          ],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "varejo-selecionado",
+          "label": "Varejo médio e atacado, sacados de melhor crédito",
+          "amount": "4",
+          "assignable": "4",
+          "excluded": "0",
+          "reasons": [],
+          "curable": [
+            "registration_missing"
+          ],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "varejo-demais",
+          "label": "Varejo médio e atacado, demais sacados",
+          "amount": "11.3",
+          "assignable": "11.3",
+          "excluded": "0",
+          "reasons": [],
+          "curable": [
+            "registration_missing"
+          ],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        },
+        {
+          "itemId": "vencidos",
+          "label": "Vencidos acima de 30 dias",
+          "amount": "2.2",
+          "assignable": "0",
+          "excluded": "2.2",
+          "reasons": [
+            "past_due"
+          ],
+          "curable": [],
+          "encumbranceHolder": null,
+          "releaseEvent": null
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "options",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "risco-sacado-b",
+          "kind": "anchor_program",
+          "volume": "3.7",
+          "volumeVerified": true,
+          "cost": "1.33155017994932145995",
+          "differenceToBankLine": "-0.48388645491029839396",
+          "annualEffective": "0.162788",
+          "spreadOverDi": "0.012",
+          "iofApplies": false,
+          "balanceSheet": "derecognized",
+          "measuredDebtAdded": "0",
+          "lien": "not_a_guarantee_confirm_with_counsel",
+          "coversAverage": false,
+          "label": "Risco sacado da rede B"
+        },
+        {
+          "id": "fidc-com-coobrigacao",
+          "kind": "fidc",
+          "volume": "21.3",
+          "volumeVerified": false,
+          "cost": "1.749689458919964672",
+          "differenceToBankLine": "-0.06574717593965518191",
+          "annualEffective": "0.20983040650908166503",
+          "spreadOverDi": "0.052942042219",
+          "iofApplies": false,
+          "balanceSheet": "tends_to_remain_as_liability",
+          "measuredDebtAdded": "17",
+          "lien": "not_a_guarantee_confirm_with_counsel",
+          "coversAverage": true,
+          "label": "FIDC multicedente com coobrigação"
+        },
+        {
+          "id": "linha-giro",
+          "kind": "bank_line",
+          "volume": null,
+          "volumeVerified": true,
+          "cost": "1.81543663485961985391",
+          "differenceToBankLine": "0",
+          "annualEffective": "0.177725",
+          "spreadOverDi": "0.025",
+          "iofApplies": true,
+          "balanceSheet": "liability",
+          "measuredDebtAdded": "17",
+          "lien": "uses_basket_if_collateralized",
+          "coversAverage": null,
+          "label": "Linha de giro de seis meses"
+        },
+        {
+          "id": "desconto-bancario",
+          "kind": "bank_discount",
+          "volume": "24.3",
+          "volumeVerified": true,
+          "cost": "1.98521532336660539135",
+          "differenceToBankLine": "0.16977868850698553744",
+          "annualEffective": "0.181172",
+          "spreadOverDi": "0.028",
+          "iofApplies": true,
+          "balanceSheet": "liability",
+          "measuredDebtAdded": "17",
+          "lien": "uses_basket",
+          "coversAverage": true,
+          "label": "Desconto bancário com rolagem"
+        },
+        {
+          "id": "fidc-sem-coobrigacao",
+          "kind": "fidc",
+          "volume": "10",
+          "volumeVerified": false,
+          "cost": "2.083420545216877977",
+          "differenceToBankLine": "0.26798391035725812309",
+          "annualEffective": "0.25340149415222672234",
+          "spreadOverDi": "0.090862919193",
+          "iofApplies": false,
+          "balanceSheet": "derecognized",
+          "measuredDebtAdded": "0",
+          "lien": "not_a_guarantee_confirm_with_counsel",
+          "coversAverage": false,
+          "label": "FIDC multicedente sem coobrigação"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "cost:risco-sacado-b",
+        "kind": "calculation",
+        "value": "1.33155017994932145995",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      },
+      {
+        "claimId": "cost:fidc-com-coobrigacao",
+        "kind": "calculation",
+        "value": "1.749689458919964672",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      },
+      {
+        "claimId": "cost:linha-giro",
+        "kind": "calculation",
+        "value": "1.81543663485961985391",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      },
+      {
+        "claimId": "cost:desconto-bancario",
+        "kind": "calculation",
+        "value": "1.98521532336660539135",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      },
+      {
+        "claimId": "cost:fidc-sem-coobrigacao",
+        "kind": "calculation",
+        "value": "2.083420545216877977",
+        "unit": "BRL",
+        "period": "2026-09-15",
+        "supportIds": [
+          "b3ad53d02a4afefd954eb14bcee769d92e9307469a98f11b463c9dbb9eec2add"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "plan",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "optionId": "risco-sacado-b",
+          "capacity": "3.7",
+          "amount": "3.7",
+          "cumulative": "3.7"
+        },
+        {
+          "optionId": "fidc-com-coobrigacao",
+          "capacity": "21.3",
+          "amount": "21.3",
+          "cumulative": "25"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "releases",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "itemId": "redes-c-d",
+          "amount": "12",
+          "releaseEvent": "pré-pagamento da CCB do Bradesco",
+          "assignableAfterRelease": "6",
+          "verified": false
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "questions",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "code": "anchor_program_of_restricted_debtor",
+          "itemId": "rede-a",
+          "amount": "19.8"
+        },
+        {
+          "code": "duplicata_registration_capability",
+          "itemId": null,
+          "amount": "21.3"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "operand": "receivables_funding.ac400000-0000-4000-9000-000000000090.item.varejo-selecionado.largestDebtorAmount",
+          "reason": "largest_debtor_not_informed"
+        },
+        {
+          "operand": "receivables_funding.ac400000-0000-4000-9000-000000000090.item.varejo-demais.largestDebtorAmount",
+          "reason": "largest_debtor_not_informed"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "buyer_contact",
+        "fund_selection",
+        "credit_approval",
+        "legal_opinion",
+        "accounting_opinion"
+      ]
+    },
+    "claims": []
+  }
+]
