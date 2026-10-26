@@ -37,6 +37,7 @@ export type TaskKind =
   | "operating_projection_extraction"
   | "projection_challenge_extraction"
   | "receivables_funding_extraction"
+  | "quarter_update_extraction"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";

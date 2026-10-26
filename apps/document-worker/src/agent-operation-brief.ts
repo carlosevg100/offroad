@@ -71,9 +71,10 @@ import {proposeWeeklyCashPremisesForTurn, shouldProposeWeeklyCashPremises, weekl
 import {operatingProjectionExtractionContract, proposeOperatingProjectionPremisesForTurn, shouldProposeOperatingProjectionPremises} from "./operating-projection-premises-proposal";
 import {projectionChallengeExtractionContract, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises} from "./projection-challenge-premises-proposal";
 import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
+import {proposeQuarterUpdatePremisesForTurn, quarterUpdateExtractionContract, shouldProposeQuarterUpdatePremises} from "./quarter-update-premises-proposal";
 
 export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash"
-  | "operating_projection" | "projection_challenge" | "receivables_funding" | "investment";
+  | "operating_projection" | "projection_challenge" | "receivables_funding" | "quarter_update" | "investment";
 /** The one premise step a turn may run. The compiled objective decides first: a message that compiles
  * to one premise method runs that method's step, subject to its own cue. Otherwise, in precedence:
  * offers for the same need are compared; a capacity question is measured; a debt table is built;
@@ -89,6 +90,7 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
     case "operating_projection": return own("operating_projection", shouldProposeOperatingProjectionPremises(message, hasAttachments, earlierUserMessages));
     case "projection_challenge": return own("projection_challenge", shouldProposeProjectionChallengePremises(message, hasAttachments, earlierUserMessages));
     case "receivables_funding": return own("receivables_funding", shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages));
+    case "quarter_update": return own("quarter_update", shouldProposeQuarterUpdatePremises(message, hasAttachments, earlierUserMessages));
     default: break;
   }
   if (shouldProposeFinancingComparisonPremises(message, hasAttachments)) return "comparison";
@@ -99,6 +101,7 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
   if (shouldProposeOperatingProjectionPremises(message, hasAttachments, earlierUserMessages)) return "operating_projection";
   if (shouldProposeProjectionChallengePremises(message, hasAttachments, earlierUserMessages)) return "projection_challenge";
   if (shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages)) return "receivables_funding";
+  if (shouldProposeQuarterUpdatePremises(message, hasAttachments, earlierUserMessages)) return "quarter_update";
   return "investment";
 }
 
@@ -363,6 +366,15 @@ Rules:
   as the reserve, and no buyer is named or contacted, and that the numbers come after the user confirms.
   Never state an assignable amount, a cost or a rate before the calculation exists. When its status is
   missing, ask for the missing items in one short list, each with the reason.
+- quarterPremises is the premise proposal for a quarter close carried forward. When proposed, the prior
+  weekly cash and covenant results it updates, each line of the close, each cause, the approved
+  facilities and the dependent analyses appear in a card below your reply, each with its origin. Give the
+  reading first: actual against projected, each deviation explained by its cause, what is one-off and
+  what persists, the weekly cash and the covenant test measured again over the prior versions, which are
+  kept, and that the numbers come after the user confirms. Never state a deviation, a week or a ratio
+  before the calculation exists. When its status is missing because priorWeeklyCash or priorCovenant is
+  absent, say that the update needs the completed weekly cash or covenant headroom result of this work
+  first and offer to build it; for other missing items, ask in one short list, each with the reason.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -707,6 +719,9 @@ export async function processAgentOperationBriefJob(
     const challenge = !challengeExtract ? null : await proposeProjectionChallengePremisesForTurn({...lote2Input, extract: challengeExtract});
     const receivablesExtract = lote3("receivables_funding", receivablesFundingExtractionContract);
     const receivables = !receivablesExtract ? null : await proposeReceivablesFundingPremisesForTurn({...lote2Input, extract: receivablesExtract});
+    const quarterExtract = lote3("quarter_update", quarterUpdateExtractionContract);
+    const quarter = !quarterExtract || !queue.loadQuarterUpdatePriors ? null
+      : await proposeQuarterUpdatePremisesForTurn({...lote2Input, extract: quarterExtract, loadPriors: () => queue.loadQuarterUpdatePriors!(job)});
     const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
@@ -767,6 +782,7 @@ export async function processAgentOperationBriefJob(
               projectionPremises: projection?.forAdvisor ?? null,
               challengePremises: challenge?.forAdvisor ?? null,
               receivablesPremises: receivables?.forAdvisor ?? null,
+              quarterPremises: quarter?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -883,7 +899,7 @@ export async function processAgentOperationBriefJob(
       }
     }
     const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal
-      ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? null;
+      ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? quarter?.proposal ?? null;
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
@@ -899,6 +915,7 @@ export async function processAgentOperationBriefJob(
       projectionPremises: projection?.forAdvisor.status,
       challengePremises: challenge?.forAdvisor.status,
       receivablesPremises: receivables?.forAdvisor.status,
+      quarterPremises: quarter?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,

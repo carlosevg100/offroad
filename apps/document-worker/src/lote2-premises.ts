@@ -18,7 +18,7 @@ export type Lote2Origin = "document" | "informed" | "house" | "estimate" | "mark
 /** The card contract the conversation renders for every lote 2 and lote 3 proposal. */
 export type Lote2SummaryItem = {
   group: "instrument" | "credit_line" | "obligation" | "view" | "limit" | "measurement" | "stream" | "action" | "case" | "premise"
-    | "driver" | "scenario" | "version" | "assumption" | "item" | "option";
+    | "driver" | "scenario" | "version" | "assumption" | "item" | "option" | "line" | "cause" | "facility" | "dependent";
   label: string;
   /** A stable catalog key when the house wrote the label; null when the label is the person's or a document's. */
   labelKey: string | null;

@@ -18,8 +18,8 @@ describe("one premise step per turn", () => {
     ["Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", "operating_projection"],
     ["Que premissas você questionaria nessa projeção?", "projection_challenge"],
     ["Quero antecipar recebíveis em vez de pegar linha no banco.", "receivables_funding"],
-    // The quarter close has no premise step; orientation on how to start offers the first version without producing it.
-    ["Fechou o trimestre. Atualiza tudo.", "investment"],
+    ["Fechou o trimestre. Atualiza tudo.", "quarter_update"],
+    // Orientation on how to start offers the first version without producing it.
     ["Só me diz como começar uma projeção.", "investment"],
   ] as const)("%s runs the %s step", (message, step) => {
     for (const docs of [false, true]) expect(premiseStepForTurn(message, docs, [])).toBe(step);

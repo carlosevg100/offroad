@@ -20,13 +20,14 @@ export function asksOrExplains(message: string): boolean {
 const premiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
   "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
 
-export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "operating_projection" | "projection_challenge" | "receivables_funding";
-const cueKinds = new Set<string>(["debt_table", "covenant_headroom", "weekly_cash", "operating_projection", "projection_challenge", "receivables_funding"]);
+export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "operating_projection" | "projection_challenge" | "receivables_funding"
+  | "quarter_update";
+const cueKinds = new Set<string>(["debt_table", "covenant_headroom", "weekly_cash", "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
 /** Asking only how to start a projection is answered with orientation; the first version is offered, not produced. */
 const orientationOnly = /\bcomo (?:comec\w*|inicio|iniciar)\b/;
 /** The premise step a message asks for on its own: the capacity cue first, then the router's lote 2 and
- * lote 3 objectives. A conceptual question routes elsewhere and asks for none. The quarter close has no
- * premise step: it reads the prior versions by their own bases. */
+ * lote 3 objectives. A conceptual question routes elsewhere and asks for none. The quarter close's step
+ * proposes only when the work has its prior completed weekly cash and covenant results. */
 export function premiseCueKind(message: string, hasAttachments: boolean): PremiseCueKind | null {
   const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
   if (capacityCue.test(foldCue(message))) return kind === "factual_question" ? null : "debt_capacity";

@@ -18,7 +18,7 @@ export function comparableHypotheses(hypotheses: readonly Comparable[], rename: 
 }
 
 export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise",
-  "driver", "scenario", "version", "assumption", "item", "option"];
+  "driver", "scenario", "version", "assumption", "item", "option", "line", "cause", "facility", "dependent"];
 export const summaryOrigins = ["document", "informed", "house", "estimate", "market"];
 
 type TurnInput = {message: string; hasAttachments: boolean; recentUserMessages: string[]; projectId: string | null;

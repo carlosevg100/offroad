@@ -155,7 +155,8 @@ export type RecomputeOutcome =
 type Refused = Extract<CapitalExecutionComposition, {ok: false}>;
 /** The code a composition refusal is recorded under: gate refusals keep their own code. */
 export function recomputeFailureCode(refused: Refused): RecomputeFailureCode {
-  return refused.error === "composition_invalid" ? "composition_failed" : refused.error;
+  // The quarter close reads prior results the recompute does not carry: it cannot be produced here, as a method this path cannot run.
+  return refused.error === "composition_invalid" ? "composition_failed" : refused.error === "priors_missing" ? "method_unavailable" : refused.error;
 }
 
 const endedOutcome = (candidateId: string, state: string, reason: string | null | undefined): RecomputeOutcome =>
