@@ -318,6 +318,14 @@ describe("receivables funding premises proposed from a turn", () => {
     const page = run([{...offer, provider: null, anchor: "p. 2"}, {...offer, provider: null, anchor: "p. 2", rate: "0.021"}]);
     expect(page.status === "missing" ? page.missing : page).toEqual([`options.${n + 2}.anchor`]);
   });
+  it("origin is provenance, not identity: the same row told and read is one lot; told with another value is asked (independent review, round 18)", () => {
+    const f = aurora(), e = auroraExtraction(f), n = e.items.length, lot = {...e.items[0]!, label: "Lote Rede X", amount: "6", source: "borderô 101", anchor: "linha 3"};
+    const one = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, origin: "document" as const}, {...lot, origin: "informed" as const}]}, ids: idsOf(f), currency: "BRL"});
+    expect(one.status === "complete" ? [one.facts.items.length, one.facts.items[n]!.origin, one.facts.items[n]!.source.includes("também informado na conversa")] : one)
+      .toEqual([n + 1, "document", true]);
+    const two = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, origin: "document" as const}, {...lot, origin: "informed" as const, amount: "7"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(two.status === "missing" ? two.missing : two).toEqual([`items.${n + 2}.anchor`]);
+  });
   it("a stated CNPJ alone identifies the debtor; names conflict only when stated (independent review, round 16)", () => {
     const f = aurora(), e = auroraExtraction(f), base = e.items.find((i) => i.debtorCount === 1)!;
     const lots = (a: string | null, b: string | null) => ({...e, items: [{...base, label: "Lote de outubro", debtorLabel: a, debtorTaxId: "12345678000190"},

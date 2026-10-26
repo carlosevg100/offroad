@@ -75,19 +75,22 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
 
 /** The facts a method accepts, or what it refuses named by path (a rule of the set as a whole as "facts"):
  * a refusal becomes a gap the card asks about, never a dropped card. */
-/** Record identity in the lote 3 bridges (independent review, rounds 13 and 14).
+/** Record identity in the lote 3 bridges (independent review, rounds 13 to 18).
  * - A label is compared exactly as stated after trimming and case and accent folding only; a numeric-looking label is
  *   never normalized as a number ("001" and "1" are two labels).
  * - Numbers are compared by exact decimal value (107.5 and 107.5000 are one value).
  * - A keyed collection (a driver's column, a stream's transform, a labelled line, cause, facility, dependent, scenario,
  *   option or assumption, a version's figure) holds one fact per key: the same key with equal values is one fact,
  *   wherever it was read, and the same key with different values is a conflict the method asks.
- * - A countable collection (lots of a portfolio) adds up. When an anchor (row, page or cell) is stated, the record's
- *   identity is (origin and source, anchor): the same key with the same value is the same row read twice (merged); the
- *   same key with a different value is the same row read inconsistently, asked as `<collection>.N.anchor`, never summed;
- *   different keys are different records. Without an anchor, equal values that nothing tells apart, from the same
- *   source or from different ones (two borderôs), are asked as `<collection>.N.duplicateOf`, never merged and never
- *   silently doubled (rounds 14 to 16). */
+ * - A countable collection (its members add up: lots of a portfolio, causes of a deviation, new cash streams) is
+ *   identified by where it was read, never by how it reached us: origin (document or conversation) is provenance only.
+ *   When an anchor (row, page or cell) is stated, the identity is (source, anchor): the same key with the same value
+ *   is the same record told or read twice (merged, both origins kept in the provenance); the same key with a different
+ *   value is the same record read inconsistently, asked as `<collection>.N.anchor`, never summed; different keys are
+ *   different records. Without an anchor, equal values are asked as `<collection>.N.duplicateOf`, never merged and
+ *   never silently doubled, unless the collection's source is the record's own document (an invoice is the expense)
+ *   and the sources differ: then they are two records. A borderô lists lots and the same lot may be listed twice, so
+ *   for lots a different source does not tell equal lots apart. */
 export const statedLabel = (label: string) => foldCue(label.trim());
 const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
 function canonical(value: unknown, key: string): unknown {
@@ -121,7 +124,8 @@ export function conflictingKeys<T>(items: readonly T[], key: (t: T) => string, v
 /** Applies record identity to each named collection of an extraction: the same fact read twice from the same source is
  * merged; equal values from another source are kept and asked as `<collection>.N.duplicateOf` (positions after merging).
  * Returns the extraction with merged collections and the asked positions per collection. */
-export function withRecordIdentity<E extends Record<string, unknown>>(extraction: E, collections: {keyed: readonly (keyof E & string)[]; countable: readonly (keyof E & string)[]},
+export function withRecordIdentity<E extends Record<string, unknown>>(extraction: E,
+  collections: {keyed: readonly (keyof E & string)[]; countable: readonly ((keyof E & string) | {name: keyof E & string; sourceIdentifies: true})[]},
   missing: string[]): {e: E; ambiguous: Map<string, Set<number>>} {
   const e = {...extraction} as Record<string, unknown>, ambiguous = new Map<string, Set<number>>();
   for (const name of collections.keyed) {
@@ -132,27 +136,33 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
     });
     ambiguous.set(name, new Set());
   }
-  for (const name of collections.countable) {
+  for (const entry of collections.countable) {
+    const name = typeof entry === "string" ? entry : entry.name, sourceIdentifies = typeof entry !== "string";
     const kept: Record<string, unknown>[] = [], asked = new Set<number>();
     const parts = (t: Record<string, unknown>) => {
-      const {origin, source, anchor, ...content} = t;
-      return {value: canonicalJson(content), where: canonicalJson({origin: origin ?? null, source: typeof source === "string" ? source.trim() : source ?? null}),
+      const {origin: _origin, source, anchor, ...content} = t;
+      return {value: canonicalJson(content), where: typeof source === "string" ? statedLabel(source) : null,
         anchor: typeof anchor === "string" && anchor.trim() ? statedLabel(anchor) : null};
     };
     for (const t of extraction[name] as Record<string, unknown>[]) {
       const p = parts(t), prior = kept.map(parts);
       if (p.anchor !== null) {
-        // A stated anchor is the identity: (origin and source, anchor).
-        const row = prior.filter((x) => x.where === p.where && x.anchor === p.anchor);
-        if (row.some((x) => x.value === p.value)) continue;
+        // A stated anchor is the identity: (source, anchor). Origin is provenance only.
+        const k = prior.findIndex((x) => x.where === p.where && x.anchor === p.anchor);
+        if (k >= 0 && prior[k]!.value === p.value) {
+          // Told in the conversation and read in the document: one fact, both origins kept in its provenance.
+          if (kept[k]!.origin !== t.origin) kept[k] = {...kept[k]!, origin: "document", source: `${String(kept[k]!.source ?? "").trim()} (também informado na conversa)`};
+          continue;
+        }
         kept.push(t);
-        if (row.length) {asked.add(kept.length); missing.push(`${name}.${kept.length}.anchor`);}
-        else if (prior.some((x) => x.value === p.value && x.anchor === null)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
+        if (k >= 0) {asked.add(kept.length); missing.push(`${name}.${kept.length}.anchor`);}
+        else if (prior.some((x) => x.value === p.value && x.anchor === null && !(sourceIdentifies && x.where !== p.where))) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
         continue;
       }
       kept.push(t);
-      // Without an anchor, an equal value that nothing tells apart is asked.
-      if (prior.some((x) => x.value === p.value)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
+      // Without an anchor, an equal value that nothing tells apart is asked; where the source is the record's own
+      // document, another source is another record.
+      if (prior.some((x) => x.value === p.value && !(sourceIdentifies && x.where !== p.where))) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
     }
     e[name] = kept; ambiguous.set(name, asked);
   }

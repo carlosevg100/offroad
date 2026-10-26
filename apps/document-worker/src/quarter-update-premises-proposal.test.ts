@@ -27,12 +27,12 @@ function auroraExtraction(f: QuarterUpdateFacts): QuarterUpdateExtraction {
     lines: f.lines.map((l) => ({label: l.value.label, origin: said(l.origin), source: l.source, unit: l.value.unit, scale: l.value.unit === "currency" ? "reais" as const : null, projected: l.value.projected, actual: l.value.actual})),
     cashLineLabel: {value: lineLabel(f.carry.value.cashLineId)!, origin: "document", source: "balancete"},
     ebitdaLineLabel: {value: lineLabel(f.carry.value.ebitdaLineId)!, origin: "document", source: "balancete"},
-    causes: causes.map(({c, lineId}) => ({label: c.value.label, origin: said(c.origin), source: c.source, lineLabel: lineLabel(lineId)!, amount: c.value.amount, scale: "reais" as const,
+    causes: causes.map(({c, lineId}) => ({label: c.value.label, origin: said(c.origin), source: c.source, anchor: null, lineLabel: lineLabel(lineId)!, amount: c.value.amount, scale: "reais" as const,
       classification: c.value.classification, until: c.value.until, nature: c.value.nature, basis: c.value.basis, question: c.value.question,
       equalsDeviationOfLabel: lineLabel(c.value.equalsDeviationOf), driverLineLabel: lineLabel(c.value.driverLineId)})),
     streamUpdates: f.streamUpdates.map((u) => ({streamId: u.value.streamId, causeLabels: u.value.causeIds.map(causeLabel), kind: u.value.transform.kind,
       factor: u.value.transform.kind === "scale" ? u.value.transform.factor : null, days: u.value.transform.kind === "delay" ? u.value.transform.days : null, origin: "informed", source: u.source})),
-    addedStreams: f.addedStreams.map((s) => ({label: s.value.label, origin: "informed", source: s.source, scale: "reais" as const, events: s.value.dates.map((date, k) => ({date, amount: s.value.amounts[k]!}))})),
+    addedStreams: f.addedStreams.map((s) => ({label: s.value.label, origin: "informed", source: s.source, anchor: null, scale: "reais" as const, events: s.value.dates.map((date, k) => ({date, amount: s.value.amounts[k]!}))})),
     facilities: f.facilities.map((x) => ({label: x.value.label, origin: said(x.origin), source: x.source, limit: x.value.limit, scale: "reais" as const, approval: x.value.source})),
     steps: f.steps.map((s) => {
       const facilityLabel = f.facilities.find((x) => x.value.id === s.value.facilityId)!.value.label;
@@ -295,6 +295,20 @@ describe("quarter update premises proposed from a turn", () => {
     const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
     expect(c.status === "complete" ? c.facts.lines.length : c).toBe(e.lines.length - 1);
     expect(c.status === "complete" ? [c.facts.lines[k]!.value.projected, c.facts.lines[k]!.value.actual] : c).toEqual(["4200000", "3800000"]);
+  });
+  it("causes add up: two equal freight expenses from two invoices are two causes; the same invoice line read twice is one (independent review, round 18)", () => {
+    const base = auroraExtraction(aurora(W, C)), n = base.causes.length, k = base.causes.findIndex((c) => c.classification === "calendar" && c.lineLabel === base.ebitdaLineLabel.value);
+    const freight = {...base.causes[k]!, label: "Frete", amount: "-150000", source: "nota fiscal 1201", anchor: null};
+    const run = (extra: QuarterUpdateExtraction["causes"]) => completeQuarterUpdateFacts({extraction: {...base, causes: [...base.causes, ...extra]}, ids, priors: priors(), currency: "BRL"});
+    const invoices = run([freight, {...freight, source: "nota fiscal 1202"}]);
+    expect(invoices.status === "complete" ? invoices.facts.bridges.flatMap((b) => b.causes).length : invoices).toBe(n + 2);
+    const unanchored = run([freight, {...freight}]);
+    expect(unanchored.status === "missing" ? unanchored.missing : unanchored).toEqual([`causes.${n + 2}.duplicateOf`]);
+    const line = {...freight, anchor: "item 3"};
+    const twice = run([line, {...line, origin: "informed" as const}]);
+    expect(twice.status === "complete" ? twice.facts.bridges.flatMap((b) => b.causes).length : twice).toBe(n + 1);
+    const inconsistent = run([line, {...line, amount: "-160000"}]);
+    expect(inconsistent.status === "missing" ? inconsistent.missing : inconsistent).toEqual([`causes.${n + 2}.anchor`]);
   });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {

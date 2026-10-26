@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {composeQuarterUpdateFromStoredPriors, prepareQuarterUpdatePacket, proposeQuarterUpdateHypotheses, quarterUpdateFactsSchema, type QuarterUpdateFacts} from "@offroad/financial-model";
-import {withRecordIdentity, unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
+import {statedLabel, withRecordIdentity, unsourcedFields, citedSource, extractedOrigin, factsOrGaps, repeatedLabels, fingerprintedProposal, itemKeys, itemLabel, itemSource, proposeLote2PremisesForTurn, sameLabel, sourced, stated,
   summaryRow, type Lote2Completion, type Lote2Summary, type Lote2TurnPremises, type PriorResultPin} from "./lote2-premises";
 import {premiseEntry, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
@@ -45,6 +45,8 @@ export function priorMeasurements(prior: Prior): {id: string; label: string; rol
 /** An amount as written, in the scale the document or the conversation states; the bridge checks its size. */
 const signed = z.string().regex(/^-?\d{1,40}(?:\.\d{1,40})?$/);
 const unsigned = z.string().regex(/^\d{1,40}(?:\.\d{1,40})?$/);
+/** Where a cause or a new stream was read (the invoice line, the page, the cell); null when the source does not say. */
+const anchor = z.string().trim().min(1).max(200).nullable();
 /** The scale an amount is written in: reais, thousands or millions of reais; null when nobody stated it. */
 const scale = z.enum(["reais", "milhares", "milhoes"]).nullable();
 export type AmountScale = NonNullable<z.infer<typeof scale>>;
@@ -70,13 +72,13 @@ export const quarterUpdateExtractionSchema = z.strictObject({
   lines: z.array(z.strictObject({...item, unit: z.enum(["currency", "days", "ratio"]), scale, projected: signed, actual: signed})).max(24),
   cashLineLabel: sourced(itemLabel), ebitdaLineLabel: sourced(itemLabel),
   /** Each cause of a deviation, on the line it explains. */
-  causes: z.array(z.strictObject({...item, lineLabel: itemLabel, amount: signed, scale, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
+  causes: z.array(z.strictObject({...item, anchor, lineLabel: itemLabel, amount: signed, scale, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
     nature: z.enum(["flow", "balance"]).nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable(),
     equalsDeviationOfLabel: itemLabel.nullable(), driverLineLabel: itemLabel.nullable()})).max(48),
   /** A prior weekly stream a persisting cause moves: amounts scaled by a factor, or events delayed by days. */
   streamUpdates: z.array(z.strictObject({streamId: z.string().min(1).max(40), causeLabels: z.array(itemLabel).min(1).max(8), kind: z.enum(["scale", "delay"]),
     factor: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable(), days: z.number().int().min(-366).max(366).nullable(), origin: extractedOrigin, source: itemSource})).max(16),
-  addedStreams: z.array(z.strictObject({...item, scale, events: z.array(z.strictObject({date: z.iso.date(), amount: unsigned})).min(1).max(2000)})).max(4),
+  addedStreams: z.array(z.strictObject({...item, anchor, scale, events: z.array(z.strictObject({date: z.iso.date(), amount: unsigned})).min(1).max(2000)})).max(4),
   facilities: z.array(z.strictObject({...item, limit: unsigned, scale, approval: text})).max(8),
   steps: z.array(z.strictObject({facilityLabel: itemLabel, mode: z.enum(["fixed", "residual"]), addedStreamLabel: itemLabel.nullable(),
     replacesStreamIds: z.array(z.string().min(1).max(40)).max(8), date: z.iso.date().nullable(), origin: extractedOrigin, source: itemSource})).max(4),
@@ -98,16 +100,17 @@ export const quarterUpdateExtractionContract = {
     "causes explicam cada desvio na linha que explicam (lineLabel): calendar quando volta sozinho, structural quando continua até uma data (until), com nature flow quando se repete a cada período e balance quando é um saldo deslocado uma vez; basis document quando o documento mostra, interpretation quando é leitura de alguém; question é a pergunta que muda o diagnóstico, quando houver. equalsDeviationOfLabel quando a causa é o desvio de outra linha (por exemplo o EBITDA abaixo na ponte do caixa); driverLineLabel é a linha que mede a causa.",
     "streamUpdates dizem como uma causa estrutural move um fluxo do caixa semanal anterior: streamId é um id de priorWeeklyCash.streams; scale multiplica os valores por factor, delay atrasa os eventos em days.",
     "addedStreams são fluxos novos (por exemplo o desembolso de um programa aprovado); facilities são as linhas aprovadas com o limite e a aprovação; steps são a ação: fixed usa um fluxo novo no lugar de fluxos anteriores (replacesStreamIds), residual cobre o que falta a partir de uma data.",
+    "anchor, em causes e addedStreams, é onde o item foi lido (a linha da nota, a página, a célula), null quando a fonte não diz; source cita o documento do item (a nota, o contrato).",
     "covenantMeasurementIds são os ids de priorCovenant.measurements que o fechamento atualiza, a principal primeiro. dependents são as análises, planos e materiais que leem o fechamento, com as linhas que leem, o horizonte, quem recalcula (weekly_cash, covenant:<id>, projection:<ano> ou none) e o dono quando for outro.",
     "askedDependentLabels são os rótulos, como em dependents, das análises, planos e materiais que a pessoa pediu expressamente para atualizar (por exemplo 'atualiza também o plano de 2027'); lista vazia quando ela não pediu nenhum pelo nome. Um pedido genérico ('atualiza tudo') não nomeia nenhum.",
     "origin é informed quando a pessoa disse, document quando veio de um campo de documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
   ].join("\n"),
   schema: quarterUpdateExtractionSchema,
-  schemaName: "quarter_update_extraction_v3",
+  schemaName: "quarter_update_extraction_v4",
   outputMode: "prompted_json" as const,
   maxOutputTokens: 16_000,
-  cacheKey: "quarter-update-extraction-2026.10.26-v3",
+  cacheKey: "quarter-update-extraction-2026.10.26-v4",
 };
 
 export const quarterUpdateSituation = "near-covenant";
@@ -160,7 +163,7 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
   // Record identity (see withRecordIdentity): a keyed collection holds one fact per key; a countable one merges only the
   // same record read twice from one source and asks equal records from another source (duplicateOf). Gap positions count after merging.
   const missing: string[] = [], used: string[] = [];
-  const {e, ambiguous} = withRecordIdentity(statedInReais(input.extraction), {keyed: ["lines", "causes", "streamUpdates", "addedStreams", "facilities", "steps", "dependents"], countable: []}, missing);
+  const {e, ambiguous} = withRecordIdentity(statedInReais(input.extraction), {keyed: ["lines", "streamUpdates", "facilities", "steps", "dependents"], countable: [{name: "causes", sourceIdentifies: true}, {name: "addedStreams", sourceIdentifies: true}]}, missing);
   // A value stated without its origin is asked, never replaced by a house default nor dropped.
   missing.push(...unsourcedFields(e as unknown as Record<string, unknown>));
   // Fields of one record that contradict each other are asked, never resolved in favour of either (independent review, round 12).
@@ -182,10 +185,15 @@ export function completeQuarterUpdateFacts(input: {extraction: QuarterUpdateExtr
     if (l.unit !== "currency") return [l.projected, l.actual].map((v, n) => lineMeasure.test(v) ? v : (missing.push(p + (n ? "actual" : "projected")), null));
     return [money(l.projected, l.scale, p + "projected", p + "scale"), money(l.actual, l.scale, p + "actual", p + "scale")];
   });
-  // A collection referenced by label never carries the same label twice: the reference would silently take the first.
-  for (const [name, labels] of [["lines", e.lines.map((x) => x.label)], ["causes", e.causes.map((x) => x.label)], ["addedStreams", e.addedStreams.map((x) => x.label)],
-    ["facilities", e.facilities.map((x) => x.label)], ["dependents", e.dependents.map((x) => x.label)]] as const)
+  // A keyed collection referenced by label never carries the same label twice: the reference would silently take the
+  // first. Causes and new streams add up: two with one label are two records, asked only where something names them
+  // by that label (a stream update names its causes, a step names its new stream).
+  for (const [name, labels] of [["lines", e.lines.map((x) => x.label)], ["facilities", e.facilities.map((x) => x.label)], ["dependents", e.dependents.map((x) => x.label)]] as const)
     for (const k of repeatedLabels(labels)) if (!ambiguous.get(name)!.has(k)) missing.push(`${name}.${k}.label`);
+  const named = {causes: new Set(e.streamUpdates.flatMap((u) => u.causeLabels.map(statedLabel))),
+    addedStreams: new Set(e.steps.flatMap((x) => x.addedStreamLabel === null ? [] : [statedLabel(x.addedStreamLabel)]))};
+  for (const [name, labels] of [["causes", e.causes.map((x) => x.label)], ["addedStreams", e.addedStreams.map((x) => x.label)]] as const)
+    for (const k of repeatedLabels(labels)) if (!ambiguous.get(name)!.has(k) && named[name].has(statedLabel(labels[k - 1]!))) missing.push(`${name}.${k}.label`);
   const lineIds = itemKeys(e.lines.map((l) => l.label));
   const lineOf = (label: string | null) => {
     if (label === null) return null;

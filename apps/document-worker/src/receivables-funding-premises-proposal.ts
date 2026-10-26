@@ -112,7 +112,7 @@ export function optionsByIdentity(options: ReceivablesFundingExtraction["options
     }
     if (!same.length) {kept.push(o); continue;}
     const reading = same.filter((x) => p === null && provider(x) === null && x.anchor !== null && o.anchor !== null && statedLabel(x.anchor) === statedLabel(o.anchor)
-      && (x.source ?? "").trim() === (o.source ?? "").trim() && x.origin === o.origin);
+      && (x.source ?? "").trim() === (o.source ?? "").trim());
     if (reading.some((x) => terms(x) === terms(o))) continue;
     kept.push(o);
     missing.push(reading.length ? `options.${kept.length}.anchor` : `options.${kept.length}.duplicateOf`);
