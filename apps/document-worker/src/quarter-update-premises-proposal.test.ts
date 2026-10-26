@@ -347,6 +347,26 @@ describe("quarter update premises proposed from a turn", () => {
     const other = completeQuarterUpdateFacts({extraction: {...e, causes: [...e.causes, {...freight, lineLabel: ebitda, amount: "-0.2"}]}, priors: priors(), ids, currency: "BRL"});
     expect(other.status === "missing" ? other.missing : other).toEqual([`causes.${e.causes.length + 1}.anchor`]);
   });
+  it("the role in a cause's identity is the resolved line, not its label: \"EBITDA\" and \"ebitda\" are one line (independent review, round 23)", () => {
+    const base = auroraExtraction(aurora(W, C)), ebitda = base.ebitdaLineLabel.value!, cash = base.cashLineLabel.value!;
+    const line = base.lines.find((x) => x.label === ebitda)!; line.actual = String(Math.round((Number(line.actual) - 0.3) * 1e8) / 1e8);
+    const cashLine = base.lines.find((x) => x.label === cash)!; cashLine.actual = String(Math.round((Number(cashLine.actual) - 0.3) * 1e8) / 1e8);
+    // The EBITDA effect flows into the cash bridge through its linked cause, which equals the EBITDA deviation.
+    for (const x of base.causes) if (x.equalsDeviationOfLabel === ebitda) x.amount = String(Math.round((Number(x.amount) - 0.3) * 1e8) / 1e8);
+    const expense = {...base.causes.find((c) => c.classification === "calendar")!, label: "Despesa", amount: "-0.3", source: "nota fiscal 1201", anchor: "item 1",
+      equalsDeviationOfLabel: null, driverLineLabel: null, question: null};
+    const e = {...base, causes: [...base.causes, {...expense, lineLabel: ebitda.toUpperCase()}, {...expense, lineLabel: ebitda.toLowerCase(), origin: "informed" as const}]};
+    const c = completeQuarterUpdateFacts({extraction: e, priors: priors(), ids, currency: "BRL"});
+    if (c.status !== "complete") throw new Error(JSON.stringify(c));
+    expect(c.facts.bridges.flatMap((b) => b.causes).filter((x) => x.value.label === "Despesa").length).toBe(1);
+    const entityId = (JSON.parse(priors().weeklyCash.inputSnapshot) as {analysis: {entityId: string}}).analysis.entityId;
+    let packet: {readings: {bridges: {lineId: string; residual: string}[]}} | undefined;
+    expect(readerGaps(proposeQuarterUpdateHypotheses(c.facts).map((h) => ({...h, dimensions: {...h.dimensions, entityId}})), (b) => {packet = quarterUpdateReader(priors())(b) as never;})).toEqual([]);
+    expect(packet!.readings.bridges.map((b) => b.residual)).toEqual(["0", "0"]);
+    // A genuinely different line is another role: two causes.
+    const two = completeQuarterUpdateFacts({extraction: {...base, causes: [...base.causes, {...expense, lineLabel: ebitda}, {...expense, lineLabel: cash}]}, priors: priors(), ids, currency: "BRL"});
+    expect(two.status === "complete" ? two.facts.bridges.flatMap((b) => b.causes).filter((x) => x.value.label === "Despesa").length : two).toBe(2);
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;

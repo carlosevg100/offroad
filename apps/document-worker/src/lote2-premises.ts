@@ -98,7 +98,9 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
  *   and the sources differ: then they are two records. A borderô lists lots and the same lot may be listed twice, so
  *   for lots a different source does not tell equal lots apart. A collection may name the role a record plays (a C54
  *   cause's bridge line): the identity is then (role, source, anchor), and the same evidence explaining two lines is
- *   two records, one per line; readings within one role reconcile as above (round 20). */
+ *   two records, one per line; readings within one role reconcile as above (round 20). The role is the resolved
+ *   identity of the referenced record (the line as the method resolves the label), never the raw label: "EBITDA" and
+ *   "ebitda" are one line (round 23). */
 export const statedLabel = (label: string) => foldCue(label.trim());
 const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
 function canonical(value: unknown, key: string): unknown {
@@ -133,7 +135,10 @@ export function conflictingKeys<T>(items: readonly T[], key: (t: T) => string, v
  * merged; equal values from another source are kept and asked as `<collection>.N.duplicateOf` (positions after merging).
  * Returns the extraction with merged collections and the asked positions per collection. */
 export function withRecordIdentity<E extends Record<string, unknown>>(extraction: E,
-  collections: {keyed: readonly (keyof E & string)[]; countable: readonly ((keyof E & string) | {name: keyof E & string; sourceIdentifies: true; role?: string})[]},
+  collections: {keyed: readonly (keyof E & string)[]; countable: readonly ((keyof E & string) | {name: keyof E & string; sourceIdentifies: true;
+    /** The resolved identity of the record this one plays a role for (for a cause, the id of the line it explains, as the
+     * method resolves the reference), never its raw label; null when it does not resolve (asked by the method). */
+    role?: (record: Record<string, unknown>, reconciled: Record<string, unknown>) => string | null})[]},
   missing: string[]): {e: E; ambiguous: Map<string, Set<number>>} {
   const e = {...extraction} as Record<string, unknown>, ambiguous = new Map<string, Set<number>>();
   for (const name of collections.keyed) {
@@ -157,7 +162,7 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
       // A document tuple is compared by its exact stated strings, only outer whitespace trimmed: 'Clientes-A'!A2 and
       // 'Clientes A'!A2 are two anchors (round 22).
       const exact = (v: unknown) => typeof v === "string" ? v.trim() : null;
-      return {value: canonicalJson(content), where: JSON.stringify(role === undefined ? [exact(source)] : [exact(t[role]), exact(source)]),
+      return {value: canonicalJson(content), where: JSON.stringify(role === undefined ? [exact(source)] : [role(t, e), exact(source)]),
         anchor: typeof anchor === "string" && anchor.trim() ? anchor.trim() : null};
     }
     const keep = (t: Record<string, unknown>, p: ReturnType<typeof parts>) => {kept.push(t); keys.push(p); origins.push(new Set([t.origin])); firsts.push(t);};
