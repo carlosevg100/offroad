@@ -350242,6 +350242,12 @@
       "reason": "Ponte da conversa do lote 2: cartões de premissas da tabela de dívida, da folga de covenant e do caixa semanal em contextos próprios, resultados como revisões com blocos espelhados do contrato e resposta citada; uma proposta nunca adota, calcula ou concede."
     },
     {
+      "path": "supabase/migrations/20261026215637_worker_claim_executor_list_bound.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "reason": "O worker anuncia todos os executores compilados que carrega; com o lote 3 a lista passa de 8 para 12 e o limite anterior recusava toda reivindicação. O limite continua explícito, agora 64; o restante da função é idêntico."
+    },
+    {
       "path": "supabase/migrations/20261026203118_lote3_payload_provenance.sql",
       "kind": "migration",
       "decision": "preservar",
