@@ -82,11 +82,12 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
  * - A keyed collection (a driver's column, a stream's transform, a labelled line, cause, facility, dependent, scenario,
  *   option or assumption, a version's figure) holds one fact per key: the same key with equal values is one fact,
  *   wherever it was read, and the same key with different values is a conflict the method asks.
- * - A countable collection (lots of a portfolio) adds up, and a record is identified by its anchor (row, page or cell
- *   where it was read). Two records are the same fact only when value, origin, source AND anchor are equal (the same
- *   row read twice, merged). Equal values with different anchors are two records. Equal values without an anchor that
- *   tells them apart, from the same source or from different ones (two borderôs), are ambiguous: the later one is
- *   asked as `<collection>.N.duplicateOf`, never merged and never silently doubled (rounds 14 and 15). */
+ * - A countable collection (lots of a portfolio) adds up. When an anchor (row, page or cell) is stated, the record's
+ *   identity is (origin and source, anchor): the same key with the same value is the same row read twice (merged); the
+ *   same key with a different value is the same row read inconsistently, asked as `<collection>.N.anchor`, never summed;
+ *   different keys are different records. Without an anchor, equal values that nothing tells apart, from the same
+ *   source or from different ones (two borderôs), are asked as `<collection>.N.duplicateOf`, never merged and never
+ *   silently doubled (rounds 14 to 16). */
 export const statedLabel = (label: string) => foldCue(label.trim());
 const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
 function canonical(value: unknown, key: string): unknown {
@@ -139,12 +140,19 @@ export function withRecordIdentity<E extends Record<string, unknown>>(extraction
         anchor: typeof anchor === "string" && anchor.trim() ? statedLabel(anchor) : null};
     };
     for (const t of extraction[name] as Record<string, unknown>[]) {
-      const p = parts(t), same = kept.map(parts).filter((x) => x.value === p.value);
-      // The same row read twice: equal value, source and anchor.
-      if (p.anchor !== null && same.some((x) => x.where === p.where && x.anchor === p.anchor)) continue;
+      const p = parts(t), prior = kept.map(parts);
+      if (p.anchor !== null) {
+        // A stated anchor is the identity: (origin and source, anchor).
+        const row = prior.filter((x) => x.where === p.where && x.anchor === p.anchor);
+        if (row.some((x) => x.value === p.value)) continue;
+        kept.push(t);
+        if (row.length) {asked.add(kept.length); missing.push(`${name}.${kept.length}.anchor`);}
+        else if (prior.some((x) => x.value === p.value && x.anchor === null)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
+        continue;
+      }
       kept.push(t);
-      // Equal value that no anchor tells apart is asked; different anchors are different records.
-      if (same.some((x) => x.anchor === null || p.anchor === null || x.anchor === p.anchor)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
+      // Without an anchor, an equal value that nothing tells apart is asked.
+      if (prior.some((x) => x.value === p.value)) {asked.add(kept.length); missing.push(`${name}.${kept.length}.duplicateOf`);}
     }
     e[name] = kept; ambiguous.set(name, asked);
   }

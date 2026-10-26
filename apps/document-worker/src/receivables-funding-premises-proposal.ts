@@ -148,28 +148,30 @@ export function completeReceivablesFundingFacts(input: {extraction: ReceivablesF
   const referenced = new Set(e.options.flatMap((o) => o.anchorItemLabels.map(statedLabel)));
   for (const k of repeatedLabels(e.items.map((i) => i.label))) if (!ambiguous.get("items")!.has(k) && referenced.has(statedLabel(e.items[k - 1]!.label))) missing.push(`items.${k}.label`);
   const itemIds = itemKeys(e.items.map((i) => i.label));
-  // Debtor identities are reconciled across every group before any key: the same whole normalized name with
-  // compatible CNPJs (equal, or stated in some groups only) is one debtor, keyed by its CNPJ when any group states
-  // it and otherwise by the name with a hash. The same name with two CNPJs, or one CNPJ under two names, is asked,
-  // never split into two debtors nor merged into one.
-  const nameOf = (i: ReceivablesFundingExtraction["items"][number]) => normalizedName(i.debtorLabel ?? i.label);
+  // Debtor identities are reconciled across every group before any key, from what is stated only: a stated CNPJ is
+  // the debtor's identity; a stated debtor name with compatible CNPJs (equal, or stated in some groups only) is one
+  // debtor, keyed by its CNPJ when any group states it and otherwise by the name with a hash. A lot label is never a
+  // debtor name. Two lots with the same CNPJ and no names are the same debtor. The same stated name with two CNPJs, or
+  // one CNPJ under two stated names, is asked, never split into two debtors nor merged into one (round 16).
+  const nameOf = (i: ReceivablesFundingExtraction["items"][number]) => i.debtorLabel === null ? null : normalizedName(i.debtorLabel);
   const taxesByName = new Map<string, Set<string>>(), namesByTax = new Map<string, Set<string>>();
   for (const i of e.items) {
     const name = nameOf(i);
-    if (!taxesByName.has(name)) taxesByName.set(name, new Set());
-    if (i.debtorTaxId !== null) {
-      taxesByName.get(name)!.add(i.debtorTaxId);
-      if (!namesByTax.has(i.debtorTaxId)) namesByTax.set(i.debtorTaxId, new Set());
-      namesByTax.get(i.debtorTaxId)!.add(name);
-    }
+    if (name !== null && !taxesByName.has(name)) taxesByName.set(name, new Set());
+    if (i.debtorTaxId !== null && !namesByTax.has(i.debtorTaxId)) namesByTax.set(i.debtorTaxId, new Set());
+    if (name !== null && i.debtorTaxId !== null) {taxesByName.get(name)!.add(i.debtorTaxId); namesByTax.get(i.debtorTaxId)!.add(name);}
   }
   e.items.forEach((i, k) => {
-    if (taxesByName.get(nameOf(i))!.size > 1) missing.push(`items.${k + 1}.debtorTaxId`);
+    const name = nameOf(i);
+    if (name !== null && taxesByName.get(name)!.size > 1) missing.push(`items.${k + 1}.debtorTaxId`);
     if (i.debtorTaxId !== null && namesByTax.get(i.debtorTaxId)!.size > 1) missing.push(`items.${k + 1}.debtorLabel`);
   });
   const debtorKeyOf = (i: ReceivablesFundingExtraction["items"][number]) => {
-    const taxes = [...taxesByName.get(nameOf(i))!];
-    return taxes.length === 1 ? `cnpj-${taxes[0]}` : stableKey(i.debtorLabel ?? i.label, 80);
+    if (i.debtorTaxId !== null) return `cnpj-${i.debtorTaxId}`;
+    const name = nameOf(i), taxes = name === null ? [] : [...taxesByName.get(name)!];
+    if (taxes.length === 1) return `cnpj-${taxes[0]}`;
+    // A set of debtors (or a lot without a stated debtor where no per-debtor sublimit applies) keys by its own label.
+    return stableKey(i.debtorLabel ?? i.label, 80);
   };
   // A single debtor with neither name nor CNPJ has no identity: where a per-debtor sublimit applies, the lot label is
   // never read as the debtor (two lots would become two independent buyers); the debtor is asked (round 15).

@@ -290,6 +290,25 @@ describe("receivables funding premises proposed from a turn", () => {
     const labels = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, {...lot, label: "001"}, {...lot, label: "1"}]}, ids: idsOf(f), currency: "BRL"});
     expect(labels.status === "complete" ? labels.facts.items.slice(-2).map((i) => i.value.label) : labels).toEqual(["001", "1"]);
   });
+  it("a stated anchor is the lot's identity: the same row read with two values is asked, never summed (independent review, round 16)", () => {
+    const f = aurora(), e = auroraExtraction(f), n = e.items.length, lot = {...e.items[0]!, label: "Lote Rede X", amount: "6", source: "borderô 101", anchor: "linha 3"};
+    const c = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot, amount: "7"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(c.status === "missing" ? c.missing : c).toEqual([`items.${n + 2}.anchor`]);
+    // The same anchor in another borderô is another row.
+    const other = completeReceivablesFundingFacts({extraction: {...e, items: [...e.items, lot, {...lot, amount: "7", source: "borderô 102"}]}, ids: idsOf(f), currency: "BRL"});
+    expect(other.status === "complete" ? other.facts.items.length : other).toBe(n + 2);
+  });
+  it("a stated CNPJ alone identifies the debtor; names conflict only when stated (independent review, round 16)", () => {
+    const f = aurora(), e = auroraExtraction(f), base = e.items.find((i) => i.debtorCount === 1)!;
+    const lots = (a: string | null, b: string | null) => ({...e, items: [{...base, label: "Lote de outubro", debtorLabel: a, debtorTaxId: "12345678000190"},
+      {...base, label: "Lote de novembro", debtorLabel: b, debtorTaxId: "12345678000190"}], options: e.options.filter((o) => o.kind !== "anchor_program")});
+    const unnamed = completeReceivablesFundingFacts({extraction: lots(null, null), ids: idsOf(f), currency: "BRL"});
+    expect(unnamed.status === "complete" ? unnamed.facts.items.map((i) => i.value.debtorKey) : unnamed).toEqual(["cnpj-12345678000190", "cnpj-12345678000190"]);
+    const oneNamed = completeReceivablesFundingFacts({extraction: lots("Rede Z", null), ids: idsOf(f), currency: "BRL"});
+    expect(oneNamed.status).toBe("complete");
+    const twoNames = completeReceivablesFundingFacts({extraction: lots("Rede Z", "Rede W"), ids: idsOf(f), currency: "BRL"});
+    expect(twoNames.status === "missing" ? twoNames.missing : twoNames).toEqual(["items.1.debtorLabel", "items.2.debtorLabel"]);
+  });
   it("never reads a lot label as the debtor where a per-debtor sublimit applies, and keeps Unicode names apart (independent review, round 15)", () => {
     const f = aurora(), e = auroraExtraction(f), single = e.items.findIndex((i) => i.debtorCount === 1);
     const unnamed = {...e, items: e.items.map((i, k) => k === single ? {...i, label: "Lote de outubro", debtorLabel: null} : i)};
