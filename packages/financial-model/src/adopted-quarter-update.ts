@@ -31,7 +31,9 @@ export const adoptedQuarterUpdateInputSchema = adoptedAnalysisContextSchema.safe
   steps: z.array(z.discriminatedUnion("mode", [
     z.strictObject({facilityId: key, mode: z.literal("fixed"), streamId: key, replacesStreamIds: z.array(key).max(8)}),
     z.strictObject({facilityId: key, mode: z.literal("residual"), date: selection})])).max(4),
-  dependents: z.array(z.strictObject({id: key, label: selection, kind: selection, reads: selection, horizonStart: selection, horizonEnd: selection, recomputedBy: selection, owner: selection.nullable()})).max(24),
+  dependents: z.array(z.strictObject({id: key, label: selection, kind: selection, reads: selection, horizonStart: selection, horizonEnd: selection, recomputedBy: selection, owner: selection.nullable(),
+    /** Economic identity: the quantities it consumes and the definition and scenario they are measured on. */
+    quantities: selection, definition: selection.nullable(), scenario: selection.nullable()})).max(24),
 }).refine(i => i.endDate > i.openingDate, "Invalid quarter")
   .refine(i => new Set(i.lines.map(l => l.id)).size === i.lines.length, "Duplicate line")
   .refine(i => i.bridges.every(b => i.lines.some(l => l.id === b.lineId)), "A bridge names a line the analysis does not carry");
@@ -131,9 +133,12 @@ export function calculateAdoptedQuarterUpdate(raw: unknown) {
   const steps = input.steps.map(s => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: need(read(s.date, `step.${s.facilityId}.date`, "date", "date", z.iso.date()))});
   const dependents = input.dependents.map(d => {const p = `dependent.${d.id}.`; const by = need(read(d.recomputedBy, p + "recomputedBy", "convention", "text", z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9_-]{0,39}|projection:[1-9]\d{3})$/)));
     const owner = d.owner === null ? null : need(read(d.owner, p + "owner", "text", "text", words));
+    const quantities = need(read(d.quantities, p + "quantities", "identity", "list", z.array(z.string().regex(/^[a-z][a-z0-9_]{0,59}$/)).max(8)));
+    const definition = d.definition === null ? null : need(read(d.definition, p + "definition", "text", "text", words));
+    const scenario = d.scenario === null ? null : need(read(d.scenario, p + "scenario", "identity", "text", words));
     return {id: d.id, label: need(read(d.label, p + "label", "text", "text", words)), kind: need(read(d.kind, p + "kind", "convention", "text", z.enum(["analysis", "plan", "material"]))),
       reads: need(read(d.reads, p + "reads", "identity", "list", z.array(key).max(24))), horizonStart: need(read(d.horizonStart, p + "horizonStart", "date", "date", z.iso.date())),
-      horizonEnd: need(read(d.horizonEnd, p + "horizonEnd", "date", "date", z.iso.date())), recomputedBy: by === "none" ? null : by, owner};});
+      horizonEnd: need(read(d.horizonEnd, p + "horizonEnd", "date", "date", z.iso.date())), recomputedBy: by === "none" ? null : by, owner, quantities, definition, scenario};});
   const priorComplete = weekly.weekly !== null && covenant.headroom !== null;
   const kernelInput: QuarterUpdateInput | null = complete && priorComplete ? {currency: input.currency, quarterStart: input.openingDate, quarterEnd: input.endDate,
     lines, bridges, carry: input.carry,

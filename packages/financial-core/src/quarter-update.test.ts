@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {buildWeeklyCash} from "./weekly-cash";
 import {measureCovenantHeadroom} from "./covenant-headroom";
@@ -72,7 +73,8 @@ describe("update after the quarter close", () => {
       {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
     expect(n(r.covenant.measurements[0]!.trailingEbitda.updated)).toBe("53.5");
     const cheaper = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: x.amounts.map((a, k) => x.dates[k]! > "2026-09-30" ? "5.7" : a)} : x);
-    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"},
+    // The effect is the declared transform's; a series that departs from it is the gap.
+    expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: cheaper}}).gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_series_not_matching_factor"},
       {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
   });
   it("review r1: effects are bounded by the persistence window", () => {
@@ -96,17 +98,18 @@ describe("update after the quarter close", () => {
   it("review r3: updated only for a result this packet computes, bound by identity, horizon and what it reads", () => {
     const longer = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, until: "2027-03-31"} : x));
     const extra = [
-      {id: "covenant-nov", label: "Covenant até 30/11/2026", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "covenant:dez26-base", owner: "measure-covenant-headroom"},
-      {id: "ebitda-nov", label: "EBITDA acumulado até novembro", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "projection:2026", owner: "build-operating-projection"},
-      {id: "dre-mensal", label: "DRE mensal do quarto trimestre", kind: "analysis" as const, reads: ["ebitda"], horizonStart: "2026-10-01", horizonEnd: "2026-12-31", recomputedBy: "weekly_cash", owner: "build-operating-projection"},
-      {id: "plano-2027-declarado", label: "Plano de 2027", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "projection:2027", owner: "build-operating-projection"},
+      {id: "covenant-nov", label: "Covenant até 30/11/2026", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "covenant:dez26-base", owner: "measure-covenant-headroom", quantities: ["covenant_ratio"], definition: "Definição da escritura (CVM 156 menos arrendamentos)", scenario: "base"},
+      {id: "ebitda-nov", label: "EBITDA acumulado até novembro", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-11-30", recomputedBy: "projection:2026", owner: "build-operating-projection", quantities: ["annual_ebitda"], definition: null, scenario: "base"},
+      {id: "dre-mensal", label: "DRE mensal do quarto trimestre", kind: "analysis" as const, reads: ["ebitda"], horizonStart: "2026-10-01", horizonEnd: "2026-12-31", recomputedBy: "weekly_cash", owner: "build-operating-projection", quantities: ["monthly_ebitda"], definition: null, scenario: "linha-17"},
+      {id: "plano-2027-declarado", label: "Plano de 2027", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "projection:2027", owner: "build-operating-projection", quantities: ["annual_ebitda"], definition: null, scenario: "base"},
     ];
     const r = updateAfterQuarterClose({...longer, dependents: [...longer.dependents, ...extra]});
     expect(r.dependents.slice(-4).map(d => [d.id, d.status, d.binding, d.owner])).toEqual([["covenant-nov", "affected_not_recomputed", "mismatched", "measure-covenant-headroom"],
       ["ebitda-nov", "affected_not_recomputed", "mismatched", "build-operating-projection"], ["dre-mensal", "affected_not_recomputed", "mismatched", "build-operating-projection"],
       ["plano-2027-declarado", "affected_not_recomputed", "mismatched", "build-operating-projection"]]);
     expect(r.gaps).toEqual([]);
-    expect(u.dependents.find(d => d.id === "covenant-dez26")!.result).toEqual({kind: "covenant", id: "dez26-base", start: "2026-01-01", end: "2026-12-31", scenario: "base", lines: ["caixa", "ebitda"]});
+    expect(u.dependents.find(d => d.id === "covenant-dez26")!.result).toEqual({kind: "covenant", id: "dez26-base", start: "2026-01-01", end: "2026-12-31", scenario: "base",
+      definition: "Definição da escritura (CVM 156 menos arrendamentos)", produces: ["covenant_ratio", "covenant_headroom"]});
   });
   it("review r3: a series must be the adopted factor applied to the prior one, or the weekly cash is not updated", () => {
     const tiny = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, amounts: base.prior.weeklyCash.streams.find(s => s.id === "insumos")!.amounts.map((a, k) => k === 3 ? "5.80000001" : a)} : x);
@@ -115,6 +118,25 @@ describe("update after the quarter close", () => {
     expect(r.dependents.find(d => d.id === "caixa-semanal")!.status).toBe("affected_not_recomputed");
     const days = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 3}} : x);
     expect(updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: days}}).gaps[0]).toEqual({item: "cause.prazo-redes", reason: "structural_cause_series_not_matching_factor"});
+  });
+  it("review r4: an identity transform or noise inside the tolerance is no propagation", () => {
+    const prior = base.prior.weeklyCash.streams.find(s => s.id === "insumos")!;
+    const noise = base.weekly.updates.map(x => x.streamId === "insumos" ? {...x, transform: {kind: "scale" as const, factor: "1"}, dates: [...prior.dates], amounts: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)} : x);
+    const r = updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: noise}});
+    expect(r.gaps).toEqual([{item: "cause.trigo", reason: "structural_cause_weekly_effect_inconsistent"}, {item: "dependent.caixa-semanal", reason: "affected_not_recomputed"}]);
+    expect(r.propagation.find(p => p.causeId === "trigo")!.weeklyEffect).toBe("0");
+    const receipts = base.prior.weeklyCash.streams.find(s => s.id === "recebimentos")!;
+    const still = base.weekly.updates.map(x => x.streamId === "recebimentos" ? {...x, transform: {kind: "delay" as const, days: 0}, dates: [...receipts.dates], amounts: receipts.amounts.map((a, k) => k === 30 ? new Decimal(a).plus("0.00000001").toFixed() : a)} : x);
+    expect(() => updateAfterQuarterClose({...base, weekly: {...base.weekly, updates: still}})).toThrow("quarter_update_transform");
+  });
+  it("review r4: a driver line is an input, never a product, and a dependent keeps its own definition and scenario", () => {
+    const driver = withBridge("ebitda", c => c.map(x => x.id === "trigo" ? {...x, driverLineId: "ebitda"} : x));
+    const dre = {id: "dre-semanal", label: "EBITDA no horizonte semanal", kind: "analysis" as const, reads: ["ebitda"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03",
+      recomputedBy: "weekly_cash", owner: "build-operating-projection", quantities: ["monthly_ebitda"], definition: null, scenario: "linha-17"};
+    expect(updateAfterQuarterClose({...driver, dependents: [...driver.dependents, dre]}).dependents.at(-1)).toMatchObject({status: "affected_not_recomputed", binding: "mismatched"});
+    const onlyIndenture = {...base, covenant: {measurementIds: ["dez26-base"]},
+      dependents: base.dependents.map(d => d.id === "covenant-dez26-gerencial" ? {...d, recomputedBy: "covenant:dez26-base"} : d)};
+    expect(updateAfterQuarterClose(onlyIndenture).dependents.find(d => d.id === "covenant-dez26-gerencial")).toMatchObject({status: "affected_not_recomputed", binding: "mismatched"});
   });
   it("asks the open diagnosis of a balance shift read by interpretation", () => {
     const r = updateAfterQuarterClose(withBridge("caixa", c => c.map(x => x.id === "prazo-redes" ? {...x, question: null} : x)));

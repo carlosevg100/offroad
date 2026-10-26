@@ -16,9 +16,9 @@
     "exportName": "buildQuarterUpdateRuns"
   },
   "run": {
-    "startedAt": "2026-10-26T13:57:31.901Z",
-    "finishedAt": "2026-10-26T13:57:31.901Z",
-    "commit": "76df8a470ec13fa7db412ebae1f1a9f512e53c43"
+    "startedAt": "2026-10-26T14:17:46.401Z",
+    "finishedAt": "2026-10-26T14:17:46.401Z",
+    "commit": "66d477e3b782c9324faee878667eb09850781c30"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,188 +26,204 @@
       "id": "bridges-sum-exactly-to-the-deviations",
       "expectation": "[[\"ebitda\",\"-0.4\",\"0\"],[\"caixa\",\"-1.7\",\"0\"]]",
       "observed": "[[\"ebitda\",\"-0.4\",\"0\"],[\"caixa\",\"-1.7\",\"0\"]]",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "each-cause-in-the-oracle-bridge",
       "expectation": "[[\"ebitda\",[[\"volume\",0.5],[\"trigo\",-0.6],[\"frete-energia\",-0.3]]],[\"caixa\",[[\"ebitda-abaixo\",-0.4],[\"prazo-redes\",-2.1],[\"estoque-trigo\",-1.6],[\"impostos-outros\",2.4]]]]",
       "observed": "[[\"ebitda\",[[\"volume\",0.5],[\"trigo\",-0.6],[\"frete-energia\",-0.3]]],[\"caixa\",[[\"ebitda-abaixo\",-0.4],[\"prazo-redes\",-2.1],[\"estoque-trigo\",-1.6],[\"impostos-outros\",2.4]]]]",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "stock-is-calendar-terms-and-wheat-structural-until-december",
       "expectation": "{\"calendar\":[\"volume\",\"frete-energia\",\"ebitda-abaixo\",\"estoque-trigo\",\"impostos-outros\"],\"structural\":[[\"trigo\",\"2026-12-31\",\"flow\"],[\"prazo-redes\",\"2026-12-31\",\"balance\"]]}",
       "observed": "{\"calendar\":[\"volume\",\"frete-energia\",\"ebitda-abaixo\",\"estoque-trigo\",\"impostos-outros\"],\"structural\":[[\"trigo\",\"2026-12-31\",\"flow\"],[\"prazo-redes\",\"2026-12-31\",\"balance\"]]}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "worst-december-week-near-4-2",
       "expectation": "{\"prior\":[\"2026-12-21\",7.5],\"updated\":[\"2026-12-21\",4.4],\"near\":true}",
       "observed": "{\"prior\":[\"2026-12-21\",7.5],\"updated\":[\"2026-12-21\",4.4],\"near\":true}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "december-need-above-the-overdraft-limit",
       "expectation": "{\"need\":10.6,\"limit\":10,\"exceeds\":true,\"withFullLimit\":14.4,\"covers\":false}",
       "observed": "{\"need\":10.6,\"limit\":10,\"exceeds\":true,\"withFullLimit\":14.4,\"covers\":false}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "action-within-what-is-approved",
       "expectation": "{\"steps\":[[\"programas-redes\",23,true],[\"conta-garantida\",4.6,true]],\"withinApproved\":true,\"covers\":true,\"smallerDraw\":true}",
       "observed": "{\"steps\":[[\"programas-redes\",23,true],[\"conta-garantida\",4.6,true]],\"withinApproved\":true,\"covers\":true,\"smallerDraw\":true}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "december-covenant-by-each-definition",
       "expectation": "{\"indenture\":{\"ratio\":[2.2,2.29],\"policy\":[6.2,4.3]},\"managerial\":{\"ratio\":[2.04,2.12],\"policy\":[10.2,8.3]},\"breach\":false}",
       "observed": "{\"indenture\":{\"ratio\":[2.2,2.29],\"policy\":[6.2,4.3]},\"managerial\":{\"ratio\":[2.04,2.12],\"policy\":[10.2,8.3]},\"breach\":false}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "oracle-second-absorption-kept-as-contrast",
       "expectation": "{\"method\":2.29,\"oracle\":2.32,\"oraclePolicy\":3.7,\"carriedOnce\":[\"prazo-redes\"]}",
       "observed": "{\"method\":2.29,\"oracle\":2.32,\"oraclePolicy\":3.7,\"carriedOnce\":[\"prazo-redes\"]}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "projection-2026-ebitda-propagated",
       "expectation": "[54.5,53.5]",
       "observed": "[54.5,53.5]",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "decisions-that-change-are-named",
       "expectation": "[\"short_term_financing\",\"covenant_headroom\",\"third_party_material\"]",
       "observed": "[\"short_term_financing\",\"covenant_headroom\",\"third_party_material\"]",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "what-did-not-change-in-one-line",
       "expectation": "{\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"unchanged\":[\"tabela-divida\",\"plano-2027\",\"linha-embalagem\"]}",
       "observed": "{\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"unchanged\":[\"tabela-divida\",\"plano-2027\",\"linha-embalagem\"]}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "question-negotiated-terms-or-late-payment",
       "expectation": "[[\"prazo-redes\",\"Os 54 dias das redes são prazo negociado ou atraso?\"]]",
       "observed": "[[\"prazo-redes\",\"Os 54 dias das redes são prazo negociado ou atraso?\"]]",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "stale-material-offered-never-sent",
       "expectation": "{\"stale\":[\"material-sondagem\"],\"sent\":false,\"publication\":false}",
       "observed": "{\"stale\":[\"material-sondagem\"],\"sent\":false,\"publication\":false}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "prior-version-kept-as-released",
       "expectation": "{\"sameAsReleased\":true,\"resultFingerprint\":true}",
       "observed": "{\"sameAsReleased\":true,\"resultFingerprint\":true}",
-      "inputFingerprint": "9d117c514c596e1d3309590993dcdd770b0fe76b718fa5ac8199a98e5913672d",
-      "outputFingerprint": "1034a2cde678f539da773ebafa8e908736170bce279870f41e1a808e06871dd2",
+      "inputFingerprint": "8ccf092101af2f96a587c021a256545ebe6b83b074b9426c9282d7644523d937",
+      "outputFingerprint": "f6168a5b34f617707bca040adafd71b3f2de1c9e4e47c9f58198cf1dfe69cf60",
       "passed": true
     },
     {
       "id": "deviation-without-cause-is-a-named-residual",
       "expectation": "{\"status\":\"partial\",\"residual\":\"0.4\",\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"residual\":\"0.4\",\"gap\":true}",
-      "inputFingerprint": "5305a58ff53b1cefe3fa6cda99a1c10ccd70740de7bd734bfd59e8180933cf50",
-      "outputFingerprint": "c32a2c3f605c64bcb685f97288ecf5c21f6771b218c2686f2b8ae02c97eb86e2",
+      "inputFingerprint": "0b3ef3b9ee0f75ebe570ab96f3671b1ba6a0c37902e89ecd871562ac3692925c",
+      "outputFingerprint": "1df2a0ea068730caf5ccc83a8e17d9e653ef8a5519d7c089e81653c250a5a782",
       "passed": true
     },
     {
       "id": "structural-cause-without-weekly-effect-is-a-gap",
       "expectation": "{\"status\":\"partial\",\"gaps\":[\"trigo\",\"prazo-redes\"],\"projected\":53.5}",
       "observed": "{\"status\":\"partial\",\"gaps\":[\"trigo\",\"prazo-redes\"],\"projected\":53.5}",
-      "inputFingerprint": "48f0cc61eaff2d8f0bd1e3404e0b7bddbd672500a29b6f3a00438b35061b0bec",
-      "outputFingerprint": "de27100a78c7ce520692aa2a195d0d6de99061d6340110f0f9e2d8bbc4cdd8ea",
+      "inputFingerprint": "b0c9148ff8560485e4d9e08d794ecfe32df9777ab7cc18afb94772b162e27133",
+      "outputFingerprint": "7578d5038358433852ecaf95794725ba50931be9884b17e55bbe4bf709136c96",
       "passed": true
     },
     {
       "id": "persistence-date-bounds-every-effect",
       "expectation": "{\"ebitdaAhead\":-0.0196,\"weekly\":-0.058,\"projected\":54.08}",
       "observed": "{\"ebitdaAhead\":-0.0196,\"weekly\":-0.058,\"projected\":54.08}",
-      "inputFingerprint": "3d4f92a1f815b0b33f86d577d7aa759cdfeaeb42ee5618bb4188704bfb59f8b6",
-      "outputFingerprint": "ce30835cc8afcc838935e08a83f0f08295a2eee2f9f0fcd458d7bd64a64869d6",
+      "inputFingerprint": "5210a3e46ef6363c4fbc4355d6659deb677361e8f053bc713a6dc7efa217a532",
+      "outputFingerprint": "89c80f92f157a5613868501ccbd67dd0d0998b6a774c672d9f0eaf9b71c5af42",
       "passed": true
     },
     {
       "id": "open-diagnosis-without-question-is-a-gap",
       "expectation": "{\"status\":\"partial\",\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"gap\":true}",
-      "inputFingerprint": "a7d21c6eefec43ee4acf1f9aa06774cc8209677e5a86ab42aecd18069947e11b",
-      "outputFingerprint": "99f7368962d724954888d8f7e1aad97d2c8fc305c89133f5b77ef910efdb2596",
+      "inputFingerprint": "bec42404005ac8ec8eb486dd44209c1d97e414fdb5a1cc0060feec599fc5e9e1",
+      "outputFingerprint": "dc3fd866942636e559b2cb03eb5c0a44d143750fccf9d45fe61e3a3104b793d2",
       "passed": true
     },
     {
       "id": "updated-only-for-results-this-packet-computes",
-      "expectation": "{\"status\":\"prepared_for_human_review\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"ownedElsewhere\":[\"plano-2027\",\"linha-embalagem\",\"covenant-nov\",\"ebitda-nov\",\"dre-mensal\"]}",
-      "observed": "{\"status\":\"prepared_for_human_review\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"ownedElsewhere\":[\"plano-2027\",\"linha-embalagem\",\"covenant-nov\",\"ebitda-nov\",\"dre-mensal\"]}",
-      "inputFingerprint": "a705276b590cb30d5dbb7174eb3063af3349ca81569d734170d745980fe1571d",
-      "outputFingerprint": "f9e351c88d87545eddcaabdfebc54e8cb3cfa3601881793a6fef8984862acd38",
+      "expectation": "{\"status\":\"prepared_for_human_review\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"ownedElsewhere\":[\"plano-2027\",\"linha-embalagem\",\"covenant-nov\",\"ebitda-nov\",\"dre-mensal\",\"dre-semanal\"]}",
+      "observed": "{\"status\":\"prepared_for_human_review\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"covenant-dez26-gerencial\",\"projecao-2026\"],\"ownedElsewhere\":[\"plano-2027\",\"linha-embalagem\",\"covenant-nov\",\"ebitda-nov\",\"dre-mensal\",\"dre-semanal\"]}",
+      "inputFingerprint": "51e45d88d059186193578a57a0ccf85ae431a1ac3af171cae380ca3313aa8d3d",
+      "outputFingerprint": "55ed33a700606bea23eb95d63ff8e1618267d2f5363673cef5d8f24ccaf72aa9",
+      "passed": true
+    },
+    {
+      "id": "identity-transform-with-noise-is-no-propagation",
+      "expectation": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_weekly_effect_inconsistent\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
+      "observed": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_weekly_effect_inconsistent\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
+      "inputFingerprint": "7ecc30daf391aa4db5dcc39e3f604f4c65c931efe7b27dc15b9d1e9ee48c55dd",
+      "outputFingerprint": "dc4c0df416e5a41b68490d35eb9bdb9e7881ef63fc6c8dd3e16e2dd9897554a7",
+      "passed": true
+    },
+    {
+      "id": "managerial-reading-not-updated-by-the-indenture-result",
+      "expectation": "{\"status\":\"partial\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"projecao-2026\"],\"reasons\":[\"asked_dependent_not_recomputed\"]}",
+      "observed": "{\"status\":\"partial\",\"updated\":[\"caixa-semanal\",\"covenant-dez26\",\"projecao-2026\"],\"reasons\":[\"asked_dependent_not_recomputed\"]}",
+      "inputFingerprint": "7f50d421a4e871bbf08a458f6fba777cb06b254270a1dbeb0bc86e25e4930160",
+      "outputFingerprint": "cbf173fa649bc1089d3d9189a6a728e762073aad4da1d6a536e897c53b2f1791",
       "passed": true
     },
     {
       "id": "token-weekly-propagation-keeps-the-weekly-cash-affected",
       "expectation": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_series_not_matching_factor\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
       "observed": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_series_not_matching_factor\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
-      "inputFingerprint": "5a11f0f283466b372dde431f9c5232c55c150bde12f0d3211dbfb2a59962fa91",
-      "outputFingerprint": "225f88bcfa8eddded1896f79b1d5705b70bfd778f740109fd971432c5e9e1d8f",
+      "inputFingerprint": "79bf10cfa06a995f814e0793541e1e9e035bd72090a85ad0ab231c07313696b5",
+      "outputFingerprint": "c3dd939d4ed93d830fd895dde12d26bb535961aadbb6a9264f588728cb836f87",
       "passed": true
     },
     {
       "id": "inconsistent-weekly-propagation-keeps-the-weekly-cash-affected",
-      "expectation": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_weekly_effect_inconsistent\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
-      "observed": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_weekly_effect_inconsistent\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
-      "inputFingerprint": "563f7b0e3082cfb83046fa1381789b50358854e6e9347af85500c43c40599272",
-      "outputFingerprint": "f7d37170aa772b989d591d655b3909d634212879258c26930b9baee22b38ee3f",
+      "expectation": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_series_not_matching_factor\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
+      "observed": "{\"status\":\"partial\",\"reasons\":[\"structural_cause_series_not_matching_factor\",\"affected_not_recomputed\"],\"weeklyUpdated\":false}",
+      "inputFingerprint": "ccae6098847c76438031b3a91325daa2f2ea24d03f83d1abe8939ed59f21e3d5",
+      "outputFingerprint": "47fbf0d80f72f38c9a6c6f45fe890b1cd325cf85c8da1b8e1008edda93fbce21",
       "passed": true
     },
     {
       "id": "named-dependent-owned-elsewhere-makes-the-packet-partial",
       "expectation": "{\"status\":\"partial\",\"reasons\":[\"asked_dependent_not_recomputed\"]}",
       "observed": "{\"status\":\"partial\",\"reasons\":[\"asked_dependent_not_recomputed\"]}",
-      "inputFingerprint": "664524f0347c95b013f806e88ae30fe03b2fe720aa5e52901c6a8274efe2fdc8",
-      "outputFingerprint": "f921be658dc7dddb8b17569377fce06e72303ced6db124b559f45d827c3bdebf",
+      "inputFingerprint": "399b62190eca1d9ab6154d71f9101212e0d2c025953ec380e1aedf04ce39aaca",
+      "outputFingerprint": "088010cba2162cbd97e4bb1a35caecd8bead6831250caa9574c0788c7ab0c77d",
       "passed": true
     },
     {
       "id": "absent-actual-is-a-gap-not-a-default",
       "expectation": "{\"status\":\"framed\",\"gap\":true}",
       "observed": "{\"status\":\"framed\",\"gap\":true}",
-      "inputFingerprint": "d374014945b95a849959e65280924f951da30e78d7bb298cf0d1c4bbae248393",
-      "outputFingerprint": "d04b90b0b36611016eb3f84997d0ccd419d90414cd4739bca923717d51cc6640",
+      "inputFingerprint": "2b01ae3b31f2e18dcfa1f67e6f70cb4b8303d119e1e40ae91b4a3fc2a0d0b4a7",
+      "outputFingerprint": "7d81ddbcbaa4e1d4c5dcf67a5d48295b518cf1931ab1e561eec078546e8df67c",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7c3da78364bda562d51bb6038340b26bc52d1a65d51553596fd89fc772fcca46",
+  "evidenceFingerprint": "266f1cde6818c18f4f2d252d5a3160b0ce25457efefcd622099a3e991af1b96d",
   "notes": "Synthetic deterministic execution calibrated on ficha C54. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -27,7 +27,9 @@ const step = z.discriminatedUnion("mode", [
   z.strictObject({facilityId: key, mode: z.literal("residual"), date: z.iso.date()})]);
 /** recomputedBy names the result this packet computes ("weekly_cash", "covenant:<measurement>", "projection:<year>") or "none"; owner names the method that must recompute it otherwise. */
 const dependent = z.strictObject({id: key, label: text, kind: z.enum(["analysis", "plan", "material"]), reads: z.array(key).max(24),
-  horizonStart: z.iso.date(), horizonEnd: z.iso.date(), recomputedBy: z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9-]{0,39}|projection:[1-9]\d{3})$/), owner: text.nullable()});
+  horizonStart: z.iso.date(), horizonEnd: z.iso.date(), recomputedBy: z.string().regex(/^(none|weekly_cash|covenant:[a-z0-9][a-z0-9-]{0,39}|projection:[1-9]\d{3})$/), owner: text.nullable(),
+  /** Its economic identity: the quantities it consumes, and the definition and scenario they are measured on. */
+  quantities: z.array(z.string().regex(/^[a-z][a-z0-9_]{0,59}$/)).max(8), definition: text.nullable(), scenario: text.nullable()});
 /** How the cause moves the series inside its window: amounts scaled by a factor, or events delayed by days. */
 const transform = z.discriminatedUnion("kind", [z.strictObject({kind: z.literal("scale"), factor: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/)}),
   z.strictObject({kind: z.literal("delay"), days: z.number().int().min(-366).max(366)})]);
@@ -156,6 +158,9 @@ export function proposeQuarterUpdateHypotheses(raw: unknown): ProposedHypothesis
     txt(p + "label", "text", v.label, r); txt(p + "kind", "convention", v.kind, r); list(p + "reads", "identity", v.reads, r);
     date(p + "horizonStart", v.horizonStart, r); date(p + "horizonEnd", v.horizonEnd, r); txt(p + "recomputedBy", "convention", v.recomputedBy, r);
     if (v.owner !== null) txt(p + "owner", "text", v.owner, r);
+    list(p + "quantities", "identity", v.quantities, r);
+    if (v.definition !== null) txt(p + "definition", "text", v.definition, r);
+    if (v.scenario !== null) txt(p + "scenario", "identity", v.scenario, r);
   }
   list("order.lines", "identity", f.lines.map((l) => l.value.id), house("Ordem das linhas como informada"));
   list("order.bridges", "identity", f.bridges.map((b) => b.lineId), house("Ordem das pontes como informada"));

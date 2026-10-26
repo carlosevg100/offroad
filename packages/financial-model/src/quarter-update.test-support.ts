@@ -73,14 +73,14 @@ export const auroraClose = {
     {facilityId: "conta-garantida", mode: "residual" as const, date: "2026-12-14"},
   ],
   dependents: [
-    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis" as const, reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash", owner: null as string | null},
-    {id: "covenant-dez26", label: "Covenant de dezembro de 2026, definição da escritura", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-base", owner: null as string | null},
-    {id: "covenant-dez26-gerencial", label: "Covenant de dezembro de 2026, definição gerencial", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-gerencial", owner: null as string | null},
-    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection:2026", owner: null as string | null},
-    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis" as const, reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: "none", owner: "build-company-debt-table" as string | null},
-    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "none", owner: "build-operating-projection" as string | null},
-    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: "none", owner: "analyze-investment-project" as string | null},
-    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material" as const, reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: "none", owner: "autoria do material da sondagem" as string | null},
+    {id: "caixa-semanal", label: "Caixa semanal até dezembro", kind: "analysis" as const, reads: ["caixa", "prazo", "trigo"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03", recomputedBy: "weekly_cash", quantities: ["cash_balance_by_week"], definition: null as string | null, scenario: "linha-17" as string | null, owner: null as string | null},
+    {id: "covenant-dez26", label: "Covenant de dezembro de 2026, definição da escritura", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-base", quantities: ["covenant_ratio", "covenant_headroom"], definition: "Definição da escritura (CVM 156 menos arrendamentos)" as string | null, scenario: "base" as string | null, owner: null as string | null},
+    {id: "covenant-dez26-gerencial", label: "Covenant de dezembro de 2026, definição gerencial", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "covenant:dez26-gerencial", quantities: ["covenant_ratio", "covenant_headroom"], definition: "Definição gerencial adotada pelo conselho" as string | null, scenario: "gerencial_dez" as string | null, owner: null as string | null},
+    {id: "projecao-2026", label: "Projeção de 2026 (EBITDA do ano)", kind: "plan" as const, reads: ["ebitda"], horizonStart: "2026-01-01", horizonEnd: "2026-12-31", recomputedBy: "projection:2026", quantities: ["annual_ebitda"], definition: null as string | null, scenario: "base" as string | null, owner: null as string | null},
+    {id: "tabela-divida", label: "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)", kind: "analysis" as const, reads: [], horizonStart: "2026-09-30", horizonEnd: "2026-09-30", recomputedBy: "none", quantities: ["debt_by_instrument"], definition: null as string | null, scenario: null as string | null, owner: "build-company-debt-table" as string | null},
+    {id: "plano-2027", label: "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre", kind: "plan" as const, reads: ["receita", "ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2027-12-31", recomputedBy: "none", quantities: ["annual_ebitda", "cash_balance_by_month"], definition: null as string | null, scenario: "base" as string | null, owner: "build-operating-projection" as string | null},
+    {id: "linha-embalagem", label: "Análise da linha de embalagem", kind: "analysis" as const, reads: ["ebitda", "caixa"], horizonStart: "2027-01-01", horizonEnd: "2031-12-31", recomputedBy: "none", quantities: ["project_return"], definition: null as string | null, scenario: "base" as string | null, owner: "analyze-investment-project" as string | null},
+    {id: "material-sondagem", label: "Material da sondagem da debênture (EBITDA de junho)", kind: "material" as const, reads: ["ebitda"], horizonStart: "2025-07-01", horizonEnd: "2026-06-30", recomputedBy: "none", quantities: ["covenant_ratio", "annual_ebitda"], definition: null as string | null, scenario: "base" as string | null, owner: "autoria do material da sondagem" as string | null},
   ],
 };
 
@@ -130,7 +130,9 @@ export function auroraQuarterUpdateBasis() {
     steps: c.steps.map((s) => s.mode === "fixed" ? s : {facilityId: s.facilityId, mode: s.mode, date: date(`step.${s.facilityId}.date`, s.date)}),
     dependents: c.dependents.map((d) => {const p = `dependent.${d.id}.`; return {id: d.id, label: text(p + "label", d.label), kind: text(p + "kind", d.kind, "convention"),
       reads: list(p + "reads", "identity", d.reads), horizonStart: date(p + "horizonStart", d.horizonStart), horizonEnd: date(p + "horizonEnd", d.horizonEnd),
-      recomputedBy: text(p + "recomputedBy", d.recomputedBy, "convention"), owner: d.owner === null ? null : text(p + "owner", d.owner)};}),
+      recomputedBy: text(p + "recomputedBy", d.recomputedBy, "convention"), owner: d.owner === null ? null : text(p + "owner", d.owner),
+      quantities: list(p + "quantities", "identity", d.quantities), definition: d.definition === null ? null : text(p + "definition", d.definition),
+      scenario: d.scenario === null ? null : text(p + "scenario", d.scenario, "identity")};}),
   } as unknown as AdoptedQuarterUpdateInput;
   const seal = (): QuarterUpdateAnalyses => ({prior, update: {...input, envelope: f.seal()}});
   return {...f, input, prior, weekly, covenant, seal};

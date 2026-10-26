@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: quarter-update-packet.v1
 unit_test_files: [packages/financial-model/src/quarter-update-packet.test.ts, packages/financial-model/src/quarter-update-premises.test.ts, packages/financial-model/src/quarter-update-runs.test.ts, packages/financial-core/src/quarter-update.test.ts]
-gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default]
+gold_case_ids: [bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-transform-with-noise-is-no-propagation, managerial-reading-not-updated-by-the-indenture-result, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default]
 adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-sending-in-result, update-of-another-version, prior-of-another-company, linked-cause-off-its-deviation, calendar-cause-moves-the-projection, series-moved-outside-persistence, balance-shift-on-ebitda, series-shared-by-two-causes, series-outside-the-scenario-used, structural-cause-without-an-end, recomputing-what-did-not-move, series-updated-without-change, quarter-outside-the-test-period, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:bridges-sum-exactly-to-the-deviations]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -75,14 +75,14 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - Ponte: soma das causas de cada linha; resíduo = desvio menos a soma. Resíduo diferente de zero vira lacuna nomeada na linha e nunca é distribuído entre as causas.
 - Causa que é o desvio de outra linha (EBITDA abaixo dentro da ponte do caixa) tem de ser igual a esse desvio, exatamente.
 - Causa de calendário não tem data de fim e não move a projeção além do que o realizado já leva aos saldos; causa estrutural tem data de fim depois do fechamento e é fluxo ou mudança de saldo. Mudança de saldo pertence à ponte do caixa.
-- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. Cada série atualizada pertence a uma única causa e a uma série do cenário informado; série atribuída a duas causas, ou fora do cenário usado, é recusada. A série só pode mudar depois do fechamento e até a data de fim da sua causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada série declara a transformação da sua causa: valores multiplicados por um fator (custo do insumo) ou eventos adiados por um número de dias (prazo de recebimento, que precisa ser o desvio da linha de prazo). A série adotada tem de ser essa transformação da série anterior dentro da janela, com tolerância de R$ 0,000001 por data; cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor. Sem série, com efeito nulo, de sinal oposto ou fora da transformação declarada, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
+- Caixa semanal atualizado = versão anterior com o saldo inicial acrescido do desvio de caixa do fechamento e as séries substituídas pelas causas estruturais. Cada série atualizada pertence a uma única causa e a uma série do cenário informado; série atribuída a duas causas, ou fora do cenário usado, é recusada. A série só pode mudar depois do fechamento e até a data de fim da sua causa: antes do fechamento o realizado já a contém, depois do fim a causa acabou; mudança fora dessa janela é recusada. Cada série declara a transformação da sua causa: valores multiplicados por um fator (custo do insumo) ou eventos adiados por um número de dias (prazo de recebimento, que precisa ser o desvio da linha de prazo). A série adotada tem de ser essa transformação da série anterior dentro da janela, com tolerância de R$ 0,000001 por data; cada causa estrutural precisa mover o caixa semanal no mesmo sentido do seu valor. O efeito considerado é o da transformação declarada, nunca o ruído da série adotada: fator 1, atraso de zero dias ou efeito dentro da tolerância não é propagação. Sem série, com efeito nulo, de sinal oposto ou fora da transformação declarada, vira lacuna nomeada. A versão anterior é medida de novo pelo mesmo núcleo e fica ao lado. Série substituída sem mudança é recusada.
 - Necessidade = mínimo menos o menor saldo semanal, nunca negativa; comparada ao limite da linha que completa as semanas; o limite inteiro é medido como caso próprio.
 - Ação: passos em ordem; o passo fixo saca uma série nova que substitui a planejada; o passo residual saca, na data adotada, a necessidade que ainda resta. Cada passo é comparado ao limite aprovado.
 - Efeito à frente de uma causa estrutural, por medição: fluxo = valor do trimestre × dias entre o dia seguinte ao fechamento e o menor entre a data de fim e a data do teste ÷ dias do trimestre; entra no EBITDA quando a causa está na ponte do EBITDA e no caixa sempre. Mudança de saldo = zero à frente: o saldo já está no desvio de caixa do fechamento, levado uma vez, e continua mais baixo enquanto a causa persiste.
 - Covenant atualizado = cada medição adotada da versão anterior (a da escritura e a gerencial) com EBITDA reportado acrescido do desvio de EBITDA do trimestre e dos efeitos à frente, e caixa acrescido do desvio de caixa e dos efeitos à frente; o trimestre precisa estar dentro dos doze meses do teste. A medição de núcleo é a do método de folga de covenant. Cada folga diz em qual definição foi medida.
 - Divergência declarada do oráculo da ficha C54: o oráculo baixa o caixa de dezembro pelo desvio do trimestre (R$ 1,7 milhão) e de novo pelos R$ 2,1 milhões do prazo das redes. Os R$ 2,1 milhões já estão dentro do desvio de R$ 1,7 milhão; o prazo de 54 dias mantém o saldo mais baixo, mas não absorve outros R$ 2,1 milhões no quarto trimestre. O método leva a mudança de saldo uma vez. A leitura do oráculo (2,32x e folga de R$ 3,7 milhões) fica só como contraste registrado nas corridas.
 - Dependência movida quando lê uma linha com desvio dentro do seu horizonte, ou uma linha movida por causa estrutural no período até a data de fim; sem isso, sem mudança. Recalcular o que não foi movido é recusado.
-- Atualizado é só o que este pacote calcula, cada um ligado a um resultado identificável: o caixa semanal do caso informado no horizonte da versão anterior; cada teste de covenant recalculado, por limite, definição (escritura ou gerencial), cenário e data; e o EBITDA do ano da projeção, por ano e cenário. A dependência precisa ter o mesmo horizonte do resultado e ler só o que ele calcula. Resultado deste pacote cuja propagação falta ou não confere fica afetado sem recálculo, e o pacote, parcial.
+- Atualizado é só o que este pacote calcula, cada um ligado a um resultado identificável: o caixa semanal do caso informado no horizonte da versão anterior; cada teste de covenant recalculado, por limite, definição (escritura ou gerencial), cenário e data; e o EBITDA do ano da projeção, por ano e cenário. Cada resultado declara as grandezas que produz (caixa semanal: saldo de caixa por semana; covenant: índice e folga do seu limite, definição e data; projeção: EBITDA do ano); linhas lidas como direcionadores são insumos, nunca produtos. A dependência declara a sua identidade econômica (grandezas que consome, definição, cenário e período) e só fica atualizada quando todas as grandezas são produzidas pelo resultado vinculado e definição, cenário e período coincidem; mudar o vínculo não transforma a leitura da escritura na leitura gerencial. Resultado deste pacote cuja propagação falta ou não confere fica afetado sem recálculo, e o pacote, parcial.
 - Qualquer outra dependência (planos, materiais, demonstrações mensais, outras datas de teste, outros anos) fica afetada sem recálculo quando uma causa toca o que ela lê, com o método que deve recalculá-la, ou sem mudança quando nada a toca. É informação para quem a mantém, não lacuna, salvo quando a pergunta do usuário a nomeia: aí o pacote fica parcial.
 - Precisão: aritmética decimal de alta precisão, sem arredondamento intermediário.
 
@@ -106,7 +106,8 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 # Stop conditions
 - Número sem contribuição adotada vira lacuna; a atualização não é montada com valor presumido.
 - Atualização que nomeia outra versão anterior que não a recebida é recusada.
-- Causa estrutural sem efeito no caixa semanal, mudança de saldo por interpretação sem a pergunta e dependência movida sem recálculo deixam o pacote parcial, com a lacuna nomeada.
+- Causa estrutural sem efeito demonstrável no caixa semanal, mudança de saldo por interpretação sem a pergunta e resultado deste pacote cuja propagação falta deixam o pacote parcial, com a lacuna nomeada.
+- Dependência mantida por outro método e tocada pelo fechamento é informação para o seu dono, listada com o método que deve recalculá-la; vira lacuna, e o pacote fica parcial, só quando a pergunta do usuário a nomeia.
 - O pacote não fecha a contabilidade, não atribui causas por conta própria, não compara custo de financiamento, não envia material a terceiros, não aprova crédito e não publica nem altera a base.
 
 # Outputs
@@ -131,7 +132,7 @@ Pacote de atualização do trimestre: realizado contra projetado linha a linha; 
 - packages/financial-core/src/quarter-update.test.ts: núcleo contra o oráculo da ficha, com os núcleos de caixa semanal e de covenant compostos.
 - packages/financial-model/src/quarter-update-packet.test.ts e packages/financial-model/src/quarter-update-premises.test.ts: leitor adotado sobre três bases, pacote e ida e volta das premissas.
 ## Gold
-- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default.
+- bridges-sum-exactly-to-the-deviations, each-cause-in-the-oracle-bridge, stock-is-calendar-terms-and-wheat-structural-until-december, worst-december-week-near-4-2, december-need-above-the-overdraft-limit, action-within-what-is-approved, december-covenant-by-each-definition, oracle-second-absorption-kept-as-contrast, projection-2026-ebitda-propagated, decisions-that-change-are-named, what-did-not-change-in-one-line, question-negotiated-terms-or-late-payment, stale-material-offered-never-sent, prior-version-kept-as-released, deviation-without-cause-is-a-named-residual, structural-cause-without-weekly-effect-is-a-gap, persistence-date-bounds-every-effect, open-diagnosis-without-question-is-a-gap, updated-only-for-results-this-packet-computes, identity-transform-with-noise-is-no-propagation, managerial-reading-not-updated-by-the-indenture-result, token-weekly-propagation-keeps-the-weekly-cash-affected, inconsistent-weekly-propagation-keeps-the-weekly-cash-affected, named-dependent-owned-elsewhere-makes-the-packet-partial, absent-actual-is-a-gap-not-a-default.
 ## Adversarial
 - Base adulterada, resultado livre no pedido, concessão fabricada, envio fabricado, atualização de outra versão, versão anterior de outra companhia, causa ligada diferente do desvio, causa de calendário movendo a projeção, série movida fora do período em que a causa persiste, série atribuída a duas causas, série fora do cenário usado, dependência declarada recalculada sem nada movido, mudança de saldo na ponte do EBITDA, causa estrutural sem data de fim, recálculo do que não mudou, série atualizada sem mudança, trimestre fora do período do teste e número lido em outro cenário são recusados.
 ## Aceitação
@@ -5355,6 +5356,181 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                       }
                                     ]
                                   }
+                                },
+                                "quantities": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "object",
+                                    "fields": {
+                                      "decisionId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "definitionVersionId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "definitionKind": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "enum",
+                                          "values": [
+                                            "reported",
+                                            "managerial",
+                                            "contractual"
+                                          ]
+                                        }
+                                      },
+                                      "missingReason": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "definition": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "scenario": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
                                 }
                               }
                             }
@@ -9922,7 +10098,21 @@ Quando a necessidade passa do limite de uma linha, a primeira resposta usa o que
                                                   "type": "string"
                                                 }
                                               },
-                                              "lines": {
+                                              "definition": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "produces": {
                                                 "required": true,
                                                 "value": {
                                                   "type": "array",

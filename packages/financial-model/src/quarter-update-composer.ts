@@ -117,7 +117,8 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
   const dependents = keys("dependent", "order.dependents").map((id) => {
     const p = `dependent.${id}.`;
     return {id, label: select(p + "label", "text", "text"), kind: select(p + "kind", "convention", "text"), reads: select(p + "reads", "identity", "list"),
-      horizonStart: select(p + "horizonStart", "date", "date"), horizonEnd: select(p + "horizonEnd", "date", "date"), recomputedBy: select(p + "recomputedBy", "convention", "text"), owner: optional(p + "owner", "text", "text")};
+      horizonStart: select(p + "horizonStart", "date", "date"), horizonEnd: select(p + "horizonEnd", "date", "date"), recomputedBy: select(p + "recomputedBy", "convention", "text"), owner: optional(p + "owner", "text", "text"),
+      quantities: select(p + "quantities", "identity", "list"), definition: optional(p + "definition", "text", "text"), scenario: optional(p + "scenario", "identity", "text")};
   });
   const measurementIds = z.array(keyOf).min(1).parse(meta("covenant.measurementIds", "list", "quarter_update_covenant_measurement", true));
   const update = {envelope: input.update.envelope, scope: input.update.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,

@@ -40,4 +40,10 @@ describe("receivables funding packet", () => {
     expect(p.readings!.exclusions.find((x) => x.itemId === "rede-e-lote-2")).toMatchObject({amount: "1.5", reasons: ["debtor_sublimit"]});
     expect([p.readings!.assignable, p.readings!.exclusions.every((x) => x.reasons.length > 0)]).toEqual(["25", true]);
   });
+  it("costs the discount through the adopted reader when the time in use is shorter, equal or longer than the rollover term", () => {
+    const at = (calendarDays: number) => prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question,
+      analysis: auroraReceivablesFundingBasis({...auroraReceivablesFunding(), calendarDays, businessDays: Math.round(calendarDays * 0.7)}).seal()})
+      .result.funding!.options.find((o) => o.id === "desconto-bancario")!.cost;
+    expect([30, 50, 51].map((d) => {const c = at(d); return [c.draws, c.iofDays, n(c.iof, 6)];})).toEqual([[1, 30, "0.106420"], [1, 50, "0.134300"], [2, 51, "0.200294"]]);
+  });
 });

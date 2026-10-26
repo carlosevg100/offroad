@@ -160,7 +160,7 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     if ((o.leadDaysMin === null) !== (o.leadDaysMax === null)) throw new Error("receivables_funding_lead_days");
     if (o.leadDaysMin !== null) {int(o.leadDaysMin, 0, 365, "receivables_funding_lead_days"); int(o.leadDaysMax!, o.leadDaysMin, 365, "receivables_funding_lead_days");}
     int(o.iofDailyCapDays, 0, 3660, "receivables_funding_days");
-    if (o.rolloverDays !== null) int(o.rolloverDays, 1, calendarDays, "receivables_funding_rollover_days");
+    if (o.rolloverDays !== null) int(o.rolloverDays, 1, 3660, "receivables_funding_rollover_days");
     if (!["monthly", "annual", "di_plus"].includes(o.rate.basis)) throw new Error("receivables_funding_rate_basis");
     const e = o.eligibility;
     if (e) {
@@ -248,7 +248,8 @@ export function assessReceivablesFunding(input: ReceivablesFundingInput) {
     }
     const spread = new Exact(spreadOverIndex({annualRate: annual.toFixed(), annualIndex: di.toFixed()}).value);
     // Whole draws: a rollover started inside the time in use is a draw and pays the additional IOF in full;
-    // daily IOF runs on the days each draw is in use, the last one possibly shorter, each capped.
+    // daily IOF runs on the days each draw is in use, the last one possibly shorter, each capped. A term
+    // longer than the time in use is one draw: daily IOF on the days used, the additional IOF in full.
     const draws = o.rolloverDays === null ? 1 : Math.ceil(calendarDays / o.rolloverDays);
     const term = o.rolloverDays ?? calendarDays;
     const iofDays = Array.from({length: draws}, (_, n) => Math.min(term, calendarDays - n * term, o.iofDailyCapDays)).reduce((a, b) => a + b, 0);

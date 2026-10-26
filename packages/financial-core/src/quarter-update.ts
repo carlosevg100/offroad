@@ -47,8 +47,12 @@ export type QuarterUpdateDependent = {id: string; label: string; kind: "analysis
    * "covenant:<measurement>" (one recomputed test, its definition and date) or "projection:<year>" (that year's EBITDA);
    * null when another method owns it. */
   recomputedBy: string | null;
+  /** Its economic identity: the quantities it consumes, the definition and scenario they are measured on; its horizon is the period. */
+  quantities: readonly string[]; definition: string | null; scenario: string | null;
   /** The method that must recompute it when this packet does not. */
   owner: string | null};
+/** The quantities each result of this packet produces; lines read as drivers are inputs, never products. */
+export const quarterUpdateProducedQuantities = {weekly_cash: ["cash_balance_by_week"], covenant: ["covenant_ratio", "covenant_headroom"], projection: ["annual_ebitda"]} as const;
 export type QuarterUpdateInput = {
   currency: string; quarterStart: string; quarterEnd: string;
   lines: readonly QuarterUpdateLine[];
@@ -190,12 +194,9 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     // A series moves only while its causes persist: before the close the actual already holds it, after the end the cause is gone.
     const until = named[0]!.until!;
     const before = byDate(prior.dates, prior.amounts), after = byDate(u.dates, u.amounts);
-    let effect = new Exact(0);
     for (const d of new Set([...before.keys(), ...after.keys()])) {
       const change = (after.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
-      if (change.isZero()) continue;
-      if (d <= qe || d > until) throw new Error("quarter_update_series_outside_persistence");
-      effect = effect.plus(prior.direction === "inflow" ? change : change.neg());
+      if (!change.isZero() && (d <= qe || d > until)) throw new Error("quarter_update_series_outside_persistence");
     }
     // The adopted series must be the cause's own transform of the prior series, inside the window, within the tolerance.
     const inside = (d: string) => d > qe && d <= until, expected = new Map([...before].filter(([d]) => !inside(d)));
@@ -207,6 +208,12 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
       for (const [d, v] of before) {const to = shift(d, u.transform.days); if (inside(to)) expected.set(to, (expected.get(to) ?? new Exact(0)).plus(v));}
     } else throw new Error("quarter_update_transform");
     const tolerance = new Exact(quarterUpdateSeriesTolerance);
+    // The effect is the transform's own, never the adopted noise: an identity transform moves nothing.
+    let effect = new Exact(0);
+    for (const d of new Set([...expected.keys(), ...before.keys()])) {
+      const change = (expected.get(d) ?? new Exact(0)).minus(before.get(d) ?? new Exact(0));
+      effect = effect.plus(prior.direction === "inflow" ? change : change.neg());
+    }
     let matches = [...new Set([...expected.keys(), ...after.keys()])].every(d => (after.get(d) ?? new Exact(0)).minus(expected.get(d) ?? new Exact(0)).abs().lte(tolerance));
     // A delay measured by a line in days must be that line's deviation.
     const driver = named[0]!.driverLineId === null ? null : line(named[0]!.driverLineId);
@@ -317,7 +324,7 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   for (const c of structuralCauses) {
     const w = inWeekly.get(c.id);
     if (!w) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_not_in_weekly_cash"});
-    else if (w.effect.isZero() || w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
+    else if (w.effect.abs().lte(quarterUpdateSeriesTolerance) || w.effect.isNegative() !== c.value.isNegative()) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_weekly_effect_inconsistent"});
     else if (!w.matches) gaps.push({item: `cause.${c.id}`, reason: "structural_cause_series_not_matching_factor"});
   }
   const weeklyReasons: QuarterUpdateGapReason[] = ["structural_cause_not_in_weekly_cash", "structural_cause_weekly_effect_inconsistent", "structural_cause_series_not_matching_factor"];
@@ -328,14 +335,15 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
   // each recomputed covenant test (limit, definition, scenario, date) and the EBITDA of the projection year.
   const yearBefore = (d: string) => shift(`${Number(d.slice(0, 4)) - 1}${d.slice(4)}`, 1);
   const leadDate = targets[0]!.date;
-  type Result = {kind: "weekly_cash" | "covenant" | "projection"; id: string; start: string; end: string; scenario: string; lines: string[]; propagated: boolean};
+  type Result = {kind: "weekly_cash" | "covenant" | "projection"; id: string; start: string; end: string; scenario: string; definition: string | null; produces: readonly string[]; propagated: boolean};
   const results = new Map<string, Result>([
-    ["weekly_cash", {kind: "weekly_cash", id: "weekly_cash", start: priorWeekly.firstMonday, end: weeklyEnd, scenario: informed.id,
-      lines: [...new Set([cashLineId, ...structuralCauses.filter(c => c.driverLineId !== null).map(c => c.driverLineId!)])], propagated: weeklyPropagated}],
-    ...targets.map(m => [`covenant:${m.id}`, {kind: "covenant" as const, id: m.id, start: yearBefore(m.date), end: m.date, scenario: m.scenario, lines: [cashLineId, ebitdaLineId], propagated: true}] as [string, Result]),
-    // The projection year exists only when the leading test closes a calendar year.
+    ["weekly_cash", {kind: "weekly_cash", id: "weekly_cash", start: priorWeekly.firstMonday, end: weeklyEnd, scenario: informed.id, definition: null,
+      produces: quarterUpdateProducedQuantities.weekly_cash, propagated: weeklyPropagated}],
+    ...targets.map(m => [`covenant:${m.id}`, {kind: "covenant" as const, id: m.id, start: yearBefore(m.date), end: m.date, scenario: m.scenario, definition: m.label,
+      produces: quarterUpdateProducedQuantities.covenant, propagated: true}] as [string, Result]),
+    // The projection year exists only when the leading test closes a calendar year; its EBITDA is the reported one.
     ...leadDate.endsWith("-12-31") ? [[`projection:${leadDate.slice(0, 4)}`, {kind: "projection" as const, id: leadDate.slice(0, 4), start: `${leadDate.slice(0, 4)}-01-01`, end: leadDate,
-      scenario: targets[0]!.scenario, lines: [ebitdaLineId], propagated: true}] as [string, Result]] : [],
+      scenario: targets[0]!.scenario, definition: null, produces: quarterUpdateProducedQuantities.projection, propagated: true}] as [string, Result]] : [],
   ]);
   const forwardUntil = (lineId: string) => [...causes.values()].filter(c => c.classification === "structural" && (c.lineId === lineId || c.driverLineId === lineId))
     .reduce<string | null>((u, c) => u === null || c.until! > u ? c.until! : u, null);
@@ -345,6 +353,7 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     if (!["analysis", "plan", "material"].includes(d.kind)) throw new Error("quarter_update_dependent_kind");
     if (d.recomputedBy !== null && !/^(weekly_cash|covenant:[a-z0-9][a-z0-9_-]{0,39}|projection:[1-9]\d{3})$/.test(d.recomputedBy)) throw new Error("quarter_update_dependent_recomputation");
     if (d.owner !== null) text(d.owner, "quarter_update_owner_required");
+    if (d.quantities.length > 8 || d.quantities.some(q => !/^[a-z][a-z0-9_]{0,59}$/.test(q))) throw new Error("quarter_update_dependent_quantities");
     if (date(d.horizonStart) > date(d.horizonEnd) || d.reads.length > 24) throw new Error("quarter_update_dependent_horizon");
     const moved = d.reads.filter(id => {
       const l = line(id), until = forwardUntil(id);
@@ -352,16 +361,17 @@ export function updateAfterQuarterClose(input: QuarterUpdateInput) {
     });
     const supersededByClose = d.kind === "material" && d.horizonEnd < qe && d.reads.some(id => !line(id).deviation.isZero());
     if (!moved.length && d.recomputedBy !== null) throw new Error("quarter_update_recomputes_unaffected");
-    // Bound only to the very result: same horizon, nothing read beyond what that result computes.
+    // Bound only to the very result: every quantity it consumes produced by it, same definition, scenario and period.
     const bound = d.recomputedBy === null ? null : results.get(d.recomputedBy) ?? null;
     const binding = d.recomputedBy === null ? "none" as const
-      : bound !== null && d.horizonStart === bound.start && d.horizonEnd === bound.end && d.reads.every(id => bound.lines.includes(id)) ? "matched" as const : "mismatched" as const;
+      : bound !== null && d.quantities.length > 0 && d.quantities.every(q => bound.produces.includes(q)) && d.definition === bound.definition && d.scenario === bound.scenario
+        && d.horizonStart === bound.start && d.horizonEnd === bound.end ? "matched" as const : "mismatched" as const;
     const status = !moved.length ? (supersededByClose ? "stale" as const : "unchanged" as const)
       : binding === "matched" && bound!.propagated ? "updated" as const : "affected_not_recomputed" as const;
     // A result this packet computes whose propagation is missing is a gap; anything owned elsewhere is information for its owner.
     if (status === "affected_not_recomputed" && binding === "matched") gaps.push({item: `dependent.${d.id}`, reason: "affected_not_recomputed"});
     return {id: d.id, label: d.label, kind: d.kind, status, movedBy: moved, recomputedBy: d.recomputedBy,
-      binding, result: binding === "matched" ? {kind: bound!.kind, id: bound!.id, start: bound!.start, end: bound!.end, scenario: bound!.scenario, lines: bound!.lines} : null,
+      binding, result: binding === "matched" ? {kind: bound!.kind, id: bound!.id, start: bound!.start, end: bound!.end, scenario: bound!.scenario, definition: bound!.definition, produces: [...bound!.produces]} : null,
       owner: binding === "matched" ? null : d.owner,
       /** A stale material is offered again with the closed figures; it is never sent from here. */
       sentToThirdParties: false as const};

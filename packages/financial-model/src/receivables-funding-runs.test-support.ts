@@ -125,6 +125,10 @@ function goldCases(): Case[] {
       {lot: ["rede-e-lote-2", 1.5, ["debtor_sublimit"]], assignable: 25, everyExclusionHasAReason: true},
       (p) => {const x = p.readings!.exclusions.find((e) => e.itemId === "rede-e-lote-2")!;
         return {lot: [x.itemId, r(x.amount), x.reasons], assignable: r(p.readings!.assignable), everyExclusionHasAReason: p.readings!.exclusions.every((e) => e.reasons.length > 0)};}),
+    ...[30, 50, 51].map((days) => observe(`discount-iof-with-${days}-days-in-use-and-a-50-day-term`,
+      packetInput(undefined, undefined, () => auroraReceivablesFundingBasis({...auroraReceivablesFunding(), calendarDays: days, businessDays: Math.round(days * 0.7)})),
+      ({30: {draws: 1, iofDays: 30, iof: 0.10642}, 50: {draws: 1, iofDays: 50, iof: 0.1343}, 51: {draws: 2, iofDays: 51, iof: 0.200294}} as Record<number, unknown>)[days],
+      (p) => {const c = p.result.funding!.options.find((o) => o.id === "desconto-bancario")!.cost; return {draws: c.draws, iofDays: c.iofDays, iof: r(c.iof, 6)};})),
     observe("unsold-balance-goes-to-the-next-buyer", packetInput(undefined, undefined, unsoldBalance),
       {plan: [["fundo-barato", 2, 2, 2], ["fundo-caro", 3, 1, 3]], coversPeak: true},
       (p) => ({plan: p.readings!.plan.map((s) => [s.optionId, r(s.capacity), r(s.amount), r(s.cumulative)]), coversPeak: p.readings!.planCoversPeak})),

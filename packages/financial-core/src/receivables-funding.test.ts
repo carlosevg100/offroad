@@ -142,4 +142,8 @@ describe("receivables funding", () => {
       .toEqual([["lote-1", "3", "0", []], ["lote-2", "0", "1.5", ["debtor_sublimit"]]]);
     expect(r.portfolio.items.every(i => i.excluded === "0" || i.reasons.length > 0)).toBe(true);
   });
+  it("allows a rollover term longer, equal or shorter than the time in use", () => {
+    const at = (calendarDays: number) => assessReceivablesFunding({...base, calendarDays, businessDays: Math.round(calendarDays * 0.7)}).options.find(x => x.id === "desconto-bancario")!.cost;
+    expect([30, 50, 51].map(d => {const c = at(d); return [c.draws, c.iofDays, n(c.iof, 6)];})).toEqual([[1, 30, "0.106420"], [1, 50, "0.134300"], [2, 51, "0.200294"]]);
+  });
 });

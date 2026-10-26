@@ -84,7 +84,10 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     const b = bases((f) => {
       f.bridges[0]!.causes[1]!.value.until = "2027-03-31";
       const d = (id: string, label: string, kind: "analysis" | "plan", reads: string[], start: string, end: string, recomputedBy: string, owner: string) =>
-        ({value: {id, label, kind, reads, horizonStart: start, horizonEnd: end, recomputedBy, owner}, origin: "house" as const, source: "mapa de dependências"});
+        ({value: {id, label, kind, reads, horizonStart: start, horizonEnd: end, recomputedBy, owner, ...identity[id]!}, origin: "house" as const, source: "mapa de dependências"});
+      const identity: Record<string, {quantities: string[]; definition: string | null; scenario: string | null}> = {
+        "covenant-nov": {quantities: ["covenant_ratio"], definition: "Definição da escritura (CVM 156 menos arrendamentos)", scenario: "base"},
+        "ebitda-nov": {quantities: ["annual_ebitda"], definition: null, scenario: "base"}, "dre-mensal": {quantities: ["monthly_ebitda"], definition: null, scenario: "linha-17"}};
       f.dependents.push(d("covenant-nov", "Covenant até 30/11/2026", "analysis", ["ebitda", "caixa"], "2026-01-01", "2026-11-30", "covenant:dez26-base", "measure-covenant-headroom"),
         d("ebitda-nov", "EBITDA acumulado até novembro", "plan", ["ebitda"], "2026-01-01", "2026-11-30", "projection:2026", "build-operating-projection"),
         d("dre-mensal", "DRE mensal do quarto trimestre", "analysis", ["ebitda"], "2026-10-01", "2026-12-31", "weekly_cash", "build-operating-projection"));
@@ -106,7 +109,35 @@ describe("C54 premises proposed from facts with origin, adopted, composed and me
     const cheaper = bases((f) => {const s = f.streamUpdates[1]!.value; s.amounts = s.amounts.map((a, k) => s.dates[k]! > "2026-09-30" ? "5.7" : a);});
     const q = packetOf(cheaper);
     expect(q.readings!.affectedNotRecomputed).toContain("caixa-semanal");
-    expect(q.gaps.map((g) => g.reason)).toEqual(["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"]);
+    expect(q.gaps.map((g) => g.reason)).toEqual(["structural_cause_series_not_matching_factor", "affected_not_recomputed"]);
+  });
+  it("review r4: an identity transform with noise inside the tolerance does not update the weekly cash", () => {
+    const prior = auroraWeeklyCash.streams.find((x) => x.id === "insumos")!;
+    const p = packetOf(bases((f) => {const s = f.streamUpdates[1]!.value; s.transform = {kind: "scale", factor: "1"}; s.dates = [...prior.dates]; s.amounts = prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a);}));
+    expect(p.status).toBe("partial");
+    expect(p.gaps.map((g) => g.reason)).toEqual(["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"]);
+    expect(p.readings!.updated).not.toContain("caixa-semanal");
+  });
+  it("review r4: an EBITDA statement bound to the weekly cash through a driver line is not updated, and asking for it makes the packet partial", () => {
+    const b = bases((f) => {
+      f.bridges[0]!.causes[1]!.value.driverLineId = "ebitda";
+      f.dependents.push({value: {id: "dre-semanal", label: "EBITDA no horizonte semanal", kind: "analysis", reads: ["ebitda"], horizonStart: "2026-09-14", horizonEnd: "2027-01-03",
+        recomputedBy: "weekly_cash", owner: "build-operating-projection", quantities: ["monthly_ebitda"], definition: null, scenario: "linha-17"}, origin: "house", source: "mapa de dependências"});
+    });
+    const p = prepareQuarterUpdatePacket(composeBoundQuarterUpdate({prior: {weeklyCash: b.weeklyCash, covenant: b.covenant}, update: b.update, question, askedDependentIds: ["dre-semanal"]}));
+    expect(p.readings!.affectedNotRecomputed).toContain("dre-semanal");
+    expect(p.status).toBe("partial");
+    expect(p.gaps.map((g) => g.reason)).toEqual(["asked_dependent_not_recomputed"]);
+  });
+  it("review r4: the managerial reading is not updated by the indenture result", () => {
+    const b = bases((f) => {
+      f.covenant.value.measurementIds = ["dez26-base"];
+      for (const d of f.dependents) if (d.value.id === "covenant-dez26-gerencial") d.value.recomputedBy = "covenant:dez26-base";
+    });
+    const p = prepareQuarterUpdatePacket(composeBoundQuarterUpdate({prior: {weeklyCash: b.weeklyCash, covenant: b.covenant}, update: b.update, question, askedDependentIds: ["covenant-dez26-gerencial"]}));
+    expect(p.readings!.updated).toEqual(["caixa-semanal", "covenant-dez26", "projecao-2026"]);
+    expect(p.readings!.affectedNotRecomputed).toContain("covenant-dez26-gerencial");
+    expect(p.status).toBe("partial");
   });
   it("refuses a composition whose structure is missing, by name", () => {
     const b = bases(), without = (suffix: string) => ({...b, update: envelopeOf(b.entries.filter((e) => !e.fieldPath.endsWith(suffix)), 503, "synthetic quarter update")});

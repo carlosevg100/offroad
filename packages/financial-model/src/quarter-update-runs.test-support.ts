@@ -107,18 +107,33 @@ function goldCases(): Case[] {
       f.set("dependent.plano-2027.recomputedBy", {type: "text", value: "projection:2027"});
       // A November covenant, an EBITDA to November and a monthly statement are not the December results nor the weekly cash.
       const dependents = (f.input as unknown as {dependents: unknown[]}).dependents;
-      const add = (id: string, label: string, kind: string, reads: string[], start: string, end: string, by: string, owner: string) => {
+      const add = (id: string, label: string, kind: string, reads: string[], start: string, end: string, by: string, owner: string, quantities: string[], definition: string | null, scenario: string) => {
         const p = `dependent.${id}.`, txt = (k: string, v: string, unit = "text") => f.contribute(p + k, unit, {type: "text", value: v});
         dependents.push({id, label: txt("label", label), kind: txt("kind", kind, "convention"), reads: f.contribute(p + "reads", "identity", {type: "list", value: reads}),
           horizonStart: f.contribute(p + "horizonStart", "date", {type: "date", value: start}), horizonEnd: f.contribute(p + "horizonEnd", "date", {type: "date", value: end}),
-          recomputedBy: txt("recomputedBy", by, "convention"), owner: txt("owner", owner)});
+          recomputedBy: txt("recomputedBy", by, "convention"), owner: txt("owner", owner), quantities: f.contribute(p + "quantities", "identity", {type: "list", value: quantities}),
+          definition: definition === null ? null : txt("definition", definition), scenario: txt("scenario", scenario, "identity")});
       };
-      add("covenant-nov", "Covenant até 30/11/2026", "analysis", ["ebitda", "caixa"], "2026-01-01", "2026-11-30", "covenant:dez26-base", "measure-covenant-headroom");
-      add("ebitda-nov", "EBITDA acumulado até novembro", "plan", ["ebitda"], "2026-01-01", "2026-11-30", "projection:2026", "build-operating-projection");
-      add("dre-mensal", "DRE mensal do quarto trimestre", "analysis", ["ebitda"], "2026-10-01", "2026-12-31", "weekly_cash", "build-operating-projection");
+      add("covenant-nov", "Covenant até 30/11/2026", "analysis", ["ebitda", "caixa"], "2026-01-01", "2026-11-30", "covenant:dez26-base", "measure-covenant-headroom",
+        ["covenant_ratio"], "Definição da escritura (CVM 156 menos arrendamentos)", "base");
+      add("ebitda-nov", "EBITDA acumulado até novembro", "plan", ["ebitda"], "2026-01-01", "2026-11-30", "projection:2026", "build-operating-projection", ["annual_ebitda"], null, "base");
+      add("dre-mensal", "DRE mensal do quarto trimestre", "analysis", ["ebitda"], "2026-10-01", "2026-12-31", "weekly_cash", "build-operating-projection", ["monthly_ebitda"], null, "linha-17");
+      add("dre-semanal", "EBITDA no horizonte semanal", "analysis", ["ebitda"], "2026-09-14", "2027-01-03", "weekly_cash", "build-operating-projection", ["monthly_ebitda"], null, "linha-17");
+      (f.input as unknown as {bridges: {causes: {id: string; driverLineId: string | null}[]}[]}).bridges[0]!.causes.find((c) => c.id === "trigo")!.driverLineId = "ebitda";
     }), {status: "prepared_for_human_review", updated: ["caixa-semanal", "covenant-dez26", "covenant-dez26-gerencial", "projecao-2026"],
-      ownedElsewhere: ["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal"]},
+      ownedElsewhere: ["plano-2027", "linha-embalagem", "covenant-nov", "ebitda-nov", "dre-mensal", "dre-semanal"]},
       (p) => ({status: p.status, updated: p.readings!.updated, ownedElsewhere: p.readings!.ownedElsewhere.map((x) => x.dependentId)})),
+    observe("identity-transform-with-noise-is-no-propagation", packetInput((f) => {
+      const prior = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
+      f.set("streamUpdate.insumos.transformValue", {type: "number", value: "1"});
+      f.set("streamUpdate.insumos.dates", {type: "list", value: [...prior.dates]});
+      f.set("streamUpdate.insumos.amounts", {type: "list", value: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)});
+    }), {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
+      (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
+    observe("managerial-reading-not-updated-by-the-indenture-result", packetInput((f) => f.set("dependent.covenant-dez26-gerencial.recomputedBy", {type: "text", value: "covenant:dez26-base"}),
+      (i) => {i.analysis.update.covenant.measurementIds = ["dez26-base"]; i.askedDependentIds = ["covenant-dez26-gerencial"];}),
+      {status: "partial", updated: ["caixa-semanal", "covenant-dez26", "projecao-2026"], reasons: ["asked_dependent_not_recomputed"]},
+      (p) => ({status: p.status, updated: p.readings!.updated, reasons: p.gaps.map((g) => g.reason)})),
     observe("token-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
       const prior = auroraWeeklyCash.streams.find((s) => s.id === "insumos")!;
       f.set("streamUpdate.insumos.amounts", {type: "list", value: prior.amounts.map((a, k) => k === 3 ? "5.80000001" : a)});
@@ -127,7 +142,7 @@ function goldCases(): Case[] {
     observe("inconsistent-weekly-propagation-keeps-the-weekly-cash-affected", packetInput((f) => {
       const dates = f.entries.find((x) => x.fieldPath.endsWith("streamUpdate.insumos.dates"))!.value.value as string[];
       f.set("streamUpdate.insumos.amounts", {type: "list", value: dates.map((d) => d > "2026-09-30" ? "5.7" : "5.8")});
-    }), {status: "partial", reasons: ["structural_cause_weekly_effect_inconsistent", "affected_not_recomputed"], weeklyUpdated: false},
+    }), {status: "partial", reasons: ["structural_cause_series_not_matching_factor", "affected_not_recomputed"], weeklyUpdated: false},
       (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason), weeklyUpdated: p.readings!.updated.includes("caixa-semanal")})),
     observe("named-dependent-owned-elsewhere-makes-the-packet-partial", packetInput((f) => f.set("cause.trigo.until", {type: "date", value: "2027-03-31"}), (i) => {i.askedDependentIds = ["plano-2027"];}),
       {status: "partial", reasons: ["asked_dependent_not_recomputed"]}, (p) => ({status: p.status, reasons: p.gaps.map((g) => g.reason)})),
