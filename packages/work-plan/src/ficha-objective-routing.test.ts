@@ -398,6 +398,29 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 9: "não quero que", "prefiro que não" and "sem que" negate the action; "primeira
+  // versão" only for a projection of the closed list (operating, by drivers, annual, results, financial).
+  it.each([
+    ["Não quero que revise a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não quero que atualize as análises depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Não quero que construa a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Prefiro que não revise o business plan.", "ambiguous", "documents_to_case"],
+    ["Prefiro que você não atualize a projeção depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Monte a projeção operacional sem que a gente mande nada ao banco.", "operating_projection", "operating_projection"],
+    ["Revise a projeção financeira sem que mude o modelo.", "projection_challenge", "projection_challenge"],
+    ["Não gostaria que você construísse a projeção por drivers.", "ambiguous", "documents_to_case"],
+    ["Crie uma primeira versão da projeção de férias dos funcionários.", "ambiguous", "documents_to_case"],
+    ["Faça a primeira versão da projeção de vendas do evento.", "ambiguous", "documents_to_case"],
+    ["Monte a primeira versão da projeção de estoque.", "ambiguous", "documents_to_case"],
+    ["Faça a primeira versão da projeção por drivers.", "operating_projection", "operating_projection"],
+    ["Crie a primeira versão da projeção financeira.", "operating_projection", "operating_projection"],
+    ["Faz uma primeira versão com hipóteses explícitas.", "operating_projection", "operating_projection"],
+    ["Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", "operating_projection", "operating_projection"],
+  ] as const)("round 9: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);

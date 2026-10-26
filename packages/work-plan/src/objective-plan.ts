@@ -710,7 +710,7 @@ const debtObject = /\b(?:amortiz\w*|contratua\w*|contratos?|dividas?|endividamen
 
 /** An explicit negation of the action ("não revise", "não atualize", "não construa"): never a lote 3 kind. A negated
  * possession ("não temos projeção pronta") is not a negated action and keeps the C24 ficha. */
-const negatedAction = /\b(?:nao|nunca|jamais)\s+(?:(?:me|nos|lhe|quero|queremos|precisa|precisamos|vamos|deve|devemos|e para|pode|podem)\s+)?(?:revis\w*|atualiz\w*|constru\w*|mont\w*|fa(?:z|ca|cam|zer|ca)\b|cri(?:a|e|ar)\b|elabor\w*|desenvolv\w*|question\w*|contest\w*|critiqu\w*|critic\w*|refa\w*|refaz\w*|propag\w*|prepar\w*|projet\w*|calcul\w*|rod\w*|analis\w*|antecip\w*|ced(?:a|er)\b|financi\w*|us(?:e|ar)\b)/;
+const negatedAction = /(?:\b(?:nao|nunca|jamais)\s+(?:(?:quero|queremos|gostaria|gostariamos) que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?|(?:me|nos|lhe|quero|queremos|precisa|precisamos|vamos|deve|devemos|e para|pode|podem)\s+)?|\bprefir(?:o|imos) que\s+(?:voce\s+|voces\s+)?(?:nao|nunca)\s+|\bsem que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?)(?:revis\w*|atualiz\w*|constru\w*|mont\w*|fa(?:z|ca|cam|zer|ca)\b|cri(?:a|e|ar)\b|elabor\w*|desenvolv\w*|question\w*|contest\w*|critiqu\w*|critic\w*|refa\w*|refaz\w*|propag\w*|prepar\w*|projet\w*|calcul\w*|rod\w*|analis\w*|antecip\w*|ced(?:a|er)\b|financi\w*|us(?:e|ar)\b)/;
 
 function lote3Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
   const trimmed = text.trim();
@@ -747,7 +747,7 @@ const accountingClose = /\b(?:lancamentos?|ajustes?|fechamento contabil|contabil
 function firstVersion(text: string): boolean {
   if (/^(?:faz|faca|fazer|monta|monte|cria|crie|elabora|elabore) (?:uma|a) primeira versao com (?:hipoteses|premissas) explicitas[.!]*$/.test(text.trim())) return true;
   return text.split(/[.;!?]/).some((clause) => /\bprimeira versao\b/.test(clause)
-    && new RegExp(`(?:${operatingProjectionObject.source}|\\bprojec(?:ao|oes)\\b)`).test(clause));
+    && new RegExp(`(?:${operatingProjectionObject.source}|\\bprojec(?:ao|oes) financeiras?\\b)`).test(clause));
 }
 /** C35 never on a refusal or on a request only to record something. */
 const receivablesRefusal = /\b(?:nao|nunca|jamais|sem|recus\w*)\b|\b(?:registr(?:e|a|ar)|anot(?:e|a|ar))\b/;
