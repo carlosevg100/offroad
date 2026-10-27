@@ -62,6 +62,18 @@ describe("ficha 1 premises proposed from facts with origin, adopted, composed an
     expect(composeBoundReceivedProposal({...envelopeOf(unlisted), question}).analysis.portfolio.map((b) => b.id).at(-1)).toBe("rede-a");
     expect(packetOf(envelopeOf(unlisted)).readings!.collateral.assignable).toBe("25.41");
   });
+  it("never assumes the indexer: absent, it is asked; estimated, it is refused", () => {
+    const facts = auroraReceivedProposalFacts(); facts.indexer = null;
+    const h = proposeReceivedProposalHypotheses(facts);
+    expect(h.some((x) => x.fieldPath.endsWith(".proposal.indexer"))).toBe(false);
+    const q = packetOf(envelopeOf(adopt(facts).entries));
+    expect([q.status, q.openQuestions, q.gaps.some((g) => g.operand.endsWith(".proposal.indexer"))]).toEqual(["framed", ["indexer_confirmation"], true]);
+    expect(h.length).toBe(proposeReceivedProposalHypotheses(auroraReceivedProposalFacts()).length - 1);
+    const guessed = auroraReceivedProposalFacts(); guessed.indexer = {value: "cdi_plus", origin: "estimate", source: "provavelmente CDI"};
+    expect(() => proposeReceivedProposalHypotheses(guessed)).toThrow("never assumed");
+    const reason = proposeReceivedProposalHypotheses(auroraReceivedProposalFacts()).find((x) => x.fieldPath.endsWith(".proposal.indexer"))!.reason;
+    expect(reason).toBe("Origem: documento. term sheet do Itaú: CDI mais 2,10% ao ano");
+  });
   it("refuses inconsistent facts before proposing premises", () => {
     const holder = auroraReceivedProposalFacts(); holder.portfolio[1]!.value.holder = null;
     expect(() => proposeReceivedProposalHypotheses(holder)).toThrow("names the holder of its assignment");

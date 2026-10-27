@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: received-proposal-packet.v1
 unit_test_files: [packages/financial-core/src/evaluate-received-proposal.test.ts, packages/financial-model/src/evaluate-received-proposal-packet.test.ts, packages/financial-model/src/evaluate-received-proposal-runs.test.ts, packages/financial-model/src/evaluate-received-proposal-premises.test.ts]
-gold_case_ids: [indicative-proposal-is-a-starting-point, lender-has-not-seen-the-indenture, 2027-service-against-available-cash, peak-pressure-in-the-third-quarter-of-2027, december-solved-cash-below-minimum-from-third-quarter-2027, two-thirds-seasonal-on-a-three-year-amortizing-loan, covenant-on-the-indenture-definition, bank-case-and-board-policy, semiannual-test-doubles-the-dates, collateral-against-the-assignable-portfolio, retailer-a-is-not-assignable, aggregate-basket-occupied-by-bradesco, per-operation-reading-changes-only-the-basket, consent-window-against-the-draw, nominal-spread-against-the-market-range, cost-over-the-life-apart-from-the-nominal-spread, bridge-to-the-bradesco-operation, longer-tenor-lightens-the-upfront-costs, asks-and-what-each-buys, company-alternatives-on-the-same-basis, facts-readings-recommendations-apart-without-verdict, questions-for-the-lender-and-the-company, market-below-threshold-is-a-gap-not-a-reading, absent-basket-usage-is-a-gap-not-zero]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-verdict-in-readings, fabricated-acceptance-of-the-proposal, nominal-spread-offered-as-the-cost, basket-read-as-empty-under-the-bradesco-assignment, restricted-receivables-counted-as-free, free-bucket-placed-in-the-basket, assignment-without-holder, indexer-other-than-cdi, covenant-test-off-the-calendar, reading-after-the-draw, parallel-lists-of-different-length, bullet-with-many-installments, market-range-out-of-order, alternative-for-a-use-not-in-the-analysis, figure-read-in-another-scenario]
+gold_case_ids: [indicative-proposal-is-a-starting-point, lender-has-not-seen-the-indenture, 2027-service-against-available-cash, peak-pressure-in-the-third-quarter-of-2027, december-solved-cash-below-minimum-from-third-quarter-2027, two-thirds-seasonal-on-a-three-year-amortizing-loan, covenant-on-the-indenture-definition, bank-case-and-board-policy, semiannual-test-doubles-the-dates, collateral-against-the-assignable-portfolio, retailer-a-is-not-assignable, aggregate-basket-occupied-by-bradesco, per-operation-reading-changes-only-the-basket, consent-window-against-the-draw, nominal-spread-against-the-market-range, cost-over-the-life-apart-from-the-nominal-spread, bridge-to-the-bradesco-operation, longer-tenor-lightens-the-upfront-costs, asks-and-what-each-buys, company-alternatives-on-the-same-basis, facts-readings-recommendations-apart-without-verdict, questions-for-the-lender-and-the-company, market-below-threshold-is-a-gap-not-a-reading, missing-covenant-test-is-a-gap-not-compliance, every-required-test-through-2028-is-present, net-cost-under-full-deduction-convention, net-cost-withheld-without-taxable-profit, unconfirmed-indexer-is-asked, absent-basket-usage-is-a-gap-not-zero]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, fabricated-verdict-in-readings, fabricated-acceptance-of-the-proposal, nominal-spread-offered-as-the-cost, equivalent-spread-replaced-by-nominal-under-old-fingerprint, adopted-cost-replaced-by-nominal-under-old-fingerprint, covenant-test-in-an-undeclared-scenario, basket-read-as-empty-under-the-bradesco-assignment, restricted-receivables-counted-as-free, free-bucket-placed-in-the-basket, assignment-without-holder, indexer-other-than-cdi, covenant-test-off-the-calendar, reading-after-the-draw, parallel-lists-of-different-length, bullet-with-many-installments, market-range-out-of-order, alternative-for-a-use-not-in-the-analysis, figure-read-in-another-scenario]
 e2e_scenario_ids: [domain:2027-service-against-available-cash]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -52,10 +52,11 @@ Pacote de avaliação de uma proposta, na ordem da árvore de julgamento: firmez
 - Pedido limitado a ler ou organizar o term sheet: preservar o limite.
 
 # Inputs mínimos e substitutos
-- Termos da proposta: valor, indexador e spread, comissão, data do desembolso, carência, número e intervalo das parcelas, pagamento de juros, tipo de garantia e cobertura, conta vinculada, covenant com limite, datas e definição, pré-pagamento, firmeza e validade. Termo ausente vira pergunta ao banco, nunca suposição.
+- Indexador confirmado por documento ou pela pessoa, com a fonte; sem confirmação, vira pergunta ao banco ou à companhia antes de qualquer número, nunca suposição de CDI.
+- Termos da proposta: valor, spread, comissão, data do desembolso, carência, número e intervalo das parcelas, pagamento de juros, tipo de garantia e cobertura, conta vinculada, covenant com limite, datas e definição, pré-pagamento, firmeza e validade. Termo ausente vira pergunta ao banco, nunca suposição.
 - Usos do dinheiro com valor e prazo esperado de cada um. Sem propósito não há adequação: falta crítica.
 - Calendário da companhia sem a proposta, por trimestre: serviço da dívida existente (tabela de dívida), caixa disponível para o serviço e caixa de fim de período (projeção adotada), períodos tributáveis e caixa mínimo. Substituto: projeção por drivers marcada como estimativa.
-- Apurações do covenant sem a proposta, na definição escrita, no caso base e no caso do banco; limite da escritura vigente com aditamentos e política do conselho quando existir.
+- Cenários em que o covenant precisa ser lido (caso da companhia e caso do banco) e, em cada um, a apuração sem a proposta em toda data de teste exigida pela escritura, pelo credor e pela política dentro do horizonte, na definição escrita; limite da escritura vigente com aditamentos e política do conselho quando existir.
 - Carteira por grupo: valor, vedação de cessão, cessão a outro credor e se ocupa a exceção da escritura, atraso. Exceção da escritura para garantia nova, com a base (agregada ou por operação) e o que já está ocupado, e prazo de assembleia de referência.
 - Curva do CDI por ano, regra do IOF, regime tributário. Referência de mercado com amostra e confiança, só acima do limiar de comparabilidade. Última operação da companhia com as parcelas da ponte.
 
@@ -72,11 +73,13 @@ Pacote de avaliação de uma proposta, na ordem da árvore de julgamento: firmez
 # Cálculos determinísticos
 - Cronograma: pagamentos no dia do contrato a cada mês de juros e em cada parcela, sem ajuste a dia útil; principal SAC em parcelas iguais com a última absorvendo o arredondamento em oito casas, ou bullet; o CDI acumula por dias úteis do calendário nacional sobre 252 e os intervalos se partem em 1º de janeiro, onde a curva muda. Price, IPCA, prefixado e percentual do CDI são recusados.
 - IOF de crédito: alíquota fixa sobre o valor mais a diária sobre cada parcela, pelos dias corridos do desembolso ao pagamento dela, até o teto declarado. Comissão e IOF retidos no desembolso.
-- Custo efetivo pela vida: spread anual que, composto com o CDI de cada intervalo, zera o valor presente dos fluxos líquidos da companhia (motor publicado do custo equivalente). Custo líquido no lucro real = custo efetivo vezes um menos a alíquota; no presumido, igual ao bruto; regime desconhecido, sem número. Reciprocidade nunca é precificada aqui.
+- Custo efetivo pela vida: spread anual que, composto com o CDI de cada intervalo, zera o valor presente dos fluxos líquidos da companhia (motor publicado do custo equivalente). Custo líquido pela convenção simplificada de dedução plena: custo efetivo vezes um menos a alíquota, afirmado só no lucro real com todos os períodos da vida da proposta tributáveis; havendo período sem lucro tributável, o líquido não é afirmado e a condição vira lacuna; no presumido, igual ao bruto; regime desconhecido, sem número. Não é uma TIR depois de impostos. Divergência com a ficha 1, decidida a favor do método: a ficha dava CDI + 4,4 bruto somando IOF de 3,38% e comissão sobre 1,8 ano, aproximação que não zera o valor presente; o motor publicado dá CDI + 4,90 bruto e 3,24 líquido na convenção acima. Reciprocidade nunca é precificada aqui.
 - Calendário: o serviço da proposta em cada período sai do mesmo cronograma, cortado nos fins de período (núcleo publicado da comparação); serviço total = existente adotado mais o da proposta; o ano de pico é o de maior serviço existente; caixa com a proposta = caixa adotado mais o fluxo acumulado da proposta (desembolso menos retenção, juros e principal, mais o benefício fiscal de juros apropriados e encargos nos períodos tributáveis do lucro real).
+- Cobertura do covenant: exigidas todas as datas de teste em vigor dentro do horizonte (as do credor a partir do desembolso), em cada cenário declarado; apuração ausente vira lacuna nomeada, o pacote fica parcial e, sem violação encontrada, a conclusão de violação fica nula, nunca falsa.
 - Covenant: em cada apuração adotada, dívida mais o principal da proposta e caixa mais o fluxo acumulado dela, pelo núcleo publicado de folga, contra a escritura, o credor e a política do conselho, cada um só nas suas datas; folga em vezes do EBITDA = limite menos índice.
 - Garantia: exigida = cobertura vezes o valor. Carteira cedível = grupos livres, sem vedação de cessão e sem atraso. Exceção da escritura: agregada = limite menos o já ocupado, por operação = limite; garantia acima dela exige anuência dos debenturistas. O já ocupado não pode ser menor que a cessão que a carteira mostra dentro da exceção.
 - Preço: posição do spread nominal na faixa adotada; ponte contra a última operação = diferença observada menos as parcelas adotadas de mercado, risco e estrutura (núcleo publicado da ponte); resíduo é interpretação.
+- Integridade: o fingerprint do resultado adotado e do pacote é o hash do conteúdo em JSON canônico de chaves ordenadas, recalculado na validação; valor alterado com fingerprint antigo é recusado.
 - Precisão: aritmética decimal de 60 dígitos; resultados em até vinte casas, premissas monetárias em até oito.
 
 # Julgamentos permitidos
@@ -96,6 +99,9 @@ Pacote de avaliação de uma proposta, na ordem da árvore de julgamento: firmez
 - Comparar só a taxa nominal.
 - Veredito binário; certeza sobre o comportamento do banco.
 - Proposta indicativa tratada como dinheiro garantido.
+- Indexador presumido como CDI sem confirmação.
+- Ausência de apuração lida como cumprimento do covenant.
+- Custo líquido afirmado sem lucro tributável.
 
 # Stop conditions
 - Sem propósito ou sem garantia entendida: responder em duas etapas, com o que já dá para dizer e as perguntas certas.
@@ -127,9 +133,9 @@ Pacote de avaliação de uma proposta, na ordem da árvore de julgamento: firmez
 - packages/financial-model/src/evaluate-received-proposal-packet.test.ts: leituras, avaliação sem veredito, estado parcial, contrato publicado.
 - packages/financial-model/src/evaluate-received-proposal-premises.test.ts: fatos com origem, premissas, base, composição e pacote igual à calibração.
 ## Gold
-- Ficha 1 corrigida pelas fichas C32, A05 e C09, com o oráculo da C32 como conferência: firmeza, 2027, pico no terceiro trimestre, caixa, encaixe, covenant base, banco e política, garantia, rede A, exceção agregada, janela da assembleia, preço, custo, ponte, pedidos, alternativas, avaliação, perguntas, mercado abaixo do limiar e exceção sem uso informado.
+- Ficha 1 corrigida pelas fichas C32, A05 e C09, com o oráculo da C32 como conferência: firmeza, 2027, pico no terceiro trimestre, caixa, encaixe, covenant base, banco e política, garantia, rede A, exceção agregada, janela da assembleia, preço, custo, ponte, pedidos, alternativas, avaliação, perguntas, mercado abaixo do limiar, exceção sem uso informado, apuração de covenant ausente, custo líquido sem lucro tributável e indexador não confirmado.
 ## Adversarial
-- Base adulterada, resultado livre, concessão, veredito, aceite, custo nominal, exceção lida como vazia sob a cessão do Bradesco, recebível vedado contado como livre, grupo livre na exceção, cessão sem credor, indexador fora do CDI, apuração fora do calendário, leitura depois do desembolso, listas paralelas de tamanhos diferentes, bullet com várias parcelas, faixa de mercado fora de ordem, alternativa para uso inexistente, número de outro cenário.
+- Base adulterada, resultado livre, concessão, veredito, aceite, custo nominal, exceção lida como vazia sob a cessão do Bradesco, recebível vedado contado como livre, grupo livre na exceção, cessão sem credor, indexador fora do CDI, apuração fora do calendário, leitura depois do desembolso, listas paralelas de tamanhos diferentes, bullet com várias parcelas, faixa de mercado fora de ordem, alternativa para uso inexistente, número de outro cenário, valor da saída trocado sob fingerprint antigo (pacote e resultado adotado), apuração em cenário não declarado.
 ## Aceitação
 - Executar a conversa da ficha 1 turno a turno pela interface real com fontes e direitos do ambiente de teste.
 
@@ -3153,6 +3159,59 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                           }
                         },
                         "indentureSource": {
+                          "required": true,
+                          "value": {
+                            "type": "object",
+                            "fields": {
+                              "decisionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              },
+                              "definitionVersionId": {
+                                "required": true,
+                                "value": {
+                                  "type": "string"
+                                }
+                              },
+                              "definitionKind": {
+                                "required": true,
+                                "value": {
+                                  "type": "enum",
+                                  "values": [
+                                    "reported",
+                                    "managerial",
+                                    "contractual"
+                                  ]
+                                }
+                              },
+                              "missingReason": {
+                                "required": true,
+                                "value": {
+                                  "type": "union",
+                                  "variants": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "requiredScenarios": {
                           "required": true,
                           "value": {
                             "type": "object",
@@ -7814,6 +7873,18 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                                       ]
                                     }
                                   },
+                                  "netConvention": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "enum",
+                                      "values": [
+                                        "full_deductibility_simplified",
+                                        "not_all_periods_taxable",
+                                        "no_deduction_presumido",
+                                        "regime_unknown"
+                                      ]
+                                    }
+                                  },
                                   "taxRegime": {
                                     "required": true,
                                     "value": {
@@ -8711,10 +8782,64 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                                       ]
                                     }
                                   },
+                                  "required": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "fields": {
+                                          "date": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "date"
+                                            }
+                                          },
+                                          "scenario": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "missingTests": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "fields": {
+                                          "date": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "date"
+                                            }
+                                          },
+                                          "scenario": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
                                   "anyBreachWith": {
                                     "required": true,
                                     "value": {
-                                      "type": "boolean"
+                                      "type": "union",
+                                      "variants": [
+                                        {
+                                          "type": "boolean"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "testsPerYear": {
@@ -9652,6 +9777,43 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                                   }
                                 }
                               }
+                            },
+                            "anyBreachWith": {
+                              "required": true,
+                              "value": {
+                                "type": "union",
+                                "variants": [
+                                  {
+                                    "type": "boolean"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "missingTests": {
+                              "required": true,
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "date": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "date"
+                                      }
+                                    },
+                                    "scenario": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -9892,6 +10054,18 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                                 ]
                               }
                             },
+                            "netConvention": {
+                              "required": true,
+                              "value": {
+                                "type": "enum",
+                                "values": [
+                                  "full_deductibility_simplified",
+                                  "not_all_periods_taxable",
+                                  "no_deduction_presumido",
+                                  "regime_unknown"
+                                ]
+                              }
+                            },
                             "upfrontShare": {
                               "required": true,
                               "value": {
@@ -10117,7 +10291,9 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                                     "improvement_partly_paid_in_collateral",
                                     "real_improvement_against_last_operation",
                                     "covenant_headroom_tight",
-                                    "diligence_may_reopen_structure"
+                                    "diligence_may_reopen_structure",
+                                    "covenant_tests_missing",
+                                    "net_cost_conditioned_on_taxable_profit"
                                   ]
                                 }
                               }
@@ -10227,6 +10403,18 @@ O que decide é o ano e o trimestre em que o serviço se concentra contra o caix
                       }
                     }
                   }
+                }
+              }
+            },
+            "openQuestions": {
+              "required": true,
+              "value": {
+                "type": "array",
+                "items": {
+                  "type": "enum",
+                  "values": [
+                    "indexer_confirmation"
+                  ]
                 }
               }
             },

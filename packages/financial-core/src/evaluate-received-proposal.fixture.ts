@@ -10,7 +10,8 @@ export const auroraPeriodEnds = ["2026-09-30", "2026-12-31", "2027-03-31", "2027
 export const auroraBankCase = {
   closingCash: ["39.430246", "-12.2166881", "12.02020387", "-9.87983937", "-48.72005072", "-85.93699927", "-55.72208823", "-66.59216361", "-61.51231404", "-81.40670829"],
   measurements: [{date: "2026-12-31", debt: "111.66666667", cash: "-12.2166881", reportedEbitda: "52.4"}, {date: "2027-06-30", debt: "93.33333333", cash: "-9.87983937", reportedEbitda: "49.625"},
-    {date: "2027-12-31", debt: "35", cash: "-85.93699927", reportedEbitda: "50.8725"}],
+    {date: "2027-12-31", debt: "35", cash: "-85.93699927", reportedEbitda: "50.8725"}, {date: "2028-06-30", debt: "16.66666667", cash: "-66.59216361", reportedEbitda: "54.1875"},
+    {date: "2028-12-31", debt: "13.33333333", cash: "-81.40670829", reportedEbitda: "55.08"}],
 };
 export function auroraReceivedProposal(): ReceivedProposalInput {
   const measurement = (scenario: string, m: {date: string; debt: string; cash: string; reportedEbitda: string}) => ({...m, scenario, definitionAdjustment: "-3"});
@@ -35,10 +36,13 @@ export function auroraReceivedProposal(): ReceivedProposalInput {
       taxable: auroraPeriodEnds.map(() => true), minimumCash: "15"},
     covenant: {indenture: {maximumRatio: "3", testDates: ["2026-12-31", "2027-12-31", "2028-12-31"], source: "Escritura de 2021 com o aditamento de 2023"},
       policy: {maximumRatio: "2.5", testDates: ["2026-12-31", "2027-12-31", "2028-12-31"], source: "Ata do conselho de março de 2026"},
+      requiredScenarios: ["base", "bank"],
       measurements: [
         measurement("base", {date: "2026-12-31", debt: "111.66666667", cash: "-10.8306881", reportedEbitda: "54.5"}),
         measurement("base", {date: "2027-06-30", debt: "93.33333333", cash: "-5.67233937", reportedEbitda: "56"}),
         measurement("base", {date: "2027-12-31", debt: "35", cash: "-78.62584927", reportedEbitda: "59.85"}),
+        measurement("base", {date: "2028-06-30", debt: "16.66666667", cash: "-56.07341361", reportedEbitda: "63.75"}),
+        measurement("base", {date: "2028-12-31", debt: "13.33333333", cash: "-67.68035829", reportedEbitda: "64.8"}),
         ...auroraBankCase.measurements.map((m) => measurement("bank", m))]},
     portfolio: [
       {id: "rede-a", label: "Rede A (maior cliente)", amount: "18.56", contract: "prohibited_without_consent", encumbrance: "free", holder: null, pastDue: false, countsAgainstBasket: false},

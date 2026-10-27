@@ -15,7 +15,7 @@ export type ReceivedProposalStructure = {
   graceMonths: number; installments: number; coverage: string; restrictedAccount: boolean;
 };
 export type ReceivedProposalTerms = ReceivedProposalStructure & {
-  lender: string; indexer: "cdi_plus"; firmness: "indicative" | "committed"; termSheetDate: string; validityDays: number;
+  lender: string; indexer: "cdi_plus" | "percent_of_cdi" | "ipca_plus" | "fixed"; firmness: "indicative" | "committed"; termSheetDate: string; validityDays: number;
   amount: string; annualSpread: string; feeRate: string;
   /** Draw date and the day of the month of every payment; payments are not moved to business days. */
   drawDate: string; paymentDay: number;
@@ -47,6 +47,8 @@ export type ReceivedProposalInput = {
   covenant: {indenture: {maximumRatio: string; testDates: readonly string[]; source: string};
     policy: {maximumRatio: string; testDates: readonly string[]; source: string} | null;
     /** Each test without the proposal: debt, cash, reported trailing EBITDA and what the written definition deducts. */
+    /** Every scenario the covenant must be read in; each in-force test date in the horizon is required in each. */
+    requiredScenarios: readonly string[];
     measurements: readonly {date: string; scenario: string; debt: string; cash: string; reportedEbitda: string; definitionAdjustment: string}[]};
   portfolio: readonly ReceivedProposalBucket[];
   /** The indenture's basket for new liens: its limit, whether it is aggregate or per operation, and what is already in it. */
@@ -191,6 +193,10 @@ function validate(input: ReceivedProposalInput) {
   const p = input.proposal;
   int(p.validityDays, 1, 365); int(p.prepayment.penaltyMonths, 0, 360); num(p.prepayment.penaltyRate);
   if (p.collateralKind === "none" && num(p.coverage).gt(0)) throw new Error("received_proposal_collateral_kind");
+  const scenarios = input.covenant.requiredScenarios;
+  if (!scenarios.length || scenarios.length > 4 || new Set(scenarios).size !== scenarios.length) throw new Error("received_proposal_covenant_scenarios");
+  if (input.covenant.measurements.some(m => !scenarios.includes(m.scenario))) throw new Error("received_proposal_covenant_scenario_undeclared");
+  if (new Set(input.covenant.measurements.map(m => `${m.date}|${m.scenario}`)).size !== input.covenant.measurements.length) throw new Error("received_proposal_covenant_duplicate_test");
   if (!input.covenant.measurements.length || input.covenant.measurements.length > 12) throw new Error("received_proposal_covenant_measurements");
   for (const m of input.covenant.measurements) if (!c.periodEnds.includes(m.date)) throw new Error("received_proposal_covenant_date_off_calendar");
   if (input.seasonalPeak !== null) num(input.seasonalPeak);
@@ -286,6 +292,12 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       limits: limits.map(l => ({limitId: l.id, kind: l.kind, maximumRatio: out(num(l.maximumRatio)), testedOnDate: l.testDates.includes(m.date),
         headroomWith: w.ratio === null ? null : out(num(l.maximumRatio).minus(w.ratio)), breachedWith: w.ratio === null ? true : new Exact(w.ratio).gt(l.maximumRatio)}))};
   });
+  // Coverage: each in-force limit's test dates inside the horizon (the lender's from the draw on), in every
+  // required scenario. A missing test is never read as compliance.
+  const horizonEnd = c.periodEnds.at(-1)!;
+  const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && (l.id !== "proposal" || d >= p.drawDate) && d > c.openingDate)))].sort();
+  const required = requiredDates.flatMap(date => input.covenant.requiredScenarios.map(scenario => ({date, scenario})));
+  const missingTests = required.filter(r => !input.covenant.measurements.some(m => m.date === r.date && m.scenario === r.scenario));
   const testsPerYear = (dates: readonly string[]) => {const y = new Map<string, number>(); dates.forEach(d => y.set(d.slice(0, 4), (y.get(d.slice(0, 4)) ?? 0) + 1)); return Math.max(0, ...y.values());};
 
   // Price: nominal spread against the adopted range when it is comparable; cost over the life apart.
@@ -296,7 +308,13 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       toMedianBps: out(spread.minus(median).mul(10000)), toHighBps: out(spread.minus(high).mul(10000)), low: out(low), median: out(median), high: out(high),
       sample: m.sample, confidence: m.confidence, observedOn: m.observedOn};
   })() : null;
-  const net = (gross: Decimal) => input.tax.regime === "lucro_real" ? out(gross.mul(new Exact(1).minus(taxRate))) : input.tax.regime === "lucro_presumido" ? out(gross) : null;
+  // Net cost by the simplified convention: the spread reduced by the tax rate, assuming the interest, fee and
+  // credit tax are fully deducted when paid. It holds only under lucro real with every period of the life
+  // inside the horizon taxable; otherwise it is not stated and the condition is named.
+  const lifeQuarters = quarters.map((q, i) => ({q, i})).filter(({q, i}) => i >= drawIndex && q.periodEnd >= p.drawDate);
+  const netConvention = input.tax.regime === "unknown" ? "regime_unknown" as const : input.tax.regime === "lucro_presumido" ? "no_deduction_presumido" as const
+    : lifeQuarters.every(({i}) => c.taxable[i]) ? "full_deductibility_simplified" as const : "not_all_periods_taxable" as const;
+  const net = (gross: Decimal) => netConvention === "full_deductibility_simplified" ? out(gross.mul(new Exact(1).minus(taxRate))) : netConvention === "no_deduction_presumido" ? out(gross) : null;
   const history = input.history ? calculateRelativeDebtCostBridge({ownSpreadBps: out(spread.mul(10000)), peerSpreadBps: out(num(input.history.spread, true).mul(10000)),
     pricingBasis: "same_indexer_quoted_spread", ownIndexer: "CDI", peerIndexer: "CDI", curveVersion: null, coverage: "complete_scoped_bridge",
     adjustments: input.history.adjustments.map(a => ({id: a.id, family: a.family, bps: a.bps, evidenceAnchor: a.anchor, methodologyVersion: receivedProposalVersion, independentEffectGroup: a.id}))}) : null;
@@ -330,7 +348,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       reciprocity: p.reciprocity, covenantDefinition: p.covenant?.definition ?? null, firstLenderTestDate: firstCovenantDate},
     cost: {fee: out(received.fee), creditTax: out(received.iof), creditTaxRate: out(received.iof.div(amount)), upfrontCosts: out(received.upfront),
       upfrontShare: out(received.upfront.div(amount)), weightedAverageLifeYears: out(life), equivalentSpread: out(received.equivalentSpread),
-      equivalentSpreadNet: net(received.equivalentSpread), taxRegime: input.tax.regime, nominalToEquivalentBps: out(received.equivalentSpread.minus(spread).mul(10000)),
+      equivalentSpreadNet: net(received.equivalentSpread), netConvention, taxRegime: input.tax.regime, nominalToEquivalentBps: out(received.equivalentSpread.minus(spread).mul(10000)),
       serviceByYear: [...received.serviceByYear].map(([year, v]) => ({year, service: out(v)}))},
     calendar: {quarters, years, peakYear: peak.year, peakQuarter: {periodEnd: peakQuarter.periodEnd, totalService: peakQuarter.totalService},
       minimumCash: {policy: minimumCash === null ? null : out(minimumCash), without: {periodEnd: low("closingCashWithout").periodEnd, amount: low("closingCashWithout").closingCashWithout},
@@ -347,7 +365,9 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       consentRequired: receivedCollateral.consentRequired, excess: receivedCollateral.excessOverBasket,
       maxCoverageWithoutConsent: usesBasket ? out(basketRemaining.div(amount)) : null,
       consentWindow: {from: consentFrom, by: consentBy, needDate: input.needDate, slackDays: daysBetween(consentBy, input.needDate)}},
-    covenant: {rows: covenantRows, worst: headroom.worst, anyBreachWith: headroom.anyBreach,
+    covenant: {rows: covenantRows, worst: headroom.worst, required, missingTests,
+      // A breach found is a breach; without one, no conclusion while a required test is missing.
+      anyBreachWith: headroom.anyBreach ? true : missingTests.length ? null : false,
       testsPerYear: {indenture: testsPerYear(input.covenant.indenture.testDates), lender: p.covenant ? testsPerYear(p.covenant.testDates) : 0}},
     price: {market, history: history ? {peer: input.history!.label, peerDate: input.history!.date, observedBps: history.grossBps,
       expectedBps: history.knownAdjustmentsBps, residualBps: history.residualBps, steps: history.steps.map(s => ({id: s.id, family: s.family, bps: s.bps}))} : null},

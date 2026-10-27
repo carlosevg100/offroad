@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {prepareReceivedProposalPacket} from "./evaluate-received-proposal-packet";
+import {prepareReceivedProposalPacket, receivedProposalPacketOutputSchema} from "./evaluate-received-proposal-packet";
 import {calculateAdoptedReceivedProposal} from "./adopted-evaluate-received-proposal";
 import {adoptedReceivedProposalOutputSchema} from "./evaluate-received-proposal-results";
 import {receivedProposalPacketExecutorContracts} from "./evaluate-received-proposal-contracts";
@@ -35,6 +35,24 @@ describe("received proposal packet", {timeout: 180_000}, () => {
   it("prices the asks and puts the nominal spread and the cost over the life side by side", () => {
     expect([n(r.price.nominalSpread, 4), n(r.price.equivalentSpread, 4), n(r.price.equivalentSpreadNet, 4), r.price.marketPosition]).toEqual(["0.0210", "0.0490", "0.0324", "above_median_within_range"]);
     expect(r.asks.map((a) => [a.id, n(a.peakYearServiceDelta), a.consentStillRequired])).toEqual([["carencia-12-prazo-48", "-6.0", true], ["carencia-12-prazo-60", "-6.4", true], ["cobertura-120-sem-conta", "0.0", true]]);
+  });
+  it("does not conclude compliance with a required covenant test missing", () => {
+    expect([r.covenant.anyBreachWith, r.covenant.missingTests]).toEqual([true, []]);
+    const k = auroraReceivedProposal(); k.covenant.measurements = k.covenant.measurements.filter((m) => !(m.scenario === "bank" && ["2026-12-31", "2027-12-31"].includes(m.date)));
+    const q = packet(k);
+    expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.assessment.readings.includes("covenant_tests_missing"), q.gaps.filter((g) => g.operand.includes(".covenant.bank.")).length]).toEqual(["partial", null, true, 2]);
+  });
+  it("conditions the net cost on taxable profit in every period", () => {
+    expect(r.price.netConvention).toBe("full_deductibility_simplified");
+    const k = auroraReceivedProposal(); k.calendar.taxable = k.calendar.taxable.map(() => false);
+    const q = packet(k);
+    expect([q.status, q.readings!.price.equivalentSpreadNet, q.readings!.price.netConvention, q.gaps.some((g) => g.operand.endsWith(".calendar.taxable"))]).toEqual(["partial", null, "not_all_periods_taxable", true]);
+  });
+  it("refuses a changed value under the old fingerprint, in the packet and in the adopted result", () => {
+    expect(() => receivedProposalPacketOutputSchema.parse({...p, readings: {...r, price: {...r.price, equivalentSpread: r.price.nominalSpread}}})).toThrow("received_proposal_fingerprint_mismatch");
+    const ev = p.result.evaluation!;
+    expect(() => receivedProposalPacketOutputSchema.parse({...p, result: {...p.result, evaluation: {...ev, cost: {...ev.cost, equivalentSpread: ev.proposal.annualSpread}}}})).toThrow("received_proposal_fingerprint_mismatch");
+    expect(receivedProposalPacketOutputSchema.parse(JSON.parse(JSON.stringify(p))).fingerprint).toBe(p.fingerprint);
   });
   it("is partial without a comparable market and deterministic, validated and published", () => {
     const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};

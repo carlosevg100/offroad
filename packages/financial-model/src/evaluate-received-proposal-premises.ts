@@ -33,7 +33,10 @@ export const receivedProposalFactsSchema = z.strictObject({
   receivedProposalId: z.uuid(), entityId: z.uuid(), perimeter: text, currency: z.string().regex(/^[A-Z]{3}$/), definitionVersionId: z.uuid(),
   openingDate: date, readingDate: fact(date), needDate: fact(date),
   /** The term sheet, with the clauses that came from somewhere else named apart. */
-  proposal: fact(proposal), provenance: z.partialRecord(z.enum(clauses), origin).optional(),
+  proposal: fact(proposal),
+  /** The indexer, with its own origin: a document or the person must state it; absent, it is asked, never assumed. */
+  indexer: fact(z.enum(["cdi_plus", "percent_of_cdi", "ipca_plus", "fixed"])).nullable(),
+  provenance: z.partialRecord(z.enum(clauses), origin).optional(),
   creditTax: fact(z.strictObject({fixedRate: unsignedRatio, dailyRate: unsignedRatio, maxDays: count(3660)})),
   indexCurve: fact(z.array(z.strictObject({year: z.number().int().min(2000).max(2200), annualRate: ratio})).min(1).max(40)),
   tax: fact(z.strictObject({regime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), rate: unsignedRatio})),
@@ -44,6 +47,8 @@ export const receivedProposalFactsSchema = z.strictObject({
     closingCash: z.array(signedMoney).min(1).max(40), taxable: z.array(z.boolean()).min(1).max(40)})),
   minimumCash: fact(money).nullable(),
   indenture: fact(z.strictObject({maximumRatio: unsignedRatio, testDates: z.array(date).min(1).max(24), source: text})),
+  /** Every scenario the covenant must be read in (the company's and the bank's case); each required test date in each. */
+  covenantScenarios: fact(z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(4)),
   policy: fact(z.strictObject({maximumRatio: unsignedRatio, testDates: z.array(date).min(1).max(24), source: text})).nullable(),
   measurements: fact(z.array(z.strictObject({date, scenario: z.string().regex(/^[a-z0-9-]{1,40}$/), debt: money, cash: signedMoney, reportedEbitda: signedMoney,
     definitionAdjustment: signedMoney})).min(1).max(12)),
@@ -68,6 +73,8 @@ export const receivedProposalFactsSchema = z.strictObject({
   if (f.readingDate.value > p.drawDate) fail("The reading precedes the draw");
   if (p.amortization === "bullet" && p.installments !== 1) fail("A bullet has one installment");
   for (const m of f.measurements.value) if (!c.periodEnds.includes(m.date)) fail(`Covenant test ${m.date} is not a period end of the calendar`);
+  if (f.indexer && f.indexer.origin !== "document" && f.indexer.origin !== "informed") fail("The indexer is confirmed by a document or by the person, never assumed");
+  if (f.measurements.value.some((m) => !f.covenantScenarios.value.includes(m.scenario))) fail("A covenant test is in a scenario not declared");
   const ids = (list: {value: {id: string}}[], what: string) => {if (new Set(list.map((x) => x.value.id)).size !== list.length) fail(`Duplicate ${what}`);};
   ids(f.uses, "use"); ids(f.portfolio, "bucket"); ids(f.variants, "variant"); ids(f.alternatives, "alternative");
   for (const {value: b} of f.portfolio) {
@@ -107,7 +114,7 @@ export function proposeReceivedProposalHypotheses(raw: unknown): ProposedHypothe
   day("needDate", f.needDate.value, why(f.needDate));
   const p = f.proposal.value, r = why(f.proposal), clause = (k: (typeof clauses)[number]) => f.provenance?.[k] ? why(f.provenance[k]!) : r;
   txt("proposal.lender", "text", p.lender, r);
-  txt("proposal.indexer", "convention", "cdi_plus", r);
+  if (f.indexer) txt("proposal.indexer", "convention", f.indexer.value, why(f.indexer));
   txt("proposal.firmness", "convention", p.firmness, r);
   day("proposal.termSheetDate", p.termSheetDate, clause("termSheetDate"));
   num("proposal.validityDays", "days", p.validityDays, r);
@@ -156,6 +163,7 @@ export function proposeReceivedProposalHypotheses(raw: unknown): ProposedHypothe
   num("covenant.indentureLimit", "ratio", ind.maximumRatio, why(f.indenture));
   list("covenant.indentureTestDates", "date", ind.testDates, why(f.indenture));
   txt("covenant.indentureSource", "text", ind.source, why(f.indenture));
+  list("covenant.requiredScenarios", "identity", f.covenantScenarios.value, why(f.covenantScenarios));
   if (f.policy) {
     num("covenant.policyLimit", "ratio", f.policy.value.maximumRatio, why(f.policy));
     list("covenant.policyTestDates", "date", f.policy.value.testDates, why(f.policy));

@@ -1,9 +1,8 @@
-import {createHash} from "node:crypto";
 import {z} from "zod";
 import {evaluateReceivedProposal, financialCoreVersion, type ReceivedProposalInput} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
-import {receivedProposalAdoptedExclusions} from "./evaluate-received-proposal-results";
+import {receivedProposalAdoptedExclusions, receivedProposalFingerprint} from "./evaluate-received-proposal-results";
 
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), words = z.string().trim().min(1).max(2000);
 const unsigned = z.string().regex(/^\d{1,24}(?:\.\d{1,20})?$/), signed = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/);
@@ -26,7 +25,7 @@ export const adoptedReceivedProposalInputSchema = adoptedAnalysisContextSchema.s
   uses: z.array(z.strictObject({id: key, label: selection, amount: selection, kind: selection, tenorMinYears: selection, tenorMaxYears: selection})).min(1).max(8),
   seasonalPeak: optional,
   calendar: z.strictObject({periodEnds: selection, existingService: selection, availableForService: selection, closingCash: selection, taxable: selection, minimumCash: optional}),
-  covenant: z.strictObject({indentureLimit: selection, indentureTestDates: selection, indentureSource: selection, policyLimit: optional, policyTestDates: optional, policySource: optional,
+  covenant: z.strictObject({indentureLimit: selection, indentureTestDates: selection, indentureSource: selection, requiredScenarios: selection, policyLimit: optional, policyTestDates: optional, policySource: optional,
     dates: selection, scenarios: selection, debt: selection, cash: selection, reportedEbitda: selection, definitionAdjustment: selection}),
   portfolio: z.array(z.strictObject({id: key, label: selection, amount: selection, contract: selection, encumbrance: selection, holder: optional, pastDue: selection,
     countsAgainstBasket: selection})).min(1).max(12),
@@ -65,7 +64,7 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
     testDates: read(p.covenantTestDates!, "proposal.covenantTestDates", "date", "list", dates),
     definition: convention(p.covenantDefinition!, "proposal.covenantDefinition", ["same_as_indenture", "not_stated"])};
   const proposal: ReceivedProposalInput["proposal"] = {
-    lender: read(p.lender, "proposal.lender", "text", "text", words), indexer: convention(p.indexer, "proposal.indexer", ["cdi_plus"]),
+    lender: read(p.lender, "proposal.lender", "text", "text", words), indexer: convention(p.indexer, "proposal.indexer", ["cdi_plus", "percent_of_cdi", "ipca_plus", "fixed"]),
     firmness: convention(p.firmness, "proposal.firmness", ["indicative", "committed"]), termSheetDate: read(p.termSheetDate, "proposal.termSheetDate", "date", "date", z.iso.date()),
     validityDays: count(p.validityDays, "proposal.validityDays", "days"), amount: read(p.amount, "proposal.amount", "currency", "number", unsigned),
     annualSpread: read(p.annualSpread, "proposal.annualSpread", "ratio", "number", ratio), feeRate: read(p.feeRate, "proposal.feeRate", "ratio", "number", unsigned),
@@ -105,6 +104,7 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
       minimumCash: maybe(c.minimumCash, "calendar.minimumCash", "currency", "number", unsigned)},
     covenant: {indenture: {maximumRatio: read(v.indentureLimit, "covenant.indentureLimit", "ratio", "number", unsigned), testDates: list(v.indentureTestDates, "covenant.indentureTestDates", "date", dates),
       source: read(v.indentureSource, "covenant.indentureSource", "text", "text", words)},
+      requiredScenarios: list(v.requiredScenarios, "covenant.requiredScenarios", "identity", z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(4)),
       policy: v.policyLimit === null ? null : {maximumRatio: read(v.policyLimit, "covenant.policyLimit", "ratio", "number", unsigned),
         testDates: list(v.policyTestDates!, "covenant.policyTestDates", "date", dates), source: read(v.policySource!, "covenant.policySource", "text", "text", words)},
       measurements: (measurement.dates ?? []).map((date, i) => ({date, scenario: measurement.scenarios?.[i] ?? "", debt: measurement.debt?.[i] ?? "", cash: measurement.cash?.[i] ?? "",
@@ -144,5 +144,5 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
     classification: [...b.used.values()].some(e => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
     exclusions: [...receivedProposalAdoptedExclusions],
     grantsExecution: false as const, grantsPublication: false as const};
-  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+  return {...payload, fingerprint: receivedProposalFingerprint(payload)};
 }

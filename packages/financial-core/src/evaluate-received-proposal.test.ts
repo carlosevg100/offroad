@@ -60,6 +60,21 @@ describe("received proposal kernel", {timeout: 120_000}, () => {
     expect([v["cobertura-120-sem-conta"]!.collateral.required, v["cobertura-120-sem-conta"]!.collateral.consentRequired]).toEqual(["36", true]);
     expect(r.alternatives.map((a) => [a.id, a.consentRequired])).toEqual([["giro-seis-meses", false], ["finame-linha", false]]);
   });
+  it("requires every test date in every declared scenario before concluding there is no breach", () => {
+    expect([r.covenant.missingTests, r.covenant.required.length, r.covenant.anyBreachWith]).toEqual([[], 10, true]);
+    const gone = evaluateReceivedProposal(edit((i) => {i.covenant.measurements = i.covenant.measurements.filter((m) => !(m.scenario === "bank" && ["2026-12-31", "2027-12-31"].includes(m.date)));}));
+    expect([gone.covenant.anyBreachWith, gone.covenant.missingTests]).toEqual([null, [{date: "2026-12-31", scenario: "bank"}, {date: "2027-12-31", scenario: "bank"}]]);
+    const no2028 = evaluateReceivedProposal(edit((i) => {i.covenant.measurements = i.covenant.measurements.filter((m) => !m.date.startsWith("2028"));}));
+    expect(no2028.covenant.missingTests.map((m) => m.date)).toEqual(["2028-06-30", "2028-06-30", "2028-12-31", "2028-12-31"]);
+    expect(() => evaluateReceivedProposal(edit((i) => {i.covenant.measurements[0]!.scenario = "stress";}))).toThrow("received_proposal_covenant_scenario_undeclared");
+  });
+  it("states the net cost only under lucro real with every period of the life taxable", () => {
+    expect(r.cost.netConvention).toBe("full_deductibility_simplified");
+    const none = evaluateReceivedProposal(edit((i) => {i.calendar.taxable = i.calendar.taxable.map(() => false);}));
+    expect([none.cost.netConvention, none.cost.equivalentSpreadNet, none.variants[0]!.equivalentSpreadNet]).toEqual(["not_all_periods_taxable", null, null]);
+    const presumido = evaluateReceivedProposal(edit((i) => {i.tax.regime = "lucro_presumido";}));
+    expect([presumido.cost.netConvention, presumido.cost.equivalentSpreadNet]).toEqual(["no_deduction_presumido", presumido.cost.equivalentSpread]);
+  });
   it("reads the indenture basket per operation only when adopted that way", () => {
     const per = evaluateReceivedProposal(edit((i) => {i.basket.basis = "per_operation";}));
     expect([per.negativePledge.remaining, per.negativePledge.consentRequired]).toEqual(["15", true]);

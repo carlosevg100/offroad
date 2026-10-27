@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import {z} from "zod";
 import {adoptedWeeklyCashOutputSchema} from "./ficha-calculation-results";
 
@@ -21,7 +22,8 @@ export const receivedProposalOutputSchema = z.strictObject({
     months: z.number().int().min(1).max(360), finalPaymentDate: date, bankSawIndenture: z.boolean(), prepaymentPenaltyRate: decimal, prepaymentFreeFrom: date,
     reciprocity: z.enum(["none_stated", "stated"]), covenantDefinition: z.enum(["same_as_indenture", "not_stated"]).nullable(), firstLenderTestDate: date.nullable()}),
   cost: z.strictObject({fee: decimal, creditTax: decimal, creditTaxRate: decimal, upfrontCosts: decimal, upfrontShare: decimal, weightedAverageLifeYears: decimal,
-    equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(), taxRegime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), nominalToEquivalentBps: decimal,
+    equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(),
+    netConvention: z.enum(["full_deductibility_simplified", "not_all_periods_taxable", "no_deduction_presumido", "regime_unknown"]), taxRegime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), nominalToEquivalentBps: decimal,
     serviceByYear: z.array(z.strictObject({year: z.number().int(), service: decimal})).max(40)}),
   calendar: z.strictObject({
     quarters: z.array(z.strictObject({periodEnd: date, existingService: decimal, proposalService: decimal, totalService: decimal, availableForService: decimal, proposalCashFlow: decimal,
@@ -45,7 +47,10 @@ export const receivedProposalOutputSchema = z.strictObject({
   covenant: z.strictObject({
     rows: z.array(z.strictObject({date, scenario: key, ratioWithout: decimal.nullable(), ratioWith: decimal.nullable(),
       limits: z.array(z.strictObject({limitId, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, testedOnDate: z.boolean(), headroomWith: decimal.nullable(), breachedWith: z.boolean()})).min(1).max(3)})).min(1).max(12),
-    worst: z.strictObject({measurementId: key, limitId, ebitdaHeadroom: decimal}).nullable(), anyBreachWith: z.boolean(),
+    worst: z.strictObject({measurementId: key, limitId, ebitdaHeadroom: decimal}).nullable(),
+    required: z.array(z.strictObject({date, scenario: key})).max(64), missingTests: z.array(z.strictObject({date, scenario: key})).max(64),
+    /** True when a breach is found; null while a required test is missing; false only with every test present. */
+    anyBreachWith: z.boolean().nullable(),
     testsPerYear: z.strictObject({indenture: z.number().int().min(0), lender: z.number().int().min(0)})}),
   price: z.strictObject({
     market: z.strictObject({position: z.enum(["below_range", "at_or_below_median", "above_median_within_range", "above_range"]), toMedianBps: decimal, toHighBps: decimal,
@@ -60,9 +65,25 @@ export const receivedProposalOutputSchema = z.strictObject({
   schedule: scheduleSchema,
 });
 
+/** Canonical JSON with sorted keys: the fingerprint is recomputable from the content, whatever the key order. */
+export function receivedProposalStableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(receivedProposalStableJson).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).filter((k) => record[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${receivedProposalStableJson(record[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+}
+export const receivedProposalFingerprint = (payload: unknown) => createHash("sha256").update(receivedProposalStableJson(payload)).digest("hex");
+/** The fingerprint must be the hash of everything else in the object; a changed value with an old fingerprint is refused. */
+export const verifiedReceivedProposalFingerprint = (value: {fingerprint: string}, ctx: z.RefinementCtx) => {
+  const {fingerprint, ...payload} = value;
+  if (receivedProposalFingerprint(payload) !== fingerprint) ctx.addIssue({code: "custom", message: "received_proposal_fingerprint_mismatch"});
+};
+
 export const receivedProposalAdoptedExclusions = ["proposal_acceptance", "counterparty_contact", "credit_approval", "legal_opinion", "reciprocity_pricing",
   "company_projection", "method_release"] as const;
 export const adoptedReceivedProposalOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-received-proposal.v1"),
   analysisId: z.uuid(), perimeter: text, evaluation: receivedProposalOutputSchema.nullable(),
   exclusions: z.array(z.enum(receivedProposalAdoptedExclusions)).length(7)
-    .refine(v => v.join("|") === receivedProposalAdoptedExclusions.join("|"), "Exact exclusion ledger required")});
+    .refine(v => v.join("|") === receivedProposalAdoptedExclusions.join("|"), "Exact exclusion ledger required")}).superRefine(verifiedReceivedProposalFingerprint);
