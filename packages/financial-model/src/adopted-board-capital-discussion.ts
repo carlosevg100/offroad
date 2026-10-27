@@ -27,7 +27,7 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
   deliberations: z.array(z.strictObject({id: key, topicId: key.nullable(), title: selection, subject: selection, recommendation: selection.nullable(),
     /** [authority, basis?] */
     authority: selection, deadlines: z.array(z.strictObject({id: key, reading: selection})).max(4)})).min(1).max(12),
-  /** A reading is [source, path, unit, scale, places, stated?]; a pending figure is [required method, reason]. */
+  /** A reading is [source, path, unit, scale, places, stated?]; a pending figure is [required method, required field path, reason]. */
   figures: z.array(z.strictObject({id: key, kind: z.enum(["reading", "pending"]), reading: selection})).max(160),
   materialFigureIds: selection,
   indicative: z.array(z.strictObject({figureId: key, reason: selection})).max(24),
@@ -92,8 +92,9 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
   });
   const figures: BoardFigure[] = input.figures.map((f) => {
     if (f.kind === "pending") {
-      const r = list(f.reading, `figure.${f.id}.pending`, z.tuple([key, textRef]));
-      return {id: f.id, kind: "pending", requiredMethodId: r?.[0] as string, reason: r?.[1] as string};
+      // A pending figure names the method and the exact field it stands for, and why it is pending.
+      const r = list(f.reading, `figure.${f.id}.pending`, z.tuple([key, z.string().min(1).max(400), textRef]));
+      return {id: f.id, kind: "pending", requiredMethodId: r?.[0] as string, requiredPath: r?.[1] as string, reason: r?.[2] as string};
     }
     const r = list(f.reading, `figure.${f.id}.reading`, readingTuple);
     if (r && (r.length > 4 || (r[3] !== undefined && !reference.test(r[3])))) throw new Error(`board_capital_figure_reading_invalid:${f.id}`);

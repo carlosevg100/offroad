@@ -119,7 +119,9 @@ describe("board discussion core", () => {
       ["c", {display: "R$ -2,1 milhões", unit: "money", origin: origin(IP, "comparison.metrics[caseId=capex-120].netPresentValue", "-2100000")}],
       ["s", {display: "R$ -1,0 milhão", unit: "money", origin: origin(IP, "comparison.metrics[caseId=slower-start].netPresentValue", "-1000000")}],
       ["ep", {display: "R$ 6,4 milhões", unit: "money", origin: origin(IP, "comparison.metrics[caseId=economy-4].netPresentValue", "6400000")}],
-      ["p", {pending: true, methodId: IP}]]);
+      ["p", {pending: true, methodId: IP, path: "comparison.metrics[caseId=staged].netPresentValue"}],
+      ["pw", {pending: true, methodId: IP, path: "comparison.metrics[caseId=base].discountRate"}],
+      ["pl", {display: "Linha de embalagem, cronograma original", unit: "label", origin: origin(IP, "cases[id=base].label", "Linha de embalagem, cronograma original")}]]);
     const source = (id: string, methodId: string, packet: unknown) => ({id, methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}) as BoardSourceReading;
     const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {cases: (() => {
       const periods = ["2026-12-31", "2027-12-31", "2028-12-31"];
@@ -157,11 +159,47 @@ describe("board discussion core", () => {
     expect(render("topic.project_sensitivities|vpl_economia=e|vpl_capex=c|vpl_partida=s")).toContain("R$ -6,4 milhões");
     expect(() => render("topic.project_sensitivities|vpl_economia=ep|vpl_capex=c|vpl_partida=s")).toThrow("board_capital_template_condition_failed:topic.project_sensitivities:0");
     expect(render("option.staged|vpl=p")).toBe("Seguir em etapas: VPL de [pendente].");
-    expect(() => render("situation.debt_total|total=p|ano=y")).toThrow("board_capital_slot_concept_mismatch:situation.debt_total:total:pending_method");
+    expect(() => render("situation.debt_total|total=p|ano=y")).toThrow("board_capital_slot_concept_mismatch:situation.debt_total:total:pending_origin");
+    // A pending figure occupies only the slot of the field it stands for: the staged NPV never takes a rate slot.
+    expect(() => render("topic.project_value|retorno=p|custo=r|vpl=n")).toThrow("board_capital_slot_concept_mismatch:topic.project_value:retorno:pending_origin");
+    // A pending figure in its own slot leaves every condition that names it undefined, and undefined never holds.
+    expect(() => render("topic.project_return|projeto=pl|retorno=r|custo=pw")).toThrow("board_capital_template_condition_undefined:topic.project_return:0");
     // A deadline is the deadline of the action the template announces.
     expect(render("next_steps.route|prazo=deadline:v.rota|ano=y")).toBe("15/nov: decisão da rota para os vencimentos de 2027.");
     expect(() => render("next_steps.notice|prazo=deadline:v.rota|projeto=project-label")).toThrow("board_capital_deadline_action_mismatch:next_steps.notice:prazo:v.rota");
     // A condition whose source is not in the material cannot be verified.
-    expect(() => renderBoardRef("situation.debt_total|total=d|ano=y", {...context, sources: []})).toThrow("board_capital_template_condition_unverified");
+    // Absent source: the condition is undefined, never satisfied.
+    expect(() => renderBoardRef("situation.debt_total|total=d|ano=y", {...context, sources: []})).toThrow("board_capital_template_condition_undefined:situation.debt_total");
+  });
+  it("property: three values; every condition of the library, with every operand absent or pending, is undefined and its sentence never comes out", () => {
+    // Every slot bound to a pending figure of the exact field it admits (variables set to a placeholder), years to a
+    // calendar reading, deadlines and informed facts to their own kinds; no source at all.
+    const informed = (["chair", "cfo", "ceo"] as const).map((author) => ({id: `i-${author}`, origin: "informed" as const, author, code: "reduce_single_supplier_dependence"}));
+    const actions = Object.entries(boardTemplates).filter(([, t]) => t.use.includes("delib.action")).map(([id]) => id);
+    const holder: BoardDeliberation = {...deliberation("z", []), deadlines: actions.map((a, k) => ({id: `d${k}`, date: "2026-11-15", action: a}))};
+    let undefinedCount = 0, constantOnly = 0;
+    for (const [id, template] of Object.entries(boardTemplates)) for (const [i, c] of template.when.entries()) {
+      const figures = new Map<string, BoardFigureDisplay>(), bindings: string[] = [];
+      for (const [slot, spec] of Object.entries(template.slots)) {
+        if (spec.type === "deadline") {bindings.push(`${slot}=deadline:z.d${actions.indexOf(spec.action!)}`); continue;}
+        if (spec.type === "informed") {bindings.push(`${slot}=informed:i-${spec.author}`); continue;}
+        const fid = `f-${slot.replace(/_/g, "-")}`;
+        if (spec.year !== undefined) figures.set(fid, {display: "2027", unit: "calendar", origin: {sourceId: "s", methodId: "build-company-debt-table", path: "result.table.profile.scheduleByYear[year=2027].year", value: "2027"}});
+        else figures.set(fid, {pending: true, methodId: spec.from![0]![0], path: spec.from![0]![1].replace(/\$y\b/g, "2027").replace(/\$[a-z]+/g, "x")});
+        bindings.push(`${slot}=${fid}`);
+      }
+      const ref = [id, ...bindings].join("|"), original = boardTemplates[id]!;
+      boardTemplates[id] = {...original, when: [c]};
+      try {
+        let outcome = "rendered";
+        try {renderBoardRef(ref, {figures, deliberations: [holder], nextMeetingDate: null, sources: [], informed});} catch (e) {outcome = String(e);}
+        // A condition that reads nothing (only constants and variables already bound) may hold; any other is undefined.
+        const readsData = !("bind" in c && "value" in c.to) && !("compare" in c && c.compare.every((o) => typeof o === "string" ? false : "value" in o || "var" in o));
+        if (readsData) {expect(outcome, `${id}:${i}`).toContain(`board_capital_template_condition_undefined:${id}:0`); undefinedCount++;}
+        else constantOnly++;
+      } finally {boardTemplates[id] = original;}
+    }
+    expect(undefinedCount).toBeGreaterThan(150);
+    expect(constantOnly).toBeLessThan(20);
   });
 });

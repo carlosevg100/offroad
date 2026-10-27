@@ -75,12 +75,14 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
 export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
   economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string;
-  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"} = {}) {
+  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
     : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy)
     : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears)
     : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd)
     : variant.exactDeferral !== undefined ? c32WithExactDeferral(variant.exactDeferral) : c32PacketInput(), from = id(1001);
+  // Regressions only: every case discounted at another cost of capital.
+  if (variant.discountRate) for (const e of calibration.basis.entries) if (e.fieldPath.endsWith(".valuation.discountRate")) e.value = {...e.value, value: variant.discountRate} as typeof e.value;
   // The same analysis registered for another project: only the base case's label changes.
   if (variant.baseLabel) calibration.input.cases[0]!.label = variant.baseLabel;
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
@@ -411,10 +413,10 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "horizon-12m": ["tabela-divida", "result.table.profile.twelveMonthHorizon", "month_long", "2027-06-30"],
   ...auroraPathReadings(),
 };
-/** Numbers the material needs and no reviewed result supplies: [required method, reason]. */
-export const auroraBoardPending: Record<string, [string, string]> = {
-  "stages-npv": ["analyze-investment-project", "note.case_not_reviewed"],
-  "cl-terms": ["build-company-debt-table", "note.credit_line_terms_not_registered"],
+/** Numbers the material needs and no reviewed result supplies: [required method, the exact field it stands for, reason]. */
+export const auroraBoardPending: Record<string, [string, string, string]> = {
+  "stages-npv": ["analyze-investment-project", "comparison.metrics[caseId=staged].netPresentValue", "note.case_not_reviewed"],
+  "cl-terms": ["build-company-debt-table", "result.table.creditLines[id=conta-garantida].terms", "note.credit_line_terms_not_registered"],
 };
 export const auroraMaterialFigures = ["principal-2027", "cash-end-2027", "debenture-amount", "deb-cost-low", "deb-cost-high", "bradesco-gap", "share-12m", "min-cash", "sem-linha-min", "cov-limit", "policy-limit", "irr", "wacc", "npv", "payback", "peak-need",
   "npv-economy", "npv-capex", "npv-slow", "programs", "lev-dez26", "lev-adv27", "ebitda-wheat", "wc-60"];

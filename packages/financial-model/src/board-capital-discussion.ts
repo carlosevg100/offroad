@@ -26,7 +26,7 @@ export type BoardOmissionTarget = (typeof boardOmissionTargets)[number];
  * kind, unit, scale and periodicity come from the registry of the source's method. */
 export type BoardFigure =
   | {id: string; kind: "reading"; sourceId: string; path: string; presentation: string; stated: string | null}
-  | {id: string; kind: "pending"; requiredMethodId: string; reason: string};
+  | {id: string; kind: "pending"; requiredMethodId: string; requiredPath: string; reason: string};
 /** A reviewed result as the material reads it: identity only; the packet itself is checked by the reader. */
 export type BoardSourceReading = {id: string; methodId: string; methodVersion: string; executorVersion: string | null; packetSchemaVersion: string;
   packetFingerprint: string; status: string; gaps: {operand: string; reason: string}[]; packet: unknown};
@@ -187,7 +187,16 @@ export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figu
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 /** A reading as shown, with its origin (source, method, path and source value) so a slot can check its concept. */
-export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string};
+/** A condition that cannot be decided (an operand absent or pending): never satisfied. */
+export class BoardIndefinite extends Error {}
+/** The slots a condition names, wherever it names them. */
+export function boardConditionSlots(c: unknown): string[] {
+  const out: string[] = [];
+  const walk = (v: unknown) => {if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) {if (k === "slot" && typeof x === "string") out.push(x); else walk(x);}};
+  walk(c);
+  return out;
+}
+export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
   debtors?: Map<string, string>;
@@ -329,7 +338,17 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (!figure) throw new Error(`board_capital_unknown_token:${bound}`);
     out.push({templateId, slot, figureId: bound, deadlineId: null, informedId: null});
     if ("pending" in figure) {
-      if (!figure.methodId || !(spec.from ?? []).some(([m]) => m === figure.methodId)) throw concept(slot, "pending_method");
+      // A pending figure stands for one field: it occupies only a slot whose specification admits that exact field (method,
+      // path pattern with its selectors, and the registered kind, concept and nature where the registry knows it).
+      if (!figure.methodId || !figure.path) throw concept(slot, "pending_without_field");
+      if (spec.year !== undefined) throw concept(slot, "pending_year");
+      const got = (spec.from ?? []).filter(([m]) => m === figure.methodId).map(([, path]) => boardMatchPath(path, figure.path!)).find((x) => x !== null);
+      if (!got) throw concept(slot, "pending_origin");
+      const field = boardFieldOf(figure.methodId, figure.path);
+      if (field && !slotAccepts[spec.type as Exclude<BoardSlotType, "deadline" | "informed">]?.includes(field.kind as BoardFigureUnit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${field.kind}`);
+      if (spec.concept !== undefined && field?.concept !== spec.concept) throw concept(slot, "pending_concept");
+      if (spec.nature !== undefined && field?.nature !== spec.nature) throw concept(slot, "pending_nature");
+      share(slot, got);
       values[slot] = null; continue;
     }
     if (!slotAccepts[spec.type].includes(figure.unit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${figure.unit}`);
@@ -353,7 +372,9 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   for (const a of Object.values(values)) for (const b of Object.values(values))
     if (a && b && a.methodId && a.methodId === b.methodId && a.sourceId !== b.sourceId) throw new Error(`board_capital_source_mixed:${templateId}:${a.methodId}`);
   // The conditions the fixed text asserts, against the bound readings and their sources.
-  const unverified = (why: string) => new Error(`board_capital_template_condition_unverified:${templateId}:${why}`);
+  // Three-valued conditions: a condition whose operand is absent or pending is undefined, and undefined never holds.
+  const unverified = (why: string) => new BoardIndefinite(`board_capital_template_condition_unverified:${templateId}:${why}`);
+  const indefinite = (why: string) => new BoardIndefinite(`board_capital_template_condition_pending:${templateId}:${why}`);
   // The source a condition reads is the one package of its method in the material, the same one the slots bind.
   const sourceOf = (method: string) => {
     const all = (context.sources ?? []).filter((x) => x.methodId === method);
@@ -369,10 +390,10 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") return String(raw);
     throw unverified(why);
   };
-  const operand = (o: BoardOperand): string | undefined => {
+  const operand = (o: BoardOperand): string => {
     if ("value" in o) return o.value.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
-    if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var];}
-    if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); return v === null ? undefined : o.year ? v.value.slice(0, 4) : v.value;}
+    if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var]!;}
+    if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); if (v === null) throw indefinite(`slot_${o.slot}`); return o.year ? v.value.slice(0, 4) : v.value;}
     if ("contributed" in o) {
       // An adopted term the result records: exactly one contribution whose field path ends with the given suffix.
       const [method, rawSuffix] = o.contributed, packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
@@ -431,22 +452,22 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return out;
   };
   const holds = (c: BoardCondition): boolean => {
-    if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return a === undefined || b === undefined || compareBoard(a, c.compare[1], b);}
-    if ("every" in c) {const than = operand(c.than); return than === undefined || list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
-    if ("bind" in c) {const v = operand(c.to); if (v === undefined) throw unverified(`bind_${c.bind}`); if (Object.hasOwn(vars, c.bind) && vars[c.bind] !== v) return false; vars[c.bind] = v; return true;}
+    if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return compareBoard(a, c.compare[1], b);}
+    if ("every" in c) {const than = operand(c.than); return list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
+    if ("bind" in c) {const v = operand(c.to); if (Object.hasOwn(vars, c.bind) && vars[c.bind] !== v) return false; vars[c.bind] = v; return true;}
     if ("includes" in c) {
       const [m, path, field] = c.includes, want = operand(c.value);
       const xs = read(m, path);
       if (!Array.isArray(xs)) throw unverified(path);
       const items = xs.map((x) => scalar(field === null ? x : readBoardSourcePath(x, field), path));
-      return want === undefined || (c.none ? !items.includes(want) : items.includes(want) && (!c.only || items.length === 1));
+      return c.none ? !items.includes(want) : items.includes(want) && (!c.only || items.length === 1);
     }
     if ("dominates" in c) {
       // Period by period, matched by key; a series that does not resolve, or keys that do not match, fail the condition.
       const series = boardSeriesOf;
       const a = series(c.dominates[0]), b = series(c.dominates[1]);
       // Over the horizon of the second series (the base): every one of its periods must exist in the first.
-      if (!a || !b || b.size === 0 || [...b.keys()].some((k) => !a.has(k))) return false;
+      if (!a || !b || b.size === 0 || [...b.keys()].some((k) => !a.has(k))) throw indefinite("series_absent");
       const pairs = [...b].map(([k, v]) => [a.get(k)!, v] as const);
       if (c.op === "eq") return pairs.every(([x, y]) => compareBoard(x, "eq", y));
       const weak = c.op === "gt" ? "ge" : "le";
@@ -491,7 +512,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       });
       if (!existing.length) throw unverified("existing_debt");
       const mine = list(`path.${path}.instruments`);
-      if (!mine.length) return false;
+      if (!mine.length) throw indefinite(`path_${path}_absent`);
       // The whole path object: every field the plan records for the path is read here; the label is its name.
       const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
       if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return false;
@@ -550,11 +571,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const driverOf = (f: string) => f.startsWith("shock.") ? "inputCostShock" : f.startsWith("override.") ? f.split(".")[1]! : f;
       const defined = new Set(fields.map(driverOf));
       if (c.drivers.includes("inputCostShock") && !["shock.rate", "shock.fromPeriodEnd", "shock.passThroughLagMonths"].every((f) => fields.includes(f))) return false;
+      if (!fields.length) throw indefinite(`scenario_${id}_absent`);
       return defined.size === c.drivers.length && c.drivers.every((d) => defined.has(d));
     }
     if ("atKey" in c) {
       const a = boardSeriesOf(c.atKey[0]), b = boardSeriesOf(c.atKey[1]), k = operand(c.key);
-      if (!a || !b || k === undefined || !a.has(k) || !b.has(k)) return false;
+      if (!a || !b || !a.has(k) || !b.has(k)) throw indefinite("series_absent");
       return compareBoard(a.get(k)!, c.op, b.get(k)!);
     }
     if ("startsLater" in c) {
@@ -564,7 +586,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         return keys.find((key) => !new Exact(m.get(key)!).eq(0)) ?? null;
       };
       const a = first(boardSeriesOf(c.startsLater[0])), b = first(boardSeriesOf(c.startsLater[1]));
-      if (a === null || b === null) return false;
+      if (a === null || b === null) throw indefinite("series_absent");
       return /^\d+$/.test(a) && /^\d+$/.test(b) ? Number(a) > Number(b) : a > b;
     }
     if ("sameObject" in c || "registeredTerm" in c) {
@@ -583,7 +605,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         const v = readBoardSourcePath(packet, path);
         texts = typeof v === "string" ? [v] : [];
       }
-      if (texts.length === 0) return false;
+      if (texts.length === 0) throw indefinite("registered_text_absent");
       const terms = texts.map((x) => boardObjectTerm(c.vocabulary, x));
       if ("registeredTerm" in c) return terms.every((t) => t === c.term);
       // Identity across sources: the bound reading names a term, and every registered text of the other source names that term.
@@ -596,21 +618,28 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const suffix = c.contributedHas[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
       const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
       const list = hits.length === 1 ? hits[0]!.value?.value : undefined, want = operand(c.value);
-      if (!Array.isArray(list)) return false;
-      return want === undefined || (c.none ? !list.includes(want) : c.only ? list.length === 1 && list[0] === want : list.includes(want));
+      if (!Array.isArray(list)) throw indefinite(`contribution_${suffix}_absent`);
+      return c.none ? !list.includes(want) : c.only ? list.length === 1 && list[0] === want : list.includes(want);
     }
     if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {
       const [m, path, flag, key] = c.onlyFlagged, equals = operand(c.equals);
       const flagged = list(m, path).filter((x) => x[flag] === true);
-      return equals === undefined || (flagged.length === 1 && scalar(flagged[0]![key], key) === equals);
+      return flagged.length === 1 && scalar(flagged[0]![key], key) === equals;
     }
     const [m, path, field, key] = c.largest, equals = operand(c.equals);
     const xs = list(m, path).map((x) => ({value: new Exact(scalar(x[field], field)), key: scalar(x[key], key)}));
     const top = xs.reduce((best, x) => x.value.gt(best.value) ? x : best, xs[0]!);
-    return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
+    return xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals);
   };
-  template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
+  template.when.forEach((c, i) => {
+    let value: boolean | "undefined";
+    // A condition that names a pending slot is undefined before anything is read.
+    try {value = boardConditionSlots(c).some((x) => values[x] === null) ? "undefined" : holds(c);}
+    catch (e) {if (e instanceof BoardIndefinite) value = "undefined"; else throw e;}
+    if (value === "undefined") throw new Error(`board_capital_template_condition_undefined:${templateId}:${i}`);
+    if (!value) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);
+  });
   const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [];
   const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
@@ -961,7 +990,7 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     scale: BoardFieldSpec["scale"]; period: BoardFieldSpec["period"]; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
   const figures = new Map<string, BoardFigureDisplay>();
   for (const f of d.figures) {
-    if (f.kind === "pending") {figures.set(f.id, {pending: true, methodId: f.requiredMethodId}); continue;}
+    if (f.kind === "pending") {figures.set(f.id, {pending: true, methodId: f.requiredMethodId, path: f.requiredPath}); continue;}
     const s = byId.get(f.sourceId);
     if (!s) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     const spec = boardFieldOf(s.methodId, f.path);
@@ -1036,5 +1065,6 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   };
   return {version: boardCapitalDiscussionVersion, stage: produce ? "material" as const : "outline" as const, timeToAlign, daysBefore, outline,
     identity: checks, omissions: decisions.map((o) => ({...o, requestedBy: shownText(o.requestedBy)})), versions: [first, second].flatMap((v) => v ? [v.material] : []), gaps: current?.gaps ?? [], pending,
+    pendingFigures: d.figures.flatMap((f) => f.kind === "pending" ? [{figureId: f.id, methodId: f.requiredMethodId, path: f.requiredPath, reason: shownText(f.reason)}] : []),
     materialFacts: boardMaterialFacts(d, figures), informed: d.informed.map((x) => ({...x})), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
 }

@@ -41,6 +41,8 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
   pending: z.strictObject({indicative: z.array(z.strictObject({figureId: key, reason: text})).max(24),
     sources: z.array(z.strictObject({sourceId: key, methodId: key, status: key, reasons: z.array(text).max(64)})).max(16),
     authority: ids, template: z.enum(["not_supplied", "supplied_not_applied"])}),
+  /** Each pending figure with the exact field it stands for (method and path), as the slots that use it admit. */
+  pendingFigures: z.array(z.strictObject({figureId: key, methodId: key, path: z.string().min(1).max(400), reason: text})).max(24),
   /** The material facts by rule: every economic reading, every figure marked material and every deadline; each version shows all of them. */
   materialFacts: z.strictObject({figures: ids, deadlines: ids}),
   /** Facts informed in the conversation, adopted with origin and author; shown only attributed to that author. */

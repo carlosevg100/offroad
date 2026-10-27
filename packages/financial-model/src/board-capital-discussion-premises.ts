@@ -19,7 +19,7 @@ const reading = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2",
   .rest(z.string().regex(/^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/));
 const figure = z.discriminatedUnion("kind", [
   z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length === (r[2] === "-" ? 3 : 4), {message: "A number or a date states its value; a label or a yes-no reading does not"})}),
-  z.strictObject({id: key, kind: z.literal("pending"), reading: z.tuple([key, text])})]);
+  z.strictObject({id: key, kind: z.literal("pending"), reading: z.tuple([key, text, text])})]);
 const deliberation = z.strictObject({id: key, topicId: key.nullable(), title: text, subject: text, recommendation: text.nullable(), authority: z.enum(boardAuthorities), authorityBasis: text.nullable(),
   deadlines: z.array(z.strictObject({id: key, date: z.iso.date(), action: text})).max(4)});
 const page = z.strictObject({id: key, role: z.enum(boardPageRoles), topicId: key.nullable(), title: text, lines: z.array(text).max(12), recommendation: text.nullable(), options: z.array(text).max(6)});

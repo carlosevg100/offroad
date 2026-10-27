@@ -4,7 +4,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -511,6 +511,23 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r24: a pending figure takes only the slot of its own field; a condition on it is undefined and never holds.
+    ["staged-npv-pending-as-the-cost-of-capital-at-30-percent", () => {
+      const packet = auroraInvestmentPacket({discountRate: "0.3"}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {
+        c.extraReadings.wacc = ["linha-embalagem", "comparison.metrics[caseId=base].discountRate", "0", "30"];
+        for (const [id, caseId] of [["npv", "base"], ["npv-economy", "economy-4"], ["npv-capex", "capex-120"], ["npv-slow", "slower-start"], ["npv-defer", "defer-12"]] as const)
+          c.extraReadings[id] = ["linha-embalagem", `comparison.metrics[caseId=${caseId}].netPresentValue`, "1", boardStatedMillions(packet, caseId)];
+        c.pages.find((x) => x.id === "linha")!.title = "topic.project_return|retorno=irr|custo=stages-npv|projeto=project-label";
+      }));
+    }, "board_capital_slot_concept_mismatch:topic.project_return:custo:pending_origin"],
+    ["staged-npv-pending-as-the-return-in-the-answer", () => build(2, (c) => {c.questions.find((q) => q.id === "estrategica")!.answer = "a.strategic|retorno=stages-npv|custo=wacc";}),
+      "board_capital_slot_concept_mismatch:a.strategic:retorno:pending_origin"],
+    ["cost-of-capital-pending-leaves-the-claim-undefined", () => {
+      auroraBoardPending["wacc-pending"] = ["analyze-investment-project", "comparison.metrics[caseId=base].discountRate", "note.case_not_reviewed"];
+      try {return build(2, (c) => {c.pages.find((x) => x.id === "linha")!.title = "topic.project_return|retorno=irr|custo=wacc-pending|projeto=project-label";});}
+      finally {delete auroraBoardPending["wacc-pending"];}
+    }, "board_capital_template_condition_undefined:topic.project_return:0"],
     // Review r23: the deferral is the base moved uniformly; the calibration's case is not, so the exact sentence is refused
     // and the material names the case by its registered role. The exact control passes the definition (conditions 0 and 1)
     // and is refused only by the comparison with going on now (condition 2): a pure deferral lowers a positive NPV.

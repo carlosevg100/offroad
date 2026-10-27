@@ -5,8 +5,9 @@ import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardConceptAttempts, boardDeferralReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
-import {boardTemplates} from "./board-capital-discussion-templates";
+import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {boardTemplates, parseBoardTextRef} from "./board-capital-discussion-templates";
+import {boardConditionSlots} from "./board-capital-discussion";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
 /** A fixed-seed generator (mulberry32), so every property run is the same run. */
@@ -24,7 +25,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -94,13 +95,13 @@ const meaning: Record<string, Record<string, string>> = {
   "topic.project_strategic_reason": {motivo: "informed:chair"},
   "topic.project_wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
-  "option.staged": {vpl: "pending:analyze-investment-project"},
+  "option.staged": {vpl: IP + "[caseId=staged].netPresentValue"},
   "option.wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "topic.project_wait_quotes_registered": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "option.wait_quotes_registered": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "topic.crop_programs": {valor: RF + "readings.plan[optionId=*].cumulative", pico: RF + "result.funding.need.peak"},
   "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=*].spreadOverDi", taxa_a: RF + "readings.options[id=*].spreadOverDi"},
-  "topic.crop_overdraft": {credor: DT + "result.table.creditLines[id=*].creditor", livre: DT + "result.table.creditLines[id=*].unused", termos: "pending:build-company-debt-table"},
+  "topic.crop_overdraft": {credor: DT + "result.table.creditLines[id=*].creditor", livre: DT + "result.table.creditLines[id=*].unused", termos: DT + "result.table.creditLines[id=*].terms"},
   "alternatives.count": {caminhos: FP + "readings.horizon.candidatePaths", ano: "year"},
   "alternatives.row.no_line_debenture": pathRow("sem-linha-debenture"), "alternatives.row.defer_line": pathRow("adiar-linha"),
   "alternatives.row.debenture_with_line": {...pathRow("debenture-com-linha"), credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.row.keep_and_roll": pathRow("manter"), "alternatives.row.short_bank_loan": pathRow("ccb-tres-anos"),
@@ -275,12 +276,24 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       continue;
     }
     const x = byId.get(b.figureId!);
-    if (!x) {if (!want.startsWith("pending:")) bad.push(`concept_pending:${b.field}:${b.slot}`); g.complete = false; continue;}
+    if (!x) {
+      // A pending figure: the exact field it stands for must be the one the oracle's table names for the slot.
+      const pendingFigure = d.pendingFigures.find((f) => f.figureId === b.figureId);
+      if (!pendingFigure || !pattern(want).test(`${pendingFigure.methodId}|${pendingFigure.path}`)) bad.push(`concept_pending:${b.field}:${b.slot}`);
+      g.complete = false; continue;
+    }
     const ok = want === "year" ? x.unit === "calendar" : pattern(want).test(`${x.methodId}|${x.path}`);
     if (!ok) bad.push(`concept:${b.field}:${b.slot}:${b.figureId}`);
     if (/^-?\d+(\.\d+)?$/.test(x.value)) g.values[b.slot] = new D(x.value);
   }
-  for (const [key, g] of groups) if (g.complete && claims[g.templateId] && !claims[g.templateId]!(g.values)) bad.push(`claim:${key}`);
+  // Three values: a claim that reads a pending or absent slot is undefined, and undefined is never accepted.
+  for (const [key, g] of groups) {
+    const fn = claims[g.templateId];
+    if (!fn) continue;
+    let ok: boolean | "undefined";
+    try {ok = fn(g.values);} catch {ok = "undefined";}
+    if (ok !== true) bad.push(`claim${ok === "undefined" ? "_undefined" : ""}:${key}`);
+  }
   // Names: the oracle's own dictionary. A label outside it is never shown and leaves a gap of name; one inside it is
   // shown as registered. One package per method. A row's creditor is named only beside readings of that same row.
   const objectPaths: [string, RegExp][] = [["project", /^analyze-investment-project\|cases\[id=[^\]]+\]\.label$/], ["input", /^build-operating-projection\|result\.projection\.projection\.scenarios\[id=[^\]]+\]\.label$/]];
@@ -961,6 +974,85 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     }
     expect(checked).toBe(series.length * 2);
   }, 600000);
+  it("regression r24: a pending figure occupies only its own field's slot, and a condition on a pending or absent operand is undefined (full path, oracle not vacuous)", () => {
+    // Cost of capital of 30%: the IRR of 16% no longer exceeds it.
+    const packet = auroraInvestmentPacket({discountRate: "0.3"}) as unknown as Record<string, unknown>;
+    const metrics = (packet.comparison as {metrics: {caseId: string; netPresentValue: string; discountRate: string}[]}).metrics;
+    const restate = (c: CaseData) => {
+      c.extraReadings.wacc = ["linha-embalagem", "comparison.metrics[caseId=base].discountRate", "0", "30"];
+      for (const [id, caseId] of [["npv", "base"], ["npv-economy", "economy-4"], ["npv-capex", "capex-120"], ["npv-slow", "slower-start"], ["npv-defer", "defer-12"]] as const)
+        c.extraReadings[id] = ["linha-embalagem", `comparison.metrics[caseId=${caseId}].netPresentValue`, "1", boardStatedMillions(packet, caseId)];
+    };
+    expect(metrics.find((m) => m.caseId === "base")!.discountRate).toBe("0.3");
+    const run = (edit: (c: CaseData) => void) => () => withBoardSource("linha-embalagem", packet, () => full(2, (c) => {restate(c); edit(c);}));
+    // Without a pending figure, the title's claim fails on the reviewed numbers.
+    expect(run(() => undefined)).toThrow("board_capital_template_condition_failed:topic.project_return:0");
+    // The staged NPV, pending, in the title and in the answer: refused, it is not the cost of capital nor the return.
+    expect(run((c) => {c.pages.find((x) => x.id === "linha")!.title = "topic.project_return|retorno=irr|custo=stages-npv|projeto=project-label";}))
+      .toThrow("board_capital_slot_concept_mismatch:topic.project_return:custo:pending_origin");
+    // The answer, with the title as reviewed (the concept refusal does not depend on the rate).
+    expect(() => full(2, (c) => {c.questions.find((q) => q.id === "estrategica")!.answer = "a.strategic|retorno=stages-npv|custo=wacc";}))
+      .toThrow("board_capital_slot_concept_mismatch:a.strategic:retorno:pending_origin");
+    // A pending figure of exactly the cost of capital: the claim is undefined and the title does not come out.
+    auroraBoardPending["wacc-pending"] = ["analyze-investment-project", "comparison.metrics[caseId=base].discountRate", "note.case_not_reviewed"];
+    try {
+      expect(run((c) => {c.pages.find((x) => x.id === "linha")!.title = "topic.project_return|retorno=irr|custo=wacc-pending|projeto=project-label";}))
+        .toThrow("board_capital_template_condition_undefined:topic.project_return:0");
+      expect(() => full(2, (c) => {c.questions.find((q) => q.id === "estrategica")!.answer = "a.strategic|retorno=irr|custo=wacc-pending";}))
+        .toThrow("board_capital_template_condition_undefined:a.strategic:0");
+    } finally {delete auroraBoardPending["wacc-pending"];}
+    // Not vacuous: the oracle refuses a shown title whose claim reads a pending slot, and a pending figure in another concept's slot.
+    const p = full(2, () => undefined), forged = structuredClone(p), v = forged.result.discussion!.versions.at(-1)!;
+    const binding = v.bindings.find((b) => b.templateId === "topic.project_return" && b.slot === "custo")!;
+    binding.figureId = "stages-npv";
+    const bad = oracle(forged).bad;
+    expect(bad.some((x) => x.startsWith("concept_pending:"))).toBe(true);
+    expect(bad.some((x) => x.startsWith("claim_undefined:"))).toBe(true);
+  });
+  it("property: every pending figure bound in every slot of the calibration is refused unless the slot admits exactly its field; every slot a condition reads, made pending, leaves that condition undefined (full path)", () => {
+    let probe: CaseData | null = null;
+    boardPacketInput(2, (c) => {probe = structuredClone(c);});
+    const fields = textFields(probe!).filter(([, , ref]) => /^[a-z]/.test(ref) && !ref.includes(" ") && ref.includes("|"));
+    let refused = 0, accepted = 0, undefinedCount = 0;
+    for (const [name, , ref] of fields) {
+      const set = (c: CaseData, v: string) => textFields(c).find(([n]) => n === name)![1](v);
+      const {templateId, bindings} = parseBoardTextRef(ref), template = boardTemplates[templateId]!;
+      for (const slot of Object.keys(bindings)) {
+        const spec = template.slots[slot]!;
+        if (spec.type === "deadline" || spec.type === "informed") continue;
+        for (const pending of ["stages-npv", "cl-terms"]) {
+          const changed = ref.replace(new RegExp(`\\|${slot}=[^|]+`), `|${slot}=${pending}`);
+          let p: Packet | null = null, error = "";
+          // Options are shown once the recommendation is withdrawn (turn 3); every other field is shown at turn 2.
+          const turn = name.includes(".option.") ? 3 : 2;
+          try {p = full(turn, (c) => {set(c, changed);});} catch (e) {error = String(e);}
+          const own = (templateId === "option.staged" && slot === "vpl" && pending === "stages-npv") || (templateId === "topic.crop_overdraft" && slot === "termos" && pending === "cl-terms");
+          if (own) {expect(error, `${name} ${changed}`).toBe(""); expect(oracle(p!)).toEqual({bad: [], missing: []}); accepted++;}
+          else {expect(error, `${name} ${changed}`).toMatch(/board_capital_(slot_concept_mismatch|slot_type_mismatch|template_condition_undefined|figure_|material_fact|text_|answer_mismatch|deliberation_text_mismatch)/); refused++;}
+        }
+      }
+      // Every slot a condition reads, made pending with its own exact field: the condition is undefined.
+      for (const slot of new Set(template.when.flatMap((c) => boardConditionSlots(c)))) {
+        const bound = bindings[slot];
+        const reading = bound ? auroraBoardReadings[bound as keyof typeof auroraBoardReadings] : undefined;
+        if (!reading || !template.slots[slot] || template.slots[slot]!.year !== undefined) continue;
+        const methodId = auroraBoardSources().find((x) => x.id === reading[0])!.methodId;
+        auroraBoardPending["probe-pending"] = [methodId, reading[1], "note.case_not_reviewed"];
+        try {
+          const changed = ref.replace(new RegExp(`\\|${slot}=[^|]+`), `|${slot}=probe-pending`);
+          // A question and its answer share their readings: the same slot is made pending in both.
+          const both = (c: CaseData) => {set(c, changed);
+            const q = /^question\.([a-z0-9-]+)\.question$/.exec(name);
+            if (q) {const answer = c.questions.find((x) => x.id === q[1])!; answer.answer = answer.answer.replace(new RegExp(`\\|${slot}=${bound}(?=\\||$)`), `|${slot}=probe-pending`);}};
+          expect(() => full(name.includes(".option.") ? 3 : 2, both), `${name} ${changed}`).toThrow(`board_capital_template_condition_undefined:${templateId}`);
+          undefinedCount++;
+        } finally {delete auroraBoardPending["probe-pending"];}
+      }
+    }
+    expect(accepted).toBe(2);
+    expect(refused).toBeGreaterThan(150);
+    expect(undefinedCount).toBeGreaterThan(30);
+  }, 1200000);
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
     const economy = original.cases.find((x) => x.id === "economy-4")!.result.contributions;
@@ -1002,7 +1094,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     let probe: CaseData | null = null;
     boardPacketInput(2, (c) => {probe = structuredClone(c);});
     const fields = textFields(probe!).filter(([, , ref]) => /^[a-z]/.test(ref) && !ref.includes(" "));
-    const refs = fields.map(([, , ref]) => ref), ids = Object.keys(boardTemplates), readings = [...Object.keys(auroraBoardReadings), "stages-npv"];
+    const refs = fields.map(([, , ref]) => ref), ids = Object.keys(boardTemplates), readings = [...Object.keys(auroraBoardReadings), "stages-npv", "cl-terms", "stages-npv", "cl-terms"];
     const deadlines = ["deadline:linha.aviso", "deadline:safra.adesao", "deadline:vencimentos.sondagem", "deadline:vencimentos.rota"];
     const anyBinding = () => r() < 0.2 ? pick(r, deadlines) : pick(r, readings);
     let refused = 0, accepted = 0;
