@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T13:27:22.323Z",
-    "finishedAt": "2026-10-27T13:27:22.323Z",
-    "commit": "d998ea9d"
+    "startedAt": "2026-10-27T13:51:04.624Z",
+    "finishedAt": "2026-10-27T13:51:04.624Z",
+    "commit": "ce422601"
   },
   "modelCalls": 0,
   "cases": [
@@ -255,6 +255,46 @@
       "passed": true
     },
     {
+      "id": "copy-of-another-instrument",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "f39eca4a24abd99f21fc8de03e858aa20c561ce9230f53d5e860fd94944380b3",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "copy-of-a-lower-version",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "94772ff2974855dec0e5e0d4e9cf30f2e1cd5e0a67bcfdb40380e6bd55db77b8",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "copy-of-another-period",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "26f51f656a61cf229026cd1306f98c1c0978da9dcf390a16d194f3ddcf3c8a6f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "sheet-in-dollars",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "1a4cfa168a8071d65b498965e416334d0fb5dd8de381200ddef57f2cfa3bc0e5",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "figure-scale-at-odds-with-its-sheet",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9aafdc273d1d3c698b7fa10b0fd981cbd29917b42b80bd9c6a7d707902efa6fa",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "record-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -264,6 +304,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7b850463f2a67b81563006e6df0bb4c27eb3640b8400d9125236aa6df3184632",
+  "evidenceFingerprint": "a935adcf8c3a8226433549e0b65a6ebc24d99067ab78ed2f7e72a34d2826c08e",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

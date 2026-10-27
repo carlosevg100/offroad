@@ -23,6 +23,13 @@ const economics = (o: DocumentFolderInventory) => ({effective: o.effectiveTexts,
   findings: o.findings.map((f) => [f.id, f.code, f.effect, f.statement, f.decisionStatement]).sort(), checks: o.identityChecks, families: o.families,
   gaps: o.gaps.map((g) => [g.id, g.item]), follow: o.followUps});
 
+/** The identity a page copy must share with the document it substitutes. */
+const sameDocumentAs = (t: DocumentReading) => structuredClone({kind: t.kind, instrument: t.instrument, entity: t.entity, period: t.period, version: t.version, referenceDate: t.referenceDate});
+/** A document and its page copies, or a copy and its document: what makes them one document moves together. */
+const kin = (files: DocumentReading[], d: DocumentReading) => files.filter((y) => y.sha256 === d.sha256
+  || (d.substitutesPages !== null && y.substitutesPages === null && y.instrument?.ref === d.substitutesPages.instrumentRef)
+  || (d.substitutesPages === null && y.substitutesPages !== null && d.instrument !== null && y.substitutesPages.instrumentRef === d.instrument.ref));
+
 describe("property: terms bind only with signature or registration", () => {
   for (const status of documentStatuses) it(`status ${status}`, () => {
     const on = (id: string) => run(readings((r) => {file(r, id).version.status = status;}));
@@ -199,8 +206,9 @@ describe("property: recovered pages join the instrument before force is resolved
         period: amendment === "future" ? {label: "2027", start: "2027-01-01", end: "2027-01-31"} : {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"},
         version: {label: "x", status: amendment === "draft" ? "draft" : "registered", ordinal: null, lastUpdated: null}, instrument: {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-embalagem"},
         clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 1, section: null}, statement: "Renovação automática salvo aviso até 2/nov/26.", termEnd: "2026-12-31", noticeDeadline: "2026-11-02"}]});});
+    const f23 = file(files, "f23");
     const subs = Array.from({length: copies}, (_, k) => ({...structuredClone(auroraTurnTwoReadings()[0]!), fileId: `p${k + 1}`, fileName: `p${k + 1}.pdf`, sha256: hex(`p${k + 1}-${n}`),
-      kind: "supplier_contract" as const, instrument: {ref: "contrato-embalagem", label: "contrato", amends: null}, substitutesPages: {instrumentRef: "contrato-embalagem", pages: [11]},
+      ...sameDocumentAs(f23), substitutesPages: {instrumentRef: "contrato-embalagem", pages: [11]},
       clauses: [{type: "auto_renewal" as const, id: "renovacao", at: {page: 11, section: null}, statement: "Renovação automática salvo aviso até 2/out/26.", termEnd: "2026-12-31",
         noticeDeadline: k > 0 && !agree ? "2026-10-15" : "2026-10-02"}]}));
     const o = run([...files, ...subs]);
@@ -393,14 +401,14 @@ describe("property: dependencies proven by tracking; every state injected into e
     conflict: (files, id) => {const d = file(files, id); files.push({...structuredClone(d), fileId: `${id}-x`, fileName: `${id}-x.pdf`, description: `${d.description} (outra leitura)`}); return "conflict";},
     future: (files, id) => {
       const d = file(files, id); if (d.legibility.wholeFile) return null;
-      for (const x of files.filter((y) => y.sha256 === d.sha256)) x.version = {...x.version, lastUpdated: "2027-01-15"};
+      for (const x of kin(files, d)) x.version = {...x.version, lastUpdated: "2027-01-15"};
       return "future";
     },
     // A source absent or outside the registry, where that does not change what the document is: an instrument outside
     // the registry (its chain is by reference), or the only document of a month removed.
     missing_source: (files, id) => {
       const d = file(files, id); if (d.legibility.wholeFile || d.substitutesPages) return null;
-      if (d.instrument) {for (const x of files.filter((y) => y.sha256 === d.sha256)) x.entity = {...x.entity, primaryId: "fora-do-cadastro"}; return "missing_source";}
+      if (d.instrument) {for (const x of kin(files, d)) x.entity = {...x.entity, primaryId: "fora-do-cadastro"}; return "missing_source";}
       if (d.kind === "trial_balance" && !files.some((x) => x !== d && x.kind === d.kind && x.period.start === d.period.start)) {files.splice(files.indexOf(d), 1); return "missing_source";}
       return null;
     },
@@ -421,7 +429,7 @@ describe("property: dependencies proven by tracking; every state injected into e
       const o = traced((files) => {variant(files); expected = inject[state](files, id);});
       if (expected === null) return;
       for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
-      const files = all(), sha = file(files, id).sha256, same = files.filter((f) => f.sha256 === sha).map((f) => f.fileId);
+      const files = all(), same = (state === "future" || state === "missing_source" ? kin(files, file(files, id)) : files.filter((f) => f.sha256 === file(files, id).sha256)).map((f) => f.fileId);
       for (const b of emitted) {
         const after = o.traces.find((t) => t.effect === b.effect);
         const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
@@ -477,4 +485,90 @@ describe("property: an existence that enables an effect is judged with it", () =
     expect(t.guarded).toContain("f03");
     expect(t.emitted).toBe(when !== "2027-01-15");
   });
+});
+
+// Review r9 generators: the copy's identity, the currency domain and conflicts that appear only when the pages are gathered.
+/** Turn 2 over the calibration, traced, with the base readings and the turn-two readings edited. */
+const turnTwo = (editBase: (r: DocumentReading[]) => void, editTwo: (r: DocumentReading[]) => void) => {
+  const base = readings(editBase), two = auroraTurnTwoReadings(); editTwo(two);
+  const prior = run(base);
+  return organizeDocumentFolderTraced(auroraKernelInput({files: [...base, ...two], asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}}));
+};
+describe("property: a page copy is the very document it substitutes", () => {
+  const edits = {
+    none: () => undefined,
+    instrument: (s: DocumentReading) => {s.instrument = {...s.instrument!, ref: "finame-2022"};},
+    reference: (s: DocumentReading) => {s.substitutesPages = {...s.substitutesPages!, instrumentRef: "finame-2022"};},
+    amends: (s: DocumentReading) => {s.instrument = {...s.instrument!, amends: "deb-aurora-1"};},
+    entity: (s: DocumentReading) => {s.entity = {...s.entity, primaryId: "aurora-log"};},
+    period: (s: DocumentReading) => {s.period = {label: "2023", start: "2023-01-01", end: "2023-12-31"};},
+    lower_version: (s: DocumentReading) => {s.version = {...s.version, ordinal: 1};},
+    higher_version: (s: DocumentReading) => {s.version = {...s.version, ordinal: 3};},
+    other_update: (s: DocumentReading) => {s.version = {...s.version, lastUpdated: "2024-10-15"};},
+  } as const;
+  for (let n = 1; n <= 36; n++) {
+    const r = random(80000 + n), which = pick(r, Object.keys(edits) as (keyof typeof edits)[]), status = pick(r, ["signed", "registered"] as const);
+    it(`copy ${n}: ${which}, ${status}`, () => {
+      const go = () => turnTwo((b) => {file(b, "f20").version.ordinal = 2;}, (t) => {const s = file(t, "s01"); s.version = {...s.version, status, ordinal: 2}; s.clauses = [covenantClause("1", "covenant-ccb", 7)]; edits[which](s);});
+      if (which !== "none") {expect(go).toThrow(which === "instrument" || which === "reference" ? /document_inventory_unsupported_substitute|document_inventory_substitute_without_target/ : "document_inventory_unsupported_substitute"); return;}
+      const o = go();
+      // Specific outputs: the row is complete, the recovered covenant is the text in force, and the comparison stands on it.
+      expect(o.inventory.rows.find((x) => x.fileId === "f20")!.situation.read).toBe("complete");
+      expect(o.traces.find((x) => x.effect === "page:f20:7")!.emitted).toBe(true);
+      expect(o.inventory.findings.find((f) => f.id === "f24-politica")!.statement).toContain("covenant vigente de 1,0x");
+    });
+  }
+});
+describe("property: every monetary value is in reais; another currency or a unit at odds with its section is refused", () => {
+  for (let n = 1; n <= 24; n++) {
+    const r = random(81000 + n), currency = pick(r, ["BRL", "BRL", "USD", "EUR"] as const), where = pick(r, ["f06", "f12", "f16", "month"] as const), scaleOff = r() < 0.25;
+    it(`currency ${n}: ${currency} on ${where}${scaleOff ? ", scale off" : ""}`, () => {
+      const go = () => turnTwo((b) => {
+        const d = where === "month" ? b.find((x) => x.kind === "trial_balance")! : file(b, where);
+        if (!d.units.length) d.units.push({section: d.figures[0]?.at.section ?? d.debtTable?.at.section ?? "Planilha", currency: "BRL", scale: d.figures[0]?.scale ?? d.debtTable?.scale ?? "1"});
+        d.units[0]!.currency = currency;
+        if (scaleOff) {const u = d.units[0]!; const x = d.figures.find((y) => y.at.section === u.section) ?? (d.debtTable?.at.section === u.section ? d.debtTable : null);
+          if (x) x.scale = x.scale === "1" ? "1000" : "1";}
+      }, () => undefined);
+      const refused = currency !== "BRL" ? "document_inventory_unsupported_currency" : null;
+      if (refused) {expect(go).toThrow(refused); return;}
+      let o: ReturnType<typeof go> | null = null, error: string | null = null;
+      try {o = go();} catch (e) {error = e instanceof Error ? e.message : String(e);}
+      if (scaleOff && error) {expect(error).toContain("document_inventory_unsupported_unit"); return;}
+      expect(error).toBeNull();
+      // In the domain, every check states BRL and the month sum still closes in reais.
+      for (const c of o!.inventory.identityChecks) expect(c.currency).toBe("BRL");
+      if (!scaleOff) expect(o!.inventory.identityChecks.find((c) => c.kind === "period_against_months")!.status).toBe("matches");
+    });
+  }
+  it("the input currency outside reais is refused", () => {
+    expect(() => organizeDocumentFolder(auroraKernelInput({currency: "USD"}))).toThrow("document_inventory_unsupported_currency");
+  });
+});
+describe("property: page completeness is judged after every recovered page is gathered", () => {
+  for (let n = 1; n <= 36; n++) {
+    const r = random(82000 + n), onTarget = pick(r, [null, "1", "3"] as const), pages: number[] = pick(r, [[7], [7, 8]]), ratios = pages.map(() => pick(r, ["1", "1", "3"] as const));
+    it(`gathered ${n}: target ${onTarget ?? "none"}, copies ${pages.map((p, k) => `${p}:${ratios[k]}`).join(" ")}`, () => {
+      const o = turnTwo((b) => {const f = file(b, "f20");
+        f.legibility = {...f.legibility, unreadablePages: [...f.legibility.unreadablePages, ...pages.includes(8) ? [{page: 8, reason: "illegible_scan" as const, expectedContent: null, expectedFrom: null}] : []]};
+        if (onTarget) f.clauses.push(covenantClause(onTarget, "covenant-ccb-6", 6));
+      }, (t) => {
+        const s = file(t, "s01"); t.splice(t.indexOf(s), 1);
+        pages.forEach((p, k) => t.push({...structuredClone(s), fileId: `s0${k + 3}`, fileName: `s0${k + 3}.pdf`, sha256: hex(`gathered-${n}-${k}`), substitutesPages: {instrumentRef: "ccb-bradesco-2024", pages: [p]},
+          clauses: [covenantClause(ratios[k]!, `covenant-p${p}`, p)]}));
+      });
+      const values = [...onTarget ? [onTarget] : [], ...ratios];
+      const conflict = new Set(values).size > 1;
+      const row = o.inventory.rows.find((x) => x.fileId === "f20")!;
+      // The row and every page guard read the same final state.
+      expect(row.situation.read).toBe(conflict ? "partial" : "complete");
+      for (const p of pages) expect(o.traces.find((x) => x.effect === `page:f20:${p}`)!.emitted, `page ${p}`).toBe(!conflict);
+      expect(o.inventory.findings.some((f) => f.code === "substitute_conflict" && f.anchor === "f20")).toBe(conflict);
+      expect(o.inventory.readingConflicts.some((c) => c.sha256 === null && c.fileIds.some((x) => x.startsWith("s0")))).toBe(conflict);
+      // The text in force: with the conflict, no covenant is affirmed and the comparison is withheld.
+      const text = o.traces.find((x) => x.effect === "text:ccb-bradesco-2024")!;
+      expect(text.state).toBe(conflict ? "conflict" : "known");
+      expect(o.inventory.findings.find((f) => f.id === "f24-politica")?.statement.includes(`covenant vigente de ${times(values[0]!)}`) ?? false).toBe(!conflict);
+    });
+  }
 });

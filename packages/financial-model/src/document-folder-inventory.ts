@@ -163,6 +163,15 @@ export const documentReadingSchema = z.strictObject({
   for (const l of r.debtTable?.lines ?? []) if (l.limit !== null && new Exact(l.drawn).gt(l.limit)) fail("document_inventory_drawn_above_limit");
   if (r.instrument?.amends === r.instrument?.ref && r.instrument !== null) fail("document_inventory_amends_itself");
   if (r.substitutesPages && (r.legibility.unreadablePages.length || r.legibility.wholeFile)) fail("document_inventory_substitute_not_legible");
+  // A copy of pages is the same instrument it substitutes: a reference that contradicts the copy's own instrument is refused.
+  if (r.substitutesPages && r.instrument?.ref !== r.substitutesPages.instrumentRef) fail("document_inventory_unsupported_substitute");
+  // The supported currency domain: every monetary value in reais. Another currency is refused, never converted.
+  if (r.units.some((u) => u.currency !== "BRL")) fail("document_inventory_unsupported_currency");
+  // A figure read on a section with a declared unit carries that unit; a different scale on the same section is refused.
+  const unitOf = new Map<string, string>();
+  for (const u of r.units) {if (unitOf.has(u.section) && unitOf.get(u.section) !== u.scale) fail("document_inventory_unsupported_unit"); unitOf.set(u.section, u.scale);}
+  for (const x of [...r.figures.map((f) => ({at: f.at, scale: f.scale})), ...r.debtTable ? [{at: r.debtTable.at, scale: r.debtTable.scale}] : []])
+    if (x.at.section !== null && unitOf.has(x.at.section) && unitOf.get(x.at.section) !== x.scale) fail("document_inventory_unsupported_unit");
   // The supported domain: a file with no readable content is the only form without entity, period and reference date;
   // every other reading names its entity, a period with start and end, and the date it speaks from.
   if (!r.legibility.wholeFile) {
@@ -285,7 +294,7 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
 export type DocumentFolderInventory = z.infer<typeof documentFolderInventoryOutputSchema>;
 
 export const documentFolderInventoryInputSchema = z.strictObject({
-  asOf: date, mode: z.enum(inventoryModes), currency: z.string().regex(/^[A-Z]{3}$/),
+  asOf: date, mode: z.enum(inventoryModes), currency: z.string().regex(/^[A-Z]{3}$/).refine((c) => c === "BRL", "document_inventory_unsupported_currency"),
   /** The company's registry: entities, their group and the controlling entity. */
   entities: z.array(z.strictObject({id: key, label: text, groupId: key, groupLabel: text, parentId: key.nullable(), ownership: ratio.nullable()})).min(1).max(50),
   decisions: z.array(z.strictObject({id: key, label: text, kind: z.enum(decisionKinds)})).max(12),
@@ -526,54 +535,109 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       statement: `${what} não é afirmado: depende de documento ${stateWords[g.state]}. Fica pendente até a leitura completa.`});
 
   const offered = new Map<string, DocumentReading[]>();
+  /** A copy fills a page only of the very document it repeats: same instrument, entity, period and version. A lower
+   * or another version never gives its text to the target; an incompatible copy is refused, not read as unread. */
+  const sameDocument = (s: DocumentReading, t: DocumentReading) => s.instrument?.ref === t.instrument?.ref && s.instrument?.amends === t.instrument?.amends
+    && s.entity.primaryId === t.entity.primaryId && s.period.start === t.period.start && s.period.end === t.period.end
+    && s.version.ordinal === t.version.ordinal && s.version.lastUpdated === t.version.lastUpdated;
   for (const s of substitutes) {
     const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef
       && s.substitutesPages!.pages.every((p) => f.legibility.unreadablePages.some((u) => u.page === p)));
     const named = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
-    if (!named.length && !documents.some((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef)) throw new Error("document_inventory_substitute_without_target");
+    const anyNamed = documents.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
+    if (!named.length && !anyNamed.length) throw new Error("document_inventory_substitute_without_target");
     if (named.length && !targets.length) throw new Error("document_inventory_substitute_for_legible_page");
     if (targets.length > 1) throw new Error("document_inventory_substitute_target_ambiguous");
     const target = targets[0];
+    if (target ? !sameDocument(s, target) : !anyNamed.some((d) => sameDocument(s, d))) throw new Error("document_inventory_unsupported_substitute");
     if (!target) continue;
     substituted.add(target.fileId);
     if (target.legibility.pageCount !== null && s.substitutesPages!.pages.some((p) => p > target.legibility.pageCount!)) throw new Error("document_inventory_page_outside_file");
     for (const p of s.substitutesPages!.pages) offered.set(`${target.fileId}|${p}`, [...offered.get(`${target.fileId}|${p}`) ?? [], s]);
   }
-  // A page is completed only from one reading, and only if the target (its other pages aside) and every copy are known:
-  // copies that read the page differently leave it unread with the conflict declared; a copy with its own conflict,
-  // a hash read two ways or a date after the reading date withholds the page.
-  for (const [k, list] of [...offered].sort(([a], [b]) => byKey(a, b))) {
-    const [targetId, pageText] = k.split("|") as [string, string], page = Number(pageText), target = byId.get(targetId)!;
+  // Page states in one pass before any effect. First each page on its own (copies that read it differently, a copy
+  // without documentary force, a target or copy not known); then the set: the recovered pages gathered with the
+  // target's own pages, and a clause read differently across them is a conflict of the set. The pass repeats until
+  // stable; the effects below only read the final state, so the row and every guard see the same pages.
+  const onPage = (s: DocumentReading, page: number) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
+    debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
+  type PageOutcome = {kind: "filled"; from: DocumentReading} | {kind: "copies_conflict"; fileIds: string[]} | {kind: "set_conflict"; fileIds: string[]}
+    | {kind: "weak"; weak: DocumentReading[]} | {kind: "withheld"};
+  const pageOutcome = new Map<string, PageOutcome>();
+  const offeredKeys = [...offered.keys()].sort(byKey);
+  const split = (k: string) => {const [t, p] = k.split("|") as [string, string]; return {target: byId.get(t)!, page: Number(p)};};
+  for (const k of offeredKeys) {
+    const {target, page} = split(k), usable = offered.get(k)!.filter((s) => !suspended.has(s.fileId));
+    if (new Set(usable.map((s) => onPage(s, page))).size > 1) {pageOutcome.set(k, {kind: "copies_conflict", fileIds: ids(usable)}); continue;}
+    if (!usable.length) {pageOutcome.set(k, {kind: "withheld"}); continue;}
+    // A copy carries its own documentary force: it fills the page only if it is signed or registered and at least as
+    // strong as the target. A draft, an approval or a final version never inherits the original's signature.
+    const weak = usable.filter((x) => !binds(x.version.status) || guarantee(x.version.status) < guarantee(target.version.status));
+    if (weak.length) {pageOutcome.set(k, {kind: "weak", weak}); continue;}
+    pageOutcome.set(k, {kind: "filled", from: [...usable].sort((a, b) => byKey(a.fileId, b.fileId))[0]!});
+  }
+  const applyFills = () => {
+    pagesFrom.clear(); recovered.clear(); pageConflicted.clear(); entriesCache.clear();
+    for (const k of offeredKeys) {
+      const o = pageOutcome.get(k)!, {target, page} = split(k);
+      if (o.kind === "copies_conflict" || o.kind === "set_conflict") pageConflicted.add(target.fileId);
+      if (o.kind !== "filled") continue;
+      pagesFrom.set(target.fileId, [...pagesFrom.get(target.fileId) ?? [], {page, fileId: o.from.fileId, sha256: o.from.sha256}].sort((a, b) => a.page - b.page));
+      for (const c of o.from.clauses.filter((x) => x.at.page === page)) recovered.set(target.fileId, [...recovered.get(target.fileId) ?? [], {c, from: o.from.fileId}]);
+    }
+  };
+  for (let changed = true, round = 0; changed && round < offeredKeys.length + 2; round++) {
+    changed = false; applyFills();
+    // The set: a recovered clause read differently from another page of the target, or from another recovered page.
+    for (const target of [...new Set(offeredKeys.map((k) => split(k).target))]) {
+      const groups = bucket(clausesOf(target).filter((h) => anchoredLimit(h.c)), (h) => keyOf(h.c));
+      for (const list of groups.values()) {
+        // Across pages only: a copy that contradicts itself on one page is that copy's own conflict, judged by its state.
+        if (list.every((h) => equivalent(h.c, list[0]!.c)) || !list.some((h) => h.from !== target.fileId) || new Set(list.map((h) => `${h.from}|${h.c.at.page}`)).size < 2) continue;
+        for (const h of list.filter((x) => x.from !== target.fileId)) {
+          const k = `${target.fileId}|${h.c.at.page}`, o = pageOutcome.get(k);
+          if (o?.kind === "filled") {pageOutcome.set(k, {kind: "set_conflict", fileIds: [...new Set([target.fileId, ...list.map((x) => x.from)])].sort(byKey)}); changed = true;}
+        }
+      }
+    }
+    if (changed) continue;
+    applyFills();
+    // Each page filled only if the target (its other pages aside) and every copy are known in the final set.
+    for (const k of offeredKeys) {
+      const o = pageOutcome.get(k)!, {target} = split(k);
+      if (o.kind !== "filled") continue;
+      const st = [target, ...offered.get(k)!].map((d) => stateFrom(stateParts(d), d === target));
+      if (worstKnowledge(...st) !== "known") {pageOutcome.set(k, {kind: "withheld"}); changed = true;}
+    }
+  }
+  applyFills();
+  for (const k of offeredKeys) {
+    const o = pageOutcome.get(k)!;
+    if (o.kind === "copies_conflict" || o.kind === "set_conflict") readingConflicts.push({sha256: null, page: split(k).page, fileIds: o.fileIds});
+  }
+  // The effects read the final state only.
+  for (const k of offeredKeys) {
+    const {target, page} = split(k), targetId = target.fileId, list = offered.get(k)!, o = pageOutcome.get(k)!;
     effect(`page:${targetId}:${page}`, () => {
-      const onPage = (s: DocumentReading) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
-        debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
-      const usable = list.filter((s) => !suspended.has(s.fileId));
-      if (new Set(usable.map(onPage)).size > 1) {
-        const fileIds = usable.map((s) => s.fileId).sort(byKey);
-        readingConflicts.push({sha256: null, page, fileIds}); pageConflicted.add(targetId);
-        add({id: `${targetId}-substitute-conflict-p${page}`, code: "substitute_conflict", anchor: targetId, sources: fileIds.map((x) => src(x, {page, section: null})), knowledge: "conflict",
-          statement: `Há ${fileIds.length} cópias da página ${page} com leituras diferentes; a página continua sem leitura até a divergência ser resolvida.`});
+      if (o.kind === "copies_conflict" || o.kind === "set_conflict") {
+        const fileIds = o.fileIds;
+        guard([target, ...list], [], {ignoreUnread: [targetId]});
+        add({id: `${targetId}-substitute-conflict-p${page}`, code: "substitute_conflict", anchor: targetId, sources: fileIds.map((x) => src(x, x === targetId ? null : {page, section: null})), knowledge: "conflict",
+          statement: o.kind === "copies_conflict" ? `Há ${fileIds.length} cópias da página ${page} com leituras diferentes; a página continua sem leitura até a divergência ser resolvida.`
+            : `A página ${page} recuperada lê a mesma cláusula de outra forma que outra página do documento; a página continua sem leitura até a divergência ser resolvida.`});
         return;
       }
       const g = guard([target, ...list], [], {ignoreUnread: [targetId]});
-      if (g.state !== "known" || !usable.length) {block(`page-${page}`, targetId, `O conteúdo da página ${page} recuperada`, g); return;}
-      // A copy carries its own documentary force: it fills the page only if it is signed or registered and at least as
-      // strong as the target. A draft, an approval or a final version never inherits the original's signature.
-      const weak = usable.filter((x) => !binds(x.version.status) || guarantee(x.version.status) < guarantee(target.version.status));
-      if (weak.length) {
-        add({id: `${targetId}-weak-copy-p${page}`, code: "substitute_not_binding", anchor: targetId, sources: ids(weak).map((x) => src(x, {page, section: null})), knowledge: "unread",
+      if (g.state !== "known") {block(`page-${page}`, targetId, `O conteúdo da página ${page} recuperada`, g); return;}
+      if (o.kind === "weak") {
+        add({id: `${targetId}-weak-copy-p${page}`, code: "substitute_not_binding", anchor: targetId, sources: ids(o.weak).map((x) => src(x, {page, section: null})), knowledge: "unread",
           statement: `A cópia da página ${page} não tem assinatura nem registro, ou tem força menor que o original; a página continua sem leitura.`});
         return;
       }
-      // Same reading of the page in every copy: the lowest file id carries it.
-      const s = [...usable].sort((a, b) => byKey(a.fileId, b.fileId))[0]!;
-      pagesFrom.set(targetId, [...pagesFrom.get(targetId) ?? [], {page, fileId: s.fileId, sha256: s.sha256}].sort((a, b) => a.page - b.page));
+      if (o.kind === "withheld") {block(`page-${page}`, targetId, `O conteúdo da página ${page} recuperada`, {state: "unread", sources: [targetId]}); return;}
       recorder!.emitted = true;
     });
   }
-  for (const [targetId, pages] of [...pagesFrom].sort(([a], [b]) => byKey(a, b))) for (const p of pages)
-    for (const c of byId.get(p.fileId)!.clauses.filter((x) => x.at.page === p.page)) recovered.set(targetId, [...recovered.get(targetId) ?? [], {c, from: p.fileId}]);
-
 
   // Version families: one precedence function for every family, by content and never by arrival.
   const superseded = new Map<string, {fileId: string; reason: "audited_over_draft" | "higher_assurance" | "later_version" | "later_position"}>();
@@ -911,6 +975,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
 
   // Identity checks: the only arithmetic the method does.
   const identityChecks: DocumentFolderInventory["identityChecks"] = [];
+  /** Defense in depth over the BRL domain: each operand's currency and unit, from the section it was read on, are the
+   * ones the sum assumes; otherwise the check does not run. Nothing is converted. */
+  const sameUnit = (f: DocumentReading, at: {section: string | null}, scale: string) => {
+    const u = f.units.filter((x) => x.section === at.section);
+    return u.every((x) => x.currency === input.currency && x.scale === scale) && input.currency === "BRL";
+  };
   for (const f of live.filter((x) => x.debtTable !== null && settled(x))) {
     // The check stands on every position of the same table, whatever its version.
     const members = documents.filter((x) => x.kind === f.kind && x.entity.primaryId === f.entity.primaryId);
@@ -922,6 +992,10 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const matches = drawn.eq(reported), drawnShown = brl(drawn.div(t.scale).toFixed(), t.scale);
       const words = {total: brl(t.reportedTotal, t.scale), period: periodText(f), lines: atLimit.map((l) => ({kind: l.lineKind, limit: brl(l.limit!, t.scale), unused: new Exact(l.drawn).eq(0)})), at: src(f.fileId, t.at)};
       const g = guard(members);
+      if (g.state === "known" && !sameUnit(f, t.at, t.scale)) {
+        identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: "currency_or_unit"});
+        return;
+      }
       if (g.state !== "known") {
         identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId, ...g.sources.filter((x) => x !== f.fileId)], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: g.state});
         block("debt-total", f.fileId, "A conferência do total da tabela de dívida", g); return;
@@ -966,6 +1040,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
         const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
         identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
           reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
+        return;
+      }
+      if (![{f: report, x: r!}, ...series.map((f, n) => ({f, x: values[n]!}))].every(({f, x}) => sameUnit(f, x.at, x.scale))) {
+        identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId, ...series.map((f) => f.fileId)], status: "not_run",
+          reported: null, recomposed: null, currency: input.currency, reason: "currency_or_unit"});
         return;
       }
       recorder!.emitted = true;

@@ -70,7 +70,13 @@ describe("document folder inventory kernel", () => {
   });
   it("accepts a page substitute only for an unreadable page of the same instrument", () => {
     const [s01] = auroraTurnTwoReadings();
-    expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, substitutesPages: {instrumentRef: "inexistente", pages: [7]}}]}))).toThrow("document_inventory_substitute_without_target");
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, instrument: {...s01!.instrument!, ref: "inexistente"}, substitutesPages: {instrumentRef: "inexistente", pages: [7]}}]}))).toThrow("document_inventory_substitute_without_target");
+    // The copy's identity is the target's: another instrument, entity, period or version is refused, a lower version included.
+    const refused = (x: DocumentReading) => expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), x]}))).toThrow("document_inventory_unsupported_substitute");
+    refused({...s01!, instrument: {...s01!.instrument!, ref: "finame-2022"}});
+    refused({...s01!, entity: {...s01!.entity, primaryId: "aurora-log"}});
+    refused({...s01!, period: {label: "2023", start: "2023-01-01", end: "2023-12-31"}});
+    refused({...s01!, version: {...s01!.version, ordinal: 1}});
     expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, clauses: [{...s01!.clauses[0]!, at: {page: 3, section: null}}]}]}))).toThrow("document_inventory_substitute_outside_its_pages");
   });
 });

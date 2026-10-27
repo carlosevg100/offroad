@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T13:27:22.323Z",
-    "finishedAt": "2026-10-27T13:27:22.323Z",
-    "commit": "d998ea9d"
+    "startedAt": "2026-10-27T13:51:04.624Z",
+    "finishedAt": "2026-10-27T13:51:04.624Z",
+    "commit": "ce422601"
   },
   "modelCalls": 0,
   "cases": [
@@ -314,8 +314,8 @@
       "id": "recovered-notice-does-not-revive-a-replaced-deadline",
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
-      "inputFingerprint": "74235d3c86dc1239d5468a1aa2a45ab67d0b215fb43ea495ccb65a287d8c26f3",
-      "outputFingerprint": "18be4349913e48f3f1fbf2b09ae4793d8970782fcd01c962a4b4cb094e9f2be6",
+      "inputFingerprint": "67041511bd3e98af194f065c7c22c5563b7a96cc400e189a0f59def527549ae9",
+      "outputFingerprint": "a3c31d48eebef2bbca8bd5989e15bae518240d0ca4bdacdc23432499286294ab",
       "passed": true
     },
     {
@@ -455,6 +455,14 @@
       "passed": true
     },
     {
+      "id": "recovered-page-read-against-another-page-leaves-the-row-partial",
+      "expectation": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
+      "observed": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
+      "inputFingerprint": "0a4a74575e169c24cf12d9d94396bf10dfde961f8798229d606ffb4ba9fac339",
+      "outputFingerprint": "bab8315bed65b35c5dedbb182f61680576ae913e1df2148a5e4f829fcf979bcf",
+      "passed": true
+    },
+    {
       "id": "notice-deadline-followed-never-scheduled",
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
@@ -464,6 +472,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "c6c72538219aa823c91084a77c3d1e2ddcfc67346ad1ec0ac0ebe4b13ed537d7",
+  "evidenceFingerprint": "8fed7114d04a8c42aaafa793f22c87410234c9c87da48754e961c2a80e12fc41",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

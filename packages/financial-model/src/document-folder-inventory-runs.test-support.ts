@@ -187,6 +187,7 @@ function goldCases(): Case[] {
         period: {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"}, instrument: {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-embalagem"},
         clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 1, section: null}, statement: "Renovação automática salvo aviso até 2/nov/26.", termEnd: "2026-12-31", noticeDeadline: "2026-11-02"}]});
       r.push({...structuredClone(auroraTurnTwoReadings()[0]!), fileId: "p1", fileName: "p1.pdf", sha256: createHash("sha256").update("p1").digest("hex"), kind: "supplier_contract",
+        ...structuredClone({entity: c.entity, period: c.period, version: c.version, referenceDate: c.referenceDate}),
         instrument: {ref: "contrato-embalagem", label: "contrato", amends: null}, substitutesPages: {instrumentRef: "contrato-embalagem", pages: [11]},
         clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 11, section: null}, statement: "Renovação automática salvo aviso até 2/out/26.", termEnd: "2026-12-31", noticeDeadline: "2026-10-02"}]});})}),
       {deadlines: [["f31", "2026-11-02"]], history: "clause_superseded"}, (p) => ({deadlines: inv(p).followUps.flatMap((f) => f.kind === "notice_deadline" ? [[f.fileId, f.date]] : []),
@@ -244,6 +245,11 @@ function goldCases(): Case[] {
       {ccb: "partial", cause: "unread"}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read, cause: inv(p).findings.find((f) => f.code === "substitute_not_binding")?.knowledge ?? null})),
     observe("future-parent-statements-of-another-period-block-the-perimeter", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f02", "f30"]) r.splice(r.indexOf(file(r, id)), 1); file(r, "f03").version.lastUpdated = "2027-01-15";})}),
       {perimeter: false, blocked: "future"}, (p) => ({perimeter: inv(p).findings.some((f) => f.effect === "perimeter"), blocked: inv(p).findings.find((f) => f.id === "f04-blocked-perimeter")?.knowledge ?? null})),
+    // Review r9 case: the page is judged after every recovered page is gathered with the target's own.
+    observe("recovered-page-read-against-another-page-leaves-the-row-partial", folderPacketInput({files: readings((r) => {file(r, "f20").clauses.push({type: "financial_covenant" as const, id: "covenant-ccb", at: {page: 6, section: null}, statement: "Dívida líquida / EBITDA de no máximo 3,0x.", metric: "net_debt_to_ebitda" as const, maxRatio: "3.0"});}),
+      turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, clauses: [...x.clauses, {type: "financial_covenant" as const, id: "covenant-ccb-7", at: {page: 7, section: null}, statement: "Dívida líquida / EBITDA de no máximo 1,0x.", metric: "net_debt_to_ebitda" as const, maxRatio: "1.0"}]} : x)}}),
+      {ccb: "partial", conflict: "conflict", inForce: false}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read,
+        conflict: inv(p).findings.find((f) => f.id === "f20-substitute-conflict-p7")?.knowledge ?? null, inForce: inv(p).findings.find((f) => f.id === "f24-politica")?.statement.includes("covenant vigente") ?? false})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -283,6 +289,13 @@ function adversarialCases(): Case[] {
     ["dateless-amendment", () => folderPacketInput({files: readings((r) => {file(r, "f19").period = {label: "sem data", start: null, end: null};})}), "document_inventory_unsupported_reading:period"],
     ["ratio-in-a-clause-that-is-not-its-limit", () => folderPacketInput({files: readings((r) => {file(r, "f22").clauses[0]!.statement = "Veda a cessão; alavancagem atual de 2,1x.";})}), "document_inventory_free_text_outside_reading"],
     ["reading-without-page-or-section", () => folderPacketInput({files: readings((r) => {file(r, "f24").clauses[0]!.at = {page: null, section: null};})}), "A reading names the page or the section"],
+    // Review r9: the copy's identity and the currency domain.
+    ["copy-of-another-instrument", () => folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, instrument: {...x.instrument!, ref: "finame-2022"}} : x)}}), "document_inventory_unsupported_substitute"],
+    ["copy-of-a-lower-version", () => folderPacketInput({files: readings((r) => {file(r, "f20").version.ordinal = 2;}),
+      turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, version: {...x.version, ordinal: 1}} : x)}}), "document_inventory_unsupported_substitute"],
+    ["copy-of-another-period", () => folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, period: {label: "2023", start: "2023-01-01", end: "2023-12-31"}} : x)}}), "document_inventory_unsupported_substitute"],
+    ["sheet-in-dollars", () => folderPacketInput({files: readings((r) => {file(r, "f12").units[0]!.currency = "USD";})}), "document_inventory_unsupported_currency"],
+    ["figure-scale-at-odds-with-its-sheet", () => folderPacketInput({files: readings((r) => {file(r, "f12").units[0]!.scale = "1";})}), "document_inventory_unsupported_unit"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

@@ -30,8 +30,9 @@ describe("recorded document folder inventory evaluations", () => {
       "recovered-notice-does-not-revive-a-replaced-deadline", "unread-predecessor-is-not-absent", "future-amendment-is-not-current", "unread-substitutive-clause-keeps-no-limit-in-force", "page-copies-differing-in-the-debt-table-leave-the-page-unread",
       "amendment-without-a-read-original-has-no-deadline", "future-board-minutes-have-no-effect", "concurrent-values-of-one-metric-are-a-conflict", "side-by-side-is-for-budgets-only", "future-position-blocks-the-debt-check", "unreadable-original-blocks-the-text-in-force",
       "update-after-the-reading-date-is-future", "copy-with-its-own-conflict-does-not-complete-the-page", "comparison-without-both-operands-is-withheld", "update-not-read-shows-the-prior-as-history",
-      "partial-period-is-not-summed", "draft-copy-does-not-fill-the-page", "future-parent-statements-of-another-period-block-the-perimeter", "notice-deadline-followed-never-scheduled"]);
-    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(30);
+      "partial-period-is-not-summed", "draft-copy-does-not-fill-the-page", "future-parent-statements-of-another-period-block-the-perimeter",
+      "recovered-page-read-against-another-page-leaves-the-row-partial", "notice-deadline-followed-never-scheduled"]);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(35);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
 });
