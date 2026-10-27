@@ -28,7 +28,8 @@ describe("recorded document folder inventory evaluations", () => {
       "conflict-resolved-later-is-history", "competing-originals-without-winner", "position-tie-broken-by-version", "covenant-without-its-limit-text-has-no-effect",
       "cycle-of-numbers-is-an-explicit-conflict", "two-covenants-in-one-amendment-are-a-conflict", "recovered-covenant-joins-the-text-in-force",
       "recovered-notice-does-not-revive-a-replaced-deadline", "unread-predecessor-is-not-absent", "future-amendment-is-not-current", "unread-substitutive-clause-keeps-no-limit-in-force", "page-copies-differing-in-the-debt-table-leave-the-page-unread",
-      "amendment-without-a-read-original-has-no-deadline", "future-board-minutes-have-no-effect", "concurrent-values-of-one-metric-are-a-conflict", "notice-deadline-followed-never-scheduled"]);
+      "amendment-without-a-read-original-has-no-deadline", "future-board-minutes-have-no-effect", "concurrent-values-of-one-metric-are-a-conflict", "side-by-side-is-for-budgets-only", "future-position-blocks-the-debt-check", "unreadable-original-blocks-the-text-in-force",
+      "notice-deadline-followed-never-scheduled"]);
     expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(25);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });

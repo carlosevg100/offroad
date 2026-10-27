@@ -51,7 +51,7 @@ describe("document folder inventory kernel", () => {
   });
   it("updates in turn 2 only the rows touched; the rest are the prior bytes", () => {
     const prior = turnOne(), t = turnTwo(prior);
-    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-unreadable-p7"], findingsAdded: ["f20-s01-reforco"],
+    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-blocked-text-in-force", "f20-unreadable-p7"], findingsAdded: ["f20-s01-reforco"],
       questionsAnswered: ["circulacao-f02"]});
     for (const r of prior.rows.filter((x) => x.fileId !== "f20")) expect(t.rows.find((x) => x.fileId === r.fileId)).toEqual(r);
     expect(t.findings.find((f) => f.id === "f11-series-gap")).toMatchObject({status: "resolved", resolvedBy: ["s02"]});
@@ -77,7 +77,7 @@ describe("review r1 of the folder inventory kernel", () => {
   it("never sums a month whose versions have no winner", () => {
     const files = [...edit((r) => {file(r, "f09").version.ordinal = null; file(r, "f10").version.ordinal = null;}), auroraTurnTwoReadings()[1]!];
     const c = organizeDocumentFolder(auroraKernelInput({files})).identityChecks.find((x) => x.kind === "period_against_months")!;
-    expect([c.status, c.reason, c.recomposed]).toEqual(["not_run", "unresolved_versions:2026-05", null]);
+    expect([c.status, c.reason, c.recomposed]).toEqual(["not_run", "conflict:unresolved_versions:2026-05", null]);
   });
   it("a draft amendment produces no term in force", () => {
     const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f19").version = {label: "minuta não assinada", status: "draft", ordinal: null, lastUpdated: null};})}));

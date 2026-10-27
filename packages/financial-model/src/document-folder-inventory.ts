@@ -211,7 +211,7 @@ const rowSchema = z.strictObject({fileId: key, fileName: z.string().min(1).max(2
   validated: z.literal(false)});
 const findingCodes = ["duplicate", "draft_superseded", "version_superseded", "position_superseded", "versions_side_by_side", "versions_unresolved", "series_gap", "mixed_units",
   "stale_forecast", "total_includes_unused_limit", "total_not_recomposed", "amended_original", "amendment_in_force", "amendment_superseded", "amendment_not_in_force",
-  "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
+  "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "effect_blocked", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
   "clause_not_in_force", "reading_conflict", "substitute_conflict", "page_unreadable",
   "file_unreadable", "clause", "observation", "subsidiary_in_consolidated", "appraisal_without_registry", "figure_basis_differs"] as const;
 const findingSchema = z.strictObject({id: z.string().min(1).max(80), code: z.enum(findingCodes),
@@ -235,6 +235,8 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
   /** The text in force of each instrument: the clause of each type in force, and the types two amendments set differently with nothing to rank them. */
   effectiveTexts: z.array(z.strictObject({instrumentRef: key, fileIds: z.array(key).min(2),
     clauses: z.array(z.strictObject({type: z.string().min(1).max(90), fileId: key, clauseId: key})).max(100),
+    /** The state of the whole chain; the clauses in force are stated only when it is known. */
+    knowledge: z.enum(["known", "future", "unread", "missing_source", "conflict"]),
     conflicts: z.array(z.strictObject({type: z.string().min(1).max(90), fileIds: z.array(key).min(1)})).max(20),
     /** Clauses an amendment may change on a page not read: no text in force is stated for them. */
     unread: z.array(z.strictObject({type: z.string().min(1).max(90), fileIds: z.array(key).min(1)})).max(20),
@@ -352,8 +354,12 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const byId = new Map(input.files.map((f) => [f.fileId, f]));
   const order = new Map(input.files.map((f, n) => [f.fileId, n]));
   const findings: Finding[] = [];
-  const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge">>) =>
+  /** Findings whose knowledge a guard computed; the rest take the worst state of the documents they cite. */
+  const guarded = new Set<string>();
+  const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge">>) => {
+    if (f.knowledge !== undefined) guarded.add(f.id);
     findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "known", ...f, status: "open", resolvedBy: []});
+  };
   const src = (fileId: string, a: {page: number | null; section: string | null} | null = null) => ({fileId, page: a?.page ?? null, section: a?.section ?? null});
   const cite = (fileId: string, a: {page: number | null; section: string | null}, words: string): Quote => ({...src(fileId, a), text: words});
 
@@ -380,7 +386,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   // Pages read from a legible copy of the same instrument. A page is completed only from one reading: two
   // substitutes of the same page that read it differently leave it unread, and the conflict is declared.
   const pagesFrom = new Map<string, {page: number; fileId: string; sha256: string}[]>();
-  const substituted = new Set<string>();
+  const substituted = new Set<string>(), pageConflicted = new Set<string>();
+  const futureSubstitutes: {s: DocumentReading; target: string}[] = [];
   const offered = new Map<string, DocumentReading[]>();
   for (const s of substitutes) {
     const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef
@@ -394,6 +401,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     substituted.add(target.fileId);
     if (target.legibility.pageCount !== null && s.substitutesPages!.pages.some((p) => p > target.legibility.pageCount!)) throw new Error("document_inventory_page_outside_file");
     if (suspended.has(s.fileId)) continue;
+    // A copy dated after the reading date does not complete a page.
+    const sd = s.period.start ?? s.period.end, td = target.period.start ?? target.period.end;
+    if ((sd !== null && sd > input.asOf) || (td !== null && td > input.asOf)) {futureSubstitutes.push({s, target: target.fileId}); continue;}
     for (const p of s.substitutesPages!.pages) offered.set(`${target.fileId}|${p}`, [...offered.get(`${target.fileId}|${p}`) ?? [], s]);
   }
   for (const [k, list] of [...offered].sort(([a], [b]) => byKey(a, b))) {
@@ -403,7 +413,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
     if (new Set(list.map(onPage)).size > 1) {
       const fileIds = list.map((s) => s.fileId).sort(byKey);
-      readingConflicts.push({sha256: null, page, fileIds});
+      readingConflicts.push({sha256: null, page, fileIds}); pageConflicted.add(targetId);
       add({id: `${targetId}-substitute-conflict-p${page}`, code: "substitute_conflict", anchor: targetId, sources: fileIds.map((x) => src(x, {page, section: null})),
         statement: `Há ${fileIds.length} cópias da página ${page} com leituras diferentes; a página continua sem leitura até a divergência ser resolvida.`});
       continue;
@@ -414,10 +424,39 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   }
   const stillUnreadable = (f: DocumentReading) => f.legibility.unreadablePages.filter((p) => !(pagesFrom.get(f.fileId) ?? []).some((x) => x.page === p.page));
 
-  // Version families: one precedence function for every family, by content and never by arrival.
-  const superseded = new Map<string, {fileId: string; reason: "audited_over_draft" | "higher_assurance" | "later_version" | "later_position"}>();
-  const sideBySide = new Map<string, string[]>();
-  const families: DocumentFolderInventory["families"] = [];
+
+  // Knowledge. Every effect is computed by one function over the dependencies it declares, and a single guard lets it
+  // out only if every dependency is known: no page unread, no conflict, nothing dated after the reading date, no
+  // missing or suspended source, no version without a winner. Otherwise the whole effect is withheld and declared
+  // with its state and sources. Conservative on purpose: the inventory says what is there; analysis waits for a full reading.
+  const ids = (list: DocumentReading[]) => list.map((m) => m.fileId).sort(byKey);
+  const bucket = <T>(items: T[], k: (x: T) => string | null) => {const m = new Map<string, T[]>(); for (const x of items) {const g = k(x); if (g !== null) m.set(g, [...m.get(g) ?? [], x]);} return m;};
+  const equivalent = (a: Clause, b: Clause) => JSON.stringify(canonical({...a, id: null, at: null})) === JSON.stringify(canonical({...b, id: null, at: null}));
+  const sentence = (parts: string[]) => parts.join(" e ");
+  const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+  /** A limit is anchored when the quoted clause states the very limit it is typed with. */
+  const anchoredLimit = (c: Clause) => (c.type !== "financial_covenant" && c.type !== "debt_policy")
+    || [...c.statement.matchAll(ratioInText)].some((m) => new Exact(m[1]!.replace(",", ".")).eq(c.maxRatio));
+  type Held = {c: Clause; from: string};
+  const recovered = new Map<string, Held[]>();
+  for (const [targetId, pages] of [...pagesFrom].sort(([a], [b]) => byKey(a, b))) for (const p of pages)
+    for (const c of byId.get(p.fileId)!.clauses.filter((x) => x.at.page === p.page)) recovered.set(targetId, [...recovered.get(targetId) ?? [], {c, from: p.fileId}]);
+  /** The instrument's clauses as read in full: its own and those of the pages its substitutes recovered. */
+  const clausesOf = (f: DocumentReading): Held[] => [...f.clauses.map((c) => ({c, from: f.fileId})), ...recovered.get(f.fileId) ?? []];
+  const keyOf = (c: Clause) => c.scope ? `${c.type}:${c.scope}` : c.type;
+  const typeOf = (k: string) => k.split(":")[0] as Clause["type"];
+  type Entry = {one: Held} | {many: Held[]};
+  const entriesCache = new Map<string, Map<string, Entry>>();
+  const entriesOf = (f: DocumentReading) => {
+    const cached = entriesCache.get(f.fileId); if (cached) return cached;
+    const groups = bucket(clausesOf(f).filter((h) => anchoredLimit(h.c)), (h) => keyOf(h.c)), out = new Map<string, Entry>();
+    for (const [k, list] of groups) {
+      const sorted = [...list].sort((a, b) => byKey(`${a.from}:${a.c.id}`, `${b.from}:${b.c.id}`));
+      out.set(k, sorted.every((h) => equivalent(h.c, sorted[0]!.c)) ? {one: sorted[0]!} : {many: sorted});
+    }
+    entriesCache.set(f.fileId, out); return out;
+  };
+  const held = (h: Held) => `${h.from}:${h.c.id}`;
   /** One value per metric and document: concurrent values that differ are a conflict, never the first of the list. */
   const figureList = (f: DocumentReading, metric: string) => f.figures.filter((x) => x.metric === metric);
   const figureState = (f: DocumentReading, metric: string): Knowledge => {
@@ -428,8 +467,32 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   for (const f of live) for (const metric of [...new Set(f.figures.map((x) => x.metric))].sort(byKey)) if (figureState(f, metric) === "conflict")
     add({id: `${f.fileId}-figure-conflict-${metric.replace(/_/g, "-")}`, code: "figure_conflict", anchor: f.fileId, sources: figureList(f, metric).map((x) => src(f.fileId, x.at)), knowledge: "conflict",
       statement: `O documento traz valores diferentes para a mesma medida; nenhum foi usado até a leitura ser conferida.`});
-  const bucket = <T>(items: T[], k: (x: T) => string | null) => {const m = new Map<string, T[]>(); for (const x of items) {const g = k(x); if (g !== null) m.set(g, [...m.get(g) ?? [], x]);} return m;};
-  const ids = (list: DocumentReading[]) => list.map((m) => m.fileId).sort(byKey);
+  const dateOf = (f: DocumentReading) => f.period.start ?? f.period.end;
+  const future = (f: DocumentReading) => {const d = dateOf(f); return d !== null && d > input.asOf;};
+  const familyConflicted = new Set<string>();
+  const internalConflict = (f: DocumentReading) => [...bucket(clausesOf(f).filter((h) => anchoredLimit(h.c)), (h) => keyOf(h.c)).values()].some((list) => list.some((h) => !equivalent(h.c, list[0]!.c)));
+  /** The state of one document as read here. */
+  const stateOf = (f: DocumentReading): Knowledge => worstKnowledge(
+    suspended.has(f.fileId) || familyConflicted.has(f.fileId) || pageConflicted.has(f.fileId) || internalConflict(f)
+      || [...new Set(f.figures.map((x) => x.metric))].some((m) => figureState(f, m) === "conflict") ? "conflict" : "known",
+    stillUnreadable(f).length || f.legibility.wholeFile || clausesOf(f).some((h) => !anchoredLimit(h.c)) ? "unread" : "known",
+    future(f) ? "future" : "known");
+  const stateWords: Record<Knowledge, string> = {known: "lido", future: "com data posterior à leitura", unread: "com página ou arquivo não lido", missing_source: "com fonte ausente", conflict: "com leituras ou versões em conflito"};
+  /** The single guard: the worst state of the dependencies, with the documents that are not known. */
+  const guard = (deps: DocumentReading[], extra: Knowledge[] = []) => {
+    const unique = [...new Map(deps.map((d) => [d.fileId, d])).values()];
+    const bad = unique.filter((d) => stateOf(d) !== "known");
+    return {state: worstKnowledge(...unique.map(stateOf), ...extra), sources: bad.length ? ids(bad) : ids(unique)};
+  };
+  const block = (id: string, anchor: string, what: string, g: {state: Knowledge; sources: string[]}) =>
+    add({id: `${anchor}-blocked-${id}`, code: "effect_blocked", anchor, sources: g.sources.map((x) => src(x)), knowledge: g.state,
+      statement: `${what} não é afirmado: depende de documento ${stateWords[g.state]}. Fica pendente até a leitura completa.`});
+  for (const {s, target} of futureSubstitutes) block(`page-${s.fileId}`, target, "O conteúdo da página recuperada", {state: "future", sources: [target, s.fileId].sort(byKey)});
+
+  // Version families: one precedence function for every family, by content and never by arrival.
+  const superseded = new Map<string, {fileId: string; reason: "audited_over_draft" | "higher_assurance" | "later_version" | "later_position"}>();
+  const sideBySide = new Map<string, string[]>();
+  const families: DocumentFolderInventory["families"] = [];
   const facts = (f: DocumentReading, date: string | null): VersionFacts => ({status: f.version.status, ordinal: f.version.ordinal, date});
   const resolveFamily = (members: DocumentReading[], criteria: VersionCriterion[], dateOf: (f: DocumentReading) => string | null) =>
     resolveVersions(members, (f) => facts(f, dateOf(f)), criteria);
@@ -437,6 +500,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     ? (w.version.status === "audited" && l.version.status === "draft" ? "audited_over_draft" as const : "higher_assurance" as const) : k === "date" ? "later_position" as const : "later_version" as const;
   const unresolvedFamily = (id: string, basis: "period" | "position" | "instrument", members: DocumentReading[], what: string) => {
     families.push({id, basis, resolution: "unresolved", prevails: [], superseded: [], sideBySide: ids(members), highlighted: false});
+    for (const m of members) familyConflicted.add(m.fileId);
     for (const m of members) add({id: `${m.fileId}-unresolved`, code: "versions_unresolved", anchor: m.fileId, sources: ids(members).map((x) => src(x)),
       statement: `Há ${members.length} ${what} de ${periodText(m)} sem nada no conteúdo que as distinga; nenhuma foi escolhida.`});
   };
@@ -445,7 +509,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     ? `${f.kind}:${f.entity.primaryId}:${f.period.start}:${f.period.end}` : null)) {
     if (members.length < 2) continue;
     const statuses = new Set(members.map((m) => m.version.status));
-    if (statuses.has("approved") && statuses.has("working_revision") && members.every((m) => ["approved", "working_revision"].includes(m.version.status))) {
+    if (members.every((m) => m.kind === "budget") && statuses.has("approved") && statuses.has("working_revision") && members.every((m) => ["approved", "working_revision"].includes(m.version.status))) {
       // House policy before precedence: an approved plan and a revision still in work are both kept; neither is chosen.
       members.forEach((m) => sideBySide.set(m.fileId, ids(members.filter((x) => x !== m))));
       families.push({id, basis: "period", resolution: "side_by_side", prevails: [], superseded: [], sideBySide: ids(members), highlighted: false});
@@ -469,10 +533,12 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         const only = winner.figures.filter((x) => metricLabel[x.metric] && !l.figures.some((y) => y.metric === x.metric));
         const items = only.map((x) => `${metricLabel[x.metric]![0]} (${brl(x.value, x.scale)})`).join(" nem ");
         const compare = a && d ? `EBITDA de ${brl(d.value, d.scale)} contra ${brl(a.value, a.scale)} na auditada` : "Versão anterior à auditada";
-        add({id: `${l.fileId}-draft`, code: "draft_superseded", anchor: l.fileId, sources: [src(l.fileId, d?.at), src(winner.fileId, a?.at)],
-          statement: `${compare}${items ? `: a minuta não tem ${items}` : ""}. Verificar se essa versão foi enviada a algum banco.`,
-          topic: "statements_version", effect: "version_conflict",
-          decisionStatement: `Há duas versões ${of(policy[winner.kind].noun)} de ${periodText(winner)}. `
+        const g = guard(members);
+        add({id: `${l.fileId}-draft`, code: "draft_superseded", anchor: l.fileId, sources: [src(l.fileId, d?.at), src(winner.fileId, a?.at)], knowledge: g.state,
+          statement: g.state === "known" ? `${compare}${items ? `: a minuta não tem ${items}` : ""}. Verificar se essa versão foi enviada a algum banco.`
+            : `Versão anterior à auditada; a comparação não é afirmada porque há documento ${stateWords[g.state]}.`,
+          topic: g.state === "known" ? "statements_version" : null, effect: g.state === "known" ? "version_conflict" : null,
+          decisionStatement: g.state !== "known" ? null : `Há duas versões ${of(policy[winner.kind].noun)} de ${periodText(winner)}. `
             + (a && d ? `A minuta tem EBITDA de ${brl(d.value, d.scale)}; a auditada, ${brl(a.value, a.scale)}${only.length ? `, depois ${only.map((x) => metricLabel[x.metric]![1]).join(" e ")}` : ""}. ` : "")
             + "A auditada é a que vale."});
       } else {
@@ -511,33 +577,6 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   /** Clauses not in force, by file and clause id: the file that replaced it, "conflict", "unsigned", "future". */
   const notInForce = new Map<string, string>();
   const instruments = live.filter((f) => f.instrument !== null);
-  const equivalent = (a: Clause, b: Clause) => JSON.stringify(canonical({...a, id: null, at: null})) === JSON.stringify(canonical({...b, id: null, at: null}));
-  const sentence = (parts: string[]) => parts.join(" e ");
-  const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-  /** A limit is anchored when the quoted clause states the very limit it is typed with. */
-  const anchoredLimit = (c: Clause) => (c.type !== "financial_covenant" && c.type !== "debt_policy")
-    || [...c.statement.matchAll(ratioInText)].some((m) => new Exact(m[1]!.replace(",", ".")).eq(c.maxRatio));
-  type Held = {c: Clause; from: string};
-  const recovered = new Map<string, Held[]>();
-  for (const [targetId, pages] of [...pagesFrom].sort(([a], [b]) => byKey(a, b))) for (const p of pages)
-    for (const c of byId.get(p.fileId)!.clauses.filter((x) => x.at.page === p.page)) recovered.set(targetId, [...recovered.get(targetId) ?? [], {c, from: p.fileId}]);
-  /** The instrument's clauses as read in full: its own and those of the pages its substitutes recovered. */
-  const clausesOf = (f: DocumentReading): Held[] => [...f.clauses.map((c) => ({c, from: f.fileId})), ...recovered.get(f.fileId) ?? []];
-  const keyOf = (c: Clause) => c.scope ? `${c.type}:${c.scope}` : c.type;
-  const typeOf = (k: string) => k.split(":")[0] as Clause["type"];
-  type Entry = {one: Held} | {many: Held[]};
-  const entriesCache = new Map<string, Map<string, Entry>>();
-  const entriesOf = (f: DocumentReading) => {
-    const cached = entriesCache.get(f.fileId); if (cached) return cached;
-    const groups = bucket(clausesOf(f).filter((h) => anchoredLimit(h.c)), (h) => keyOf(h.c)), out = new Map<string, Entry>();
-    for (const [k, list] of groups) {
-      const sorted = [...list].sort((a, b) => byKey(`${a.from}:${a.c.id}`, `${b.from}:${b.c.id}`));
-      out.set(k, sorted.every((h) => equivalent(h.c, sorted[0]!.c)) ? {one: sorted[0]!} : {many: sorted});
-    }
-    entriesCache.set(f.fileId, out); return out;
-  };
-  const held = (h: Held) => `${h.from}:${h.c.id}`;
-  const future = (f: DocumentReading) => f.period.start !== null && f.period.start > input.asOf;
   const clauseQuote = (h: Held) => cite(h.from, h.c.at, h.c.statement);
   // Two clauses of one type and scope in one file that say different things: declared, none in force.
   for (const f of instruments) for (const [k, e] of entriesOf(f)) if ("many" in e) {
@@ -573,7 +612,14 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     return a.size === b.size && [...a].every(([k, e]) => {const o = b.get(k); return !!o && "one" in e && "one" in o && equivalent(e.one.c, o.one.c);});
   };
   const instrumentCriteria: VersionCriterion[] = ["guarantee", "date", "ordinal"], chainCriteria: VersionCriterion[] = ["date", "ordinal"];
+  /** The state of each instrument's whole chain: every original, every amendment, every page, every substitute. */
+  const chainStates = new Map<string, {state: Knowledge; sources: string[]; covenant: string | null; debt: boolean}>();
   for (const ref of [...new Set(instruments.filter((f) => f.instrument!.amends === null).map((f) => f.instrument!.ref))].sort(byKey)) {
+    const chainDocs = documents.filter((f) => f.instrument !== null && (f.instrument.ref === ref || f.instrument.amends === ref));
+    const chainRefs = new Set(chainDocs.map((f) => f.instrument!.ref));
+    const chainGuard = guard([...chainDocs, ...substitutes.filter((x) => chainRefs.has(x.substitutesPages!.instrumentRef))]);
+    const debtChain = chainDocs.some((f) => policy[f.kind].group === "debt");
+    chainStates.set(ref, {state: chainGuard.state, sources: chainGuard.sources, covenant: null, debt: debtChain});
     const originals = instruments.filter((f) => f.instrument!.ref === ref && f.instrument!.amends === null);
     const amendments = instruments.filter((f) => f.instrument!.amends === ref);
     for (const o of originals.filter((f) => !binds(f.version.status))) {
@@ -610,9 +656,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         if (contenders.some((o) => clausesOf(o).some((h) => h.c.type === "financial_covenant"))) covenantUndefined = true;
         const first = ids(contenders)[0]!;
         add({id: `${first}-instrument-conflict`, code: "instrument_conflict", anchor: first, sources: ids(contenders).map((x) => src(x)),
-          statement: `Há ${contenders.length} versões assinadas ou registradas ${of(policy[contenders[0]!.kind].noun)} sem nada no conteúdo que as ordene; o instrumento fica sem texto vigente.`,
-          topic: binding ? "debt_covenant" : null, effect: binding ? "binding_limit" : null,
-          decisionStatement: binding ? `${capital(policy[contenders[0]!.kind].noun)} não tem texto vigente definido: há ${contenders.length} versões assinadas ou registradas, e o conteúdo não indica qual vale.` : null});
+          statement: `Há ${contenders.length} versões assinadas ou registradas ${of(policy[contenders[0]!.kind].noun)} sem nada no conteúdo que as ordene; o instrumento fica sem texto vigente.`, knowledge: "conflict"});
+        void binding;
+        chainStates.set(ref, {state: "conflict", sources: ids(contenders), covenant: null, debt: debtChain});
       }
       for (const a of amendments) add({id: `${a.fileId}-not-in-force`, code: "amendment_not_in_force", anchor: a.fileId, sources: [src(a.fileId)],
         statement: "O instrumento original não tem versão vigente definida nesta data: o aditamento fica como histórico."});
@@ -652,17 +698,18 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       const type = typeOf(key), base = entriesOf(original).get(key);
       const setters = chain.filter((f) => entriesOf(f).has(key));
       if (!setters.length) {
-        if (base && "one" in base) {const h = {f: original, h: base.one}; inForce.set(key, h); markUnread(key, h);}
+        if (base && "one" in base) {const h = {f: original, h: base.one}; inForce.set(key, h);}
         else if (base) currentConflicts.push({type: key, fileIds: [original.fileId]});
         continue;
       }
       const rk = resolveFamily(setters, chainCriteria, (f) => f.period.start);
       const contenders = rk.winner ? [rk.winner] : rk.candidates;
-      const es = contenders.map((f) => entriesOf(f).get(key)!);
+      // With no winner, the text stands only if every amendment that sets this clause says the same.
+      const es = (rk.winner ? contenders : setters).map((f) => entriesOf(f).get(key)!);
       const holder = es.every((e) => "one" in e) && es.every((e) => equivalent((e as {one: Held}).one.c, (es[0] as {one: Held}).one.c))
         ? [...contenders].sort((a, b) => byKey(a.fileId, b.fileId))[0]! : null;
       let unreadHolder = false;
-      if (holder) {const h = {f: holder, h: (entriesOf(holder).get(key) as {one: Held}).one}; inForce.set(key, h); unreadHolder = markUnread(key, h);}
+      if (holder) {const h = {f: holder, h: (entriesOf(holder).get(key) as {one: Held}).one}; inForce.set(key, h); void markUnread;}
       else {
         const fileIds = ids(contenders);
         currentConflicts.push({type: key, fileIds});
@@ -670,9 +717,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         const binding = type === "financial_covenant" || type === "negative_pledge";
         add({id: `${fileIds[0]}-conflict-${key.replace(/[_:]/g, "-")}`, code: "amendment_conflict", anchor: fileIds[0]!,
           sources: contenders.flatMap((f) => {const e = entriesOf(f).get(key)!; return ("one" in e ? [e.one] : e.many).map((h) => src(h.from, h.c.at));}),
-          statement: `Aditamentos sem ordem demonstrada pelo conteúdo fixam ${clauseLabel[type]} de formas diferentes; nenhum foi tomado como vigente.`,
-          topic: binding ? "debt_covenant" : null, effect: binding ? "binding_limit" : null,
-          decisionStatement: binding ? `A cláusula de ${clauseLabel[type]} ${of(noun)} não tem texto vigente definido: aditamentos sem ordem demonstrada pelo conteúdo a fixam de formas diferentes.` : null});
+          statement: `Aditamentos sem ordem demonstrada pelo conteúdo fixam ${clauseLabel[type]} de formas diferentes; nenhum foi tomado como vigente.`, knowledge: "conflict"});
+        void binding;
       }
       const replacedBy = holder ? holder.fileId : "conflict";
       if (base) for (const h of "one" in base ? [base.one] : base.many) if (!notInForce.has(held(h))) notInForce.set(held(h), replacedBy);
@@ -693,12 +739,24 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         if ("one" in e) changes.push({f, key, h: e.one, current: f === holder && !unreadHolder, prior: f === holder ? prior : null, defined: f === holder && !unreadHolder ? defined : false, holder: unreadHolder ? null : holder});
       }
     }
+    // The single guard over the whole chain: anything not known withholds the whole text in force, every change and every deadline.
+    const chainState = worstKnowledge(chainGuard.state, currentConflicts.length ? "conflict" : "known");
+    if (chainState !== "known") {
+      for (const f of chainDocs) for (const h of clausesOf(f)) if (!notInForce.has(held(h))) notInForce.set(held(h), "blocked");
+      for (const v of inForce.values()) notInForce.set(held(v.h), "blocked");
+      inForce.clear(); changes.length = 0;
+      chainStates.set(ref, {state: chainState, sources: currentConflicts.length && chainGuard.state === "known" ? [...new Set(currentConflicts.flatMap((c) => c.fileIds))].sort(byKey) : chainGuard.sources, covenant: null, debt: debtChain});
+      block("text-in-force", original.fileId, `O texto vigente ${of(noun)}`, chainStates.get(ref)!);
+    } else {
+      const covenant = inForce.get("financial_covenant");
+      chainStates.set(ref, {state: "known", sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
+    }
     for (const [key, v] of inForce) if (typeOf(key) === "financial_covenant" && v.h.c.type === "financial_covenant") currentCovenants.push(v.h.c.maxRatio);
     if (!chain.length && !upcoming.length) continue;
     const fileIds = [original.fileId, ...ids(chain)];
     effectiveTexts.push({instrumentRef: ref, fileIds: fileIds.length > 1 ? fileIds : [original.fileId, ...ids(upcoming)],
       clauses: [...inForce].map(([k, v]) => ({type: k, fileId: v.f.fileId, clauseId: v.h.c.id})).sort((a, b) => byKey(a.type, b.type)),
-      conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: byId.get(id)!.period.start!}))});
+      knowledge: chainState, conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: byId.get(id)!.period.start!}))});
     if (!chain.length) continue;
     families.push({id: `instrument:${ref}`, basis: "instrument", resolution: "effective_text", prevails: fileIds, superseded: [], sideBySide: [], highlighted: false});
     const touched = [...new Set(changes.map((x) => x.key))].filter((k) => typeOf(k) === "financial_covenant" || typeOf(k) === "negative_pledge");
@@ -723,7 +781,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         sources: [src(a.fileId, own[0]!.h.c.at), src(original.fileId)],
         changes: own.map((x) => ({type: x.key, current: x.current, after: clauseQuote(x.h), before: x.current && x.defined && x.prior ? clauseQuote(x.prior) : null})),
         statement: `${capital(sentence(phrases))}. ${current.length ? `É o texto vigente junto com ${noun}.` : "Fica como histórico."}`,
-        topic: binding.length ? "debt_covenant" : null, effect: binding.length ? "binding_limit" : null,
+        topic: binding.length ? "debt_covenant" : null, effect: binding.length ? "binding_limit" : null, ...binding.length ? {knowledge: "known" as const} : {},
         decisionStatement: binding.length ? `${header} ${priorText}; o aditamento ${lower(sentence(binding.map((x) => describeChange(x.h.c, x.prior?.c ?? null, x.defined))))}. ${chain.length > 1 ? "Os textos precisam ser lidos juntos." : "As duas precisam ser lidas juntas."}` : null});
     }
   }
@@ -731,6 +789,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   // its clauses create no finding and no deadline until the original is read.
   for (const a of instruments.filter((f) => f.instrument!.amends !== null && !instruments.some((o) => o.instrument!.ref === f.instrument!.amends && o.instrument!.amends === null))) {
     for (const h of clausesOf(a)) notInForce.set(held(h), "missing_source");
+    const was = chainStates.get(a.instrument!.amends!);
+    chainStates.set(a.instrument!.amends!, {state: "missing_source", sources: [...new Set([...was?.sources ?? [], a.fileId])].sort(byKey), covenant: null, debt: (was?.debt ?? false) || policy[a.kind].group === "debt"});
     const inVault = input.vault.some((v) => v.instrumentRef === a.instrument!.amends);
     add({id: `${a.fileId}-no-original`, code: "amendment_without_original", anchor: a.fileId, sources: [src(a.fileId)], knowledge: "missing_source",
       statement: inVault ? "O original deste aditamento está no sistema, mas não foi lido nesta pasta; o texto vigente não é montado sem ele."
@@ -759,6 +819,12 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   // Identity checks: the only arithmetic the method does.
   const identityChecks: DocumentFolderInventory["identityChecks"] = [];
   for (const f of live.filter((x) => x.debtTable !== null && settled(x))) {
+    // The check stands on every position of the same table, whatever its version.
+    const g = guard(documents.filter((x) => x.kind === f.kind && x.entity.primaryId === f.entity.primaryId));
+    if (g.state !== "known") {
+      identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId, ...g.sources.filter((x) => x !== f.fileId)], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: g.state});
+      block("debt-total", f.fileId, "A conferência do total da tabela de dívida", g); continue;
+    }
     const t = f.debtTable!, drawn = t.lines.reduce((s, l) => s.plus(inReais(l.drawn, t.scale)), new Exact(0));
     const reported = inReais(t.reportedTotal, t.scale), counted = t.lines.reduce((s, l) => s.plus(inReais(l.counted, t.scale)), new Exact(0));
     // A limit explains the difference only when the lines as counted add up to the reported total.
@@ -770,31 +836,34 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const drawnShown = brl(drawn.div(t.scale).toFixed(), t.scale);
     if (atLimit.length) {
       const unused = atLimit.every((l) => new Exact(l.drawn).eq(0));
-      add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [src(f.fileId, t.at)],
+      add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [src(f.fileId, t.at)], knowledge: "known",
         statement: `Soma ${brl(t.reportedTotal, t.scale)} porque ${atLimit.map((l) => `${lineLabel[l.lineKind]} entra pelo limite (${brl(l.limit!, t.scale)})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${periodText(f)}: ${drawnShown}.`,
         topic: "debt_position", effect: "figure_correction",
         decisionStatement: `A dívida em ${periodText(f)} é de ${drawnShown}, não ${brl(t.reportedTotal, t.scale)}. A tabela soma o limite ${atLimit.map((l) => of(lineLabel[l.lineKind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}.`});
     } else {
-      add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [src(f.fileId, t.at)],
+      add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [src(f.fileId, t.at)], knowledge: "known",
         statement: `O total informado de ${brl(t.reportedTotal, t.scale)} não fecha com as linhas, que somam ${drawnShown} de saldo utilizado.`, topic: "debt_position", effect: "figure_correction",
         decisionStatement: `A tabela de dívida de ${periodText(f)} não fecha: o total informado é ${brl(t.reportedTotal, t.scale)} e as linhas somam ${drawnShown}.`});
     }
   }
-  for (const report of live.filter((f) => f.kind === "management_report" && settled(f) && f.period.start && f.period.end && figure(f, "ebitda"))) {
+  for (const report of live.filter((f) => f.kind === "management_report" && settled(f) && f.period.start && f.period.end && figureList(f, "ebitda").length)) {
     const window = monthsBetween(report.period.start!, report.period.end!);
     const inWindow = (f: DocumentReading) => policy[f.kind].monthly && prevailing(f) && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7));
     // A month with versions and no winner blocks the sum: neither version is counted, and never both.
     const undecided = [...new Set(live.filter((f) => inWindow(f) && unresolved.has(f.fileId)).map((f) => f.period.start!.slice(0, 7)))].sort();
     const series = live.filter((f) => inWindow(f) && !unresolved.has(f.fileId)).sort((a, b) => byKey(a.period.start!, b.period.start!));
     const missing = window.filter((m) => !series.some((f) => f.period.start!.startsWith(m)) && !undecided.includes(m));
-    const withoutFigure = series.filter((f) => !figure(f, "ebitda"));
-    const r = figure(report, "ebitda")!, reported = inReais(r.value, r.scale);
-    if (undecided.length || missing.length || withoutFigure.length) {
-      identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId, ...series.map((f) => f.fileId)], status: "not_run",
-        reported: reported.toFixed(), recomposed: null, currency: input.currency,
-        reason: undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : "month_without_figure"});
+    const withoutFigure = series.filter((f) => figureState(f, "ebitda") === "missing_source");
+    // The sum stands on the report and on every document of every month in the window, all versions included.
+    const deps = [report, ...documents.filter((f) => policy[f.kind].monthly && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)))];
+    const g = guard(deps, [missing.length || withoutFigure.length ? "missing_source" : "known"]);
+    if (g.state !== "known") {
+      const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
+      identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
+        reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
       continue;
     }
+    const r = figure(report, "ebitda")!, reported = inReais(r.value, r.scale);
     const sum = series.reduce((s, f) => {const x = figure(f, "ebitda")!; return s.plus(inReais(x.value, x.scale));}, new Exact(0));
     identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId, ...series.map((f) => f.fileId)],
       status: sum.eq(reported) ? "matches" : "differs", reported: reported.toFixed(), recomposed: sum.toFixed(), currency: input.currency, reason: null});
@@ -828,9 +897,13 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       add({id: `${f.fileId}-clause-conflict-${k.replace(/[_:]/g, "-")}`, code: "clause_conflict", anchor: f.fileId, sources: list.map((h) => src(h.from, h.c.at)),
         statement: `O documento traz ${list.length} cláusulas de ${clauseLabel[typeOf(k)]} com textos diferentes e nada que as separe; nenhuma foi tomada como vigente.`});
     }
-    const docBinds = binds(f.version.status), docFuture = f.period.start !== null && f.period.start > input.asOf;
-    if (f.instrument === null && docBinds && docFuture && own.length) add({id: `${f.fileId}-future`, code: "clause_future", anchor: f.fileId, sources: own.map(({c, from}) => src(from, c.at)), knowledge: "future",
-      statement: `Documento com data de ${longDate(f.period.start!)}, depois da data desta leitura: suas cláusulas ficam como texto futuro, sem efeito atual.`});
+    const docBinds = binds(f.version.status);
+    // Clause effects of an instrument stand on its whole chain; those of any other document on the document itself.
+    const chainRef = f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
+    const docGuard = chainRef ? chainStates.get(chainRef) ?? {state: "missing_source" as Knowledge, sources: [f.fileId]} : guard([f]);
+    const docKnown = docGuard.state === "known";
+    if (f.instrument === null && docBinds && !docKnown && own.some(({c}) => ["assignment_prohibition", "auto_renewal", "debt_policy"].includes(c.type)))
+      block("clauses", f.fileId, `O efeito das cláusulas ${of(policy[f.kind].noun)}`, docGuard);
     if (f.instrument === null && !docBinds && own.length) add({id: `${f.fileId}-not-in-force`, code: "clause_not_in_force", anchor: f.fileId, sources: own.map(({c, from}) => src(from, c.at)),
       statement: "Documento sem assinatura nem registro: suas cláusulas ficam como histórico e não criam obrigação nem prazo."});
     for (const {c, from} of own) {
@@ -847,18 +920,23 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
           statement: `Cláusula substituída pelo aditamento de ${periodText(byId.get(state)!)}; fica como histórico.`, quoted: cite(from, c.at, c.statement)});
         continue;
       }
-      if (state || !docBinds || docFuture) continue;
+      if (state || !docBinds || !docKnown) continue;
       const base = {id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}`, code: "clause" as const, anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement)};
-      if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction",
+      if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction", knowledge: "known",
         decisionStatement: `Os recebíveis ${of(policy[f.kind].noun)} não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão${c.receivablesShare ? `; a contraparte responde por ${percent(c.receivablesShare)} da carteira` : ""}. Isso reduz a carteira disponível para qualquer financiamento com cessão.`});
-      else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline",
+      else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline", knowledge: "known",
         decisionStatement: `${capital(policy[f.kind].noun)} renova sozinho em ${monthName(c.termEnd)}. Para renegociar preço ou não renovar, o aviso precisa sair até ${longDate(c.noticeDeadline)}.`});
       else if (c.type === "debt_policy") {
-        const lowest = [...currentCovenants].sort((a, b) => new Exact(a).cmp(b))[0];
+        // The comparison stands on every debt instrument chain: only known chains are compared, and an incomplete one is said.
+        const debt = [...chainStates.values()].filter((x) => x.debt), incomplete = debt.some((x) => x.state !== "known");
+        const lowest = debt.flatMap((x) => x.state === "known" && x.covenant ? [x.covenant] : []).sort((a, b) => new Exact(a).cmp(b))[0];
         const tighter = lowest !== undefined && new Exact(c.maxRatio).lt(lowest);
-        const against = covenantUnread || (covenantUndefined && lowest === undefined) ? (covenantUnread ? ", e o covenant vigente não pôde ser lido integralmente." : ", e o covenant vigente não está definido.") : lowest === undefined ? "." : tighter ? `, mais restritiva que o covenant vigente de ${times(lowest)}.` : `, igual ou acima do covenant vigente de ${times(lowest)}.`;
-        add({...base, statement: `Política de no máximo ${times(c.maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit",
-          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(policy[f.kind].noun)} de ${periodText(f)} fixa dívida líquida de no máximo ${times(c.maxRatio)} o EBITDA${lowest === undefined || covenantUnread ? against : tighter ? `, abaixo do covenant vigente de ${times(lowest)}. Entre os limites lidos, é o mais restritivo.` : `, não abaixo do covenant vigente de ${times(lowest)}.`}`});
+        const caveat = incomplete ? "; há instrumento de dívida com leitura incompleta, e a comparação não cobre todos os limites." : ".";
+        const against = lowest === undefined ? (incomplete ? ", e há instrumento de dívida com leitura incompleta; a comparação não é feita." : ".")
+          : `, ${tighter ? "mais restritiva que o" : "igual ou acima do"} covenant vigente de ${times(lowest)}${caveat}`;
+        add({...base, statement: `Política de no máximo ${times(c.maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit", knowledge: "known",
+          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(policy[f.kind].noun)} de ${periodText(f)} fixa dívida líquida de no máximo ${times(c.maxRatio)} o EBITDA${lowest === undefined ? against
+            : `, ${tighter ? "abaixo do" : "não abaixo do"} covenant vigente de ${times(lowest)}.${incomplete ? " Há instrumento de dívida com leitura incompleta; a comparação não cobre todos os limites." : tighter ? " Entre os limites lidos, é o mais restritivo." : ""}`}`});
       } else add({...base, statement: from === f.fileId ? "Cláusula lida no documento." : `Cláusula lida na cópia legível da página ${c.at.page}.`});
     }
   }
@@ -868,7 +946,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const sub = registry.get(f.entity.primaryId!)!, parent = registry.get(sub.parentId!)!;
     if (!live.some((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === parent.id)) continue;
     const cash = figure(f, "cash"), id = `${f.fileId}-subsidiary`;
-    add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [src(f.fileId, cash?.at)],
+    const g = guard(documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || x.entity.primaryId === sub.id) && (x.period.start ?? "") === (f.period.start ?? "")));
+    if (g.state !== "known") {block("perimeter", f.fileId, "O perímetro da controlada no consolidado", g); continue;}
+    add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [src(f.fileId, cash?.at)], knowledge: "known",
       statement: `A consolidada inclui a ${sub.label}; a análise de crédito da devedora precisa do individual.${cash ? ` O caixa da controlada (${brl(cash.value, cash.scale)}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
       topic: "group_perimeter", effect: "perimeter",
       decisionStatement: `A controlada ${sub.label} entra no consolidado.${cash ? ` O caixa dela, ${brl(cash.value, cash.scale)}, só chega à controladora por dividendo ou mútuo.` : ""}`});
@@ -886,6 +966,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     for (const x of f.figures.filter((y) => y.metric === "revenue")) {
       const statements = live.filter((s) => s.kind === "annual_financial_statements" && settled(s) && s.version.status === "audited" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end);
       if (statements.length !== 1) continue;
+      // The comparison stands on the presentation and on every reading of the same statements, drafts and copies included.
+      const g = guard([f, ...documents.filter((s) => s.kind === "annual_financial_statements" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end)]);
+      if (g.state !== "known") {block(`revenue-${x.id}`, f.fileId, "A leitura da receita citada", g); continue;}
       const st = statements[0]!, gross = figure(st, "gross_revenue"), net = figure(st, "net_revenue"), cited = inReais(x.value, x.scale);
       if (net && cited.eq(inReais(net.value, net.scale))) continue;
       add({id: `${f.fileId}-${x.id}`, code: "figure_basis_differs", anchor: f.fileId, sources: [src(f.fileId, x.at), src(st.fileId, (gross ?? net)?.at ?? null)],
@@ -938,10 +1021,16 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     for (const p of input.prior.inventory.findings) {
       if (findings.some((x) => x.id === p.id)) continue;
       const by = p.code === "page_unreadable" ? (pagesFrom.get(p.anchor) ?? []).filter((x) => p.sources.some((s) => s.page === x.page)).map((x) => x.fileId)
-        : p.code === "series_gap" ? newFiles.filter((id) => policy[byId.get(id)!.kind].monthly) : [];
+        : p.code === "series_gap" ? newFiles.filter((id) => policy[byId.get(id)!.kind].monthly)
+        : p.code === "effect_blocked" ? [...newFiles, ...substitutes.map((x) => x.fileId).filter((id) => !input.prior!.inventory.rows.some((r) => r.fileId === id))] : [];
       if (!by.length) throw new Error("document_inventory_finding_dropped");
       findings.push({...p, status: "resolved", resolvedBy: [...new Set([...p.resolvedBy, ...by])]});
     }
+  }
+  // Every finding no guard computed takes the worst state of the documents it cites.
+  for (const f of findings) if (!guarded.has(f.id) && f.status === "open") {
+    const cited = [...new Set([f.anchor, ...f.sources.map((x) => x.fileId)])].flatMap((id) => byId.has(id) ? [byId.get(id)!] : []);
+    f.knowledge = worstKnowledge(...cited.map(stateOf));
   }
   // Ordered by id, so a finding resolved in a later turn keeps the row's bytes.
   for (const r of rows) r.findingIds = findings.filter((x) => x.anchor === r.fileId).map((x) => x.id).sort(byKey);
@@ -970,7 +1059,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       need: g.need, item: g.item, why: g.why, quoted: g.quoted, purposes: p, findingId: g.findingId, conditional: g.conditional, status: "open" as const, resolvedBy: [] as string[]}));
   if (input.prior) for (const p of input.prior.inventory.gaps) {
     if (gaps.some((g) => g.id === p.id)) continue;
-    const by = findings.find((x) => x.id === p.findingId && x.status === "resolved")?.resolvedBy ?? [];
+    const arrivals = [...newFiles, ...substitutes.map((x) => x.fileId).filter((id) => !input.prior!.inventory.rows.some((r) => r.fileId === id))];
+    const resolvedFinding = findings.find((x) => x.id === p.findingId && x.status === "resolved")?.resolvedBy ?? [];
+    const by = resolvedFinding.length ? resolvedFinding : arrivals;
     if (!by.length) throw new Error("document_inventory_gap_dropped");
     gaps.push({...p, status: "resolved", resolvedBy: by});
   }
@@ -996,7 +1087,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       return f && c?.type === "auto_renewal" && c.noticeDeadline >= input.asOf
         ? [{kind: "notice_deadline" as const, date: c.noticeDeadline, fileId: f.fileId, clauseId: c.id, decisionIds: decisions.filter((d) => purposes[d.kind].topics.includes("supplier_contract")).map((d) => d.id), scheduled: false as const}] : [];
     }),
-    ...effectiveTexts.map((t) => ({kind: "effective_text" as const, instrumentRef: t.instrumentRef, fileIds: t.fileIds}))]
+    ...effectiveTexts.filter((t) => t.knowledge === "known").map((t) => ({kind: "effective_text" as const, instrumentRef: t.instrumentRef, fileIds: t.fileIds}))]
     .sort((a, b) => byKey(JSON.stringify(a), JSON.stringify(b)));
 
   if (input.mode === "organize_for_debt") for (const fam of families) if (fam.basis === "instrument" && fam.prevails.some((id) => policy[byId.get(id)!.kind].group === "debt")) fam.highlighted = true;
@@ -1017,9 +1108,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const priorFindings = new Set(input.prior.inventory.findings.map((x) => x.id)), priorGaps = new Set(input.prior.inventory.gaps.filter((g) => g.status === "open").map((g) => g.id));
     update = {priorFingerprint: input.prior.fingerprint, rowsUpdated: changed.map((r) => r.fileId), rowsAdded: newFiles,
       rowsPreserved: rows.filter((r) => prior.has(r.fileId) && !changed.includes(r)).length,
-      findingsResolved: findings.filter((x) => x.status === "resolved" && input.prior!.inventory.findings.some((p) => p.id === x.id && p.status === "open")).map((x) => x.id),
-      findingsAdded: findings.filter((x) => !priorFindings.has(x.id)).map((x) => x.id),
-      gapsResolved: gaps.filter((g) => g.status === "resolved" && priorGaps.has(g.id)).map((g) => g.id),
+      findingsResolved: findings.filter((x) => x.status === "resolved" && input.prior!.inventory.findings.some((p) => p.id === x.id && p.status === "open")).map((x) => x.id).sort(byKey),
+      findingsAdded: findings.filter((x) => !priorFindings.has(x.id)).map((x) => x.id).sort(byKey),
+      gapsResolved: gaps.filter((g) => g.status === "resolved" && priorGaps.has(g.id)).map((g) => g.id).sort(byKey),
       questionsAnswered: questions.filter((q) => q.status === "answered" && input.prior!.inventory.questions.some((p) => p.id === q.id && p.status === "open")).map((q) => q.id)};
   }
 

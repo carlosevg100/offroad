@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
-import {documentStatuses, inventoryFingerprint, organizeDocumentFolder, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -103,29 +103,37 @@ describe("property: amendments by the one filter, against a brute-force oracle (
     for (const o of outputs.slice(1)) expect(economics(o)).toEqual(economics(outputs[0]!));
     const o = outputs[0]!, text = o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1");
     const current = chain.filter((a) => !a.future);
-    expect(text?.future.map((x) => x.fileId) ?? []).toEqual(chain.filter((a) => a.future).map((a) => a.id).sort());
-    for (const type of ["ratio", "prepay"] as const) {
-      const setters = current.filter((a) => contentOf(a, type) !== null), clauseType = type === "ratio" ? "financial_covenant" : "prepayment";
-      const inForce = text?.clauses.find((c) => c.type === clauseType) ?? null;
-      if (!setters.length) {expect(inForce?.fileId ?? null).toBe(type === "ratio" ? (current.length ? "f18" : inForce?.fileId ?? null) : null); continue;}
+    expect(text!.future.map((x) => x.fileId)).toEqual(chain.filter((a) => a.future).map((a) => a.id).sort());
+    // Oracle for the guard: the whole chain is withheld if anything in it is future or in conflict.
+    const outcome = (type: "ratio" | "prepay") => {
+      const setters = current.filter((a) => contentOf(a, type) !== null);
+      if (!setters.length) return {holder: type === "ratio" ? "f18" : null, conflict: false};
       const bf = bruteForce(setters, ["date", "ordinal"]);
-      const contents = new Set(bf.possible.map((id) => contentOf(setters.find((a) => a.id === id)!, type)));
-      if (bf.winner) {
-        const w = setters.find((a) => a.id === bf.winner)!;
-        if (contentOf(w, type)!.startsWith("conflito")) expect(inForce).toBeNull(); else expect(inForce!.fileId).toBe(w.id);
-      } else if (contents.size > 1 || [...contents][0]!.startsWith("conflito")) expect(inForce).toBeNull();
-      else if (inForce) expect(contentOf(setters.find((a) => a.id === inForce.fileId)!, type)).toBe([...contents][0]);
-      // A future amendment is never the text in force.
-      if (inForce) expect(chain.find((a) => a.id === inForce.fileId)?.future ?? false).toBe(false);
+      if (bf.winner) {const w = setters.find((a) => a.id === bf.winner)!; return contentOf(w, type)!.startsWith("conflito") ? {holder: null, conflict: true} : {holder: w.id, conflict: false};}
+      const contents = new Set(setters.map((a) => contentOf(a, type)));
+      return contents.size > 1 || [...contents][0]!.startsWith("conflito") ? {holder: null, conflict: true} : {holder: "equal-text", conflict: false};
+    };
+    const blocked = chain.some((a) => a.future) || chain.some((a) => new Set(a.ratios).size > 1) || outcome("ratio").conflict || outcome("prepay").conflict;
+    const headline = o.decisionFindings!.filter((d) => /O covenant .* é o do aditamento/.test(d.statement));
+    expect(text!.knowledge === "known").toBe(!blocked);
+    if (blocked) {
+      expect(text!.clauses).toEqual([]);
+      expect(headline).toEqual([]);
+      expect(o.findings.filter((f) => f.effect === "binding_limit")).toEqual([]);
+      expect(o.findings.some((f) => f.code === "effect_blocked" && f.anchor === "f18" && f.knowledge === text!.knowledge)).toBe(true);
+      return;
+    }
+    for (const type of ["ratio", "prepay"] as const) {
+      const inForce = text!.clauses.find((c) => c.type === (type === "ratio" ? "financial_covenant" : "prepayment")) ?? null, x = outcome(type);
+      if (x.holder === "equal-text") expect(inForce).not.toBeNull(); else expect(inForce?.fileId ?? null).toBe(x.holder);
     }
     // The headline names a rise or a cut only against a documented predecessor found by the oracle.
     const setters = current.filter((a) => contentOf(a, "ratio") !== null), bf = setters.length ? bruteForce(setters, ["date", "ordinal"]) : null;
-    const headline = o.decisionFindings!.filter((d) => /O covenant .* é o do aditamento/.test(d.statement));
-    if (bf?.winner && !contentOf(setters.find((a) => a.id === bf.winner)!, "ratio")!.startsWith("conflito")) {
+    if (bf?.winner) {
       const w = setters.find((a) => a.id === bf.winner)!, rest = setters.filter((a) => a !== w);
       const pr = rest.length ? bruteForce(rest, ["date", "ordinal"]).winner : "f18";
       const prior = pr === "f18" ? "2.75" : pr ? contentOf(rest.find((a) => a.id === pr)!, "ratio") : null;
-      if (prior === null || prior.startsWith("conflito")) expect(headline).toEqual([]);
+      if (prior === null) expect(headline).toEqual([]);
       else {
         const verb = Number(w.ratios[0]) > Number(prior) ? "elevou" : Number(w.ratios[0]) < Number(prior) ? "reduziu" : "manteve";
         expect(headline.map((d) => d.findingId)).toEqual([`${w.id}-amendment`]);
@@ -155,7 +163,7 @@ describe("property: competing originals by the one filter, against the brute-for
       if (withAmendment) expect(o.findings.find((f) => f.id === "f19-amendment")!.changes!.find((c) => c.type === "financial_covenant")!.before!.fileId).toBe(w.id);
     } else if (!same) {
       expect(o.findings.some((f) => f.code === "instrument_conflict")).toBe(true);
-      expect(policy).toContain("covenant vigente não está definido");
+      expect(policy).not.toContain("covenant vigente de");
     }
   });
 });
@@ -202,7 +210,8 @@ describe("property: recovered pages join the instrument before force is resolved
     const o = run([...files, ...subs]);
     // Oracle: the amendment in force replaces whatever the original says; otherwise the original's clause counts only if one reading recovered it.
     const recoveredOne = copies > 0 && (copies === 1 || agree);
-    const expected = amendment === "registered" ? ["e1", "2026-11-02"] : recoveredOne ? ["f23", "2026-10-02"] : null;
+    // Under the guard: no deadline unless the whole contract chain is known (page recovered by one reading, nothing future).
+    const expected = !recoveredOne || amendment === "future" ? null : amendment === "registered" ? ["e1", "2026-11-02"] : ["f23", "2026-10-02"];
     const deadlines = o.followUps.flatMap((f) => f.kind === "notice_deadline" ? [[f.fileId, f.date]] : []);
     expect(deadlines).toEqual(expected ? [expected] : []);
     expect(o.decisionFindings!.filter((d) => d.effect === "deadline").length).toBe(expected ? 1 : 0);
@@ -221,15 +230,17 @@ describe("property: a predecessor that may sit on an unread page is not a docume
     const o = run(readings((list) => {const e = file(list, "f18"); e.clauses = e.clauses.filter((c) => c.type !== "financial_covenant");
       if (unread) e.legibility = {pageCount: 30, unreadablePages: [{page: 18, reason: "illegible_scan", expectedContent: "o covenant financeiro", expectedFrom: {page: 2, section: null}}], wholeFile: null};
       const a = file(list, "f19"); a.clauses = [covenantClause(ratio), a.clauses[1]!];}));
-    const f19 = o.findings.find((f) => f.id === "f19-amendment")!, change = f19.changes!.find((c) => c.type === "financial_covenant")!;
     const covenantHeadline = o.decisionFindings!.filter((d) => /O covenant .* é o do aditamento/.test(d.statement));
-    expect(f19.statement).not.toMatch(/Elevou|Reduziu|elevou|reduziu/);
     if (unread) {
+      // The guard withholds the whole text in force of the instrument: no change, no verb, no statement of absence.
       expect(covenantHeadline).toEqual([]);
-      expect(change.before).toBeNull();
-      expect(o.findings.find((f) => f.id === "f18-amended")!.statement).toContain("página não lida que pode conter a cláusula de covenant");
-      expect(f19.statement).toContain("sem texto anterior documentado");
-    } else {
+      expect(o.findings.some((f) => f.id === "f19-amendment")).toBe(false);
+      expect(o.findings.find((f) => f.id === "f18-blocked-text-in-force")!.knowledge).toBe("unread");
+      return;
+    }
+    const f19 = o.findings.find((f) => f.id === "f19-amendment")!;
+    expect(f19.statement).not.toMatch(/Elevou|Reduziu|elevou|reduziu/);
+    {
       expect(covenantHeadline[0]!.statement).toContain(`não há covenant financeiro`);
       expect(f19.statement).toContain(`Fixou o covenant para ${times(ratio)}`);
     }
@@ -281,9 +292,9 @@ describe("property: a hash read two ways is suspended for every use, whatever ar
     const o = run(build(first)), other = run(build(!first));
     expect(economics(o)).toEqual(economics(other));
     const touches = (ids: string[]) => ids.some((id) => id === "f01" || id === "f30");
-    expect(o.findings.filter((f) => f.code !== "reading_conflict" && (touches([f.anchor]) || touches(f.sources.map((s) => s.fileId))))).toEqual([]);
+    expect(o.findings.filter((f) => (f.effect !== null || f.knowledge === "known") && f.code !== "reading_conflict" && (touches([f.anchor]) || touches(f.sources.map((s) => s.fileId))))).toEqual([]);
     expect(o.families.filter((f) => touches([...f.prevails, ...f.superseded, ...f.sideBySide]))).toEqual([]);
-    expect(o.identityChecks.filter((c) => touches(c.fileIds))).toEqual([]);
+    expect(o.identityChecks.filter((c) => c.status !== "not_run" && touches(c.fileIds))).toEqual([]);
     expect(o.rows.filter((r) => ["f01", "f30"].includes(r.fileId)).map((r) => r.situation.read)).toEqual(["conflicted", "conflicted"]);
   });
 });
@@ -357,72 +368,108 @@ describe("property: every quote points to the file and the page or sheet it was 
   });
 });
 
-describe("property: the state of knowledge of every source reaches what depends on it", () => {
-  // Independent dependency evaluator: each effect and the sources it depends on, written here from the method's rules.
+describe("property: one guard over every dependency of every effect, by brute force", () => {
+  // The effects come from the output schema, by code; none is listed by hand.
+  const shape = documentFolderInventoryOutputSchema.shape;
+  const effectCodes = (shape.findings.element.shape.effect.unwrap() as unknown as {options: string[]}).options;
+  const checkKinds = (shape.identityChecks.element.shape.kind as unknown as {options: string[]}).options;
+  const followKinds = (shape.followUps.element as unknown as {options: {shape: {kind: {value: string}}}[]}).options.map((o) => o.shape.kind.value);
   type State = "known" | "future" | "unread" | "missing_source" | "conflict";
-  const order: State[] = ["known", "future", "unread", "missing_source", "conflict"];
-  const worst = (states: State[]) => states.reduce((a, b) => order.indexOf(b) > order.indexOf(a) ? b : a, "known" as State);
-  const graph: Record<string, string[]> = {notice: ["f23.renewal"], assignment: ["f22.assignment"], policy: ["f24.policy"],
-    "covenant-in-force": ["f19.covenant", "f18.instrument"], "covenant-change": ["f19.covenant", "f18.instrument", "f18.covenant"],
-    "semester-sum": ["f11.ebitda", "f12.ebitda"], "page-complete": ["s01.page"]};
-  const declaredBy: Record<string, string[]> = {"f23.renewal": ["f23"], "f22.assignment": ["f22"], "f24.policy": ["f24"], "f19.covenant": ["f19"], "f18.instrument": ["f18", "f19", "f31"],
-    "f18.covenant": ["f18"], "f11.ebitda": ["f11", "f12"], "f12.ebitda": ["f12"], "s01.page": ["s01", "s04", "f20"]};
-  const unreadPage = (d: DocumentReading, page: number, size: number, from: number) => {d.legibility = {pageCount: size, unreadablePages: [{page, reason: "illegible_scan", expectedContent: "a cláusula", expectedFrom: {page: from, section: null}}], wholeFile: null};};
-  const clone = (d: DocumentReading, id: string): DocumentReading => ({...structuredClone(d), fileId: id, fileName: `${id}.pdf`, sha256: hex(`${id}-dep`)});
-  type Edit = (base: DocumentReading[], two: DocumentReading[]) => void;
-  const injections: Record<string, Partial<Record<State, Edit>>> = {
-    "f23.renewal": {unread: (b) => {const c = file(b, "f23"); c.clauses = c.clauses.filter((x) => x.type !== "auto_renewal"); unreadPage(c, 11, 12, 1);},
-      conflict: (b) => {const c = file(b, "f23"); c.clauses.push({...c.clauses.find((x) => x.type === "auto_renewal")! as Extract<DocumentReading["clauses"][number], {type: "auto_renewal"}>, id: "renovacao-2", at: {page: 12, section: null}, statement: "Renovação automática salvo aviso até 15/out/26.", noticeDeadline: "2026-10-15"});},
-      future: (b) => {file(b, "f23").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f23").instrument = {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-ausente"};}},
-    "f22.assignment": {unread: (b) => {const c = file(b, "f22"); c.clauses = []; unreadPage(c, 9, 12, 1);},
-      conflict: (b) => {const c = file(b, "f22"); c.clauses.push({type: "assignment_prohibition", id: "cessao-2", at: {page: 10, section: null}, statement: "Permite a cessão com aviso prévio.", counterparty: "a rede A", receivablesShare: "0.32"});},
-      future: (b) => {file(b, "f22").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f22").instrument = {ref: "contrato-rede-a-ad", label: "aditivo", amends: "contrato-ausente"};}},
-    "f24.policy": {unread: (b) => {const c = file(b, "f24"); c.clauses = []; unreadPage(c, 3, 5, 1);},
-      conflict: (b) => {file(b, "f24").clauses.push({type: "debt_policy", id: "politica-2", at: {page: 4, section: null}, statement: "Política de dívida líquida / EBITDA de no máximo 3,5x", metric: "net_debt_to_ebitda", maxRatio: "3.5"});},
-      future: (b) => {file(b, "f24").period.start = "2027-01-01";}},
-    "f19.covenant": {unread: (b) => {const c = file(b, "f19"); c.clauses = c.clauses.filter((x) => x.type !== "financial_covenant"); unreadPage(c, 2, 4, 1);},
-      conflict: (b) => {file(b, "f19").clauses.push(covenantClause("4", "covenant-2", 4));},
-      future: (b) => {file(b, "f19").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f19").instrument = {ref: "deb-ad", label: "aditamento", amends: "deb-ausente"};}},
-    "f18.instrument": {missing_source: (b) => {b.splice(b.indexOf(file(b, "f18")), 1);},
-      conflict: (b) => {const c = clone(file(b, "f18"), "f31"); c.clauses = c.clauses.map((x) => x.type === "financial_covenant" ? covenantClause("4", x.id, 18) : x); b.push(c);},
-      future: (b) => {file(b, "f18").period.start = "2027-01-01";}},
-    "f18.covenant": {unread: (b) => {const c = file(b, "f18"); c.clauses = c.clauses.filter((x) => x.type !== "financial_covenant"); unreadPage(c, 18, 30, 2);},
-      conflict: (b) => {file(b, "f18").clauses.push(covenantClause("4", "covenant-2", 19));}},
-    "f11.ebitda": {unread: (b) => {const c = file(b, "f11"); c.figures = []; c.units = []; c.legibility = {pageCount: null, unreadablePages: [], wholeFile: {reason: "no_extractable_content"}};},
-      conflict: (b) => {file(b, "f11").figures.push({id: "ebitda-2", metric: "ebitda", value: "6800000", scale: "1", at: {page: null, section: "Outra aba"}});},
-      missing_source: (b) => {b.splice(b.indexOf(file(b, "f11")), 1);}},
-    "f12.ebitda": {conflict: (b) => {file(b, "f12").figures.push({id: "ebitda-2", metric: "ebitda", value: "29000", scale: "1000", at: {page: null, section: "Resumo"}});}},
-    "s01.page": {conflict: (_, two) => {const s = clone(two[0]!, "s04"); s.debtTable = {lines: [{id: "x", lineKind: "other", label: "Linha", drawn: "1", limit: null, counted: "1"}], reportedTotal: "1", scale: "1", at: {page: 7, section: null}}; two.push(s);},
-      missing_source: (_, two) => {two.splice(0, 1);}},
+  type Instance = {key: string; present: (o: DocumentFolderInventory) => boolean; deps: string[]};
+  const all = () => [...auroraFolderReadings(), ...auroraTurnTwoReadings()];
+  // Independent dependency oracle, from the method's declared rules, over the calibration's typed readings.
+  const chainOf = (files: DocumentReading[], ref: string) => {
+    const docs = files.filter((f) => f.instrument && (f.instrument.ref === ref || f.instrument.amends === ref));
+    const refs = new Set(docs.map((f) => f.instrument!.ref));
+    return [...docs, ...files.filter((f) => f.substitutesPages && refs.has(f.substitutesPages.instrumentRef))].map((f) => f.fileId);
   };
-  const effects: Record<string, (o: DocumentFolderInventory) => boolean> = {
-    notice: (o) => o.followUps.some((f) => f.kind === "notice_deadline" && f.fileId === "f23" && f.date === "2026-10-02"),
-    assignment: (o) => !!o.decisionFindings?.some((d) => d.findingId === "f22-cessao"),
-    policy: (o) => o.findings.some((f) => f.id === "f24-politica" && f.effect === "policy_limit"),
-    "covenant-in-force": (o) => o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")?.clauses.some((c) => c.type === "financial_covenant" && c.fileId === "f19") ?? false,
-    "covenant-change": (o) => !!o.decisionFindings?.some((d) => d.findingId === "f19-amendment" && d.statement.includes("elevou o covenant para 3,0x")),
-    "semester-sum": (o) => o.identityChecks.some((c) => c.id === "f12-months" && c.status === "matches"),
-    "page-complete": (o) => o.rows.find((r) => r.fileId === "f20")?.situation.read === "complete",
-  };
-  const declared = (o: DocumentFolderInventory, files: string[]) => o.findings.some((f) => f.effect === null && (files.includes(f.anchor) || f.sources.some((s) => files.includes(s.fileId)))
-      && (f.knowledge !== "known" || /conflict|unreadable|unread|future|without_original|not_in_force/.test(f.code)))
-    || o.readingConflicts.some((c) => c.fileIds.some((x) => files.includes(x))) || o.identityChecks.some((c) => c.status === "not_run" && files.some((x) => c.fileIds.includes(x) || x === "f11"));
-  const scenario = (source: string | null, state: State | null) => {
-    const base = auroraFolderReadings(), two = auroraTurnTwoReadings();
-    if (source && state) injections[source]![state]!(base, two);
+  const sameKind = (files: DocumentReading[], d: DocumentReading, same: (x: DocumentReading) => boolean) => files.filter((x) => x.kind === d.kind && x.entity.primaryId === d.entity.primaryId && same(x)).map((x) => x.fileId);
+  function instances(o: DocumentFolderInventory): Instance[] {
+    const files = all(), byId = new Map(files.map((f) => [f.fileId, f]));
+    const out: Instance[] = [];
+    for (const f of o.findings.filter((x) => x.effect !== null || x.code === "figure_basis_differs")) {
+      const d = byId.get(f.anchor)!, ref = d.instrument ? d.instrument.amends ?? d.instrument.ref : null;
+      const deps = ref ? chainOf(files, ref)
+        : f.effect === "policy_limit" ? [d.fileId]
+        : f.effect === "figure_correction" ? sameKind(files, d, () => true)
+        : f.effect === "version_conflict" ? sameKind(files, d, (x) => x.period.start === d.period.start && x.period.end === d.period.end)
+        : f.effect === "perimeter" ? files.filter((x) => x.kind === "annual_financial_statements" && ["aurora", "aurora-log"].includes(x.entity.primaryId ?? "") && x.period.start === d.period.start).map((x) => x.fileId)
+        : [d.fileId, ...files.filter((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === d.entity.primaryId && x.period.start === d.period.start).map((x) => x.fileId)];
+      out.push({key: `finding:${f.id}`, deps, present: (x) => x.findings.some((y) => y.id === f.id && y.status === "open" && (y.effect !== null || y.code === "figure_basis_differs") && y.knowledge === "known")});
+    }
+    for (const c of o.identityChecks.filter((x) => x.status !== "not_run")) {
+      const d = byId.get(c.fileIds[0]!)!;
+      const deps = c.kind === "reported_total" ? sameKind(files, d, () => true)
+        : [d.fileId, ...files.filter((x) => x.kind === "trial_balance" && x.period.start! >= d.period.start! && x.period.end! <= d.period.end!).map((x) => x.fileId)];
+      out.push({key: `check:${c.id}`, deps, present: (x) => x.identityChecks.some((y) => y.id === c.id && y.status !== "not_run")});
+    }
+    for (const u of o.followUps) {
+      const ref = u.kind === "notice_deadline" ? byId.get(u.fileId)!.instrument!.amends ?? byId.get(u.fileId)!.instrument!.ref : u.instrumentRef;
+      out.push({key: `follow:${JSON.stringify(u)}`, deps: chainOf(files, ref), present: (x) => x.followUps.some((y) => JSON.stringify(y) === JSON.stringify(u))});
+    }
+    for (const t of o.effectiveTexts.filter((x) => x.clauses.length)) out.push({key: `text:${t.instrumentRef}`, deps: chainOf(files, t.instrumentRef), present: (x) => x.effectiveTexts.some((y) => y.instrumentRef === t.instrumentRef && y.clauses.length > 0)});
+    for (const r of o.rows.filter((x) => x.situation.pagesFrom.length && x.situation.read === "complete"))
+      out.push({key: `page:${r.fileId}`, deps: [r.fileId, ...r.situation.pagesFrom.map((p) => p.fileId)], present: (x) => x.rows.find((y) => y.fileId === r.fileId)?.situation.read === "complete"});
+    return out;
+  }
+  const scenario = (edit: (files: DocumentReading[]) => void = () => undefined) => {
+    const files = all(); edit(files);
+    const second = new Set(auroraTurnTwoReadings().map((f) => f.fileId)), isSecond = (f: DocumentReading) => second.has(f.fileId.replace(/-x$/, ""));
+    const base = files.filter((f) => !isSecond(f)), extra = files.filter(isSecond);
     const prior = run(base);
-    return run([...base, ...two], {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    // The answer goes only to a question the prior turn asked.
+    const informed = prior.questions.some((q) => q.id === "circulacao-f02") ? auroraTurnTwoInformed : [];
+    return run([...base, ...extra], {asOf: "2026-09-02", informed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
   };
-  it("with every source known, every effect is present", () => {
-    const o = scenario(null, null);
-    for (const [field, has] of Object.entries(effects)) expect(has(o), field).toBe(true);
+  // Injections of each state, generic over any document.
+  const inject: Record<Exclude<State, "known">, (files: DocumentReading[], id: string) => State | null> = {
+    unread: (files, id) => {
+      const d = file(files, id); if (d.substitutesPages || d.legibility.wholeFile) return null;
+      // The same bytes are read the same way: every copy of the hash carries the injected reading.
+      for (const copy of files.filter((x) => x !== d && x.sha256 === d.sha256)) files.splice(files.indexOf(copy), 1, {...structuredClone(d), fileId: copy.fileId, fileName: copy.fileName});
+      const shared = files.filter((x) => x.sha256 === d.sha256);
+      for (const x of [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []]) x.at = {page: x.at.page ?? 1, section: x.at.section};
+      const used = [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []].map((x) => x.at.page!).concat(d.legibility.unreadablePages.map((p) => p.page), [1]);
+      const page = Math.max(...used, d.legibility.pageCount ?? 0) + 1;
+      d.legibility = {pageCount: page, unreadablePages: [...d.legibility.unreadablePages, {page, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};
+      for (const x of shared) if (x !== d) files.splice(files.indexOf(x), 1, {...structuredClone(d), fileId: x.fileId, fileName: x.fileName});
+      return "unread";
+    },
+    conflict: (files, id) => {const d = file(files, id); files.push({...structuredClone(d), fileId: `${id}-x`, fileName: `${id}-x.pdf`, description: `${d.description} (outra leitura)`}); return "conflict";},
+    future: (files, id) => {const d = file(files, id);
+      if (!(d.substitutesPages || policy(d))) return null;
+      d.period = {...d.period, start: "2027-01-01", end: "2027-01-31"}; return "future";},
+    missing_source: (files, id) => {const d = file(files, id);
+      const removable = d.substitutesPages || (d.kind === "trial_balance" && !files.some((x) => x !== d && x.kind === d.kind && x.period.start === d.period.start))
+        || (d.instrument?.amends === null && files.some((x) => x.instrument?.amends === d.instrument!.ref));
+      if (!removable) return null;
+      files.splice(files.indexOf(d), 1); return d.substitutesPages ? "unread" : "missing_source";},
+  };
+  // Future applies where the date is the document's own effect, not the key of its family.
+  function policy(d: DocumentReading) {return d.instrument !== null || d.kind === "board_minutes" || d.kind === "shareholders_minutes";}
+  const baseline = scenario(), found = instances(baseline);
+  it("the schema's effects are all present in the full calibration", () => {
+    const effects = new Set(baseline.findings.flatMap((f) => f.effect ? [f.effect] : []));
+    expect([...effects].sort()).toEqual([...effectCodes].sort());
+    expect([...new Set(baseline.identityChecks.map((c) => c.kind))].sort()).toEqual([...checkKinds].sort());
+    expect([...new Set(baseline.followUps.map((u) => u.kind))].sort()).toEqual([...followKinds].sort());
+    expect(found.length).toBeGreaterThan(12);
+    for (const i of found) expect(i.present(baseline), i.key).toBe(true);
   });
-  for (const [source, states] of Object.entries(injections)) for (const state of Object.keys(states) as State[]) it(`${source} ${state}`, () => {
-    const o = scenario(source, state);
-    for (const [field, has] of Object.entries(effects)) {
-      const derived = worst(graph[field]!.map((x) => x === source ? state : "known"));
-      expect(has(o), `${field} with ${source} ${state}`).toBe(derived === "known");
-      if (derived !== "known") expect(declared(o, declaredBy[source]!), `${field}: ${source} ${state} declared`).toBe(true);
+  const ids = [...new Set(found.flatMap((i) => i.deps))].sort();
+  for (const id of ids) for (const state of ["unread", "conflict", "future", "missing_source"] as const) it(`${id} ${state}`, () => {
+    let expected: State | null = null;
+    const o = scenario((files) => {expected = inject[state](files, id);});
+    if (expected === null) return;
+    for (const i of found) {
+      if (!i.deps.includes(id)) {expect(i.present(o), `control ${i.key}`).toBe(true); continue;}
+      expect(i.present(o), `${i.key} withheld`).toBe(false);
+      const touches = (fid: string) => i.deps.includes(fid) || fid === `${id}-x`;
+      const declared = o.findings.some((f) => f.effect === null && f.knowledge === expected && (touches(f.anchor) || f.sources.some((x) => touches(x.fileId))))
+        || o.identityChecks.some((c) => c.status === "not_run" && c.reason?.startsWith(`${expected}:`) && c.fileIds.some(touches))
+        || o.identityChecks.some((c) => c.status === "not_run" && c.reason === expected && c.fileIds.some(touches))
+        || o.effectiveTexts.some((t) => t.knowledge === expected && t.fileIds.some(touches));
+      expect(declared, `${i.key} declared as ${expected}`).toBe(true);
     }
   });
 });
