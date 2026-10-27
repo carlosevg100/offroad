@@ -116,26 +116,44 @@ describe("board discussion properties (fixed seed)", {timeout: 600000}, () => {
   const attacks = {decimal: " Dívida R$ {divida-total},{basket-free} mi.", digits: " Dívida R$ {divida-total}{basket-free} mi.", sign: " Dívida R$ -{divida-total} mi.",
     yearAsMoney: " Dívida R$ 2027 mi.", yearAsAmount: " Dívida de 2027 milhões.", wrongUnit: " Dívida de R$ {divida-total}x."};
 
-  /** An independent reader of the final text: its own tokenizer, and the numbers a reader may legitimately see. */
+  /** An independent reader of the final text: its own tokenizer and its own reading of the unit around each
+   * number, matched to a reading of the same display and unit, a deadline, a year or month after a date
+   * preposition, or an ordinal; and every material fact found by its display and unit. */
   function oracle(p: ReturnType<typeof packet>) {
     const v = current(p), d = p.result.discussion!;
     const texts = [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]), ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]),
       ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];
-    const textReadings = d.identity.filter((x) => x.unit === "text").map((x) => x.display);
-    const allowed = new Set([...d.identity.filter((x) => x.unit !== "text").map((x) => x.display), ...v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display)),
-      ...Array.from({length: 20}, (_, i) => String(i + 1))]);
-    const bad: string[] = [];
+    const labels = d.identity.filter((x) => x.unit === "text").map((x) => x.display);
+    const deadlines = new Set(v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display)));
+    const unitOf = (before: string, after: string, token: string) => {
+      if (/^\d{1,2}\/[a-z]{3}$/.test(token)) return "date_day_month";
+      if (/^[a-z]{3}\/\d{2}$/.test(token)) return "date_month_year";
+      if (after.startsWith("%")) return "percent";
+      if (/^x(?![a-zà-ú])/.test(after)) return "multiple";
+      if (/R\$ $/.test(before) && /^ (milhão|milhões|mi)(?![a-zà-ú])/.test(after)) return "brl_millions";
+      if (/(R\$|US\$|€) ?$/.test(before) || /^ ?(reais|real|bilh|p\.p\.)/.test(after)) return "foreign";
+      if (/^ (ano|anos)(?![a-zà-ú])/.test(after)) return "years";
+      if (/^ (mês|meses)(?![a-zà-ú])/.test(after)) return "months";
+      if (/^ (ponto|pontos)(?![a-zà-ú])/.test(after)) return "bps";
+      if (/^ (milhão|milhões|mi|mil)(?![a-zà-ú])/.test(after)) return "foreign";
+      return "number";
+    };
+    const bad: string[] = [], seen = new Set<string>();
     for (const t of texts) {
       let rest = t;
-      for (const label of textReadings) rest = rest.split(label).join(" ");
-      for (const m of rest.matchAll(/[-\u2212]?\d+(?:[.,]\d+)*(?:\/[a-z]{3})?|[a-z]{3}\/\d{2}/g)) {
-        const token = m[0], before = rest.slice(0, m.index), after = rest.slice(m.index! + token.length);
-        const year = /^(?:19|20)\d{2}$/.test(token) && !/R\$\s?$/.test(before) && !/^\s*(?:milh|mi\b|%|x)/.test(after);
-        if (!allowed.has(token) && !year && !/^[a-z]{3}\/\d{2}$/.test(token)) bad.push(token);
+      for (const label of labels) rest = rest.split(label).join(" ");
+      for (const m of rest.matchAll(/\d{1,2}\/[a-z]{3}(?![a-zà-ú])|(?<![a-zà-ú])[a-z]{3}\/\d{2}(?!\d)|[-−]?\d+(?:[.,]\d+)*/g)) {
+        const token = m[0], before = rest.slice(0, m.index), after = rest.slice(m.index! + token.length), unit = unitOf(before, after, token);
+        const reading = d.identity.find((x) => x.display === token && (x.unit === unit || (x.unit === "number" && unit === "number")));
+        if (reading) {seen.add(`${reading.display}|${reading.unit}`); continue;}
+        if (unit === "date_day_month" && deadlines.has(token)) continue;
+        const calendar = (/^(?:19|20)\d{2}$/.test(token) && unit === "number") || unit === "date_month_year";
+        if (calendar && /(?:^|\s)(de|em|até|desde|para|entre|a|e|no|na|do|da) $/.test(before)) continue;
+        if (unit === "number" && /^\d{1,2}$/.test(token) && (/(^|\()$/.test(before)) && /^(\.|\))/.test(after)) continue;
+        bad.push(`${token}:${unit}`);
       }
     }
-    const joined = texts.join(" | ");
-    const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(x.display);});
+    const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !seen.has(`${x.display}|${x.unit}`);});
     return {bad, missing};
   }
 
@@ -178,5 +196,26 @@ describe("board discussion properties (fixed seed)", {timeout: 600000}, () => {
       expect(p.readings!.material!.allFiguresMatch && p.readings!.material!.materialFactsShown).toBe(true);
     }
     expect(refused).toBeGreaterThan(0); expect(accepted).toBeGreaterThan(0);
+  });
+
+  it("regression r3: unit, scale and calendar attacks are refused in all eleven field families (44 cases)", () => {
+    const r3 = {billions: " Dívida R$ {divida-total} bilhões.", monthsForYears: " Prazo de {wal} meses.", reais: " A dívida é de {year:2027} reais.", spacedPercent: " A taxa é de {year:2027} % ao ano."};
+    let refused = 0;
+    for (const [family, set] of families) for (const [kind, add] of Object.entries(r3)) {
+      expect(() => packet(2, (c) => set(c, add)), `${family} ${kind}`).toThrow(/board_capital_(rendered_number_invalid|number_without_origin|unit_missing)/);
+      refused++;
+    }
+    expect(refused).toBe(44);
+  });
+  it("regression r3: a financial field of the source read as text is refused (three disguised readings)", () => {
+    const disguised: [string, [string, string, string, string, string]][] = [
+      ["principal-as-text", ["tabela-divida", "result.table.reconciliation.principal", "text", "0", "0"]],
+      ["spread-as-text", ["recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi", "text", "0", "0"]],
+      ["npv-as-text", ["linha-embalagem", "comparison.metrics[caseId=base].netPresentValue", "text", "0", "0"]]];
+    for (const [id, reading] of disguised)
+      expect(() => packet(2, (c) => {c.extraReadings[id] = reading; c.pages[1]!.lines[0] += ` Dívida total de US$ {${id}} milhões.`;}), id).toThrow(`board_capital_text_reading_not_a_label:${id}`);
+  });
+  it("the independent oracle reads the calibration clean at every turn", () => {
+    for (const turn of [2, 3] as const) expect(oracle(packet(turn, () => undefined))).toEqual({bad: [], missing: []});
   });
 });

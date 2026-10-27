@@ -10,6 +10,8 @@ export const boardCapitalDiscussionVersion = "2026.10.27-v1";
 const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
 
 export const boardFigureUnits = ["brl_millions", "brl", "percent", "multiple", "years", "months", "bps", "number", "date_day_month", "date_month_year", "text", "boolean"] as const;
+/** The source fields a text reading may come from: labels and names, never a figure. */
+export const boardLabelKeys = ["label", "creditor", "name", "title"];
 /** Units that carry an economic number: a page or an answer is supported only by one of these. */
 export const boardEconomicUnits: readonly BoardFigureUnit[] = ["brl_millions", "brl", "percent", "multiple", "years", "months", "bps", "number"];
 export type BoardFigureUnit = (typeof boardFigureUnits)[number];
@@ -99,18 +101,16 @@ export function checkBoardFigure(raw: unknown, unit: BoardFigureUnit, scale: num
   return {value: new Exact(raw).toFixed(), rounded: text, display: text.replace(".", ","), matches: stated !== null && new Exact(stated).eq(rounded)};
 }
 
-/** Literal digits are allowed only as a year or a month of a year (2027, dez/26); every other number
- * on the material comes from a placeholder bound to a reviewed result or to a deliberation. */
+/** No literal digit is allowed in a template: a number comes from a reading, a deadline, a count of
+ * deliberations, or a calendar marker (`{year:2027}`, `{month:2026-12}`) that declares it a date. */
 export function boardLiteralNumbers(template: string): string[] {
-  const literal = template.replace(/\{[^}]*\}/g, " ")
-    .replace(/\b(?:19|20)\d{2}\b/g, " ").replace(new RegExp(`\\b(?:${months.join("|")})/\\d{2}\\b`, "g"), " ");
-  return literal.match(/\d+/g) ?? [];
+  return template.replace(/\{[^}]*\}/g, " ").match(/\d+/g) ?? [];
 }
 
 /** A text as rendered, with the span of every marker it carries: a reading, a source text, a pending
  * figure, a deadline, a count of deliberations or an ordinal the method writes. The verifier reads the
  * final text against these spans. */
-export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
+export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "calendar" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit} | {pending: true};
@@ -157,6 +157,9 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
       if (context.nextMeetingDate === null) throw new Error("board_capital_number_without_origin:next_meeting_date");
       parts.push(count(context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length)); continue;
     }
+    const year = /^year:((?:19|20)\d{2})$/.exec(token), month = /^month:((?:19|20)\d{2})-(0[1-9]|1[0-2])$/.exec(token);
+    if (year) {parts.push(marker(year[1]!, "calendar", token, null)); continue;}
+    if (month) {parts.push(marker(`${months[Number(month[2]) - 1]}/${month[1]!.slice(2)}`, "calendar", token, null)); continue;}
     if (token.startsWith("deadline:")) {
       const [deliberationId, deadlineId] = token.slice(9).split(".");
       const deadline = context.deliberations.find((d) => d.id === deliberationId)?.deadlines.find((x) => x.id === deadlineId);
@@ -183,37 +186,63 @@ export function boardNumberTokens(text: string) {
   return [...text.matchAll(numberToken)].map((m) => ({text: m[0], start: m.index!, end: m.index! + m[0].length}));
 }
 
-/** Render, then verify: every number of the final text belongs to exactly one marker and is its whole display,
- * with the unit sign and the currency mark its unit requires; a number outside any marker is allowed only as a
- * year or a month of a year that is not used as money, a rate or a multiple. Anything else refuses the material. */
+/** The unit words each economic unit must carry right after its number, and the currency mark before it. */
+const unitAfter: Record<BoardFigureUnit, RegExp | null> = {
+  brl_millions: /^\s(?:milhão|milhões|mi)(?![\p{L}])/u, brl: null, percent: /^%/u, multiple: /^x(?![\p{L}])/u,
+  years: /^\s(?:ano|anos)(?![\p{L}])/u, months: /^\s(?:mês|meses)(?![\p{L}])/u, bps: /^\s(?:ponto|pontos)(?![\p{L}])/u,
+  number: null, date_day_month: null, date_month_year: null, text: null, boolean: null};
+/** Anything after a number that would give it a unit, a scale or a currency. */
+const anyUnitAfter = /^(?:\s*%|\s*x(?![\p{L}])|\s*p\.p\.|\s(?:mil|milhão|milhões|mi|bilhão|bilhões|bi|reais|real|dólares|ano|anos|mês|meses|ponto|pontos)(?![\p{L}]))/u;
+const currencyBefore = /(?:R\$|US\$|U\$|\$|€|BRL|USD)\s?$/u;
+/** Unit and scale words that must belong to a marker wherever they appear. */
+const orphanUnits = /R\$|US\$|U\$|€|(?<![\p{L}])(?:reais|real|dólares|bilhão|bilhões|bi|milhão|milhões|mi|p\.p\.|pontos?)(?![\p{L}])|%/gu;
+
+/** Render, then verify: every number of the final text belongs to exactly one marker and is its whole display;
+ * the words around it are the unit, scale and currency its reading carries (R$ and milhões for millions of
+ * reais, % for a rate, x for a multiple, anos, meses, pontos), and a number without them carries none. Years
+ * and months of a year appear only through calendar markers, never as an amount. Every currency mark, scale
+ * word and percent sign of the text belongs to a marker of that unit. Source labels are read as they are. */
 export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) {
   const fail = (why: string, token: string) => {throw new Error(`board_capital_rendered_number_invalid:${field}:${why}:${token}`);};
   for (const x of r.spans) {
     const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
-    if (f && ("pending" in f || r.display.slice(x.start, x.end) !== f.display)) fail("marker_text", x.id);
+    if (f && ("pending" in f || r.display.slice(x.start, x.end) !== f.display || f.unit !== x.unit)) fail("marker_text", x.id);
   }
+  const labels = r.spans.filter((x) => x.kind === "text_figure");
+  const inLabel = (i: number) => labels.some((x) => x.start <= i && i < x.end);
   let verified = 0;
   for (const t of boardNumberTokens(r.display)) {
+    if (inLabel(t.start) && inLabel(t.end - 1) && labels.some((x) => x.start <= t.start && t.end <= x.end)) {verified++; continue;}
     const holders = r.spans.filter((x) => x.start <= t.start && t.end <= x.end);
     const touching = r.spans.filter((x) => x.start < t.end && t.start < x.end);
-    if (holders.length > 1 || touching.length > holders.length) fail("crosses_markers", t.text);
-    const before = r.display.slice(0, t.start), after = r.display.slice(t.end);
-    const money = /R\$\s?$/.test(before), rate = /^[%x]/.test(after);
-    const holder = holders[0];
-    if (!holder) {
-      const literal = /^(?:19|20)\d{2}$/.test(t.text) || new RegExp(`^(?:${monthNames})/\\d{2}$`).test(t.text);
-      if (!literal) fail("without_marker", t.text);
-      if (money || rate || /^\s*(?:milh|mi\b|bilh|mil\b|pontos|anos|meses)/u.test(after)) fail("year_as_amount", t.text);
-      verified++; continue;
-    }
-    if (holder.kind === "text_figure") {verified++; continue;}
+    if (holders.length !== 1 || touching.length !== 1) fail(touching.length ? "crosses_markers" : "without_marker", t.text);
+    const holder = holders[0]!;
     if (t.start !== holder.start || t.end !== holder.end) fail("partial_marker", t.text);
-    if (holder.kind === "figure") {
-      const unit = holder.unit!, suffix = unitSuffix[unit];
-      if (suffix ? !after.startsWith(suffix) : rate) fail("unit_sign", holder.id);
-      if (moneyUnits.includes(unit) !== money) fail("currency_mark", holder.id);
+    const before = r.display.slice(0, t.start), after = r.display.slice(t.end);
+    if (holder.kind === "figure" && holder.unit !== null && boardEconomicUnits.includes(holder.unit)) {
+      const unit = holder.unit, money = unit === "brl_millions" || unit === "brl";
+      if (money ? !/(?<![\p{L}$])R\$\s$/u.test(before) : currencyBefore.test(before)) fail("currency_mark", holder.id);
+      const expected = unitAfter[unit];
+      if (expected ? !expected.test(after) : anyUnitAfter.test(after)) fail("unit_or_scale", holder.id);
+    } else {
+      // Dates, calendar markers, ordinals: never an amount, a rate or a multiple.
+      if (currencyBefore.test(before) || anyUnitAfter.test(after)) fail("date_as_amount", t.text);
+      if (holder.kind === "calendar" && !/(?<![\p{L}])(?:de|em|até|desde|para|entre|a|e|no|na|do|da)\s$/u.test(before)) fail("calendar_context", t.text);
     }
     verified++;
+  }
+  // Every currency mark, scale word and percent sign belongs to a marker of its unit.
+  for (const m of r.display.matchAll(orphanUnits)) {
+    const at = m.index!, word = m[0];
+    if (inLabel(at)) continue;
+    const next = r.spans.find((x) => x.start === at + word.length + 1), prev = r.spans.find((x) => x.end === at || x.end === at - 1);
+    const money = (x: BoardSpan | undefined) => x !== undefined && (x.kind === "pending" || (x.kind === "figure" && (x.unit === "brl_millions" || x.unit === "brl")));
+    const ok = word === "R$" ? money(next) && r.display[at + 2] === " "
+      : word === "%" ? prev !== undefined && prev.end === at && (prev.kind === "pending" || prev.unit === "percent")
+      : /^(?:milhão|milhões|mi)$/u.test(word) ? prev !== undefined && prev.end === at - 1 && (prev.kind === "pending" || prev.unit === "brl_millions")
+      : /^pontos?$/u.test(word) ? prev !== undefined && prev.end === at - 1 && (prev.kind === "pending" || prev.unit === "bps")
+      : false;
+    if (!ok) fail("unit_without_marker", word);
   }
   return verified;
 }
@@ -442,7 +471,11 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     const s = byId.get(f.sourceId);
     if (!s) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (boardEconomicUnits.includes(f.unit) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
-    const check = checkBoardFigure(readBoardSourcePath(s.packet, f.path), f.unit, f.scale, f.places, f.stated);
+    const raw = readBoardSourcePath(s.packet, f.path);
+    // A source text is read verbatim only from a label field of the source; a number is never read as text.
+    if (f.unit === "text" && (!boardLabelKeys.includes(f.path.split(/\.(?![^[]*\])/).at(-1)!.replace(/\[.*$/, "")) || typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw)))
+      throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
+    const check = checkBoardFigure(raw, f.unit, f.scale, f.places, f.stated);
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
     figures.set(f.id, {display: check.display, unit: f.unit});

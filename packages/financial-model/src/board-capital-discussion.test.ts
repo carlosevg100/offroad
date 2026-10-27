@@ -28,10 +28,10 @@ describe("board discussion core", () => {
     expect(checkBoardFigure(undefined, "text", 0, 0, null)).toBeNull();
     expect(checkBoardFigure(true, "boolean", 0, 0, null)).toMatchObject({display: "sim", matches: true});
   });
-  it("allows years and months of a year as literals and refuses any other literal number", () => {
-    expect(boardLiteralNumbers("Vencimentos de 2027, em dez/26 e {lev}x")).toEqual([]);
+  it("refuses every literal number, years included, and renders calendar markers as dates", () => {
+    expect(boardLiteralNumbers("Vencimentos de {year:2027}, em {month:2026-12} e {lev}x")).toEqual([]);
+    expect(boardLiteralNumbers("Vencimentos de 2027 e dez/26")).toEqual(["2027", "26"]);
     expect(boardLiteralNumbers("A dívida é de R$ 130 milhões")).toEqual(["130"]);
-    expect(boardLiteralNumbers("Aviso até 2/out")).toEqual(["2"]);
     const context = {figures: new Map<string, BoardFigureDisplay>([["x", {display: "1,5", unit: "years"}], ["r", {display: "1,2", unit: "percent"}], ["p", {pending: true}]]), deliberations: [deliberation("a", ["2026-10-02"]), deliberation("b", [])], nextMeetingDate: null};
     expect(renderBoardTemplate("{count:deliberations} decisões, {count:dated} com prazo; {x} e {p}; até {deadline:a.d0}", context))
       .toMatchObject({display: "duas decisões, uma com prazo; 1,5 e [pendente]; até 2/out", figureIds: ["x"], pendingFigureIds: ["p"], deadlineIds: ["a.d0"]});
@@ -61,17 +61,25 @@ describe("board discussion core", () => {
   it("verifies the final text against its markers: concatenation, sign, unit, currency and years used as amounts", () => {
     const figures = new Map<string, BoardFigureDisplay>([["d", {display: "130", unit: "brl_millions"}], ["b", {display: "3", unit: "brl_millions"}], ["r", {display: "1,2", unit: "percent"}], ["l", {display: "2,2", unit: "multiple"}]]);
     const context = {figures, deliberations: [], nextMeetingDate: null};
-    const check = (t: string) => verifyBoardRendered("f", renderBoardTemplate(t, context), figures);
-    expect(check("A dívida é de R$ {d} milhões em 2027, com {l}x e CDI mais {r}% ao ano")).toBe(4);
+    const check = (t: string) => verifyBoardRendered("f", renderBoardTemplate(t.replace(/\{y\}/g, "{year:2027}"), context), figures);
+    expect(check("A dívida é de R$ {d} milhões em {year:2027}, com {l}x e CDI mais {r}% ao ano")).toBe(4);
+    expect(renderBoardTemplate("em {month:2026-12}", context).display).toBe("em dez/26");
     expect(() => check("R$ {d},{b} milhões")).toThrow("crosses_markers");
     expect(() => check("R$ {d}{b} milhões")).toThrow("crosses_markers");
     expect(() => check("R$ -{d} milhões")).toThrow("crosses_markers");
     expect(() => check("R$ {d}.{b} milhões")).toThrow("crosses_markers");
     expect(() => check("{d} milhões")).toThrow("currency_mark");
+    expect(() => check("US$ {d} milhões")).toThrow("currency_mark");
     expect(() => check("R$ {l}x")).toThrow("currency_mark");
-    expect(() => check("R$ {d}x de dívida")).toThrow("unit_sign");
-    expect(() => check("R$ 2027 milhões")).toThrow("year_as_amount");
-    expect(() => check("2027 milhões")).toThrow("year_as_amount");
+    expect(() => check("R$ {d} bilhões")).toThrow("unit_or_scale");
+    expect(() => check("R$ {d} reais")).toThrow("unit_or_scale");
+    expect(() => check("CDI mais {r} %")).toThrow("board_capital_unit_missing");
+    expect(() => check("R$ {y} milhões")).toThrow("date_as_amount");
+    expect(() => check("dívida de {y} reais")).toThrow("date_as_amount");
+    expect(() => check("A dívida é {y}")).toThrow("calendar_context");
+    expect(() => check("Em milhões de reais, a dívida é de {y}.")).toThrow("unit_without_marker");
+    expect(() => check("Alta de {y} %")).toThrow("date_as_amount");
+    expect(() => check("R$ 2027 milhões")).toThrow("board_capital_number_without_origin");
     expect(() => verifyBoardRendered("f", {display: "R$ 131 milhões", spans: [{start: 3, end: 6, kind: "figure", id: "d", unit: "brl_millions"}]}, figures)).toThrow("marker_text");
   });
 });
