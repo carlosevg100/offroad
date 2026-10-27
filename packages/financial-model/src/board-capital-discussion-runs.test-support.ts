@@ -84,6 +84,19 @@ export const boardRestatePath = (c: CaseData, packet: Record<string, unknown>, i
   c.extraReadings[`${id}-cost`] = boardRestated(packet, "plano-2027", at + "horizonFinancingCost", 0);
   c.extraReadings[`${id}-net`] = boardRestated(packet, "plano-2027", at + "netDebtAtHorizon", 0);
 };
+/** The working-capital line bound to 2027 instead of 2026 (the same scenario, another year). */
+export const boardWorkingCapital2027 = (c: CaseData) => {
+  c.extraReadings["wc-60-2027"] = ["projecao", "readings.projected.scenarios[id=prazo-60].rows[periodId=2027-12-31].effects.changeInWorkingCapital", "0", "1"];
+  const page = c.pages.find((x) => x.id === "mudaria")!;
+  page.lines.push("what_changes.receivable_days|ano=year-2027|giro=wc-60-2027");
+};
+/** The status-quo readings restated from a given plan packet (the path row and the cash, service and available of 2027). */
+export const boardRestateKeptDebt = (c: CaseData, packet: Record<string, unknown>) => {
+  boardRestatePath(c, packet, "manter");
+  c.extraReadings["cash-end-2027"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=2027-12-31].closingAvailable", 0);
+  c.extraReadings["service-2027"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service", 0);
+  c.extraReadings["available-2027"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService", 0);
+};
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
   "Bradesco Deve Dezassete Cêntimos", "Bradesco Deve Dezassete Biliões"];
@@ -92,7 +105,7 @@ export const boardOffDictionaryReading = (p: Packet, name: string) => ({status: 
   gap: p.result.discussion!.gaps.find((g) => g.reason === "label_not_in_dictionary")?.item ?? null, line: current(p).pages.find((x) => x.id === "divida")!.lines[1],
   shown: boardShownTexts(p).some((t) => t.includes(name) || t.includes(name.normalize("NFKC")))});
 export const boardRegisteredCreditorExpected = {basket: "Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Itaú.",
-  question: "Por que não rolar a dívida com Itaú no vencimento?", named: 7, bradesco: false, status: "prepared_for_human_review"};
+  question: "Por que não rolar a dívida com Itaú no vencimento?", named: 10, bradesco: false, status: "prepared_for_human_review"};
 export const boardRegisteredCreditorReading = (p: Packet) => ({basket: current(p).pages.find((x) => x.id === "escritura")!.lines[0], question: current(p).questions[0]!.question,
   named: boardShownTexts(p).filter((t) => t.includes("dívida com Itaú")).length, bradesco: boardShownTexts(p).some((t) => t.includes("Bradesco")), status: p.status});
 const pageOf = (p: Packet, id: string) => current(p).pages.find((x) => x.id === id)!;
@@ -135,9 +148,9 @@ function goldCases(): Case[] {
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
     reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027", "A escritura da debênture tem só R$ 3 milhões livres na exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas das redes A e B antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões da safra, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas das redes A e B antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões da safra, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
-    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões", "Próximos passos e datas"],
+    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
     reuse("every-page-carries-a-number", p2, t2, true, (p) => current(p).pages.every((x) => x.figureIds.length + x.pendingFigureIds.length + x.deadlineIds.length > 0)),
     reuse("numbers-checked-against-the-analyses-debt-covenant-and-cash", p2, t2, {
@@ -171,12 +184,12 @@ function goldCases(): Case[] {
     reuse("pending-items-declared", p2, t2, {indicative: ["programs", "spread-a"], sources: ["covenant", "recebiveis"], template: "supplied_not_applied", safraSaysIndicative: true},
       (p) => ({indicative: p.readings!.pending.indicative, sources: p.readings!.pending.sources, template: p.readings!.pending.template,
         safraSaysIndicative: pageOf(p, "safra").lines[0]!.includes("indicativo")})),
-    reuse("line-before-the-recommendation-when-the-board-has-not-seen-it", p2, t2, {line: 5, recommendation: 8, placement: "main", sideBySide: true},
+    reuse("line-before-the-recommendation-when-the-board-has-not-seen-it", p2, t2, {line: 5, recommendation: 9, placement: "main", sideBySide: true},
       (p) => ({line: pageOf(p, "linha").number, recommendation: pageOf(p, "recomendacao").number, placement: pageOf(p, "linha").placement,
         sideBySide: pageOf(p, "linha").lines.some((l) => l.startsWith("Retorno")) && pageOf(p, "linha").lines.some((l) => l.startsWith("Motivo estratégico apresentado pelo presidente do conselho"))})),
-    observe("line-the-board-has-seen-goes-to-the-appendix", boardPacketInput(2, (c) => {c.topics[0]!.seen = true;}), {placement: "appendix", mainPages: 11},
+    observe("line-the-board-has-seen-goes-to-the-appendix", boardPacketInput(2, (c) => {c.topics[0]!.seen = true;}), {placement: "appendix", mainPages: 12},
       (p) => ({placement: pageOf(p, "linha").placement, mainPages: p.readings!.material!.mainPages})),
-    reuse("twelve-pages-fit-forty-five-minutes", p2, t2, {mainPages: 12, capacity: 15, fits: true}, (p) => ({mainPages: current(p).agenda.mainPages, capacity: current(p).agenda.capacity, fits: current(p).agenda.fits})),
+    reuse("thirteen-pages-fit-forty-five-minutes", p2, t2, {mainPages: 13, capacity: 15, fits: true}, (p) => ({mainPages: current(p).agenda.mainPages, capacity: current(p).agenda.capacity, fits: current(p).agenda.fits})),
     observe("pages-beyond-the-agenda-are-a-gap", boardPacketInput(2, (c) => {c.agendaMinutes = "30";}), {fits: false, gap: true},
       (p) => ({fits: p.readings!.material!.fitsAgenda, gap: p.gaps.some((g) => g.reason === "pages_exceed_agenda")})),
     reuse("turn-3-recommendation-withdrawn-and-facts-kept", p3, t3, {outcome: "applied", recommendation: null,
@@ -208,8 +221,8 @@ function goldCases(): Case[] {
     reuse("ficha-divergences-follow-the-published-methods", p2, t2, boardFichaDivergences.filter((x) => x.figureId in display(p2)).map((x) => [x.figureId, display(p2)[x.figureId]]),
       (p) => boardFichaDivergences.filter((x) => x.figureId in display(p)).map((x) => [x.figureId, display(p)[x.figureId]])),
     reuse("paths-page-compares-each-path", p2, t2, [
-      "Sem a linha agora, com giro e debênture nova: caixa mínimo de R$ 15 milhões; alavancagem de 2,20x; custo de R$ 49 milhões; dívida líquida em 2028 de R$ 79 milhões; nos critérios: sim; anuência: não.",
-      "Manter e rolar no vencimento: caixa mínimo de R$ -79 milhões; alavancagem de 2,38x; custo de R$ 25 milhões; dívida líquida em 2028 de R$ 81 milhões; nos critérios: não; anuência: não."],
+      "Caminho A: caixa mínimo de R$ 15 milhões; alavancagem de 2,20x; custo de R$ 49 milhões; dívida líquida em 2028 de R$ 79 milhões; nos critérios: sim; anuência: não.",
+      "Caminho D: caixa mínimo de R$ -79 milhões; alavancagem de 2,38x; custo de R$ 25 milhões; dívida líquida em 2028 de R$ 81 milhões; nos critérios: não; anuência: não."],
       (p) => [pageOf(p, "caminhos").lines[0], pageOf(p, "caminhos").lines[3]]),
     reuse("paths-page-has-seven-paths-with-every-measure", p2, t2, {lines: 7, measures: true},
       (p) => ({lines: pageOf(p, "caminhos").lines.length, measures: pageOf(p, "caminhos").lines.every((l) => ["caixa mínimo", "alavancagem", "custo", "dívida líquida em 2028", "nos critérios", "anuência"].every((m) => l.includes(m)))})),
@@ -238,6 +251,9 @@ function goldCases(): Case[] {
     observe("line-kept-with-receipts-missing-never-says-without-the-line",
       withBoardSource("caixa-semanal", boardWeeklyVariant(), () => boardPacketInput(2, boardWeeklyVariantCase)), {alternative: true, withoutTheLine: false, status: "prepared_for_human_review"},
       (p) => ({alternative: pageOf(p, "caixa").lines[0]!.startsWith("No caso alternativo de menor caixa"), withoutTheLine: boardShownTexts(p).some((t) => /sem a linha da safra/i.test(t)), status: p.status})),
+    observe("working-capital-of-another-year-is-shown-as-a-variation", boardPacketInput(2, boardWorkingCapital2027),
+      "No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2027 fica R$ 1 milhão acima da do cenário de referência.",
+      (p) => pageOf(p, "mudaria").lines[3]),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -313,11 +329,11 @@ function adversarialCases(): Case[] {
     ["unknown-template-id", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total_reversed|total=divida-total|ano=year-2027";}), "board_capital_template_unknown"],
     ["slot-left-unbound", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total";}), "board_capital_slot_unbound"],
     ["slot-the-template-does-not-have", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2027|sinal=irr";}), "board_capital_slot_invalid"],
-    ["years-bound-to-a-months-slot", () => boardPacketInput(2, (c) => {c.pages[10]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}), "board_capital_slot_type_mismatch"],
+    ["years-bound-to-a-months-slot", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}), "board_capital_slot_type_mismatch"],
     ["value-bound-to-a-date-slot", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=divida-total";}), "board_capital_slot_type_mismatch"],
     ["prose-in-a-binding", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=menos divida-total|ano=year-2027";}), "must match pattern"],
     ["literal-number-in-a-title", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "A dívida é de R$ 130 milhões, curta e concentrada em {year-2027}";}), "must match pattern"],
-    ["literal-deadline-in-a-line", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[0] = "2/out: aviso ao fornecedor de embalagem.";}), "must match pattern"],
+    ["literal-deadline-in-a-line", () => boardPacketInput(2, (c) => {c.pages[12]!.lines[0] = "2/out: aviso ao fornecedor de embalagem.";}), "must match pattern"],
     ["reading-that-does-not-resolve", () => alterReading("principal-2027", (r) => {r[1] = "result.table.profile.scheduleByYear[year=2099].principal";}), "board_capital_figure_without_origin:principal-2027"],
     ["reading-of-an-unnamed-result", () => alterReading("wal", (r) => {r[0] = "outra-analise";}), "board_capital_figure_without_origin:wal"],
     ["tampered-reviewed-result", alterSource("tabela-divida", (p) => {(p.result as {table: {reconciliation: {principal: string}}}).table.reconciliation.principal = "120";}, false), "board_capital_source_fingerprint_mismatch:tabela-divida"],
@@ -331,7 +347,7 @@ function adversarialCases(): Case[] {
     }), "Invalid option"],
     ["extra-result-beside-the-named-ones", () => boardPacketInput(2, undefined, (i) => {i.analysis.sources.push({id: "extra", packet: i.analysis.sources[0]!.packet});}), "board_capital_source_not_named"],
     ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "next_steps.title";}), "board_capital_title_without_number:escritura"],
-    ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[11]!.lines = ["topic.project_value|retorno=irr|custo=wacc|vpl=npv"];}), "board_capital_page_without_number:passos"],
+    ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[12]!.lines = ["topic.project_value|retorno=irr|custo=wacc|vpl=npv"];}), "board_capital_page_without_number:passos"],
     ["false-number-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";}), "must match pattern"],
     ["false-number-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";}), "must match pattern"],
     ["false-number-in-an-option-not-yet-shown", () => boardPacketInput(2, (c) => {c.pages[4]!.options[1] = "Seguir em etapas: VPL de R$ 0,9 milhão.";}), "must match pattern"],
@@ -373,12 +389,12 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["positive-npv-under-a-negative-claim", () => build(2, (c) => {c.pages[4]!.lines[2] = "topic.project_sensitivities|vpl_economia=npv|vpl_capex=npv-capex|vpl_partida=npv-slow";}),
       "board_capital_slot_concept_mismatch:topic.project_sensitivities:vpl_economia"],
     ["path-row-reading-another-path", () => build(2, (c) => {c.pages[6]!.lines[3] = row("keep_and_roll", "sem-linha-debenture");}), "board_capital_slot_concept_mismatch:alternatives.row.keep_and_roll:caixa"],
-    ["ebitda-of-another-year", () => build(2, (c) => {c.pages[10]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat";}),
+    ["ebitda-of-another-year", () => build(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat";}),
       "board_capital_slot_concept_mismatch:what_changes.wheat:ebitda:variable_y"],
     ["concentration-year-that-is-not-the-largest", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2028";}), "board_capital_template_condition_failed:situation.debt_total"],
-    ["adverse-leverage-dated-in-another-year", () => build(2, (c) => {c.pages[8]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2026";}), "board_capital_template_condition_failed:risk.leverage"],
-    ["notice-dated-with-the-route-deadline", () => build(2, (c) => {c.pages[11]!.lines[0] = "next_steps.notice|prazo=deadline:vencimentos.rota";}), "board_capital_deadline_action_mismatch:next_steps.notice:prazo:vencimentos.rota"],
-    ["fallback-dated-with-the-sounding-deadline", () => build(2, (c) => {c.pages[7]!.lines[2] = "recommendation.alternative|prazo=deadline:vencimentos.sondagem";}),
+    ["adverse-leverage-dated-in-another-year", () => build(2, (c) => {c.pages[9]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2026";}), "board_capital_template_condition_failed:risk.leverage"],
+    ["notice-dated-with-the-route-deadline", () => build(2, (c) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=deadline:vencimentos.rota";}), "board_capital_deadline_action_mismatch:next_steps.notice:prazo:vencimentos.rota"],
+    ["fallback-dated-with-the-sounding-deadline", () => build(2, (c) => {c.pages[8]!.lines[2] = "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.sondagem";}),
       "board_capital_deadline_action_mismatch:recommendation.alternative"],
     ["action-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.deadlines[0]!.action = "delib.action.decide_route";}), "board_capital_deliberation_text_mismatch:deliberation.linha.deadline.aviso"],
     ["subject-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.subject = "delib.crop.subject|ano=year-2026";}), "board_capital_deliberation_text_mismatch:deliberation.linha.subject"],
@@ -388,16 +404,16 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     // Review r8: one package per method, and a creditor named only by the creditor field of the right row.
     ["second-package-of-the-same-method", () => withExtraBoardSource({id: "covenant-2", methodId: covenant, packet: covenantWithAdverseDebt("400")}, () => build(2, (c) => {
       c.extraReadings["lev-adv27-b"] = ["covenant-2", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "8.04"];
-      c.pages[8]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27-b|ano=year-2027";
+      c.pages[9]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27-b|ano=year-2027";
     })), `board_capital_source_method_repeated:${covenant}`],
     ["basket-occupied-by-the-creditor-of-another-row", () => build(2, (c) => {finame(c); c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=finame-creditor";}),
       "board_capital_template_condition_failed:constraint.basket_usage"],
     ["largest-creditor-in-a-row-creditor-slot", () => build(2, (c) => {c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=largest-creditor";}),
       "board_capital_slot_concept_mismatch:constraint.basket_usage:credor"],
-    ["prepaid-creditor-the-plan-does-not-prepay", () => build(2, (c) => {finame(c); c.pages[7]!.lines[0] = "recommendation.debenture_cost|credor=finame-creditor|baixo=deb-cost-low|alto=deb-cost-high";}),
+    ["prepaid-creditor-the-plan-does-not-prepay", () => build(2, (c) => {finame(c); c.pages[8]!.lines[0] = "recommendation.debenture_cost|credor=finame-creditor|baixo=deb-cost-low|alto=deb-cost-high";}),
       "board_capital_template_condition_failed:recommendation.debenture_cost"],
-    ["amended-creditor-the-plan-does-not-amend", () => build(2, (c) => {finame(c); c.pages[6]!.lines[6] = c.pages[6]!.lines[6]!.replace("credor=bradesco-creditor", "credor=finame-creditor");}),
-      "board_capital_template_condition_failed:alternatives.row.extend_bradesco"],
+    ["amended-creditor-the-plan-does-not-amend", () => build(2, (c) => {finame(c); c.pages[7]!.lines[6] = c.pages[7]!.lines[6]!.replace("credor=bradesco-creditor", "credor=finame-creditor");}),
+      "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
     ["question-and-answer-name-different-creditors", () => build(2, (c) => {finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor";}), "board_capital_answer_mismatch:bradesco:credor"],
     // Review r9: exposure is the balance the chain owes, never the program's volume or the eligible capacity; a
     // contractual assertion holds only when the registered contract says so.
@@ -449,7 +465,20 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["deferral-without-a-deferred-schedule", () => {
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
-    }, "board_capital_template_condition_failed:alternatives.row.defer_line"],
+    }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r14: the debt kept as it is takes no new loan; a deferral starts operating later; a path's moves are its complete set.
+    ["kept-debt-with-a-new-working-capital-loan", () => {
+      const packet = auroraPlanPacket({keptDebtWithNewLoan: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestateKeptDebt(c, packet);}));
+    }, "board_capital_template_condition_failed:situation.cash_shortfall"],
+    ["deferral-with-operation-on-the-original-schedule", () => {
+      const packet = auroraPlanPacket({deferralWithOperationOnTime: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
+    }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    ["extension-path-with-an-undeclared-prepayment", () => {
+      const packet = auroraPlanPacket({extensionWithExtraPrepayment: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "alongar-bradesco");}));
+    }, "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
     ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],

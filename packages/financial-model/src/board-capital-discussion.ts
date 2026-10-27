@@ -324,6 +324,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (!got) throw concept(slot, "origin");
       // Where a method holds several fields of one kind, the registry's concept must be the one the slot names.
       if (spec.concept !== undefined && boardFieldOf(figure.origin.methodId, figure.origin.path)?.concept !== spec.concept) throw concept(slot, "registered_concept");
+      // A balance, a flow and a value are not interchangeable: the sentence's reading must be the field's registered nature.
+      if (spec.nature !== undefined && boardFieldOf(figure.origin.methodId, figure.origin.path)?.nature !== spec.nature) throw concept(slot, "nature");
       share(slot, got);
     }
     values[slot] = {value: figure.origin.value, methodId: figure.origin.methodId, sourceId: figure.origin.sourceId};
@@ -430,6 +432,39 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (c.op === "eq") return pairs.every(([x, y]) => compareBoard(x, "eq", y));
       const weak = c.op === "gt" ? "ge" : "le";
       return pairs.every(([x, y]) => compareBoard(x, weak, y)) && pairs.some(([x, y]) => compareBoard(x, c.op, y));
+    }
+    if ("pathMoves" in c) {
+      // The complete set of a plan path's moves: new instruments and existing ones removed (against the existing debt),
+      // prepayments, charges and the project variant (against the status quo's). Each recorded move must match a declared pattern and each declared pattern a move.
+      const [method, rawPath] = c.pathMoves, path = rawPath.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+      const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const term = (suffix: string): string[] | null => {
+        const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+        if (hits.length > 1) return null;
+        const v = hits[0]?.value?.value;
+        return v === undefined ? [] : Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : null;
+      };
+      const quo = (packet.result?.contributions ?? []).flatMap((e) => {
+        const m = typeof e.fieldPath === "string" ? /\.path\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
+        return m && Array.isArray(v) && v[0] === "status_quo" ? [m[1]!] : [];
+      });
+      if (quo.length !== 1) throw unverified("status_quo_path");
+      const mine = term(`path.${path}.instruments`), theirs = term(`path.${quo[0]}.instruments`), terms = term(`path.${path}.terms`), quoTerms = term(`path.${quo[0]}.terms`);
+      const prepaid = term(`path.${path}.prepayments`), charges = term(`path.${path}.chargeSlots`);
+      if (!mine || !theirs || !terms || !quoTerms || !prepaid || !charges) return false;
+      const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "\u0000");
+      const matches = (pattern: string, item: string) => {const p = fill(pattern); return p.endsWith("*") ? item.startsWith(p.slice(0, -1)) : item === p;};
+      const exact = (items: string[], patterns: readonly string[]) => items.every((x) => patterns.some((p) => matches(p, x))) && patterns.every((p) => items.some((x) => matches(p, x)));
+      // Moves are measured against the existing debt (instruments the plan records as existing), not against another path,
+      // so the status quo itself shows any new instrument it takes.
+      const existing = (packet.result?.contributions ?? []).flatMap((e) => {
+        const m = typeof e.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
+        return m && Array.isArray(v) && v[0] === "existing" ? [m[1]!] : [];
+      });
+      if (!existing.length) throw unverified("existing_debt");
+      return exact(mine.filter((x) => !existing.includes(x)), c.added) && exact(existing.filter((x) => !mine.includes(x)), c.removed)
+        && exact(prepaid.map((x) => x.split("|")[0]!), c.prepaid) && exact(charges.map((x) => x.split("|").slice(0, 2).join("|")), c.charges)
+        && (c.variant === "same" ? terms[1] === quoTerms[1] : terms[1] !== quoTerms[1]);
     }
     if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
     if ("changedOnly" in c) {

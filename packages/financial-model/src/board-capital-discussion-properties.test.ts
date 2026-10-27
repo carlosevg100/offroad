@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardRestatePath, boardRestated, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
@@ -104,7 +104,10 @@ const meaning: Record<string, Record<string, string>> = {
   "recommendation.debenture": {valor: LI + "issueTarget", prazo: LI + "termYears"},
   "recommendation.debenture_cost": {credor: DT + "result.table.rows[id=*].creditor", baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition"},
   "recommendation.amortization": {inicio: LI + "firstAmortizationYear", fim: LI + "lastAmortizationYear"},
-  "recommendation.alternative": {prazo: route},
+  "recommendation.alternative": {credor: DT + "result.table.rows[id=*].creditor", prazo: route},
+  "alternatives.moves.title": {caminhos: FP + "readings.horizon.candidatePaths"},
+  "alternatives.moves.no_line_debenture": {credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.moves.debenture_with_line": {credor: DT + "result.table.rows[id=*].creditor"},
+  "alternatives.moves.extend_with_bank": {credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.moves.extend_bradesco": {credor: DT + "result.table.rows[id=*].creditor"},
   "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", ano: "year"},
   "risk.leverage_path": {inicio: CV + "result.headroom.measurements[id=dez26-base].ratio", data_inicio: CV + "result.headroom.measurements[id=dez26-base].date",
     fim: CV + "result.headroom.measurements[id=dez27-base].ratio", data_fim: CV + "result.headroom.measurements[id=dez27-base].date"},
@@ -277,7 +280,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       const own = (suffix: string) => contributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
       const days = (id: string): string[] | undefined => id === "base" ? own(".base.receivableDays") : own(`.scenario.${id}.override.receivableDays`)
         ?? (() => {const parent = scenarios.find((x) => x.id === id)?.basedOn; return parent ? days(parent) : undefined;})();
-      const shown = /capital de giro de (20\d\d)/.exec(t)?.[1], k = shown ? periods.indexOf(`${shown}-12-31`) : -1, parent = scenarios.find((x) => x.id === "prazo-60")?.basedOn;
+      const shown = /capital de giro em (20\d\d)/.exec(t)?.[1], k = shown ? periods.indexOf(`${shown}-12-31`) : -1, parent = scenarios.find((x) => x.id === "prazo-60")?.basedOn;
       const mine = days("prazo-60"), theirs = parent ? days(parent) : undefined;
       if (defined("prazo-60") !== "receivableDays" || k < 0 || !mine || !theirs || !new D(mine[k]!).gt(theirs[k]!)) bad.push(`scenario_receivables:${t.slice(0, 60)}`);
     }
@@ -306,9 +309,32 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     }
     const planContributions = (sourceOf("evaluate-financing-paths")?.result as {contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined)?.contributions ?? [];
     const variant = (id: string, field: string) => planContributions.find((x) => x.fieldPath.endsWith(`.variant.${id}.${field}`))?.value.value;
-    if (/^Sem a linha agora/.test(t) && !(variant("sem-linha", "kind") === "none" && variant("seguir", "kind") === "project")) bad.push(`scenario_plan_without:${t.slice(0, 60)}`);
-    if (/^Linha de embalagem adiada/.test(t) && !(firstNonZero(variant("adiar-12", "growthCapex") as string[]) > firstNonZero(variant("seguir", "growthCapex") as string[])
-      && firstNonZero(variant("adiar-12", "startupWorkingCapitalCashFlow") as string[]) > firstNonZero(variant("seguir", "startupWorkingCapitalCashFlow") as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    // Plan paths: the oracle's own table of each label's complete moves, read against the source (instrument roles,
+    // prepayments, charges and project variant); a deferred line starts operating (EBITDA) and disbursing later.
+    const term = (suffix: string) => planContributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
+    const existing = planContributions.flatMap((x) => {const m = /\.instrument\.([a-z0-9-]+)\.terms$/.exec(x.fieldPath); return m && (x.value.value as string[])[0] === "existing" ? [m[1]!] : [];});
+    const family = (id: string) => id.replace(/-.*$/, "");
+    const pathMoves = (id: string) => {
+      const ids = term(`.path.${id}.instruments`) ?? [];
+      return {added: [...new Set(ids.filter((x) => !existing.includes(x)).map((x) => x.endsWith("-aditada") ? "aditada" : x === "ccb-alongamento" ? "alongamento" : family(x)))].sort().join(","),
+        removed: existing.filter((x) => !ids.includes(x)).sort().join(","), prepaid: (term(`.path.${id}.prepayments`) ?? []).map((x) => x.split("|")[0]).sort().join(","),
+        charges: (term(`.path.${id}.chargeSlots`) ?? []).map((x) => x.split("|")[0]).sort().join(","), variant: (term(`.path.${id}.terms`) ?? [])[1]};
+    };
+    const expected: Record<string, [string, ReturnType<typeof pathMoves>]> = {
+      "Caminho A:": ["sem-linha-debenture", {added: "debenture,giro", removed: "", prepaid: "ccb-bradesco,debenture-2021", charges: "", variant: "sem-linha"}],
+      "Caminho B:": ["adiar-linha", {added: "giro", removed: "", prepaid: "", charges: "", variant: "adiar-12"}],
+      "Caminho C:": ["debenture-com-linha", {added: "debenture,finame,giro", removed: "", prepaid: "ccb-bradesco,debenture-2021", charges: "", variant: "seguir"}],
+      "Caminho D:": ["manter", {added: "", removed: "", prepaid: "", charges: "", variant: "seguir"}],
+      "Caminho E:": ["ccb-tres-anos", {added: "ccb", removed: "", prepaid: "", charges: "", variant: "seguir"}],
+      "Caminho F:": ["alongar-com-banco", {added: "alongamento,finame,giro", removed: "", prepaid: "ccb-bradesco", charges: "waiver", variant: "seguir"}],
+      "Caminho G:": ["alongar-bradesco", {added: "aditada,finame,giro", removed: "ccb-bradesco", prepaid: "", charges: "", variant: "seguir"}],
+    };
+    for (const [label, [id, want]] of Object.entries(expected)) if (t.startsWith(`${label} `) && !/caixa mínimo/.test(t) && JSON.stringify(pathMoves(id)) !== JSON.stringify(want)) bad.push(`path_moves:${label}`);
+    if (/mantida a dívida como está/.test(t) && JSON.stringify(pathMoves("manter")) !== JSON.stringify(expected["Caminho D:"]![1])) bad.push(`path_kept:${t.slice(0, 60)}`);
+    if (/linha de embalagem adiada/i.test(t) && !(firstNonZero(variant("adiar-12", "growthCapex") as string[]) > firstNonZero(variant("seguir", "growthCapex") as string[])
+      && firstNonZero(variant("adiar-12", "ebitda") as string[]) > firstNonZero(variant("seguir", "ebitda") as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    // A flow is never read as a balance: a working-capital amount above a reference is said of its variation.
+    if (/capital de giro/.test(t) && /acima/.test(t) && !/variação do capital de giro/.test(t)) bad.push(`nature:${t.slice(0, 60)}`);
     if (/sem a linha da safra/i.test(t)) bad.push(`scenario_weekly_line:${t.slice(0, 60)}`);
     void year;
   }
@@ -359,10 +385,10 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       ["missing-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total";}],
       ["extra-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2027|sinal=irr";}],
       ["repeated-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|total=basket|ano=year-2027";}],
-      ["years-in-a-months-slot", (c: CaseData) => {c.pages[10]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}],
+      ["years-in-a-months-slot", (c: CaseData) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}],
       ["rate-in-a-money-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=irr|ano=year-2027";}],
       ["value-in-a-date-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=divida-total";}],
-      ["reading-in-a-deadline-slot", (c: CaseData) => {c.pages[11]!.lines[0] = "next_steps.notice|prazo=tight-week";}],
+      ["reading-in-a-deadline-slot", (c: CaseData) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=tight-week";}],
       ["deadline-in-a-value-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=deadline:linha.aviso|ano=year-2027";}],
       ["prose-in-a-binding", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=menos divida-total|ano=year-2027";}],
     ] as const) expect(() => full(2, edit), name).toThrow(refusal);
@@ -506,7 +532,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       .toThrow("board_capital_template_condition_failed:what_changes.receivable_days");
     const flat = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("plano-2027", flat, () => full(2, (c) => {boardRestatePath(c, flat, "adiar-linha");})))
-      .toThrow("board_capital_template_condition_failed:alternatives.row.defer_line");
+      .toThrow("board_capital_template_condition_failed:alternatives.moves.defer_line");
     // Not vacuous: the calibrated texts read against each forged source are read as false, each on its own scenario.
     const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
     const readWith = (packet: Record<string, unknown>, method: string) => oracle(calibrated, [{packet: {...packet, fingerprint: fingerprintOf(method)}}, ...auroraBoardSources()]).bad;
@@ -514,6 +540,27 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(readWith(elsewhere, "build-operating-projection").some((x) => x.startsWith("scenario_receivables:"))).toBe(true);
     expect(readWith(flat, "evaluate-financing-paths").some((x) => x.startsWith("scenario_plan_deferral:"))).toBe(true);
     expect(readWith(late, "build-operating-projection").some((x) => x.startsWith("scenario_receivables:"))).toBe(false);
+  });
+  it("regression r14: balance against flow, first operation, and a path's complete moves (full path, oracle not vacuous)", () => {
+    const p2027 = full(2, boardWorkingCapital2027);
+    expect(p2027.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!.lines[3]).toContain("a variação do capital de giro em 2027");
+    expect(oracle(p2027)).toEqual({bad: [], missing: []});
+    const kept = auroraPlanPacket({keptDebtWithNewLoan: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("plano-2027", kept, () => full(2, (c) => {boardRestateKeptDebt(c, kept);}))).toThrow("board_capital_template_condition_failed:situation.cash_shortfall");
+    const onTime = auroraPlanPacket({deferralWithOperationOnTime: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("plano-2027", onTime, () => full(2, (c) => {boardRestatePath(c, onTime, "adiar-linha");}))).toThrow("board_capital_template_condition_failed:alternatives.moves.defer_line");
+    const extra = auroraPlanPacket({extensionWithExtraPrepayment: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("plano-2027", extra, () => full(2, (c) => {boardRestatePath(c, extra, "alongar-bradesco");}))).toThrow("board_capital_template_condition_failed:alternatives.moves.extend_bradesco");
+    // Not vacuous: each forged plan read against the calibrated texts, and a working-capital line forged as a balance.
+    const calibrated = packet(2, () => undefined), plan = calibrated.result.discussion!.identity.find((x) => x.methodId === "evaluate-financing-paths")!.packetFingerprint;
+    const readWith = (packet: Record<string, unknown>) => oracle(calibrated, [{packet: {...packet, fingerprint: plan}}, ...auroraBoardSources()]).bad;
+    expect(readWith(kept).some((x) => x.startsWith("path_kept:") || x.startsWith("path_moves:Caminho D:"))).toBe(true);
+    expect(readWith(onTime).some((x) => x.startsWith("scenario_plan_deferral:"))).toBe(true);
+    expect(readWith(extra).some((x) => x === "path_moves:Caminho G:")).toBe(true);
+    expect(readWith(extra).some((x) => x === "path_moves:Caminho A:")).toBe(false);
+    const forged = structuredClone(calibrated), line = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!;
+    line.lines[2] = line.lines[2]!.replace("a variação do capital de giro", "o capital de giro");
+    expect(oracle(forged).bad.some((x) => x.startsWith("nature:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

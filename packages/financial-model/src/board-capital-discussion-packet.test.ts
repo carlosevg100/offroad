@@ -14,15 +14,15 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.readings!.deliberations.map((d) => d.text)).toEqual([
       "não emitir o pedido de compra até as cotações firmes, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out",
       "financiar a safra pelos programas de antecipação das redes A e B, com a conta garantida para o aperto do fim da safra e a linha bancária só como reserva, e aderir aos programas até 16/out",
-      "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, tendo o alongamento bancário como plano alternativo, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
+      "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
       "definir qual EBITDA mede o limite de 2,5x"]);
     expect(p.result.discussion!.outline.narrative).toEqual(["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"]);
     expect(p.readings!.questionsBeforeMaterial.map((q) => q.code)).toEqual(["template", "agenda_minutes", "board_has_seen"]);
   });
-  it("turn 2: twelve pages read from the reviewed results, the line before the recommendation, nothing pending", () => {
+  it("turn 2: thirteen pages read from the reviewed results, the line before the recommendation, nothing pending", () => {
     const p = prepareBoardCapitalDiscussionPacket(boardPacketInput(2));
     expect(p.status).toBe("prepared_for_human_review");
-    expect(p.readings!.material!.mainPages).toBe(12);
+    expect(p.readings!.material!.mainPages).toBe(13);
     expect(p.readings!.material!.fitsAgenda).toBe(true);
     const line = current(p).pages.find((x) => x.id === "linha")!;
     expect(line.lines[0]).toBe("Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.");

@@ -69,7 +69,9 @@ export type BoardFieldKind = "money" | "rate" | "multiple" | "years" | "months" 
 export type BoardDateFormat = "day_month" | "day_long" | "month_year" | "month_long" | "year";
 export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly BoardDateFormat[];
   /** The economic concept of the field where a method holds several of the same kind that must never stand for one another. */
-  concept?: string};
+  concept?: string;
+  /** For money: a balance (a position at a date), a flow (a change or an amount over a period) or a value (a present value or an amount to issue). */
+  nature?: "balance" | "flow" | "value"};
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
 const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
 const plain = (kind: BoardFieldKind): BoardFieldSpec => ({kind, scale: "native", period: "none", formats: []});
@@ -77,58 +79,58 @@ const date = (...formats: BoardDateFormat[]): BoardFieldSpec => ({kind: "date", 
 /** Field paths with every selector written as [*]. */
 export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<string, BoardFieldSpec>>> = {
   "build-company-debt-table": {
-    "result.table.reconciliation.principal": money("millions"), "result.table.profile.scheduleByYear[*].principal": money("millions"),
+    "result.table.reconciliation.principal": {...money("millions"), nature: "balance"}, "result.table.profile.scheduleByYear[*].principal": {...money("millions"), nature: "flow"},
     "result.table.profile.scheduleByYear[*].year": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
     "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
     "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.rows[*].creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
-    "result.table.negativePledgeBaskets[*].basket": money("millions"), "result.table.negativePledgeBaskets[*].occupied": money("millions"),
-    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
+    "result.table.negativePledgeBaskets[*].basket": {...money("millions"), nature: "balance"}, "result.table.negativePledgeBaskets[*].occupied": {...money("millions"), nature: "balance"},
+    "result.table.negativePledgeBaskets[*].remaining": {...money("millions"), nature: "balance"}, "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
     "result.table.profile.twelveMonthHorizon": date("month_year", "month_long")},
   "measure-covenant-headroom": {
     "result.headroom.limits[*].maximumRatio": plain("multiple"), "result.headroom.measurements[*].ratio": plain("multiple"),
-    "result.headroom.measurements[*].reportedEbitda": money("millions"), "result.headroom.measurements[*].date": date("month_year", "month_long", "year")},
+    "result.headroom.measurements[*].reportedEbitda": {...money("millions"), nature: "flow"}, "result.headroom.measurements[*].date": date("month_year", "month_long", "year")},
   "project-weekly-cash": {
-    "result.weekly.minimumCash": money("millions"), "readings.sensitivities[*].minimum": money("millions"),
+    "result.weekly.minimumCash": {...money("millions"), nature: "balance"}, "readings.sensitivities[*].minimum": {...money("millions"), nature: "balance"},
     "readings.sensitivities[*].weekStart": date("day_month", "day_long"), "readings.tightestWeek.weekStart": date("day_month", "day_long")},
   "analyze-investment-project": {
     "comparison.metrics[*].annualIrr": rate("annual"), "comparison.metrics[*].discountRate": rate("annual"),
-    "comparison.metrics[*].netPresentValue": money("reais"), "comparison.metrics[*].paybackYears": plain("years"),
-    "comparison.metrics[*].peakCumulativeCashNeed.amount": money("reais"), "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "month_long", "year"),
+    "comparison.metrics[*].netPresentValue": {...money("reais"), nature: "value"}, "comparison.metrics[*].paybackYears": plain("years"),
+    "comparison.metrics[*].peakCumulativeCashNeed.amount": {...money("reais"), nature: "balance"}, "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "month_long", "year"),
 },
   "build-operating-projection": {
     "result.projection.projection.scenarios[*].inputCostShock.rate": rate("none"),
     "result.projection.projection.scenarios[*].inputCostShock.passThroughLagMonths": plain("months"),
-    "readings.projected.scenarios[*].rows[*].ebitda": money("millions"),
-    "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": money("millions")},
-  "challenge-financial-projection": {"readings.gap.plan.ebitda": money("millions"), "readings.gap.reference.ebitda": money("millions")},
+    "readings.projected.scenarios[*].rows[*].ebitda": {...money("millions"), nature: "flow"},
+    "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": {...money("millions"), nature: "flow"}},
+  "challenge-financial-projection": {"readings.gap.plan.ebitda": {...money("millions"), nature: "flow"}, "readings.gap.reference.ebitda": {...money("millions"), nature: "flow"}},
   // Receivables (C35): balance owed by each debtor, eligible capacity, program volume and sublimit are distinct concepts.
   "monetize-receivables-for-working-capital": {
-    "readings.gross": {...money("millions"), concept: "carteira_bruta"},
-    "result.funding.portfolio.items[*].amount": {...money("millions"), concept: "saldo_da_carteira_por_devedor"},
-    "result.funding.portfolio.items[*].assignable": {...money("millions"), concept: "capacidade_elegivel_por_devedor"},
-    "readings.options[*].volume": {...money("millions"), concept: "volume_antecipavel_do_programa"},
-    "result.funding.options[*].byItem[*].retained": {...money("millions"), concept: "volume_do_programa_por_devedor"},
-    "result.funding.options[*].byItem[*].sublimitExcess": {...money("millions"), concept: "excesso_sobre_sublimite_por_devedor"},
-    "readings.plan[*].cumulative": {...money("millions"), concept: "volume_antecipavel_acumulado_no_plano"},
-    "result.funding.need.peak": {...money("millions"), concept: "pico_da_necessidade_de_caixa"},
+    "readings.gross": {...money("millions"), concept: "carteira_bruta", nature: "balance"},
+    "result.funding.portfolio.items[*].amount": {...money("millions"), concept: "saldo_da_carteira_por_devedor", nature: "balance"},
+    "result.funding.portfolio.items[*].assignable": {...money("millions"), concept: "capacidade_elegivel_por_devedor", nature: "balance"},
+    "readings.options[*].volume": {...money("millions"), concept: "volume_antecipavel_do_programa", nature: "balance"},
+    "result.funding.options[*].byItem[*].retained": {...money("millions"), concept: "volume_do_programa_por_devedor", nature: "balance"},
+    "result.funding.options[*].byItem[*].sublimitExcess": {...money("millions"), concept: "excesso_sobre_sublimite_por_devedor", nature: "balance"},
+    "readings.plan[*].cumulative": {...money("millions"), concept: "volume_antecipavel_acumulado_no_plano", nature: "balance"},
+    "result.funding.need.peak": {...money("millions"), concept: "pico_da_necessidade_de_caixa", nature: "balance"},
     "readings.options[*].spreadOverDi": {...rate("annual"), concept: "spread_sobre_cdi_do_programa"}},
-  "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "levers[*].netOfKnownCosts": money("reais", "annual")},
+  "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "levers[*].netOfKnownCosts": {...money("reais", "annual"), nature: "flow"}},
   "evaluate-financing-paths": {
-    "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": money("millions"),
-    "result.evaluation.paths[*].debtServiceByYear[*].service": money("millions"), "result.evaluation.paths[*].debtServiceByYear[*].availableForService": money("millions"),
+    "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": {...money("millions"), nature: "balance"},
+    "result.evaluation.paths[*].debtServiceByYear[*].service": {...money("millions"), nature: "flow"}, "result.evaluation.paths[*].debtServiceByYear[*].availableForService": {...money("millions"), nature: "flow"},
     "readings.horizon.candidatePaths": plain("count"), "readings.horizon.lastPeriodEnd": date("year", "month_year"),
-    "readings.recommendation.longInstrument.issueTarget": money("millions"), "readings.recommendation.longInstrument.issueFloorInsideGates": money("millions"),
+    "readings.recommendation.longInstrument.issueTarget": {...money("millions"), nature: "value"}, "readings.recommendation.longInstrument.issueFloorInsideGates": {...money("millions"), nature: "value"},
     "readings.recommendation.longInstrument.termYears": plain("years"), "readings.recommendation.longInstrument.equivalentSpread": rate("annual"),
     "readings.recommendation.longInstrument.equivalentSpreadAtCondition": rate("annual"),
     "readings.recommendation.longInstrument.firstAmortizationYear": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
     "readings.recommendation.longInstrument.lastAmortizationYear": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
-    "result.evaluation.paths[*].shortfallVsPolicyMinimum": money("millions"),
-    "result.evaluation.paths[*].amortizationTests[*].years[*].scheduledAmortization": money("millions"),
-    "result.evaluation.paths[*].amortizationTests[*].years[*].availableAfterInterest": money("millions"),
-    "readings.alternative.issueTarget": money("millions"), "readings.recommendation.horizonFinancingCost": money("millions"),
-    "readings.recommendation.netDebtAtHorizon": money("millions"),
-    "readings.paths[*].minimumCash.amount": money("millions"), "readings.paths[*].worstLeverage": plain("multiple"),
-    "readings.paths[*].horizonFinancingCost": money("millions"), "readings.paths[*].netDebtAtHorizon": money("millions"),
+    "result.evaluation.paths[*].shortfallVsPolicyMinimum": {...money("millions"), nature: "balance"},
+    "result.evaluation.paths[*].amortizationTests[*].years[*].scheduledAmortization": {...money("millions"), nature: "flow"},
+    "result.evaluation.paths[*].amortizationTests[*].years[*].availableAfterInterest": {...money("millions"), nature: "flow"},
+    "readings.alternative.issueTarget": {...money("millions"), nature: "value"}, "readings.recommendation.horizonFinancingCost": {...money("millions"), nature: "flow"},
+    "readings.recommendation.netDebtAtHorizon": {...money("millions"), nature: "balance"},
+    "readings.paths[*].minimumCash.amount": {...money("millions"), nature: "balance"}, "readings.paths[*].worstLeverage": plain("multiple"),
+    "readings.paths[*].horizonFinancingCost": {...money("millions"), nature: "flow"}, "readings.paths[*].netDebtAtHorizon": {...money("millions"), nature: "balance"},
     "readings.paths[*].eligible": plain("flag"), "readings.paths[*].consentRequired": plain("flag")},
 };
 /** The field a reading path names, or null when the method's registry does not list it. */

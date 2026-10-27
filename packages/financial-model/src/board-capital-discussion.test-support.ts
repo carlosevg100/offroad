@@ -136,8 +136,15 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
 }
 /** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
-export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true} = {}) {
+export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true} = {}) {
   const k = auroraCapitalPathsKernel();
+  const path = (id: string) => (k as unknown as {paths: {id: string; instrumentIds: string[]; prepayments: {instrumentId: string; periodEnd: string}[]}[]}).paths.find((x) => x.id === id)!;
+  if (variant.keptDebtWithNewLoan) path("manter").instrumentIds = [...path("manter").instrumentIds, "giro-4t26-17"];
+  if (variant.extensionWithExtraPrepayment) path("alongar-bradesco").prepayments = [{instrumentId: "debenture-2021", periodEnd: "2027-03-31"}];
+  if (variant.deferralWithOperationOnTime) {
+    const goOn = k.projectVariants.find((v) => v.id === "seguir") as unknown as {effects: Record<string, string[]>}, later = k.projectVariants.find((v) => v.id === "adiar-12") as unknown as {effects: Record<string, string[]>};
+    later.effects = {...later.effects, ebitda: goOn.effects.ebitda!, depreciation: goOn.effects.depreciation!, maintenanceCapex: goOn.effects.maintenanceCapex!};
+  }
   if (variant.deferralWithoutLaterSchedule) {
     const goOn = k.projectVariants.find((v) => v.id === "seguir")!, later = k.projectVariants.find((v) => v.id === "adiar-12")!;
     (later as {effects: Record<string, unknown>}).effects = {...(later as {effects: Record<string, unknown>}).effects,
@@ -331,10 +338,12 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|semana=tight-week"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
-        lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}${["debenture-com-linha", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
+        lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
+      {id: "movimentos", role: "alternatives", topicId: null, title: "alternatives.moves.title|caminhos=n-paths", recommendation: null, options: [],
+        lines: auroraPaths.map(([id]) => `alternatives.moves.${auroraPathRows[id]}${["sem-linha-debenture", "debenture-com-linha", "alongar-com-banco", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}`)},
       {id: "recomendacao", role: "recommendation", topicId: null, title: "recommendation.debenture|valor=debenture-amount|prazo=debenture-term", recommendation: null, options: [],
         lines: ["recommendation.debenture_cost|credor=bradesco-creditor|baixo=deb-cost-low|alto=deb-cost-high", "recommendation.amortization|inicio=amort-first|fim=amort-last",
-          "recommendation.alternative|prazo=deadline:vencimentos.rota"]},
+          "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.rota"]},
       {id: "alavancagem", role: "risk", topicId: null, title: "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2027", recommendation: null, options: [],
         lines: ["risk.leverage_path|inicio=lev-dez26|data_inicio=dez26-date|fim=lev-dez27|data_fim=dez27-date", "risk.leverage_adverse|ano=year-2027|adverso=lev-adv27|politica=policy-limit"]},
       {id: "politica", role: "risk", topicId: null, title: "risk.policy_definition|politica=policy-limit", recommendation: null, options: [],
