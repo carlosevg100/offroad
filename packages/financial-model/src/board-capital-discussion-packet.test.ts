@@ -13,8 +13,8 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.result.discussion!.versions).toEqual([]);
     expect(p.readings!.deliberations.map((d) => d.text)).toEqual([
       "não emitir o pedido de compra até as cotações firmes, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out",
-      "financiar a safra pelos programas de antecipação das redes A e B, com a conta garantida para as semanas de dezembro e a linha bancária só como reserva, e aderir aos programas até 16/out",
-      "autorizar a sondagem de uma debênture de até R$ 80 milhões, em 7 anos, com o alongamento bancário como plano alternativo, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
+      "financiar a safra pelos programas de antecipação das redes A e B, com a conta garantida para o aperto de caixa da safra e a linha bancária só como reserva, e aderir aos programas até 16/out",
+      "autorizar a sondagem de uma debênture com teto de R$ 80 milhões, com prazo de 7 anos, com o alongamento bancário como plano alternativo, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
       "definir qual EBITDA mede o limite de 2,5x"]);
     expect(p.result.discussion!.outline.narrative).toEqual(["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"]);
     expect(p.readings!.questionsBeforeMaterial.map((q) => q.code)).toEqual(["template", "agenda_minutes", "board_has_seen"]);

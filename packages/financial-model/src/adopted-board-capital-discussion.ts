@@ -55,6 +55,8 @@ const reference = /^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/;
 export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
   const {sources: packets, discussion: input} = boardCapitalDiscussionAnalysesSchema.parse(raw);
   const prefix = `board_capital.${input.analysisId}.`, sc = input.scenario;
+  // The only domain is reais: a discussion in another currency is not prepared.
+  if (input.currency !== "BRL") throw new Error(`board_capital_currency_not_supported:${input.currency}`);
   const b = createAnalysisBinding(input, []);
   let complete = true;
   const need = <T>(v: T | null): T => {if (v === null) complete = false; return v as T;};

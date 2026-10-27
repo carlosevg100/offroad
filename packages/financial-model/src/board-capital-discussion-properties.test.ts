@@ -20,7 +20,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label)|Invalid option|Too big|Invalid input|states its value/;
+const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label)|Invalid option|Too big|Invalid input|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -53,12 +53,16 @@ const families: [string, (c: CaseData, add: string) => void][] = [
   ["appendix.label", (c, x) => {c.appendix[0]!.label += x;}], ["question.question", (c, x) => {c.questions[0]!.question += x;}], ["question.answer", (c, x) => {c.questions[0]!.answer += x;}]];
 /** Every attack of the four review rounds, in the contribution syntax of this version. */
 const attacks = {
-  decimal: " Dívida {divida-total},{basket-free}.", digits: " Dívida {divida-total}{basket-free}.", sign: " Dívida -{divida-total}.",
+  digits: " Dívida {divida-total}{basket-free}.", sign: " Dívida -{divida-total}.",
   yearAsMoney: " Dívida R$ {year-2027}.", yearAsAmount: " Dívida em {year-2027} milhões.", wrongUnit: " Dívida {divida-total}x.",
   billions: " Dívida {divida-total} bilhões.", monthsForYears: " Prazo de {wal} meses.", reais: " A dívida vence em {year-2027} reais.", spacedPercent: " Alta em {year-2027} % ao ano.",
   brlCode: " A dívida é de {year-2027} BRL.", usdCode: " A dívida é de {year-2027} USD.", percentInWords: " A taxa é de {year-2027} por cento ao ano.",
   capitalized: " A dívida é de {year-2027} Bilhões de Reais.", monthlyReturn: " Retorno de {irr} ao mês.", monthlySpread: " CDI mais {deb-cost-low} ao mês.",
   isoAfter: " Dívida {divida-total} BRL.", percentWordsAfter: " Retorno de {irr} por cento.", capsScale: " Dívida {divida-total} MILHÕES.", calendarAsValue: " A dívida é de {year-2027}.",
+  fullwidthDigits: " O prazo médio é de \uff11,\uff16 ano.", fullwidthAmount: " A dívida é de \uff11\uff13\uff10,\uff11.", arabicIndic: " A dívida é de \u0661\u0663\u0660.",
+  arabicPercent: " A taxa equivale a {em:year-2027}\u066a.", yearAsAmountWithPreposition: " A dívida equivale a {em:year-2027} CAD.", yen: " A dívida equivale a {em:year-2027} ienes.",
+  cents: " Custo de {divida-total} e centavos.", thousands: " Milhares de reais em {divida-total}.", perWeek: " Retorno de {irr} por semana.", perSemester: " Retorno de {irr} por semestre.",
+  durationInParentheses: " Prazo médio de {wal} (sete anos).", valueAfterDatePreposition: " Dívida em {divida-total}.",
 } as const;
 
 /** An independent reader of the final text. It formats every reading again from its source value, kind, scale,
@@ -85,13 +89,20 @@ function oracle(p: Packet) {
   const bad: string[] = d.identity.filter((x) => reformat(x) !== x.display).map((x) => `format:${x.figureId}`);
   const texts = [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]), ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]),
     ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];
-  const known = [...d.identity.map((x) => x.display), ...v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display))].sort((a, b) => b.length - a.length);
+  const counts = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
+  const known = [...d.identity.map((x) => x.display), ...v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display)),
+    `Pedimos ${counts[v.deliberations.length]} decisões; ${counts[v.deliberations.filter((x) => x.deadlines.length).length]} têm`, "[pendente]"].sort((a, b) => b.length - a.length);
   const joined = texts.join(" | ");
+  // Its own whitelist and lexicon, written apart from the method's.
+  const allowed = /^[a-zA-ZÀ-ÿ ,.;:?!()"'“”‘’-]*$/u;
+  const lexicon = /(?<![a-zA-ZÀ-ÿ])(dois|duas|tr[eê]s|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|quinze|vinte|trinta|cem|mil|milh\S*|bilh\S*|centavos?|milhares?|meio|metade|dobro|reais|real|d[oó]lar\S*|euros?|ienes?|brl|usd|cad|eur|janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|anos?|m[eê]s|meses|dias?|semanas?|semestres?|trimestres?|anual|mensal|semestral|trimestral|cento|percentua\S*|pontos?|x)(?![a-zA-ZÀ-ÿ])/iu;
   for (const t of texts) {
     let rest = t;
-    for (const k of known) rest = rest.split(k).join(" § ");
-    rest = rest.replace(/^\d{1,2}\. /, "").replace(/\(\d{1,2}\) /g, "");
-    for (const m of rest.matchAll(/\d|R\$|US\$|€|%|\b(?:brl|usd|reais|bilh\S*|milh\S*|mi|por cento|ao ano|ao m[eê]s|por ano|por m[eê]s)\b/giu)) bad.push(`${m[0]}@${t.slice(0, 60)}`);
+    for (const k of known) rest = rest.split(k).join(" ");
+    rest = rest.replace(/^\d{1,2}\. /, " ").replace(/\(\d{1,2}\) /g, " ").normalize("NFKC");
+    if (!allowed.test(rest)) bad.push(`character@${t.slice(0, 60)}`);
+    const word = lexicon.exec(rest);
+    if (word) bad.push(`${word[0]}@${t.slice(0, 60)}`);
   }
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
   return {bad, missing};
@@ -137,7 +148,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   it("regression r1: withdrawing a recommendation that alone carries material facts is refused", () => {
     const p = packet(3, (c) => {
       const line = c.pages.find((x) => x.id === "linha")!;
-      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a {npv-economy} e com capex maior a {npv-capex}; partida mais lenta, {npv-slow}; adiar doze meses leva o VPL a {npv-defer} e o retorno a {irr-defer}.";
+      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a {npv-economy} e com capex maior a {npv-capex}; partida mais lenta, {npv-slow}; {label-defer}: VPL de {npv-defer} e retorno de {irr-defer}.";
       line.lines.splice(2, 1);
     });
     expect(p.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["npv-economy", "npv-capex", "npv-slow"]});
@@ -147,7 +158,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(() => packet(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";})).toThrow("board_capital_number_without_origin");
     expect(() => packet(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";})).toThrow("board_capital_number_without_origin");
     expect(current(packet(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de {irr}";})).deliberations[0]!.title).toBe("Linha de embalagem com retorno de 16% ao ano");
-    expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "linha")!.lines[1] = "O fluxo acumulado do projeto chega a {peak-need} em {peak-date}.";})).toThrow("board_capital_material_fact_not_shown:payback");
+    expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "linha")!.lines[1] = "O fluxo acumulado do projeto chega a {peak-need} {em:peak-date}.";})).toThrow("board_capital_material_fact_not_shown:payback");
     for (const order of [["peak-date", "label-economy"], ["label-economy", "peak-date"]]) {
       const p = packet(2, (c) => {
         c.deliberations[0]!.subject = "decidir com payback de {payback} e fluxo de {peak-need}; VPLs de {npv-economy}, {npv-capex}, {npv-slow}";
@@ -196,6 +207,9 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       });
       expect(attempt, `${mode} ${id}`).toThrow(refusal);
     }
+  });
+  it("regression r5: a discussion in another currency is refused, never shown as reais", () => {
+    expect(() => prepareBoardCapitalDiscussionPacket(boardPacketViaPremises(2, () => undefined, undefined, (f) => {(f as {currency: string}).currency = "USD";}))).toThrow("board_capital_currency_not_supported:USD");
   });
   it("the independent oracle reads the calibration clean at every turn, through the full path as well", () => {
     for (const turn of [2, 3] as const) expect(oracle(packet(turn, () => undefined))).toEqual({bad: [], missing: []});

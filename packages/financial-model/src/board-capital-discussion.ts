@@ -87,7 +87,9 @@ const isNumeric = (raw: unknown) => (typeof raw === "number" && Number.isFinite(
  * against the number the author states. Valid conversions only: reais to millions (divided by 10^6), a
  * ratio to percent (times 100). The text it returns is the whole marker: number, sign, currency, scale
  * word, percent and periodicity. */
-export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentation: string, stated: string | null) {
+export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentation: string, stated: string | null, currency = "BRL") {
+  // The only domain is reais: a money reading of a result in another currency is never shown.
+  if (spec.kind === "money" && currency !== "BRL") throw new Error(`board_capital_currency_not_supported:${currency}`);
   const out = (value: string, rounded: string, display: string, number: string | null, matches: boolean) => ({value, rounded, display, number, matches});
   if (spec.kind === "flag") return typeof raw === "boolean" && presentation === "-" ? out(String(raw), String(raw), raw ? "sim" : "não", null, stated === null) : null;
   if (spec.kind === "label") {
@@ -117,9 +119,53 @@ export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentat
   return out(new Exact(raw as Decimal.Value).toFixed(), text, display, number, stated !== null && /^-?\d+(?:\.\d+)?$/.test(stated) && new Exact(stated).eq(rounded));
 }
 
-/** No literal digit is allowed in a template: a number comes from a reading, a deadline or a count of deliberations. */
+/** Free text is everything outside the markers the method writes. After NFKC normalization it may hold only
+ * the letters of Portuguese, spaces, a hyphen between two letters and the punctuation , . ; : ? ! ( ) and
+ * quotes. Any digit of any script, any currency or other symbol, a percent sign or an isolated x is refused. */
+const freeTextChar = /[A-Za-záàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ ,.;:?!()"'“”‘’-]/u;
+/** The closed lexicon that never appears in free text: these concepts exist only inside the formatter's markers.
+ * Numbers in words (the articles "um" and "uma" excepted), scales, currencies and ISO codes, months, periodicity
+ * and durations, percentages and points. */
+export const boardForbiddenWords = [
+  "zero", "dois", "duas", "três", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "quatorze", "catorze", "quinze",
+  "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento",
+  "duzentos", "duzentas", "trezentos", "trezentas", "quatrocentos", "quatrocentas", "quinhentos", "quinhentas", "seiscentos", "seiscentas", "setecentos",
+  "setecentas", "oitocentos", "oitocentas", "novecentos", "novecentas", "mil", "milhão", "milhao", "milhões", "milhoes", "bilhão", "bilhao", "bilhões", "bilhoes",
+  "trilhão", "trilhões", "meio", "meia", "metade", "dobro", "triplo", "dúzia", "duzia", "dúzias", "dezena", "dezenas", "centena", "centenas", "milhar", "milhares",
+  "centavo", "centavos", "mi", "bi", "mm", "mn", "k",
+  "real", "reais", "dólar", "dolar", "dólares", "dolares", "euro", "euros", "iene", "ienes", "libra", "libras", "peso", "pesos", "franco", "francos", "yuan",
+  "renminbi", "rublo", "rublos", "rupia", "rupias", "bitcoin", "bitcoins",
+  "brl", "usd", "eur", "gbp", "jpy", "cny", "chf", "cad", "aud", "nzd", "ars", "clp", "mxn", "cop", "pen", "uyu", "pyg", "bob", "inr", "krw", "rub", "zar", "sek",
+  "nok", "dkk", "hkd", "sgd", "try", "btc", "eth",
+  "janeiro", "fevereiro", "março", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+  "ano", "anos", "mês", "mes", "meses", "dia", "dias", "semana", "semanas", "quinzena", "quinzenas", "semestre", "semestres", "trimestre", "trimestres",
+  "bimestre", "bimestres", "anual", "anuais", "mensal", "mensais", "semestral", "semestrais", "trimestral", "trimestrais", "bimestral", "bimestrais",
+  "quinzenal", "quinzenais", "semanal", "semanais", "diário", "diario", "diária", "diaria", "anualizado", "anualizada",
+  "percentual", "percentuais", "porcentagem", "porcento", "cento", "ponto", "pontos", "bps", "bp", "pp", "x",
+] as const;
+const forbidden = new Set<string>(boardForbiddenWords);
+/** The first reason a free text is refused, or null. Phrases (ao ano, por cento, p.p.) fall on their words. */
+export function boardFreeTextIssue(text: string): string | null {
+  const t = text.normalize("NFKC");
+  for (const ch of t) if (!freeTextChar.test(ch)) return `character:${ch}`;
+  if (/(?<![\p{L}])-|-(?![\p{L}])/u.test(t)) return "character:-";
+  for (const w of t.toLowerCase().split(/[^\p{L}]+/u)) if (forbidden.has(w)) return `word:${w}`;
+  if (/(?<![\p{L}])p\.\s*p\.?(?![\p{L}])|(?<![\p{L}])a\.\s*[am]\.?(?![\p{L}])/iu.test(t)) return "word:abbreviation";
+  return null;
+}
+/** Refuses a free text by name: a number, unit, currency, period or date without origin. */
+export function checkBoardFreeText(text: string): string {
+  const issue = boardFreeTextIssue(text);
+  if (issue) throw new Error(`board_capital_number_without_origin:${issue}:${text.slice(0, 80)}`);
+  return text;
+}
+/** The reading ids a template names, with or without a date preposition; counts and deadlines excluded. */
+export function boardPlaceholderIds(t: string): string[] {
+  return [...t.matchAll(/\{(?:(?:em|ate|desde|para|fim):)?([^}:]*)\}/g)].map((m) => m[1]!);
+}
+/** Kept for the template check: the digits a template writes outside its placeholders. */
 export function boardLiteralNumbers(template: string): string[] {
-  return template.replace(/\{[^}]*\}/g, " ").match(/\d+/g) ?? [];
+  return template.replace(/\{[^}]*\}/g, " ").normalize("NFKC").match(/\p{N}+/gu) ?? [];
 }
 
 /** A text as rendered, with the span of every marker it carries: a reading (with its unit words), a source
@@ -129,6 +175,13 @@ export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit} | {pending: true};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null};
+
+/** The prepositions a date marker carries, written by the method. */
+const datePrepositions = {em: "em", ate: "até", desde: "desde", para: "para", fim: "no fim de"} as const;
+/** Free text may not end with a preposition before a date marker (the marker carries its own), nor with a
+ * date preposition before a value marker (a value is never a date). */
+const prepositionBeforeDate = /(?<![\p{L}])(?:em|até|ate|de|desde|para|a|à|ao|no|na|nos|nas|do|da|dos|das|entre|fim|partir)\s*$/iu;
+const datePrepositionBeforeValue = /(?<![\p{L}])(?:em|até|ate|desde|partir\s+de|fim\s+de)\s*$/iu;
 
 /** Joins rendered pieces and literal glue into one text, shifting every span. */
 export function joinBoardRich(parts: (string | BoardRich)[]): BoardRich {
@@ -146,15 +199,15 @@ const resolved = (r: BoardRich): Resolved => ({...r, figureIds: ids(r, ["figure"
 
 /** Checks a text that carries no placeholder: any literal number is refused. */
 export function checkBoardText(text: string): string {
-  if (boardLiteralNumbers(text).length || /\{[^}]*\}/.test(text)) throw new Error(`board_capital_number_without_origin:${text.slice(0, 80)}`);
-  return text;
+  if (/\{[^}]*\}/.test(text)) throw new Error(`board_capital_number_without_origin:placeholder:${text.slice(0, 80)}`);
+  return checkBoardFreeText(text);
 }
 
 /** Renders one template into text and spans. Tokens: `{figure}`, `{count:deliberations}`, `{count:dated}`,
  * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number or an unknown
  * token refuses the material by name. The figure's text comes whole from the formatter. */
 export function renderBoardTemplate(template: string, context: Context): Resolved {
-  if (boardLiteralNumbers(template).length) throw new Error(`board_capital_number_without_origin:${template.slice(0, 80)}`);
+  checkBoardFreeText(template.replace(/\{[^}]*\}/g, " "));
   const parts: (string | BoardRich)[] = [];
   let last = 0;
   const marker = (display: string, kind: BoardSpan["kind"], id: string, unit: BoardFigureUnit | null): BoardRich => ({display, spans: [{start: 0, end: display.length, kind, id, unit}]});
@@ -174,10 +227,15 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
       if (!deadline) throw new Error(`board_capital_unknown_token:${token}`);
       parts.push(marker(dayMonth(deadline.date), "deadline", `${deliberationId}.${deadlineId}`, null)); continue;
     }
-    const figure = context.figures.get(token);
+    // A date or a year is written with its preposition by the method: {em:id}, {ate:id}, {desde:id}, {para:id}, {fim:id}.
+    const dated = /^(em|ate|desde|para|fim):(.+)$/.exec(token), id = dated ? dated[2]! : token;
+    const figure = context.figures.get(id);
     if (!figure) throw new Error(`board_capital_unknown_token:${token}`);
-    if ("pending" in figure) {parts.push(marker(boardPendingMark, "pending", token, null)); continue;}
-    parts.push(marker(figure.display, figure.unit === "label" ? "text_figure" : "figure", token, figure.unit));
+    if ("pending" in figure) {parts.push(marker(boardPendingMark, "pending", id, null)); continue;}
+    const isDate = figure.unit === "date" || figure.unit === "calendar";
+    if (isDate !== (dated !== null)) throw new Error(isDate ? `board_capital_date_without_preposition:${id}` : `board_capital_preposition_on_value:${id}`);
+    const display = dated ? `${datePrepositions[dated[1] as keyof typeof datePrepositions]} ${figure.display}` : figure.display;
+    parts.push(marker(display, figure.unit === "label" ? "text_figure" : "figure", id, figure.unit));
   }
   parts.push(template.slice(last));
   return resolved(joinBoardRich(parts));
@@ -186,31 +244,21 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
  * of a year (dez/26), or a signed number with any run of digits joined by "." or "," (-9,5; 130,3; 1.303). */
 const monthNames = months.join("|");
-const numberToken = new RegExp(`\\d{1,2}/(?:${monthNames})(?![\\p{L}])|(?<![\\p{L}])(?:${monthNames})/\\d{2}(?!\\d)|[-+\\u2212]?\\d+(?:[.,]\\d+)*`, "giu");
+const numberToken = new RegExp(`\\p{N}{1,2}/(?:${monthNames})(?![\\p{L}])|(?<![\\p{L}])(?:${monthNames})/\\p{N}{2}(?!\\p{N})|[-+\\u2212]?\\p{N}+(?:[.,]\\p{N}+)*`, "giu");
 export function boardNumberTokens(text: string) {
   return [...text.matchAll(numberToken)].map((m) => ({text: m[0], start: m.index!, end: m.index! + m[0].length}));
 }
-/** Unit, scale, currency and periodicity words, in any capitalization. Outside the formatter's markers and
- * source labels none may appear; right after a marker none may follow; right before one none may precede. */
-const unitWords = String.raw`R\$|US\$|U\$|€|\$|%|(?<![\p{L}])(?:brl|usd|eur|reais|real|d[oó]lar(?:es)?|euros?|bilh(?:ão|ões|oes)|bi|milh(?:ão|ões|oes)|mi|mil|trilh(?:ão|ões)|por\s+cento|percentual|pontos?(?:-base)?|p\.?\s?p\.?|bps|ao\s+ano|ao\s+m[eê]s|por\s+ano|por\s+m[eê]s|a\.\s?a\.?|a\.\s?m\.?|anuais|anual|mensais|mensal|x)(?![\p{L}])`;
-/** Duration words are prose elsewhere (doze meses) but never right after or before a marker. */
-const durationWords = String.raw`(?<![\p{L}])(?:ano|anos|m[eê]s|meses|dias?|semanas?|trimestres?)(?![\p{L}])`;
-const orphanUnit = new RegExp(unitWords, "giu");
-const unitAfterMarker = new RegExp(`^\\s*(?:${unitWords}|${durationWords})`, "iu");
-const unitBeforeMarker = new RegExp(`(?:(?:${unitWords}|${durationWords}|[-+\\u2212])\\s*|[\\d.,])$`, "iu");
-
-/** Render, then verify, on the final text: every number lies inside exactly one marker the method wrote (a
- * formatted reading, a deadline, an ordinal or a source label), and the marker's text is the formatter's text
- * for that reading in the registry's unit, scale and periodicity. No unit, scale, currency or periodicity word
- * may stand outside a marker, follow one or precede one, in any capitalization; no sign or digit may be glued
- * to one. A calendar reading follows a date preposition. Source labels are read as they are. */
+/** Render, then verify, on the final text. Every number lies inside exactly one marker the method wrote, and
+ * a reading's marker is the formatter's text for it. Everything outside markers is free text and passes the
+ * whitelist and the closed lexicon above; source labels are read as they are. No preposition stands before a
+ * date marker and no date preposition before a value marker. */
 export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) {
   const fail = (why: string, token: string) => {throw new Error(`board_capital_rendered_number_invalid:${field}:${why}:${token}`);};
   for (const x of r.spans) {
     const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
-    if (f && ("pending" in f || r.display.slice(x.start, x.end) !== f.display || f.unit !== x.unit)) fail("marker_text", x.id);
+    const text = r.display.slice(x.start, x.end);
+    if (f && ("pending" in f || f.unit !== x.unit || (text !== f.display && !Object.values(datePrepositions).some((p) => text === `${p} ${f.display}`)))) fail("marker_text", x.id);
   }
-  const covered = (i: number) => r.spans.some((x) => x.start <= i && i < x.end);
   let verified = 0;
   for (const t of boardNumberTokens(r.display)) {
     const holders = r.spans.filter((x) => x.start <= t.start && t.end <= x.end);
@@ -218,16 +266,19 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     if (holders.length !== 1 || touching.length !== 1) fail(touching.length ? "crosses_markers" : "without_marker", t.text);
     verified++;
   }
-  for (const x of r.spans) {
-    if (x.kind === "count" || x.kind === "pending") continue;
-    const before = r.display.slice(0, x.start), after = r.display.slice(x.end);
-    if (x.kind !== "ordinal" && unitBeforeMarker.test(before)) fail("unit_or_sign_before_marker", x.id);
-    if (unitAfterMarker.test(after) || /^[.,]?\d/.test(after)) fail("unit_or_digit_after_marker", x.id);
-    if (x.unit === "calendar" || (x.unit === "date" && /^\d{4}$/.test(r.display.slice(x.start, x.end)))) {
-      if (!/(?<![\p{L}])(?:em|até|desde|entre|para|no|na|do|da|de|a)\s$/iu.test(before) || /(?<![\p{L}])(?:é|são|foi|era|será|soma|somam|vale|custa|custam|total|valor|montante|dívida|custo|taxa)\s+(?:de\s+)?$/iu.test(before)) fail("calendar_context", x.id);
-    }
+  // Free text: the runs between markers.
+  const sorted = [...r.spans].sort((a, b) => a.start - b.start);
+  let at = 0;
+  for (const x of [...sorted, {start: r.display.length, end: r.display.length} as BoardSpan]) {
+    if (x.start > at) {const issue = boardFreeTextIssue(r.display.slice(at, x.start)); if (issue) fail("free_text", issue);}
+    at = Math.max(at, x.end);
   }
-  for (const m of r.display.matchAll(orphanUnit)) if (!covered(m.index!)) fail("unit_without_marker", m[0]);
+  for (const x of r.spans) {
+    if (x.kind !== "figure") continue;
+    const before = r.display.slice(0, x.start), after = r.display.slice(x.end);
+    if (/[\p{L}\p{N}]$/u.test(before) || /^[\p{L}\p{N}]/u.test(after)) fail("glued_to_marker", x.id);
+    if (x.unit === "date" || x.unit === "calendar" ? prepositionBeforeDate.test(before) : datePrepositionBeforeValue.test(before)) fail("preposition_before_marker", x.id);
+  }
   return verified;
 }
 /** Urgency order: the earliest deadline first; undated deliberations last; ties keep the adopted order. */
@@ -282,7 +333,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   const render = (t: string) => renderBoardTemplate(t, context);
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
-  const drops = (t: string) => [...t.matchAll(/\{([^}:]*)\}/g)].some((m) => removed.figures.has(m[1]!));
+  const drops = (t: string) => boardPlaceholderIds(t).some((id) => removed.figures.has(id));
   const neutralTopics = new Set(d.pages.filter((p) => removed.recommendations.has(p.id) && p.topicId !== null).map((p) => p.topicId!));
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
     const ask = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation) : render(x.subject);
@@ -386,7 +437,7 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
     if (o.target === "recommendation") {
       const p = d.pages.find((x) => x.id === o.targetId);
       if (!p || p.recommendation === null) return done("refused", sentences.unknownTarget);
-      const kept = [...new Set([p.title, ...p.lines, p.recommendation, ...p.options].flatMap((t) => [...t.matchAll(/\{([^}:]*)\}/g)].map((m) => m[1]!)))].filter((id) => economic.has(id));
+      const kept = [...new Set([p.title, ...p.lines, p.recommendation, ...p.options].flatMap(boardPlaceholderIds))].filter((id) => economic.has(id));
       const decision = attempt((r) => r.recommendations.add(p.id), sentences.recommendationRemoved);
       return decision.outcome === "applied" ? {...decision, keptFigureIds: kept} : decision;
     }
@@ -426,14 +477,14 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   for (const t of [...d.pages.flatMap((p) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options]),
     ...d.deliberations.flatMap((x) => [x.title, x.subject, ...x.recommendation ? [x.recommendation] : [], ...x.deadlines.map((t) => t.action)]),
     d.summary.opening, d.summary.closing, ...d.appendix.map((a) => a.label), ...d.questions.flatMap((q) => [q.question, q.answer])])
-    if (boardLiteralNumbers(t).length) throw new Error(`board_capital_number_without_origin:${t.slice(0, 80)}`);
+    checkBoardFreeText(t.replace(/\{[^}]*\}/g, " "));
   // Texts without placeholders that the material or the readings show.
   for (const t of [...d.topics.map((x) => x.label), ...d.indicative.map((x) => x.reason), ...d.omissions.map((x) => x.requestedBy),
     ...d.deliberations.flatMap((x) => x.authorityBasis === null ? [] : [x.authorityBasis]),
     ...d.figures.flatMap((f) => f.kind === "pending" ? [f.reason] : [])]) checkBoardText(t);
   if (!shown) return;
   const economic = new Set([...shown].filter(([, f]) => "pending" in f || boardEconomicUnits.includes(f.unit)).map(([id]) => id));
-  const tokens = (t: string) => [...t.matchAll(/\{([^}]*)\}/g)].map((m) => m[1]!);
+  const tokens = (t: string) => [...t.matchAll(/\{([^}]*)\}/g)].map((m) => m[1]!.replace(/^(?:em|ate|desde|para|fim):/, ""));
   const hasEconomic = (t: string[]) => t.flatMap(tokens).some((x) => economic.has(x));
   for (const p of d.pages) {
     if (p.role === "decisions") continue;
@@ -462,7 +513,8 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     if (boardEconomicUnits.includes(spec.kind) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
     const raw = readBoardSourcePath(s.packet, f.path);
     if (spec.kind === "label" && (typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw))) throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
-    const check = formatBoardReading(raw, spec, f.presentation, f.stated);
+    const currency = (s.packet as {currency?: unknown}).currency;
+    const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "");
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
     figures.set(f.id, {display: check.display, unit: spec.kind});

@@ -79,7 +79,8 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
     "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
     "result.table.negativePledgeBaskets[*].basket": money("millions"), "result.table.negativePledgeBaskets[*].occupied": money("millions"),
-    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "year")},
+    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "year"),
+    "result.table.profile.twelveMonthHorizon": date("month_year")},
   "measure-covenant-headroom": {
     "result.headroom.limits[*].maximumRatio": plain("multiple"), "result.headroom.measurements[*].ratio": plain("multiple"),
     "result.headroom.measurements[*].reportedEbitda": money("millions"), "result.headroom.measurements[*].date": date("month_year", "year")},
