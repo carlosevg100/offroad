@@ -121,6 +121,19 @@ function goldCases(): Case[] {
     observe("net-cost-withheld-without-taxable-profit", packetInput(undefined, undefined, variant((k) => {k.calendar.taxable = k.calendar.taxable.map(() => false);})),
       {status: "partial", net: null, convention: "not_all_periods_taxable", gap: true}, (p) => ({status: p.status, net: p.readings!.price.equivalentSpreadNet,
         convention: p.readings!.price.netConvention, gap: p.gaps.some((g) => g.operand.endsWith(".calendar.taxable"))})),
+    // Review r2: a limit with no test at all is a gap, never an error and never compliance.
+    observe("limits-with-no-test-are-gaps", packetInput(undefined, undefined, variant((k) => {k.variants = [];
+      k.covenant.measurements = [{date: "2027-03-31", scenario: "base", debt: "110", cash: "14.79220387", reportedEbitda: "55", definitionAdjustment: "-3"}];})),
+      {status: "partial", anyBreachWith: null, untested: ["indenture", "proposal", "board-policy"], missing: 10},
+      (p) => ({status: p.status, anyBreachWith: p.readings!.covenant.anyBreachWith, untested: p.readings!.covenant.untestedLimits, missing: p.readings!.covenant.missingTests.length})),
+    // Review r2: each structure on its own life; past the calendar only with an adopted hypothesis, never past the payoff.
+    observe("life-past-the-fiscal-calendar-needs-an-adopted-hypothesis", packetInput(undefined, undefined, variant((k) => {k.tax.taxableAfterCalendar = null;})),
+      {status: "partial", received: "life_beyond_fiscal_calendar", net: null, asks: ["life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar"]},
+      (p) => ({status: p.status, received: p.readings!.price.netConvention, net: p.readings!.price.equivalentSpreadNet, asks: p.readings!.asks.map((a) => a.netConvention)})),
+    observe("period-after-payoff-never-counts", packetInput(undefined, undefined, variant((k) => {k.proposal.graceMonths = 0; k.proposal.installments = 3;
+      k.calendar.taxable = k.calendar.taxable.map((_, i) => i < 9); k.variants = [{id: "curta", label: "Quitação em setembro de 2028", graceMonths: 0, installments: 23, coverage: "1.3", restrictedAccount: true}];})),
+      {final: "2027-01-01", received: "full_deductibility_simplified", variantFinal: "2028-09-01", variant: "full_deductibility_simplified"},
+      (p) => ({final: p.readings!.fit.finalPaymentDate, received: p.readings!.price.netConvention, variantFinal: p.result.evaluation!.variants[0]!.finalPaymentDate, variant: p.readings!.asks[0]!.netConvention})),
     // Review r1: an indexer nobody confirmed is asked, never assumed.
     (() => {
       const i = packetInput() as ReceivedProposalPacketInput & {analysis: {proposal: {indexer: {decisionId: string | null; missingReason: string | null}}}};
@@ -145,6 +158,7 @@ function adversarialCases(): Case[] {
     ["nominal-spread-offered-as-the-cost", () => ({forge: "costBasis"}), "Unrecognized key"],
     ["equivalent-spread-replaced-by-nominal-under-old-fingerprint", () => ({forge: "tamperReading"}), "received_proposal_fingerprint_mismatch"],
     ["adopted-cost-replaced-by-nominal-under-old-fingerprint", () => ({forge: "tamperResult"}), "received_proposal_fingerprint_mismatch"],
+    ["tax-rate-above-one", () => packetInput((f) => {entry(f, "tax.rate").value = {type: "number", value: "1.5"};}), "received_proposal_tax_rate_out_of_domain"],
     ["covenant-test-in-an-undeclared-scenario", () => packetInput((f) => {entry(f, "covenant.scenarios").value = {type: "list", value: ["base", "base", "base", "base", "base", "stress", "bank", "bank", "bank", "bank"]};}), "received_proposal_covenant_scenario_undeclared"],
     // The exception read as empty while the Bradesco assignment sits in it.
     ["basket-read-as-empty-under-the-bradesco-assignment", () => packetInput((f) => {entry(f, "basket.occupied").value = {type: "number", value: "0"};}), "received_proposal_basket_usage_understated"],
@@ -204,6 +218,6 @@ export function buildReceivedProposalRuns(): Evidence[] {
       harness: {module: "@offroad/financial-model/src/evaluate-received-proposal-runs.test-support.ts", exportName: "buildReceivedProposalRuns"},
       modelCalls: 0 as const, cases, result: cases.every((c) => c.passed) ? "pass" as const : "fail" as const};
     return {...evidence, evidenceFingerprint: deterministicRunEvidenceFingerprint(evidence),
-      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 findings on covenant coverage, indexer origin, net cost convention and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
+      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 and r2 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
   });
 }

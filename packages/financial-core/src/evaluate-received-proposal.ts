@@ -38,7 +38,8 @@ export type ReceivedProposalInput = {
   creditTax: {fixedRate: string; dailyRate: string; maxDays: number};
   /** Annual index by calendar year; the last year applies to every later year. */
   indexCurve: readonly {year: number; annualRate: string}[];
-  tax: {regime: "lucro_real" | "lucro_presumido" | "unknown"; rate: string};
+  /** Regime, rate in [0, 1] and whether periods after the calendar are taxable: an adopted hypothesis, or null when nobody stated it. */
+  tax: {regime: "lucro_real" | "lucro_presumido" | "unknown"; rate: string; taxableAfterCalendar: boolean | null};
   uses: readonly ReceivedProposalUse[];
   seasonalPeak: string | null;
   /** The company without the proposal, by period, from the adopted projection and debt table. */
@@ -149,7 +150,23 @@ export function buildReceivedProposalSchedule(terms: ReceivedProposalTerms, stru
     serviceByYear, collateralAtDraw: amount.mul(num(structure.coverage))};
 }
 
+/** Whether the net cost by the full-deduction convention can be stated for one structure: lucro real, every company
+ * period that overlaps its life (draw to final payment) taxable, and, when the life runs past the calendar, the
+ * adopted hypothesis that later periods are taxable. A period after the final payment never counts. */
+export function receivedProposalNetConvention(tax: ReceivedProposalInput["tax"], periods: readonly {startDate: string; endDate: string; taxable: boolean}[],
+  drawDate: string, finalPaymentDate: string) {
+  if (tax.regime === "unknown") return "regime_unknown" as const;
+  if (tax.regime === "lucro_presumido") return "no_deduction_presumido" as const;
+  const life = periods.filter(q => q.endDate >= drawDate && q.startDate <= finalPaymentDate);
+  if (!life.every(q => q.taxable)) return "not_all_periods_taxable" as const;
+  if (finalPaymentDate > periods.at(-1)!.endDate) return tax.taxableAfterCalendar === true ? "full_deductibility_simplified" as const
+    : tax.taxableAfterCalendar === false ? "not_all_periods_taxable" as const : "life_beyond_fiscal_calendar" as const;
+  return "full_deductibility_simplified" as const;
+}
+
 function validate(input: ReceivedProposalInput) {
+  // A tax rate outside [0, 1] is refused before any benefit, cash or covenant is computed.
+  const rate = num(input.tax.rate, true); if (rate.lt(0) || rate.gt(1)) throw new Error("received_proposal_tax_rate_out_of_domain");
   if (!/^[A-Z]{3}$/.test(input.currency)) throw new Error("received_proposal_invalid_currency");
   [input.readingDate, input.needDate, input.proposal.termSheetDate, input.calendar.openingDate].forEach(isoDate);
   const c = input.calendar, n = c.periodEnds.length;
@@ -276,6 +293,15 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
     ...(input.covenant.policy ? [{id: "board-policy", label: "Política do conselho", kind: "board_policy" as const, status: "in_force" as const,
       maximumRatio: input.covenant.policy.maximumRatio, source: input.covenant.policy.source, testDates: [...input.covenant.policy.testDates]}] : []),
   ];
+  // Coverage first: each in-force limit's test dates inside the horizon (the lender's from the draw on), in every
+  // required scenario. A missing test is never read as compliance, and a limit with no test at all is carried to
+  // the headroom kernel as untested (never as a test), so the gaps form instead of an error.
+  const horizonEnd = c.periodEnds.at(-1)!;
+  const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && (l.id !== "proposal" || d >= p.drawDate) && d > c.openingDate)))].sort();
+  const required = requiredDates.flatMap(date => input.covenant.requiredScenarios.map(scenario => ({date, scenario})));
+  const missingTests = required.filter(r => !input.covenant.measurements.some(m => m.date === r.date && m.scenario === r.scenario));
+  const untestedLimits = limits.filter(l => !input.covenant.measurements.some(m => l.testDates.includes(m.date))).map(l => l.id);
+  for (const l of limits) if (untestedLimits.includes(l.id)) l.status = "superseded";
   const measurements: CovenantMeasurement[] = input.covenant.measurements.flatMap((m, k) => {
     const q = quarters[c.periodEnds.indexOf(m.date)]!, limitIds = limits.filter(l => l.testDates.includes(m.date)).map(l => l.id);
     const base = {date: m.date, scenario: m.scenario, reportedEbitda: m.reportedEbitda, unrealizedEbitda: null, limitIds,
@@ -289,15 +315,9 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   const covenantRows = input.covenant.measurements.map((m, k) => {
     const w = headroom.measurements.find(x => x.id === `with-${k}`)!, wo = headroom.measurements.find(x => x.id === `without-${k}`)!;
     return {date: m.date, scenario: m.scenario, ratioWithout: wo.ratio, ratioWith: w.ratio,
-      limits: limits.map(l => ({limitId: l.id, kind: l.kind, maximumRatio: out(num(l.maximumRatio)), testedOnDate: l.testDates.includes(m.date),
+      limits: limits.map(l => ({limitId: l.id, kind: l.kind, maximumRatio: out(num(l.maximumRatio)), testedOnDate: l.testDates.includes(m.date) && !untestedLimits.includes(l.id),
         headroomWith: w.ratio === null ? null : out(num(l.maximumRatio).minus(w.ratio)), breachedWith: w.ratio === null ? true : new Exact(w.ratio).gt(l.maximumRatio)}))};
   });
-  // Coverage: each in-force limit's test dates inside the horizon (the lender's from the draw on), in every
-  // required scenario. A missing test is never read as compliance.
-  const horizonEnd = c.periodEnds.at(-1)!;
-  const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && (l.id !== "proposal" || d >= p.drawDate) && d > c.openingDate)))].sort();
-  const required = requiredDates.flatMap(date => input.covenant.requiredScenarios.map(scenario => ({date, scenario})));
-  const missingTests = required.filter(r => !input.covenant.measurements.some(m => m.date === r.date && m.scenario === r.scenario));
   const testsPerYear = (dates: readonly string[]) => {const y = new Map<string, number>(); dates.forEach(d => y.set(d.slice(0, 4), (y.get(d.slice(0, 4)) ?? 0) + 1)); return Math.max(0, ...y.values());};
 
   // Price: nominal spread against the adopted range when it is comparable; cost over the life apart.
@@ -311,10 +331,12 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   // Net cost by the simplified convention: the spread reduced by the tax rate, assuming the interest, fee and
   // credit tax are fully deducted when paid. It holds only under lucro real with every period of the life
   // inside the horizon taxable; otherwise it is not stated and the condition is named.
-  const lifeQuarters = quarters.map((q, i) => ({q, i})).filter(({q, i}) => i >= drawIndex && q.periodEnd >= p.drawDate);
-  const netConvention = input.tax.regime === "unknown" ? "regime_unknown" as const : input.tax.regime === "lucro_presumido" ? "no_deduction_presumido" as const
-    : lifeQuarters.every(({i}) => c.taxable[i]) ? "full_deductibility_simplified" as const : "not_all_periods_taxable" as const;
-  const net = (gross: Decimal) => netConvention === "full_deductibility_simplified" ? out(gross.mul(new Exact(1).minus(taxRate))) : netConvention === "no_deduction_presumido" ? out(gross) : null;
+  // Each structure on its own life, from its draw to its final payment, and never past it.
+  const netOf = (gross: Decimal, finalPaymentDate: string) => {
+    const netConvention = receivedProposalNetConvention(input.tax, periods.map((q, i) => ({...q, taxable: c.taxable[i]!})), p.drawDate, finalPaymentDate);
+    return {netConvention, net: netConvention === "full_deductibility_simplified" ? out(gross.mul(new Exact(1).minus(taxRate))) : netConvention === "no_deduction_presumido" ? out(gross) : null};
+  };
+  const receivedNet = netOf(received.equivalentSpread, received.finalPaymentDate);
   const history = input.history ? calculateRelativeDebtCostBridge({ownSpreadBps: out(spread.mul(10000)), peerSpreadBps: out(num(input.history.spread, true).mul(10000)),
     pricingBasis: "same_indexer_quoted_spread", ownIndexer: "CDI", peerIndexer: "CDI", curveVersion: null, coverage: "complete_scoped_bridge",
     adjustments: input.history.adjustments.map(a => ({id: a.id, family: a.family, bps: a.bps, evidenceAnchor: a.anchor, methodologyVersion: receivedProposalVersion, independentEffectGroup: a.id}))}) : null;
@@ -330,7 +352,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   const variants = input.variants.map(v => {
     const s = buildReceivedProposalSchedule(p, v, input), col = collateralView(s.collateralAtDraw);
     return {id: v.id, label: v.label, graceMonths: v.graceMonths, installments: v.installments, coverage: out(num(v.coverage)), restrictedAccount: v.restrictedAccount,
-      equivalentSpread: out(s.equivalentSpread), equivalentSpreadNet: net(s.equivalentSpread), weightedAverageLifeYears: out(s.weightedAverageLifeYears),
+      equivalentSpread: out(s.equivalentSpread), equivalentSpreadNet: netOf(s.equivalentSpread, s.finalPaymentDate).net, netConvention: netOf(s.equivalentSpread, s.finalPaymentDate).netConvention, weightedAverageLifeYears: out(s.weightedAverageLifeYears),
       finalPaymentDate: s.finalPaymentDate, upfrontCosts: out(s.upfront), peakYearService: peakYearOf(s.serviceByYear), collateral: col,
       deltas: {equivalentSpreadBps: out(s.equivalentSpread.minus(received.equivalentSpread).mul(10000)),
         peakYearService: out(new Exact(peakYearOf(s.serviceByYear)).minus(peakYearOf(received.serviceByYear))),
@@ -348,7 +370,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       reciprocity: p.reciprocity, covenantDefinition: p.covenant?.definition ?? null, firstLenderTestDate: firstCovenantDate},
     cost: {fee: out(received.fee), creditTax: out(received.iof), creditTaxRate: out(received.iof.div(amount)), upfrontCosts: out(received.upfront),
       upfrontShare: out(received.upfront.div(amount)), weightedAverageLifeYears: out(life), equivalentSpread: out(received.equivalentSpread),
-      equivalentSpreadNet: net(received.equivalentSpread), netConvention, taxRegime: input.tax.regime, nominalToEquivalentBps: out(received.equivalentSpread.minus(spread).mul(10000)),
+      equivalentSpreadNet: receivedNet.net, netConvention: receivedNet.netConvention, taxRegime: input.tax.regime, nominalToEquivalentBps: out(received.equivalentSpread.minus(spread).mul(10000)),
       serviceByYear: [...received.serviceByYear].map(([year, v]) => ({year, service: out(v)}))},
     calendar: {quarters, years, peakYear: peak.year, peakQuarter: {periodEnd: peakQuarter.periodEnd, totalService: peakQuarter.totalService},
       minimumCash: {policy: minimumCash === null ? null : out(minimumCash), without: {periodEnd: low("closingCashWithout").periodEnd, amount: low("closingCashWithout").closingCashWithout},
@@ -365,7 +387,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       consentRequired: receivedCollateral.consentRequired, excess: receivedCollateral.excessOverBasket,
       maxCoverageWithoutConsent: usesBasket ? out(basketRemaining.div(amount)) : null,
       consentWindow: {from: consentFrom, by: consentBy, needDate: input.needDate, slackDays: daysBetween(consentBy, input.needDate)}},
-    covenant: {rows: covenantRows, worst: headroom.worst, required, missingTests,
+    covenant: {rows: covenantRows, worst: headroom.worst, required, missingTests, untestedLimits,
       // A breach found is a breach; without one, no conclusion while a required test is missing.
       anyBreachWith: headroom.anyBreach ? true : missingTests.length ? null : false,
       testsPerYear: {indenture: testsPerYear(input.covenant.indenture.testDates), lender: p.covenant ? testsPerYear(p.covenant.testDates) : 0}},

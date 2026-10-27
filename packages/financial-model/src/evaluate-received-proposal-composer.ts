@@ -87,7 +87,7 @@ export function composeBoundReceivedProposal(raw: unknown): ReceivedProposalPack
   const analysis = {envelope: input.envelope, scope: input.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!, openingDate: d.periodStart!, endDate: d.periodEnd!,
     numericInterpretations: [], analysisId, scenario: sc, readingDate: dt("readingDate"), needDate: dt("needDate"), proposal,
     creditTax: {fixedRate: n("creditTax.fixedRate", "ratio"), dailyRate: n("creditTax.dailyRate", "ratio"), maxDays: n("creditTax.maxDays", "days")},
-    curve: {years: l("curve.years", "identity"), rates: l("curve.rates", "ratio")}, tax: {regime: t("tax.regime", "convention"), rate: n("tax.rate", "ratio")},
+    curve: {years: l("curve.years", "identity"), rates: l("curve.rates", "ratio")}, tax: {regime: t("tax.regime", "convention"), rate: n("tax.rate", "ratio"), taxableAfterCalendar: optional("tax.taxableAfterCalendar", "convention", "boolean")},
     uses: keys("use", "order.uses").map((id) => {const q = `use.${id}.`; return {id, label: t(q + "label", "text"), amount: n(q + "amount", "currency"), kind: t(q + "kind", "convention"),
       tenorMinYears: n(q + "tenorMinYears", "years"), tenorMaxYears: n(q + "tenorMaxYears", "years")};}),
     seasonalPeak: optional("seasonalPeak", "currency", "number"),

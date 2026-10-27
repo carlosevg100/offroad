@@ -54,6 +54,29 @@ describe("received proposal packet", {timeout: 180_000}, () => {
     expect(() => receivedProposalPacketOutputSchema.parse({...p, result: {...p.result, evaluation: {...ev, cost: {...ev.cost, equivalentSpread: ev.proposal.annualSpread}}}})).toThrow("received_proposal_fingerprint_mismatch");
     expect(receivedProposalPacketOutputSchema.parse(JSON.parse(JSON.stringify(p))).fingerprint).toBe(p.fingerprint);
   });
+  it("turns a limit with no test at all into gaps, for each limit and for all of them", () => {
+    // Without the December tests the indenture and the policy are untested; without any, the lender too.
+    for (const [drop, untested] of [[["2026-12-31", "2027-12-31", "2028-12-31"], ["indenture", "board-policy"]],
+      [["2026-12-31", "2027-06-30", "2027-12-31", "2028-06-30", "2028-12-31"], ["indenture", "proposal", "board-policy"]]] as const) {
+      const k = auroraReceivedProposal(); k.variants = [];
+      k.covenant.measurements = k.covenant.measurements.filter((m) => !(drop as readonly string[]).includes(m.date));
+      if (!k.covenant.measurements.length) k.covenant.measurements = [{date: "2027-03-31", scenario: "base", debt: "110", cash: "14.79220387", reportedEbitda: "55", definitionAdjustment: "-3"}];
+      const q = packet(k);
+      expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.covenant.untestedLimits]).toEqual(["partial", null, untested]);
+      expect(untested.every((l) => q.gaps.some((g) => g.operand.endsWith(`.covenant.limit.${l}`)))).toBe(true);
+    }
+  });
+  it("does not state the net cost for a life past the fiscal calendar without an adopted hypothesis", () => {
+    const k = auroraReceivedProposal(); k.tax.taxableAfterCalendar = null;
+    const q = packet(k);
+    expect([q.status, q.readings!.price.netConvention, q.readings!.price.equivalentSpreadNet, q.readings!.asks.map((a) => a.netConvention)])
+      .toEqual(["partial", "life_beyond_fiscal_calendar", null, ["life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar"]]);
+    expect(q.gaps.filter((g) => g.operand.endsWith(".tax.taxableAfterCalendar") || g.operand.endsWith(".net")).length).toBe(4);
+  });
+  it("refuses a tax rate above one in the adopted reader", () => {
+    const k = auroraReceivedProposal(); k.tax.rate = "1.5";
+    expect(() => packet(k)).toThrow("received_proposal_tax_rate_out_of_domain");
+  });
   it("is partial without a comparable market and deterministic, validated and published", () => {
     const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};
     const q = packet(k);

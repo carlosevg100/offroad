@@ -74,6 +74,14 @@ describe("ficha 1 premises proposed from facts with origin, adopted, composed an
     const reason = proposeReceivedProposalHypotheses(auroraReceivedProposalFacts()).find((x) => x.fieldPath.endsWith(".proposal.indexer"))!.reason;
     expect(reason).toBe("Origem: documento. term sheet do Itaú: CDI mais 2,10% ao ano");
   });
+  it("refuses generated tax rates outside [0, 1] in the facts and proposes those inside", () => {
+    let seed = 20261027; const next = () => {seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648;};
+    for (let k = 0; k < 60; k++) {
+      const rate = (Math.floor(next() * 30000) / 10000).toFixed(4), facts = auroraReceivedProposalFacts(); facts.tax.value.rate = rate;
+      if (Number(rate) > 1) expect(() => proposeReceivedProposalHypotheses(facts)).toThrow("Tax rate outside [0, 1]");
+      else expect(proposeReceivedProposalHypotheses(facts).find((h) => h.fieldPath.endsWith(".tax.rate"))!.value).toEqual({type: "number", value: rate});
+    }
+  });
   it("refuses inconsistent facts before proposing premises", () => {
     const holder = auroraReceivedProposalFacts(); holder.portfolio[1]!.value.holder = null;
     expect(() => proposeReceivedProposalHypotheses(holder)).toThrow("names the holder of its assignment");

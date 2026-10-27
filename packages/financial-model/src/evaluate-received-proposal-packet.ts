@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {adoptedReceivedProposalInputSchema, calculateAdoptedReceivedProposal} from "./adopted-evaluate-received-proposal";
-import {adoptedReceivedProposalOutputSchema, receivedProposalBucketReasons, receivedProposalFingerprint, verifiedReceivedProposalFingerprint} from "./evaluate-received-proposal-results";
+import {adoptedReceivedProposalOutputSchema, receivedProposalBucketReasons, receivedProposalNetConventions, receivedProposalFingerprint, verifiedReceivedProposalFingerprint} from "./evaluate-received-proposal-results";
 
 export const receivedProposalPacketVersion = "2026.10.27-v1";
 const Exact = Decimal.clone({precision: 60});
@@ -48,7 +48,8 @@ export const receivedProposalPacketOutputSchema = z.strictObject({
     covenant: z.strictObject({rows: z.array(z.strictObject({date, scenario: key, ratioWith: decimal.nullable(),
       headroom: z.array(z.strictObject({limitId: z.enum(["indenture", "proposal", "board-policy"]), testedOnDate: z.boolean(), headroomWith: decimal.nullable(), breachedWith: z.boolean()})).max(3)})).max(12),
       testsPerYear: z.strictObject({indenture: z.number().int(), lender: z.number().int()}),
-      anyBreachWith: z.boolean().nullable(), missingTests: z.array(z.strictObject({date, scenario: key})).max(64)}),
+      anyBreachWith: z.boolean().nullable(), missingTests: z.array(z.strictObject({date, scenario: key})).max(64),
+      untestedLimits: z.array(z.enum(["indenture", "proposal", "board-policy"])).max(3)}),
     collateral: z.strictObject({required: decimal, nominallyFree: decimal, assignable: decimal, shortfallToAssignable: decimal.nullable(), assignableLeftAfter: decimal.nullable(),
       seasonalPeak: decimal.nullable(), excluded: z.array(z.strictObject({id: key, amount: decimal, holder: text.nullable(), reasons: z.array(z.enum(receivedProposalBucketReasons)).min(1).max(3)})).max(12),
       coverage: decimal, restrictedAccount: z.boolean()}),
@@ -57,11 +58,11 @@ export const receivedProposalPacketOutputSchema = z.strictObject({
     /** Price is two readings: the nominal spread against the market and the cost over the life; never one for the other. */
     price: z.strictObject({nominalSpread: decimal, equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(),
       /** The net figure is the spread reduced by the tax rate, assuming full deduction when paid; stated only under lucro real with every period taxable. */
-      netConvention: z.enum(["full_deductibility_simplified", "not_all_periods_taxable", "no_deduction_presumido", "regime_unknown"]), upfrontShare: decimal, creditTaxRate: decimal,
+      netConvention: z.enum(receivedProposalNetConventions), upfrontShare: decimal, creditTaxRate: decimal,
       weightedAverageLifeYears: decimal, marketPosition: z.enum(["below_range", "at_or_below_median", "above_median_within_range", "above_range"]).nullable(),
       history: z.strictObject({observedBps: decimal, expectedBps: decimal, residualBps: decimal.nullable()}).nullable()}),
     /** What to ask the lender, each with what it buys. */
-    asks: z.array(z.strictObject({id: key, label: text, peakYearServiceDelta: decimal, equivalentSpreadDeltaBps: decimal, collateralDelta: decimal, consentStillRequired: z.boolean(),
+    asks: z.array(z.strictObject({id: key, label: text, peakYearServiceDelta: decimal, equivalentSpreadDeltaBps: decimal, collateralDelta: decimal, consentStillRequired: z.boolean(), netConvention: z.enum(receivedProposalNetConventions),
       restrictedAccount: z.boolean()})).max(4),
     alternatives: z.array(z.strictObject({id: key, usesCovered: z.array(key).min(1).max(8), allInSpreadDifferenceBps: decimal.nullable(), consentRequired: z.boolean()})).max(4),
     /** Fact, reading and recommendation kept apart, with what would change the conclusion. There is no verdict field. */
@@ -115,7 +116,7 @@ export function prepareReceivedProposalPacket(raw: unknown): ReceivedProposalPac
       ["nominal_spread_above_median_within_range", market === "above_median_within_range"], ["nominal_spread_above_range", market === "above_range"],
       ["improvement_partly_paid_in_collateral", residual !== null && new Exact(residual).gt(0) && guarantee], ["real_improvement_against_last_operation", residual !== null && !new Exact(residual).gt(0)],
       ["covenant_headroom_tight", tight], ["diligence_may_reopen_structure", diligence], ["covenant_tests_missing", e.covenant.missingTests.length > 0],
-      ["net_cost_conditioned_on_taxable_profit", e.cost.netConvention === "not_all_periods_taxable"]] as const).filter(([, on]) => on).map(([c]) => c);
+      ["net_cost_conditioned_on_taxable_profit", e.cost.netConvention === "not_all_periods_taxable" || e.cost.netConvention === "life_beyond_fiscal_calendar"]] as const).filter(([, on]) => on).map(([c]) => c);
     const recommendations = ([["address_indenture_consent_before_signing", consent], ["ask_longer_grace_and_tenor", peakRelief],
       ["ask_lower_coverage_and_no_restricted_account", lighterCollateral], ["separate_uses_by_term", e.fit.uses.every((u) => usesCoveredWithoutConsent.has(u.id))],
       ["keep_price_discussion_secondary", market === "at_or_below_median" || market === "above_median_within_range"]] as const).filter(([, on]) => on).map(([c]) => c);
@@ -132,7 +133,7 @@ export function prepareReceivedProposalPacket(raw: unknown): ReceivedProposalPac
         uses: e.fit.uses.map((u) => ({id: u.id, amount: u.amount, reading: u.reading}))},
       covenant: {rows: e.covenant.rows.map((r) => ({date: r.date, scenario: r.scenario, ratioWith: r.ratioWith,
         headroom: r.limits.map((l) => ({limitId: l.limitId, testedOnDate: l.testedOnDate, headroomWith: l.headroomWith, breachedWith: l.breachedWith}))})), testsPerYear: e.covenant.testsPerYear,
-        anyBreachWith: e.covenant.anyBreachWith, missingTests: e.covenant.missingTests},
+        anyBreachWith: e.covenant.anyBreachWith, missingTests: e.covenant.missingTests, untestedLimits: e.covenant.untestedLimits},
       collateral: {required: e.collateral.required, nominallyFree: e.collateral.portfolio.nominallyFree, assignable: e.collateral.portfolio.assignable,
         shortfallToAssignable: e.collateral.shortfallToAssignable, assignableLeftAfter: e.collateral.assignableLeftAfter, seasonalPeak: e.collateral.seasonalPeak,
         excluded: e.collateral.portfolio.buckets.filter((b) => !b.assignable).map((b) => ({id: b.id, amount: b.amount, holder: b.holder, reasons: b.reasons})),
@@ -143,7 +144,7 @@ export function prepareReceivedProposalPacket(raw: unknown): ReceivedProposalPac
         creditTaxRate: e.cost.creditTaxRate, weightedAverageLifeYears: e.cost.weightedAverageLifeYears, marketPosition: market,
         history: e.price.history ? {observedBps: e.price.history.observedBps, expectedBps: e.price.history.expectedBps, residualBps: e.price.history.residualBps} : null},
       asks: e.variants.map((v) => ({id: v.id, label: v.label, peakYearServiceDelta: v.deltas.peakYearService, equivalentSpreadDeltaBps: v.deltas.equivalentSpreadBps,
-        collateralDelta: v.deltas.collateral, consentStillRequired: v.collateral.consentRequired, restrictedAccount: v.restrictedAccount})),
+        collateralDelta: v.deltas.collateral, consentStillRequired: v.collateral.consentRequired, netConvention: v.netConvention, restrictedAccount: v.restrictedAccount})),
       alternatives: e.alternatives.map((a) => ({id: a.id, usesCovered: a.usesCovered, allInSpreadDifferenceBps: a.allInSpreadDifferenceBps, consentRequired: a.consentRequired})),
       assessment: {facts: [...facts], readings: [...readingCodes], recommendations: [...recommendations], wouldChange: [...wouldChange]}, questions: [...questions],
       process: {acceptsProposal: false as const, contactsLender: false as const, counterproposalSent: false as const},
@@ -155,6 +156,10 @@ export function prepareReceivedProposalPacket(raw: unknown): ReceivedProposalPac
     ...(e && !e.price.history ? [{operand: prefix + "history", reason: "Sem operação anterior comparável; a ponte contra o histórico da companhia não roda"}] : []),
     ...(e && e.cost.netConvention === "regime_unknown" ? [{operand: prefix + "tax.regime", reason: "Regime tributário não informado; custo líquido não calculado"}] : []),
     ...(e && e.cost.netConvention === "not_all_periods_taxable" ? [{operand: prefix + "calendar.taxable", reason: "Há períodos sem lucro tributável na vida da proposta; o custo líquido pela convenção de dedução plena não é afirmado"}] : []),
+    ...(e && e.cost.netConvention === "life_beyond_fiscal_calendar" ? [{operand: prefix + "tax.taxableAfterCalendar", reason: `A proposta vai até ${e.proposal.finalPaymentDate}, além do calendário fiscal; sem hipótese adotada para esses períodos, o custo líquido não é afirmado`}] : []),
+    ...(e?.variants ?? []).filter((v) => v.netConvention === "life_beyond_fiscal_calendar" || v.netConvention === "not_all_periods_taxable").map((v) => ({operand: `${prefix}variant.${v.id}.net`,
+      reason: v.netConvention === "life_beyond_fiscal_calendar" ? `A variante vai até ${v.finalPaymentDate}, além do calendário fiscal; custo líquido não afirmado` : "Há período sem lucro tributável na vida da variante; custo líquido não afirmado"})),
+    ...(e?.covenant.untestedLimits ?? []).map((l) => ({operand: `${prefix}covenant.limit.${l}`, reason: `Nenhuma apuração adotada nas datas de teste do limite ${l}; o limite não é testado`})),
     ...(e?.covenant.missingTests ?? []).map((m) => ({operand: `${prefix}covenant.${m.scenario}.${m.date}`, reason: `Apuração exigida de ${m.date} no cenário ${m.scenario} não adotada; nenhuma conclusão de cumprimento sem ela`}))];
   const openQuestions = result.gaps.some((g) => g.operand.endsWith(".proposal.indexer")) ? ["indexer_confirmation" as const] : [];
   const status = !e ? "framed" as const : gaps.length ? "partial" as const : "prepared_for_human_review" as const;

@@ -8,6 +8,7 @@ const text = z.string().min(1).max(2000), key = z.string().min(1).max(160), date
 const decimal = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/);
 const limitId = z.enum(["indenture", "proposal", "board-policy"]);
 const collateral = {required: decimal, shortfallToAssignable: decimal.nullable(), assignableLeftAfter: decimal.nullable(), consentRequired: z.boolean(), excessOverBasket: decimal.nullable()};
+export const receivedProposalNetConventions = ["full_deductibility_simplified", "not_all_periods_taxable", "life_beyond_fiscal_calendar", "no_deduction_presumido", "regime_unknown"] as const;
 export const receivedProposalBucketReasons = ["assigned_to_other_creditor", "assignment_prohibited_without_debtor_consent", "past_due"] as const;
 
 /** The dated schedule the cost and the calendar come from, as built from the adopted terms. */
@@ -23,7 +24,7 @@ export const receivedProposalOutputSchema = z.strictObject({
     reciprocity: z.enum(["none_stated", "stated"]), covenantDefinition: z.enum(["same_as_indenture", "not_stated"]).nullable(), firstLenderTestDate: date.nullable()}),
   cost: z.strictObject({fee: decimal, creditTax: decimal, creditTaxRate: decimal, upfrontCosts: decimal, upfrontShare: decimal, weightedAverageLifeYears: decimal,
     equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(),
-    netConvention: z.enum(["full_deductibility_simplified", "not_all_periods_taxable", "no_deduction_presumido", "regime_unknown"]), taxRegime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), nominalToEquivalentBps: decimal,
+    netConvention: z.enum(receivedProposalNetConventions), taxRegime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), nominalToEquivalentBps: decimal,
     serviceByYear: z.array(z.strictObject({year: z.number().int(), service: decimal})).max(40)}),
   calendar: z.strictObject({
     quarters: z.array(z.strictObject({periodEnd: date, existingService: decimal, proposalService: decimal, totalService: decimal, availableForService: decimal, proposalCashFlow: decimal,
@@ -49,6 +50,7 @@ export const receivedProposalOutputSchema = z.strictObject({
       limits: z.array(z.strictObject({limitId, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, testedOnDate: z.boolean(), headroomWith: decimal.nullable(), breachedWith: z.boolean()})).min(1).max(3)})).min(1).max(12),
     worst: z.strictObject({measurementId: key, limitId, ebitdaHeadroom: decimal}).nullable(),
     required: z.array(z.strictObject({date, scenario: key})).max(64), missingTests: z.array(z.strictObject({date, scenario: key})).max(64),
+    untestedLimits: z.array(limitId).max(3),
     /** True when a breach is found; null while a required test is missing; false only with every test present. */
     anyBreachWith: z.boolean().nullable(),
     testsPerYear: z.strictObject({indenture: z.number().int().min(0), lender: z.number().int().min(0)})}),
@@ -58,7 +60,7 @@ export const receivedProposalOutputSchema = z.strictObject({
     history: z.strictObject({peer: text, peerDate: date, observedBps: decimal, expectedBps: decimal, residualBps: decimal.nullable(),
       steps: z.array(z.strictObject({id: key, family: z.enum(["pricing_date", "tenor", "guarantee", "instrument_distribution", "scale", "other"]), bps: decimal})).max(8)}).nullable()}),
   variants: z.array(z.strictObject({id: key, label: text, graceMonths: z.number().int(), installments: z.number().int(), coverage: decimal, restrictedAccount: z.boolean(),
-    equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(), weightedAverageLifeYears: decimal, finalPaymentDate: date, upfrontCosts: decimal, peakYearService: decimal,
+    equivalentSpread: decimal, equivalentSpreadNet: decimal.nullable(), netConvention: z.enum(receivedProposalNetConventions), weightedAverageLifeYears: decimal, finalPaymentDate: date, upfrontCosts: decimal, peakYearService: decimal,
     collateral: z.strictObject(collateral), deltas: z.strictObject({equivalentSpreadBps: decimal, peakYearService: decimal, collateral: decimal})})).max(4),
   alternatives: z.array(z.strictObject({id: key, label: text, usesCovered: z.array(key).min(1).max(8), allInSpread: decimal.nullable(), allInSpreadDifferenceBps: decimal.nullable(),
     collateral: decimal, consentRequired: z.boolean(), monthsToMoney: z.strictObject({min: z.number().int(), max: z.number().int()})})).max(4),

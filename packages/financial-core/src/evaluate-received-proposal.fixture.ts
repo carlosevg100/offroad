@@ -25,7 +25,7 @@ export function auroraReceivedProposal(): ReceivedProposalInput {
       prepayment: {penaltyRate: "0.01", penaltyMonths: 12}, reciprocity: "none_stated", bankSawIndenture: false},
     creditTax: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365},
     indexCurve: [{year: 2026, annualRate: "0.149"}, {year: 2027, annualRate: "0.14"}, {year: 2028, annualRate: "0.1275"}, {year: 2029, annualRate: "0.12"}],
-    tax: {regime: "lucro_real", rate: "0.34"},
+    tax: {regime: "lucro_real", rate: "0.34", taxableAfterCalendar: true},
     uses: [{id: "safra", label: "Compra de safra de outubro a dezembro", amount: "20", kind: "seasonal_working_capital", tenorMinYears: "0.25", tenorMaxYears: "0.5"},
       {id: "embalagem", label: "Antecipar a linha de embalagem", amount: "10", kind: "long_lived_capex", tenorMinYears: "5", tenorMaxYears: "10"}],
     seasonalPeak: "25",

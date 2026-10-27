@@ -39,7 +39,9 @@ export const receivedProposalFactsSchema = z.strictObject({
   provenance: z.partialRecord(z.enum(clauses), origin).optional(),
   creditTax: fact(z.strictObject({fixedRate: unsignedRatio, dailyRate: unsignedRatio, maxDays: count(3660)})),
   indexCurve: fact(z.array(z.strictObject({year: z.number().int().min(2000).max(2200), annualRate: ratio})).min(1).max(40)),
-  tax: fact(z.strictObject({regime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), rate: unsignedRatio})),
+  tax: fact(z.strictObject({regime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), rate: unsignedRatio.refine((v) => Number(v) <= 1, "Tax rate outside [0, 1]")})),
+  /** Whether periods after the company calendar are taxable: a hypothesis someone adopts, or null and the net cost of a longer life is not stated. */
+  taxableAfterCalendar: fact(z.boolean()).nullable(),
   uses: z.array(fact(z.strictObject({id: key, label: text, amount: money, kind: z.enum(["seasonal_working_capital", "long_lived_capex", "refinancing", "other"]),
     tenorMinYears: unsignedRatio, tenorMaxYears: unsignedRatio}))).min(1).max(8),
   seasonalPeak: fact(money).nullable(),
@@ -146,6 +148,7 @@ export function proposeReceivedProposalHypotheses(raw: unknown): ProposedHypothe
   list("curve.rates", "ratio", curve.map((x) => x.annualRate), why(f.indexCurve));
   txt("tax.regime", "convention", f.tax.value.regime, why(f.tax));
   num("tax.rate", "ratio", f.tax.value.rate, why(f.tax));
+  if (f.taxableAfterCalendar) bool("tax.taxableAfterCalendar", f.taxableAfterCalendar.value, why(f.taxableAfterCalendar));
   for (const u of f.uses) {
     const v = u.value, q = `use.${v.id}.`, w = why(u);
     txt(q + "label", "text", v.label, w); num(q + "amount", "currency", v.amount, w); txt(q + "kind", "convention", v.kind, w);
