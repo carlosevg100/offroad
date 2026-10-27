@@ -31,6 +31,14 @@ describe("document folder inventory packet", {timeout: 120000}, () => {
     expect(p.result.status).toBe("base_only");
     expect(p.readings!.opening.files).toBe(30);
   });
+  it("review r1: refuses selections that leave out a record the basis holds", () => {
+    const i = folderPacketInput();
+    i.analysis.base.files = i.analysis.base.files.filter((f) => f.id !== "f19");
+    expect(() => prepareDocumentFolderInventoryPacket(i)).toThrow("document_inventory_selection_incomplete");
+    const j = folderPacketInput();
+    j.analysis.base.decisions = [];
+    expect(() => prepareDocumentFolderInventoryPacket(j)).toThrow("document_inventory_selection_incomplete");
+  });
   it("publishes strict contracts and is deterministic", () => {
     const c = documentFolderInventoryPacketExecutorContracts();
     expect(c.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareDocumentFolderInventoryPacket", version: "2026.10.27-v1"});

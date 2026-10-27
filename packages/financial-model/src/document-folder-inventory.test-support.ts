@@ -120,8 +120,8 @@ export function auroraFolderReadings(): DocumentReading[] {
 }
 
 export const auroraEntities = [
-  {id: "aurora", label: "Aurora Alimentos S.A.", groupId: "aurora", parentId: null, ownership: null},
-  {id: "aurora-log", label: "Aurora Logística", groupId: "aurora", parentId: "aurora", ownership: "1"},
+  {id: "aurora", label: "Aurora Alimentos S.A.", groupId: "aurora", groupLabel: "Aurora", parentId: null, ownership: null},
+  {id: "aurora-log", label: "Aurora Logística", groupId: "aurora", groupLabel: "Aurora", parentId: "aurora", ownership: "1"},
 ];
 export const auroraDecisions = [
   {id: "plano-financiamento-2027", label: "Plano de financiamento de 2027", kind: "financing_plan" as const},

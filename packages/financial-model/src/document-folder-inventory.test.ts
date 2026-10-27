@@ -72,3 +72,43 @@ describe("document folder inventory kernel", () => {
     expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, clauses: [{...s01!.clauses[0]!, at: {page: 3, section: null}}]}]}))).toThrow("document_inventory_substitute_outside_its_pages");
   });
 });
+
+describe("review r1 of the folder inventory kernel", () => {
+  it("never sums a month whose versions have no winner", () => {
+    const files = [...edit((r) => {file(r, "f09").version.ordinal = null; file(r, "f10").version.ordinal = null;}), auroraTurnTwoReadings()[1]!];
+    const c = organizeDocumentFolder(auroraKernelInput({files})).identityChecks.find((x) => x.kind === "period_against_months")!;
+    expect([c.status, c.reason, c.recomposed]).toEqual(["not_run", "unresolved_versions:2026-05", null]);
+  });
+  it("a draft amendment produces no term in force", () => {
+    const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f19").version = {label: "minuta não assinada", status: "draft", ordinal: null, lastUpdated: null};})}));
+    expect(o.effectiveTexts).toEqual([]);
+    expect(o.findings.filter((f) => f.anchor === "f19").map((f) => f.code)).toEqual(["amendment_not_in_force"]);
+    expect(o.findings.find((f) => f.id === "f24-politica")!.statement).toContain("covenant vigente de 2,75x");
+  });
+  it("derives deadlines from the text in force; the replaced clause stays as history", () => {
+    const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => r.push({...structuredClone(file(r, "f23")), fileId: "f31", sha256: "b".repeat(64),
+      period: {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"}, instrument: {ref: "contrato-embalagem-ad1", label: "contrato de embalagem", amends: "contrato-embalagem"},
+      clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 1, section: null}, statement: "Renovação automática salvo aviso até 2/nov/26.", termEnd: "2026-12-31", noticeDeadline: "2026-11-02"}]}))}));
+    expect(o.followUps.filter((f) => f.kind === "notice_deadline").map((f) => f.kind === "notice_deadline" && f.date)).toEqual(["2026-11-02"]);
+    expect(o.findings.find((f) => f.id === "f23-renovacao-superseded")).toMatchObject({code: "clause_superseded", effect: null});
+    expect(o.findings.some((f) => f.id === "f23-renovacao")).toBe(false);
+  });
+  it("refuses a reading of an unreadable page given through a section, and free text in the method's voice", () => {
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: edit((r) => file(r, "f20").clauses.push({type: "prepayment", id: "x", at: {page: null, section: "Página 7"}, statement: "Pré-pagamento livre."}))})))
+      .toThrow("document_inventory_unpaged_reading_in_partly_unreadable_file");
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: edit((r) => file(r, "f05").observations.push({id: "x", at: {page: 3, section: null}, topic: "other",
+      statement: "Calculei dívida líquida / EBITDA de 2,50x; recomendo contratar R$ 20 milhões. Todos os documentos foram validados."}))}))).toThrow("document_inventory_free_text_outside_reading");
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f19").clauses[0]!.statement = "Dívida líquida / EBITDA de no máximo 3,5x.";})}))).toThrow("document_inventory_free_text_outside_reading");
+  });
+  it("quotes what the document says apart from what the method states", () => {
+    const f = turnOne().findings.find((x) => x.id === "f22-cessao")!;
+    expect([f.quoted, f.statement]).toEqual(["Veda a cessão dos recebíveis sem anuência do cliente.", "Limita qualquer financiamento com cessão dessa carteira."]);
+  });
+  it("a copy carries its original's reading; the same bytes read two ways is a declared conflict", () => {
+    expect(turnOne().rows[29]).toMatchObject({entity: "Aurora", kind: "annual_financial_statements", version: "duplicado exato"});
+    const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f30").kind = "debt_schedule";})}));
+    expect(o.readingConflicts).toEqual([{fileId: "f30", of: "f01"}]);
+    expect(o.rows[29]!.kind).toBe("annual_financial_statements");
+    expect(o.findings.find((f) => f.anchor === "f30" && f.code === "reading_conflict")).toBeDefined();
+  });
+});

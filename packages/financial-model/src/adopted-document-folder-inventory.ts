@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
-import {adoptionBasisEntrySchema} from "@offroad/reconciliation";
+import {adoptionBasisEntrySchema, readContextualBasis} from "@offroad/reconciliation";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
 import {documentFolderInventoryOutputSchema, documentFolderInventoryVersion, documentReadingSchema, inventoryFingerprint, inventoryModes, organizeDocumentFolder,
@@ -11,7 +11,7 @@ const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), text = z.string().tri
 const record = <T extends z.ZodType>(schema: T) => z.string().min(2).max(400000).transform((s, ctx) => {
   try {return JSON.parse(s) as unknown;} catch {ctx.addIssue({code: "custom", message: "document_inventory_record_not_json"}); return z.NEVER;}
 }).pipe(schema);
-export const inventoryEntityRecordSchema = z.strictObject({label: text, groupId: key, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
+export const inventoryEntityRecordSchema = z.strictObject({label: text, groupId: key, groupLabel: text, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
 export const inventoryDecisionRecordSchema = z.strictObject({label: text, kind: z.enum(["financing_plan", "investment_project", "debt_discussion"])});
 export const inventoryVaultRecordSchema = z.strictObject({sha256: hash, label: text, instrumentRef: key.nullable()});
 export const inventoryInformedRecordSchema = z.strictObject({questionId: z.string().min(1).max(80), statement: text, author: text, date: z.iso.date()});
@@ -50,6 +50,26 @@ export const adoptedDocumentFolderInventoryOutputSchema = z.strictObject({
 });
 export type AdoptedDocumentFolderInventory = z.infer<typeof adoptedDocumentFolderInventoryOutputSchema>;
 
+/** The selections must cover every record the basis holds for the analysis, in the adopted arrival order:
+ * leaving a selection out never makes an adopted file (an amendment, a page) disappear from the folder. */
+function assertComplete(input: z.infer<typeof adoptedAnalysisContextSchema> & {analysisId: string}, prefix: string, slots: Record<string, {id: string}[]>) {
+  const basis = readContextualBasis(input.envelope, input.scope), root = `${prefix}${input.analysisId}.`;
+  const pattern = /^(entity|decision|vault|file|informed)\.([a-z0-9][a-z0-9-]{0,39})\.(record|reading)$/;
+  const adopted = new Map<string, Set<string>>();
+  let order: string[] | null = null;
+  for (const e of basis.entries) {
+    if (!e.fieldPath.startsWith(root)) continue;
+    const rest = e.fieldPath.slice(root.length), m = pattern.exec(rest);
+    if (m) adopted.set(m[1]!, (adopted.get(m[1]!) ?? new Set()).add(m[2]!));
+    if (rest === "order.files" && e.value.type === "list") order = e.value.value;
+  }
+  for (const [kind, list] of Object.entries(slots)) {
+    const ids = list.map((x) => x.id), held = adopted.get(kind) ?? new Set<string>();
+    if (new Set(ids).size !== ids.length || [...held].some((id) => !ids.includes(id))) throw new Error("document_inventory_selection_incomplete");
+  }
+  if (order && slots.file && JSON.stringify(order) !== JSON.stringify(slots.file.map((f) => f.id))) throw new Error("document_inventory_selection_out_of_order");
+}
+
 /** Reads every record of one basis by field path, in the analysis' own dimensions. A record that is
  * not adopted is a named gap; the kernel never runs on a folder with a file it could not read. */
 function readBasis<I extends z.infer<typeof adoptedAnalysisContextSchema> & {analysisId: string; scenario: string}>(input: I, prefix: string) {
@@ -69,6 +89,8 @@ function readBasis<I extends z.infer<typeof adoptedAnalysisContextSchema> & {ana
  * recommendation or validation. */
 export function calculateAdoptedDocumentFolderInventory(raw: unknown, mode: (typeof inventoryModes)[number] = "organize"): AdoptedDocumentFolderInventory {
   const {base, update} = documentFolderInventoryAnalysesSchema.parse(raw);
+  assertComplete(base, "document_folder_inventory.", {entity: base.entities, decision: base.decisions, vault: base.vault, file: base.files});
+  if (update) assertComplete(update, "document_folder_inventory_update.", {file: update.files, informed: update.informed});
   const r = readBasis(base, "document_folder_inventory.");
   const entities = base.entities.map((e) => {const v = r.read(e.value, `entity.${e.id}.record`, record(inventoryEntityRecordSchema)); return v && {id: e.id, ...v};});
   const decisions = base.decisions.map((d) => {const v = r.read(d.value, `decision.${d.id}.record`, record(inventoryDecisionRecordSchema)); return v && {id: d.id, ...v};});

@@ -52,8 +52,8 @@ function goldCases(): Case[] {
   };
   return [
     // Expectations come from the ficha's answer key and its conversation, declared before execution.
-    // The copy keeps the entity its content reads; the key writes "Aurora" for it. That single field is the declared divergence.
-    reuse("inventory-item-by-item-matches-the-answer-key", [["DF_2025_final (1).pdf", "entidade"]], answerKeyMismatches),
+    // Review r1: a copy carries the reading of its original and shows the economic group as entity, as the key does.
+    reuse("inventory-item-by-item-matches-the-answer-key", [], answerKeyMismatches),
     reuse("counts-30-1-2-3-2-21", Object.values(c09AnswerKeyCounts), (p) => {const c = inv(p).counts; return [c.files, c.duplicates, c.incompleteReadings, c.superseded, c.inVault, c.withFinding];}),
     reuse("copy-found-by-hash", {copy: "f30", of: "f01", vault: [["f18", "cofre-escritura-2021"], ["f20", "cofre-ccb-bradesco"]]},
       (p) => ({copy: inv(p).rows.find((r) => r.situation.duplicateOf)!.fileId, of: inv(p).rows.find((r) => r.situation.duplicateOf)!.situation.duplicateOf,
@@ -88,7 +88,7 @@ function goldCases(): Case[] {
       preservedBytes: true}, (p) => ({updated: p.readings!.update!.rowsUpdated, added: p.readings!.update!.rowsAdded, preserved: p.readings!.update!.rowsPreserved,
       ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situationLabel,
       preservedBytes: inv(p).rows.filter((r) => !["f20", "s02"].includes(r.fileId)).every((r, n) => JSON.stringify(r) === JSON.stringify(p.result.priorInventory!.rows.filter((x) => x.fileId !== "f20")[n]))}), true),
-    reuse("turn-2-page-7-read-and-semester-closes-month-by-month", {page7: ["A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."],
+    reuse("turn-2-page-7-read-and-semester-closes-month-by-month", {page7: [{statement: "Cláusula lida na cópia legível da página 7.", quoted: "A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."}],
       months: [{id: "f12-months", status: "matches", reported: "27000000", recomposed: "27000000"}]}, (p) => ({page7: p.readings!.update!.newFindings, months: p.readings!.update!.identityChecks}), true),
     reuse("turn-2-informed-fact-with-author-and-date", {informed: [{statement: "A minuta não foi para nenhum banco.", author: "Controller da Aurora", date: "2026-09-02"}], questions: [],
       stillOpen: ["Matrícula atualizada do imóvel da fábrica", "Projeção ou fluxo de caixa de 13 semanas atualizado"]},
@@ -110,6 +110,23 @@ function goldCases(): Case[] {
       description: "Demonstrações financeiras auditadas", entity: {primaryId: "pastificio-serra", label: "Pastifício Serra Ltda."}}))}),
       {partitioned: true, partitions: ["aurora", "pastificio-serra", "nao-identificada"], question: "Pastifício Serra Ltda. não está no cadastro da companhia. Entra no perímetro deste trabalho?"},
       (p) => ({partitioned: inv(p).partitionByEntity, partitions: [...new Set(inv(p).groups.map((g) => g.partition))], question: p.readings!.questions[0]})),
+    // Review r1 cases.
+    observe("unresolved-month-blocks-the-semester-sum", folderPacketInput({turnTwo: true, files: readings((r) => {file(r, "f09").version.ordinal = null; file(r, "f10").version.ordinal = null;})}),
+      {status: "not_run", reason: "unresolved_versions:2026-05", recomposed: null},
+      (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "period_against_months")!; return {status: c.status, reason: c.reason, recomposed: c.recomposed};}),
+    observe("draft-amendment-changes-no-term", folderPacketInput({files: readings((r) => {file(r, "f19").version = {label: "minuta não assinada", status: "draft", ordinal: null, lastUpdated: null};})}),
+      {effectiveTexts: [], finding: "amendment_not_in_force", decisionFindings: 6, policy: "Política de no máximo 2,5x, mais restritiva que o covenant vigente de 2,75x."},
+      (p) => ({effectiveTexts: inv(p).effectiveTexts, finding: inv(p).findings.find((f) => f.anchor === "f19")!.code, decisionFindings: inv(p).decisionFindings!.length,
+        policy: inv(p).findings.find((f) => f.id === "f24-politica")!.statement})),
+    observe("replaced-notice-is-history-not-a-deadline", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f23")), fileId: "f31", fileName: "aditivo embalagem.pdf", sha256: "b".repeat(64),
+      description: "Aditivo ao contrato de fornecimento de embalagem", period: {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"}, instrument: {ref: "contrato-embalagem-ad1", label: "contrato de embalagem", amends: "contrato-embalagem"},
+      clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 1, section: null}, statement: "Renovação automática em dez/26 salvo aviso até 2/nov/26.", termEnd: "2026-12-31", noticeDeadline: "2026-11-02"}]}))}),
+      {deadlines: [["f31", "2026-11-02"]], history: "clause_superseded", active: ["f31-renovacao"]},
+      (p) => ({deadlines: inv(p).followUps.flatMap((f) => f.kind === "notice_deadline" ? [[f.fileId, f.date]] : []), history: inv(p).findings.find((f) => f.id === "f23-renovacao-superseded")!.code,
+        active: inv(p).decisionFindings!.filter((d) => d.effect === "deadline").map((d) => d.findingId)})),
+    observe("same-hash-read-two-ways-is-declared", folderPacketInput({files: readings((r) => {const c = file(r, "f30"); c.kind = "debt_schedule"; c.entity = {primaryId: "outra", label: "Outra empresa"};})}),
+      {conflicts: [{fileId: "f30", of: "f01"}], status: "partial", row: ["annual_financial_statements", "Aurora"]},
+      (p) => ({conflicts: inv(p).readingConflicts, status: p.status, row: [inv(p).rows[29]!.kind, inv(p).rows[29]!.entity]})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -129,7 +146,12 @@ function adversarialCases(): Case[] {
     ["substitute-for-a-legible-page", () => folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, substitutesPages: {instrumentRef: "ccb-bradesco-2024", pages: [8]}, clauses: []} : x)}}), "document_inventory_substitute_for_legible_page"],
     ["update-of-another-folder", () => {const i = folderPacketInput(); const u = auroraFolderUpdateBasis("0".repeat(64)).seal(); return {...i, analysis: {...i.analysis, update: u}};}, "document_inventory_prior_version_mismatch"],
     ["informed-fact-without-a-question", () => folderPacketInput({turnTwo: {informed: [{...auroraTurnTwoInformed[0]!, questionId: "pergunta-inexistente"}]}}), "document_inventory_informed_without_question"],
-    ["reading-under-another-file-slot", () => {const i = folderPacketInput(); (i.analysis.base.files as {id: string}[])[0]!.id = "f99"; return i;}, "analysis_basis_context_mismatch"],
+    ["reading-under-another-file-slot", () => {const i = folderPacketInput(); (i.analysis.base.files as {id: string}[])[0]!.id = "f99"; return i;}, "document_inventory_selection_incomplete"],
+    ["amendment-selection-left-out", () => {const i = folderPacketInput(); i.analysis.base.files = i.analysis.base.files.filter((f) => f.id !== "f19"); return i;}, "document_inventory_selection_incomplete"],
+    ["unreadable-page-read-through-a-section", () => folderPacketInput({files: readings((r) => file(r, "f20").clauses.push({type: "prepayment", id: "inventada", at: {page: null, section: "Página 7"}, statement: "Pré-pagamento livre."}))}), "document_inventory_unpaged_reading_in_partly_unreadable_file"],
+    ["leverage-and-validation-in-free-text", () => folderPacketInput({files: readings((r) => file(r, "f05").observations.push({id: "ataque", at: {page: 3, section: null}, topic: "other",
+      statement: "Calculei dívida líquida / EBITDA de 2,50x; recomendo contratar R$ 20 milhões. Todos os documentos foram validados."}))}), "document_inventory_free_text_outside_reading"],
+    ["ratio-in-a-clause-that-is-not-its-limit", () => folderPacketInput({files: readings((r) => {file(r, "f22").clauses[0]!.statement = "Veda a cessão; alavancagem atual de 2,1x.";})}), "document_inventory_free_text_outside_reading"],
     ["reading-without-page-or-section", () => folderPacketInput({files: readings((r) => {file(r, "f24").clauses[0]!.at = {page: null, section: null};})}), "A reading names the page or the section"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
