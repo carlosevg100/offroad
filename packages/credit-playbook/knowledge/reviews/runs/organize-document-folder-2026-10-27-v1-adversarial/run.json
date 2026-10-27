@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T14:59:56.504Z",
-    "finishedAt": "2026-10-27T14:59:56.504Z",
-    "commit": "8359591a"
+    "startedAt": "2026-10-27T15:12:50.093Z",
+    "finishedAt": "2026-10-27T15:12:50.093Z",
+    "commit": "8ef38e07"
   },
   "modelCalls": 0,
   "cases": [
@@ -319,6 +319,22 @@
       "passed": true
     },
     {
+      "id": "amendment-of-another-entity",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a63a1d6d7073dce973d72d270e9a5d9759c90b6357e809ed7d6e88df1772b5ea",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "clause-amount-at-odds-with-its-sheet",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d57449639fb130a4b534fed1d77ed5d2af4dd6c954460c6d0cde891531a47c50",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "record-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -328,6 +344,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7f86829ab6772aecb19372b8a76b370e4e3d774ad00402f64d12768a73eea3c4",
+  "evidenceFingerprint": "b97900c1029c893ddc9150923aefc29fb799c86dd4c4a68bca9962addd3c7cbd",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

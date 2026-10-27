@@ -294,6 +294,15 @@ function goldCases(): Case[] {
       Object.assign(g, {statement: "Exceção de R$ 25.000 em valor agregado de garantias.", exceptionAmount: "25000", scale: "1"}); const t = file(r, "f16").debtTable!; t.reportedTotal = "130.04";})}),
       {exception: true, total: true}, (p) => ({exception: inv(p).findings.find((f) => f.id === "f19-amendment")!.statement.includes("R$ 25 mil"),
         total: inv(p).findings.find((f) => f.id === "f16-debt-total")!.statement.includes("R$ 130,04 milhões")})),
+    // Review r14 cases: an instrument is (entity, reference); clause amounts on their declared scale.
+    observe("same-reference-of-another-entity-is-another-instrument", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f18")), fileId: "f31", fileName: "escritura controlada.pdf",
+      sha256: createHash("sha256").update("f31-other-entity").digest("hex"), entity: {primaryId: "aurora-log", label: "Aurora Logística"}, period: {label: "out/2022", start: "2022-10-01", end: "2022-10-31"},
+      referenceDate: {kind: "update", date: "2022-10-31", origin: "stated_month"}}))}),
+      {f18: null, text: [["deb-aurora-1", "aurora", ["f18", "f19"], "known"]]}, (p) => ({f18: inv(p).rows.find((r) => r.fileId === "f18")!.situation.supersededBy,
+        text: inv(p).effectiveTexts.map((t) => [t.instrumentRef, t.entityId, t.fileIds, t.knowledge])})),
+    observe("clause-amount-on-its-declared-scale", folderPacketInput({files: readings((r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
+      Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000"});})}),
+      true, (p) => inv(p).findings.find((f) => f.id === "f19-amendment")!.statement.includes("R$ 15 milhões")),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -346,6 +355,9 @@ function adversarialCases(): Case[] {
     ["gathered-reading-above-the-limit", () => folderPacketInput({files: readings((r) => {file(r, "f20").clauses = Array.from({length: 100}, (_, n) => ({type: "prepayment" as const, id: `c${n}`, scope: `s${n}`, at: {page: 1, section: null}, statement: "Pré-pagamento previsto."}));}),
       turnTwo: true}), "document_inventory_gathered_reading_above_limit"],
     ["entity-label-above-the-limit", () => folderPacketInput({entities: auroraEntities.map((e) => ({...e, label: "Aurora ".repeat(30)}))}), "Too big"],
+    ["amendment-of-another-entity", () => folderPacketInput({files: readings((r) => {file(r, "f19").entity = {primaryId: "aurora-log", label: "Aurora Logística"};})}), "document_inventory_unsupported_amendment_entity"],
+    ["clause-amount-at-odds-with-its-sheet", () => folderPacketInput({files: readings((r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
+      Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000000"});})}), "document_inventory_unsupported_unit"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

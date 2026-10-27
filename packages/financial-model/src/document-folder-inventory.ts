@@ -194,7 +194,11 @@ export const documentReadingSchema = z.strictObject({
   // A figure read on a section with a declared unit carries that unit; a different scale on the same section is refused.
   const unitOf = new Map<string, string>();
   for (const u of r.units) {if (unitOf.has(u.section) && unitOf.get(u.section) !== u.scale) fail("document_inventory_unsupported_unit"); unitOf.set(u.section, u.scale);}
-  for (const x of [...r.figures.map((f) => ({at: f.at, scale: f.scale})), ...r.debtTable ? [{at: r.debtTable.at, scale: r.debtTable.scale}] : []])
+  // Every monetary value of every typed item (a figure, the debt table, a clause with an amount) carries its scale, and
+  // that scale is the one declared for the section it was read on. An amount without its scale is refused too.
+  for (const c of r.clauses) if (c.type === "negative_pledge" && (c.exceptionAmount === null) !== (c.scale === null)) fail("document_inventory_unsupported_unit");
+  for (const x of [...r.figures.map((f) => ({at: f.at, scale: f.scale})), ...r.debtTable ? [{at: r.debtTable.at, scale: r.debtTable.scale}] : [],
+    ...r.clauses.flatMap((c) => c.type === "negative_pledge" && c.scale !== null ? [{at: c.at, scale: c.scale}] : [])])
     if (x.at.section !== null && unitOf.has(x.at.section) && unitOf.get(x.at.section) !== x.scale) fail("document_inventory_unsupported_unit");
   // The supported domain: a file with no readable content is the only form without entity, period and reference date;
   // every other reading names its entity, a period with start and end, and the date it speaks from.
@@ -281,7 +285,7 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
     resolution: z.enum(["audited_over_draft", "higher_assurance", "later_version", "later_position", "side_by_side", "unresolved", "effective_text"]),
     prevails: z.array(key).max(L.files), superseded: z.array(key).max(L.files), sideBySide: z.array(key).max(L.files), highlighted: z.boolean()})).max(L.files),
   /** The text in force of each instrument: the clause of each type in force, and the types two amendments set differently with nothing to rank them. */
-  effectiveTexts: z.array(z.strictObject({instrumentRef: key, fileIds: z.array(key).min(2),
+  effectiveTexts: z.array(z.strictObject({instrumentRef: key, entityId: key, fileIds: z.array(key).min(2),
     clauses: z.array(z.strictObject({type: z.string().min(1).max(90), fileId: key, clauseId: z.string().min(1).max(L.id)})).max(L.chainClauses),
     /** The state of the whole chain; the clauses in force are stated only when it is known. */
     knowledge: z.enum(["known", "future", "unread", "missing_source", "conflict"]),
@@ -305,7 +309,7 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
   informed: z.array(z.strictObject({id: key, questionId: derivedId, statement: text, author: text, date, origin: z.literal("informed")})).max(L.informed),
   followUps: z.array(z.discriminatedUnion("kind", [
     z.strictObject({kind: z.literal("notice_deadline"), date, fileId: key, clauseId: key, decisionIds: z.array(key), scheduled: z.literal(false)}),
-    z.strictObject({kind: z.literal("effective_text"), instrumentRef: key, fileIds: z.array(key).min(2)})])).max(L.followUps),
+    z.strictObject({kind: z.literal("effective_text"), instrumentRef: key, entityId: key, fileIds: z.array(key).min(2)})])).max(L.followUps),
   counts: z.strictObject({files: z.number().int(), duplicates: z.number().int(), incompleteReadings: z.number().int(), superseded: z.number().int(),
     inVault: z.number().int(), withFinding: z.number().int(), pageSubstitutes: z.number().int()}),
   /** Hashes read two different ways: every file with that hash is suspended for every use until the reading is redone. */
@@ -334,7 +338,7 @@ export const documentFolderInventoryInputSchema = z.strictObject({
   // A document read together with its page copies holds no more typed items than one reading may: an input whose
   // gathered reading would exceed the limits of a reading (and so of the inventory) is refused here, before execution.
   for (const d of i.files.filter((f) => f.instrument !== null && f.substitutesPages === null)) {
-    const copies = i.files.filter((c) => c.substitutesPages?.instrumentRef === d.instrument!.ref);
+    const copies = i.files.filter((c) => c.substitutesPages?.instrumentRef === d.instrument!.ref && c.entity.primaryId === d.entity.primaryId);
     if (!copies.length) continue;
     const pages = [...new Set(copies.flatMap((c) => c.substitutesPages!.pages))];
     const most = (list: (c: DocumentReading) => {at: {page: number | null}}[]) => pages.reduce((n, p) => n + Math.max(0, ...copies.map((c) => list(c).filter((x) => x.at.page === p).length)), 0);
@@ -345,8 +349,14 @@ export const documentFolderInventoryInputSchema = z.strictObject({
   if (new Set(i.decisions.map((d) => d.id)).size !== i.decisions.length) fail("document_inventory_duplicate_decision");
   if (i.entities.some((e) => e.parentId !== null && !i.entities.some((p) => p.id === e.parentId))) fail("document_inventory_unknown_parent");
   // An amendment links only to an original: an amendment of an amendment is a form this method does not treat.
-  const amendmentRefs = new Set(i.files.flatMap((f) => f.instrument && f.instrument.amends !== null ? [f.instrument.ref] : []));
-  if (i.files.some((f) => f.instrument?.amends && amendmentRefs.has(f.instrument.amends))) fail("document_inventory_unsupported_amendment_chain");
+  // An instrument is (issuing entity, reference): the same reference under another entity is another instrument.
+  const amendmentRefs = new Set(i.files.flatMap((f) => f.instrument && f.instrument.amends !== null ? [`${f.entity.primaryId}/${f.instrument.ref}`] : []));
+  if (i.files.some((f) => f.instrument?.amends && amendmentRefs.has(`${f.entity.primaryId}/${f.instrument.amends}`))) fail("document_inventory_unsupported_amendment_chain");
+  // An amendment amends an original of its own entity: one whose original exists only under another entity is refused.
+  for (const a of i.files.filter((f) => f.instrument?.amends && f.substitutesPages === null)) {
+    const originals = i.files.filter((o) => o.substitutesPages === null && o.instrument?.amends === null && o.instrument.ref === a.instrument!.amends);
+    if (originals.length && !originals.some((o) => o.entity.primaryId === a.entity.primaryId)) fail("document_inventory_unsupported_amendment_entity");
+  }
   for (const e of i.entities) if (forbiddenVoice.test(e.label) || forbiddenVoice.test(e.groupLabel)) fail("document_inventory_free_text_outside_reading");
 });
 export type DocumentFolderInventoryInput = z.input<typeof documentFolderInventoryInputSchema>;
@@ -604,9 +614,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     && s.entity.primaryId === t.entity.primaryId && s.period.start === t.period.start && s.period.end === t.period.end
     && s.version.ordinal === t.version.ordinal && s.version.lastUpdated === t.version.lastUpdated;
   for (const s of substitutes) {
-    const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef
+    const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef && f.entity.primaryId === s.entity.primaryId
       && s.substitutesPages!.pages.every((p) => f.legibility.unreadablePages.some((u) => u.page === p)));
-    const named = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
+    const named = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef && f.entity.primaryId === s.entity.primaryId);
     const anyNamed = documents.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
     if (!named.length && !anyNamed.length) throw new Error("document_inventory_substitute_without_target");
     if (named.length && !targets.length) throw new Error("document_inventory_substitute_for_legible_page");
@@ -831,6 +841,13 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   /** Clauses not in force, by file and clause id: the file that replaced it, "conflict", "unsigned", "future". */
   const notInForce = new Map<string, string>();
   const instruments = live.filter((f) => f.instrument !== null);
+  /** The key of an instrument is its issuing entity and its reference: the same reference under another entity is
+   * another instrument, with no precedence, replacement or amendment between them. */
+  const ownKey = (f: DocumentReading) => `${f.entity.primaryId}/${f.instrument!.ref}`;
+  const rootKey = (f: DocumentReading) => `${f.entity.primaryId}/${f.instrument!.amends ?? f.instrument!.ref}`;
+  const copyKey = (s: DocumentReading) => `${s.entity.primaryId}/${s.substitutesPages!.instrumentRef}`;
+  const sharedRefs = new Set([...new Set(documents.filter((f) => f.instrument !== null).map((f) => f.instrument!.ref))]
+    .filter((ref) => new Set(documents.filter((f) => f.instrument?.ref === ref).map((f) => f.entity.primaryId)).size > 1));
   const clauseQuote = (h: Held) => cite(h.from, h.c.at, h.c.statement);
   // Two clauses of one type and scope in one file that say different things: declared, none in force.
   for (const f of instruments) for (const [k, e] of entriesOf(f)) if ("many" in e) {
@@ -870,17 +887,18 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   const chainStates = new Map<string, {state: Knowledge; sources: string[]; covenant: string | null; debt: boolean}>();
   // Chain membership is selected outside the tracked context; the text in force is computed inside it.
   const chainMembers = new Map<string, DocumentReading[]>();
-  for (const ref of [...new Set(instruments.filter((f) => f.instrument!.amends === null).map((f) => f.instrument!.ref))].sort(byKey)) {
-    const chainDocs = documents.filter((f) => f.instrument !== null && (f.instrument.ref === ref || f.instrument.amends === ref));
-    const chainRefs = new Set(chainDocs.map((f) => f.instrument!.ref));
-    const chainSubs = substitutes.filter((x) => chainRefs.has(x.substitutesPages!.instrumentRef));
-    const originals = instruments.filter((f) => f.instrument!.ref === ref && f.instrument!.amends === null);
-    const amendments = instruments.filter((f) => f.instrument!.amends === ref);
-    chainMembers.set(ref, [...chainDocs, ...chainSubs]);
+  for (const chainKey of [...new Set(instruments.filter((f) => f.instrument!.amends === null).map(ownKey))].sort(byKey)) {
+    const chainDocs = documents.filter((f) => f.instrument !== null && rootKey(f) === chainKey);
+    const chainRefs = new Set(chainDocs.map(ownKey));
+    const chainSubs = substitutes.filter((x) => chainRefs.has(copyKey(x)));
+    const originals = instruments.filter((f) => ownKey(f) === chainKey && f.instrument!.amends === null);
+    const amendments = instruments.filter((f) => f.instrument!.amends !== null && rootKey(f) === chainKey);
+    const ref = originals[0]!.instrument!.ref, entityId = originals[0]!.entity.primaryId!, name = sharedRefs.has(ref) ? `${ref}:${entityId}` : ref;
+    chainMembers.set(chainKey, [...chainDocs, ...chainSubs]);
     effect(`text:${ref}`, () => {
     const chainGuard = guard([...chainDocs, ...chainSubs]);
     const debtChain = chainDocs.some((f) => policy[f.kind].group === "debt");
-    chainStates.set(ref, {state: chainGuard.state, sources: chainGuard.sources, covenant: null, debt: debtChain});
+    chainStates.set(chainKey, {state: chainGuard.state, sources: chainGuard.sources, covenant: null, debt: debtChain});
     for (const o of originals.filter((f) => !binds(f.version.status))) {
       for (const h of clausesOf(o)) notInForce.set(held(h), "unsigned");
       add({id: `${o.fileId}-not-in-force`, code: "instrument_not_in_force", anchor: o.fileId, sources: [src(o.fileId)],
@@ -904,20 +922,20 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
           statement: reason ? "Versão anterior do mesmo instrumento; fica como histórico." : "Mesmo texto de outra versão do instrumento; fica como histórico."});
       }
       const first = losers.map((l) => r.eliminatedBy.get(l)).find((k) => k);
-      families.push({id: `original:${ref}`, basis: "instrument", resolution: first ? reasonFor(original, losers[0]!, first) : "later_version", prevails: [original.fileId], superseded: ids(losers), sideBySide: [], highlighted: false});
+      families.push({id: `original:${name}`, basis: "instrument", resolution: first ? reasonFor(original, losers[0]!, first) : "later_version", prevails: [original.fileId], superseded: ids(losers), sideBySide: [], highlighted: false});
     }
     if (!original) {
       for (const f of [...signed, ...amendments]) for (const h of clausesOf(f)) notInForce.set(held(h), "conflict");
       if (signed.length > 1) {
         const contenders = r.candidates;
-        families.push({id: `original:${ref}`, basis: "instrument", resolution: "unresolved", prevails: [], superseded: [], sideBySide: ids(signed), highlighted: false});
+        families.push({id: `original:${name}`, basis: "instrument", resolution: "unresolved", prevails: [], superseded: [], sideBySide: ids(signed), highlighted: false});
         const binding = contenders.some((o) => clausesOf(o).some((h) => h.c.type === "financial_covenant" || h.c.type === "negative_pledge"));
         if (contenders.some((o) => clausesOf(o).some((h) => h.c.type === "financial_covenant"))) covenantUndefined = true;
         const first = ids(contenders)[0]!;
         add({id: `${first}-instrument-conflict`, code: "instrument_conflict", anchor: first, sources: ids(contenders).map((x) => src(x)),
           statement: `Há ${contenders.length} versões assinadas ou registradas ${of(policy[contenders[0]!.kind].noun)} sem nada no conteúdo que as ordene; o instrumento fica sem texto vigente.`, knowledge: "conflict"});
         void binding;
-        chainStates.set(ref, {state: "conflict", sources: ids(contenders), covenant: null, debt: debtChain});
+        chainStates.set(chainKey, {state: "conflict", sources: ids(contenders), covenant: null, debt: debtChain});
       }
       for (const a of amendments) add({id: `${a.fileId}-not-in-force`, code: "amendment_not_in_force", anchor: a.fileId, sources: [src(a.fileId)],
         statement: "O instrumento original não tem versão vigente definida nesta data: o aditamento fica como histórico."});
@@ -1006,20 +1024,20 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       for (const f of chainDocs) for (const h of clausesOf(f)) if (!notInForce.has(held(h))) notInForce.set(held(h), "blocked");
       for (const v of inForce.values()) notInForce.set(held(v.h), "blocked");
       inForce.clear(); changes.length = 0;
-      chainStates.set(ref, {state: chainState, sources: currentConflicts.length && chainGuard.state === "known" ? [...new Set(currentConflicts.flatMap((c) => c.fileIds))].sort(byKey) : chainGuard.sources, covenant: null, debt: debtChain});
-      block("text-in-force", original.fileId, `O texto vigente ${of(noun)}`, chainStates.get(ref)!);
+      chainStates.set(chainKey, {state: chainState, sources: currentConflicts.length && chainGuard.state === "known" ? [...new Set(currentConflicts.flatMap((c) => c.fileIds))].sort(byKey) : chainGuard.sources, covenant: null, debt: debtChain});
+      block("text-in-force", original.fileId, `O texto vigente ${of(noun)}`, chainStates.get(chainKey)!);
     } else {
       const covenant = inForce.get("financial_covenant");
-      chainStates.set(ref, {state: "known", sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
+      chainStates.set(chainKey, {state: "known", sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
     }
     for (const [key, v] of inForce) if (typeOf(key) === "financial_covenant" && v.h.c.type === "financial_covenant") currentCovenants.push(v.h.c.maxRatio);
     if (!chain.length && !upcoming.length) return;
     const fileIds = [original.fileId, ...ids(chain)];
-    effectiveTexts.push({instrumentRef: ref, fileIds: fileIds.length > 1 ? fileIds : [original.fileId, ...ids(upcoming)],
+    effectiveTexts.push({instrumentRef: ref, entityId, fileIds: fileIds.length > 1 ? fileIds : [original.fileId, ...ids(upcoming)],
       clauses: [...inForce].map(([k, v]) => ({type: k, fileId: v.f.fileId, clauseId: v.h.c.id})).sort((a, b) => byKey(a.type, b.type)),
       knowledge: chainState, conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: dateOf(byId.get(id)!) ?? input.asOf}))});
     if (!chain.length) return;
-    families.push({id: `instrument:${ref}`, basis: "instrument", resolution: "effective_text", prevails: fileIds, superseded: [], sideBySide: [], highlighted: false});
+    families.push({id: `instrument:${name}`, basis: "instrument", resolution: "effective_text", prevails: fileIds, superseded: [], sideBySide: [], highlighted: false});
     const touched = [...new Set(changes.map((x) => x.key))].filter((k) => typeOf(k) === "financial_covenant" || typeOf(k) === "negative_pledge");
     const originalWas = touched.map((k) => {const e = entriesOf(original).get(k);
       return e && "many" in e ? `a cláusula de ${clauseLabel[typeOf(k)]} tem textos conflitantes`
@@ -1049,10 +1067,10 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   }
   // An amendment whose original is not read here (absent, only in the vault, or suspended) has no text in force:
   // its clauses create no finding and no deadline until the original is read.
-  for (const a of instruments.filter((f) => f.instrument!.amends !== null && !instruments.some((o) => o.instrument!.ref === f.instrument!.amends && o.instrument!.amends === null))) {
+  for (const a of instruments.filter((f) => f.instrument!.amends !== null && !instruments.some((o) => o.instrument!.amends === null && ownKey(o) === rootKey(f)))) {
     for (const h of clausesOf(a)) notInForce.set(held(h), "missing_source");
-    const was = chainStates.get(a.instrument!.amends!);
-    chainStates.set(a.instrument!.amends!, {state: "missing_source", sources: [...new Set([...was?.sources ?? [], a.fileId])].sort(byKey), covenant: null, debt: (was?.debt ?? false) || policy[a.kind].group === "debt"});
+    const was = chainStates.get(rootKey(a));
+    chainStates.set(rootKey(a), {state: "missing_source", sources: [...new Set([...was?.sources ?? [], a.fileId])].sort(byKey), covenant: null, debt: (was?.debt ?? false) || policy[a.kind].group === "debt"});
     const inVault = input.vault.some((v) => v.instrumentRef === a.instrument!.amends);
     add({id: `${a.fileId}-no-original`, code: "amendment_without_original", anchor: a.fileId, sources: [src(a.fileId)], knowledge: "missing_source",
       statement: inVault ? "O original deste aditamento está no sistema, mas não foi lido nesta pasta; o texto vigente não é montado sem ele."
@@ -1189,12 +1207,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     }
     const docBinds = binds(f.version.status);
     // Clause effects of an instrument stand on its whole chain; those of any other document on the document itself.
-    const chainRef = f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
+    const chainRef = f.instrument ? rootKey(f) : null;
     const clauseDeps = chainRef ? chainMembers.get(chainRef) ?? [f] : [f];
     // The policy's comparison stands on every debt instrument and is withheld whole if any is not known.
     const debtDeps = [...new Set([...[...chainMembers].filter(([r]) => chainStates.get(r)?.debt).flatMap(([, m]) => m),
       ...documents.filter((x) => x.instrument !== null && policy[x.kind].group === "debt"),
-      ...substitutes.filter((x) => documents.some((d) => d.instrument?.ref === x.substitutesPages!.instrumentRef && policy[d.kind].group === "debt"))])];
+      ...substitutes.filter((x) => documents.some((d) => d.instrument !== null && ownKey(d) === copyKey(x) && policy[d.kind].group === "debt"))])];
     effect(`clauses:${f.fileId}`, () => {
     const chainState = chainRef ? chainStates.get(chainRef)?.state ?? "missing_source" : "known";
     const docGuard0 = guard(clauseDeps, [chainState]);
@@ -1339,8 +1357,10 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     // chain, a page copy, a copy of the same bytes. Each code of the schema names how it can be resolved; a finding
     // with nothing related arrived is never dropped.
     const arrivedNow = files.filter((f) => !input.prior!.inventory.rows.some((r) => r.fileId === f.fileId || r.situation.pagesFrom.some((x) => x.fileId === f.fileId)));
-    const rootOf = (f: DocumentReading) => f.substitutesPages ? documents.find((d) => d.instrument?.ref === f.substitutesPages!.instrumentRef)?.instrument?.amends ?? f.substitutesPages.instrumentRef
-      : f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
+    const rootOf = (f: DocumentReading) => {
+      if (f.substitutesPages) {const d = documents.find((x) => x.instrument !== null && ownKey(x) === copyKey(f)); return d ? rootKey(d) : copyKey(f);}
+      return f.instrument ? rootKey(f) : null;
+    };
     const relates = (a: DocumentReading, d: DocumentReading) => a.sha256 === d.sha256 || (rootOf(a) !== null && rootOf(a) === rootOf(d))
       || (a.substitutesPages === null && a.kind === d.kind && a.entity.primaryId === d.entity.primaryId);
     const related = (p: Finding) => {
@@ -1438,7 +1458,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       return f && c?.type === "auto_renewal" && c.noticeDeadline >= input.asOf
         ? [{kind: "notice_deadline" as const, date: c.noticeDeadline, fileId: f.fileId, clauseId: c.id, decisionIds: decisions.filter((d) => purposes[d.kind].topics.includes("supplier_contract")).map((d) => d.id), scheduled: false as const}] : [];
     }),
-    ...effectiveTexts.filter((t) => t.knowledge === "known").map((t) => ({kind: "effective_text" as const, instrumentRef: t.instrumentRef, fileIds: t.fileIds}))]
+    ...effectiveTexts.filter((t) => t.knowledge === "known").map((t) => ({kind: "effective_text" as const, instrumentRef: t.instrumentRef, entityId: t.entityId, fileIds: t.fileIds}))]
     .sort((a, b) => byKey(JSON.stringify(a), JSON.stringify(b)));
 
   if (input.mode === "organize_for_debt") for (const fam of families) if (fam.basis === "instrument" && fam.prevails.some((id) => policy[byId.get(id)!.kind].group === "debt")) fam.highlighted = true;
@@ -1480,7 +1500,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
 
   const out = {schemaVersion: "document-folder-inventory.v1" as const, version: documentFolderInventoryVersion, asOf: input.asOf, mode: input.mode, partitionByEntity,
     // Everything but the rows is ordered by content, so the arrival of the files never reorders what the folder says.
-    rows, groups, families: families.sort((a, b) => byKey(a.id, b.id)), effectiveTexts: effectiveTexts.sort((a, b) => byKey(a.instrumentRef, b.instrumentRef)),
+    rows, groups, families: families.sort((a, b) => byKey(a.id, b.id)), effectiveTexts: effectiveTexts.sort((a, b) => byKey(`${a.instrumentRef}/${a.entityId}`, `${b.instrumentRef}/${b.entityId}`)),
     findings, readingConflicts, decisionFindings, generalFindings, identityChecks: identityChecks.sort((a, b) => byKey(a.id, b.id)), gaps, questions,
     informed: informedAll.map((i) => ({...i, origin: "informed" as const})), followUps,
     counts: {files: rows.length, duplicates: rows.filter((r) => r.situation.duplicateOf).length, incompleteReadings: rows.filter((r) => r.situation.read !== "complete").length,

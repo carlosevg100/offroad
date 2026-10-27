@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T14:59:56.504Z",
-    "finishedAt": "2026-10-27T14:59:56.504Z",
-    "commit": "8359591a"
+    "startedAt": "2026-10-27T15:12:50.093Z",
+    "finishedAt": "2026-10-27T15:12:50.093Z",
+    "commit": "8ef38e07"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "[]",
       "observed": "[]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "[30,1,2,3,2,21]",
       "observed": "[30,1,2,3,2,21]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
       "observed": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
       "observed": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
       "observed": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -67,7 +67,7 @@
       "expectation": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
       "observed": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -75,7 +75,7 @@
       "expectation": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
       "observed": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -83,7 +83,7 @@
       "expectation": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
       "observed": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -91,7 +91,7 @@
       "expectation": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
       "observed": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -99,7 +99,7 @@
       "expectation": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
       "observed": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -107,7 +107,7 @@
       "expectation": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
       "observed": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "expectation": "true",
       "observed": "true",
       "inputFingerprint": "115068e6d3ee3fb191f4f2c2e1def4350cfb5a2a3ee8499077eafdab654d8ead",
-      "outputFingerprint": "08a43c249f9cc2eee29f39e7efd7fe428d4865b6dc41c8df40dff414eca79bfa",
+      "outputFingerprint": "e96ce365393ded751c520392e6ea98c065bd87faaa306d3f9ef7010d2c579e43",
       "passed": true
     },
     {
@@ -123,7 +123,7 @@
       "expectation": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
       "observed": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
       "inputFingerprint": "07927eed05dd6ec049e0b5597b993b8372bee4b36e0d988ed925b295c998cdf2",
-      "outputFingerprint": "c25519b266d850d939a2d6de433c26e2ee5ba3ab08bb828db9c310ea96a6eabf",
+      "outputFingerprint": "888834edb3b3f38f34754852441d2557de5ee520da8f7fe07799b6cbd7926780",
       "passed": true
     },
     {
@@ -131,7 +131,7 @@
       "expectation": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
       "observed": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
       "inputFingerprint": "e6536f994f21114a58a005b8a153fa1f17ce4e827688bb38848496da71267263",
-      "outputFingerprint": "b036bba1eb49fe22918c803a635de940a8389e646cc57cd0adf679bbef972980",
+      "outputFingerprint": "a57b456f20f33b1337ae9c557f8ae2d2fe31df542f82664e4d365fcbcc487356",
       "passed": true
     },
     {
@@ -139,7 +139,7 @@
       "expectation": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
       "observed": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "9ede99b64224c1c6e10c2275bf9c05cda32a719d7b0dc0b02799b80751534d12",
+      "outputFingerprint": "2f17b2a1af67a7cbb1a2165a362ea59a8f6174650d3b8870b2856a0191aa8962",
       "passed": true
     },
     {
@@ -147,7 +147,7 @@
       "expectation": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
       "observed": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "9ede99b64224c1c6e10c2275bf9c05cda32a719d7b0dc0b02799b80751534d12",
+      "outputFingerprint": "2f17b2a1af67a7cbb1a2165a362ea59a8f6174650d3b8870b2856a0191aa8962",
       "passed": true
     },
     {
@@ -155,7 +155,7 @@
       "expectation": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
       "observed": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "9ede99b64224c1c6e10c2275bf9c05cda32a719d7b0dc0b02799b80751534d12",
+      "outputFingerprint": "2f17b2a1af67a7cbb1a2165a362ea59a8f6174650d3b8870b2856a0191aa8962",
       "passed": true
     },
     {
@@ -163,7 +163,7 @@
       "expectation": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
       "observed": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
       "inputFingerprint": "116c82be1fbe248b7a4246f990d13b55f8fe92591cb8e46e8b2de8d1d7308e99",
-      "outputFingerprint": "ab330955ea0fb6d197e378c96ef0ffb38ec93968cfc4f62dbcc4d09f0df5a628",
+      "outputFingerprint": "664782c0f699183a398bcd1c5ab48e6fae5a18a480cca58418a8ae93938dab6b",
       "passed": true
     },
     {
@@ -171,7 +171,7 @@
       "expectation": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
       "observed": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
       "inputFingerprint": "6b9fae884565033ba9d7049c0f666361686fe4143b9ef180c2977897a7ae1844",
-      "outputFingerprint": "4f1c02189f9c7017b02cae3c86ac95a772ead4e4ff2678642f14c63138789bc2",
+      "outputFingerprint": "1353ed9f0427208e2955b51514dd5bbb006e0f8a03bd033c78ea8e358c9f3234",
       "passed": true
     },
     {
@@ -179,7 +179,7 @@
       "expectation": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
       "observed": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
       "inputFingerprint": "cf939601f8a1193cef95dfe0dd927aa96c6d29ec81f1234864e9b82ff7e19597",
-      "outputFingerprint": "39c92132e78b8b253b0a28df38922fbc34100675971d12bfca2e1fd8bd425db1",
+      "outputFingerprint": "1ce5a6394016ee48d6ccdec9b3504aa6fdbaae402dcc5b97b6e99461d4846142",
       "passed": true
     },
     {
@@ -187,7 +187,7 @@
       "expectation": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"aurora-log\",\"pastificio-serra\",\"nao-identificada\"],\"groups\":[[\"f01\",\"aurora\",\"aurora\"],[\"f04\",\"aurora-log\",\"aurora\"],[\"f31\",\"pastificio-serra\",null]],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
       "observed": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"aurora-log\",\"pastificio-serra\",\"nao-identificada\"],\"groups\":[[\"f01\",\"aurora\",\"aurora\"],[\"f04\",\"aurora-log\",\"aurora\"],[\"f31\",\"pastificio-serra\",null]],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
       "inputFingerprint": "60b4719916a06cab72ccf3b76633e24a78dc1b4eb49f5a885788b271b23093c9",
-      "outputFingerprint": "c474790382df05f7b4729a2c93c184a85a9028d6d009e742e89dced0b8fd6f19",
+      "outputFingerprint": "2dae82b66b79828b02e432232704738aa651ec0d5bde25ef0a81811cfe8e1499",
       "passed": true
     },
     {
@@ -195,7 +195,7 @@
       "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "inputFingerprint": "d5860f35cd2f10f7bc006d460034c2bae26e5b9a7773a0849b17d5296f31d6ea",
-      "outputFingerprint": "6fc24d23e77455d5a1dcaefe6b50e8a2dae6db1130f9d39aebf1d4c1bda7b95c",
+      "outputFingerprint": "9420b8b04c8fa1ecf466ec76a472bb6aa8171308f1fbf276eb86e95102e6c123",
       "passed": true
     },
     {
@@ -211,7 +211,7 @@
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
       "inputFingerprint": "59dd3c03a0e60ad297b0c840b0665b86d1351ec5ce2c7bbbb6585d1f7399409f",
-      "outputFingerprint": "b13f62ab74e8483630606db795ea5b9a3943a12bcd60381d5dda15480acca19d",
+      "outputFingerprint": "3736bf3966625e047f9f64f672b0b7511de2bdb4753d419284860ec1f33a0d78",
       "passed": true
     },
     {
@@ -219,7 +219,7 @@
       "expectation": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "observed": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "inputFingerprint": "a121d64536b4623ff274b1b14454343bff9bd322012e34e1117ce4031797491a",
-      "outputFingerprint": "6574f4da5041bc0c81a440b7b80c8fb31052b3295f4c9d023638787adec58703",
+      "outputFingerprint": "a077df2c864ddb9f41f2dbad1e998b326c7d7f4428e62d4b0b88dd29f993ca83",
       "passed": true
     },
     {
@@ -235,7 +235,7 @@
       "expectation": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "1cef0a8006e749c6a734178a61167768de59ba8596a9fea0ff1c3d71c574fe01",
-      "outputFingerprint": "543446e4bf51b548c26a93bd0d6ecd395ef1cf0b72012c2f2a5a308726891735",
+      "outputFingerprint": "70f207b9f285cb1e990b599e22158466bd61ae399f809253c657b812c4bd1ff3",
       "passed": true
     },
     {
@@ -243,7 +243,7 @@
       "expectation": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
       "observed": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
       "inputFingerprint": "16f794ae8b11d4e107c4f6def2af0be146258827b00ac220ff398681605d0248",
-      "outputFingerprint": "2c015b752c36da4ff5c564efc30b8c8ac73c9f1d8a15f0d5191990f4f0de4aa4",
+      "outputFingerprint": "eb35df4e4e4af89c622fc818569424725b53323a47add046b3548a4fc2a462b2",
       "passed": true
     },
     {
@@ -251,7 +251,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
       "inputFingerprint": "bd72925399f4c9849e911f76602f9fa1d8d78b966c753eb43a0949436f7430d9",
-      "outputFingerprint": "043980ca2839edf389adb7b89653277488772551cc61ca247ee3327d3b4db059",
+      "outputFingerprint": "bd12d23e4bef8a103066182693eac8058cbf4a2a76345caddbc274a3b515b870",
       "passed": true
     },
     {
@@ -259,7 +259,7 @@
       "expectation": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
       "observed": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
       "inputFingerprint": "aa3d8f8d411cf2484fc26195d5f6524fd0e426e220dcafca607caca736f8d815",
-      "outputFingerprint": "9562789bd94ec224cad0e77f4842b7d3915bf8cd5193f7794727be2c491071dd",
+      "outputFingerprint": "6d61a3c470a54909db7a199c1cccb1678f86664814a33e2e77e7b0e149aca3db",
       "passed": true
     },
     {
@@ -267,7 +267,7 @@
       "expectation": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
       "observed": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
       "inputFingerprint": "c13fc1594cf4bce73de7c531d8bf9ac6d08d608ffa18746efa26ed9eced39892",
-      "outputFingerprint": "96c9ee54e8885c5086d0b00968f6ad200817489e20f39a3e777e599092273e35",
+      "outputFingerprint": "a98a3aeb4ecf89c84ace4ef040fbc018347096c6c6eaac11b207c651a0209f3e",
       "passed": true
     },
     {
@@ -283,7 +283,7 @@
       "expectation": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
       "observed": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
       "inputFingerprint": "fe2a8949c8f62bdf31e9cb50f4bcb50f1f1dd8905e51e18678935b6c700f0089",
-      "outputFingerprint": "c5bd268544d597261f8e47928978da0ea616a712eee92d63e00ccd1fb9f2ea56",
+      "outputFingerprint": "92a2471d84642f719fc16160e7dba235577ad6bd83b639c41914e95c9220b7ed",
       "passed": true
     },
     {
@@ -291,7 +291,7 @@
       "expectation": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
       "observed": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
       "inputFingerprint": "64c9f5084270d4433c2cfb9e9f3c248b12dc65356b929c63a4a22d562db0597a",
-      "outputFingerprint": "707377d33689595c28fc5b3fa6714f42115965e3fd76e2771c0304ea32dba8dd",
+      "outputFingerprint": "8a0eeabd1d4790b1ba7cb3f1139f44c7d6a40f302f3ee9f8f53b6f774e207146",
       "passed": true
     },
     {
@@ -299,7 +299,7 @@
       "expectation": "{\"covenantInForce\":false,\"conflict\":true}",
       "observed": "{\"covenantInForce\":false,\"conflict\":true}",
       "inputFingerprint": "4cb80510b5f38b83870f643d90d6b13a9c1c5d3e059149d134a75156912de884",
-      "outputFingerprint": "6cf6e2bc6bd8c24600cbc481aae167a702af19cce1444abfbd815c3820031a80",
+      "outputFingerprint": "82ffad762440874c893f610f03cfe13575e746f0a37bf18fda0252d1e70d558e",
       "passed": true
     },
     {
@@ -307,7 +307,7 @@
       "expectation": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
       "observed": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
       "inputFingerprint": "fd27bb884aee2c6ba01404b5252c5aa8d3481eeb1ea2cca7293d47e77230c3f8",
-      "outputFingerprint": "3ed99ecf510920d3b8637dc33379126574e396404c0610f48a22571b749513e6",
+      "outputFingerprint": "a6806cca14251e42f6a37409e00d0cd764d40f53894b081d8a9adfa441fe0a36",
       "passed": true
     },
     {
@@ -315,7 +315,7 @@
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "inputFingerprint": "67041511bd3e98af194f065c7c22c5563b7a96cc400e189a0f59def527549ae9",
-      "outputFingerprint": "6e462704cae980b673394201aded3be911b2cf012d50eb518125c22b62ef620c",
+      "outputFingerprint": "b2fdf0adfaf88642bbeede0c64d304a67f59968087aa01aafaca85476d37060a",
       "passed": true
     },
     {
@@ -323,7 +323,7 @@
       "expectation": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
       "observed": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
       "inputFingerprint": "0575b06b43466a3f16f611f2c42f509e35b716f3b4021b86a62a8ae6814701ae",
-      "outputFingerprint": "4a10c80adac38e1527bd0802c9ad7f8a8d56b635d8d03169f7fde7fe77b9e746",
+      "outputFingerprint": "0a32cbe8a76d21c331112c5346aae559891a858e34634c42d3f0432b80982951",
       "passed": true
     },
     {
@@ -331,7 +331,7 @@
       "expectation": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "4262c1cbe75749e54b3ec5c3f43faeefd7d46c2fb7544102231eeefc5e2aa5e7",
-      "outputFingerprint": "3bd2157c6a08d0df77de763ecc7d4798f016446e1540cbafe9b23cbf87f4a9f3",
+      "outputFingerprint": "6eedf236d33d702915cda3ee74a1ed9897c517aa06449e7c4968ab42aa8e6fc3",
       "passed": true
     },
     {
@@ -339,7 +339,7 @@
       "expectation": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "3bfe6ffa52bc968c7a38c0a78a9253dd68dd85e73ae0ce851d0bbd857bc514d2",
-      "outputFingerprint": "144a04d20e4e44cf1ff0b2e03e2fd38a7d0e381b6e5de38c982a0bdbd2b3047f",
+      "outputFingerprint": "f43f5b472cd018cac01f58aedf9adb80b28ea4f5d872388ad02b80a691a74f0a",
       "passed": true
     },
     {
@@ -347,7 +347,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
       "inputFingerprint": "876749242305e9dc1a9a95b7e379e6f2821c2fcc42e2a007880d3dc7f3b0882b",
-      "outputFingerprint": "5f585059bd407797df54ff8175398a2524dc3cd66908f6f9380136c2b52296e0",
+      "outputFingerprint": "df5bc915ac1b70210d14b9d077ff375128f7f61028177854d4414d443f532d76",
       "passed": true
     },
     {
@@ -355,7 +355,7 @@
       "expectation": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
       "observed": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
       "inputFingerprint": "231b11754537a42b958f3e8ddfa1d9103353a4459c5cfbab202670a8f5abbb2c",
-      "outputFingerprint": "e65e115b8b377b87b9a79d2d70b786e084a2947945e13f9d8fc97b13dbbeaf89",
+      "outputFingerprint": "ec830cc95dc61e05e214af896d9d0c31ffbf141ef659e729305b63ce303d56a5",
       "passed": true
     },
     {
@@ -363,7 +363,7 @@
       "expectation": "{\"policy\":false,\"future\":true}",
       "observed": "{\"policy\":false,\"future\":true}",
       "inputFingerprint": "771b4707421c7f23132efc40d1ffb8635ea55567cd51de09c3e1008e1c49fe02",
-      "outputFingerprint": "7164b69dcf966f0b9fb314d5f976f70c1d0af1661bfc8a37c6a7b565abda5006",
+      "outputFingerprint": "c71358fd870ce2143f08d6c9c4d313e05df984f29ede857c9edf72f29921b193",
       "passed": true
     },
     {
@@ -371,7 +371,7 @@
       "expectation": "{\"check\":\"not_run\",\"conflict\":true}",
       "observed": "{\"check\":\"not_run\",\"conflict\":true}",
       "inputFingerprint": "aeef9e88c4a24a1d36724367d048c224f6e8a65f704ec337297a63403e0f935c",
-      "outputFingerprint": "d7a6f4a5254c8647b495000420c4a83a9156cb22a21678054c935291e6ce5c99",
+      "outputFingerprint": "3d2a1a9c8722112b23b46cd4c0915a5ab21c18c998dc385f455a882a2b8c01d2",
       "passed": true
     },
     {
@@ -379,7 +379,7 @@
       "expectation": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
       "observed": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
       "inputFingerprint": "9bbb7cee8dcb6978ff3b580b8bf2a2674772ca12a90ba0242828fa1356a982a5",
-      "outputFingerprint": "0b990e675693d2fefbb97bf4a8e25d51681ee1bc5c89309a1d667ecc81764bd3",
+      "outputFingerprint": "de2ff28a36e9b0a0d1a2e8ea4ad6dea3021357eca1b42befbd1ff92b04ac6cb7",
       "passed": true
     },
     {
@@ -387,7 +387,7 @@
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
       "inputFingerprint": "35b02e4ace69d6725546a05c1e2e7bd5c11f205ceda0397efdb166f17314e3e5",
-      "outputFingerprint": "874f690fed0aeba55fd5523af31fe1326fce6830f06e6067a8df6397d796f407",
+      "outputFingerprint": "665d4eace549084a25f05642f0d8b8e2e03594f22017e5ea3f1cbf2c8c915260",
       "passed": true
     },
     {
@@ -395,7 +395,7 @@
       "expectation": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
       "observed": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
       "inputFingerprint": "52b32bfad7d2eb3556d4ff0c6e023c495ff77ef8c7b07c8ee1dcf10747d40eb4",
-      "outputFingerprint": "2761b09cde3f628264360822e04bc2afa2aa5d33e525f3118b08628b603cc143",
+      "outputFingerprint": "33e56fc133f206d3ee57a934b51b4d9bbb5002db50e8295074ce42d1507d72e6",
       "passed": true
     },
     {
@@ -403,7 +403,7 @@
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\"}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\"}",
       "inputFingerprint": "ce9acdc3f6733e6cf826f6dd8f7168d2ccab2c078d17074f7674c4183841ffe4",
-      "outputFingerprint": "3cfd03769b1105b80ba3d6a9429311e43869be79a5d166054bfc86160c3457b6",
+      "outputFingerprint": "b41fe138983df63c9820a64060142766117f2de8d24f84d8facfdb3571fb6fe6",
       "passed": true
     },
     {
@@ -411,7 +411,7 @@
       "expectation": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
       "observed": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
       "inputFingerprint": "9621114d23876ab781da8e6f4519c34d9cc9aad7c00b9eb363e7adc7d5ed58b3",
-      "outputFingerprint": "567be55e7fd7255031e5a936b6392ce3a47b3f96548f2f7003c8b22346b217a1",
+      "outputFingerprint": "eb717dc0e1694a4910a45a3740c81f81c3d21cd7a0c545c2568fdf36d54af04a",
       "passed": true
     },
     {
@@ -419,7 +419,7 @@
       "expectation": "{\"finding\":false,\"blocked\":\"missing_source\"}",
       "observed": "{\"finding\":false,\"blocked\":\"missing_source\"}",
       "inputFingerprint": "e74bfcf16578da19533dc3edc64e6a4ba71135a9478e206780b971fca592bc27",
-      "outputFingerprint": "94d9c6d024af45207aab294bcb6a858aed4d8eb0fa5dec476667a1c4acf03687",
+      "outputFingerprint": "eddf8a1cf9c3ff49b531e25d2404a08182c259c0a0c7a11740f745843883e9b7",
       "passed": true
     },
     {
@@ -427,7 +427,7 @@
       "expectation": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
       "observed": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
       "inputFingerprint": "d0dd7d9b690a5b72cf3cbf365d6e7de1e99eaab51d95e1776af0f3ad414b385a",
-      "outputFingerprint": "31efeee7bc71a8d12bb9669198742342c81774f3db5f587a6e4292fd8e5a6597",
+      "outputFingerprint": "93c71b141c5e9c7ae0a46e75415c588d5d34fc775a75da69bdee4781498d6bfb",
       "passed": true
     },
     {
@@ -435,7 +435,7 @@
       "expectation": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
       "inputFingerprint": "a8d9cd51dd58defa752d9003ef4db58416ae5d8e0801db2f563f3cad5183e4f9",
-      "outputFingerprint": "c4144474cddfc1b0ccb3c9b87240ce3c27d1bd1f3b1d63c00e883f4f7bff13a4",
+      "outputFingerprint": "12d7adf94d2895ce95d552fd14e1a26533ce2abb27a3a1a68b0587f27e451498",
       "passed": true
     },
     {
@@ -443,7 +443,7 @@
       "expectation": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
       "observed": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
       "inputFingerprint": "52e884a646c3ef7f2920e521a74c72b62b00a5444c51829c7d835223ef2db289",
-      "outputFingerprint": "5e0a0c5171085290f77398cb986e5efc7cbec12412b9b136ec84dda8de60d4c9",
+      "outputFingerprint": "eb36b25a97a21a5890991b0b11684563672efe2b024a4849dde1dc76832fb7fa",
       "passed": true
     },
     {
@@ -451,7 +451,7 @@
       "expectation": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "observed": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "inputFingerprint": "98e772f49c0bb334f1eff40e25e7d037a5940594bd332b9ff9d9af24d0eb7df3",
-      "outputFingerprint": "c932132f361f7972e57f44811cb357a1ed772639e1da398c5c32693c70af1444",
+      "outputFingerprint": "4ab535964e9b475f1f637cc545775cff499aad219d0e44ca7d3230b92c1f65ab",
       "passed": true
     },
     {
@@ -459,7 +459,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "inputFingerprint": "0a4a74575e169c24cf12d9d94396bf10dfde961f8798229d606ffb4ba9fac339",
-      "outputFingerprint": "e109d1b189ca362e0621257f58b0e65fae6a319186f4003bfbeeb8d61c22977c",
+      "outputFingerprint": "a692cedbe8d52defa2b9f9c07a5a7163e347961864d16dd755b918b734174749",
       "passed": true
     },
     {
@@ -467,7 +467,7 @@
       "expectation": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
       "observed": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
       "inputFingerprint": "2c30108442b09a0bbbc8a6dd1ad13decb7c08ad6b965e59c45360dac26fa0cc0",
-      "outputFingerprint": "9eca5a0273fe7ae3a12c23fb61fc685222cdf5fbaae0ac61c4044560e4904d51",
+      "outputFingerprint": "a635b3edd2f47e1af2643d853539de80ca0561ca8c4b2cced837ac521b638926",
       "passed": true
     },
     {
@@ -475,7 +475,7 @@
       "expectation": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
       "observed": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
       "inputFingerprint": "6e85fbd1c3b006098aa01b5a973494ef9b42798d197f436a3fdfa5d9efcc5f3c",
-      "outputFingerprint": "e504fd2c4b0b5d7d9688b815bea6fed570a2dd83d4fb97d97c3d2ec0f177c977",
+      "outputFingerprint": "e2e806486a5640245e58fcb21e6d4f6576be58b98eac5ab30fc5e168bcf6126f",
       "passed": true
     },
     {
@@ -483,7 +483,7 @@
       "expectation": "{\"ccb\":\"complete\",\"conflict\":false}",
       "observed": "{\"ccb\":\"complete\",\"conflict\":false}",
       "inputFingerprint": "43ce3ec82446619bdf41fa11794070fdb654bb33b07924d9847b1540b8934d0e",
-      "outputFingerprint": "117d5791c6894fb6ef21f81f9acbadf4b0791329b6d99d6fc3ebc46437965a86",
+      "outputFingerprint": "2a7ff9c061845a7d45f33501aae59bb05d59df2b33312a6a90412e6501de0e02",
       "passed": true
     },
     {
@@ -491,7 +491,7 @@
       "expectation": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
       "observed": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
       "inputFingerprint": "92f28271ff2ba0a46db8c41e6da9247a5b33b2885f5c35d0009fd8669ab1a2e6",
-      "outputFingerprint": "64a3ddfc8ff59a04aed7b6f3c5ecf94cf358b2cbfbf4aafe19323f6483c46507",
+      "outputFingerprint": "15bb344474b81ec978bce08e8fb88c0963ca91bb735b2f15aa34d65315393f06",
       "passed": true
     },
     {
@@ -499,7 +499,7 @@
       "expectation": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
       "observed": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
       "inputFingerprint": "5353be791471bba4dc4a9cb77994197499257034ae5b58f49e3cc866451fc729",
-      "outputFingerprint": "d3c41fa1fce03f8d06e54950a47bb80df668e6505888537e96584d3051d8cdf7",
+      "outputFingerprint": "5a03b8b53e91d189d746006cc010305bb0eeb9b6af18a803ea08f2155201d4f2",
       "passed": true
     },
     {
@@ -507,7 +507,7 @@
       "expectation": "{\"conflicts\":0,\"f02\":\"lida; superada pela auditada\"}",
       "observed": "{\"conflicts\":0,\"f02\":\"lida; superada pela auditada\"}",
       "inputFingerprint": "6b7bc1207de6bf9e878cd4afcac8447ff0375f2806529b15730485f23b2083d9",
-      "outputFingerprint": "f8fadfb65cfe12c3f3783419543a0ed8e6d88071f3ceb65c795dfc781a253426",
+      "outputFingerprint": "e6e21857c891d99431994b52d929dec675e0156be8bc69d2bfc35b152ac2d679",
       "passed": true
     },
     {
@@ -515,7 +515,7 @@
       "expectation": "{\"copy\":\"complete\",\"policy\":true}",
       "observed": "{\"copy\":\"complete\",\"policy\":true}",
       "inputFingerprint": "6e9de026c6f1db812ca298123e0dbcd0c3e659f51b8550df4c7c008cac7c0de9",
-      "outputFingerprint": "2460298ae787fa704049772ffc1eaf3c6630cfbf991a83fc5c06a982dde66586",
+      "outputFingerprint": "16abc9ce6fb607cc6a8c0f4c62f5885323a5ef5a8d7ce06b4c0abfd43d2881dc",
       "passed": true
     },
     {
@@ -523,7 +523,7 @@
       "expectation": "{\"text\":\"known\",\"resolved\":true}",
       "observed": "{\"text\":\"known\",\"resolved\":true}",
       "inputFingerprint": "395e9600bf3d5a589ca687a65cd8d4f02cbf10c9e0f4fd0d0e2d611e4337b01b",
-      "outputFingerprint": "d5a230aa32aa51531f22872b020f4277db9adbabc76272714d37cf0c76d6210b",
+      "outputFingerprint": "8ef4b397bf10a123414d42c46391e928ce1034b8631ad511d213fd3f8c8059be",
       "passed": true
     },
     {
@@ -531,7 +531,7 @@
       "expectation": "{\"knowledge\":\"known\",\"covenant\":\"3.5\"}",
       "observed": "{\"knowledge\":\"known\",\"covenant\":\"3.5\"}",
       "inputFingerprint": "73981b66d0a961fd8128cbc091e9c68dc9d3f2169fb053af18cd3adc6d0ce81e",
-      "outputFingerprint": "45a5807afd4ef8231f3df3c80eb58cfe853fd81e9d9b50362291d82ba4c9b511",
+      "outputFingerprint": "eebf8e98890c72a178a3853f94224a6d9e84ae977e3d84c52fdc72d0cad434c3",
       "passed": true
     },
     {
@@ -539,7 +539,23 @@
       "expectation": "{\"exception\":true,\"total\":true}",
       "observed": "{\"exception\":true,\"total\":true}",
       "inputFingerprint": "e49487d478bffd2cfa794d0caa811e2da5fedac94e3a6fedd40330b9d54ccb93",
-      "outputFingerprint": "251ac876f77b2206bc5dab363568fe6ca3564eb1c731552a1f6eae584d1655a4",
+      "outputFingerprint": "cd6903e25d86762ac17f413501647bcfc0a7f9ac6c7e469b8a50c4f1124dc1e0",
+      "passed": true
+    },
+    {
+      "id": "same-reference-of-another-entity-is-another-instrument",
+      "expectation": "{\"f18\":null,\"text\":[[\"deb-aurora-1\",\"aurora\",[\"f18\",\"f19\"],\"known\"]]}",
+      "observed": "{\"f18\":null,\"text\":[[\"deb-aurora-1\",\"aurora\",[\"f18\",\"f19\"],\"known\"]]}",
+      "inputFingerprint": "6feff74383c13bfd272b36995e96a31a59e0da36d13edf8ec55ccf4aeaf5e388",
+      "outputFingerprint": "78fed7addd6f81b51a9bf7769fc243240f503b69a71d1373c3f4b3a73132b629",
+      "passed": true
+    },
+    {
+      "id": "clause-amount-on-its-declared-scale",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "7fbbf386004e475a56371f8cfa5807343895293a6daea5bbb3a502da4e513d86",
+      "outputFingerprint": "c49f44dde944a2c9e9158c8c75e825240dcb13ea25afc48433c4a9d43a9dfe21",
       "passed": true
     },
     {
@@ -547,11 +563,11 @@
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "da34903429753c041e3bdaf008e3161cbc4befc8788141c6d8b5adea695950c8",
+      "outputFingerprint": "b3d1aa953b46f9cf9ed7cbfb0e1a42b1b9938fb6688b2785a13f923446055c28",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "6c942b627ee5897c73f9332760141fa49c05b5b59a5ad58057a65ae341771e39",
+  "evidenceFingerprint": "944b34721ed5b25687cdd8e06fc3a9e6431ea8e0e2170c79cfae7b686be04cc3",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

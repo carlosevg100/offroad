@@ -1,7 +1,8 @@
 import {createHash} from "node:crypto";
+import {z} from "zod";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentReadingSchema, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -26,6 +27,12 @@ const economics = (o: DocumentFolderInventory) => ({effective: o.effectiveTexts,
 
 /** The identity a page copy must share with the document it substitutes. */
 const sameDocumentAs = (t: DocumentReading) => structuredClone({kind: t.kind, instrument: t.instrument, entity: t.entity, period: t.period, version: t.version, referenceDate: t.referenceDate});
+/** Every document of an instrument chain (same root reference) with its copies and same-hash files. */
+const chainKin = (files: DocumentReading[], d: DocumentReading) => {
+  const root = (f: DocumentReading) => f.substitutesPages ? files.find((x) => x.substitutesPages === null && x.instrument?.ref === f.substitutesPages!.instrumentRef)?.instrument?.amends ?? f.substitutesPages.instrumentRef
+    : f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
+  return files.filter((y) => y.sha256 === d.sha256 || (root(y) !== null && root(y) === root(d)));
+};
 /** A document and its page copies, or a copy and its document: what makes them one document moves together. */
 const kin = (files: DocumentReading[], d: DocumentReading) => files.filter((y) => y.sha256 === d.sha256
   || (d.substitutesPages !== null && y.substitutesPages === null && y.instrument?.ref === d.substitutesPages.instrumentRef)
@@ -409,7 +416,8 @@ describe("property: dependencies proven by tracking; every state injected into e
     // the registry (its chain is by reference), or the only document of a month removed.
     missing_source: (files, id) => {
       const d = file(files, id); if (d.legibility.wholeFile || d.substitutesPages) return null;
-      if (d.instrument) {for (const x of kin(files, d)) x.entity = {...x.entity, primaryId: "fora-do-cadastro"}; return "missing_source";}
+      // An instrument is (entity, reference): the whole chain and its copies move to the other entity together.
+      if (d.instrument) {for (const x of chainKin(files, d)) x.entity = {...x.entity, primaryId: "fora-do-cadastro"}; return "missing_source";}
       if (d.kind === "trial_balance" && !files.some((x) => x !== d && x.kind === d.kind && x.period.start === d.period.start)) {files.splice(files.indexOf(d), 1); return "missing_source";}
       return null;
     },
@@ -430,7 +438,8 @@ describe("property: dependencies proven by tracking; every state injected into e
       const o = traced((files) => {variant(files); expected = inject[state](files, id);});
       if (expected === null) return;
       for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
-      const files = all(), same = (state === "future" || state === "missing_source" ? kin(files, file(files, id)) : files.filter((f) => f.sha256 === file(files, id).sha256)).map((f) => f.fileId);
+      const files = all(), same = (state === "missing_source" && file(files, id).instrument ? chainKin(files, file(files, id)) : state === "future" || state === "missing_source" ? kin(files, file(files, id))
+        : files.filter((f) => f.sha256 === file(files, id).sha256)).map((f) => f.fileId);
       for (const b of emitted) {
         const after = o.traces.find((t) => t.effect === b.effect);
         const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
@@ -899,5 +908,73 @@ describe("property: several companies are separated by entity; the economic grou
     const o = run(auroraFolderReadings());
     expect(o.partitionByEntity).toBe(false);
     expect(o.rows.find((x) => x.fileId === "f04")!.economicGroup).toBe("aurora");
+  });
+});
+
+// Review r14: an instrument is (entity, reference); every monetary field of the schema obeys the declared scale.
+describe("property: the same reference under another entity is another instrument", () => {
+  const otherOriginal = (ref: string) => ({...structuredClone(file(auroraFolderReadings(), "f18")), fileId: "f31", fileName: "f31.pdf", sha256: hex(`other-original-${ref}`),
+    entity: {primaryId: "aurora-log", label: "Aurora Logística"}, period: {label: "out/2022", start: "2022-10-01", end: "2022-10-31"},
+    referenceDate: {kind: "update" as const, date: "2022-10-31", origin: "stated_month" as const}, instrument: {ref, label: "escritura", amends: null}});
+  for (const ref of ["deb-aurora-1", "deb-logistica-1"]) it(`a later original of the subsidiary under ${ref === "deb-aurora-1" ? "the same reference" : "another reference (control)"}`, () => {
+    const o = run([...readings(), otherOriginal(ref)]);
+    expect(o.rows.find((x) => x.fileId === "f18")!.situation.supersededBy).toBeNull();
+    const parent = o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1" && t.entityId === "aurora")!;
+    expect(parent.fileIds).toEqual(["f18", "f19"]);
+    expect(o.effectiveTexts.some((t) => t.fileIds.includes("f31"))).toBe(false);
+    expect(o.families.some((f) => [...f.prevails, ...f.superseded, ...f.sideBySide].includes("f18") && [...f.prevails, ...f.superseded, ...f.sideBySide].includes("f31"))).toBe(false);
+  });
+  it("an amendment of another entity than its original is refused; the control of the same entity is read", () => {
+    expect(() => run(readings((r) => {file(r, "f19").entity = {primaryId: "aurora-log", label: "Aurora Logística"};}))).toThrow("document_inventory_unsupported_amendment_entity");
+    expect(run(readings()).effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")!.knowledge).toBe("known");
+  });
+  it("with originals of both entities, the amendment joins only its own entity's", () => {
+    const o = run([...readings(), otherOriginal("deb-aurora-1")]);
+    expect(o.effectiveTexts.filter((t) => t.fileIds.includes("f19")).map((t) => t.entityId)).toEqual(["aurora"]);
+  });
+});
+describe("property: every monetary field of the schema obeys the scale declared for its section", () => {
+  // Walk the reading schema and list every object that holds a monetary amount: those must carry a scale.
+  type Def = {type: string; shape?: Record<string, unknown>; element?: unknown; innerType?: unknown; options?: unknown[]; in?: unknown};
+  const def = (s: unknown) => (s as {_zod: {def: Def}})._zod.def;
+  // A monetary amount: signed, up to 24 digits and 8 decimals; a ratio, an id or a text field does not accept this.
+  const isAmount = (x: unknown) => (x as z.ZodType).safeParse("-123456789012345678901234.12345678").success && !(x as z.ZodType).safeParse("abc").success;
+  const owners: string[] = [], holders: string[] = [];
+  const walk = (s: unknown, path: string): void => {
+    const d = def(s);
+    if (d.type === "nullable" || d.type === "optional") return walk(d.innerType, path);
+    if (d.type === "array") return walk(d.element, `${path}[]`);
+    if (d.type === "union") return (d.options ?? []).forEach((o) => walk(o, `${path}|${(def(o).shape?.type as {_zod: {def: {values: string[]}}} | undefined)?._zod.def.values[0] ?? "?"}`));
+    if (d.type === "object") {
+      const shape = d.shape!, amounts = Object.keys(shape).filter((k) => isAmount(shape[k]));
+      if (amounts.length) holders.push(path);
+      if (amounts.length || Object.values(shape).some((v) => def(v).type === "array" && def(def(v).element).type === "object" && Object.values(def(def(v).element).shape!).some(isAmount)))
+        if ("scale" in shape) owners.push(path);
+      for (const [k, v] of Object.entries(shape)) walk(v, `${path}.${k}`);
+    }
+  };
+  walk(documentReadingSchema, "reading");
+  // One contradiction per monetary owner the schema has; a new owner without one fails this test.
+  const contradictions: Record<string, (r: DocumentReading[]) => void> = {
+    "reading.clauses[]|negative_pledge": (r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
+      Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000000"});},
+    "reading.figures[]": (r) => {file(r, "f12").figures[0]!.scale = "1";},
+    "reading.debtTable": (r) => {const f = file(r, "f16"); f.units = [{section: f.debtTable!.at.section ?? "Dívida", currency: "BRL", scale: "1"}]; f.debtTable!.at = {page: null, section: f.debtTable!.at.section ?? "Dívida"};},
+  };
+  it("the schema's monetary owners are exactly those covered, and every amount sits under one", () => {
+    expect(owners.sort()).toEqual(Object.keys(contradictions).sort());
+    expect(holders.length).toBeGreaterThanOrEqual(3);
+    for (const h of holders) expect(owners.some((o) => h === o || h.startsWith(`${o}.`)), h).toBe(true);
+  });
+  for (const owner of Object.keys(contradictions)) it(`contradiction on ${owner} is refused`, () => {
+    expect(() => run(readings(contradictions[owner]!))).toThrow("document_inventory_unsupported_unit");
+  });
+  it("the declared scale on the clause's section gives the exact amount (control)", () => {
+    const o = run(readings((r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
+      Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000"});}));
+    expect(o.findings.find((f) => f.id === "f19-amendment")!.statement).toContain("R$ 15 milhões");
+  });
+  it("an amount without its scale is refused", () => {
+    expect(() => run(readings((r) => {Object.assign(file(r, "f19").clauses.find((c) => c.type === "negative_pledge")!, {scale: null});}))).toThrow("document_inventory_unsupported_unit");
   });
 });
