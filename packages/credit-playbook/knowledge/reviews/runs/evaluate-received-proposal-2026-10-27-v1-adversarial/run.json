@@ -16,9 +16,9 @@
     "exportName": "buildReceivedProposalRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:27:58.977Z",
-    "finishedAt": "2026-10-27T12:30:14.821Z",
-    "commit": "2e374e3ac54abfcdf2c156ac2362d8ebfcf5a326"
+    "startedAt": "2026-10-27T12:45:17.042Z",
+    "finishedAt": "2026-10-27T12:47:38.563Z",
+    "commit": "5d37d51503580fe9f08c70276bf3d66332272975"
   },
   "modelCalls": 0,
   "cases": [
@@ -83,6 +83,30 @@
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "41a110983fe0d4b1f2fdd8468ec1005b936f8c968c9a8eb383a61564db22237e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-indenture-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3f2a6fbc73f10d85642e8b0e84f787ec4b809dc3486b5f8f16fe7f55cddc8da6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-policy-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d6069003b00272c8da50405e63b01d8c1816c855425fdabbb69d4fe908f377e0",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-lender-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ff29fa5974fd56025d4bee61032b04150100c2f82f27a51acff2598753343c46",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -208,6 +232,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "f268e0ff34f7fd85ef20c860ffbd6e7761f54a8e4fa8db4df766b1ed1d3787bf",
-  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r4 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+  "evidenceFingerprint": "c83d2a00f6d6485ddf83f8008a45372513c57f12c3ea9f64930661df10613ec2",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r5 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

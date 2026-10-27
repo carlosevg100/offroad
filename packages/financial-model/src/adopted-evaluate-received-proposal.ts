@@ -62,9 +62,11 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
   const count = (s: z.infer<typeof selection>, path: string, unit = "count") => Number(read(s, path, unit, "number", whole));
   const flag = (s: z.infer<typeof selection>, path: string) => read(s, path, "convention", "boolean", z.boolean());
   const dates = z.array(z.iso.date()).min(1).max(40), money = z.array(signed).min(1).max(40);
+  // A list of test dates or period ends holds each date once; a repetition is refused by name, never collapsed.
+  const uniqueDates = dates.refine((v) => new Set(v).size === v.length, "received_proposal_duplicate_test_date");
   const convention = <const T extends readonly [string, ...string[]]>(s: z.infer<typeof selection>, path: string, values: T) => read(s, path, "convention", "text", z.enum(values));
   const lenderCovenant = p.covenantLimit === null ? null : {maximumRatio: read(p.covenantLimit, "proposal.covenantLimit", "ratio", "number", unsigned),
-    testDates: read(p.covenantTestDates!, "proposal.covenantTestDates", "date", "list", dates),
+    testDates: read(p.covenantTestDates!, "proposal.covenantTestDates", "date", "list", uniqueDates),
     definition: convention(p.covenantDefinition!, "proposal.covenantDefinition", ["same_as_indenture", "not_stated"])};
   const proposal: ReceivedProposalInput["proposal"] = {
     lender: read(p.lender, "proposal.lender", "text", "text", words), indexer: convention(p.indexer, "proposal.indexer", ["cdi_plus", "percent_of_cdi", "ipca_plus", "fixed"]),
@@ -105,15 +107,15 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
       kind: convention(u.kind, q + "kind", ["seasonal_working_capital", "long_lived_capex", "refinancing", "other"]),
       tenorMinYears: read(u.tenorMinYears, q + "tenorMinYears", "years", "number", unsigned), tenorMaxYears: read(u.tenorMaxYears, q + "tenorMaxYears", "years", "number", unsigned)};}),
     seasonalPeak: maybe(input.seasonalPeak, "seasonalPeak", "currency", "number", unsigned),
-    calendar: {openingDate: input.openingDate, periodEnds: list(c.periodEnds, "calendar.periodEnds", "date", dates), existingService: list(c.existingService, "calendar.existingService", "currency", money),
+    calendar: {openingDate: input.openingDate, periodEnds: list(c.periodEnds, "calendar.periodEnds", "date", uniqueDates), existingService: list(c.existingService, "calendar.existingService", "currency", money),
       availableForService: list(c.availableForService, "calendar.availableForService", "currency", money), closingCash: list(c.closingCash, "calendar.closingCash", "currency", money),
       taxable: (list(c.taxable, "calendar.taxable", "boolean", z.array(z.enum(["true", "false"])).min(1).max(40)) ?? []).map(x => x === "true"),
       minimumCash: maybe(c.minimumCash, "calendar.minimumCash", "currency", "number", unsigned)},
-    covenant: {indenture: {maximumRatio: read(v.indentureLimit, "covenant.indentureLimit", "ratio", "number", unsigned), testDates: list(v.indentureTestDates, "covenant.indentureTestDates", "date", dates),
+    covenant: {indenture: {maximumRatio: read(v.indentureLimit, "covenant.indentureLimit", "ratio", "number", unsigned), testDates: list(v.indentureTestDates, "covenant.indentureTestDates", "date", uniqueDates),
       source: read(v.indentureSource, "covenant.indentureSource", "text", "text", words)},
       requiredScenarios: list(v.requiredScenarios, "covenant.requiredScenarios", "identity", z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(4)),
       policy: v.policyLimit === null ? null : {maximumRatio: read(v.policyLimit, "covenant.policyLimit", "ratio", "number", unsigned),
-        testDates: list(v.policyTestDates!, "covenant.policyTestDates", "date", dates), source: read(v.policySource!, "covenant.policySource", "text", "text", words)},
+        testDates: list(v.policyTestDates!, "covenant.policyTestDates", "date", uniqueDates), source: read(v.policySource!, "covenant.policySource", "text", "text", words)},
       measurements: (measurement.dates ?? []).map((date, i) => ({date, scenario: measurement.scenarios?.[i] ?? "", debt: measurement.debt?.[i] ?? "", cash: measurement.cash?.[i] ?? "",
         reportedEbitda: measurement.reportedEbitda?.[i] ?? "", definitionAdjustment: measurement.definitionAdjustment?.[i] ?? ""}))},
     portfolio: input.portfolio.map(x => {const q = `bucket.${x.id}.`; return {id: x.id, label: read(x.label, q + "label", "text", "text", words), amount: read(x.amount, q + "amount", "currency", "number", unsigned),
@@ -141,6 +143,8 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
     const lengths = [measurement.scenarios, measurement.debt, measurement.cash, measurement.reportedEbitda, measurement.definitionAdjustment].map(x => x!.length);
     if (lengths.some(l => l !== measurement.dates!.length) || years!.length !== rates!.length
       || (history && [history.families, history.bps, history.anchors].some(x => x!.length !== history.ids!.length))) throw new Error("received_proposal_list_length_mismatch");
+    const pairs = measurement.dates!.map((d, i) => `${d}|${measurement.scenarios![i]}`);
+    if (new Set(pairs).size !== pairs.length) throw new Error("received_proposal_covenant_duplicate_test");
   }
   const evaluation = complete ? (({operands, ...rest}) => ({...rest, schedule: operands.received}))(evaluateReceivedProposal(kernelInput)) : null;
   const payload = {schemaVersion: "adopted-received-proposal.v1" as const, financialCoreVersion, scope: input.scope, analysisId: input.analysisId,

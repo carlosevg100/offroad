@@ -69,6 +69,10 @@ export const receivedProposalFactsSchema = z.strictObject({
 }).superRefine((f, ctx) => {
   const fail = (message: string) => ctx.addIssue({code: "custom", message});
   const c = f.calendar.value, n = c.periodEnds.length, end = c.periodEnds[n - 1]!;
+  // Every list of test dates holds each date once: refused by name, never collapsed.
+  for (const [name, dates] of [["indenture", f.indenture.value.testDates], ["policy", f.policy?.value.testDates ?? []], ["lender", f.proposal.value.covenant?.testDates ?? []]] as const)
+    if (new Set(dates).size !== dates.length) fail(`received_proposal_duplicate_test_date: ${name}`);
+  if (new Set(f.measurements.value.map((m) => `${m.date}|${m.scenario}`)).size !== f.measurements.value.length) fail("received_proposal_covenant_duplicate_test");
   if ([c.existingService, c.availableForService, c.closingCash, c.taxable].some((s) => s.length !== n)) fail("Every calendar series has one value per period");
   if (c.periodEnds.some((e, i) => e <= (i ? c.periodEnds[i - 1]! : f.openingDate))) fail("Period ends follow the opening date in order");
   const p = f.proposal.value;

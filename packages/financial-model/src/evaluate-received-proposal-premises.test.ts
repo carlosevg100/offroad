@@ -89,6 +89,31 @@ describe("ficha 1 premises proposed from facts with origin, adopted, composed an
     const q = packetOf(envelopeOf(adopt(none).entries));
     expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.covenant.untestedLimits, q.readings!.covenant.missingTests.length]).toEqual(["partial", null, ["indenture", "proposal", "board-policy"], 10]);
   });
+  it("from facts to packet: a repeated test date is refused in every list and permutations change no derived field", () => {
+    let seed = 20261027; const next = () => {seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648;};
+    const shuffle = <T>(xs: readonly T[]) => {const y = [...xs]; for (let a = y.length - 1; a > 0; a--) {const b = Math.floor(next() * (a + 1)); [y[a], y[b]] = [y[b]!, y[a]!];} return y;};
+    type Facts = ReturnType<typeof auroraReceivedProposalFacts>;
+    const lists: [string, (f: Facts) => string[], (f: Facts, v: string[]) => void][] = [
+      ["indenture", (f) => f.indenture.value.testDates, (f, v) => {f.indenture.value.testDates = v;}],
+      ["policy", (f) => f.policy!.value.testDates, (f, v) => {f.policy!.value.testDates = v;}],
+      ["lender", (f) => f.proposal.value.covenant!.testDates, (f, v) => {f.proposal.value.covenant!.testDates = v;}]];
+    const facts = () => {const f = auroraReceivedProposalFacts(); f.variants = []; return f;};
+    for (const [name, get, set] of lists) {
+      const f = facts(), d = get(f); set(f, [...d, d[Math.floor(next() * d.length)]!]);
+      expect(() => proposeReceivedProposalHypotheses(f)).toThrow(`received_proposal_duplicate_test_date: ${name}`);
+    }
+    const twin = facts(); twin.measurements.value = [...twin.measurements.value, twin.measurements.value[0]!];
+    expect(() => proposeReceivedProposalHypotheses(twin)).toThrow("received_proposal_covenant_duplicate_test");
+    const reference = packetOf(envelopeOf(adopt(facts()).entries));
+    expect(reference.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture")).toBe(true);
+    for (const [, get, set] of [...lists, ["measurements", () => [], () => undefined] as const]) {
+      const f = facts();
+      if (get(f).length) set(f, shuffle(get(f))); else f.measurements.value = shuffle(f.measurements.value);
+      const p = packetOf(envelopeOf(adopt(f).entries));
+      expect(p.readings).toEqual(reference.readings);
+      expect(p.result.evaluation).toEqual(reference.result.evaluation);
+    }
+  });
   it("refuses inconsistent facts before proposing premises", () => {
     const holder = auroraReceivedProposalFacts(); holder.portfolio[1]!.value.holder = null;
     expect(() => proposeReceivedProposalHypotheses(holder)).toThrow("names the holder of its assignment");

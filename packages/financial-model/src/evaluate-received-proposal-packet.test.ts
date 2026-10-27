@@ -86,6 +86,11 @@ describe("received proposal packet", {timeout: 180_000}, () => {
     expect([q.result.evaluation!.proposal.firstLenderTestDate, q.readings!.covenant.testsPerYear, q.readings!.covenant.lenderDatesBeforeDraw,
       q.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture")]).toEqual(["2027-12-31", {indenture: 1, lender: 1}, ["2026-07-31", "2026-08-31", "2026-09-30"], false]);
   });
+  it("refuses a repeated test date in the adopted reader before the kernel runs", () => {
+    const k = auroraReceivedProposal(); k.covenant.indenture = {...k.covenant.indenture, testDates: [...k.covenant.indenture.testDates, "2026-12-31"]};
+    const f = auroraReceivedProposalBasis(k), i = f.seal(); i.basket = {...i.basket, occupied: {...i.basket.occupied, decisionId: null, missingReason: "Ausente"}};
+    expect(() => calculateAdoptedReceivedProposal(i)).toThrow("received_proposal_duplicate_test_date");
+  });
   it("is partial without a comparable market and deterministic, validated and published", () => {
     const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};
     const q = packet(k);

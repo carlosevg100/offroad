@@ -137,6 +137,12 @@ function goldCases(): Case[] {
       {first: "2027-12-31", lender: 1, fact: false, beforeDraw: ["2026-07-31", "2026-08-31", "2026-09-30"]},
       (p) => ({first: p.result.evaluation!.proposal.firstLenderTestDate, lender: p.readings!.covenant.testsPerYear.lender,
         fact: p.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture"), beforeDraw: p.readings!.covenant.lenderDatesBeforeDraw})),
+    // Review r5: the order of every list of test dates changes nothing derived, the lender's frequency fact included.
+    observe("test-date-order-changes-nothing", packetInput(undefined, undefined, variant((k) => {
+      k.covenant.indenture = {...k.covenant.indenture, testDates: [...k.covenant.indenture.testDates].reverse()};
+      k.covenant.policy = {...k.covenant.policy!, testDates: [...k.covenant.policy!.testDates].reverse()};
+      k.proposal.covenant = {...k.proposal.covenant!, testDates: [...k.proposal.covenant!.testDates].reverse()}; k.covenant.measurements = [...k.covenant.measurements].reverse();})),
+      {sameReadings: true, fact: true}, (p) => ({sameReadings: JSON.stringify(p.readings) === JSON.stringify(packet.readings), fact: p.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture")})),
     // Review r2: each structure on its own life; past the calendar only with an adopted hypothesis, never past the payoff.
     observe("life-past-the-fiscal-calendar-needs-an-adopted-hypothesis", packetInput(undefined, undefined, variant((k) => {k.tax.taxableAfterCalendar = null;})),
       {status: "partial", received: "life_beyond_fiscal_calendar", net: null, asks: ["life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar"]},
@@ -169,6 +175,9 @@ function adversarialCases(): Case[] {
     ["nominal-spread-offered-as-the-cost", () => ({forge: "costBasis"}), "Unrecognized key"],
     ["equivalent-spread-replaced-by-nominal-under-old-fingerprint", () => ({forge: "tamperReading"}), "received_proposal_fingerprint_mismatch"],
     ["adopted-cost-replaced-by-nominal-under-old-fingerprint", () => ({forge: "tamperResult"}), "received_proposal_fingerprint_mismatch"],
+    ["repeated-indenture-test-date", () => packetInput((f) => {entry(f, "covenant.indentureTestDates").value = {type: "list", value: ["2026-12-31", "2026-12-31", "2027-12-31", "2028-12-31"]};}), "received_proposal_duplicate_test_date"],
+    ["repeated-policy-test-date", () => packetInput((f) => {entry(f, "covenant.policyTestDates").value = {type: "list", value: ["2026-12-31", "2027-12-31", "2027-12-31", "2028-12-31"]};}), "received_proposal_duplicate_test_date"],
+    ["repeated-lender-test-date", () => packetInput((f) => {entry(f, "proposal.covenantTestDates").value = {type: "list", value: ["2026-12-31", "2027-06-30", "2027-06-30", "2027-12-31", "2028-06-30", "2028-12-31"]};}), "received_proposal_duplicate_test_date"],
     ["tax-rate-above-one", () => packetInput((f) => {entry(f, "tax.rate").value = {type: "number", value: "1.5"};}), "received_proposal_tax_rate_out_of_domain"],
     ["tax-rate-just-above-one", () => packetInput((f) => {entry(f, "tax.rate").value = {type: "number", value: "1.00000000000000000001"};}), "received_proposal_tax_rate_out_of_domain"],
     ["covenant-test-in-an-undeclared-scenario", () => packetInput((f) => {entry(f, "covenant.scenarios").value = {type: "list", value: ["base", "base", "base", "base", "base", "stress", "bank", "bank", "bank", "bank"]};}), "received_proposal_covenant_scenario_undeclared"],
@@ -230,6 +239,6 @@ export function buildReceivedProposalRuns(): Evidence[] {
       harness: {module: "@offroad/financial-model/src/evaluate-received-proposal-runs.test-support.ts", exportName: "buildReceivedProposalRuns"},
       modelCalls: 0 as const, cases, result: cases.every((c) => c.passed) ? "pass" as const : "fail" as const};
     return {...evidence, evidenceFingerprint: deterministicRunEvidenceFingerprint(evidence),
-      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r4 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
+      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r5 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
   });
 }

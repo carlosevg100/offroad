@@ -123,6 +123,27 @@ describe("received proposal properties", {timeout: 600_000}, () => {
       for (const row of r.covenant.rows) expect(row.limits.find(l => l.limitId === "proposal")!.testedOnDate).toBe(effective.includes(row.date) && !r.covenant.untestedLimits.includes("proposal"));
     }
   });
+  it("refuses a repeated date in every list of test dates and is invariant to their order (generated permutations)", () => {
+    const lists = ["indenture", "policy", "lender"] as const;
+    const get = (i: ReceivedProposalInput, l: (typeof lists)[number]) => l === "indenture" ? i.covenant.indenture.testDates : l === "policy" ? i.covenant.policy!.testDates : i.proposal.covenant!.testDates;
+    const set = (i: ReceivedProposalInput, l: (typeof lists)[number], v: string[]) => {
+      if (l === "indenture") i.covenant.indenture = {...i.covenant.indenture, testDates: v}; else if (l === "policy") i.covenant.policy = {...i.covenant.policy!, testDates: v};
+      else i.proposal.covenant = {...i.proposal.covenant!, testDates: v};};
+    for (const l of lists) {
+      const i = auroraReceivedProposal(), d = [...get(i, l)]; set(i, l, [...d, d[int(0, d.length - 1)]!]);
+      expect(() => evaluateReceivedProposal(i)).toThrow("received_proposal_duplicate_test_date");
+    }
+    const shuffle = <T>(xs: readonly T[]) => {const y = [...xs]; for (let a = y.length - 1; a > 0; a--) {const b = int(0, a); [y[a], y[b]] = [y[b]!, y[a]!];} return y;};
+    const strip = (r: ReturnType<typeof evaluateReceivedProposal>) => {const {operands: _o, ...rest} = r; return rest;};
+    const base = auroraReceivedProposal(); base.variants = [];
+    const reference = strip(evaluateReceivedProposal(base));
+    for (let k = 0; k < 2; k++) {
+      const i = auroraReceivedProposal(); i.variants = [];
+      for (const l of lists) set(i, l, shuffle(get(i, l)));
+      i.covenant.measurements = shuffle(i.covenant.measurements);
+      expect(strip(evaluateReceivedProposal(i))).toEqual(reference);
+    }
+  });
   it("reproduces the review: a lender test dated before the draw creates no breach", () => {
     const i = auroraReceivedProposal(); i.variants = []; i.covenant.policy = null;
     i.proposal.covenant = {...i.proposal.covenant!, testDates: ["2026-09-30", ...i.proposal.covenant!.testDates]};

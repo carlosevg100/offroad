@@ -216,6 +216,9 @@ function validate(input: ReceivedProposalInput) {
   if (new Set(input.covenant.measurements.map(m => `${m.date}|${m.scenario}`)).size !== input.covenant.measurements.length) throw new Error("received_proposal_covenant_duplicate_test");
   // No test at all is allowed: it becomes gaps, never an error and never compliance.
   if (input.covenant.measurements.length > 12) throw new Error("received_proposal_covenant_measurements");
+  // Every list of test dates holds each date once: a repeated date is refused by name, never collapsed in silence.
+  for (const dates of [input.covenant.indenture.testDates, input.covenant.policy?.testDates ?? [], input.proposal.covenant?.testDates ?? []])
+    if (new Set(dates).size !== dates.length) throw new Error("received_proposal_duplicate_test_date");
   for (const m of input.covenant.measurements) if (!c.periodEnds.includes(m.date)) throw new Error("received_proposal_covenant_date_off_calendar");
   if (input.seasonalPeak !== null) num(input.seasonalPeak);
 }
@@ -287,8 +290,8 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
 
   // The lender's effective test dates, one list for every field derived from them: from the draw on, sorted, once
   // each. Dates before the draw are kept apart as contrast and never feed a test, a frequency or a first date.
-  const lenderDates = p.covenant ? [...new Set(p.covenant.testDates.filter(d => d >= p.drawDate))].sort() : [];
-  const lenderDatesBeforeDraw = p.covenant ? [...new Set(p.covenant.testDates.filter(d => d < p.drawDate))].sort() : [];
+  const lenderDates = p.covenant ? p.covenant.testDates.filter(d => d >= p.drawDate).sort() : [];
+  const lenderDatesBeforeDraw = p.covenant ? p.covenant.testDates.filter(d => d < p.drawDate).sort() : [];
   // Covenant: each adopted test with and without the proposal, through the published headroom kernel.
   const limits: CovenantLimit[] = [
     {id: "indenture", label: "Escritura vigente", kind: "contractual", status: "in_force", maximumRatio: input.covenant.indenture.maximumRatio,
@@ -305,21 +308,24 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   const horizonEnd = c.periodEnds.at(-1)!;
   const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && d > c.openingDate)))].sort();
   const required = requiredDates.flatMap(date => input.covenant.requiredScenarios.map(scenario => ({date, scenario})));
-  const missingTests = required.filter(r => !input.covenant.measurements.some(m => m.date === r.date && m.scenario === r.scenario));
-  const untestedLimits = limits.filter(l => !input.covenant.measurements.some(m => l.testDates.includes(m.date))).map(l => l.id);
+  // Tests in a canonical order (date, then scenario), so the order they arrive in changes nothing downstream.
+  const tests = [...input.covenant.measurements].sort((a, b) => a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.scenario < b.scenario ? -1 : a.scenario > b.scenario ? 1 : 0);
+  const key = (m: {date: string; scenario: string}) => `${m.scenario}-${m.date}`;
+  const missingTests = required.filter(r => !tests.some(m => m.date === r.date && m.scenario === r.scenario));
+  const untestedLimits = limits.filter(l => !tests.some(m => l.testDates.includes(m.date))).map(l => l.id);
   for (const l of limits) if (untestedLimits.includes(l.id)) l.status = "superseded";
-  const measurements: CovenantMeasurement[] = input.covenant.measurements.flatMap((m, k) => {
+  const measurements: CovenantMeasurement[] = tests.flatMap((m) => {
     const q = quarters[c.periodEnds.indexOf(m.date)]!, limitIds = limits.filter(l => l.testDates.includes(m.date)).map(l => l.id);
     const base = {date: m.date, scenario: m.scenario, reportedEbitda: m.reportedEbitda, unrealizedEbitda: null, limitIds,
       adjustments: [{label: "Ajuste da definição escrita", amount: m.definitionAdjustment}]};
-    return [{...base, id: `with-${k}`, label: `Com a proposta, ${m.scenario}, ${m.date}`, role: limitIds.length ? "test" as const : "contrast" as const,
+    return [{...base, id: `with-${key(m)}`, label: `Com a proposta, ${m.scenario}, ${m.date}`, role: limitIds.length ? "test" as const : "contrast" as const,
       debt: out(num(m.debt).plus(q.proposalPrincipal)), cash: out(num(m.cash, true).plus(q.cumulativeProposalCash))},
-    {...base, id: `without-${k}`, label: `Sem a proposta, ${m.scenario}, ${m.date}`, role: "contrast" as const, debt: m.debt, cash: m.cash}];
+    {...base, id: `without-${key(m)}`, label: `Sem a proposta, ${m.scenario}, ${m.date}`, role: "contrast" as const, debt: m.debt, cash: m.cash}];
   });
   const headroom = measurements.length === 0 ? null : measureCovenantHeadroom({currency: input.currency, readingDate: input.readingDate, limits, measurements,
-    effects: input.covenant.measurements.map((_, k) => ({id: `proposal-${k}`, label: "Efeito da proposta", measurementId: `with-${k}`, withoutEffectMeasurementId: `without-${k}`}))});
-  const covenantRows = input.covenant.measurements.map((m, k) => {
-    const w = headroom!.measurements.find(x => x.id === `with-${k}`)!, wo = headroom!.measurements.find(x => x.id === `without-${k}`)!;
+    effects: tests.map((m) => ({id: `proposal-${key(m)}`, label: "Efeito da proposta", measurementId: `with-${key(m)}`, withoutEffectMeasurementId: `without-${key(m)}`}))});
+  const covenantRows = tests.map((m) => {
+    const w = headroom!.measurements.find(x => x.id === `with-${key(m)}`)!, wo = headroom!.measurements.find(x => x.id === `without-${key(m)}`)!;
     return {date: m.date, scenario: m.scenario, ratioWithout: wo.ratio, ratioWith: w.ratio,
       limits: limits.map(l => ({limitId: l.id, kind: l.kind, maximumRatio: out(num(l.maximumRatio)), testedOnDate: l.testDates.includes(m.date) && !untestedLimits.includes(l.id),
         headroomWith: w.ratio === null ? null : out(num(l.maximumRatio).minus(w.ratio)), breachedWith: w.ratio === null ? true : new Exact(w.ratio).gt(l.maximumRatio)}))};

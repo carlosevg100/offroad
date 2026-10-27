@@ -16,9 +16,9 @@
     "exportName": "buildReceivedProposalRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:27:58.977Z",
-    "finishedAt": "2026-10-27T12:30:14.820Z",
-    "commit": "2e374e3ac54abfcdf2c156ac2362d8ebfcf5a326"
+    "startedAt": "2026-10-27T12:45:17.042Z",
+    "finishedAt": "2026-10-27T12:47:38.563Z",
+    "commit": "5d37d51503580fe9f08c70276bf3d66332272975"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "{\"firmness\":\"indicative\",\"validUntil\":\"2026-09-13\",\"fact\":true}",
       "observed": "{\"firmness\":\"indicative\",\"validUntil\":\"2026-09-13\",\"fact\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "{\"bankSawIndenture\":false,\"diligenceMayReopenStructure\":true}",
       "observed": "{\"bankSawIndenture\":false,\"diligenceMayReopenStructure\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "{\"existing\":89.7,\"near90\":true,\"available\":35.7,\"near36\":true,\"proposal\":12.2,\"near13\":true,\"total\":101.9,\"nearOracle\":true}",
       "observed": "{\"existing\":89.7,\"near90\":true,\"available\":35.7,\"near36\":true,\"proposal\":12.2,\"near13\":true,\"total\":101.9,\"nearOracle\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "{\"peakYear\":2027,\"peakQuarter\":\"2027-09-30\"}",
       "observed": "{\"peakYear\":2027,\"peakQuarter\":\"2027-09-30\"}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "{\"dec26\":18,\"sep27\":-21.4,\"dec27\":-60.6,\"oracleSep27\":true,\"oracleDec27\":true,\"firstBelow\":\"2027-09-30\"}",
       "observed": "{\"dec26\":18,\"sep27\":-21.4,\"dec27\":-60.6,\"oracleSep27\":true,\"oracleDec27\":true,\"firstBelow\":\"2027-09-30\"}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -67,7 +67,7 @@
       "expectation": "{\"seasonalShare\":0.67,\"uses\":[[\"safra\",\"longer_than_use\"],[\"embalagem\",\"shorter_than_use\"]],\"life\":1.77,\"final\":\"2029-10-01\"}",
       "observed": "{\"seasonalShare\":0.67,\"uses\":[[\"safra\",\"longer_than_use\"],[\"embalagem\",\"shorter_than_use\"]],\"life\":1.77,\"final\":\"2029-10-01\"}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -75,7 +75,7 @@
       "expectation": "{\"ratio\":2.4,\"oracle\":true,\"headroom\":0.6,\"policyHeadroom\":0.1,\"dec27\":2.07}",
       "observed": "{\"ratio\":2.4,\"oracle\":true,\"headroom\":0.6,\"policyHeadroom\":0.1,\"dec27\":2.07}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -83,7 +83,7 @@
       "expectation": "{\"dec26\":2.53,\"headroom\":0.47,\"dec27\":2.61,\"oracle\":true,\"headroomDec27\":0.39,\"policyBreached\":true}",
       "observed": "{\"dec26\":2.53,\"headroom\":0.47,\"dec27\":2.61,\"oracle\":true,\"headroomDec27\":0.39,\"policyBreached\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -91,7 +91,7 @@
       "expectation": "{\"indenture\":1,\"lender\":2,\"june\":true}",
       "observed": "{\"indenture\":1,\"lender\":2,\"june\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -99,7 +99,7 @@
       "expectation": "{\"required\":39,\"nominallyFree\":46,\"assignable\":25.41,\"shortfall\":13.59,\"leftAfter\":0,\"seasonalPeak\":25}",
       "observed": "{\"required\":39,\"nominallyFree\":46,\"assignable\":25.41,\"shortfall\":13.59,\"leftAfter\":0,\"seasonalPeak\":25}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -107,7 +107,7 @@
       "expectation": "[[\"rede-a\",18.56,[\"assignment_prohibited_without_debtor_consent\"]],[\"redes-c-d\",12,[\"assigned_to_other_creditor\"]],[\"vencidos\",2.03,[\"past_due\"]]]",
       "observed": "[[\"rede-a\",18.56,[\"assignment_prohibited_without_debtor_consent\"]],[\"redes-c-d\",12,[\"assigned_to_other_creditor\"]],[\"vencidos\",2.03,[\"past_due\"]]]",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "expectation": "{\"basis\":\"aggregate\",\"remaining\":3,\"excess\":36,\"consentRequired\":true}",
       "observed": "{\"basis\":\"aggregate\",\"remaining\":3,\"excess\":36,\"consentRequired\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -123,7 +123,7 @@
       "expectation": "{\"remaining\":15,\"consentRequired\":true,\"seasonalLineWithinBasket\":false}",
       "observed": "{\"remaining\":15,\"consentRequired\":true,\"seasonalLineWithinBasket\":false}",
       "inputFingerprint": "f5a8e5ca4bb02221d9cecdfc6d12c02c83670610518a95504d9b0d7c4096e611",
-      "outputFingerprint": "4af7de67229350377c08ad92d71376a48322035d2b649dc87a9dfaabb49aaa6e",
+      "outputFingerprint": "f858ea0dc1f84bb3a02c5c9a51329aeb2e2882f9db482173616802f674799e23",
       "passed": true
     },
     {
@@ -131,7 +131,7 @@
       "expectation": "{\"consentBy\":\"2026-09-13\",\"needDate\":\"2026-10-01\",\"slackDays\":18,\"recommendation\":true}",
       "observed": "{\"consentBy\":\"2026-09-13\",\"needDate\":\"2026-10-01\",\"slackDays\":18,\"recommendation\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -139,7 +139,7 @@
       "expectation": "{\"position\":\"above_median_within_range\",\"toMedianBps\":20,\"sample\":12,\"confidence\":\"high\"}",
       "observed": "{\"position\":\"above_median_within_range\",\"toMedianBps\":20,\"sample\":12,\"confidence\":\"high\"}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -147,7 +147,7 @@
       "expectation": "{\"nominal\":2.1,\"gross\":4.9,\"net\":3.24,\"iof\":3.25,\"life\":1.77,\"readingCostAboveNominal\":true}",
       "observed": "{\"nominal\":2.1,\"gross\":4.9,\"net\":3.24,\"iof\":3.25,\"life\":1.77,\"readingCostAboveNominal\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -155,7 +155,7 @@
       "expectation": "{\"observed\":-50,\"expected\":-70,\"residual\":20,\"partlyPaidInCollateral\":true}",
       "observed": "{\"observed\":-50,\"expected\":-70,\"residual\":20,\"partlyPaidInCollateral\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -163,7 +163,7 @@
       "expectation": "{\"received\":280,\"sixtyMonths\":185,\"ratio\":0.66}",
       "observed": "{\"received\":280,\"sixtyMonths\":185,\"ratio\":0.66}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -171,7 +171,7 @@
       "expectation": "[[\"carencia-12-prazo-48\",-6,-67,0,true],[\"carencia-12-prazo-60\",-6.4,-95,0,true],[\"cobertura-120-sem-conta\",0,0,-3,true]]",
       "observed": "[[\"carencia-12-prazo-48\",-6,-67,0,true],[\"carencia-12-prazo-60\",-6.4,-95,0,true],[\"cobertura-120-sem-conta\",0,0,-3,true]]",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -179,7 +179,7 @@
       "expectation": "[[\"giro-seis-meses\",[\"safra\"],190,false],[\"finame-linha\",[\"embalagem\"],null,false]]",
       "observed": "[[\"giro-seis-meses\",[\"safra\"],190,false],[\"finame-linha\",[\"embalagem\"],null,false]]",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -187,7 +187,7 @@
       "expectation": "{\"recommendations\":[\"address_indenture_consent_before_signing\",\"ask_longer_grace_and_tenor\",\"ask_lower_coverage_and_no_restricted_account\",\"separate_uses_by_term\",\"keep_price_discussion_secondary\"],\"wouldChange\":5,\"verdict\":false,\"process\":{\"acceptsProposal\":false,\"contactsLender\":false,\"counterproposalSent\":false}}",
       "observed": "{\"recommendations\":[\"address_indenture_consent_before_signing\",\"ask_longer_grace_and_tenor\",\"ask_lower_coverage_and_no_restricted_account\",\"separate_uses_by_term\",\"keep_price_discussion_secondary\"],\"wouldChange\":5,\"verdict\":false,\"process\":{\"acceptsProposal\":false,\"contactsLender\":false,\"counterproposalSent\":false}}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -195,7 +195,7 @@
       "expectation": "[\"lender_covenant_definition\",\"reciprocity_expected_by_lender\",\"restricted_debtor_consent\",\"indenture_clause_wording\",\"other_free_asset\"]",
       "observed": "[\"lender_covenant_definition\",\"reciprocity_expected_by_lender\",\"restricted_debtor_consent\",\"indenture_clause_wording\",\"other_free_asset\"]",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -203,7 +203,7 @@
       "expectation": "{\"status\":\"partial\",\"position\":null,\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"position\":null,\"gap\":true}",
       "inputFingerprint": "590f86b302599df58d9791fd8a19d30b1656b3dba86f941c20dcca34d54a4460",
-      "outputFingerprint": "a899480be7240864782ae5e2d8240ce120cab159b7fe9c97488fdc5ab47e6417",
+      "outputFingerprint": "c0a7da93fe32fdc2ae30dc76fbf0e776784cbb5cbbb051a55add02b784bdb3a4",
       "passed": true
     },
     {
@@ -211,7 +211,7 @@
       "expectation": "{\"status\":\"partial\",\"anyBreachWith\":null,\"missing\":[[\"2026-12-31\",\"bank\"],[\"2027-12-31\",\"bank\"]],\"reading\":true}",
       "observed": "{\"status\":\"partial\",\"anyBreachWith\":null,\"missing\":[[\"2026-12-31\",\"bank\"],[\"2027-12-31\",\"bank\"]],\"reading\":true}",
       "inputFingerprint": "9aaa1b4b3c29f857ffade58b97b2228a568baf15f19810ae1c43e2ccdbacee71",
-      "outputFingerprint": "fad279d84587730aad7f9dbcd875819db50f941ee4cd9278720b6e6d622f1f9f",
+      "outputFingerprint": "98617e214b787400991649cf25c21e78fb6f8c74dd441bd3612bf075bf1b8565",
       "passed": true
     },
     {
@@ -219,7 +219,7 @@
       "expectation": "{\"required\":10,\"missing\":0,\"anyBreachWith\":true}",
       "observed": "{\"required\":10,\"missing\":0,\"anyBreachWith\":true}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -227,7 +227,7 @@
       "expectation": "{\"convention\":\"full_deductibility_simplified\",\"net\":3.24}",
       "observed": "{\"convention\":\"full_deductibility_simplified\",\"net\":3.24}",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
+      "outputFingerprint": "eb569084e7f2e68ce7aacb4801e9161e82fd448a6883b7f12d8515fbf30523eb",
       "passed": true
     },
     {
@@ -235,7 +235,7 @@
       "expectation": "{\"status\":\"partial\",\"net\":null,\"convention\":\"not_all_periods_taxable\",\"gap\":true}",
       "observed": "{\"status\":\"partial\",\"net\":null,\"convention\":\"not_all_periods_taxable\",\"gap\":true}",
       "inputFingerprint": "b7bc97302d858f2d6ee05569f7fd9cc7a01013683e547971a0885cfade0fcbd1",
-      "outputFingerprint": "29f223b75a5a692533f998f10e58ab3683a889b71a864976d1b45f3624ff74f2",
+      "outputFingerprint": "bd10899c26be1010a53178d320607ff0b5c9daa66c999fab80b01690f8b16503",
       "passed": true
     },
     {
@@ -251,7 +251,7 @@
       "expectation": "{\"anyBreachWith\":false,\"beforeDraw\":[\"2026-09-30\"],\"testedOnDate\":false}",
       "observed": "{\"anyBreachWith\":false,\"beforeDraw\":[\"2026-09-30\"],\"testedOnDate\":false}",
       "inputFingerprint": "511289e10f5fe55494f5ec0ca1b0cf96123b9377f54f137959d00e4a71302093",
-      "outputFingerprint": "20915a51b0070174fe8e5501df0c35ecd498545e84b9a624d514bcef8d303279",
+      "outputFingerprint": "0e8e58098c93f2330b4c79a71b8bd66f47cc861ef1a8200dcc588bb1fc7b76b9",
       "passed": true
     },
     {
@@ -259,7 +259,15 @@
       "expectation": "{\"first\":\"2027-12-31\",\"lender\":1,\"fact\":false,\"beforeDraw\":[\"2026-07-31\",\"2026-08-31\",\"2026-09-30\"]}",
       "observed": "{\"first\":\"2027-12-31\",\"lender\":1,\"fact\":false,\"beforeDraw\":[\"2026-07-31\",\"2026-08-31\",\"2026-09-30\"]}",
       "inputFingerprint": "501591f3a46569b5b8da1c86e6c5492aef08b61f7afbcfdf5a5e6b746d41ea7f",
-      "outputFingerprint": "e0cdfc47fbe31075044591ea8009ec9f38413cc997493dd9e1d4f82330642715",
+      "outputFingerprint": "00515468da56f397cdcddd46bbcdf62d0f928aca9203b44ba26439db44b6ae59",
+      "passed": true
+    },
+    {
+      "id": "test-date-order-changes-nothing",
+      "expectation": "{\"sameReadings\":true,\"fact\":true}",
+      "observed": "{\"sameReadings\":true,\"fact\":true}",
+      "inputFingerprint": "81826fddcb35b9fca5a147c567a9b617fb2f2855cdff4b2572f4ec8cf06f9704",
+      "outputFingerprint": "41c11360ce5cf09ee32ba98b4d1401a38494441f1500cc97b4f33e7cf03ad7a7",
       "passed": true
     },
     {
@@ -267,7 +275,7 @@
       "expectation": "{\"status\":\"partial\",\"received\":\"life_beyond_fiscal_calendar\",\"net\":null,\"asks\":[\"life_beyond_fiscal_calendar\",\"life_beyond_fiscal_calendar\",\"life_beyond_fiscal_calendar\"]}",
       "observed": "{\"status\":\"partial\",\"received\":\"life_beyond_fiscal_calendar\",\"net\":null,\"asks\":[\"life_beyond_fiscal_calendar\",\"life_beyond_fiscal_calendar\",\"life_beyond_fiscal_calendar\"]}",
       "inputFingerprint": "138a8a18f7084000a75fe8a7d83b2df8a05223a3bfdcf88520a29aec8266365b",
-      "outputFingerprint": "eb10eb52b1bc035e458d6914e7c3bfd93a998c4fd16a7212594350392a864e8e",
+      "outputFingerprint": "78a67136f3539932a03a56a94161682f14dda73979859846d6d06a70b34246a0",
       "passed": true
     },
     {
@@ -275,7 +283,7 @@
       "expectation": "{\"final\":\"2027-01-01\",\"received\":\"full_deductibility_simplified\",\"variantFinal\":\"2028-09-01\",\"variant\":\"full_deductibility_simplified\"}",
       "observed": "{\"final\":\"2027-01-01\",\"received\":\"full_deductibility_simplified\",\"variantFinal\":\"2028-09-01\",\"variant\":\"full_deductibility_simplified\"}",
       "inputFingerprint": "853ea958158985129e7ae658c5bd90953b2de9a88c18065ba0ea14c91e66952f",
-      "outputFingerprint": "470a747f932819604933a811103f56a29337a65604e9aec83378fca479cf131b",
+      "outputFingerprint": "ee35d4ca5d07c9d10f5128a70709779434ef6b63644fc454a8f815a2f0726564",
       "passed": true
     },
     {
@@ -296,6 +304,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "bd0eb6360cad77ffca76fcec6d4cca8112aa30903d0d4af3ab63d1d3472fda61",
-  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r4 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+  "evidenceFingerprint": "2a2a5357cf53efa36353bb4bb560ffab23b602b648628ec65fd66a94eb4842ce",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r5 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
