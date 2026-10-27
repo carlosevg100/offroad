@@ -354,7 +354,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); return v === null ? undefined : o.year ? v.value.slice(0, 4) : v.value;}
     if ("contributed" in o) {
       // An adopted term the result records: exactly one contribution whose field path ends with the given suffix.
-      const [method, suffix] = o.contributed, packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const [method, rawSuffix] = o.contributed, packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const suffix = rawSuffix.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
       const hits = (packet.result?.contributions ?? []).filter((x) => typeof x.fieldPath === "string" && x.fieldPath.endsWith(`.${suffix}`));
       if (hits.length !== 1) throw unverified(`contribution_${suffix}`);
       return scalar(hits[0]!.value?.value, suffix);
@@ -377,6 +378,25 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("dominates" in c) {
       // Period by period, matched by key; a series that does not resolve, or keys that do not match, fail the condition.
       const series = (x: BoardSeries): Map<string, string> | null => {
+        const sub = (v: string) => v.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+        if ("projectionRows" in x) {
+          const id = sub(x.projectionRows[1]);
+          return series({list: [x.projectionRows[0], id === "base" ? "result.projection.projection.base" : `result.projection.projection.scenarios[id=${id}].rows`], key: "periodId", field: x.field});
+        }
+        if ("projectionDriver" in x) {
+          // The driver a scenario uses: its own override, else the scenario it is based on, down to the base.
+          const [method, start, driver] = x.projectionDriver, packet = sourceOf(method).packet;
+          let id = sub(start);
+          for (let depth = 0; depth < 8; depth++) {
+            if (id === "base") return series({contributed: [method, `base.${driver}`]});
+            const own = series({contributed: [method, `scenario.${id}.override.${driver}`]});
+            if (own) return own;
+            const parent = readBoardSourcePath(packet, `result.projection.projection.scenarios[id=${id}].basedOn`);
+            if (typeof parent !== "string") return null;
+            id = parent;
+          }
+          return null;
+        }
         if ("contributed" in x) {
           const packet = sourceOf(x.contributed[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
           const suffix = x.contributed[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
@@ -401,6 +421,14 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (c.op === "eq") return pairs.every(([x, y]) => compareBoard(x, "eq", y));
       const weak = c.op === "gt" ? "ge" : "le";
       return pairs.every(([x, y]) => compareBoard(x, weak, y)) && pairs.some(([x, y]) => compareBoard(x, c.op, y));
+    }
+    if ("contributedHas" in c) {
+      const packet = sourceOf(c.contributedHas[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const suffix = c.contributedHas[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+      const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+      const list = hits.length === 1 ? hits[0]!.value?.value : undefined, want = operand(c.value);
+      if (!Array.isArray(list)) return false;
+      return want === undefined || (c.none ? !list.includes(want) : list.includes(want));
     }
     if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {

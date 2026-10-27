@@ -39,7 +39,7 @@ function rebind<T>(value: T, from: string, to: string): T {
 function buildSources() {
   const debtTable = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: auroraDebtTableBasis().seal()});
   const covenant = auroraCovenantPacket();
-  const weekly = prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro e o que vence?", analysis: auroraWeeklyCashBasis().seal()});
+  const weekly = auroraWeeklyPacket();
   const investment = auroraInvestmentPacket();
   const projection = auroraProjectionPacket();
   const challenge = prepareProjectionChallengePacket({schemaVersion: "projection-challenge-packet-input.v1",
@@ -103,8 +103,18 @@ function c32WithMislabelledEconomy() {
 }
 /** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
  * days instead of the chains' receivable days, which stay as in the base. */
-export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true} = {}) {
+export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true} = {}) {
   const b = operatingProjectionBasis({informed: true});
+  if (variant.shorterThanParentWithInventory) {
+    // Receivable days of 55 against a parent scenario of 60, with longer inventory: the working-capital effect comes from inventory.
+    const scenarios = (b.input as unknown as {scenarios: {id: string; basedOn: string; overrides: unknown[]}[]}).scenarios;
+    const i = scenarios.findIndex((x) => x.id === "prazo-60"), scenario = scenarios[i]!;
+    scenario.basedOn = "informado";
+    b.entries.find((e) => e.fieldPath.endsWith("scenario.prazo-60.override.receivableDays"))!.value = {type: "list", value: ["55", "55", "55"]};
+    scenario.overrides = [...scenario.overrides, {driver: "inventoryDays", values: b.contribute("scenario.prazo-60.override.inventoryDays", "days", {type: "list", value: ["60", "60", "60"]}, "prazo-60"),
+        origin: b.contribute("scenario.prazo-60.override.inventoryDays.origin", "origin", {type: "text", value: "house"}, "prazo-60")}];
+    scenarios.splice(i, 1); scenarios.push(scenario);
+  }
   if (variant.inventoryInsteadOfReceivables) {
     const scenario = (b.input as unknown as {scenarios: {id: string; overrides: unknown[]}[]}).scenarios.find((x) => x.id === "prazo-60")!;
     scenario.overrides = [{driver: "inventoryDays", values: b.contribute("scenario.prazo-60.override.inventoryDays", "days", {type: "list", value: ["55", "55", "55"]}, "prazo-60"),
@@ -112,6 +122,15 @@ export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?:
   }
   return prepareOperatingProjectionPacket({schemaVersion: "operating-projection-packet-input.v1",
     question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: b.seal()});
+}
+/** C18. The variant (regressions only) keeps the line in the case without the line and takes the customer receipts out of it instead. */
+export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {}) {
+  const b = auroraWeeklyCashBasis();
+  if (variant.lineKeptReceiptsMissing) {
+    const c = (b.input as unknown as {cases: {id: string; streamIds: string[]}[]}).cases.find((x) => x.id === "sem-linha")!;
+    c.streamIds = [...c.streamIds.filter((x) => x !== "recebimentos"), "linha-17"];
+  }
+  return prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro e o que vence?", analysis: b.seal()});
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */

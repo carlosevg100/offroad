@@ -4,7 +4,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -64,6 +64,14 @@ export const boardStatedMillions = (packet: Record<string, unknown>, caseId: str
 export const boardWorkingCapitalReading = (packet: Record<string, unknown>): [string, string, string, string] => {
   const path = "readings.projected.scenarios[id=prazo-60].rows[periodId=2026-12-31].effects.changeInWorkingCapital";
   return ["projecao", path, "0", new Decimal(readBoardSourcePath(packet, path) as string).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)];
+};
+/** The weekly result where the case without the line keeps the line and loses the receipts, and the readings of that case. */
+export const boardWeeklyVariant = () => auroraWeeklyPacket({lineKeptReceiptsMissing: true}) as unknown as Record<string, unknown>;
+export const boardWeeklyVariantCase = (c: CaseData) => {
+  const packet = boardWeeklyVariant(), at = (path: string) => readBoardSourcePath(packet, path) as string;
+  c.extraReadings["sem-linha-min"] = ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].minimum", "1",
+    new Decimal(at("readings.sensitivities[caseId=sem-linha].minimum")).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1)];
+  c.extraReadings["sem-linha-week"] = ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].weekStart", "day_long", at("readings.sensitivities[caseId=sem-linha].weekStart")];
 };
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
@@ -216,6 +224,9 @@ function goldCases(): Case[] {
       informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", text: "reduzir a dependência de um único fornecedor de embalagem"}], figures: []},
       (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
         figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
+    observe("line-kept-with-receipts-missing-never-says-without-the-line",
+      withBoardSource("caixa-semanal", boardWeeklyVariant(), () => boardPacketInput(2, boardWeeklyVariantCase)), {alternative: true, withoutTheLine: false, status: "prepared_for_human_review"},
+      (p) => ({alternative: pageOf(p, "caixa").lines[0]!.startsWith("No caso alternativo de menor caixa"), withoutTheLine: boardShownTexts(p).some((t) => /sem a linha da safra/i.test(t)), status: p.status})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -409,6 +420,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(packet, "capex-120")];}));
     }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    // Review r12: the cause against the same reference as the effect (the scenario it derives from).
+    ["receivables-shorter-than-the-parent-with-longer-inventory", () => {
+      const packet = auroraProjectionPacket({shorterThanParentWithInventory: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
+    }, "board_capital_template_condition_failed:what_changes.title"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
     ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],
