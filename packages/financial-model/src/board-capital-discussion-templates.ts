@@ -53,7 +53,13 @@ type BoardConditionBody =
   /** A list of the source (or a field of each element) contains the operand; `only` requires it to be the single element. */
   | {includes: readonly [string, string, string | null]; value: BoardOperand; only?: true; none?: true}
   /** A list of the source has at least this many elements. */
-  | {atLeast: readonly [string, string]; count: number};
+  | {atLeast: readonly [string, string]; count: number}
+  /** A series against another, period by period over the second series' periods (matched by key): "gt" every value at least the other's and one larger,
+   * "lt" every value at most and one smaller, "eq" all equal. A series that does not resolve fails the condition. */
+  | {dominates: readonly [BoardSeries, BoardSeries]; op: "gt" | "lt" | "eq"};
+/** A per-period series of a source: a list read by path (each element's key and dotted field), or an adopted list among
+ * the contributions of the result, by the end of its field path (index as key). Variables are substituted. */
+export type BoardSeries = {list: readonly [string, string]; key: string; field: string} | {contributed: readonly [string, string]};
 export type BoardTemplate = {text: string; slots: Record<string, BoardSlotSpec>; use: readonly BoardTextUse[]; when: readonly BoardCondition[];
   /** For a deliberation's texts: the title template of the deliberation they belong to. */
   of?: string;
@@ -88,18 +94,46 @@ const policyIsBoard = claim("a política é do conselho e está em vigor", cmp(a
   cmp(at(CV, "result.headroom.limits[id=politica].status"), "eq", {value: "in_force"}));
 const policyUndefined = claim("a política adotada não registra definição de EBITDA (questão aberta do resultado do covenant)",
   has(CV, "result.openQuestions", "limitId", "politica"), has(CV, "result.openQuestions", "question", "ebitda_definition_not_written"));
-/** Each cause a sensitivity names is the operand that case changes against the base, in the direction said. */
+/** The causes a fixed text may name, each checked on the driver that defines it, scenario against base, in the
+ * direction and over the scope the sentence states. A text that names a cause carries its condition (self-checked). */
+export const boardCauses = [
+  {cause: "economia menor", phrase: /economia menor/i, method: "analyze-investment-project",
+    driver: "EBITDA incremental de cada período do caso contra a base, com carga e fração do ano em operação iguais em todos os períodos",
+    direction: "menor ou igual em todo período e menor em algum", scope: "todo o horizonte do projeto"},
+  {cause: "capex maior", phrase: /capex maior/i, method: "analyze-investment-project",
+    driver: "capex de expansão de cada período do caso contra a base (o total maior no horizonte, por dominância período a período, sem somar fora do núcleo)",
+    direction: "maior ou igual em todo período e maior em algum", scope: "todo o horizonte do projeto; mudança só de cronograma pede outra frase (capex antecipado)"},
+  {cause: "partida mais lenta", phrase: /partida mais lenta/i, method: "analyze-investment-project",
+    driver: "fração do ano em operação de cada período do caso contra a base, com o mesmo capex de expansão",
+    direction: "menor ou igual em todo período e menor em algum", scope: "todo o horizonte do projeto"},
+  {cause: "adiar a linha", phrase: /adiar a linha/i, method: "analyze-investment-project ou evaluate-financing-paths",
+    driver: "no projeto: fração do ano em operação e capex do primeiro período do caso adiado contra a base; no plano: EBITDA por ano do caminho contra o que segue com a linha e contra o que fica sem ela",
+    direction: "operação e desembolso depois; EBITDA entre os dois caminhos", scope: "todo o horizonte de cada resultado"},
+  {cause: "sem a linha", phrase: /sem a linha/i, method: "project-weekly-cash ou evaluate-financing-paths",
+    driver: "no caixa semanal: entradas de cada semana do caso sem a linha contra o caso com a linha; no plano: EBITDA por ano do caminho contra o que segue com a linha",
+    direction: "menor ou igual em todo período e menor em algum", scope: "todas as semanas ou anos do horizonte"},
+  {cause: "trigo mais caro", phrase: /trigo\s+(?:\{[a-z_]+\}\s+)?mais caro/i, method: "build-operating-projection",
+    driver: "choque de custo do insumo adotado no cenário (inputCostShock.rate) e o EBITDA do cenário contra o cenário de que deriva",
+    direction: "choque positivo; EBITDA menor ou igual em todo período e menor em algum", scope: "a partir do período do choque"},
+  {cause: "redes pagando mais tarde", phrase: /redes pagando mais tarde/i, method: "build-operating-projection",
+    driver: "prazo de recebimento das redes adotado no cenário (override.receivableDays) contra o da base (base.receivableDays); capital de giro ou id do cenário não bastam",
+    direction: "maior ou igual em todo período e maior em algum", scope: "todos os períodos da projeção"},
+] as const;
+const cause = (name: (typeof boardCauses)[number]["cause"], ...conditions: BoardCondition[]) => claim(`causa: ${name}`, ...conditions);
+const caseRows = (caseId: string, field: string): BoardSeries => ({list: [IP, `cases[id=${caseId}].result.project.rows`], key: "periodId", field});
+const vsBase = (caseId: string, field: string, op: "gt" | "lt" | "eq"): BoardCondition => ({dominates: [caseRows(caseId, field), caseRows("base", field)], op});
+const smallerEconomy = cause("economia menor", vsBase("economy-4", "incrementalEbitda", "lt"), vsBase("economy-4", "operands.loadYearFraction", "eq"), vsBase("economy-4", "operands.activeYearFraction", "eq"));
+const largerCapex = cause("capex maior", vsBase("capex-120", "operands.growthCapexPaid", "gt"));
+const slowerStart = cause("partida mais lenta", vsBase("slower-start", "operands.activeYearFraction", "lt"), vsBase("slower-start", "operands.growthCapexPaid", "eq"));
 const caseField = (caseId: string, period: string, field: string) => at(IP, `cases[id=${caseId}].result.project.rows[periodId=${period}].${field}`);
-const smallerEconomy = claim("economia menor: o EBITDA incremental em regime do caso é menor que o da base, com a mesma carga",
-  cmp(caseField("economy-4", "2028-12-31", "incrementalEbitda"), "lt", caseField("base", "2028-12-31", "incrementalEbitda")),
-  cmp(caseField("economy-4", "2028-12-31", "operands.loadYearFraction"), "eq", caseField("base", "2028-12-31", "operands.loadYearFraction")));
-const largerCapex = claim("capex maior: o capex de expansão do caso supera o da base",
-  cmp(caseField("capex-120", "2026-12-31", "operands.growthCapexPaid"), "gt", caseField("base", "2026-12-31", "operands.growthCapexPaid")));
-const slowerStart = claim("partida mais lenta: a fração do ano em operação do caso é menor que a da base",
-  cmp(caseField("slower-start", "2027-12-31", "operands.activeYearFraction"), "lt", caseField("base", "2027-12-31", "operands.activeYearFraction")));
-const deferral = claim("adiar: o caso desembolsa depois e opera depois da base",
-  cmp(caseField("defer-12", "2026-12-31", "operands.growthCapexPaid"), "lt", caseField("base", "2026-12-31", "operands.growthCapexPaid")),
-  cmp(caseField("defer-12", "2027-12-31", "operands.activeYearFraction"), "lt", caseField("base", "2027-12-31", "operands.activeYearFraction")));
+const deferral = cause("adiar a linha", vsBase("defer-12", "operands.activeYearFraction", "lt"),
+  cmp(caseField("defer-12", "2026-12-31", "operands.growthCapexPaid"), "lt", caseField("base", "2026-12-31", "operands.growthCapexPaid")));
+const pathEbitda = (path: string): BoardSeries => ({list: [FP, `result.evaluation.paths[id=${path}].ebitdaByYear`], key: "year", field: "ebitda"});
+const wheatShock = (scenario: string, from: string) => cause("trigo mais caro", cmp(at(OP, `result.projection.projection.scenarios[id=${scenario}].inputCostShock.rate`), "gt", {value: "0"}),
+  {dominates: [{list: [OP, `result.projection.projection.scenarios[id=${scenario}].rows`], key: "periodId", field: "ebitda"},
+    {list: [OP, `result.projection.projection.scenarios[id=${from}].rows`], key: "periodId", field: "ebitda"}], op: "lt"});
+const laterReceivables = (scenario: string) => cause("redes pagando mais tarde",
+  {dominates: [{contributed: [OP, `scenario.${scenario}.override.receivableDays`]}, {contributed: [OP, "base.receivableDays"]}], op: "gt"});
 const bankFallback = claim("o plano alternativo do resultado é um alongamento bancário (CCB de alongamento) que exige anuência",
   {bind: "alt", to: at(FP, "readings.alternative.pathId")}, has(FP, "result.evaluation.paths[id=$alt].instrumentIds", null, "ccb-alongamento"),
   cmp(at(FP, "readings.paths[id=$alt].consentRequired"), "eq", {value: "true"}));
@@ -173,7 +207,9 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {when: [tightBelowMinimum, ...claim("sem ação é o caminho de manter e rolar", cmp(at(FP, "readings.paths[id=manter].role"), "eq", {value: "status_quo"}))]}),
   "situation.cash_without_line": t("page.line", "Sem a linha da safra, o caixa {em:semana} é de {saldo}, contra o mínimo de {minimo}.",
     {semana: s("date", WC, "readings.sensitivities[caseId=sem-linha].weekStart"), saldo: s("money", WC, "readings.sensitivities[caseId=sem-linha].minimum"),
-      minimo: s("money", WC, "result.weekly.minimumCash")}, {when: claim("o caixa sem a linha fica abaixo do mínimo", cmp("saldo", "lt", "minimo"))}),
+      minimo: s("money", WC, "result.weekly.minimumCash")}, {when: [...claim("o caixa sem a linha fica abaixo do mínimo", cmp("saldo", "lt", "minimo")),
+      ...cause("sem a linha", {dominates: [{list: [WC, "result.weekly.cases[id=sem-linha].rows"], key: "weekStart", field: "inflows"},
+        {list: [WC, "result.weekly.cases[id=linha-17].rows"], key: "weekStart", field: "inflows"}], op: "lt"})]}),
   "situation.debt_service": t("page.line", "Serviço da dívida {em:ano}: {servico}, contra {disponivel} de caixa disponível.",
     {ano: yr("$y"), servico: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].service"),
       disponivel: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].availableForService")},
@@ -219,8 +255,10 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {caminhos: s("count", FP, "readings.horizon.candidatePaths"), ano: yr("$y")},
     {when: [maturityYear, {onlyFlagged: [FP, "readings.paths", "eligible", "id"], equals: at(FP, "readings.recommendation.pathId"), claim: "só o caminho recomendado passa em todos os critérios"}]}),
   "alternatives.row.no_line_debenture": pathRow("Sem a linha agora, com giro e debênture nova", "sem-linha-debenture",
-    [...variant("sem-linha-debenture", "sem-linha"), ...instrument("sem-linha-debenture", "debenture-80", "o caminho emite a debênture nova")]),
-  "alternatives.row.defer_line": pathRow("Adiar a linha de embalagem", "adiar-linha", variant("adiar-linha", "adiar-12")),
+    [...variant("sem-linha-debenture", "sem-linha"), ...cause("sem a linha", {dominates: [pathEbitda("sem-linha-debenture"), pathEbitda("manter")], op: "lt"}),
+      ...instrument("sem-linha-debenture", "debenture-80", "o caminho emite a debênture nova")]),
+  "alternatives.row.defer_line": pathRow("Adiar a linha de embalagem", "adiar-linha", [...variant("adiar-linha", "adiar-12"),
+    ...cause("adiar a linha", {dominates: [pathEbitda("adiar-linha"), pathEbitda("manter")], op: "lt"}, {dominates: [pathEbitda("adiar-linha"), pathEbitda("sem-linha-debenture")], op: "gt"})]),
   "alternatives.row.debenture_with_line": pathRow("Separar por uso e emitir debênture que substitui a atual e a dívida com {credor}", "debenture-com-linha",
     [...variant("debenture-com-linha", "seguir"), prepaidIn("debenture-com-linha"), ...claim("o caminho resgata a debênture atual", has(FP, "result.evaluation.paths[id=debenture-com-linha].prepayments", "instrumentId", "debenture-2021"))], true),
   "alternatives.row.keep_and_roll": pathRow("Manter e rolar no vencimento", "manter", claim("o caminho é o de manter", cmp(at(FP, "readings.paths[id=manter].role"), "eq", {value: "status_quo"}))),
@@ -253,18 +291,17 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "what_changes.title": t("page.title", "A recomendação depende de demanda acima de {piso}; trigo mais caro e redes pagando mais tarde reduzem a folga",
     {piso: s("money", FP, L + "issueFloorInsideGates")},
     {when: [...claim("o piso fica abaixo do alvo de emissão", cmp("piso", "lt", at(FP, L + "issueTarget"))),
-      ...claim("trigo mais caro reduz o EBITDA e redes pagando mais tarde consomem capital de giro",
-        cmp(at(OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=2027-12-31].ebitda"), "lt", at(OP, "readings.projected.scenarios[id=informado].rows[periodId=2027-12-31].ebitda")),
-        cmp(at(OP, "readings.projected.largestCashReduction.workingCapitalChangeEffect"), "gt", {value: "0"}), cmp(at(OP, "readings.projected.largestCashReduction.scenarioId"), "eq", {value: "prazo-60"}))]}),
+      ...wheatShock("informado-trigo-4m", "informado"), ...laterReceivables("prazo-60"),
+      ...claim("redes pagando mais tarde consomem capital de giro", cmp(at(OP, "readings.projected.scenarios[id=prazo-60].rows[periodId=2026-12-31].effects.changeInWorkingCapital"), "gt", {value: "0"}))]}),
   "what_changes.demand": t("page.line", "Demanda da debênture abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
     {piso: s("money", FP, L + "issueFloorInsideGates"), alvo: issue}, {when: [...claim("o piso fica abaixo do alvo", cmp("piso", "lt", "alvo")), ...longIsDebenture]}),
   "what_changes.wheat": t("page.line", "Trigo {choque} mais caro, com repasse em {defasagem}: EBITDA {de:ano} perto de {ebitda}.",
     {choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
-      ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda")}, {when: claim("o choque é de alta", cmp("choque", "gt", "0"))}),
+      ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda")}, {when: wheatShock("informado-trigo-4m", "informado")}),
   "what_changes.receivable_days": t("page.line", "Redes pagando mais tarde: {giro} a mais de capital de giro.",
     {giro: s("money", OP, "readings.projected.scenarios[id=prazo-60].rows[periodId=$p].effects.changeInWorkingCapital")},
-    {when: claim("o efeito do prazo maior aumenta o capital de giro", cmp("giro", "gt", "0"))}),
+    {when: [...laterReceivables("prazo-60"), ...claim("o efeito do prazo maior aumenta o capital de giro", cmp("giro", "gt", "0"))]}),
   "next_steps.title": t("page.title", "Próximos passos e datas"),
   "next_steps.notice": t("page.line", "{prazo}: aviso ao fornecedor de embalagem.", {prazo: dl("delib.action.supplier_notice")}),
   "next_steps.programs": t("page.line", "{prazo}: adesão aos programas de antecipação.", {prazo: dl("delib.action.join_programs")}),
@@ -326,7 +363,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
       ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda"),
       ebitda_adverso: measurement("money", "dez27-adverso", "reportedEbitda"), alavancagem: measurement("multiple", "dez27-adverso", "ratio"), covenant},
-    {answers: "q.wheat", when: [...claim("o choque é de alta", cmp("choque", "gt", "0")),
+    {answers: "q.wheat", when: [...wheatShock("informado-trigo-4m", "informado"),
       ...claim("o EBITDA cai contra o cenário informado", cmp("ebitda", "lt", at(OP, "readings.projected.scenarios[id=informado].rows[periodId=$y-12-31].ebitda"))),
       ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant"))]}),
   "q.anchor": t("question", "Dependemos demais da rede A?"),
@@ -366,11 +403,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
 export function boardTemplateClaims() {
   const describe = (o: BoardOperand): string => "slot" in o ? `posição ${o.slot}` : "value" in o ? `"${o.value}"` : "var" in o ? `$${o.var}`
     : "at" in o ? `${o.at[0]} ${o.at[1]}${o.year ? " (ano)" : ""}` : `contrato ${o.contributed[0]} ${o.contributed[1]}`;
+  const series = (x: BoardSeries) => "list" in x ? `${x.list[0]} ${x.list[1]}[*].${x.field} por ${x.key}` : `contrato ${x.contributed[0]} ${x.contributed[1]}`;
   const check = (c: BoardCondition): string => "compare" in c ? `${describe(c.compare[0])} ${c.compare[1]} ${describe(c.compare[2])}`
     : "every" in c ? `todo ${c.every[0]} ${c.every[1]}[*].${c.every[2]} ${c.op} ${describe(c.than)}`
     : "onlyFlagged" in c ? `só um de ${c.onlyFlagged[0]} ${c.onlyFlagged[1]} com ${c.onlyFlagged[2]}, ${c.onlyFlagged[3]} = ${describe(c.equals)}`
     : "largest" in c ? `maior ${c.largest[2]} em ${c.largest[0]} ${c.largest[1]} tem ${c.largest[3]} = ${describe(c.equals)}`
     : "bind" in c ? `$${c.bind} := ${describe(c.to)}` : "atLeast" in c ? `${c.atLeast[0]} ${c.atLeast[1]} tem ao menos ${c.count}`
+    : "dominates" in c ? `série ${series(c.dominates[0])} ${c.op === "gt" ? "domina por cima" : c.op === "lt" ? "domina por baixo" : "igual a"} ${series(c.dominates[1])}`
     : `${c.includes[0]} ${c.includes[1]}${c.includes[2] ? `[*].${c.includes[2]}` : ""} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`;
   const rows: {templateId: string; claim: string; checks: string[]}[] = [];
   for (const [templateId, x] of Object.entries(boardTemplates)) for (const c of x.when) {
@@ -468,8 +507,9 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c ? [] : [c.equals]);
-    const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]] : []);
+      : "atLeast" in c || "dominates" in c ? [] : [c.equals]);
+    const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
+      : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : d.contributed[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
     for (const o of operands) {
       if ("slot" in o && !Object.hasOwn(x.slots, o.slot)) problems.push(`${id}:operand:${o.slot}`);
@@ -477,6 +517,8 @@ export function checkBoardTemplateLibrary() {
       if ("at" in o) for (const m of o.at[1].matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:at:${m[1]}`);
     }
     for (const m of x.text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)) if (!m[0].startsWith("{count:") && !Object.hasOwn(x.slots, m[1]!)) problems.push(`${id}:text:${m[1]}`);
+    // A text that names a cause carries the condition of that cause, on its driver.
+    for (const c of boardCauses) if (c.phrase.test(x.text) && !x.when.some((w) => w.claim === `causa: ${c.cause}`)) problems.push(`${id}:cause:${c.cause}`);
     // No fixed text names a creditor or a bank: names enter only through label slots.
     for (const name of boardNameDictionary) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(x.text) && !boardNamesAllowedInText.includes(name)) problems.push(`${id}:names:${name}`);
     if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);

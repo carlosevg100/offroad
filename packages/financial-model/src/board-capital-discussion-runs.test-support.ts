@@ -1,9 +1,10 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
+import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraReceivablesPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -58,6 +59,11 @@ export const boardSublimitExpected = "A rede A deve R$ 19,8 milhões dos R$ 62 m
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
   return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
+};
+/** The working-capital reading of the scenario prazo-60 as the case states it, from a given projection packet (test side only). */
+export const boardWorkingCapitalReading = (packet: Record<string, unknown>): [string, string, string, string] => {
+  const path = "readings.projected.scenarios[id=prazo-60].rows[periodId=2026-12-31].effects.changeInWorkingCapital";
+  return ["projecao", path, "0", new Decimal(readBoardSourcePath(packet, path) as string).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)];
 };
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
@@ -393,6 +399,15 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["sensitivity-called-smaller-economy-with-unchanged-economy", () => {
       const packet = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
+    }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    // Review r11: each cause by the driver that defines it, scenario against base, over the scope the sentence states.
+    ["later-receivables-claimed-on-longer-inventory", () => {
+      const packet = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
+    }, "board_capital_template_condition_failed:what_changes.title"],
+    ["larger-capex-claimed-on-front-loaded-capex-with-smaller-total", () => {
+      const packet = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(packet, "capex-120")];}));
     }, "board_capital_template_condition_failed:topic.project_sensitivities"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
     ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],

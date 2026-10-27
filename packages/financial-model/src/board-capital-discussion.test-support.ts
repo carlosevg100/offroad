@@ -41,8 +41,7 @@ function buildSources() {
   const covenant = auroraCovenantPacket();
   const weekly = prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro e o que vence?", analysis: auroraWeeklyCashBasis().seal()});
   const investment = auroraInvestmentPacket();
-  const projection = prepareOperatingProjectionPacket({schemaVersion: "operating-projection-packet-input.v1",
-    question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: operatingProjectionBasis({informed: true}).seal()});
+  const projection = auroraProjectionPacket();
   const challenge = prepareProjectionChallengePacket({schemaVersion: "projection-challenge-packet-input.v1",
     question: "Que premissas você questionaria nessa projeção? Vai para os bancos semana que vem.", analysis: projectionChallengeBasis().seal()});
   const receivables = auroraReceivablesPacket();
@@ -73,12 +72,22 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
-export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true} = {}) {
-  const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : c32PacketInput(), from = id(1001);
+export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true} = {}) {
+  const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex() : c32PacketInput(), from = id(1001);
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
   for (const x of calibration.input.cases) x.analysis.entityId = company;
   calibration.seal();
   return prepareInvestmentDecisionPacket(calibration.input);
+}
+/** The C32 cases with capex-120 rebuilt so the first year's capex is larger and the total smaller (12 and 5 against 10 and 8). */
+function c32WithFrontLoadedCapex() {
+  const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
+  const millions = (v: string) => new Decimal(v).times(1000000).toFixed();
+  const capex = b.overlay(base, "capex-antecipado", (c, i, years) => {
+    i.project.money.growthCapexPaid = c("project.growthCapexPaid", "currency", {type: "list", value: years.map((y) => y === 2026 ? millions("12") : y === 2027 ? millions("5") : "0")});
+  });
+  f.input.cases[2] = {...f.input.cases[2]!, analysis: capex};
+  return f;
 }
 /** The C32 cases with economy-4 built as an overlay of capex only (economy unchanged, capex and depreciation 20% larger). */
 function c32WithMislabelledEconomy() {
@@ -91,6 +100,18 @@ function c32WithMislabelledEconomy() {
   });
   f.input.cases[1] = {...f.input.cases[1]!, analysis: economy};
   return f;
+}
+/** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
+ * days instead of the chains' receivable days, which stay as in the base. */
+export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true} = {}) {
+  const b = operatingProjectionBasis({informed: true});
+  if (variant.inventoryInsteadOfReceivables) {
+    const scenario = (b.input as unknown as {scenarios: {id: string; overrides: unknown[]}[]}).scenarios.find((x) => x.id === "prazo-60")!;
+    scenario.overrides = [{driver: "inventoryDays", values: b.contribute("scenario.prazo-60.override.inventoryDays", "days", {type: "list", value: ["55", "55", "55"]}, "prazo-60"),
+      origin: b.contribute("scenario.prazo-60.override.inventoryDays.origin", "origin", {type: "text", value: "house"}, "prazo-60")}];
+  }
+  return prepareOperatingProjectionPacket({schemaVersion: "operating-projection-packet-input.v1",
+    question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: b.seal()});
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */

@@ -1,9 +1,9 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardStatedMillions, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardStatedMillions, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -253,20 +253,31 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   // Policy and sensitivities, read in the text against the covenant and investment results the identity names: a
   // policy said to lack a definition has none recorded, and each cause of a sensitivity is the operand its case changes.
   const sourceOf = (method: string) => {const x = d.identity.find((i) => i.methodId === method); return x ? sources.find((s) => s.packet.fingerprint === x.packetFingerprint)?.packet : undefined;};
-  const covenantPacket = sourceOf("measure-covenant-headroom"), investmentPacket = sourceOf("analyze-investment-project");
+  const covenantPacket = sourceOf("measure-covenant-headroom"), investmentPacket = sourceOf("analyze-investment-project"), projectionPacket = sourceOf("build-operating-projection");
   for (const t of texts) {
     if (/definição de EBITDA|qual EBITDA mede/.test(t)) {
       const definition = (covenantPacket?.result as {definitions?: {limitId: string; definition: string | null}[]} | undefined)?.definitions?.find((x) => x.limitId === "politica");
       if (!definition || definition.definition !== null) bad.push(`policy_definition:${t.slice(0, 60)}`);
     }
-    if (/economia menor|capex maior|partida mais lenta/.test(t)) {
-      const cases = (investmentPacket as {cases?: {id: string; result: {project: {rows: {periodId: string; incrementalEbitda: string; operands: Record<string, string>}[]}}}[]} | undefined)?.cases ?? [];
-      const row = (id: string, period: string) => cases.find((c) => c.id === id)?.result.project.rows.find((r) => r.periodId === period);
-      const lower = (a?: string, b?: string) => a !== undefined && b !== undefined && new D(a).lt(b);
-      if (/economia menor/.test(t) && !(lower(row("economy-4", "2028-12-31")?.incrementalEbitda, row("base", "2028-12-31")?.incrementalEbitda)
-        && row("economy-4", "2028-12-31")?.operands.loadYearFraction === row("base", "2028-12-31")?.operands.loadYearFraction)) bad.push(`cause_economy:${t.slice(0, 60)}`);
-      if (/capex maior/.test(t) && !lower(row("base", "2026-12-31")?.operands.growthCapexPaid, row("capex-120", "2026-12-31")?.operands.growthCapexPaid)) bad.push(`cause_capex:${t.slice(0, 60)}`);
-      if (/partida mais lenta/.test(t) && !lower(row("slower-start", "2027-12-31")?.operands.activeYearFraction, row("base", "2027-12-31")?.operands.activeYearFraction)) bad.push(`cause_start:${t.slice(0, 60)}`);
+    // Causes, by the oracle's own reading of the drivers: totals over the horizon for the project, receivable days for the chains.
+    const cases = (investmentPacket as {cases?: {id: string; result: {project: {rows: {periodId: string; incrementalEbitda: string; operands: Record<string, string>}[]}}}[]} | undefined)?.cases ?? [];
+    const rows = (id: string) => cases.find((c) => c.id === id)?.result.project.rows ?? [];
+    const total = (id: string, f: (r: ReturnType<typeof rows>[number]) => string) => rows(id).reduce((sum, r) => sum.plus(f(r)), new D(0));
+    const same = (id: string, f: (r: ReturnType<typeof rows>[number]) => string) => rows("base").every((r) => rows(id).find((x) => x.periodId === r.periodId) && f(rows(id).find((x) => x.periodId === r.periodId)!) === f(r));
+    if (/economia menor/i.test(t) && !(rows("economy-4").length && total("economy-4", (r) => r.incrementalEbitda).lt(total("base", (r) => r.incrementalEbitda))
+      && same("economy-4", (r) => r.operands.loadYearFraction!))) bad.push(`cause_economy:${t.slice(0, 60)}`);
+    if (/capex maior/i.test(t) && !(rows("capex-120").length && total("capex-120", (r) => r.operands.growthCapexPaid!).gt(total("base", (r) => r.operands.growthCapexPaid!)))) bad.push(`cause_capex:${t.slice(0, 60)}`);
+    if (/partida mais lenta/i.test(t) && !(rows("slower-start").length && total("slower-start", (r) => r.operands.activeYearFraction!).lt(total("base", (r) => r.operands.activeYearFraction!)))) bad.push(`cause_start:${t.slice(0, 60)}`);
+    if (/redes pagando mais tarde/i.test(t)) {
+      const contributions = (projectionPacket?.result as {contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined)?.contributions ?? [];
+      const days = (suffix: string) => contributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
+      const scenario = d.identity.map((x) => /scenarios\[id=([^\]]+)\]\.rows\[[^\]]+\]\.effects\.changeInWorkingCapital/.exec(x.path)?.[1]).find(Boolean);
+      const later = scenario ? days(`.scenario.${scenario}.override.receivableDays`) : undefined, base = days(".base.receivableDays");
+      if (!later || !base || !later.reduce((sum, v) => sum.plus(v), new D(0)).gt(base.reduce((sum, v) => sum.plus(v), new D(0)))) bad.push(`cause_receivables:${t.slice(0, 60)}`);
+    }
+    if (/trigo\s+(?:R\$\s)?[^.;]*mais caro|trigo mais caro/i.test(t)) {
+      const shock = (projectionPacket?.result as {projection?: {projection?: {scenarios?: {id: string; inputCostShock: {rate: string} | null}[]}}} | undefined)?.projection?.projection?.scenarios?.find((x) => x.id === "informado-trigo-4m")?.inputCostShock;
+      if (!shock || !new D(shock.rate).gt(0)) bad.push(`cause_wheat:${t.slice(0, 60)}`);
     }
   }
   // Exposure, capacity and contract, read in the text and against the receivables result the identity names: the
@@ -419,6 +430,23 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(read.some((x) => x.startsWith("policy_definition:"))).toBe(true);
     expect(read.some((x) => x.startsWith("cause_economy:"))).toBe(true);
     expect(read.some((x) => x.startsWith("cause_capex:") || x.startsWith("cause_start:"))).toBe(false);
+  });
+  it("regression r11: each cause by its driver, through the full path; the oracle reads the drivers of the sources", () => {
+    const inventory = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("projecao", inventory, () => full(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(inventory);})))
+      .toThrow("board_capital_template_condition_failed:what_changes.title");
+    const frontLoaded = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("linha-embalagem", frontLoaded, () => full(2, (c) => {
+      c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(frontLoaded, "capex-120")];
+    }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+    // Not vacuous: the calibrated material read against the projection with longer inventory and the investment with
+    // front-loaded capex is read as false on both causes, and only on those.
+    const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
+    const forged = [{packet: {...inventory, fingerprint: fingerprintOf("build-operating-projection")}}, {packet: {...frontLoaded, fingerprint: fingerprintOf("analyze-investment-project")}}, ...auroraBoardSources()];
+    const read = oracle(calibrated, forged).bad;
+    expect(read.some((x) => x.startsWith("cause_receivables:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("cause_capex:"))).toBe(true);
+    expect(read.some((x) => /^cause_(economy|start|wheat):/.test(x))).toBe(false);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

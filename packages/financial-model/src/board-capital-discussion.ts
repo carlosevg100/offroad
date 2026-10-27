@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -373,6 +373,34 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (!Array.isArray(xs)) throw unverified(path);
       const items = xs.map((x) => scalar(field === null ? x : (x as Record<string, unknown>)[field], path));
       return want === undefined || (c.none ? !items.includes(want) : items.includes(want) && (!c.only || items.length === 1));
+    }
+    if ("dominates" in c) {
+      // Period by period, matched by key; a series that does not resolve, or keys that do not match, fail the condition.
+      const series = (x: BoardSeries): Map<string, string> | null => {
+        if ("contributed" in x) {
+          const packet = sourceOf(x.contributed[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+          const suffix = x.contributed[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+          const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+          const v = hits.length === 1 ? hits[0]!.value?.value : undefined;
+          return Array.isArray(v) && v.every((y) => typeof y === "string") ? new Map(v.map((y, i) => [String(i), y as string])) : null;
+        }
+        const xs = read(x.list[0], x.list[1]);
+        if (!Array.isArray(xs)) return null;
+        const out = new Map<string, string>();
+        for (const e of xs) {
+          const k = readBoardSourcePath(e, x.key), v = readBoardSourcePath(e, x.field);
+          if ((typeof k !== "string" && typeof k !== "number") || (typeof v !== "string" && typeof v !== "number")) return null;
+          out.set(String(k), String(v));
+        }
+        return out;
+      };
+      const a = series(c.dominates[0]), b = series(c.dominates[1]);
+      // Over the horizon of the second series (the base): every one of its periods must exist in the first.
+      if (!a || !b || b.size === 0 || [...b.keys()].some((k) => !a.has(k))) return false;
+      const pairs = [...b].map(([k, v]) => [a.get(k)!, v] as const);
+      if (c.op === "eq") return pairs.every(([x, y]) => compareBoard(x, "eq", y));
+      const weak = c.op === "gt" ? "ge" : "le";
+      return pairs.every(([x, y]) => compareBoard(x, weak, y)) && pairs.some(([x, y]) => compareBoard(x, c.op, y));
     }
     if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {
