@@ -16,6 +16,8 @@ import {adoptedProjectionChallengeInputSchema, calculateAdoptedProjectionChallen
 import {adoptedProjectionChallengeOutputSchema} from "./projection-challenge-results";
 import {adoptedDriverProjectionInputSchema, calculateAdoptedDriverProjection} from "./adopted-operating-projection-drivers";
 import {adoptedDriverProjectionOutputSchema} from "./operating-projection-results";
+import {adoptedReceivedProposalInputSchema, calculateAdoptedReceivedProposal} from "./adopted-evaluate-received-proposal";
+import {adoptedReceivedProposalOutputSchema} from "./evaluate-received-proposal-results";
 import {adoptedFinancingProposalOutputSchema, adoptedRelativeDebtCostOutputSchema,
   adoptedDebtCapacityOutputSchema, adoptedInvestmentAnalysisOutputSchema, adoptedFinancingComparisonOutputSchema, adoptedDebtTableOutputSchema, adoptedCovenantHeadroomOutputSchema, adoptedWeeklyCashOutputSchema} from "./ficha-calculation-results";
 
@@ -58,6 +60,9 @@ export function calculateReceivablesFundingEvidence(raw: unknown) {
 export function calculateQuarterUpdateEvidence(raw: unknown) {
   const result = calculateAdoptedQuarterUpdate(raw); adoptedQuarterUpdateOutputSchema.parse(result); return result;
 }
+export function calculateReceivedProposalEvidence(raw: unknown) {
+  const result = calculateAdoptedReceivedProposal(raw); adoptedReceivedProposalOutputSchema.parse(result); return result;
+}
 
 function contracts(id: string, exportName: string, input: z.ZodType, output: z.ZodType) {
   const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
@@ -81,5 +86,6 @@ export function fichaCalculationExecutorContracts() {
     {name: "projection-challenge-evidence", ...contracts("projection-challenge-evidence", "calculateProjectionChallengeEvidence", adoptedProjectionChallengeInputSchema, adoptedProjectionChallengeOutputSchema)},
     {name: "receivables-funding-evidence", ...contracts("receivables-funding-evidence", "calculateReceivablesFundingEvidence", adoptedReceivablesFundingInputSchema, adoptedReceivablesFundingOutputSchema)},
     {name: "quarter-update-evidence", ...contracts("quarter-update-evidence", "calculateQuarterUpdateEvidence", quarterUpdateAnalysesSchema, adoptedQuarterUpdateOutputSchema)},
+    {name: "received-proposal-evidence", ...contracts("received-proposal-evidence", "calculateReceivedProposalEvidence", adoptedReceivedProposalInputSchema, adoptedReceivedProposalOutputSchema)},
   ];
 }

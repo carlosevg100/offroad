@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "evaluate-received-proposal-2026-10-27-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "não exposto pelo ambiente",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "evaluate-received-proposal",
+    "version": "2026.10.27-v1",
+    "fingerprint": "68e10e2a6db1340395c5f549aabc7ca58bb100beff6e86f467238447bb5990a0"
+  },
+  "run": {
+    "id": "r6-1d434b9-125047",
+    "startedAt": "2026-10-27T12:50:47Z",
+    "finishedAt": "2026-10-27T12:59:49Z",
+    "commit": "1d434b919ea69b16904af43ce7a3c3bc58f56ced"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "O fingerprint da base, os 13 arquivos fixados e as quatro referências externas conferem com os SHA-256 informados. A execução usou uma cópia extraída do commit indicado.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/evaluate-received-proposal-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Revisitei procedimento, fatos, premissas, base adotada, compositor, leitor, núcleo e pacote. O reaproveitamento dos motores publicados C02, C12 e C03 é efetivo, sem duplicação desses motores.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "buildReceivedProposalSchedule; evaluateReceivedProposal",
+      "result": "confirmed",
+      "note": "Há chamadas reais a buildDeferredFinancingSchedule, solveEquivalentFinancingSpread, proposalCompanyLedger, measureCovenantHeadroom e calculateRelativeDebtCostBridge."
+    },
+    {
+      "claim": "O cálculo independente em Python confirmou 176 comparações. Dívida inicial de R$ 130 mi; serviço existente de 2027 de R$ 89,679537 mi; caixa disponível de R$ 35,684376 mi; incremento da CCB de R$ 12,212013 mi. Pico no terceiro trimestre de 2027.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.fixture.ts",
+      "result": "confirmed",
+      "note": "Reexecutei em memória as funções do oráculo C32 e conferi calendário, caixa, dívida e EBITDA dos casos base e bancário. O incremento trimestral do oráculo é R$ 13,293713 mi; a diferença de R$ 1,081700 mi respeita a tolerância registrada de R$ 1,2 mi."
+    },
+    {
+      "claim": "A divergência de custo bruto está decidida a favor do método: CDI + 4,902762175% ao ano. Recalculei IOF por parcela de R$ 0,974344 mi, equivalente a 3,247813333%, e comissão de R$ 0,24 mi.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "buildReceivedProposalSchedule",
+      "result": "corrected",
+      "note": "Meu cronograma independente acumula juros diariamente, paga nas datas adotadas e resolve o spread sobre todos os fluxos líquidos da vida. CDI + 4,4% deixa diferença absoluta de valor presente de R$ 210.863,59. A aproximação da ficha é a incorreta na convenção declarada."
+    },
+    {
+      "claim": "O líquido de CDI + 3,235823036%, arredondado a 3,24%, reproduz corretamente a convenção simplificada declarada: spread equivalente bruto multiplicado por 0,66.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "receivedProposalNetConvention; netOf",
+      "result": "confirmed",
+      "note": "Não é uma TIR dos fluxos após impostos. Testei lucro presumido, regime desconhecido, períodos não tributáveis, cobertura fiscal insuficiente e período posterior à quitação. Cada estrutura usa sua própria vida; o benefício pleno exige lucro real e tributabilidade adotada."
+    },
+    {
+      "claim": "Recalculei covenant base de dezembro de 2026 de 2,401305x, com folga contratual de 0,598695x e de política de 0,098695x. No caso bancário: 2,531442x em dezembro de 2026 e 2,609507x em dezembro de 2027.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "measurements; covenantRows",
+      "result": "confirmed",
+      "note": "O aditamento de 2023 usa 3,0x e a política do conselho usa 2,5x separadamente. As diferenças para o oráculo respeitam a tolerância de 0,02x. O caso bancário supera a política nas duas datas."
+    },
+    {
+      "claim": "Garantia pedida de R$ 39 mi contra R$ 25,41 mi cedíveis, com insuficiência de R$ 13,59 mi. Rede A excluída em R$ 18,56 mi, Bradesco em R$ 12 mi e atrasados em R$ 2,03 mi. Restam R$ 3 mi da exceção agregada; o excesso de R$ 36 mi exige anuência.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "buckets; basketRemaining; collateralView",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Spread nominal 20 bp acima da mediana, dentro da faixa. Ponte contra Bradesco: -50 bp observados, -70 bp esperados e +20 bp residuais. Carência de 12 meses com prazo total de 48 reduz o serviço de 2027 em R$ 5,988784 mi.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "market; history; variants",
+      "result": "confirmed",
+      "note": "Recalculei as três variantes. Na variante de 48 meses, o serviço de 2027 permanece em aproximadamente R$ 6,223229 mi."
+    },
+    {
+      "claim": "Os dois comandos solicitados passaram sob Node 24.19.0: financial-core com 23 testes e financial-model com 25 testes. As corridas registradas reproduziram casos e fingerprints: 35 gold, 26 adversariais e seis de consistência.",
+      "source": "packages/financial-model/src/evaluate-received-proposal-runs.test.ts",
+      "anchor": "npx vitest run src/evaluate-received-proposal",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A falha residual da rodada 5 foi corrigida na origem: escritura, política e credor recusam datas repetidas nos fatos, no leitor adotado e no núcleo, com erro nomeado. A recusa do leitor permanece mesmo com outro operando ausente.",
+      "source": "packages/financial-model/src/adopted-evaluate-received-proposal.ts",
+      "anchor": "uniqueDates; validações correspondentes nos fatos e no núcleo",
+      "result": "confirmed",
+      "note": "Ataques próprios repetiram datas uma e três vezes em cada lista. Cinco permutações simultâneas das listas, apurações e entradas da base preservaram integralmente resultados e leituras, incluindo frequência 1 contra 2 e o fato sobre maior frequência do credor."
+    },
+    {
+      "claim": "Os ataques das rodadas 1 a 4 não reproduzem as falhas anteriores: cobertura ausente gera lacunas, inclusive sem apuração alguma; datas anteriores ao desembolso não geram violação nem inflam frequência; a primeira data efetiva independe da ordem.",
+      "source": "packages/financial-core/src/evaluate-received-proposal.ts",
+      "anchor": "required; missingTests; lenderDates; tests; firstCovenantDate",
+      "result": "confirmed",
+      "note": "Também confirmei a recusa decimal de 1,5 e 1,00000000000000000001 nas três camadas, inclusive no leitor sem execução posterior do núcleo."
+    },
+    {
+      "claim": "Ataques próprios adicionais passaram: adulteração da exceção e da rede A sem atualizar a base, custo nominal injetado, veredito injetado e mudança de cenário do operando foram recusados. Price e os três indexadores diferentes de CDI mais spread não foram aceitos silenciosamente.",
+      "source": "packages/financial-model/src/evaluate-received-proposal-packet.ts",
+      "result": "confirmed",
+      "note": "Quatro testes independentes registraram 32 observações aprovadas, além das recusas verificadas por asserção. Alterar equivalentSpread mantendo o fingerprint antigo é recusado. Adotar explicitamente exceção por operação deixa R$ 15 mi e ainda exige anuência; tornar a rede A cedível exige mudar o operando adotado."
+    },
+    {
+      "claim": "O procedimento acompanha a árvore e a resposta profissional corrigida: custo real, necessidade, dependências de terceiros, comparações e pedidos ao banco. Separa fatos, leituras, recomendações e fatores que mudariam a conclusão, sem veredito binário nem crítica à companhia.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/evaluate-received-proposal.md",
+      "anchor": "Sequência operacional; Narrativa; Template; Exemplos",
+      "result": "confirmed",
+      "note": "Confrontei ficha1-conversa.html, arvore-proposta-recebida.html, metodos-analise.html e registro-definicoes.html. A voz prescrita é profissional e trata o comportamento do banco como provável. A reciprocidade permanece explicitamente fora da precificação, com pergunta própria."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "Não encontrei falha numérica além das tolerâncias, definição financeira implementada incorretamente ou condição residual de conteúdo no escopo revisado. A correção de duplicidades protege as três listas de datas de teste; as apurações usam ordem canônica e identificadores por cenário e data. A invariância confirmada abrange números e leituras; fingerprints da base podem mudar quando seus bytes mudam. O custo bruto de 4,90% está correto na curva e convenção adotadas; o líquido de 3,24% é a redução simplificada explicitamente documentada, condicionada ao aproveitamento fiscal pleno. Esta revisão técnica não substitui aprovação profissional humana, não autoriza publicação ou execução e não verifica uma conversa final pela interface. Nenhum arquivo do repositório foi escrito ou alterado por esta revisão. A cópia temporária, os testes adicionais e os scripts independentes foram removidos antes do encerramento."
+}

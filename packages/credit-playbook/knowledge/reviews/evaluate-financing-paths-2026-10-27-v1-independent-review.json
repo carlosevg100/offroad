@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "evaluate-financing-paths-2026-10-27-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "evaluate-financing-paths",
+    "version": "2026.10.27-v1",
+    "fingerprint": "20ff20fe6b8ec057b75bc6c67ee894d1cfb0fbe7eff454505bdd7f760043376a"
+  },
+  "run": {
+    "id": "fp-r4-20261027-130326",
+    "startedAt": "2026-10-27T13:03:26Z",
+    "finishedAt": "2026-10-27T13:10:58Z",
+    "commit": "70432962467302743f29512a8d16608c683f8c3b"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 12 arquivos fixados e as três fontes externas conferem com os SHA-256 declarados. Os arquivos da cópia executável foram extraídos do commit indicado e conferidos novamente ao término.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/evaluate-financing-paths-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "Alterações concorrentes fora da base foram excluídas do julgamento. Nenhum comando da revisão escreveu dentro do repositório; a cópia temporária foi excluída."
+    },
+    {
+      "claim": "Procedimento, premissas, compositor, leitor adotado, contratos e pacote chegam ao núcleo determinístico. O reaproveitamento dos núcleos publicados é real.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; packages/financial-model/src/adopted-capital-structure-paths.ts",
+      "anchor": "evaluatePath, covenantRows, amortizationTest, instrumentCost e calculateAdoptedCapitalStructurePaths",
+      "result": "confirmed",
+      "note": "Conferidas as chamadas de financiamento, imposto, caixa, alavancagem, capacidade e custo equivalente, além dos vínculos de campo, cenário, entidade, período, unidade e definição na base adotada."
+    },
+    {
+      "claim": "Os comandos solicitados passaram: 15 testes no financial-core e 16 no financial-model. Os registros reproduziram 27 casos gold, 22 adversariais e seis de consistência, incluindo seus fingerprints.",
+      "source": "packages/financial-core/src/capital-structure-paths.test.ts; packages/financial-model/src/capital-structure-paths-runs.test.ts",
+      "result": "confirmed",
+      "note": "Executado npx vitest run src/capital-structure-paths em ambos os pacotes. Um teste independente adicional executou 25 casos, incluindo reprodução dos ataques anteriores e variações geradas de termos."
+    },
+    {
+      "claim": "O oráculo foi executado a partir de uma cópia de bytes idênticos. Um cálculo independente em Python conferiu 6.331 valores dos nove caminhos, cenários, fluxos, índices, custos e testes anuais, sem diferença acima da tolerância.",
+      "source": "outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py; packages/financial-core/src/capital-structure-paths.fixture.ts",
+      "result": "confirmed",
+      "note": "A maior diferença foi 3,34e-8 em R$ milhão, abaixo da tolerância monetária de 1e-6. As diferenças intencionais de calendário do waiver e do aditamento foram isoladas e recalculadas."
+    },
+    {
+      "claim": "Sem ação, o caixa de 4T27 é -78,62584928. O serviço de 2027 é 89,68, com principal de 76,67 e disponível para serviço de 35,68 antes do investimento do projeto.",
+      "source": "outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py; outputs/fichas-ensaio-2026-10/C32/corpo.html",
+      "result": "confirmed",
+      "note": "Os 36 da referência são arredondamento compatível. A classificação exclui do disponível o efeito do capex e do giro de partida do projeto, preservando imposto, manutenção, arrendamentos e giro operacional."
+    },
+    {
+      "claim": "O caminho recomendado reproduz caixa mínimo de 15,45720185, custo até 2028 de 49,43605240 e dívida líquida final de 79,31379459. A alavancagem é 2,20x, 1,85x e 1,42x; no adverso de 2027, 2,37072724x.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py",
+      "result": "confirmed",
+      "note": "Os caminhos ccb-tres-anos, debenture-com-linha e adiar-linha também reproduzem os valores do oráculo na mesma base."
+    },
+    {
+      "claim": "Imposto é recalculado por caminho e cenário. Juros semestrais acumulam, rendem até o pagamento e permanecem distintos dos juros pagos. Os prêmios são 0,10125 para a debênture e 0,40 para o Bradesco.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts",
+      "anchor": "buildInstrument, evaluatePath e covenantRows",
+      "result": "confirmed",
+      "note": "O prêmio da debênture é 45 × 0,003 × 0,75. No primeiro trimestre, juros apropriados são aproximadamente 4,85 e pagos, 2,36. A alavancagem usa principal menos caixa disponível e EBITDA ajustado pelos arrendamentos conforme a definição adotada."
+    },
+    {
+      "claim": "O waiver de 0,525 no 1T27 acompanha a nova garantia. A reprecificação do Bradesco somente desde o 1T27 preserva os termos anteriores ao aditamento.",
+      "source": "packages/financial-core/src/capital-structure-paths.fixture.ts; outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py",
+      "result": "corrected",
+      "note": "O oráculo antecipa o waiver ao 4T26. Na data corrigida não há benefício fiscal adicional, pois a base tributável já é negativa. Preservar o spread anterior nos dois primeiros trimestres reduz juros em aproximadamente 0,04059404 e aumenta caixa líquido de imposto em 0,02679206."
+    },
+    {
+      "claim": "A exceção agregada tem limite de 15 e ocupação inicial de 12, deixando 3. alongar-bradesco e bradesco-sem-linha atingem 27; alongar-com-banco atinge 36. Alongar apenas o Bradesco sem a linha deixa insuficiência de 18,23207894.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts",
+      "anchor": "basketUse e bradesco-sem-linha",
+      "result": "confirmed",
+      "note": "adiar-linha atinge 15, pois liquida o Bradesco antes do giro de 2027. Os 18 da ficha são arredondamento adequado; os 19 dos fragmentos usam outra variante de giro. A modalidade per_operation é um operando contratual distinto e muda a conta quando adotada explicitamente."
+    },
+    {
+      "claim": "Nos bytes revisados, o custo equivalente é CDI + 3,46124587% para a debênture a 2,9% e 3,56277128% a 3,0%. O giro inicial resulta em 6,95594950% e a CCB de 70 em 3,95794777%.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts",
+      "anchor": "instrumentCost",
+      "result": "corrected",
+      "note": "Comissões e IOF são pagos no fim do trimestre, conforme o caixa. Portanto, os antigos 3,49%, 3,59%, 7,20% e 4,02% não são os resultados desta base. Os fluxos contratuais foram recalculados independentemente; a faixa de 3,4% a 3,6% permanece compatível."
+    },
+    {
+      "claim": "O teste independente de 2029 a 2033 confirma a falha do perfil de cinco anos: em 2029 são 33,33333332 de amortização contra 23,71868000 disponíveis. O perfil de sete anos passa, com 22,66666665 contra 23,18195040 em 2029.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; packages/financial-core/src/debt-capacity.ts",
+      "anchor": "amortizationTest e projectDebtCapacityAmount",
+      "result": "confirmed",
+      "note": "Conferidos Finame, juros sobre saldo médio, imposto e todos os anos. Os 24,1 da C04 são aproximação, não o resultado exato destes operandos."
+    },
+    {
+      "claim": "O residual bloqueante da rodada 3 foi corrigido: encargo de 1 em path.charges atribuído à debênture entra em longCost e eleva o spread publicado para CDI + 3,82000524%, com custo do horizonte de 50,43605240.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; packages/financial-model/src/capital-structure-paths-packet.ts",
+      "anchor": "instrumentCost, recommendation.longCost e capital_paths_spread_not_from_path_cost",
+      "result": "confirmed",
+      "note": "O pacote lê longCost e recusa um spread publicado diferente dele. O mesmo encargo colocado no instrumento ou no caminho produziu o mesmo spread, inclusive no gatilho, nas variações geradas."
+    },
+    {
+      "claim": "Encargos atribuídos a outros instrumentos entram no custo do horizonte e são listados em chargesOutsideSpread. O encargo tardio de 1 no giro produz CDI + 14,51910505% quando o próprio giro é precificado com esse pagamento.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; packages/financial-model/src/capital-structure-paths-packet.test.ts",
+      "result": "confirmed",
+      "note": "No ataque por path.charges sobre o giro, o spread da debênture permanece correto e o encargo aparece explicitamente fora dele. Em 97 conjuntos de fluxos conferidos, o maior resíduo absoluto de valor presente no spread publicado foi inferior a 1,3e-18."
+    },
+    {
+      "claim": "Os ataques das rodadas anteriores não reproduzem as falhas: dívida longa rotulada sazonal, reutilização da mesma liberação e saldo anterior disfarçado são recusados; parcelas finais zero e emissões de 74,44, 79,99 e 81,23 fecham sem erro.",
+      "source": "packages/financial-core/src/capital-structure-paths.test.ts; packages/financial-model/src/capital-structure-paths-runs.test-support.ts",
+      "result": "confirmed",
+      "note": "A base de juros average_principal também altera corretamente os fluxos e o custo. Encargo anterior ao desembolso recebe custo not_applicable, sem publicação de spread incompleto."
+    },
+    {
+      "claim": "Portões precedem custo e dívida líquida. Política de 1,8x elimina a recomendação; texto exigindo outro caminho não muda a escolha. Foram recusados imposto injetado, cupom semestral pago trimestralmente, amortização ignorada e recomendação forjada fora dos portões.",
+      "source": "packages/financial-core/src/capital-structure-paths.ts; packages/financial-model/src/capital-structure-paths-packet.ts",
+      "result": "confirmed",
+      "note": "Reordenar caminhos e instrumentos preservou os números e a recomendação. Variar montantes, spreads, convenções de cupom, perfis e posição dos encargos preservou as identidades econômicas verificadas."
+    },
+    {
+      "claim": "Fato, leitura e recomendação estão separados, sem veredito binário. O plano alternativo tem decisão em 15/11/2026 e condições explícitas. O conteúdo distingue alvo de emissão de 80 do piso calculado de 74,44.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/evaluate-financing-paths.md; outputs/fichas-ensaio-2026-10/C47/corpo.html",
+      "result": "confirmed",
+      "note": "Trigo +15% deixa EBITDA de 2027 em 52,64057450 e rompe a política no estresse; prazo das redes de 60 dias rompe caixa mínimo e política no estresse. A definição provisória de EBITDA da política permanece explícita. A narrativa usa português profissional, com caminhos, datas e condições."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "A revisão não encontrou falha numérica ou de definição remanescente nos bytes fixados. A correção da rodada 4 alcança a origem do problema: o custo do instrumento no caminho incorpora seus encargos próprios e todos os encargos que o caminho lhe atribui; a leitura da recomendação usa esse custo. As diferenças contra aproximações das fichas e contra calendários do oráculo foram recalculadas e explicadas. A aprovação é técnica e limitada ao assunto fixado; não constitui aprovação profissional humana, publicação do método ou autorização de efeito externo. Nenhum arquivo foi escrito dentro do repositório pela revisão. A cópia temporária, os scripts e os resultados auxiliares foram excluídos."
+}

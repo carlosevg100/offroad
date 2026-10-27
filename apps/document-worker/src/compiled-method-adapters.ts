@@ -26,6 +26,12 @@ export const compiledMethodAdapters = [
     exports: {calculate: "prepareProjectionChallengePacket", input: "projectionChallengePacketInputSchema", output: "projectionChallengePacketOutputSchema"}},
   {methodId: "build-operating-projection", executorKey: "@offroad/financial-model#prepareOperatingProjectionPacket", executorVersion: "2026.10.26-v1",
     exports: {calculate: "prepareOperatingProjectionPacket", input: "operatingProjectionPacketInputSchema", output: "operatingProjectionPacketOutputSchema"}},
+  {methodId: "organize-document-folder", executorKey: "@offroad/financial-model#prepareDocumentFolderInventoryPacket", executorVersion: "2026.10.27-v1",
+    exports: {calculate: "prepareDocumentFolderInventoryPacket", input: "documentFolderInventoryPacketInputSchema", output: "documentFolderInventoryPacketOutputSchema"}},
+  {methodId: "evaluate-received-proposal", executorKey: "@offroad/financial-model#prepareReceivedProposalPacket", executorVersion: "2026.10.27-v1",
+    exports: {calculate: "prepareReceivedProposalPacket", input: "receivedProposalPacketInputSchema", output: "receivedProposalPacketOutputSchema"}},
+  {methodId: "evaluate-financing-paths", executorKey: "@offroad/financial-model#prepareCapitalPathsPacket", executorVersion: "2026.10.27-v1",
+    exports: {calculate: "prepareCapitalPathsPacket", input: "capitalPathsPacketInputSchema", output: "capitalPathsPacketOutputSchema"}},
 ] as const;
 export type CompiledMethodAdapter = (typeof compiledMethodAdapters)[number];
 export const compiledMethodIds: readonly string[] = compiledMethodAdapters.map(a => a.methodId);

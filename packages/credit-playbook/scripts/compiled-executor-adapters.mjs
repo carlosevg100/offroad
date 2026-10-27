@@ -74,6 +74,24 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareOperatingProjectionPacket', input: 'operatingProjectionPacketInputSchema', output: 'operatingProjectionPacketOutputSchema'}),
     entry: 'export {prepareOperatingProjectionPacket, operatingProjectionPacketInputSchema, operatingProjectionPacketOutputSchema} from "../../packages/financial-model/src/operating-projection-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'organize-document-folder',
+    executorKey: '@offroad/financial-model#prepareDocumentFolderInventoryPacket', executorVersion: '2026.10.27-v1',
+    exports: Object.freeze({calculate: 'prepareDocumentFolderInventoryPacket', input: 'documentFolderInventoryPacketInputSchema', output: 'documentFolderInventoryPacketOutputSchema'}),
+    entry: 'export {prepareDocumentFolderInventoryPacket, documentFolderInventoryPacketInputSchema, documentFolderInventoryPacketOutputSchema} from "../../packages/financial-model/src/document-folder-inventory-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'evaluate-received-proposal',
+    executorKey: '@offroad/financial-model#prepareReceivedProposalPacket', executorVersion: '2026.10.27-v1',
+    exports: Object.freeze({calculate: 'prepareReceivedProposalPacket', input: 'receivedProposalPacketInputSchema', output: 'receivedProposalPacketOutputSchema'}),
+    entry: 'export {prepareReceivedProposalPacket, receivedProposalPacketInputSchema, receivedProposalPacketOutputSchema} from "../../packages/financial-model/src/evaluate-received-proposal-packet.ts";',
+  }),
+  Object.freeze({
+    methodId: 'evaluate-financing-paths',
+    executorKey: '@offroad/financial-model#prepareCapitalPathsPacket', executorVersion: '2026.10.27-v1',
+    exports: Object.freeze({calculate: 'prepareCapitalPathsPacket', input: 'capitalPathsPacketInputSchema', output: 'capitalPathsPacketOutputSchema'}),
+    entry: 'export {prepareCapitalPathsPacket, capitalPathsPacketInputSchema, capitalPathsPacketOutputSchema} from "../../packages/financial-model/src/capital-structure-paths-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */

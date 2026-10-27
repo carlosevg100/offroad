@@ -1,7 +1,7 @@
 ---
 id: evaluate-financing-paths
 version: 2026.10.27-v1
-maturity: implemented
+maturity: tested
 title_pt: Avaliar caminhos de financiamento na mesma base
 title_en: Evaluate Financing Paths on One Basis
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [evaluate-financing-paths-2026-10-27-v1-consistency]
 adversarial_run_ids: [evaluate-financing-paths-2026-10-27-v1-adversarial]
-review_ids: []
+review_ids: [evaluate-financing-paths-2026-10-27-v1-independent-review]
 gold_run_ids: [evaluate-financing-paths-2026-10-27-v1-gold]
 ---
 
@@ -10916,7 +10916,9 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/evaluate-financing-paths-2026-10-27-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/evaluate-financing-paths-2026-10-27-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/evaluate-financing-paths-2026-10-27-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/evaluate-financing-paths-2026-10-27-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/evaluate-financing-paths-2026-10-27-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/evaluate-financing-paths-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]
