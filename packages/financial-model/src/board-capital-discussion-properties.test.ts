@@ -1,9 +1,9 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardStatedMillions, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, auroraBoardSources, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -22,7 +22,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -89,6 +89,7 @@ const meaning: Record<string, Record<string, string>> = {
   "topic.project_value": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate", vpl: IP + "[caseId=base].netPresentValue"},
   "topic.project_payback": {payback: IP + "[caseId=base].paybackYears", pico: IP + "[caseId=base].peakCumulativeCashNeed.amount", data: IP + "[caseId=base].peakCumulativeCashNeed.periodEndDate"},
   "topic.project_sensitivities": {vpl_economia: IP + "[caseId=economy-4].netPresentValue", vpl_capex: IP + "[caseId=capex-120].netPresentValue", vpl_partida: IP + "[caseId=slower-start].netPresentValue"},
+  "topic.project_strategic_reason": {motivo: "informed:chair"},
   "topic.project_wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
   "option.staged": {vpl: "pending:analyze-investment-project"},
@@ -215,6 +216,11 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const want = meaning[b.templateId]?.[b.slot], key = `${b.field}|${b.templateId}`;
     const g = groups.get(key) ?? {templateId: b.templateId, values: {}, complete: true}; groups.set(key, g);
     if (!want) {bad.push(`concept_unknown:${b.templateId}.${b.slot}`); continue;}
+    if (b.informedId !== null) {
+      const fact = d.informed.find((x) => x.id === b.informedId);
+      if (want !== `informed:${fact?.author}` || fact?.origin !== "informed") bad.push(`concept_informed:${b.field}:${b.slot}`);
+      continue;
+    }
     if (b.deadlineId !== null) {
       const [dId, tId] = b.deadlineId.split(".");
       const t = v.deliberations.find((x) => x.id === dId)?.deadlines.find((x) => x.id === tId);
@@ -244,6 +250,25 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   }
   for (const [key, rows] of rowsOf) if (rows.size > 1) bad.push(`creditor_row:${key}`);
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
+  // Policy and sensitivities, read in the text against the covenant and investment results the identity names: a
+  // policy said to lack a definition has none recorded, and each cause of a sensitivity is the operand its case changes.
+  const sourceOf = (method: string) => {const x = d.identity.find((i) => i.methodId === method); return x ? sources.find((s) => s.packet.fingerprint === x.packetFingerprint)?.packet : undefined;};
+  const covenantPacket = sourceOf("measure-covenant-headroom"), investmentPacket = sourceOf("analyze-investment-project");
+  for (const t of texts) {
+    if (/definição de EBITDA|qual EBITDA mede/.test(t)) {
+      const definition = (covenantPacket?.result as {definitions?: {limitId: string; definition: string | null}[]} | undefined)?.definitions?.find((x) => x.limitId === "politica");
+      if (!definition || definition.definition !== null) bad.push(`policy_definition:${t.slice(0, 60)}`);
+    }
+    if (/economia menor|capex maior|partida mais lenta/.test(t)) {
+      const cases = (investmentPacket as {cases?: {id: string; result: {project: {rows: {periodId: string; incrementalEbitda: string; operands: Record<string, string>}[]}}}[]} | undefined)?.cases ?? [];
+      const row = (id: string, period: string) => cases.find((c) => c.id === id)?.result.project.rows.find((r) => r.periodId === period);
+      const lower = (a?: string, b?: string) => a !== undefined && b !== undefined && new D(a).lt(b);
+      if (/economia menor/.test(t) && !(lower(row("economy-4", "2028-12-31")?.incrementalEbitda, row("base", "2028-12-31")?.incrementalEbitda)
+        && row("economy-4", "2028-12-31")?.operands.loadYearFraction === row("base", "2028-12-31")?.operands.loadYearFraction)) bad.push(`cause_economy:${t.slice(0, 60)}`);
+      if (/capex maior/.test(t) && !lower(row("base", "2026-12-31")?.operands.growthCapexPaid, row("capex-120", "2026-12-31")?.operands.growthCapexPaid)) bad.push(`cause_capex:${t.slice(0, 60)}`);
+      if (/partida mais lenta/.test(t) && !lower(row("slower-start", "2027-12-31")?.operands.activeYearFraction, row("base", "2027-12-31")?.operands.activeYearFraction)) bad.push(`cause_start:${t.slice(0, 60)}`);
+    }
+  }
   // Exposure, capacity and contract, read in the text and against the receivables result the identity names: the
   // balance the chain owes is the exposure, the program's volume is a capacity, and a ban on assignment needs the
   // registered contract to say so.
@@ -362,7 +387,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const capped = auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>;
     const p = withBoardSource("recebiveis", capped, () => full(2, boardSublimitCase));
     expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.answer).toBe(boardSublimitExpected);
-    expect(oracle(p, [{packet: capped}])).toEqual({bad: [], missing: []});
+    expect(oracle(p, [{packet: capped}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
     expect(() => withBoardSource("recebiveis", capped, () => full(2, (c) => {boardSublimitCase(c);
       c.questions[8]!.answer = "a.anchor|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}))).toThrow("board_capital_slot_concept_mismatch:a.anchor:saldo");
     const open = auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>;
@@ -371,9 +396,29 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     // assignment read against a contract registered as assignable, are both divergences.
     const forged = structuredClone(p), answer = forged.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!;
     answer.answer = answer.answer.replace("deve R$ 19,8 milhões", "deve R$ 10,0 milhões");
-    expect(oracle(forged, [{packet: capped}]).bad.some((x) => x.startsWith("exposure:"))).toBe(true);
+    expect(oracle(forged, [{packet: capped}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("exposure:"))).toBe(true);
     const calibrated = packet(2, () => undefined), openWithSameFingerprint = {...open, fingerprint: calibrated.result.discussion!.identity.find((x) => x.methodId === receivablesMethod)!.packetFingerprint};
     expect(oracle(calibrated, [{packet: openWithSameFingerprint}]).bad.some((x) => x.startsWith("contract:"))).toBe(true);
+  });
+  it("regression r10: a defined policy and a sensitivity whose economy is unchanged are refused; the chair's reason is an attributed informed fact (full path)", () => {
+    const defined = auroraCovenantPacket({policyDefinition: "Mesma definição da escritura"}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("covenant", defined, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:delib.policy.definition");
+    const relabelled = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("linha-embalagem", relabelled, () => full(2, (c) => {
+      c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(relabelled, "economy-4")];
+    }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+    const p = full(2, () => undefined);
+    expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor de embalagem.");
+    expect(() => full(2, (c) => {c.informed[0]!.author = "cfo";})).toThrow("board_capital_informed_fact_mismatch");
+    expect(() => full(2, (c) => {c.informed[0]!.origin = "analysis";})).toThrow(refusal);
+    // The oracle is not vacuous for the two: the calibrated material read against a covenant result whose policy is
+    // defined, and against an investment result whose economy case keeps the base economy, is read as false.
+    const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
+    const forged = [{packet: {...defined, fingerprint: fingerprintOf("measure-covenant-headroom")}}, {packet: {...relabelled, fingerprint: fingerprintOf("analyze-investment-project")}}, ...auroraBoardSources()];
+    const read = oracle(calibrated, forged).bad;
+    expect(read.some((x) => x.startsWith("policy_definition:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("cause_economy:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("cause_capex:") || x.startsWith("cause_start:"))).toBe(false);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

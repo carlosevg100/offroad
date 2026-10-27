@@ -6,6 +6,7 @@ import {prepareInvestmentDecisionPacket} from "./investment-decision-packet";
 import {c32PacketInput} from "./investment-decision-packet.test-support";
 import {prepareDebtTablePacket} from "./debt-table-packet";
 import {auroraDebtTableBasis} from "./debt-table.test-support";
+import Decimal from "decimal.js";
 import {prepareCovenantHeadroomPacket} from "./covenant-headroom-packet";
 import {auroraCovenantBasis} from "./covenant-headroom.test-support";
 import {prepareWeeklyCashPacket} from "./weekly-cash-packet";
@@ -37,17 +38,9 @@ function rebind<T>(value: T, from: string, to: string): T {
 
 function buildSources() {
   const debtTable = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: auroraDebtTableBasis().seal()});
-  const c = auroraCovenantBasis(), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
-  const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
-  measurements.push({id: "dez26-gerencial", label: "dez26-gerencial", role: "test", limitIds: ["politica"], scenario: sc, date: c.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
-    debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
-  const covenant = prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base", analysis: c.seal()});
+  const covenant = auroraCovenantPacket();
   const weekly = prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro e o que vence?", analysis: auroraWeeklyCashBasis().seal()});
-  const investmentCalibration = c32PacketInput(), from = id(1001);
-  for (const e of investmentCalibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
-  for (const x of investmentCalibration.input.cases) x.analysis.entityId = company;
-  investmentCalibration.seal();
-  const investment = prepareInvestmentDecisionPacket(investmentCalibration.input);
+  const investment = auroraInvestmentPacket();
   const projection = prepareOperatingProjectionPacket({schemaVersion: "operating-projection-packet-input.v1",
     question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: operatingProjectionBasis({informed: true}).seal()});
   const challenge = prepareProjectionChallengePacket({schemaVersion: "projection-challenge-packet-input.v1",
@@ -69,6 +62,35 @@ function buildSources() {
     {id: "custo-relativo", methodId: "analyze-relative-debt-cost", packet: relativeCost},
     {id: "plano-2027", methodId: "evaluate-financing-paths", packet: plan},
   ] as const;
+}
+/** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
+export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) {
+  const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
+  const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
+  measurements.push({id: "dez26-gerencial", label: "dez26-gerencial", role: "test", limitIds: ["politica"], scenario: sc, date: c.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
+    debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
+  return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base", analysis: c.seal()});
+}
+/** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
+ * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
+export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true} = {}) {
+  const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : c32PacketInput(), from = id(1001);
+  for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
+  for (const x of calibration.input.cases) x.analysis.entityId = company;
+  calibration.seal();
+  return prepareInvestmentDecisionPacket(calibration.input);
+}
+/** The C32 cases with economy-4 built as an overlay of capex only (economy unchanged, capex and depreciation 20% larger). */
+function c32WithMislabelledEconomy() {
+  const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
+  const millions = (v: string) => new Decimal(v).times(1000000).toFixed();
+  const series = (years: number[], value: (y: number) => string) => ({type: "list" as const, value: years.map((y) => {const v = value(y); return v === "0" ? "0" : millions(v);})});
+  const economy = b.overlay(base, "economy-4-capex", (c, i, years) => {
+    i.project.money.growthCapexPaid = c("project.growthCapexPaid", "currency", series(years, (y) => y === 2026 ? "12" : y === 2027 ? "9.6" : "0"));
+    i.project.money.annualDepreciation = c("project.annualDepreciation", "currency", series(years, () => "2.16"));
+  });
+  f.input.cases[1] = {...f.input.cases[1]!, analysis: economy};
+  return f;
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
@@ -250,7 +272,7 @@ export function auroraBoardCase(turn: BoardTurn) {
         lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=bradesco-creditor", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
       {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
-          "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow"],
+          "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason|motivo=informed:motivo-estrategico"],
         recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
         options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
@@ -291,6 +313,8 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "rede-a", question: "q.anchor", answer: "a.anchor|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
+    /** Facts informed in the conversation: the chair's strategic reason for the packaging line. */
+    informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", text: "reduzir a dependência de um único fornecedor de embalagem"}],
     /** Readings a test adds to the basis beside the calibration's own. */
     extraReadings: {} as Record<string, Reading>,
     omissions: turn === 3 ? [{id: "linha-sem-recomendacao", target: "recommendation", targetId: "linha", requestedBy: "requester.chair"}] : [] as {id: string; target: string; targetId: string; requestedBy: string}[],
@@ -331,6 +355,7 @@ export function auroraBoardBasis(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     appendix: c.appendix.map((a) => ({id: a.id, reading: list(`appendix.${a.id}`, [a.label, ...a.sourceIds])})),
     questions: c.questions.map((q) => ({id: q.id, question: text(`question.${q.id}.question`, q.question), answer: text(`question.${q.id}.answer`, q.answer)})),
     omissions: c.omissions.map((o) => ({id: o.id, reading: list(`omission.${o.id}`, [o.target, o.targetId, o.requestedBy])})),
+    informed: c.informed.map((x) => ({id: x.id, reading: list(`informed.${x.id}`, [x.origin, x.author, x.text])})),
   } as unknown as AdoptedBoardCapitalDiscussionInput;
   const seal = (): BoardCapitalDiscussionAnalyses => ({sources: auroraBoardSources().map((s) => ({id: s.id, packet: JSON.stringify(s.packet)})), discussion: {...input, envelope: f.seal()}});
   return {...f, input, case: c, seal};
@@ -359,5 +384,6 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     appendix: c.appendix.map((a) => fact(a, "house", "apêndice consultável")),
     questions: c.questions.map((q) => fact(q, "house", "perguntas prováveis do conselho")),
     omissions: c.omissions.map((o) => fact(o, "informed", "pedido do CFO na conversa")),
+    informed: c.informed.map((x) => fact({id: x.id, author: x.author, text: x.text}, x.origin as "informed", "presidente do conselho na conversa sobre a linha de embalagem")),
   } as unknown as BoardCapitalDiscussionFacts;
 }

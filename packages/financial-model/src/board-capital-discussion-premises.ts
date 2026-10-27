@@ -3,6 +3,7 @@ import {capacityUuid} from "./debt-capacity-premises";
 import type {ProposedHypothesis} from "./investment-premises";
 import {boardAuthorities, boardOmissionTargets, boardPageRoles} from "./board-capital-discussion";
 import {boardSourceMethodIds} from "./board-capital-discussion-sources";
+import {boardInformedAuthors} from "./board-capital-discussion-templates";
 
 const text = z.string().trim().min(1).max(2000);
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/);
@@ -41,13 +42,15 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   appendix: z.array(fact(z.strictObject({id: key, label: text, sourceIds: z.array(key).min(1).max(16)}))).max(16),
   questions: z.array(fact(z.strictObject({id: key, question: text, answer: text}))).max(24),
   omissions: z.array(fact(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,80}$/), requestedBy: text}))).max(12),
+  /** Facts informed in the conversation, with the person who stated them; the origin travels into the basis. */
+  informed: z.array(fact(z.strictObject({id: key, author: z.enum(boardInformedAuthors), text: z.string().trim().min(1).max(200)}))).max(12).default([]),
 }).superRefine((f, ctx) => {
   const fail = (message: string) => ctx.addIssue({code: "custom", message});
   if (f.meetingDate.value < f.askedOn.value) fail("The meeting must not precede the request");
   const unique = (xs: string[], what: string) => {if (new Set(xs).size !== xs.length) fail(`Duplicate ${what}`);};
   unique(f.sources.map((s) => s.value.id), "source"); unique(f.topics.map((t) => t.value.id), "topic"); unique(f.deliberations.map((d) => d.value.id), "deliberation");
   unique(f.figures.map((x) => x.value.id), "figure"); unique(f.pages.map((p) => p.value.id), "page"); unique(f.questions.map((q) => q.value.id), "question");
-  unique(f.appendix.map((a) => a.value.id), "appendix item"); unique(f.omissions.map((o) => o.value.id), "omission");
+  unique(f.appendix.map((a) => a.value.id), "appendix item"); unique(f.omissions.map((o) => o.value.id), "omission"); unique(f.informed.map((x) => x.value.id), "informed fact");
   const sources = new Set(f.sources.map((s) => s.value.id)), figures = new Set(f.figures.map((x) => x.value.id)), topics = new Set(f.topics.map((t) => t.value.id));
   for (const {value: x} of f.figures) if (x.kind === "reading" && !sources.has(x.reading[0])) fail(`Figure ${x.id} reads a result the discussion does not name`);
   for (const id of [...f.materialFigureIds.value, ...f.indicative.map((x) => x.value.figureId)]) if (!figures.has(id)) fail(`Unknown figure ${id}`);
@@ -107,12 +110,14 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
   for (const a of f.appendix) list(`appendix.${a.value.id}`, [a.value.label, ...a.value.sourceIds], why(a));
   for (const q of f.questions) {txt(`question.${q.value.id}.question`, q.value.question, why(q)); txt(`question.${q.value.id}.answer`, q.value.answer, why(q));}
   for (const o of f.omissions) list(`omission.${o.value.id}`, [o.value.target, o.value.targetId, o.value.requestedBy], why(o));
+  for (const x of f.informed) list(`informed.${x.value.id}`, [x.origin, x.value.author, x.value.text], why(x));
   const order = (name: string, ids: string[], what: string) => {if (ids.length) list(`order.${name}`, ids, house(`Ordem ${what} como informada`));};
   order("sources", f.sources.map((s) => s.value.id), "dos resultados"); order("topics", f.topics.map((t) => t.value.id), "dos temas");
   order("deliberations", f.deliberations.map((d) => d.value.id), "das deliberações"); order("figures", f.figures.map((x) => x.value.id), "dos números");
   order("indicative", f.indicative.map((x) => x.value.figureId), "das condições indicativas");
   order("pages", f.pages.map((p) => p.value.id), "das páginas"); order("appendix", f.appendix.map((a) => a.value.id), "do apêndice");
   order("questions", f.questions.map((q) => q.value.id), "das perguntas"); order("omissions", f.omissions.map((o) => o.value.id), "dos pedidos");
+  order("informed", f.informed.map((x) => x.value.id), "dos fatos informados");
   // A working basis holds at most 256 premises; a set larger than that is refused here, not at confirmation.
   if (out.length > maxBoardCapitalDiscussionHypotheses) throw new Error("board_capital_premises_exceed_basis");
   return out;

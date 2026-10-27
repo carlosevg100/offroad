@@ -19,7 +19,7 @@ export const boardMaterialSchema = z.strictObject({version: z.number().int().min
   /** Numbers of the final text verified against their markers (render, then verify). */
   verifiedNumbers: z.number().int().min(0),
   /** Which slot of which library template each displayed field binds to which reading or deadline (concept checked). */
-  bindings: z.array(z.strictObject({field: text, templateId: key, slot: key, figureId: key.nullable(), deadlineId: key.nullable()})).max(1200),
+  bindings: z.array(z.strictObject({field: text, templateId: key, slot: key, figureId: key.nullable(), deadlineId: key.nullable(), informedId: key.nullable()})).max(1200),
   agenda: z.strictObject({minutes: z.number().int().nullable(), minutesPerPage: z.number().int(), mainPages: z.number().int(), capacity: z.number().int().nullable(), fits: z.boolean().nullable()}),
   fingerprint: hash});
 export type BoardMaterial = z.infer<typeof boardMaterialSchema>;
@@ -43,6 +43,8 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
     authority: ids, template: z.enum(["not_supplied", "supplied_not_applied"])}),
   /** The material facts by rule: every economic reading, every figure marked material and every deadline; each version shows all of them. */
   materialFacts: z.strictObject({figures: ids, deadlines: ids}),
+  /** Facts informed in the conversation, adopted with origin and author; shown only attributed to that author. */
+  informed: z.array(z.strictObject({id: key, origin: z.literal("informed"), author: z.enum(["chair", "cfo", "ceo"]), text: z.string().min(1).max(200)})).max(12),
   priorVersionsKept: z.literal(true), sentToThirdParties: z.literal(false), presented: z.literal(false),
 });
 

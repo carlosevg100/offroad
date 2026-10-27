@@ -121,13 +121,15 @@ describe("board discussion core", () => {
       ["ep", {display: "R$ 6,4 milhões", unit: "money", origin: origin(IP, "comparison.metrics[caseId=economy-4].netPresentValue", "6400000")}],
       ["p", {pending: true, methodId: IP}]]);
     const source = (id: string, methodId: string, packet: unknown) => ({id, methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}) as BoardSourceReading;
-    const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {})];
+    const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {cases: [["base", "6", "1", "10", "0.6"], ["economy-4", "4", "1", "10", "0.6"], ["capex-120", "6", "1", "12", "0.6"], ["slower-start", "6", "1", "10", "0.2"]]
+      .map(([id, ebitda, load, capex, active]) => ({id, result: {project: {rows: [{periodId: "2026-12-31", operands: {growthCapexPaid: capex}},
+        {periodId: "2027-12-31", operands: {activeYearFraction: active}}, {periodId: "2028-12-31", incrementalEbitda: ebitda, operands: {loadYearFraction: load}}]}}}))})];
     const action = (t: string): BoardDeliberation => ({...deliberation("v", ["2026-11-15"]), title: "delib.maturities|ano=y", deadlines: [{id: "rota", date: "2026-11-15", action: t}]});
     const context = {figures, deliberations: [action("delib.action.decide_route")], nextMeetingDate: null, sources};
     const render = (ref: string) => renderBoardRef(ref, context).display;
     expect(render("situation.debt_total|total=d|ano=y")).toBe("A dívida é de R$ 130 milhões, concentrada em 2027");
-    expect(renderBoardRef("situation.debt_total|total=d|ano=y", context).bindings).toEqual([{templateId: "situation.debt_total", slot: "total", figureId: "d", deadlineId: null},
-      {templateId: "situation.debt_total", slot: "ano", figureId: "y", deadlineId: null}]);
+    expect(renderBoardRef("situation.debt_total|total=d|ano=y", context).bindings).toEqual([{templateId: "situation.debt_total", slot: "total", figureId: "d", deadlineId: null, informedId: null},
+      {templateId: "situation.debt_total", slot: "ano", figureId: "y", deadlineId: null, informedId: null}]);
     // Type, then concept: the same dimension of another concept is refused.
     expect(() => render("situation.debt_total|total=r|ano=y")).toThrow("board_capital_slot_type_mismatch");
     expect(() => render("situation.debt_total|total=d|ano=d")).toThrow("board_capital_slot_type_mismatch");

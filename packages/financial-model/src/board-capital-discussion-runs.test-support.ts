@@ -1,8 +1,9 @@
 import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraReceivablesPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraReceivablesPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -53,6 +54,11 @@ export const boardSublimitCase = (c: CaseData) => {
   c.extraReadings.programs = ["recebiveis", "readings.plan[optionId=risco-sacado-a].cumulative", "1", "13.7"];
 };
 export const boardSublimitExpected = "A rede A deve R$ 19,8 milhões dos R$ 62 milhões da carteira; o contrato com ela veda a cessão sem consentimento, mas o programa próprio da rede antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.";
+/** The NPV of a case of an investment packet in millions with one decimal, as a reading states it (test side only). */
+export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
+  const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
+  return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
+};
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
   "Bradesco Deve Dezassete Cêntimos", "Bradesco Deve Dezassete Biliões"];
@@ -142,7 +148,7 @@ function goldCases(): Case[] {
         safraSaysIndicative: pageOf(p, "safra").lines[0]!.includes("indicativo")})),
     reuse("line-before-the-recommendation-when-the-board-has-not-seen-it", p2, t2, {line: 5, recommendation: 8, placement: "main", sideBySide: true},
       (p) => ({line: pageOf(p, "linha").number, recommendation: pageOf(p, "recomendacao").number, placement: pageOf(p, "linha").placement,
-        sideBySide: pageOf(p, "linha").lines.some((l) => l.startsWith("Retorno")) && pageOf(p, "linha").lines.some((l) => l.startsWith("O VPL fica negativo"))})),
+        sideBySide: pageOf(p, "linha").lines.some((l) => l.startsWith("Retorno")) && pageOf(p, "linha").lines.some((l) => l.startsWith("Motivo estratégico apresentado pelo presidente do conselho"))})),
     observe("line-the-board-has-seen-goes-to-the-appendix", boardPacketInput(2, (c) => {c.topics[0]!.seen = true;}), {placement: "appendix", mainPages: 11},
       (p) => ({placement: pageOf(p, "linha").placement, mainPages: p.readings!.material!.mainPages})),
     reuse("twelve-pages-fit-forty-five-minutes", p2, t2, {mainPages: 12, capacity: 15, fits: true}, (p) => ({mainPages: current(p).agenda.mainPages, capacity: current(p).agenda.capacity, fits: current(p).agenda.fits})),
@@ -200,6 +206,10 @@ function goldCases(): Case[] {
     observe("program-sublimit-below-exposure-keeps-exposure-and-capacity-apart",
       withBoardSource("recebiveis", auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>, () => boardPacketInput(2, boardSublimitCase)),
       boardSublimitExpected, (p) => current(p).questions.find((q) => q.id === "rede-a")!.answer),
+    reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor de embalagem.",
+      informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", text: "reduzir a dependência de um único fornecedor de embalagem"}], figures: []},
+      (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
+        figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -376,6 +386,17 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     })), "board_capital_slot_concept_mismatch:a.anchor:saldo"],
     ["assignment-ban-asserted-on-an-assignable-contract", () => withBoardSource("recebiveis", auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>,
       () => build(2, () => undefined)), "board_capital_template_condition_failed:a.anchor"],
+    // Review r10: a policy said to lack a definition only when the covenant result records it; each sensitivity cause
+    // by the operand its case changes; the chair's reason only as an informed fact attributed to the chair.
+    ["policy-already-defined", () => withBoardSource("covenant", auroraCovenantPacket({policyDefinition: "Mesma definição da escritura"}) as unknown as Record<string, unknown>,
+      () => build(2, () => undefined)), "board_capital_template_condition_failed:delib.policy.definition"],
+    ["sensitivity-called-smaller-economy-with-unchanged-economy", () => {
+      const packet = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
+    }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
+    ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
+    ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],
     ["creditor-and-maturity-of-different-rows", () => build(2, (c) => {
       finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor"; c.questions[0]!.answer = "a.roll_bank|credor=finame-creditor|falta=bradesco-gap|vencimento=bradesco-maturity";
     }), "board_capital_slot_concept_mismatch:a.roll_bank:vencimento:variable_i"],

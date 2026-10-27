@@ -13,8 +13,10 @@
  * Slot syntax in a text: `{slot}` for a value, a label, a yes-no reading or a deadline; `{em:slot}`, `{ate:slot}`,
  * `{desde:slot}`, `{para:slot}`, `{fim:slot}`, `{de:slot}` or `{a:slot}` for a date or a year, written by the
  * formatter with that preposition. `{count:deliberations}` and `{count:dated}` are counted by the method. */
-export const boardSlotTypes = ["money", "rate", "multiple", "years", "months", "bps", "count", "date", "label", "flag", "deadline"] as const;
+export const boardSlotTypes = ["money", "rate", "multiple", "years", "months", "bps", "count", "date", "label", "flag", "deadline", "informed"] as const;
 export type BoardSlotType = (typeof boardSlotTypes)[number];
+/** Who may be named as the author of an informed fact. */
+export const boardInformedAuthors = ["chair", "cfo", "ceo"] as const;
 export const boardTextUses = ["delib.title", "delib.subject", "delib.recommendation", "delib.action", "page.title", "page.line", "page.recommendation", "page.option",
   "summary.opening", "summary.closing", "appendix", "question", "answer", "topic", "note", "requester", "authority"] as const;
 export type BoardTextUse = (typeof boardTextUses)[number];
@@ -25,6 +27,8 @@ export type BoardTextUse = (typeof boardTextUses)[number];
 export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [string, string])[]; year?: string; action?: string;
   /** The registered concept the field must carry (receivables: balance, capacity, program volume and sublimit differ). */
   concept?: string;
+  /** For an informed fact: the person the template attributes it to; the fact must be adopted as informed by that person. */
+  author?: (typeof boardInformedAuthors)[number];
   /** For a label: the generic words shown when the source name is not an entry of the closed name dictionary. */
   generic?: string};
 /** An operand of a condition: a bound slot's source value, a literal (variables written as `$name` substituted), a
@@ -82,9 +86,20 @@ const allBelowPolicy: BoardCondition = {every: [CV, "result.headroom.measurement
 const adverseYear: BoardCondition = {...cmp("ano", "eq", at(CV, "result.headroom.measurements[id=dez27-adverso].date", true)), claim: "o ano é o da medição adversa"};
 const policyIsBoard = claim("a política é do conselho e está em vigor", cmp(at(CV, "result.headroom.limits[id=politica].kind"), "eq", {value: "board_policy"}),
   cmp(at(CV, "result.headroom.limits[id=politica].status"), "eq", {value: "in_force"}));
-const policyUndefined = claim("a política fica sem definição de EBITDA: a leitura gerencial e a da escritura diferem na mesma data",
-  cmp(at(CV, "result.headroom.measurements[id=dez26-gerencial].ratio"), "ne", at(CV, "result.headroom.measurements[id=dez26-base].ratio")),
-  cmp(at(CV, "result.headroom.measurements[id=dez26-gerencial].date"), "eq", at(CV, "result.headroom.measurements[id=dez26-base].date")));
+const policyUndefined = claim("a política adotada não registra definição de EBITDA (questão aberta do resultado do covenant)",
+  has(CV, "result.openQuestions", "limitId", "politica"), has(CV, "result.openQuestions", "question", "ebitda_definition_not_written"));
+/** Each cause a sensitivity names is the operand that case changes against the base, in the direction said. */
+const caseField = (caseId: string, period: string, field: string) => at(IP, `cases[id=${caseId}].result.project.rows[periodId=${period}].${field}`);
+const smallerEconomy = claim("economia menor: o EBITDA incremental em regime do caso é menor que o da base, com a mesma carga",
+  cmp(caseField("economy-4", "2028-12-31", "incrementalEbitda"), "lt", caseField("base", "2028-12-31", "incrementalEbitda")),
+  cmp(caseField("economy-4", "2028-12-31", "operands.loadYearFraction"), "eq", caseField("base", "2028-12-31", "operands.loadYearFraction")));
+const largerCapex = claim("capex maior: o capex de expansão do caso supera o da base",
+  cmp(caseField("capex-120", "2026-12-31", "operands.growthCapexPaid"), "gt", caseField("base", "2026-12-31", "operands.growthCapexPaid")));
+const slowerStart = claim("partida mais lenta: a fração do ano em operação do caso é menor que a da base",
+  cmp(caseField("slower-start", "2027-12-31", "operands.activeYearFraction"), "lt", caseField("base", "2027-12-31", "operands.activeYearFraction")));
+const deferral = claim("adiar: o caso desembolsa depois e opera depois da base",
+  cmp(caseField("defer-12", "2026-12-31", "operands.growthCapexPaid"), "lt", caseField("base", "2026-12-31", "operands.growthCapexPaid")),
+  cmp(caseField("defer-12", "2027-12-31", "operands.activeYearFraction"), "lt", caseField("base", "2027-12-31", "operands.activeYearFraction")));
 const bankFallback = claim("o plano alternativo do resultado é um alongamento bancário (CCB de alongamento) que exige anuência",
   {bind: "alt", to: at(FP, "readings.alternative.pathId")}, has(FP, "result.evaluation.paths[id=$alt].instrumentIds", null, "ccb-alongamento"),
   cmp(at(FP, "readings.paths[id=$alt].consentRequired"), "eq", {value: "true"}));
@@ -128,7 +143,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "delib.packaging_line": t("delib.title", "Linha de embalagem"),
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho da linha de embalagem", {}, {of: "delib.packaging_line"}),
   "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra até as cotações firmes", {}, {of: "delib.packaging_line",
-    when: claim("esperar as cotações e adiar a linha tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))}),
+    when: [...claim("esperar as cotações e adiar a linha tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
   "delib.crop": t("delib.title", "Safra {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
   "delib.crop.subject": t("delib.subject", "decidir o financiamento da safra {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
@@ -182,14 +197,16 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {payback: metric("years", "base", "paybackYears"), pico: metric("money", "base", "peakCumulativeCashNeed.amount"), data: metric("date", "base", "peakCumulativeCashNeed.periodEndDate")}),
   "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: economia menor, {vpl_economia}; capex maior, {vpl_capex}; partida mais lenta, {vpl_partida}.",
     {vpl_economia: metric("money", "economy-4", "netPresentValue"), vpl_capex: metric("money", "capex-120", "netPresentValue"), vpl_partida: metric("money", "slower-start", "netPresentValue")},
-    {when: negative("vpl_economia", "vpl_capex", "vpl_partida")}),
+    {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; adiar a linha leva o VPL a {vpl} e o retorno a {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue"), retorno: metric("rate", "defer-12", "annualIrr")},
-    {when: claim("adiar tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))}),
+    {when: [...claim("adiar tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
   "option.go_now": t("page.option", "Seguir agora: VPL de {vpl} e retorno de {retorno}.", {vpl: metric("money", "base", "netPresentValue"), retorno: metric("rate", "base", "annualIrr")}),
   "option.staged": t("page.option", "Seguir em etapas: VPL de {vpl}.", {vpl: metric("money", "staged", "netPresentValue")}),
   "option.wait_quotes": t("page.option", "Esperar as cotações e adiar a linha: VPL de {vpl} e retorno de {retorno}.",
-    {vpl: metric("money", "defer-12", "netPresentValue"), retorno: metric("rate", "defer-12", "annualIrr")}),
+    {vpl: metric("money", "defer-12", "netPresentValue"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
+  // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
+  "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair"}}),
   "topic.crop_programs": t("page.title", "Os programas das redes A e B antecipam {valor} contra o pico de {pico} da safra, sem dívida bancária nova",
     {valor: rf("money", "readings.plan[optionId=risco-sacado-a].cumulative", "volume_antecipavel_acumulado_no_plano"),
       pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa")}, {when: programsAB}),
@@ -301,7 +318,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo com economia menor, capex maior ou partida mais lenta. Cotações firmes decidem.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")},
     {answers: "q.strategic", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
-      ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0")))]}),
+      ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0"))),
+      ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "q.wheat": t("question", "E se o trigo subir?"),
   "a.wheat": t("answer", "Com trigo {choque} mais caro e repasse em {defasagem}, o EBITDA {de:ano} cai para cerca de {ebitda}; no adverso, com EBITDA de {ebitda_adverso}, a alavancagem fica em {alavancagem}, abaixo do covenant de {covenant}.",
     {choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
@@ -371,7 +389,7 @@ export const boardNameDictionary = ["Itaú", "Bradesco", "Santander", "Banco do 
 export const boardNamesAllowedInText: readonly string[] = ["rede A", "rede B"];
 
 /** A text reference as adopted: `template|slot=reading|slot=deadline:deliberation.deadline`. */
-export const boardTextRefPattern = /^[a-z][a-z0-9_.]{0,79}(?:\|[a-z][a-z0-9_]{0,30}=(?:deadline:)?[a-z0-9][a-z0-9.-]{0,80})*$/;
+export const boardTextRefPattern = /^[a-z][a-z0-9_.]{0,79}(?:\|[a-z][a-z0-9_]{0,30}=(?:deadline:|informed:)?[a-z0-9][a-z0-9.-]{0,80})*$/;
 export type BoardTextRef = {templateId: string; bindings: Record<string, string>};
 /** Parses one reference by name: unknown template, a missing, unknown or repeated slot is refused. */
 export function parseBoardTextRef(ref: string): BoardTextRef & {template: BoardTemplate} {
@@ -391,7 +409,7 @@ export function parseBoardTextRef(ref: string): BoardTextRef & {template: BoardT
 /** The reading ids a reference binds (deadlines excluded). */
 export function boardRefReadingIds(ref: string): string[] {
   const parsed = parseBoardTextRef(ref);
-  return Object.entries(parsed.bindings).filter(([slot]) => parsed.template.slots[slot]!.type !== "deadline").map(([, id]) => id);
+  return Object.entries(parsed.bindings).filter(([slot]) => !["deadline", "informed"].includes(parsed.template.slots[slot]!.type)).map(([, id]) => id);
 }
 
 /** Splits a path into its keys and selectors, the same way the reader does. */
@@ -444,7 +462,7 @@ export function checkBoardTemplateLibrary() {
     for (const spec of Object.values(x.slots)) {
       for (const [, path] of spec.from ?? []) for (const m of path.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
       if (spec.year) for (const m of spec.year.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
-      if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : !spec.from && !spec.year) problems.push(`${id}:slot`);
+      if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : spec.type === "informed" ? !spec.author : !spec.from && !spec.year) problems.push(`${id}:slot`);
       if (spec.year && spec.type !== "date") problems.push(`${id}:year`);
       if ((spec.type === "label") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
     }
