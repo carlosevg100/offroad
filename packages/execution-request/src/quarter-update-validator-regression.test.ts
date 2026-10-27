@@ -13,7 +13,7 @@ const body = (file: string) => {
 
 describe("the provenance walk after the quarter close priors", () => {
   it("is the lote 3 provenance body (20261026203118, in production) byte for byte for every other method, every lote 3 binding kept", () => {
-    const before = body("20261026203118_lote3_payload_provenance.sql"), after = body("20261026220400_lote3_quarter_update_priors.sql");
+    const before = body("20261026203118_lote3_payload_provenance.sql"), after = body("20261027010426_lote3_quarter_update_priors.sql");
     const added = after.split("\n").filter((line) => line.endsWith(" -- quarter close"));
     expect(added.length).toBe(6);
     const restored = after.split("\n").filter((line) => !line.endsWith(" -- quarter close")).join("\n");

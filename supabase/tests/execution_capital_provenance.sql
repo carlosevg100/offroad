@@ -39,7 +39,7 @@ do $$declare f capital_provenance_fixture; m record; pinned jsonb; payload jsonb
   pinned:=jsonb_set(f.c,'{method}',jsonb_build_object('methodId',m.id,'methodVersion','2026.10.26-v1','manifestHash',m.hash));
   payload:=jsonb_set(f.p,'{schemaVersion}',to_jsonb(m.schema));
   -- The quarter close is accepted only over the prior results the v3 producer recorded for the execution
-  -- (20261026220400_lote3_quarter_update_priors; acceptance is proved in lote3_quarter_update_priors.sql).
+  -- (20261027010426_lote3_quarter_update_priors; acceptance is proved in lote3_quarter_update_priors.sql).
   perform pg_temp.check_capital_provenance(pinned,payload,m.id<>'update-after-quarter-close',
    m.id||case when m.id='update-after-quarter-close' then ' without recorded priors refused' else ' pinned identity with exact basis accepted' end);
   perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,methodVersion}','"2026.10.23-v1"'),payload,false,m.id||' other version denied');
