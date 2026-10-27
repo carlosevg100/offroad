@@ -526,6 +526,21 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 24: "cancele a revisão", "não estou pedindo que" and "não é para" negate the action.
+  it.each([
+    ["Cancele a revisão da projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Cancelar a atualização das análises depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Não estou pedindo que revise a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não estou pedindo para construir a projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não é para revisar a projeção financeira.", "ambiguous", "documents_to_case"],
+    ["Não é para que você atualize as análises depois do fechamento do trimestre.", "ambiguous", "documents_to_case"],
+    ["Revise a projeção financeira, não é para cancelar nada.", "projection_challenge", "projection_challenge"],
+    ["Revise a projeção operacional.", "projection_challenge", "projection_challenge"],
+  ] as const)("round 24: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
