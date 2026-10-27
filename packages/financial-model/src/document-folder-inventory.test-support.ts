@@ -14,13 +14,34 @@ import type {DocumentFolderInventoryFacts, DocumentFolderUpdateFacts} from "./do
 const sha = (content: string) => createHash("sha256").update(`aurora-c09:${content}`).digest("hex");
 const at = (page: number | null, section: string | null = null) => ({page, section});
 const mi = "1000000";
-type Partial = Omit<DocumentReading, "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "sha256"> &
+type Partial = Omit<DocumentReading, "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "sha256" | "referenceDate"> &
   {content?: string} & Partial2;
-type Partial2 = {[K in "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset"]?: DocumentReading[K]};
+type Partial2 = {[K in "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "referenceDate"]?: DocumentReading[K]};
+/** The date each file speaks from, and where it comes from. "stated" and "stated_month" are what the ficha says (the
+ * month's last day when only the month is given); "derived_from_period" and "derived_from_term_start" are taken from the
+ * reading's own period and are listed as derivations in FICHA-LOTE4-ORGANIZE-DOCUMENT-FOLDER.md. */
+export const auroraReferenceDates: Record<string, DocumentReading["referenceDate"]> = {
+  f01: {kind: "closing", date: "2026-03-18", origin: "stated"}, f02: {kind: "update", date: "2026-02-28", origin: "stated_month"},
+  f03: {kind: "closing", date: "2024-12-31", origin: "derived_from_period"}, f04: {kind: "closing", date: "2025-12-31", origin: "derived_from_period"},
+  f05: {kind: "closing", date: "2025-12-31", origin: "derived_from_period"}, f06: {kind: "closing", date: "2026-01-31", origin: "derived_from_period"},
+  f07: {kind: "closing", date: "2026-02-28", origin: "derived_from_period"}, f08: {kind: "closing", date: "2026-04-30", origin: "derived_from_period"},
+  f09: {kind: "closing", date: "2026-05-31", origin: "derived_from_period"}, f10: {kind: "closing", date: "2026-05-31", origin: "derived_from_period"},
+  f11: {kind: "closing", date: "2026-06-30", origin: "derived_from_period"}, f12: {kind: "closing", date: "2026-07-31", origin: "stated_month"},
+  f13: {kind: "update", date: "2025-12-31", origin: "stated_month"}, f14: {kind: "update", date: "2026-07-31", origin: "stated_month"},
+  f15: {kind: "update", date: "2026-03-31", origin: "stated_month"}, f16: {kind: "position", date: "2026-06-30", origin: "derived_from_period"},
+  f17: {kind: "position", date: "2025-12-31", origin: "derived_from_period"}, f18: {kind: "update", date: "2021-10-31", origin: "stated_month"},
+  f19: {kind: "update", date: "2023-06-30", origin: "stated_month"}, f20: {kind: "update", date: "2024-09-30", origin: "stated_month"},
+  f21: {kind: "update", date: "2022-01-01", origin: "derived_from_term_start"}, f22: {kind: "update", date: "2025-01-01", origin: "derived_from_term_start"},
+  f23: {kind: "update", date: "2024-01-01", origin: "derived_from_term_start"}, f24: {kind: "update", date: "2026-03-31", origin: "stated_month"},
+  f25: {kind: "update", date: "2026-04-30", origin: "stated_month"}, f26: {kind: "position", date: "2026-06-30", origin: "derived_from_period"},
+  f27: {kind: "update", date: "2023-08-31", origin: "stated_month"}, f28: {kind: "update", date: "2025-12-31", origin: "derived_from_period"},
+  f29: null, f30: {kind: "closing", date: "2026-03-18", origin: "stated"},
+  s01: {kind: "update", date: "2024-09-30", origin: "stated_month"}, s02: {kind: "closing", date: "2026-03-31", origin: "derived_from_period"},
+};
 function doc(d: Partial): DocumentReading {
   const {content, ...rest} = d;
   return {sha256: sha(content ?? d.fileId), legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: null, units: [], figures: [], clauses: [],
-    observations: [], debtTable: null, instrument: null, asset: null, ...rest};
+    observations: [], debtTable: null, instrument: null, asset: null, referenceDate: auroraReferenceDates[d.fileId] ?? null, ...rest};
 }
 const aurora = "aurora";
 const v = (label: string, status: DocumentReading["version"]["status"], ordinal: number | null = null, lastUpdated: string | null = null) => ({label, status, ordinal, lastUpdated});

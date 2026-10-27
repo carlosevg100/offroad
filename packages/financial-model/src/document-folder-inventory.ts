@@ -118,6 +118,11 @@ export const documentReadingSchema = z.strictObject({
   entity: z.strictObject({primaryId: key.nullable(), label: text}),
   period: z.strictObject({label: text, start: date.nullable(), end: date.nullable()}),
   version: z.strictObject({label: text, status: z.enum(documentStatuses), ordinal: z.number().int().min(1).max(99).nullable(), lastUpdated: date.nullable()}),
+  /** The date the document speaks from: its closing, its position or its last update, with where that date comes from.
+   * "stated": the document says it; "stated_month": the document gives the month, and the day is the month's last day;
+   * "derived_from_period" or "derived_from_term_start": taken from the period or the term, never proof of anything the period does not prove. */
+  referenceDate: z.strictObject({kind: z.enum(["closing", "position", "update"]), date,
+    origin: z.enum(["stated", "stated_month", "derived_from_period", "derived_from_term_start"])}).nullable(),
   /** The instrument the document is or amends, by a reference the extraction normalized from its content. */
   instrument: z.strictObject({ref: key, label: text, amends: key.nullable()}).nullable(),
   asset: z.strictObject({id: key, label: text}).nullable(),
@@ -158,6 +163,16 @@ export const documentReadingSchema = z.strictObject({
   for (const l of r.debtTable?.lines ?? []) if (l.limit !== null && new Exact(l.drawn).gt(l.limit)) fail("document_inventory_drawn_above_limit");
   if (r.instrument?.amends === r.instrument?.ref && r.instrument !== null) fail("document_inventory_amends_itself");
   if (r.substitutesPages && (r.legibility.unreadablePages.length || r.legibility.wholeFile)) fail("document_inventory_substitute_not_legible");
+  // The supported domain: a file with no readable content is the only form without entity, period and reference date;
+  // every other reading names its entity, a period with start and end, and the date it speaks from.
+  if (!r.legibility.wholeFile) {
+    if (r.entity.primaryId === null) fail("document_inventory_unsupported_reading:entity");
+    if (r.period.start === null || r.period.end === null) fail("document_inventory_unsupported_reading:period");
+    if (r.referenceDate === null) fail("document_inventory_unsupported_reading:reference_date");
+  }
+  if (r.period.start !== null && r.period.end !== null && r.period.end < r.period.start) fail("document_inventory_unsupported_reading:period");
+  if (r.referenceDate?.origin === "stated_month" && r.referenceDate.date !== new Date(Date.UTC(Number(r.referenceDate.date.slice(0, 4)), Number(r.referenceDate.date.slice(5, 7)), 0)).toISOString().slice(0, 10))
+    fail("document_inventory_unsupported_reading:stated_month_day");
   const texts = [r.description, r.entity.label, r.period.label, r.version.label, r.instrument?.label, r.asset?.label, ...r.legibility.unreadablePages.map((p) => p.expectedContent),
     ...r.clauses.flatMap((c) => c.type === "assignment_prohibition" ? [c.statement, c.counterparty] : [c.statement]), ...r.observations.map((o) => o.statement),
     ...r.units.map((u) => u.section), ...located.map((a) => a.section), ...r.debtTable?.lines.map((l) => l.label) ?? []].filter((x): x is string => typeof x === "string");
@@ -286,6 +301,9 @@ export const documentFolderInventoryInputSchema = z.strictObject({
   if (new Set(i.entities.map((e) => e.id)).size !== i.entities.length) fail("document_inventory_duplicate_entity");
   if (new Set(i.decisions.map((d) => d.id)).size !== i.decisions.length) fail("document_inventory_duplicate_decision");
   if (i.entities.some((e) => e.parentId !== null && !i.entities.some((p) => p.id === e.parentId))) fail("document_inventory_unknown_parent");
+  // An amendment links only to an original: an amendment of an amendment is a form this method does not treat.
+  const amendmentRefs = new Set(i.files.flatMap((f) => f.instrument && f.instrument.amends !== null ? [f.instrument.ref] : []));
+  if (i.files.some((f) => f.instrument?.amends && amendmentRefs.has(f.instrument.amends))) fail("document_inventory_unsupported_amendment_chain");
   for (const e of i.entities) if (forbiddenVoice.test(e.label) || forbiddenVoice.test(e.groupLabel)) fail("document_inventory_free_text_outside_reading");
 });
 export type DocumentFolderInventoryInput = z.input<typeof documentFolderInventoryInputSchema>;
@@ -347,17 +365,57 @@ type Held = {c: Clause; fileId: string} | {conflict: string[]};
  * with the prior inventory updates only the rows what arrived touches. It never classifies by file name,
  * never calculates ratios, projects or recommends, and never declares a document validated. */
 export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): DocumentFolderInventory {
+  return organizeTraced(raw, null);
+}
+/** One effect's proof of dependencies: the documents (and pages) its computation actually read, and those the guard judged. */
+export type EffectTrace = {effect: string; tracked: string[]; pages: string[]; guarded: string[]; ignoreUnread: string[]; state: Knowledge; emitted: boolean};
+/** The same organization, returning for every effect the documents it read and the documents its guard judged. */
+export function organizeDocumentFolderTraced(raw: DocumentFolderInventoryInput) {
+  const traces: EffectTrace[] = [];
+  const inventory = organizeTraced(raw, traces);
+  return {inventory, traces};
+}
+function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[] | null): DocumentFolderInventory {
   const input = documentFolderInventoryInputSchema.parse(raw);
   const registry = new Map(input.entities.map((e) => [e.id, e]));
-  const substitutes = input.files.filter((f) => f.substitutesPages !== null);
-  const documents = input.files.filter((f) => f.substitutesPages === null);
-  const byId = new Map(input.files.map((f) => [f.fileId, f]));
-  const order = new Map(input.files.map((f, n) => [f.fileId, n]));
+  // Tracking: every reading is seen through a view that records, while an effect is being computed, each document and
+  // page it reads. The guard judges the union of what was read and what was declared; an effect that read a document
+  // its guard did not judge is refused.
+  type Recorder = {key: string; files: Set<string>; pages: Set<string>; guarded: Set<string> | null; ignoreUnread: Set<string>; state: Knowledge; emitted: boolean};
+  let recorder: Recorder | null = null;
+  const views = new WeakMap<object, unknown>();
+  const view = <T extends object>(target: T, fileId: string): T => {
+    const cached = views.get(target); if (cached) return cached as T;
+    const proxy = new Proxy(target, {get(t, prop, receiver) {
+      const v = Reflect.get(t, prop, receiver);
+      if (recorder && typeof prop === "string") {recorder.files.add(fileId); if (prop === "page" && typeof v === "number") recorder.pages.add(`${fileId}:p${v}`);}
+      return v !== null && typeof v === "object" ? view(v as object, fileId) : v;
+    }});
+    views.set(target, proxy); return proxy;
+  };
+  const files = input.files.map((f) => view(f, f.fileId));
+  const effect = <T>(key: string, fn: () => T): T => {
+    const outer = recorder;
+    recorder = {key, files: new Set(), pages: new Set(), guarded: null, ignoreUnread: new Set(), state: "known", emitted: false};
+    try {
+      const result = fn(), r = recorder;
+      const unjudged = r.guarded ? [...r.files].filter((x) => !r.guarded!.has(x)) : [];
+      if (unjudged.length) throw new Error(`document_inventory_untracked_dependency:${key}:${unjudged.sort(byKey).join(",")}`);
+      if (r.emitted && !r.guarded) throw new Error("document_inventory_unguarded_effect");
+      if (traces && r.guarded) traces.push({effect: key, tracked: [...r.files].sort(byKey), pages: [...r.pages].sort(byKey), guarded: [...r.guarded].sort(byKey), ignoreUnread: [...r.ignoreUnread].sort(byKey), state: r.state, emitted: r.emitted});
+      return result;
+    } finally {recorder = outer;}
+  };
+  const substitutes = files.filter((f) => f.substitutesPages !== null);
+  const documents = files.filter((f) => f.substitutesPages === null);
+  const byId = new Map(files.map((f) => [f.fileId, f]));
+  const order = new Map(files.map((f, n) => [f.fileId, n]));
   const findings: Finding[] = [];
   /** Findings whose knowledge a guard computed; the rest take the worst state of the documents they cite. */
   const guarded = new Set<string>();
   const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge">>) => {
     if (f.knowledge !== undefined) guarded.add(f.id);
+    if (f.effect != null) {if (!recorder) throw new Error("document_inventory_untracked_effect"); recorder.emitted = true;}
     findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "known", ...f, status: "open", resolvedBy: []});
   };
   const src = (fileId: string, a: {page: number | null; section: string | null} | null = null) => ({fileId, page: a?.page ?? null, section: a?.section ?? null});
@@ -366,8 +424,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   // Identity and suspension by hash over every file, page substitutes included: the same bytes read two ways
   // suspend every file with that hash for every use, whatever arrived first.
   const content = (f: DocumentReading) => JSON.stringify(canonical({...f, fileId: null, fileName: null}));
-  const readingConflicts: DocumentFolderInventory["readingConflicts"] = [...new Set(input.files.map((f) => f.sha256))].flatMap((sha) => {
-    const same = input.files.filter((f) => f.sha256 === sha);
+  const readingConflicts: DocumentFolderInventory["readingConflicts"] = [...new Set(files.map((f) => f.sha256))].flatMap((sha) => {
+    const same = files.filter((f) => f.sha256 === sha);
     return new Set(same.map(content)).size > 1 ? [{sha256: sha, page: null, fileIds: same.map((f) => f.fileId).sort(byKey)}] : [];
   });
   const suspended = new Set(readingConflicts.flatMap((c) => c.fileIds));
@@ -383,52 +441,10 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   /** A copy is read as the document it repeats: same hash, same content, same reading. */
   const readingOf = (f: DocumentReading) => byId.get(duplicateOf.get(f.fileId) ?? f.fileId)!;
 
-  // Pages read from a legible copy of the same instrument. A page is completed only from one reading: two
-  // substitutes of the same page that read it differently leave it unread, and the conflict is declared.
-  const pagesFrom = new Map<string, {page: number; fileId: string; sha256: string}[]>();
-  const substituted = new Set<string>(), pageConflicted = new Set<string>();
-  const futureSubstitutes: {s: DocumentReading; target: string}[] = [];
-  const offered = new Map<string, DocumentReading[]>();
-  for (const s of substitutes) {
-    const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef
-      && s.substitutesPages!.pages.every((p) => f.legibility.unreadablePages.some((u) => u.page === p)));
-    const named = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
-    if (!named.length && !documents.some((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef)) throw new Error("document_inventory_substitute_without_target");
-    if (named.length && !targets.length) throw new Error("document_inventory_substitute_for_legible_page");
-    if (targets.length > 1) throw new Error("document_inventory_substitute_target_ambiguous");
-    const target = targets[0];
-    if (!target) continue;
-    substituted.add(target.fileId);
-    if (target.legibility.pageCount !== null && s.substitutesPages!.pages.some((p) => p > target.legibility.pageCount!)) throw new Error("document_inventory_page_outside_file");
-    if (suspended.has(s.fileId)) continue;
-    // A copy dated after the reading date does not complete a page.
-    const sd = s.period.start ?? s.period.end, td = target.period.start ?? target.period.end;
-    if ((sd !== null && sd > input.asOf) || (td !== null && td > input.asOf)) {futureSubstitutes.push({s, target: target.fileId}); continue;}
-    for (const p of s.substitutesPages!.pages) offered.set(`${target.fileId}|${p}`, [...offered.get(`${target.fileId}|${p}`) ?? [], s]);
-  }
-  for (const [k, list] of [...offered].sort(([a], [b]) => byKey(a, b))) {
-    const [targetId, pageText] = k.split("|") as [string, string], page = Number(pageText);
-    // Copies of a page are compared on every typed reading anchored there: clauses, figures, observations and the debt table.
-    const onPage = (s: DocumentReading) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
-      debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
-    if (new Set(list.map(onPage)).size > 1) {
-      const fileIds = list.map((s) => s.fileId).sort(byKey);
-      readingConflicts.push({sha256: null, page, fileIds}); pageConflicted.add(targetId);
-      add({id: `${targetId}-substitute-conflict-p${page}`, code: "substitute_conflict", anchor: targetId, sources: fileIds.map((x) => src(x, {page, section: null})),
-        statement: `Há ${fileIds.length} cópias da página ${page} com leituras diferentes; a página continua sem leitura até a divergência ser resolvida.`});
-      continue;
-    }
-    // Same reading of the page in every copy: the lowest file id carries it.
-    const s = [...list].sort((a, b) => byKey(a.fileId, b.fileId))[0]!;
-    pagesFrom.set(targetId, [...pagesFrom.get(targetId) ?? [], {page, fileId: s.fileId, sha256: s.sha256}].sort((a, b) => a.page - b.page));
-  }
-  const stillUnreadable = (f: DocumentReading) => f.legibility.unreadablePages.filter((p) => !(pagesFrom.get(f.fileId) ?? []).some((x) => x.page === p.page));
-
-
-  // Knowledge. Every effect is computed by one function over the dependencies it declares, and a single guard lets it
-  // out only if every dependency is known: no page unread, no conflict, nothing dated after the reading date, no
-  // missing or suspended source, no version without a winner. Otherwise the whole effect is withheld and declared
-  // with its state and sources. Conservative on purpose: the inventory says what is there; analysis waits for a full reading.
+  // Knowledge. Every effect is computed inside a tracked context and judged by one guard over what it read and what it
+  // declared; it comes out only if every dependency is known: no page unread, no conflict, nothing dated after the
+  // reading date, no missing, unregistered or suspended source, no version without a winner. Otherwise the whole effect
+  // is withheld and declared with its state and sources. Conservative on purpose: the inventory says what is there.
   const ids = (list: DocumentReading[]) => list.map((m) => m.fileId).sort(byKey);
   const bucket = <T>(items: T[], k: (x: T) => string | null) => {const m = new Map<string, T[]>(); for (const x of items) {const g = k(x); if (g !== null) m.set(g, [...m.get(g) ?? [], x]);} return m;};
   const equivalent = (a: Clause, b: Clause) => JSON.stringify(canonical({...a, id: null, at: null})) === JSON.stringify(canonical({...b, id: null, at: null}));
@@ -438,13 +454,34 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const anchoredLimit = (c: Clause) => (c.type !== "financial_covenant" && c.type !== "debt_policy")
     || [...c.statement.matchAll(ratioInText)].some((m) => new Exact(m[1]!.replace(",", ".")).eq(c.maxRatio));
   type Held = {c: Clause; from: string};
-  const recovered = new Map<string, Held[]>();
-  for (const [targetId, pages] of [...pagesFrom].sort(([a], [b]) => byKey(a, b))) for (const p of pages)
-    for (const c of byId.get(p.fileId)!.clauses.filter((x) => x.at.page === p.page)) recovered.set(targetId, [...recovered.get(targetId) ?? [], {c, from: p.fileId}]);
-  /** The instrument's clauses as read in full: its own and those of the pages its substitutes recovered. */
-  const clausesOf = (f: DocumentReading): Held[] => [...f.clauses.map((c) => ({c, from: f.fileId})), ...recovered.get(f.fileId) ?? []];
   const keyOf = (c: Clause) => c.scope ? `${c.type}:${c.scope}` : c.type;
   const typeOf = (k: string) => k.split(":")[0] as Clause["type"];
+  /** One value per metric and document: concurrent values that differ are a conflict, never the first of the list. */
+  const figureList = (f: DocumentReading, metric: string) => f.figures.filter((x) => x.metric === metric);
+  const figureState = (f: DocumentReading, metric: string): Knowledge => {
+    const list = figureList(f, metric);
+    return !list.length ? "missing_source" : list.every((x) => inReais(x.value, x.scale).eq(inReais(list[0]!.value, list[0]!.scale))) ? "known" : "conflict";
+  };
+  const figure = (f: DocumentReading, metric: string) => figureState(f, metric) === "known" ? figureList(f, metric)[0]! : null;
+  for (const f of live) for (const metric of [...new Set(f.figures.map((x) => x.metric))].sort(byKey)) if (figureState(f, metric) === "conflict")
+    add({id: `${f.fileId}-figure-conflict-${metric.replace(/_/g, "-")}`, code: "figure_conflict", anchor: f.fileId, sources: figureList(f, metric).map((x) => src(f.fileId, x.at)), knowledge: "conflict",
+      statement: `O documento traz valores diferentes para a mesma medida; nenhum foi usado até a leitura ser conferida.`});
+  const dateOf = (f: DocumentReading) => f.period.start ?? f.period.end;
+  /** After the reading date by what the document proves: the end of a closed period for documents of actual figures,
+   * the start for terms and acts, a stated date or last update. A derived reference date neither advances nor delays it. */
+  const future = (f: DocumentReading) => {
+    const actual = ["annual_financial_statements", "auditor_management_letter", "trial_balance", "management_report", "debt_schedule", "receivables_aging"].includes(f.kind);
+    const dates = [actual ? f.period.end : f.period.start ?? f.period.end, f.version.lastUpdated,
+      f.referenceDate && (f.referenceDate.origin === "stated" || f.referenceDate.origin === "stated_month") ? f.referenceDate.date : null];
+    return dates.some((d) => d !== null && d > input.asOf);
+  };
+  // Pages read from a legible copy of the same instrument.
+  const pagesFrom = new Map<string, {page: number; fileId: string; sha256: string}[]>();
+  const substituted = new Set<string>(), pageConflicted = new Set<string>();
+  const stillUnreadable = (f: DocumentReading) => f.legibility.unreadablePages.filter((p) => !(pagesFrom.get(f.fileId) ?? []).some((x) => x.page === p.page));
+  const recovered = new Map<string, Held[]>();
+  /** The instrument's clauses as read in full: its own and those of the pages its substitutes recovered. */
+  const clausesOf = (f: DocumentReading): Held[] => [...f.clauses.map((c) => ({c, from: f.fileId})), ...recovered.get(f.fileId) ?? []];
   type Entry = {one: Held} | {many: Held[]};
   const entriesCache = new Map<string, Map<string, Entry>>();
   const entriesOf = (f: DocumentReading) => {
@@ -457,37 +494,78 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     entriesCache.set(f.fileId, out); return out;
   };
   const held = (h: Held) => `${h.from}:${h.c.id}`;
-  /** One value per metric and document: concurrent values that differ are a conflict, never the first of the list. */
-  const figureList = (f: DocumentReading, metric: string) => f.figures.filter((x) => x.metric === metric);
-  const figureState = (f: DocumentReading, metric: string): Knowledge => {
-    const list = figureList(f, metric);
-    return !list.length ? "missing_source" : list.every((x) => inReais(x.value, x.scale).eq(inReais(list[0]!.value, list[0]!.scale))) ? "known" : "conflict";
-  };
-  const figure = (f: DocumentReading, metric: string) => figureState(f, metric) === "known" ? figureList(f, metric)[0]! : null;
-  for (const f of live) for (const metric of [...new Set(f.figures.map((x) => x.metric))].sort(byKey)) if (figureState(f, metric) === "conflict")
-    add({id: `${f.fileId}-figure-conflict-${metric.replace(/_/g, "-")}`, code: "figure_conflict", anchor: f.fileId, sources: figureList(f, metric).map((x) => src(f.fileId, x.at)), knowledge: "conflict",
-      statement: `O documento traz valores diferentes para a mesma medida; nenhum foi usado até a leitura ser conferida.`});
-  const dateOf = (f: DocumentReading) => f.period.start ?? f.period.end;
-  const future = (f: DocumentReading) => {const d = dateOf(f); return d !== null && d > input.asOf;};
   const familyConflicted = new Set<string>();
   const internalConflict = (f: DocumentReading) => [...bucket(clausesOf(f).filter((h) => anchoredLimit(h.c)), (h) => keyOf(h.c)).values()].some((list) => list.some((h) => !equivalent(h.c, list[0]!.c)));
+  const stateParts = (f: DocumentReading): {conflict: boolean; missing: boolean; unread: boolean; future: boolean} => ({
+    conflict: suspended.has(f.fileId) || familyConflicted.has(f.fileId) || pageConflicted.has(f.fileId) || internalConflict(f)
+      || [...new Set(f.figures.map((x) => x.metric))].some((m) => figureState(f, m) === "conflict"),
+    // An entity outside the registry is a source not identified here: the row stays, its effects do not.
+    missing: f.entity.primaryId !== null && !registry.has(f.entity.primaryId),
+    unread: stillUnreadable(f).length > 0 || f.legibility.wholeFile !== null || clausesOf(f).some((h) => !anchoredLimit(h.c)),
+    future: future(f)});
+  const stateFrom = (p: ReturnType<typeof stateParts>, ignoreUnread: boolean): Knowledge =>
+    worstKnowledge(p.conflict ? "conflict" : "known", p.missing ? "missing_source" : "known", p.unread && !ignoreUnread ? "unread" : "known", p.future ? "future" : "known");
   /** The state of one document as read here. */
-  const stateOf = (f: DocumentReading): Knowledge => worstKnowledge(
-    suspended.has(f.fileId) || familyConflicted.has(f.fileId) || pageConflicted.has(f.fileId) || internalConflict(f)
-      || [...new Set(f.figures.map((x) => x.metric))].some((m) => figureState(f, m) === "conflict") ? "conflict" : "known",
-    stillUnreadable(f).length || f.legibility.wholeFile || clausesOf(f).some((h) => !anchoredLimit(h.c)) ? "unread" : "known",
-    future(f) ? "future" : "known");
-  const stateWords: Record<Knowledge, string> = {known: "lido", future: "com data posterior à leitura", unread: "com página ou arquivo não lido", missing_source: "com fonte ausente", conflict: "com leituras ou versões em conflito"};
-  /** The single guard: the worst state of the dependencies, with the documents that are not known. */
-  const guard = (deps: DocumentReading[], extra: Knowledge[] = []) => {
-    const unique = [...new Map(deps.map((d) => [d.fileId, d])).values()];
-    const bad = unique.filter((d) => stateOf(d) !== "known");
-    return {state: worstKnowledge(...unique.map(stateOf), ...extra), sources: bad.length ? ids(bad) : ids(unique)};
+  const stateOf = (f: DocumentReading): Knowledge => stateFrom(stateParts(f), false);
+  const stateWords: Record<Knowledge, string> = {known: "lido", future: "com data posterior à leitura", unread: "com página ou arquivo não lido", missing_source: "com fonte ausente ou fora do cadastro", conflict: "com leituras ou versões em conflito"};
+  /** The single guard: the worst state over what the effect read and what it declared, with the documents that are not known. */
+  const guard = (deps: DocumentReading[], extra: Knowledge[] = [], options: {ignoreUnread?: string[]} = {}) => {
+    const r = recorder; recorder = null;
+    try {
+      const judged = new Set([...deps.map((d) => d.fileId), ...r ? r.files : []]);
+      const unique = [...judged].sort(byKey).map((id) => byId.get(id)!);
+      const st = (d: DocumentReading) => stateFrom(stateParts(d), options.ignoreUnread?.includes(d.fileId) ?? false);
+      const bad = unique.filter((d) => st(d) !== "known");
+      const state = worstKnowledge(...unique.map(st), ...extra);
+      if (r) {r.guarded = new Set([...r.guarded ?? [], ...judged]); for (const x of options.ignoreUnread ?? []) r.ignoreUnread.add(x); r.state = worstKnowledge(r.state, state);}
+      return {state, sources: bad.length ? ids(bad) : ids(unique)};
+    } finally {recorder = r;}
   };
   const block = (id: string, anchor: string, what: string, g: {state: Knowledge; sources: string[]}) =>
     add({id: `${anchor}-blocked-${id}`, code: "effect_blocked", anchor, sources: g.sources.map((x) => src(x)), knowledge: g.state,
       statement: `${what} não é afirmado: depende de documento ${stateWords[g.state]}. Fica pendente até a leitura completa.`});
-  for (const {s, target} of futureSubstitutes) block(`page-${s.fileId}`, target, "O conteúdo da página recuperada", {state: "future", sources: [target, s.fileId].sort(byKey)});
+
+  const offered = new Map<string, DocumentReading[]>();
+  for (const s of substitutes) {
+    const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef
+      && s.substitutesPages!.pages.every((p) => f.legibility.unreadablePages.some((u) => u.page === p)));
+    const named = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef);
+    if (!named.length && !documents.some((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef)) throw new Error("document_inventory_substitute_without_target");
+    if (named.length && !targets.length) throw new Error("document_inventory_substitute_for_legible_page");
+    if (targets.length > 1) throw new Error("document_inventory_substitute_target_ambiguous");
+    const target = targets[0];
+    if (!target) continue;
+    substituted.add(target.fileId);
+    if (target.legibility.pageCount !== null && s.substitutesPages!.pages.some((p) => p > target.legibility.pageCount!)) throw new Error("document_inventory_page_outside_file");
+    for (const p of s.substitutesPages!.pages) offered.set(`${target.fileId}|${p}`, [...offered.get(`${target.fileId}|${p}`) ?? [], s]);
+  }
+  // A page is completed only from one reading, and only if the target (its other pages aside) and every copy are known:
+  // copies that read the page differently leave it unread with the conflict declared; a copy with its own conflict,
+  // a hash read two ways or a date after the reading date withholds the page.
+  for (const [k, list] of [...offered].sort(([a], [b]) => byKey(a, b))) {
+    const [targetId, pageText] = k.split("|") as [string, string], page = Number(pageText), target = byId.get(targetId)!;
+    effect(`page:${targetId}:${page}`, () => {
+      const onPage = (s: DocumentReading) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
+        debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
+      const usable = list.filter((s) => !suspended.has(s.fileId));
+      if (new Set(usable.map(onPage)).size > 1) {
+        const fileIds = usable.map((s) => s.fileId).sort(byKey);
+        readingConflicts.push({sha256: null, page, fileIds}); pageConflicted.add(targetId);
+        add({id: `${targetId}-substitute-conflict-p${page}`, code: "substitute_conflict", anchor: targetId, sources: fileIds.map((x) => src(x, {page, section: null})), knowledge: "conflict",
+          statement: `Há ${fileIds.length} cópias da página ${page} com leituras diferentes; a página continua sem leitura até a divergência ser resolvida.`});
+        return;
+      }
+      const g = guard([target, ...list], [], {ignoreUnread: [targetId]});
+      if (g.state !== "known" || !usable.length) {block(`page-${page}`, targetId, `O conteúdo da página ${page} recuperada`, g); return;}
+      // Same reading of the page in every copy: the lowest file id carries it.
+      const s = [...usable].sort((a, b) => byKey(a.fileId, b.fileId))[0]!;
+      pagesFrom.set(targetId, [...pagesFrom.get(targetId) ?? [], {page, fileId: s.fileId, sha256: s.sha256}].sort((a, b) => a.page - b.page));
+      recorder!.emitted = true;
+    });
+  }
+  for (const [targetId, pages] of [...pagesFrom].sort(([a], [b]) => byKey(a, b))) for (const p of pages)
+    for (const c of byId.get(p.fileId)!.clauses.filter((x) => x.at.page === p.page)) recovered.set(targetId, [...recovered.get(targetId) ?? [], {c, from: p.fileId}]);
+
 
   // Version families: one precedence function for every family, by content and never by arrival.
   const superseded = new Map<string, {fileId: string; reason: "audited_over_draft" | "higher_assurance" | "later_version" | "later_position"}>();
@@ -528,7 +606,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     for (const l of losers) {
       const reason = reasonFor(winner, l, r.eliminatedBy.get(l)!);
       superseded.set(l.fileId, {fileId: winner.fileId, reason});
-      if (reason === "audited_over_draft") {
+      if (reason === "audited_over_draft") effect(`draft:${l.fileId}`, () => {
         const a = figure(winner, "ebitda"), d = figure(l, "ebitda");
         const only = winner.figures.filter((x) => metricLabel[x.metric] && !l.figures.some((y) => y.metric === x.metric));
         const items = only.map((x) => `${metricLabel[x.metric]![0]} (${brl(x.value, x.scale)})`).join(" nem ");
@@ -541,7 +619,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
           decisionStatement: g.state !== "known" ? null : `Há duas versões ${of(policy[winner.kind].noun)} de ${periodText(winner)}. `
             + (a && d ? `A minuta tem EBITDA de ${brl(d.value, d.scale)}; a auditada, ${brl(a.value, a.scale)}${only.length ? `, depois ${only.map((x) => metricLabel[x.metric]![1]).join(" e ")}` : ""}. ` : "")
             + "A auditada é a que vale."});
-      } else {
+      });
+      else {
         const note = winner.observations.find((o) => o.topic === "revision_note");
         add({id: `${l.fileId}-superseded`, code: "version_superseded", anchor: l.fileId, sources: [src(l.fileId), ...note ? [src(winner.fileId, note.at)] : [src(winner.fileId)]],
           statement: `Duas versões de ${periodText(l)}; ${winner.version.ordinal !== null && reason === "later_version" ? `a v${winner.version.ordinal}` : "a de maior asseguração"} vale e esta fica como histórico.`,
@@ -614,14 +693,19 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const instrumentCriteria: VersionCriterion[] = ["guarantee", "date", "ordinal"], chainCriteria: VersionCriterion[] = ["date", "ordinal"];
   /** The state of each instrument's whole chain: every original, every amendment, every page, every substitute. */
   const chainStates = new Map<string, {state: Knowledge; sources: string[]; covenant: string | null; debt: boolean}>();
+  // Chain membership is selected outside the tracked context; the text in force is computed inside it.
+  const chainMembers = new Map<string, DocumentReading[]>();
   for (const ref of [...new Set(instruments.filter((f) => f.instrument!.amends === null).map((f) => f.instrument!.ref))].sort(byKey)) {
     const chainDocs = documents.filter((f) => f.instrument !== null && (f.instrument.ref === ref || f.instrument.amends === ref));
     const chainRefs = new Set(chainDocs.map((f) => f.instrument!.ref));
-    const chainGuard = guard([...chainDocs, ...substitutes.filter((x) => chainRefs.has(x.substitutesPages!.instrumentRef))]);
-    const debtChain = chainDocs.some((f) => policy[f.kind].group === "debt");
-    chainStates.set(ref, {state: chainGuard.state, sources: chainGuard.sources, covenant: null, debt: debtChain});
+    const chainSubs = substitutes.filter((x) => chainRefs.has(x.substitutesPages!.instrumentRef));
     const originals = instruments.filter((f) => f.instrument!.ref === ref && f.instrument!.amends === null);
     const amendments = instruments.filter((f) => f.instrument!.amends === ref);
+    chainMembers.set(ref, [...chainDocs, ...chainSubs]);
+    effect(`text:${ref}`, () => {
+    const chainGuard = guard([...chainDocs, ...chainSubs]);
+    const debtChain = chainDocs.some((f) => policy[f.kind].group === "debt");
+    chainStates.set(ref, {state: chainGuard.state, sources: chainGuard.sources, covenant: null, debt: debtChain});
     for (const o of originals.filter((f) => !binds(f.version.status))) {
       for (const h of clausesOf(o)) notInForce.set(held(h), "unsigned");
       add({id: `${o.fileId}-not-in-force`, code: "instrument_not_in_force", anchor: o.fileId, sources: [src(o.fileId)],
@@ -630,7 +714,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     for (const o of originals.filter((f) => binds(f.version.status) && future(f))) {
       for (const h of clausesOf(o)) notInForce.set(held(h), "future");
       add({id: `${o.fileId}-future`, code: "instrument_future", anchor: o.fileId, sources: [src(o.fileId)],
-        statement: `Vigência a partir de ${longDate(o.period.start!)}, depois da data desta leitura: texto futuro, ainda não vigente.`});
+        statement: "Data posterior à data desta leitura: texto futuro, ainda não vigente."});
     }
     const signed = originals.filter((f) => binds(f.version.status) && !future(f));
     const r = resolveFamily(signed, instrumentCriteria, (f) => f.period.start);
@@ -662,7 +746,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       }
       for (const a of amendments) add({id: `${a.fileId}-not-in-force`, code: "amendment_not_in_force", anchor: a.fileId, sources: [src(a.fileId)],
         statement: "O instrumento original não tem versão vigente definida nesta data: o aditamento fica como histórico."});
-      continue;
+      return;
     }
     const noun = policy[original.kind].noun;
     for (const a of amendments.filter((x) => !binds(x.version.status))) {
@@ -674,7 +758,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     for (const a of upcoming) {
       for (const h of clausesOf(a)) notInForce.set(held(h), "future");
       add({id: `${a.fileId}-future`, code: "amendment_future", anchor: a.fileId, sources: [src(a.fileId), src(original.fileId)],
-        statement: `Aditamento com vigência a partir de ${longDate(a.period.start!)}, depois da data desta leitura: texto futuro, ainda não vigente.`});
+        statement: "Aditamento com data posterior à data desta leitura: texto futuro, ainda não vigente."});
     }
     const chain = amendments.filter((x) => binds(x.version.status) && !future(x));
     const inForce = new Map<string, {f: DocumentReading; h: Held}>(), currentConflicts: {type: string; fileIds: string[]}[] = [], unreadKeys: {type: string; fileIds: string[]}[] = [];
@@ -752,12 +836,12 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       chainStates.set(ref, {state: "known", sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
     }
     for (const [key, v] of inForce) if (typeOf(key) === "financial_covenant" && v.h.c.type === "financial_covenant") currentCovenants.push(v.h.c.maxRatio);
-    if (!chain.length && !upcoming.length) continue;
+    if (!chain.length && !upcoming.length) return;
     const fileIds = [original.fileId, ...ids(chain)];
     effectiveTexts.push({instrumentRef: ref, fileIds: fileIds.length > 1 ? fileIds : [original.fileId, ...ids(upcoming)],
       clauses: [...inForce].map(([k, v]) => ({type: k, fileId: v.f.fileId, clauseId: v.h.c.id})).sort((a, b) => byKey(a.type, b.type)),
-      knowledge: chainState, conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: byId.get(id)!.period.start!}))});
-    if (!chain.length) continue;
+      knowledge: chainState, conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: dateOf(byId.get(id)!) ?? input.asOf}))});
+    if (!chain.length) return;
     families.push({id: `instrument:${ref}`, basis: "instrument", resolution: "effective_text", prevails: fileIds, superseded: [], sideBySide: [], highlighted: false});
     const touched = [...new Set(changes.map((x) => x.key))].filter((k) => typeOf(k) === "financial_covenant" || typeOf(k) === "negative_pledge");
     const originalWas = touched.map((k) => {const e = entriesOf(original).get(k);
@@ -784,6 +868,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         topic: binding.length ? "debt_covenant" : null, effect: binding.length ? "binding_limit" : null, ...binding.length ? {knowledge: "known" as const} : {},
         decisionStatement: binding.length ? `${header} ${priorText}; o aditamento ${lower(sentence(binding.map((x) => describeChange(x.h.c, x.prior?.c ?? null, x.defined))))}. ${chain.length > 1 ? "Os textos precisam ser lidos juntos." : "As duas precisam ser lidas juntas."}` : null});
     }
+    });
   }
   // An amendment whose original is not read here (absent, only in the vault, or suspended) has no text in force:
   // its clauses create no finding and no deadline until the original is read.
@@ -820,31 +905,35 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const identityChecks: DocumentFolderInventory["identityChecks"] = [];
   for (const f of live.filter((x) => x.debtTable !== null && settled(x))) {
     // The check stands on every position of the same table, whatever its version.
-    const g = guard(documents.filter((x) => x.kind === f.kind && x.entity.primaryId === f.entity.primaryId));
-    if (g.state !== "known") {
-      identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId, ...g.sources.filter((x) => x !== f.fileId)], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: g.state});
-      block("debt-total", f.fileId, "A conferência do total da tabela de dívida", g); continue;
-    }
-    const t = f.debtTable!, drawn = t.lines.reduce((s, l) => s.plus(inReais(l.drawn, t.scale)), new Exact(0));
-    const reported = inReais(t.reportedTotal, t.scale), counted = t.lines.reduce((s, l) => s.plus(inReais(l.counted, t.scale)), new Exact(0));
-    // A limit explains the difference only when the lines as counted add up to the reported total.
-    const atLimit = counted.eq(reported) ? t.lines.filter((l) => l.limit !== null && !new Exact(l.counted).eq(l.drawn) && new Exact(l.counted).eq(l.limit)) : [];
-    const matches = drawn.eq(reported);
-    identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId], status: matches ? "matches" : "differs",
-      reported: reported.toFixed(), recomposed: drawn.toFixed(), currency: input.currency, reason: matches ? null : atLimit.length ? "unused_limit_counted" : "not_recomposed"});
-    if (matches) continue;
-    const drawnShown = brl(drawn.div(t.scale).toFixed(), t.scale);
-    if (atLimit.length) {
-      const unused = atLimit.every((l) => new Exact(l.drawn).eq(0));
-      add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [src(f.fileId, t.at)], knowledge: "known",
-        statement: `Soma ${brl(t.reportedTotal, t.scale)} porque ${atLimit.map((l) => `${lineLabel[l.lineKind]} entra pelo limite (${brl(l.limit!, t.scale)})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${periodText(f)}: ${drawnShown}.`,
-        topic: "debt_position", effect: "figure_correction",
-        decisionStatement: `A dívida em ${periodText(f)} é de ${drawnShown}, não ${brl(t.reportedTotal, t.scale)}. A tabela soma o limite ${atLimit.map((l) => of(lineLabel[l.lineKind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}.`});
-    } else {
-      add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [src(f.fileId, t.at)], knowledge: "known",
-        statement: `O total informado de ${brl(t.reportedTotal, t.scale)} não fecha com as linhas, que somam ${drawnShown} de saldo utilizado.`, topic: "debt_position", effect: "figure_correction",
-        decisionStatement: `A tabela de dívida de ${periodText(f)} não fecha: o total informado é ${brl(t.reportedTotal, t.scale)} e as linhas somam ${drawnShown}.`});
-    }
+    const members = documents.filter((x) => x.kind === f.kind && x.entity.primaryId === f.entity.primaryId);
+    effect(`check:${f.fileId}-reported-total`, () => {
+      const t = f.debtTable!, drawn = t.lines.reduce((s, l) => s.plus(inReais(l.drawn, t.scale)), new Exact(0));
+      const reported = inReais(t.reportedTotal, t.scale), counted = t.lines.reduce((s, l) => s.plus(inReais(l.counted, t.scale)), new Exact(0));
+      // A limit explains the difference only when the lines as counted add up to the reported total.
+      const atLimit = counted.eq(reported) ? t.lines.filter((l) => l.limit !== null && !new Exact(l.counted).eq(l.drawn) && new Exact(l.counted).eq(l.limit)) : [];
+      const matches = drawn.eq(reported), drawnShown = brl(drawn.div(t.scale).toFixed(), t.scale);
+      const words = {total: brl(t.reportedTotal, t.scale), period: periodText(f), lines: atLimit.map((l) => ({kind: l.lineKind, limit: brl(l.limit!, t.scale), unused: new Exact(l.drawn).eq(0)})), at: src(f.fileId, t.at)};
+      const g = guard(members);
+      if (g.state !== "known") {
+        identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId, ...g.sources.filter((x) => x !== f.fileId)], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: g.state});
+        block("debt-total", f.fileId, "A conferência do total da tabela de dívida", g); return;
+      }
+      recorder!.emitted = true;
+      identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId], status: matches ? "matches" : "differs",
+        reported: reported.toFixed(), recomposed: drawn.toFixed(), currency: input.currency, reason: matches ? null : atLimit.length ? "unused_limit_counted" : "not_recomposed"});
+      if (matches) return;
+      if (words.lines.length) {
+        const unused = words.lines.every((l) => l.unused);
+        add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [words.at], knowledge: "known",
+          statement: `Soma ${words.total} porque ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${words.period}: ${drawnShown}.`,
+          topic: "debt_position", effect: "figure_correction",
+          decisionStatement: `A dívida em ${words.period} é de ${drawnShown}, não ${words.total}. A tabela soma o limite ${words.lines.map((l) => of(lineLabel[l.kind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}.`});
+      } else {
+        add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [words.at], knowledge: "known",
+          statement: `O total informado de ${words.total} não fecha com as linhas, que somam ${drawnShown} de saldo utilizado.`, topic: "debt_position", effect: "figure_correction",
+          decisionStatement: `A tabela de dívida de ${words.period} não fecha: o total informado é ${words.total} e as linhas somam ${drawnShown}.`});
+      }
+    });
   }
   for (const report of live.filter((f) => f.kind === "management_report" && settled(f) && f.period.start && f.period.end && figureList(f, "ebitda").length)) {
     const window = monthsBetween(report.period.start!, report.period.end!);
@@ -853,20 +942,24 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const undecided = [...new Set(live.filter((f) => inWindow(f) && unresolved.has(f.fileId)).map((f) => f.period.start!.slice(0, 7)))].sort();
     const series = live.filter((f) => inWindow(f) && !unresolved.has(f.fileId)).sort((a, b) => byKey(a.period.start!, b.period.start!));
     const missing = window.filter((m) => !series.some((f) => f.period.start!.startsWith(m)) && !undecided.includes(m));
-    const withoutFigure = series.filter((f) => figureState(f, "ebitda") === "missing_source");
-    // The sum stands on the report and on every document of every month in the window, all versions included.
-    const deps = [report, ...documents.filter((f) => policy[f.kind].monthly && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)))];
-    const g = guard(deps, [missing.length || withoutFigure.length ? "missing_source" : "known"]);
-    if (g.state !== "known") {
-      const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
-      identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
-        reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
-      continue;
-    }
-    const r = figure(report, "ebitda")!, reported = inReais(r.value, r.scale);
-    const sum = series.reduce((s, f) => {const x = figure(f, "ebitda")!; return s.plus(inReais(x.value, x.scale));}, new Exact(0));
-    identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId, ...series.map((f) => f.fileId)],
-      status: sum.eq(reported) ? "matches" : "differs", reported: reported.toFixed(), recomposed: sum.toFixed(), currency: input.currency, reason: null});
+    // The sum stands on every version of the report and on every document of every month in the window, all versions included.
+    const deps = [...documents.filter((f) => f.kind === report.kind && f.entity.primaryId === report.entity.primaryId && f.period.start === report.period.start && f.period.end === report.period.end),
+      ...documents.filter((f) => policy[f.kind].monthly && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)))];
+    effect(`check:${report.fileId}-months`, () => {
+      const withoutFigure = series.filter((f) => figureState(f, "ebitda") === "missing_source");
+      const r = figure(report, "ebitda"), values = series.map((f) => figure(f, "ebitda"));
+      const g = guard(deps, [missing.length || withoutFigure.length || !r ? "missing_source" : "known"]);
+      if (g.state !== "known") {
+        const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
+        identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
+          reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
+        return;
+      }
+      recorder!.emitted = true;
+      const reported = inReais(r!.value, r!.scale), sum = values.reduce((acc, x) => acc.plus(inReais(x!.value, x!.scale)), new Exact(0));
+      identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId, ...series.map((f) => f.fileId)],
+        status: sum.eq(reported) ? "matches" : "differs", reported: reported.toFixed(), recomposed: sum.toFixed(), currency: input.currency, reason: null});
+    });
   }
 
   for (const f of live) {
@@ -900,7 +993,15 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const docBinds = binds(f.version.status);
     // Clause effects of an instrument stand on its whole chain; those of any other document on the document itself.
     const chainRef = f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
-    const docGuard = chainRef ? chainStates.get(chainRef) ?? {state: "missing_source" as Knowledge, sources: [f.fileId]} : guard([f]);
+    const clauseDeps = chainRef ? chainMembers.get(chainRef) ?? [f] : [f];
+    // The policy's comparison stands on every debt instrument and is withheld whole if any is not known.
+    const debtDeps = [...new Set([...[...chainMembers].filter(([r]) => chainStates.get(r)?.debt).flatMap(([, m]) => m),
+      ...documents.filter((x) => x.instrument !== null && policy[x.kind].group === "debt"),
+      ...substitutes.filter((x) => documents.some((d) => d.instrument?.ref === x.substitutesPages!.instrumentRef && policy[d.kind].group === "debt"))])];
+    effect(`clauses:${f.fileId}`, () => {
+    const chainState = chainRef ? chainStates.get(chainRef)?.state ?? "missing_source" : "known";
+    const docGuard0 = guard(clauseDeps, [chainState]);
+    const docGuard = docGuard0;
     const docKnown = docGuard.state === "known";
     if (f.instrument === null && docBinds && !docKnown && own.some(({c}) => ["assignment_prohibition", "auto_renewal", "debt_policy"].includes(c.type)))
       block("clauses", f.fileId, `O efeito das cláusulas ${of(policy[f.kind].noun)}`, docGuard);
@@ -927,32 +1028,41 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline", knowledge: "known",
         decisionStatement: `${capital(policy[f.kind].noun)} renova sozinho em ${monthName(c.termEnd)}. Para renegociar preço ou não renovar, o aviso precisa sair até ${longDate(c.noticeDeadline)}.`});
       else if (c.type === "debt_policy") {
-        // The comparison stands on every debt instrument chain: only known chains are compared, and an incomplete one is said.
-        const debt = [...chainStates.values()].filter((x) => x.debt), incomplete = debt.some((x) => x.state !== "known");
-        const lowest = debt.flatMap((x) => x.state === "known" && x.covenant ? [x.covenant] : []).sort((a, b) => new Exact(a).cmp(b))[0];
-        const tighter = lowest !== undefined && new Exact(c.maxRatio).lt(lowest);
-        const caveat = incomplete ? "; há instrumento de dívida com leitura incompleta, e a comparação não cobre todos os limites." : ".";
-        const against = lowest === undefined ? (incomplete ? ", e há instrumento de dívida com leitura incompleta; a comparação não é feita." : ".")
-          : `, ${tighter ? "mais restritiva que o" : "igual ou acima do"} covenant vigente de ${times(lowest)}${caveat}`;
-        add({...base, statement: `Política de no máximo ${times(c.maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit", knowledge: "known",
-          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(policy[f.kind].noun)} de ${periodText(f)} fixa dívida líquida de no máximo ${times(c.maxRatio)} o EBITDA${lowest === undefined ? against
-            : `, ${tighter ? "abaixo do" : "não abaixo do"} covenant vigente de ${times(lowest)}.${incomplete ? " Há instrumento de dívida com leitura incompleta; a comparação não cobre todos os limites." : tighter ? " Entre os limites lidos, é o mais restritivo." : ""}`}`});
+        const maxRatio = c.maxRatio, noun = policy[f.kind].noun, when = periodText(f);
+        const comparison = effect(`comparison:${f.fileId}:${c.id}`, () => {
+          const debt = [...chainStates.values()].filter((x) => x.debt);
+          const g = guard([f, ...debtDeps], debt.map((x) => x.state));
+          if (g.state !== "known") {block(`comparison-${c.id}`, f.fileId, "A comparação da política com os covenants", g); return null;}
+          const lowest = debt.flatMap((x) => x.covenant ? [x.covenant] : []).sort((a, b) => new Exact(a).cmp(b))[0];
+          if (lowest === undefined) return null;
+          recorder!.emitted = true;
+          return {lowest, tighter: new Exact(maxRatio).lt(lowest)};
+        });
+        const against = comparison ? `, ${comparison.tighter ? "mais restritiva que o" : "igual ou acima do"} covenant vigente de ${times(comparison.lowest)}.` : ".";
+        add({...base, statement: `Política de no máximo ${times(maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit", knowledge: "known",
+          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(noun)} de ${when} fixa dívida líquida de no máximo ${times(maxRatio)} o EBITDA${comparison
+            ? `, ${comparison.tighter ? "abaixo do" : "não abaixo do"} covenant vigente de ${times(comparison.lowest)}.${comparison.tighter ? " Entre os limites lidos, é o mais restritivo." : ""}` : "."}`});
       } else add({...base, statement: from === f.fileId ? "Cláusula lida no documento." : `Cláusula lida na cópia legível da página ${c.at.page}.`});
     }
+    });
   }
 
   // Subsidiary inside the consolidated statements of its parent; the entity names come from the registry.
   for (const f of live.filter((x) => x.kind === "annual_financial_statements" && settled(x) && x.entity.primaryId && registry.get(x.entity.primaryId)?.parentId)) {
     const sub = registry.get(f.entity.primaryId!)!, parent = registry.get(sub.parentId!)!;
     if (!live.some((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === parent.id)) continue;
-    const cash = figure(f, "cash"), id = `${f.fileId}-subsidiary`;
-    const g = guard(documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || x.entity.primaryId === sub.id) && (x.period.start ?? "") === (f.period.start ?? "")));
-    if (g.state !== "known") {block("perimeter", f.fileId, "O perímetro da controlada no consolidado", g); continue;}
-    add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [src(f.fileId, cash?.at)], knowledge: "known",
-      statement: `A consolidada inclui a ${sub.label}; a análise de crédito da devedora precisa do individual.${cash ? ` O caixa da controlada (${brl(cash.value, cash.scale)}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
-      topic: "group_perimeter", effect: "perimeter",
-      decisionStatement: `A controlada ${sub.label} entra no consolidado.${cash ? ` O caixa dela, ${brl(cash.value, cash.scale)}, só chega à controladora por dividendo ou mútuo.` : ""}`});
-    if (f.version.status !== "audited") gapsOut.push({need: "group_perimeter", item: `Demonstrações auditadas da ${sub.label}, se existirem`, why: "perímetro da devedora e caixa disponível na controladora", quoted: null, findingId: id, anchor: f.fileId, conditional: true});
+    const members = documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || x.entity.primaryId === sub.id) && x.period.start === f.period.start);
+    const id = `${f.fileId}-subsidiary`;
+    effect(`perimeter:${f.fileId}`, () => {
+      const cash = figure(f, "cash"), cashShown = cash ? brl(cash.value, cash.scale) : null, at = src(f.fileId, cash?.at), audited = f.version.status === "audited";
+      const g = guard(members);
+      if (g.state !== "known") {block("perimeter", f.fileId, "O perímetro da controlada no consolidado", g); return;}
+      add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [at], knowledge: "known",
+        statement: `A consolidada inclui a ${sub.label}; a análise de crédito da devedora precisa do individual.${cashShown ? ` O caixa da controlada (${cashShown}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
+        topic: "group_perimeter", effect: "perimeter",
+        decisionStatement: `A controlada ${sub.label} entra no consolidado.${cashShown ? ` O caixa dela, ${cashShown}, só chega à controladora por dividendo ou mútuo.` : ""}`});
+      if (!audited) gapsOut.push({need: "group_perimeter", item: `Demonstrações auditadas da ${sub.label}, se existirem`, why: "perímetro da devedora e caixa disponível na controladora", quoted: null, findingId: id, anchor: f.fileId, conditional: true});
+    });
   }
   for (const f of live.filter((x) => x.kind === "appraisal_report" && x.asset)) {
     if (live.some((x) => x.kind === "property_registry" && x.asset?.id === f.asset!.id)) continue;
@@ -962,19 +1072,24 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     gapsOut.push({need: "real_collateral", item: "Matrícula atualizada do imóvel avaliado no laudo", why: "saber se o imóvel está livre para uma garantia", quoted: null, findingId: id, anchor: f.fileId, conditional: false});
   }
   // A figure cited outside the statements, read against the prevailing audited statements of the same entity and period.
+  // Both operands, gross and net, must be read; otherwise the comparison is withheld whole.
   for (const f of live.filter((x) => policy[x.kind].group !== "statements")) {
     for (const x of f.figures.filter((y) => y.metric === "revenue")) {
       const statements = live.filter((s) => s.kind === "annual_financial_statements" && settled(s) && s.version.status === "audited" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end);
       if (statements.length !== 1) continue;
-      // The comparison stands on the presentation and on every reading of the same statements, drafts and copies included.
-      const g = guard([f, ...documents.filter((s) => s.kind === "annual_financial_statements" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end)]);
-      if (g.state !== "known") {block(`revenue-${x.id}`, f.fileId, "A leitura da receita citada", g); continue;}
-      const st = statements[0]!, gross = figure(st, "gross_revenue"), net = figure(st, "net_revenue"), cited = inReais(x.value, x.scale);
-      if (net && cited.eq(inReais(net.value, net.scale))) continue;
-      add({id: `${f.fileId}-${x.id}`, code: "figure_basis_differs", anchor: f.fileId, sources: [src(f.fileId, x.at), src(st.fileId, (gross ?? net)?.at ?? null)],
-        statement: gross && cited.eq(inReais(gross.value, gross.scale))
-          ? `Cita receita de ${brl(x.value, x.scale)}, que é a receita bruta${net ? `; a líquida das demonstrações é ${brl(net.value, net.scale)}` : ""}.`
-          : `Cita receita de ${brl(x.value, x.scale)}, que não coincide com a bruta nem com a líquida das demonstrações.`});
+      const members = [f, ...documents.filter((s) => s.kind === "annual_financial_statements" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end)];
+      effect(`revenue:${f.fileId}:${x.id}`, () => {
+        const st = statements[0]!, gross = figure(st, "gross_revenue"), net = figure(st, "net_revenue"), cited = inReais(x.value, x.scale);
+        const words = {cited: brl(x.value, x.scale), gross: gross ? brl(gross.value, gross.scale) : null, net: net ? brl(net.value, net.scale) : null,
+          isGross: gross ? cited.eq(inReais(gross.value, gross.scale)) : false, isNet: net ? cited.eq(inReais(net.value, net.scale)) : false, sources: [src(f.fileId, x.at), src(st.fileId, (gross ?? net)?.at ?? null)]};
+        const g = guard(members, [gross && net ? "known" : "missing_source"]);
+        if (g.state !== "known") {block(`revenue-${x.id}`, f.fileId, "A comparação da receita citada", g); return;}
+        if (words.isNet) return;
+        recorder!.emitted = true;
+        add({id: `${f.fileId}-${x.id}`, code: "figure_basis_differs", anchor: f.fileId, sources: words.sources, knowledge: "known",
+          statement: words.isGross ? `Cita receita de ${words.cited}, que é a receita bruta; a líquida das demonstrações é ${words.net}.`
+            : `Cita receita de ${words.cited}, que não coincide com a bruta nem com a líquida das demonstrações.`});
+      });
     }
   }
   for (const [dup, first] of duplicateOf) if (!suspended.has(dup)) add({id: `${dup}-duplicate`, code: "duplicate", anchor: dup, sources: [src(dup), src(first)], statement: "Mesmo conteúdo, mesmo hash."});
@@ -1015,7 +1130,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   });
 
   // A later call: what the prior inventory said and no longer holds is resolved by what arrived, never dropped.
-  const newFiles = input.prior ? input.files.filter((f) => !input.prior!.inventory.rows.some((r) => r.fileId === f.fileId) && f.substitutesPages === null).map((f) => f.fileId) : [];
+  const newFiles = input.prior ? files.filter((f) => !input.prior!.inventory.rows.some((r) => r.fileId === f.fileId) && f.substitutesPages === null).map((f) => f.fileId) : [];
   if (input.prior) {
     if (inventoryFingerprint(input.prior.inventory) !== input.prior.fingerprint) throw new Error("document_inventory_prior_mismatch");
     for (const p of input.prior.inventory.findings) {

@@ -18,7 +18,9 @@ describe("document folder inventory kernel", () => {
   it("states the decision findings with the figures read, and calculates nothing else", () => {
     const d = turnOne().decisionFindings!.map((x) => x.statement);
     expect(d[0]).toBe("O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.");
-    expect(d[1]).toContain("no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x");
+    // The comparison with the covenants waits for the CCB's page 7: it is withheld whole and declared.
+    expect(d[1]).toBe("Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA.");
+    expect(turnOne().findings.find((f) => f.id === "f24-blocked-comparison-politica")!.knowledge).toBe("unread");
     expect(d[2]).toContain("a contraparte responde por 32% da carteira");
     expect(d[3]).toBe("O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.");
     expect(d[4]).toBe("A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.");
@@ -51,7 +53,7 @@ describe("document folder inventory kernel", () => {
   });
   it("updates in turn 2 only the rows touched; the rest are the prior bytes", () => {
     const prior = turnOne(), t = turnTwo(prior);
-    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-blocked-text-in-force", "f20-unreadable-p7"], findingsAdded: ["f20-s01-reforco"],
+    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-blocked-text-in-force", "f20-unreadable-p7", "f24-blocked-comparison-politica"], findingsAdded: ["f20-s01-reforco"],
       questionsAnswered: ["circulacao-f02"]});
     for (const r of prior.rows.filter((x) => x.fileId !== "f20")) expect(t.rows.find((x) => x.fileId === r.fileId)).toEqual(r);
     expect(t.findings.find((f) => f.id === "f11-series-gap")).toMatchObject({status: "resolved", resolvedBy: ["s02"]});
@@ -83,7 +85,7 @@ describe("review r1 of the folder inventory kernel", () => {
     const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f19").version = {label: "minuta não assinada", status: "draft", ordinal: null, lastUpdated: null};})}));
     expect(o.effectiveTexts).toEqual([]);
     expect(o.findings.filter((f) => f.anchor === "f19").map((f) => f.code)).toEqual(["amendment_not_in_force"]);
-    expect(o.findings.find((f) => f.id === "f24-politica")!.statement).toContain("covenant vigente de 2,75x");
+    expect(o.findings.find((f) => f.id === "f24-politica")!.statement).toBe("Política de no máximo 2,5x.");
   });
   it("derives deadlines from the text in force; the replaced clause stays as history", () => {
     const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => r.push({...structuredClone(file(r, "f23")), fileId: "f31", sha256: "b".repeat(64),

@@ -39,6 +39,8 @@ export const documentFolderInventoryPacketOutputSchema = z.strictObject({
     update: z.strictObject({rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(), newFindings: z.array(z.strictObject({statement: text, quoted: z.strictObject({fileId: key, page: z.number().int().nullable(), section: text.nullable(), text}).nullable()})),
       identityChecks: z.array(z.strictObject({id: key, status: z.enum(["matches", "differs", "not_run"]), reported: decimal.nullable(), recomposed: decimal.nullable()})),
       informed: z.array(z.strictObject({statement: text, author: text, date: z.iso.date()})), stillOpen: z.array(text)}).nullable(),
+    /** Set when the update could not be read: everything above is the prior inventory, as history. */
+    historical: z.strictObject({inventoryFingerprint: hash, reason: z.literal("update_not_read")}).nullable(),
     numericAnalysis: z.literal("none"), documentsValidated: z.literal(false),
   }).nullable(),
   gaps: z.array(z.strictObject({operand: text, reason: text})).max(1024),
@@ -58,11 +60,15 @@ export function prepareDocumentFolderInventoryPacket(raw: unknown): DocumentFold
   const input = documentFolderInventoryPacketInputSchema.parse(raw);
   const result = calculateAdoptedDocumentFolderInventory(input.analysis, input.mode);
   // An update that could not be read leaves the base inventory standing, and the packet partial.
+  // An update that could not be read never restates the prior effects as current: the prior inventory is shown as
+  // identified history, with no decision findings, no general findings and no open questions.
+  const historical = result.inventory === null && result.priorInventory !== null;
   const inv = result.inventory ?? result.priorInventory;
   const readings = inv ? {
     opening: {files: inv.counts.files, groups: [...new Set(inv.groups.map((g) => g.label))], duplicates: inv.counts.duplicates, superseded: inv.counts.superseded, inVault: inv.counts.inVault},
-    decisionFindings: inv.decisionFindings?.map((d) => ({rank: d.rank, statement: d.statement, decisionIds: d.decisionIds, sources: d.sources})) ?? null,
-    generalFindings: inv.generalFindings?.map((d) => ({rank: d.rank, statement: d.statement})) ?? null,
+    historical: historical ? {inventoryFingerprint: result.base.inventoryFingerprint!, reason: "update_not_read" as const} : null,
+    decisionFindings: historical ? null : inv.decisionFindings?.map((d) => ({rank: d.rank, statement: d.statement, decisionIds: d.decisionIds, sources: d.sources})) ?? null,
+    generalFindings: historical ? null : inv.generalFindings?.map((d) => ({rank: d.rank, statement: d.statement})) ?? null,
     versions: inv.families.map((f) => ({familyId: f.id, resolution: f.resolution, prevails: f.prevails, superseded: f.superseded, sideBySide: f.sideBySide, highlighted: f.highlighted})),
     documentary: [...inv.findings.filter((f) => f.quoted !== null && f.status === "open").map((f) => ({findingId: f.id, ...f.quoted!})),
       ...inv.findings.filter((f) => f.changes !== null && f.status === "open").flatMap((f) => f.changes!.flatMap((c) => [...c.before ? [{findingId: f.id, ...c.before}] : [], {findingId: f.id, ...c.after}])),
@@ -70,7 +76,7 @@ export function prepareDocumentFolderInventoryPacket(raw: unknown): DocumentFold
     notRead: inv.findings.filter((f) => (f.code === "page_unreadable" || f.code === "file_unreadable") && f.status === "open")
       .map((f) => ({fileId: f.anchor, pages: f.code === "page_unreadable" ? f.sources.flatMap((s) => s.page === null ? [] : [s.page]) : null, statement: f.statement})),
     gaps: inv.gaps.filter((g) => g.status === "open").map((g) => ({item: g.item, why: g.why, purposes: g.purposes, conditional: g.conditional})),
-    questions: inv.questions.filter((q) => q.status === "open").map((q) => q.text),
+    questions: historical ? [] : inv.questions.filter((q) => q.status === "open").map((q) => q.text),
     update: inv.update ? {rowsUpdated: inv.update.rowsUpdated, rowsAdded: inv.update.rowsAdded, rowsPreserved: inv.update.rowsPreserved,
       newFindings: inv.findings.filter((f) => inv.update!.findingsAdded.includes(f.id)).map((f) => ({statement: f.statement, quoted: f.quoted})),
       // Only the checks the arrival made possible are restated.

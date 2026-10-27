@@ -30,6 +30,8 @@ describe("document folder inventory packet", {timeout: 120000}, () => {
     expect(p.status).toBe("partial");
     expect(p.result.status).toBe("base_only");
     expect(p.readings!.opening.files).toBe(30);
+    // The prior inventory is history, never restated as current.
+    expect([p.readings!.historical?.reason, p.readings!.decisionFindings, p.readings!.generalFindings, p.readings!.questions]).toEqual(["update_not_read", null, null, []]);
   });
   it("review r1: refuses selections that leave out a record the basis holds", () => {
     const i = folderPacketInput();

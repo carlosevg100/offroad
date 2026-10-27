@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -73,7 +73,7 @@ describe("property: amendments by the one filter, against a brute-force oracle (
   const generate = (r: () => number): A[] => Array.from({length: 2 + Math.floor(r() * 3)}, (_, k) => {
     const covenant = r() < 0.75, twice = covenant && r() < 0.2, text = !covenant || r() < 0.35;
     const ratio = pick(r, ["2.5", "2.8", "3", "3.5"] as const);
-    return {id: `a${k + 1}`, date: pick(r, ["2023-06", "2024-06", null] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const), future: r() < 0.12,
+    return {id: `a${k + 1}`, date: pick(r, ["2023-06", "2024-06"] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const), future: r() < 0.12,
       ratios: covenant ? (twice ? [ratio, r() < 0.5 ? ratio : pick(r, ["2.5", "4"] as const)] : [ratio]) : [], prepay: text ? pick(r, prepay) : null};
   });
   const build = (a: A): DocumentReading => {const f19 = file(auroraFolderReadings(), "f19"); const start = a.future ? "2027-01" : a.date;
@@ -87,7 +87,6 @@ describe("property: amendments by the one filter, against a brute-force oracle (
   it("the generated chains cover absences, numbers 1 to 4, two clauses in one file, future effect and undetermined orders", () => {
     const seen = new Set<string>();
     for (const chain of generated) {
-      if (chain.some((a) => a.date === null && !a.future)) seen.add("missing-date");
       if (chain.some((a) => a.ordinal === 4) && chain.some((a) => a.ordinal === 1)) seen.add("ordinals");
       if (chain.some((a) => a.ratios.length > 1 && new Set(a.ratios).size > 1)) seen.add("two-clauses-differ");
       if (chain.some((a) => a.ratios.length > 1 && new Set(a.ratios).size === 1)) seen.add("two-clauses-same");
@@ -95,11 +94,11 @@ describe("property: amendments by the one filter, against a brute-force oracle (
       const setters = chain.filter((a) => a.ratios.length && !a.future);
       if (setters.length > 1) seen.add(bruteForce(setters, ["date", "ordinal"]).winner ? "determined" : "undetermined");
     }
-    expect([...seen].sort()).toEqual(["determined", "future", "missing-date", "ordinals", "two-clauses-differ", "two-clauses-same", "undetermined"]);
+    expect([...seen].sort()).toEqual(["determined", "future", "ordinals", "two-clauses-differ", "two-clauses-same", "undetermined"]);
   });
   generated.forEach((chain, n) => it(`chain ${n + 1}`, () => {
     const r = random(30000 + n), base = readings((list) => {list.splice(list.indexOf(file(list, "f19")), 1);}), amendments = chain.map(build);
-    const outputs = [0, 1, 2].map(() => run([...base, ...shuffle(r, amendments)]));
+    const outputs = [0, 1, 2].map(() => run([...base, ...shuffle(r, amendments), auroraTurnTwoReadings()[0]!]));
     for (const o of outputs.slice(1)) expect(economics(o)).toEqual(economics(outputs[0]!));
     const o = outputs[0]!, text = o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1");
     const current = chain.filter((a) => !a.future);
@@ -146,13 +145,14 @@ describe("property: amendments by the one filter, against a brute-force oracle (
 describe("property: competing originals by the one filter, against the brute-force oracle", () => {
   for (let n = 1; n <= 40; n++) it(`originals ${n}`, () => {
     const r = random(40000 + n), count = 1 + Math.floor(r() * 3), withAmendment = r() < 0.5;
-    const specs = Array.from({length: count}, (_, k) => ({id: `o${k + 1}`, g: 2, date: pick(r, ["2021-10", "2022-03", null] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const), ratio: pick(r, ["2.75", "4"] as const)}));
+    const specs = Array.from({length: count}, (_, k) => ({id: `o${k + 1}`, g: 2, date: pick(r, ["2021-10", "2022-03"] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const), ratio: pick(r, ["2.75", "4"] as const)}));
     const f18 = file(auroraFolderReadings(), "f18");
     const originals = specs.map((s) => ({...structuredClone(f18), fileId: s.id, sha256: hex(s.id), fileName: `${s.id}.pdf`,
       period: {label: s.date ?? "sem data", start: s.date ? `${s.date}-01` : null, end: s.date ? monthEnd(s.date) : null}, version: {label: "registrada", status: "registered" as const, ordinal: s.ordinal, lastUpdated: null},
       clauses: f18.clauses.map((c) => c.type === "financial_covenant" ? {...c, maxRatio: s.ratio, statement: `Dívida líquida / EBITDA de no máximo ${s.ratio.replace(".", ",")}x, apurado anualmente.`} : c)}));
     const files = readings((list) => {list.splice(list.indexOf(file(list, "f18")), 1); if (!withAmendment) list.splice(list.indexOf(file(list, "f19")), 1);});
-    const o = run([...files, ...shuffle(r, originals)]);
+    // The CCB's page 7 is supplied, so every debt instrument is read in full and the policy can be compared.
+    const o = run([...files, ...shuffle(r, originals), auroraTurnTwoReadings()[0]!]);
     const bf = bruteForce(specs, ["date", "ordinal"]);
     const same = new Set(bf.possible.map((id) => specs.find((s) => s.id === id)!.ratio)).size === 1;
     const policy = o.findings.find((f) => f.id === "f24-politica")!.statement;
@@ -171,7 +171,7 @@ describe("property: competing originals by the one filter, against the brute-for
 describe("property: positions by the one filter (numbers 1 to 4 with absences), against the brute-force oracle", () => {
   for (let n = 1; n <= 40; n++) it(`positions ${n}`, () => {
     const r = random(50000 + n), count = 2 + Math.floor(r() * 3);
-    const specs = Array.from({length: count}, (_, k) => ({id: `t${k + 1}`, g: 1, date: pick(r, ["2025-12-31", "2026-06-30", null] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const)}));
+    const specs = Array.from({length: count}, (_, k) => ({id: `t${k + 1}`, g: 1, date: pick(r, ["2025-12-31", "2026-06-30"] as const), ordinal: pick(r, [null, 1, 2, 3, 4] as const)}));
     const f16 = file(auroraFolderReadings(), "f16");
     const tables = specs.map((s) => ({...structuredClone(f16), fileId: s.id, sha256: hex(s.id), fileName: `${s.id}.xlsx`,
       period: {label: s.date ?? "sem data", start: s.date, end: s.date}, version: {label: "gerencial", status: "management" as const, ordinal: s.ordinal, lastUpdated: null}}));
@@ -181,16 +181,12 @@ describe("property: positions by the one filter (numbers 1 to 4 with absences), 
     if (bf.winner) expect([family.prevails, family.superseded]).toEqual([[bf.winner], specs.filter((x) => x.id !== bf.winner).map((x) => x.id).sort()]);
     else expect([family.resolution, family.prevails]).toEqual(["unresolved", []]);
   });
-  it("the cycle the review found has no winner and an explicit conflict with its sources", () => {
-    const f19 = file(auroraFolderReadings(), "f19");
-    const mk = (id: string, ym: string | null, ordinal: number, ratio: string): DocumentReading => ({...structuredClone(f19), fileId: id, sha256: hex(id), fileName: `${id}.pdf`,
-      period: {label: ym ?? "sem data", start: ym ? `${ym}-01` : null, end: ym ? monthEnd(ym) : null}, version: {label: "registrado", status: "registered", ordinal, lastUpdated: null},
-      instrument: {ref: `deb-${id}`, label: "aditamento", amends: "deb-aurora-1"}, clauses: [covenantClause(ratio)]});
-    const o = run([...readings((list) => {list.splice(list.indexOf(file(list, "f19")), 1);}), mk("ca", "2023-06", 3, "3"), mk("cb", "2024-06", 1, "3.5"), mk("cc", null, 2, "4")]);
-    const t = o.effectiveTexts[0]!;
-    expect(t.clauses.some((c) => c.type === "financial_covenant")).toBe(false);
-    expect(t.conflicts.find((c) => c.type === "financial_covenant")!.fileIds).toEqual(["ca", "cb", "cc"]);
-    expect(o.findings.find((f) => f.code === "amendment_conflict")!.sources.map((s) => s.fileId).sort()).toEqual(["ca", "cb", "cc"]);
+  it("an absent date is outside the supported domain and refused by name", () => {
+    expect(() => run(readings((list) => {file(list, "f19").period = {label: "sem data", start: null, end: null};}))).toThrow("document_inventory_unsupported_reading:period");
+    expect(() => run(readings((list) => {file(list, "f16").referenceDate = null;}))).toThrow("document_inventory_unsupported_reading:reference_date");
+    expect(() => run(readings((list) => {file(list, "f22").entity = {primaryId: null, label: "x"};}))).toThrow("document_inventory_unsupported_reading:entity");
+    expect(() => run(readings((list) => list.push({...structuredClone(file(list, "f19")), fileId: "f31", sha256: hex("f31"), instrument: {ref: "deb-ad2", label: "x", amends: "deb-aurora-1-ad1"}}))))
+      .toThrow("document_inventory_unsupported_amendment_chain");
   });
 });
 
@@ -368,108 +364,73 @@ describe("property: every quote points to the file and the page or sheet it was 
   });
 });
 
-describe("property: one guard over every dependency of every effect, by brute force", () => {
-  // The effects come from the output schema, by code; none is listed by hand.
+describe("property: dependencies proven by tracking; every state injected into every judged document, by brute force", () => {
   const shape = documentFolderInventoryOutputSchema.shape;
   const effectCodes = (shape.findings.element.shape.effect.unwrap() as unknown as {options: string[]}).options;
-  const checkKinds = (shape.identityChecks.element.shape.kind as unknown as {options: string[]}).options;
-  const followKinds = (shape.followUps.element as unknown as {options: {shape: {kind: {value: string}}}[]}).options.map((o) => o.shape.kind.value);
-  type State = "known" | "future" | "unread" | "missing_source" | "conflict";
-  type Instance = {key: string; present: (o: DocumentFolderInventory) => boolean; deps: string[]};
-  const all = () => [...auroraFolderReadings(), ...auroraTurnTwoReadings()];
-  // Independent dependency oracle, from the method's declared rules, over the calibration's typed readings.
-  const chainOf = (files: DocumentReading[], ref: string) => {
-    const docs = files.filter((f) => f.instrument && (f.instrument.ref === ref || f.instrument.amends === ref));
-    const refs = new Set(docs.map((f) => f.instrument!.ref));
-    return [...docs, ...files.filter((f) => f.substitutesPages && refs.has(f.substitutesPages.instrumentRef))].map((f) => f.fileId);
-  };
-  const sameKind = (files: DocumentReading[], d: DocumentReading, same: (x: DocumentReading) => boolean) => files.filter((x) => x.kind === d.kind && x.entity.primaryId === d.entity.primaryId && same(x)).map((x) => x.fileId);
-  function instances(o: DocumentFolderInventory): Instance[] {
-    const files = all(), byId = new Map(files.map((f) => [f.fileId, f]));
-    const out: Instance[] = [];
-    for (const f of o.findings.filter((x) => x.effect !== null || x.code === "figure_basis_differs")) {
-      const d = byId.get(f.anchor)!, ref = d.instrument ? d.instrument.amends ?? d.instrument.ref : null;
-      const deps = ref ? chainOf(files, ref)
-        : f.effect === "policy_limit" ? [d.fileId]
-        : f.effect === "figure_correction" ? sameKind(files, d, () => true)
-        : f.effect === "version_conflict" ? sameKind(files, d, (x) => x.period.start === d.period.start && x.period.end === d.period.end)
-        : f.effect === "perimeter" ? files.filter((x) => x.kind === "annual_financial_statements" && ["aurora", "aurora-log"].includes(x.entity.primaryId ?? "") && x.period.start === d.period.start).map((x) => x.fileId)
-        : [d.fileId, ...files.filter((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === d.entity.primaryId && x.period.start === d.period.start).map((x) => x.fileId)];
-      out.push({key: `finding:${f.id}`, deps, present: (x) => x.findings.some((y) => y.id === f.id && y.status === "open" && (y.effect !== null || y.code === "figure_basis_differs") && y.knowledge === "known")});
-    }
-    for (const c of o.identityChecks.filter((x) => x.status !== "not_run")) {
-      const d = byId.get(c.fileIds[0]!)!;
-      const deps = c.kind === "reported_total" ? sameKind(files, d, () => true)
-        : [d.fileId, ...files.filter((x) => x.kind === "trial_balance" && x.period.start! >= d.period.start! && x.period.end! <= d.period.end!).map((x) => x.fileId)];
-      out.push({key: `check:${c.id}`, deps, present: (x) => x.identityChecks.some((y) => y.id === c.id && y.status !== "not_run")});
-    }
-    for (const u of o.followUps) {
-      const ref = u.kind === "notice_deadline" ? byId.get(u.fileId)!.instrument!.amends ?? byId.get(u.fileId)!.instrument!.ref : u.instrumentRef;
-      out.push({key: `follow:${JSON.stringify(u)}`, deps: chainOf(files, ref), present: (x) => x.followUps.some((y) => JSON.stringify(y) === JSON.stringify(u))});
-    }
-    for (const t of o.effectiveTexts.filter((x) => x.clauses.length)) out.push({key: `text:${t.instrumentRef}`, deps: chainOf(files, t.instrumentRef), present: (x) => x.effectiveTexts.some((y) => y.instrumentRef === t.instrumentRef && y.clauses.length > 0)});
-    for (const r of o.rows.filter((x) => x.situation.pagesFrom.length && x.situation.read === "complete"))
-      out.push({key: `page:${r.fileId}`, deps: [r.fileId, ...r.situation.pagesFrom.map((p) => p.fileId)], present: (x) => x.rows.find((y) => y.fileId === r.fileId)?.situation.read === "complete"});
-    return out;
-  }
-  const scenario = (edit: (files: DocumentReading[]) => void = () => undefined) => {
-    const files = all(); edit(files);
-    const second = new Set(auroraTurnTwoReadings().map((f) => f.fileId)), isSecond = (f: DocumentReading) => second.has(f.fileId.replace(/-x$/, ""));
+  type State = "future" | "unread" | "missing_source" | "conflict";
+  const second = new Set(auroraTurnTwoReadings().map((f) => f.fileId));
+  /** The two turns, traced: the prior inventory, then the update with every effect's tracked and judged documents. */
+  const traced = (edit: (files: DocumentReading[]) => void = () => undefined) => {
+    const files = [...auroraFolderReadings(), ...auroraTurnTwoReadings()]; edit(files);
+    const isSecond = (f: DocumentReading) => second.has(f.fileId.replace(/-x$/, ""));
     const base = files.filter((f) => !isSecond(f)), extra = files.filter(isSecond);
     const prior = run(base);
-    // The answer goes only to a question the prior turn asked.
     const informed = prior.questions.some((q) => q.id === "circulacao-f02") ? auroraTurnTwoInformed : [];
-    return run([...base, ...extra], {asOf: "2026-09-02", informed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    return organizeDocumentFolderTraced(auroraKernelInput({files: [...base, ...extra], asOf: "2026-09-02", informed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}}));
   };
-  // Injections of each state, generic over any document.
-  const inject: Record<Exclude<State, "known">, (files: DocumentReading[], id: string) => State | null> = {
+  // Generic injections, the same for any document; each returns the state it should produce, or null when it does not apply.
+  const inject: Record<State, (files: DocumentReading[], id: string) => State | null> = {
     unread: (files, id) => {
       const d = file(files, id); if (d.substitutesPages || d.legibility.wholeFile) return null;
-      // The same bytes are read the same way: every copy of the hash carries the injected reading.
-      for (const copy of files.filter((x) => x !== d && x.sha256 === d.sha256)) files.splice(files.indexOf(copy), 1, {...structuredClone(d), fileId: copy.fileId, fileName: copy.fileName});
-      const shared = files.filter((x) => x.sha256 === d.sha256);
-      for (const x of [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []]) x.at = {page: x.at.page ?? 1, section: x.at.section};
-      const used = [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []].map((x) => x.at.page!).concat(d.legibility.unreadablePages.map((p) => p.page), [1]);
-      const page = Math.max(...used, d.legibility.pageCount ?? 0) + 1;
+      const located = [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []];
+      for (const x of located) x.at = {page: x.at.page ?? 1, section: x.at.section};
+      const page = Math.max(1, d.legibility.pageCount ?? 0, ...located.map((x) => x.at.page!), ...d.legibility.unreadablePages.map((p) => p.page)) + 1;
       d.legibility = {pageCount: page, unreadablePages: [...d.legibility.unreadablePages, {page, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};
-      for (const x of shared) if (x !== d) files.splice(files.indexOf(x), 1, {...structuredClone(d), fileId: x.fileId, fileName: x.fileName});
+      // The same bytes are read the same way: every copy of the hash carries the injected reading.
+      for (const x of files.filter((y) => y !== d && y.sha256 === d.sha256)) files.splice(files.indexOf(x), 1, {...structuredClone(d), fileId: x.fileId, fileName: x.fileName});
       return "unread";
     },
     conflict: (files, id) => {const d = file(files, id); files.push({...structuredClone(d), fileId: `${id}-x`, fileName: `${id}-x.pdf`, description: `${d.description} (outra leitura)`}); return "conflict";},
-    future: (files, id) => {const d = file(files, id);
-      if (!(d.substitutesPages || policy(d))) return null;
-      d.period = {...d.period, start: "2027-01-01", end: "2027-01-31"}; return "future";},
-    missing_source: (files, id) => {const d = file(files, id);
-      const removable = d.substitutesPages || (d.kind === "trial_balance" && !files.some((x) => x !== d && x.kind === d.kind && x.period.start === d.period.start))
-        || (d.instrument?.amends === null && files.some((x) => x.instrument?.amends === d.instrument!.ref));
-      if (!removable) return null;
-      files.splice(files.indexOf(d), 1); return d.substitutesPages ? "unread" : "missing_source";},
+    future: (files, id) => {
+      const d = file(files, id); if (d.legibility.wholeFile) return null;
+      for (const x of files.filter((y) => y.sha256 === d.sha256)) x.version = {...x.version, lastUpdated: "2027-01-15"};
+      return "future";
+    },
+    // A source absent or outside the registry, where that does not change what the document is: an instrument outside
+    // the registry (its chain is by reference), or the only document of a month removed.
+    missing_source: (files, id) => {
+      const d = file(files, id); if (d.legibility.wholeFile || d.substitutesPages) return null;
+      if (d.instrument) {for (const x of files.filter((y) => y.sha256 === d.sha256)) x.entity = {...x.entity, primaryId: "fora-do-cadastro"}; return "missing_source";}
+      if (d.kind === "trial_balance" && !files.some((x) => x !== d && x.kind === d.kind && x.period.start === d.period.start)) {files.splice(files.indexOf(d), 1); return "missing_source";}
+      return null;
+    },
   };
-  // Future applies where the date is the document's own effect, not the key of its family.
-  function policy(d: DocumentReading) {return d.instrument !== null || d.kind === "board_minutes" || d.kind === "shareholders_minutes";}
-  const baseline = scenario(), found = instances(baseline);
-  it("the schema's effects are all present in the full calibration", () => {
-    const effects = new Set(baseline.findings.flatMap((f) => f.effect ? [f.effect] : []));
-    expect([...effects].sort()).toEqual([...effectCodes].sort());
-    expect([...new Set(baseline.identityChecks.map((c) => c.kind))].sort()).toEqual([...checkKinds].sort());
-    expect([...new Set(baseline.followUps.map((u) => u.kind))].sort()).toEqual([...followKinds].sort());
-    expect(found.length).toBeGreaterThan(12);
-    for (const i of found) expect(i.present(baseline), i.key).toBe(true);
+  const baseline = traced();
+  const emitted = baseline.traces.filter((t) => t.emitted);
+  it("every effect read only what its guard judged, and the schema's effects are all present", () => {
+    expect([...new Set(baseline.inventory.findings.flatMap((f) => f.effect ? [f.effect] : []))].sort()).toEqual([...effectCodes].sort());
+    expect(emitted.length).toBeGreaterThanOrEqual(10);
+    for (const t of baseline.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
+    for (const t of emitted) expect(t.state, t.effect).toBe("known");
   });
-  const ids = [...new Set(found.flatMap((i) => i.deps))].sort();
-  for (const id of ids) for (const state of ["unread", "conflict", "future", "missing_source"] as const) it(`${id} ${state}`, () => {
+  const judged = [...new Set(emitted.flatMap((t) => t.guarded))].filter((x) => !x.endsWith("-x")).sort();
+  for (const id of judged) for (const state of ["unread", "conflict", "future", "missing_source"] as const) it(`${id} ${state}`, () => {
     let expected: State | null = null;
-    const o = scenario((files) => {expected = inject[state](files, id);});
+    const o = traced((files) => {expected = inject[state](files, id);});
     if (expected === null) return;
-    for (const i of found) {
-      if (!i.deps.includes(id)) {expect(i.present(o), `control ${i.key}`).toBe(true); continue;}
-      expect(i.present(o), `${i.key} withheld`).toBe(false);
-      const touches = (fid: string) => i.deps.includes(fid) || fid === `${id}-x`;
-      const declared = o.findings.some((f) => f.effect === null && f.knowledge === expected && (touches(f.anchor) || f.sources.some((x) => touches(x.fileId))))
-        || o.identityChecks.some((c) => c.status === "not_run" && c.reason?.startsWith(`${expected}:`) && c.fileIds.some(touches))
-        || o.identityChecks.some((c) => c.status === "not_run" && c.reason === expected && c.fileIds.some(touches))
-        || o.effectiveTexts.some((t) => t.knowledge === expected && t.fileIds.some(touches));
-      expect(declared, `${i.key} declared as ${expected}`).toBe(true);
+    for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
+    for (const b of emitted) {
+      const after = o.traces.find((t) => t.effect === b.effect);
+      // The injected reading reaches every file with the same bytes.
+      const same = [...auroraFolderReadings(), ...auroraTurnTwoReadings()].filter((f) => f.sha256 === file([...auroraFolderReadings(), ...auroraTurnTwoReadings()], id).sha256).map((f) => f.fileId);
+      const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
+      if (!touched) {expect(after?.emitted, `control ${b.effect}`).toBe(true); continue;}
+      expect(after?.emitted ?? false, `${b.effect} withheld`).toBe(false);
+      // Declared with the injected state, or a worse one it caused (a page left unread by a future copy is unread).
+      const rank = (x: string) => ["known", "future", "unread", "missing_source", "conflict"].indexOf(x);
+      const declared = after ? rank(after.state) >= rank(expected!)
+        : o.inventory.findings.some((f) => f.knowledge === expected && (f.anchor === id || f.sources.some((x) => x.fileId === id || b.guarded.includes(x.fileId))));
+      expect(declared, `${b.effect} declared as ${expected}`).toBe(true);
     }
   });
 });

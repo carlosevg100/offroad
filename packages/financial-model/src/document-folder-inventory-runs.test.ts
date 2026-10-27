@@ -24,13 +24,14 @@ describe("recorded document folder inventory evaluations", () => {
       "turn-2-informed-fact-with-author-and-date", "variation-organize-only", "variation-for-the-debt-discussion", "variation-empty-vault-no-decisions",
       "variation-several-companies", "unresolved-month-blocks-the-semester-sum", "draft-amendment-changes-no-term",
       "replaced-notice-is-history-not-a-deadline", "same-hash-read-two-ways-is-declared", "approved-amendment-is-not-in-force", "tied-amendments-have-no-winner",
-      "later-cut-is-the-covenant-in-force", "substitutes-of-one-hash-read-two-ways-are-suspended", "text-only-tie-is-a-conflict", "dateless-amendment-does-not-prevail",
+      "later-cut-is-the-covenant-in-force", "substitutes-of-one-hash-read-two-ways-are-suspended", "text-only-tie-is-a-conflict",
       "conflict-resolved-later-is-history", "competing-originals-without-winner", "position-tie-broken-by-version", "covenant-without-its-limit-text-has-no-effect",
-      "cycle-of-numbers-is-an-explicit-conflict", "two-covenants-in-one-amendment-are-a-conflict", "recovered-covenant-joins-the-text-in-force",
+      "two-covenants-in-one-amendment-are-a-conflict", "recovered-covenant-joins-the-text-in-force",
       "recovered-notice-does-not-revive-a-replaced-deadline", "unread-predecessor-is-not-absent", "future-amendment-is-not-current", "unread-substitutive-clause-keeps-no-limit-in-force", "page-copies-differing-in-the-debt-table-leave-the-page-unread",
       "amendment-without-a-read-original-has-no-deadline", "future-board-minutes-have-no-effect", "concurrent-values-of-one-metric-are-a-conflict", "side-by-side-is-for-budgets-only", "future-position-blocks-the-debt-check", "unreadable-original-blocks-the-text-in-force",
+      "update-after-the-reading-date-is-future", "copy-with-its-own-conflict-does-not-complete-the-page", "comparison-without-both-operands-is-withheld", "update-not-read-shows-the-prior-as-history",
       "notice-deadline-followed-never-scheduled"]);
-    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(25);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(30);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

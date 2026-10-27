@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:50:10.324Z",
-    "finishedAt": "2026-10-27T12:50:10.324Z",
-    "commit": "5d37d515"
+    "startedAt": "2026-10-27T13:15:26.587Z",
+    "finishedAt": "2026-10-27T13:15:26.587Z",
+    "commit": "ff54c180"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,52 +26,52 @@
       "id": "fixture-1-repeat-1",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "c8736e92ae158133941420741db058eb7844cc7ff48125f0335f4a8520bc1f43",
-      "outputFingerprint": "32b0c8cef65756ca80b8cde3ae96285508b05f2d38ce98979a5c920036e215f8",
+      "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
+      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
       "passed": true
     },
     {
       "id": "fixture-1-repeat-2",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "c8736e92ae158133941420741db058eb7844cc7ff48125f0335f4a8520bc1f43",
-      "outputFingerprint": "32b0c8cef65756ca80b8cde3ae96285508b05f2d38ce98979a5c920036e215f8",
+      "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
+      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
       "passed": true
     },
     {
       "id": "fixture-1-repeat-3",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "c8736e92ae158133941420741db058eb7844cc7ff48125f0335f4a8520bc1f43",
-      "outputFingerprint": "32b0c8cef65756ca80b8cde3ae96285508b05f2d38ce98979a5c920036e215f8",
+      "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
+      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-1",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "2202d5036e332478529d61c42c986b7e2baeab897998b830fd6a4eaa5a250cbe",
-      "outputFingerprint": "9bde5f3add06cfbcdead7208f604348f6e248e4c9d1be671df0a000313077b6d",
+      "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
+      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-2",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "2202d5036e332478529d61c42c986b7e2baeab897998b830fd6a4eaa5a250cbe",
-      "outputFingerprint": "9bde5f3add06cfbcdead7208f604348f6e248e4c9d1be671df0a000313077b6d",
+      "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
+      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
       "passed": true
     },
     {
       "id": "fixture-2-repeat-3",
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
-      "inputFingerprint": "2202d5036e332478529d61c42c986b7e2baeab897998b830fd6a4eaa5a250cbe",
-      "outputFingerprint": "9bde5f3add06cfbcdead7208f604348f6e248e4c9d1be671df0a000313077b6d",
+      "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
+      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "705c043d0d559f3795190765d07d4c715117fc945a6a090be50564c9dade9c34",
+  "evidenceFingerprint": "dc5d511a18ce78ecbdf3e04ccfd5d3cfb791f0ee6c8252c46fedaddb33f78c00",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }
