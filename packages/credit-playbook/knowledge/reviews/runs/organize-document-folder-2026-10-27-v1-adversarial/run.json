@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T13:51:04.624Z",
-    "finishedAt": "2026-10-27T13:51:04.624Z",
-    "commit": "ce422601"
+    "startedAt": "2026-10-27T14:10:25.574Z",
+    "finishedAt": "2026-10-27T14:10:25.574Z",
+    "commit": "c80412d7"
   },
   "modelCalls": 0,
   "cases": [
@@ -295,6 +295,14 @@
       "passed": true
     },
     {
+      "id": "second-debt-table-from-a-copy",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6f202fc5da569fcf87587862261d5f90e4cb3bd8096c4ba5d31f6de5b39d44bc",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "record-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -304,6 +312,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "a935adcf8c3a8226433549e0b65a6ebc24d99067ab78ed2f7e72a34d2826c08e",
+  "evidenceFingerprint": "76bc5f73333b795a218e76fb3d23fbd93c6047bbd38ef09bcba83e5c8cff6c69",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -250,6 +250,15 @@ function goldCases(): Case[] {
       turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, clauses: [...x.clauses, {type: "financial_covenant" as const, id: "covenant-ccb-7", at: {page: 7, section: null}, statement: "Dívida líquida / EBITDA de no máximo 1,0x.", metric: "net_debt_to_ebitda" as const, maxRatio: "1.0"}]} : x)}}),
       {ccb: "partial", conflict: "conflict", inForce: false}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read,
         conflict: inv(p).findings.find((f) => f.id === "f20-substitute-conflict-p7")?.knowledge ?? null, inForce: inv(p).findings.find((f) => f.id === "f24-politica")?.statement.includes("covenant vigente") ?? false})),
+    // Review r10 cases: a recovered page joins the document whole; an update records the new precedence of its family.
+    observe("recovered-table-and-note-join-the-document", folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x,
+      observations: [{id: "nota", at: {page: 7, section: null}, topic: "other" as const, statement: "Garantia por cessão fiduciária de recebíveis."}],
+      debtTable: {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000" as const, at: {page: 7, section: null}}} : x)}}),
+      {check: "matches", documentary: {fileId: "s01", page: 7}}, (p) => ({check: inv(p).identityChecks.find((c) => c.id === "f20-reported-total")?.status ?? null,
+        documentary: (({fileId, page}) => ({fileId, page}))(p.readings!.documentary.find((d) => d.findingId === "f20-nota")!)})),
+    observe("new-version-in-the-update-supersedes-the-prior-winner", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f10")), fileId: "s03",
+      fileName: "balancete mai26 v3.xlsx", sha256: createHash("sha256").update("s03").digest("hex"), version: {label: "versão 3", status: "closed" as const, ordinal: 3, lastUpdated: null}}]}}),
+      {f10: "lida; superada pela v3", updated: ["f09", "f10", "f20"], added: ["s02", "s03"]}, (p) => ({f10: inv(p).rows.find((r) => r.fileId === "f10")!.situationLabel, updated: inv(p).update!.rowsUpdated, added: inv(p).update!.rowsAdded})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -296,6 +305,9 @@ function adversarialCases(): Case[] {
     ["copy-of-another-period", () => folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, period: {label: "2023", start: "2023-01-01", end: "2023-12-31"}} : x)}}), "document_inventory_unsupported_substitute"],
     ["sheet-in-dollars", () => folderPacketInput({files: readings((r) => {file(r, "f12").units[0]!.currency = "USD";})}), "document_inventory_unsupported_currency"],
     ["figure-scale-at-odds-with-its-sheet", () => folderPacketInput({files: readings((r) => {file(r, "f12").units[0]!.scale = "1";})}), "document_inventory_unsupported_unit"],
+    ["second-debt-table-from-a-copy", () => folderPacketInput({files: readings((r) => {file(r, "f20").debtTable = {lines: [{id: "ccb", lineKind: "bank_credit", label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000", at: {page: 3, section: null}};}),
+      turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, debtTable: {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000" as const, at: {page: 7, section: null}}} : x)}}),
+      "document_inventory_unsupported_substitute_content:debt_table"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

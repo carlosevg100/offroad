@@ -572,3 +572,88 @@ describe("property: page completeness is judged after every recovered page is ga
     });
   }
 });
+
+// Review r10: a recovered page is read like a legible one. Every typed content of the page (clauses, figures,
+// observations, the debt table) joins the document before its final state and before any effect.
+describe("property: reading a content directly or recovering it from a compatible copy reaches the same conclusions", () => {
+  const at = (page: number) => ({page, section: null});
+  const pieces = (r: () => number) => {
+    const ratio = pick(r, ["2", "2.5", "3"] as const), cash = pick(r, ["4.1", "5", "7.25"] as const), drawn = pick(r, ["30", "40"] as const), total = pick(r, ["30", "40"] as const);
+    return {
+      clauses: r() < 0.6 ? [{type: "financial_covenant" as const, id: "covenant-ccb", at: at(7), statement: `Dívida líquida / EBITDA de no máximo ${times(ratio)}.`, metric: "net_debt_to_ebitda" as const, maxRatio: ratio}] : [],
+      figures: r() < 0.6 ? [{id: "caixa", metric: "cash" as const, value: cash, scale: "1000000" as const, at: at(7)}] : [],
+      observations: r() < 0.6 ? [{id: "nota", at: at(7), topic: "other" as const, statement: "Garantia por cessão fiduciária de recebíveis."}] : [],
+      debtTable: r() < 0.5 ? {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn, limit: null, counted: drawn}], reportedTotal: total, scale: "1000000" as const, at: at(7)} : null,
+    };
+  };
+  for (let n = 1; n <= 48; n++) {
+    const r = random(83000 + n), content = pieces(r), own = pick(r, ["none", "same", "other"] as const), turn = pick(r, ["one", "two"] as const);
+    const label = `${n}: ${["clauses", "figures", "observations"].filter((k) => (content as unknown as Record<string, unknown[]>)[k]!.length).join("+") || "nothing"}${content.debtTable ? "+table" : ""}, own ${own}, turn ${turn}`;
+    it(label, () => {
+      // What the target itself says on a legible page about the same clause and metric: nothing, the same, or something else.
+      const ownItems = (f: DocumentReading) => {
+        if (own === "none") return;
+        const c = content.clauses[0], x = content.figures[0];
+        if (c) f.clauses.push({...c, id: "covenant-p6", at: at(6), ...own === "other" ? {maxRatio: "1", statement: "Dívida líquida / EBITDA de no máximo 1,0x."} : {}});
+        if (x) f.figures.push({...x, id: "caixa-p6", at: at(6), value: own === "other" ? "1" : x.value});
+      };
+      const direct = readings((list) => {const f = file(list, "f20"); f.legibility = {pageCount: 14, unreadablePages: [], wholeFile: null};
+        f.clauses.push(...content.clauses); f.figures.push(...content.figures); f.observations.push(...content.observations); f.debtTable = content.debtTable; ownItems(f);});
+      const base = readings((list) => ownItems(file(list, "f20")));
+      const copy = {...auroraTurnTwoReadings()[0]!, ...structuredClone(content)};
+      const go = (files: DocumentReading[]) => {
+        if (turn === "one") return organizeDocumentFolderTraced(auroraKernelInput({files}));
+        const prior = run(base);
+        return organizeDocumentFolderTraced(auroraKernelInput({files, asOf: "2026-09-02", prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}}));
+      };
+      // In turn two the direct reading arrives as the legible document itself: compare it without a prior.
+      const a = organizeDocumentFolderTraced(auroraKernelInput({files: direct, ...turn === "two" ? {asOf: "2026-09-02"} : {}})), b = go([...base, copy]);
+      const norm = (x: unknown) => JSON.parse(JSON.stringify(x ?? null).replaceAll("s01", "f20")) as unknown;
+      const conflict = own === "other" && (content.clauses.length > 0 || content.figures.length > 0);
+      const effects = (o: typeof a) => o.traces.filter((t) => !t.effect.startsWith("page:")).map((t) => [t.effect, t.state, t.emitted]);
+      // Always: the same state of every effect, the same text in force, the same checks and the same decision findings.
+      expect(norm(effects(b))).toEqual(norm(effects(a)));
+      expect(norm(b.inventory.effectiveTexts.map((t) => ({...t, fileIds: null})))).toEqual(norm(a.inventory.effectiveTexts.map((t) => ({...t, fileIds: null}))));
+      expect(norm(b.inventory.identityChecks)).toEqual(norm(a.inventory.identityChecks));
+      expect(norm(b.inventory.decisionFindings)).toEqual(norm(a.inventory.decisionFindings));
+      // A conflict of the same metric or clause is detected in both, and withholds the same effects.
+      const conflicted = (o: typeof a) => o.traces.some((t) => t.state === "conflict" && t.guarded.includes("f20"));
+      expect(conflicted(b)).toBe(conflicted(a));
+      expect(conflicted(a)).toBe(conflict);
+      if (conflict || turn === "two") return;
+      // Without a conflict: the same findings with the same documentary quotes, cited on the copy that holds the page.
+      const findings = (o: typeof a) => o.inventory.findings.map((f) => ({...f, status: null, resolvedBy: null}));
+      expect(norm(findings(b))).toEqual(norm(findings(a)));
+      expect(norm(b.inventory.gaps)).toEqual(norm(a.inventory.gaps));
+      if (content.observations.length) expect(b.inventory.findings.find((f) => f.id === "f20-nota")!.quoted).toMatchObject({fileId: "s01", page: 7});
+      if (content.debtTable) expect(b.inventory.identityChecks.some((c) => c.id === "f20-reported-total" && c.status !== "not_run")).toBe(true);
+    });
+  }
+  it("a debt table brought by a copy to a document that holds one on another page is refused", () => {
+    const table = {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000" as const, at: at(7)};
+    expect(() => run([...readings((list) => {file(list, "f20").debtTable = {...table, at: at(3)};}), {...auroraTurnTwoReadings()[0]!, debtTable: table}]))
+      .toThrow("document_inventory_unsupported_substitute_content:debt_table");
+  });
+});
+describe("property: an update records the new precedence of the version families it touches", () => {
+  for (let n = 1; n <= 12; n++) {
+    const r = random(84000 + n), ordinal = pick(r, [3, 4, 1] as const), month = pick(r, ["f10", "f06", "f11"] as const), ebitda = pick(r, ["4400000", "4500000"] as const);
+    it(`new version ${n}: v${ordinal} of ${month}`, () => {
+      const base = auroraFolderReadings(), prior = run(base), m = file(base, month);
+      const nv = {...structuredClone(m), fileId: "s03", fileName: "s03.xlsx", sha256: hex(`new-version-${n}`), version: {...m.version, label: `versão ${ordinal}`, ordinal},
+        figures: m.figures.map((x) => ({...x, value: ebitda}))};
+      const o = run([...base, ...auroraTurnTwoReadings(), nv], {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+      const family = [...base.filter((x) => x.kind === "trial_balance" && x.period.start === m.period.start).map((x) => x.fileId), "s03"];
+      const ordinals = new Map(family.map((id) => [id, id === "s03" ? ordinal : file(base, id).version.ordinal]));
+      // The family resolves by the version number only if every member has one; then the highest prevails.
+      const numbered = [...ordinals.values()].every((x) => x !== null), winner = numbered ? [...ordinals].sort((a, b) => b[1]! - a[1]!)[0]![0] : null;
+      const fam = o.families.find((f) => [...f.prevails, ...f.superseded, ...f.sideBySide].includes("s03"))!;
+      expect(fam.prevails).toEqual(winner ? [winner] : []);
+      for (const id of family.filter((x) => x !== winner)) expect(o.rows.find((x) => x.fileId === id)!.situation.supersededBy?.fileId ?? null).toBe(winner);
+      // Rows outside the family and its dependents are the prior bytes.
+      const touched = new Set([...family, ...o.update!.rowsUpdated]);
+      for (const row of o.rows.filter((x) => !touched.has(x.fileId) && prior.rows.some((p) => p.fileId === x.fileId))) expect(row).toEqual(prior.rows.find((p) => p.fileId === row.fileId));
+      expect(o.update!.rowsUpdated.every((id) => family.includes(id) || id === "f20" || o.findings.some((f) => f.anchor === id && f.sources.some((s) => family.includes(s.fileId))))).toBe(true);
+    });
+  }
+});

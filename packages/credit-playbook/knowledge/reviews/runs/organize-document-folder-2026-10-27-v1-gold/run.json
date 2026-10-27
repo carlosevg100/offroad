@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T13:51:04.624Z",
-    "finishedAt": "2026-10-27T13:51:04.624Z",
-    "commit": "ce422601"
+    "startedAt": "2026-10-27T14:10:25.574Z",
+    "finishedAt": "2026-10-27T14:10:25.574Z",
+    "commit": "c80412d7"
   },
   "modelCalls": 0,
   "cases": [
@@ -459,7 +459,23 @@
       "expectation": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "inputFingerprint": "0a4a74575e169c24cf12d9d94396bf10dfde961f8798229d606ffb4ba9fac339",
-      "outputFingerprint": "bab8315bed65b35c5dedbb182f61680576ae913e1df2148a5e4f829fcf979bcf",
+      "outputFingerprint": "527f8c78a2265c388774f5cc7ef059c37fdea501a2df64b05658d3ce9b08f489",
+      "passed": true
+    },
+    {
+      "id": "recovered-table-and-note-join-the-document",
+      "expectation": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
+      "observed": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
+      "inputFingerprint": "2c30108442b09a0bbbc8a6dd1ad13decb7c08ad6b965e59c45360dac26fa0cc0",
+      "outputFingerprint": "6efad74a5a5a8a97f3e1f5631543ea8e4974443a63468b3ad302383d18f2c27d",
+      "passed": true
+    },
+    {
+      "id": "new-version-in-the-update-supersedes-the-prior-winner",
+      "expectation": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
+      "observed": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
+      "inputFingerprint": "6e85fbd1c3b006098aa01b5a973494ef9b42798d197f436a3fdfa5d9efcc5f3c",
+      "outputFingerprint": "a45618c8c3238b95b48d0d0c4cef6b738d6001b24fffe7a80733fb970cfb7477",
       "passed": true
     },
     {
@@ -472,6 +488,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "8fed7114d04a8c42aaafa793f22c87410234c9c87da48754e961c2a80e12fc41",
+  "evidenceFingerprint": "46ecdd11208f28a3413a6542d45f2c3befeccfcb47d895db4cc2fce84b17c17d",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

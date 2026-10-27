@@ -392,10 +392,14 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // its guard did not judge is refused.
   type Recorder = {key: string; files: Set<string>; pages: Set<string>; guarded: Set<string> | null; ignoreUnread: Set<string>; state: Knowledge; emitted: boolean};
   let recorder: Recorder | null = null;
+  /** The object under any view, so content gathered from a copy keeps its own source. */
+  const RAW = Symbol("raw");
+  const rawOf = (x: object) => (x as Record<symbol, object>)[RAW] ?? x;
   const views = new WeakMap<object, unknown>();
   const view = <T extends object>(target: T, fileId: string): T => {
     const cached = views.get(target); if (cached) return cached as T;
     const proxy = new Proxy(target, {get(t, prop, receiver) {
+      if (prop === RAW) return (Reflect.get(t, RAW) as object | undefined) ?? t;
       const v = Reflect.get(t, prop, receiver);
       if (recorder && typeof prop === "string") {recorder.files.add(fileId); if (prop === "page" && typeof v === "number") recorder.pages.add(`${fileId}:p${v}`);}
       return v !== null && typeof v === "object" ? view(v as object, fileId) : v;
@@ -427,7 +431,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     if (f.effect != null) {if (!recorder) throw new Error("document_inventory_untracked_effect"); recorder.emitted = true;}
     findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "known", ...f, status: "open", resolvedBy: []});
   };
-  const src = (fileId: string, a: {page: number | null; section: string | null} | null = null) => ({fileId, page: a?.page ?? null, section: a?.section ?? null});
+  /** Content gathered from a page copy is cited on the copy that holds it, wherever it is read. */
+  const originAt = new Map<object, string>();
+  const src = (fileId: string, a: {page: number | null; section: string | null} | null = null) => ({fileId: (a && originAt.get(rawOf(a))) ?? fileId, page: a?.page ?? null, section: a?.section ?? null});
   const cite = (fileId: string, a: {page: number | null; section: string | null}, words: string): Quote => ({...src(fileId, a), text: words});
 
   // Identity and suspension by hash over every file, page substitutes included: the same bytes read two ways
@@ -555,13 +561,19 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     if (target.legibility.pageCount !== null && s.substitutesPages!.pages.some((p) => p > target.legibility.pageCount!)) throw new Error("document_inventory_page_outside_file");
     for (const p of s.substitutesPages!.pages) offered.set(`${target.fileId}|${p}`, [...offered.get(`${target.fileId}|${p}`) ?? [], s]);
   }
+  // A reading holds one debt table: a copy bringing a table to a document that has one on another page is a format not handled.
+  for (const target of [...new Set([...offered.keys()].map((k) => k.split("|")[0]!))].map((id) => byId.get(id)!)) {
+    const pages = new Set([...target.debtTable ? [target.debtTable.at.page] : [], ...[...offered].filter(([k]) => k.startsWith(`${target.fileId}|`))
+      .flatMap(([k, list]) => list.flatMap((c) => c.debtTable && c.debtTable.at.page === Number(k.split("|")[1]) ? [c.debtTable.at.page] : []))]);
+    if (pages.size > 1) throw new Error("document_inventory_unsupported_substitute_content:debt_table");
+  }
   // Page states in one pass before any effect. First each page on its own (copies that read it differently, a copy
   // without documentary force, a target or copy not known); then the set: the recovered pages gathered with the
   // target's own pages, and a clause read differently across them is a conflict of the set. The pass repeats until
   // stable; the effects below only read the final state, so the row and every guard see the same pages.
   const onPage = (s: DocumentReading, page: number) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
     debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
-  type PageOutcome = {kind: "filled"; from: DocumentReading} | {kind: "copies_conflict"; fileIds: string[]} | {kind: "set_conflict"; fileIds: string[]}
+  type PageOutcome = {kind: "filled"; from: DocumentReading} | {kind: "copies_conflict"; fileIds: string[]} | {kind: "set_conflict"; fileIds: string[]; from: DocumentReading}
     | {kind: "weak"; weak: DocumentReading[]} | {kind: "withheld"};
   const pageOutcome = new Map<string, PageOutcome>();
   const offeredKeys = [...offered.keys()].sort(byKey);
@@ -577,15 +589,17 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     pageOutcome.set(k, {kind: "filled", from: [...usable].sort((a, b) => byKey(a.fileId, b.fileId))[0]!});
   }
   const applyFills = () => {
-    pagesFrom.clear(); recovered.clear(); pageConflicted.clear(); entriesCache.clear();
+    pagesFrom.clear(); recovered.clear(); recoveredFigures.clear(); pageConflicted.clear(); entriesCache.clear();
     for (const k of offeredKeys) {
       const o = pageOutcome.get(k)!, {target, page} = split(k);
       if (o.kind === "copies_conflict" || o.kind === "set_conflict") pageConflicted.add(target.fileId);
       if (o.kind !== "filled") continue;
       pagesFrom.set(target.fileId, [...pagesFrom.get(target.fileId) ?? [], {page, fileId: o.from.fileId, sha256: o.from.sha256}].sort((a, b) => a.page - b.page));
       for (const c of o.from.clauses.filter((x) => x.at.page === page)) recovered.set(target.fileId, [...recovered.get(target.fileId) ?? [], {c, from: o.from.fileId}]);
+      for (const x of o.from.figures.filter((y) => y.at.page === page)) recoveredFigures.set(target.fileId, [...recoveredFigures.get(target.fileId) ?? [], {x, from: o.from.fileId}]);
     }
   };
+  const recoveredFigures = new Map<string, {x: DocumentReading["figures"][number]; from: string}[]>();
   for (let changed = true, round = 0; changed && round < offeredKeys.length + 2; round++) {
     changed = false; applyFills();
     // The set: a recovered clause read differently from another page of the target, or from another recovered page.
@@ -596,7 +610,17 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
         if (list.every((h) => equivalent(h.c, list[0]!.c)) || !list.some((h) => h.from !== target.fileId) || new Set(list.map((h) => `${h.from}|${h.c.at.page}`)).size < 2) continue;
         for (const h of list.filter((x) => x.from !== target.fileId)) {
           const k = `${target.fileId}|${h.c.at.page}`, o = pageOutcome.get(k);
-          if (o?.kind === "filled") {pageOutcome.set(k, {kind: "set_conflict", fileIds: [...new Set([target.fileId, ...list.map((x) => x.from)])].sort(byKey)}); changed = true;}
+          if (o?.kind === "filled") {pageOutcome.set(k, {kind: "set_conflict", fileIds: [...new Set([target.fileId, ...list.map((x) => x.from)])].sort(byKey), from: o.from}); changed = true;}
+        }
+      }
+      // The same for a metric: a recovered figure whose value differs from another page's value of the same metric.
+      const figs = bucket([...target.figures.map((x) => ({x, from: target.fileId})), ...recoveredFigures.get(target.fileId) ?? []], (h) => h.x.metric);
+      for (const list of figs.values()) {
+        if (list.every((h) => inReais(h.x.value, h.x.scale).eq(inReais(list[0]!.x.value, list[0]!.x.scale))) || !list.some((h) => h.from !== target.fileId)
+          || new Set(list.map((h) => `${h.from}|${h.x.at.page}`)).size < 2) continue;
+        for (const h of list.filter((y) => y.from !== target.fileId)) {
+          const k = `${target.fileId}|${h.x.at.page}`, o = pageOutcome.get(k);
+          if (o?.kind === "filled") {pageOutcome.set(k, {kind: "set_conflict", fileIds: [...new Set([target.fileId, ...list.map((y) => y.from)])].sort(byKey), from: o.from}); changed = true;}
         }
       }
     }
@@ -611,6 +635,22 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     }
   }
   applyFills();
+  // The final reading of each document gathers every typed content of its recovered pages, before any effect: figures,
+  // observations and the debt table join the document as read, cited on the copy that holds them; clauses join through
+  // the recovered map. A page whose content conflicts with the rest of the set is gathered too, so the conflict is the
+  // document's, as if the page had been legible, while the row keeps it as not read. Every effect sees this one reading.
+  for (const k of offeredKeys) {
+    const o = pageOutcome.get(k)!, {target, page} = split(k);
+    if (o.kind !== "filled" && o.kind !== "set_conflict") continue;
+    if (o.kind === "set_conflict") {
+      for (const c of o.from.clauses.filter((x) => x.at.page === page)) recovered.set(target.fileId, [...recovered.get(target.fileId) ?? [], {c, from: o.from.fileId}]);
+      entriesCache.clear();
+    }
+    const t = rawOf(target) as DocumentReading, c = rawOf(o.from) as DocumentReading, from = o.from.fileId;
+    const take = <T extends {at: {page: number | null}}>(list: T[]) => list.filter((x) => x.at.page === page).map((x) => {originAt.set(x.at, from); return view(x as object, from) as T;});
+    t.figures.push(...take(c.figures)); t.observations.push(...take(c.observations));
+    if (c.debtTable && c.debtTable.at.page === page) {originAt.set(c.debtTable.at, from); t.debtTable = view(c.debtTable, from);}
+  }
   for (const k of offeredKeys) {
     const o = pageOutcome.get(k)!;
     if (o.kind === "copies_conflict" || o.kind === "set_conflict") readingConflicts.push({sha256: null, page: split(k).page, fileIds: o.fileIds});
@@ -1306,7 +1346,15 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
 
   let update: DocumentFolderInventory["update"] = null;
   if (input.prior) {
-    const affected = substituted;
+    // Rows an update may change: documents completed by a copy, every member of a version family a new file joins (its
+    // precedence is recorded again), and the documents whose findings this update adds or resolves on those members or on
+    // the new files. Every other row is the prior bytes.
+    const arrived = new Set(newFiles), membersOf = (fam: DocumentFolderInventory["families"][number]) => [...fam.prevails, ...fam.superseded, ...fam.sideBySide];
+    const touched = families.filter((fam) => membersOf(fam).some((id) => arrived.has(id)));
+    const members = new Set([...touched.flatMap(membersOf), ...input.prior.inventory.families.filter((fam) => touched.some((t) => t.id === fam.id)).flatMap(membersOf)]);
+    const priorStatus = new Map(input.prior.inventory.findings.map((x) => [x.id, x.status]));
+    const dependents = findings.filter((x) => priorStatus.get(x.id) !== x.status && x.sources.some((y) => members.has(y.fileId) || arrived.has(y.fileId))).map((x) => x.anchor);
+    const affected = new Set([...substituted, ...members, ...dependents]);
     const prior = new Map(input.prior.inventory.rows.map((r) => [r.fileId, r]));
     for (const id of prior.keys()) if (!rows.some((r) => r.fileId === id)) throw new Error("document_inventory_prior_row_dropped");
     const changed = rows.filter((r) => prior.has(r.fileId) && JSON.stringify(canonical(r)) !== JSON.stringify(canonical(prior.get(r.fileId))));
