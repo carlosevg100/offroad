@@ -6,7 +6,7 @@ import {boardAuthorities, boardFigureUnits, boardOmissionTargets, boardPageRoles
 const {schemaVersion: _s, analysisId: _a, perimeter: _p, weekly: _w, exclusions: _e, ...common} = adoptedWeeklyCashOutputSchema.shape;
 const text = z.string().min(1).max(4000), key = z.string().min(1).max(160), hash = z.string().regex(/^[a-f0-9]{64}$/), date = z.iso.date();
 const decimal = z.string().regex(/^-?\d{1,30}(?:\.\d{1,60})?$/);
-const ids = z.array(key).max(96);
+const ids = z.array(key).max(160);
 
 const deliberation = z.strictObject({id: key, number: z.number().int().min(1).max(12), title: text, text, recommendationShown: z.boolean(),
   authority: z.enum(boardAuthorities), authorityBasis: text.nullable(),
@@ -14,7 +14,7 @@ const deliberation = z.strictObject({id: key, number: z.number().int().min(1).ma
 const page = z.strictObject({id: key, number: z.number().int().min(1).max(40), placement: z.enum(["main", "appendix"]), role: z.enum(boardPageRoles), topicId: key.nullable(),
   title: text, lines: z.array(text).max(16), recommendation: text.nullable(), options: z.array(text).max(8), figureIds: ids, pendingFigureIds: ids, deadlineIds: ids});
 export const boardMaterialSchema = z.strictObject({version: z.number().int().min(1).max(2), deliberations: z.array(deliberation).min(1).max(12), pages: z.array(page).min(1).max(40),
-  summary: text, summaryFigureIds: ids, appendix: z.array(z.strictObject({id: key, label: text, sourceIds: z.array(key).min(1).max(16)})).max(16),
+  summary: text, summaryFigureIds: ids, appendix: z.array(z.strictObject({id: key, label: text, sourceIds: z.array(key).min(1).max(16), figureIds: ids})).max(16),
   questions: z.array(z.strictObject({id: key, question: text, answer: text, figureIds: ids, pendingFigureIds: ids})).max(24),
   agenda: z.strictObject({minutes: z.number().int().nullable(), minutesPerPage: z.number().int(), mainPages: z.number().int(), capacity: z.number().int().nullable(), fits: z.boolean().nullable()}),
   fingerprint: hash});
@@ -29,7 +29,7 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
     questions: z.array(z.strictObject({code: z.enum(["template", "agenda_minutes", "board_has_seen"]), topicId: key.nullable(), label: text.nullable()})).max(16)}),
   /** Identity check: every number on the material against the reviewed result it is read from. */
   identity: z.array(z.strictObject({figureId: key, sourceId: key, methodId: key, methodVersion: key, packetFingerprint: hash, path: text, unit: z.enum(boardFigureUnits),
-    value: text, rounded: text, stated: text.nullable(), display: text, matches: z.literal(true)})).max(96),
+    value: text, rounded: text, stated: text.nullable(), display: text, matches: z.literal(true)})).max(160),
   omissions: z.array(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: key, requestedBy: text, outcome: z.enum(["applied", "refused"]), reason: text, keptFigureIds: ids})).max(12),
   /** The first version as composed and, after an omission request, the second: the earlier version is kept. */
   versions: z.array(boardMaterialSchema).max(2),
@@ -37,6 +37,8 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
   pending: z.strictObject({indicative: z.array(z.strictObject({figureId: key, reason: text})).max(24),
     sources: z.array(z.strictObject({sourceId: key, methodId: key, status: key, reasons: z.array(text).max(64)})).max(16),
     authority: ids, template: z.enum(["not_supplied", "supplied_not_applied"])}),
+  /** The material facts by rule: every economic reading, every figure marked material and every deadline; each version shows all of them. */
+  materialFacts: z.strictObject({figures: ids, deadlines: ids}),
   priorVersionsKept: z.literal(true), sentToThirdParties: z.literal(false), presented: z.literal(false),
 });
 

@@ -83,6 +83,20 @@ export function auroraBoardSources() {
 }
 
 type Reading = [string, string, string, string, string, string?];
+/** The seven paths the plan evaluates (the status quo and the candidates, by rank), with what the board compares:
+ * minimum cash, worst leverage, financing cost and net debt to 2028, and execution (inside every gate, consent). */
+export const auroraPaths: [string, string, string, string, string][] = [
+  ["sem-linha-debenture", "15", "2.20", "49", "79"], ["adiar-linha", "-60", "2.21", "31", "89"], ["debenture-com-linha", "15", "2.40", "57", "102"],
+  ["manter", "-79", "2.38", "25", "81"], ["ccb-tres-anos", "-65", "2.41", "35", "87"], ["alongar-com-banco", "12", "2.40", "57", "102"], ["alongar-bradesco", "-11", "2.40", "44", "93"]];
+function auroraPathReadings(): Record<string, Reading> {
+  return Object.fromEntries(auroraPaths.flatMap(([id, cash, leverage, cost, net]) => {
+    const at = `readings.paths[id=${id}].`;
+    return [[`${id}-label`, ["plano-2027", at + "label", "text", "0", "0"]], [`${id}-cash`, ["plano-2027", at + "minimumCash.amount", "brl_millions", "0", "0", cash]],
+      [`${id}-lev`, ["plano-2027", at + "worstLeverage", "multiple", "0", "2", leverage]], [`${id}-cost`, ["plano-2027", at + "horizonFinancingCost", "brl_millions", "0", "0", cost]],
+      [`${id}-net`, ["plano-2027", at + "netDebtAtHorizon", "brl_millions", "0", "0", net]], [`${id}-ok`, ["plano-2027", at + "eligible", "boolean", "0", "0"]],
+      [`${id}-consent`, ["plano-2027", at + "consentRequired", "boolean", "0", "0"]]] as [string, Reading][];
+  }));
+}
 /** Each number as a reading of a reviewed result: [source, path, unit, scale, places, stated]. */
 export const auroraBoardReadings: Record<string, Reading> = {
   "divida-total": ["tabela-divida", "result.table.reconciliation.principal", "brl_millions", "0", "0", "130"],
@@ -93,6 +107,7 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "largest-share": ["tabela-divida", "result.table.profile.largestCreditor.share", "percent", "2", "0", "46"],
   "basket": ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].basket", "brl_millions", "0", "0", "15"],
   "basket-used": ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].occupied", "brl_millions", "0", "0", "12"],
+  "basket-free": ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].remaining", "brl_millions", "0", "0", "3"],
   "bradesco-maturity": ["tabela-divida", "result.table.rows[id=ccb-bradesco].finalPayment", "date_month_year", "0", "0", "2027-09-15"],
   "cov-limit": ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "multiple", "0", "1", "3.0"],
   "policy-limit": ["covenant", "result.headroom.limits[id=politica].maximumRatio", "multiple", "0", "1", "2.5"],
@@ -137,18 +152,20 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "service-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service", "brl_millions", "0", "0", "90"],
   "available-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService", "brl_millions", "0", "0", "36"],
   "n-paths": ["plano-2027", "readings.horizon.candidatePaths", "number", "0", "0", "7"],
-  "debenture-amount": ["plano-2027", "readings.recommendation.longInstrument.amount", "brl_millions", "0", "0", "80"],
+  "debenture-amount": ["plano-2027", "readings.recommendation.longInstrument.issueTarget", "brl_millions", "0", "0", "80"],
+  "issue-floor": ["plano-2027", "readings.recommendation.longInstrument.issueFloorInsideGates", "brl_millions", "0", "2", "74.44"],
   "debenture-term": ["plano-2027", "readings.recommendation.longInstrument.termYears", "years", "0", "0", "7"],
-  "deb-cost-low": ["plano-2027", "readings.recommendation.longInstrument.equivalentSpread", "percent", "2", "2", "3.49"],
-  "deb-cost-high": ["plano-2027", "readings.recommendation.longInstrument.equivalentSpreadAtCondition", "percent", "2", "2", "3.59"],
+  "deb-cost-low": ["plano-2027", "readings.recommendation.longInstrument.equivalentSpread", "percent", "2", "2", "3.46"],
+  "deb-cost-high": ["plano-2027", "readings.recommendation.longInstrument.equivalentSpreadAtCondition", "percent", "2", "2", "3.56"],
   "amort-first": ["plano-2027", "readings.recommendation.longInstrument.firstAmortizationYear", "number", "0", "0", "2029"],
   "amort-last": ["plano-2027", "readings.recommendation.longInstrument.lastAmortizationYear", "number", "0", "0", "2033"],
   "bradesco-gap": ["plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", "brl_millions", "0", "0", "18"],
   "five-year-amort": ["plano-2027", "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].scheduledAmortization", "brl_millions", "0", "0", "33"],
   "five-year-available": ["plano-2027", "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].availableAfterInterest", "brl_millions", "0", "0", "24"],
-  "alt-amount": ["plano-2027", "readings.alternative.amount", "brl_millions", "0", "0", "70"],
+  "alt-amount": ["plano-2027", "readings.alternative.issueTarget", "brl_millions", "0", "0", "70"],
   "cost-2028": ["plano-2027", "readings.recommendation.horizonFinancingCost", "brl_millions", "0", "0", "49"],
   "net-debt-2028": ["plano-2027", "readings.recommendation.netDebtAtHorizon", "brl_millions", "0", "0", "79"],
+  ...auroraPathReadings(),
 };
 /** Numbers the material needs and no reviewed result supplies: [required method, reason]. */
 export const auroraBoardPending: Record<string, [string, string]> = {
@@ -186,28 +203,28 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "caixa", role: "situation", topicId: null, title: "Sem ação, o caixa fica abaixo do mínimo em dezembro e chega a R$ {cash-end-2027} milhões no fim de 2027", recommendation: null, options: [],
         lines: ["Sem a linha da safra, a semana de {sem-linha-week} fecha em R$ {sem-linha-min} milhões; o mínimo é R$ {min-cash} milhões.",
           "Serviço da dívida de 2027 de R$ {service-2027} milhões contra R$ {available-2027} milhões de caixa disponível."]},
-      {id: "escritura", role: "constraint", topicId: null, title: "A escritura de 2021 limita as garantias de qualquer nova dívida", recommendation: null, options: [],
+      {id: "escritura", role: "constraint", topicId: null, title: "A escritura de 2021 deixa só R$ {basket-free} milhões de exceção para garantias de nova dívida", recommendation: null, options: [],
         lines: ["Exceção de R$ {basket} milhões para garantias, com R$ {basket-used} milhões ocupados pela CCB do Bradesco.", "Covenant de {cov-limit}x na escritura; política do conselho de {policy-limit}x."]},
-      {id: "linha", role: "topic", topicId: "linha-embalagem", title: "A linha de embalagem rende perto do custo de capital e disputa o caixa mais apertado",
+      {id: "linha", role: "topic", topicId: "linha-embalagem", title: "A linha de embalagem rende {irr}% contra custo de capital de {wacc}% e disputa o caixa mais apertado",
         lines: ["Retorno de {irr}% contra custo de capital de {wacc}%; VPL de R$ {npv} milhão.", "Payback de cerca de {payback} anos; o fluxo acumulado do projeto chega a R$ {peak-need} milhões em {peak-date}.",
           "VPL negativo em cada sensibilidade: {label-economy}, R$ {npv-economy} milhões; capex maior, R$ {npv-capex} milhões; partida mais lenta, R$ {npv-slow} milhão.",
           "Motivo estratégico: depender menos de um único fornecedor de embalagem."],
-        recommendation: "Recomendamos pedir cotações firmes antes do pedido de compra; adiar doze meses leva o VPL a R$ {npv-defer} milhão." as string | null,
+        recommendation: "Recomendamos pedir cotações firmes antes do pedido de compra; adiar doze meses leva o VPL a R$ {npv-defer} milhão e o retorno a {irr-defer}%." as string | null,
         options: ["Seguir agora: VPL de R$ {npv} milhão e retorno de {irr}%.", "Seguir em etapas: VPL de R$ {stages-npv} milhões.",
           "Esperar as cotações e adiar doze meses: VPL de R$ {npv-defer} milhão e retorno de {irr-defer}%."]},
-      {id: "safra", role: "topic", topicId: "safra", title: "A safra pode ser financiada pelos programas dos clientes, sem dívida bancária nova", recommendation: null, options: [],
-        lines: ["Programas das redes A e B até R$ {programs} milhões, a CDI mais {spread-b} a {spread-a} ao ano, em condições indicativas.", "Conta garantida para a semana de {tight-week}."]},
-      {id: "caminhos", role: "alternatives", topicId: null, title: "Avaliamos {n-paths} caminhos para 2027", recommendation: null, options: [],
-        lines: ["Quadro por caminho: caixa mínimo, alavancagem, custo, dívida líquida em 2028 e execução."]},
+      {id: "safra", role: "topic", topicId: "safra", title: "A safra pode ser financiada por até R$ {programs} milhões dos programas dos clientes, sem dívida bancária nova", recommendation: null, options: [],
+        lines: ["Programas das redes A e B a CDI mais {spread-b}% a {spread-a}% ao ano, em condições indicativas.", "Conta garantida para a semana de {tight-week}."]},
+      {id: "caminhos", role: "alternatives", topicId: null, title: "Avaliamos {n-paths} caminhos para 2027; só o recomendado passa em todos os critérios", recommendation: null, options: [],
+        lines: auroraPaths.map(([id]) => `{${id}-label}: caixa mínimo R$ {${id}-cash} mi; alavancagem {${id}-lev}x; custo R$ {${id}-cost} mi; dívida líquida 2028 R$ {${id}-net} mi; nos critérios: {${id}-ok}; anuência: {${id}-consent}.`)},
       {id: "recomendacao", role: "recommendation", topicId: null, title: "Recomendamos sondar uma debênture de até R$ {debenture-amount} milhões, em {debenture-term} anos", recommendation: null, options: [],
-        lines: ["Resgata a debênture de 2021 e pré-paga o Bradesco; custo efetivo perto de CDI mais {deb-cost-low} a {deb-cost-high}.", "Amortização de {amort-first} a {amort-last}.",
+        lines: ["Resgata a debênture de 2021 e pré-paga o Bradesco; custo efetivo perto de CDI mais {deb-cost-low}% a {deb-cost-high}% ao ano.", "Amortização de {amort-first} a {amort-last}.",
           "Plano alternativo: alongamento bancário, com decisão até {deadline:vencimentos.rota}."]},
-      {id: "alavancagem", role: "risk", topicId: null, title: "A alavancagem fica abaixo da política nos cenários avaliados, com pouca folga no adverso de 2027", recommendation: null, options: [],
+      {id: "alavancagem", role: "risk", topicId: null, title: "A alavancagem fica abaixo da política de {policy-limit}x nos cenários avaliados, com {lev-adv27}x no adverso de 2027", recommendation: null, options: [],
         lines: ["{lev-dez26}x em dez/26 e {lev-dez27}x em dez/27 pela definição da escritura.", "{lev-adv27}x no adverso de 2027, contra a política de {policy-limit}x."]},
       {id: "politica", role: "risk", topicId: null, title: "A política de {policy-limit}x precisa de uma definição de EBITDA", recommendation: null, options: [],
         lines: ["Pelo EBITDA gerencial, {lev-ger-dez26}x; pela definição da escritura, {lev-dez26}x em dez/26."]},
-      {id: "mudaria", role: "what_changes", topicId: null, title: "O que mudaria a recomendação", recommendation: null, options: [],
-        lines: ["Demanda da debênture abaixo de R$ {debenture-amount} milhões.", "Trigo {wheat-shock}% mais caro com repasse em {wheat-lag} meses: EBITDA de 2027 perto de R$ {ebitda-wheat} milhões.",
+      {id: "mudaria", role: "what_changes", topicId: null, title: "Mudaria a recomendação: demanda abaixo de R$ {issue-floor} milhões, trigo mais caro ou redes pagando mais tarde", recommendation: null, options: [],
+        lines: ["Demanda da debênture abaixo de R$ {issue-floor} milhões, o mínimo que mantém o plano de R$ {debenture-amount} milhões dentro dos critérios.", "Trigo {wheat-shock}% mais caro com repasse em {wheat-lag} meses: EBITDA de 2027 perto de R$ {ebitda-wheat} milhões.",
           "{days-label}: R$ {wc-60} milhões a mais de capital de giro."]},
       {id: "passos", role: "next_steps", topicId: null, title: "Próximos passos e datas", recommendation: null, options: [],
         lines: ["{deadline:linha.aviso}: aviso ao fornecedor de embalagem.", "{deadline:safra.adesao}: adesão aos programas de antecipação.",
@@ -229,7 +246,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "demanda", question: "E se as gestoras não comprarem o volume todo?",
         answer: "Plano alternativo: alongamento bilateral de cerca de R$ {alt-amount} milhões com waiver da debênture, decidido até {deadline:vencimentos.rota}, antes do vencimento do Bradesco em {bradesco-maturity}."},
       {id: "custo", question: "Quanto custa?",
-        answer: "Custo efetivo perto de CDI mais {deb-cost-low} a {deb-cost-high}; custo financeiro de cerca de R$ {cost-2028} milhões até 2028, com dívida líquida de R$ {net-debt-2028} milhões no fim de 2028."},
+        answer: "Custo efetivo perto de CDI mais {deb-cost-low}% a {deb-cost-high}% ao ano; custo financeiro de cerca de R$ {cost-2028} milhões até 2028, com dívida líquida de R$ {net-debt-2028} milhões no fim de 2028."},
       {id: "serra-verde", question: "Por que pagamos mais que a Serra Verde?",
         answer: "Da diferença de {gap-bps} pontos, {date-bps} vêm da data de contratação; o resto é escala, concentração de clientes, prazo curto e ausência de rating."},
       {id: "rating", question: "Vale contratar rating?",
@@ -239,7 +256,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "trigo", question: "E se o trigo subir?",
         answer: "Com trigo {wheat-shock}% mais caro e repasse em {wheat-lag} meses, o EBITDA de 2027 cai para cerca de R$ {ebitda-wheat} milhões; no adverso de 2027, com EBITDA de R$ {ebitda-adv27} milhões, a alavancagem fica em {lev-adv27}x, abaixo do covenant de {cov-limit}x."},
       {id: "rede-a", question: "Dependemos demais da rede A?",
-        answer: "A rede A tem R$ {rede-a} milhões dos R$ {carteira} milhões da carteira; o contrato veda a cessão a terceiros, mas o programa próprio dela permite antecipar no risco da rede, a CDI mais {spread-a} ao ano."},
+        answer: "A rede A tem R$ {rede-a} milhões dos R$ {carteira} milhões da carteira; o contrato veda a cessão a terceiros, mas o programa próprio dela permite antecipar no risco da rede, a CDI mais {spread-a}% ao ano."},
       {id: "fpa", question: "O plano do FP&A mostra EBITDA de R$ {fpa-2028} milhões em 2028; por que usamos R$ {ref-2028} milhões?",
         answer: "O plano supõe preço acima do custo, volume acima da capacidade da fábrica e fixos abaixo da inflação; sem evidência, o banco corta. A base por drivers fica em R$ {ref-2028} milhões."},
     ],

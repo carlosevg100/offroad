@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
-import {boardLiteralNumbers, checkBoardFigure, decideBoardOmissions, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
-  type BoardDeliberation, type BoardDiscussion, type BoardPage} from "./board-capital-discussion";
+import {boardLiteralNumbers, checkBoardFigure, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
+  type BoardDeliberation, type BoardFigureDisplay, type BoardPage} from "./board-capital-discussion";
 
 const deliberation = (id: string, dates: string[]): BoardDeliberation => ({id, title: id, subject: `decidir ${id}`, recommendation: null, topicId: null, authority: "board", authorityBasis: null,
   deadlines: dates.map((date, i) => ({id: `d${i}`, date, action: "agir"}))});
@@ -26,17 +26,22 @@ describe("board discussion core", () => {
     expect(checkBoardFigure("2027-09-15", "date_month_year", 0, 0, "2027-09-15")).toMatchObject({display: "set/27", matches: true});
     expect(checkBoardFigure("not a number", "brl_millions", 0, 0, "1")).toBeNull();
     expect(checkBoardFigure(undefined, "text", 0, 0, null)).toBeNull();
+    expect(checkBoardFigure(true, "boolean", 0, 0, null)).toMatchObject({display: "sim", matches: true});
   });
   it("allows years and months of a year as literals and refuses any other literal number", () => {
     expect(boardLiteralNumbers("Vencimentos de 2027, em dez/26 e {lev}x")).toEqual([]);
     expect(boardLiteralNumbers("A dívida é de R$ 130 milhões")).toEqual(["130"]);
     expect(boardLiteralNumbers("Aviso até 2/out")).toEqual(["2"]);
-    const context = {figures: new Map<string, {display: string} | {pending: true}>([["x", {display: "1,5"}], ["p", {pending: true}]]), deliberations: [deliberation("a", ["2026-10-02"]), deliberation("b", [])], nextMeetingDate: null};
+    const context = {figures: new Map<string, BoardFigureDisplay>([["x", {display: "1,5", unit: "years"}], ["r", {display: "1,2", unit: "percent"}], ["p", {pending: true}]]), deliberations: [deliberation("a", ["2026-10-02"]), deliberation("b", [])], nextMeetingDate: null};
     expect(renderBoardTemplate("{count:deliberations} decisões, {count:dated} com prazo; {x} e {p}; até {deadline:a.d0}", context))
       .toEqual({display: "duas decisões, uma com prazo; 1,5 e [pendente]; até 2/out", figureIds: ["x"], pendingFigureIds: ["p"], deadlineIds: ["a.d0"]});
     expect(() => renderBoardTemplate("R$ 77 milhões", context)).toThrow("board_capital_number_without_origin");
     expect(() => renderBoardTemplate("{y}", context)).toThrow("board_capital_unknown_token:y");
     expect(() => renderBoardTemplate("{count:due-before-next-meeting}", context)).toThrow("board_capital_number_without_origin:next_meeting_date");
+    expect(renderBoardTemplate("CDI mais {r}% ao ano", context).display).toBe("CDI mais 1,2% ao ano");
+    expect(() => renderBoardTemplate("CDI mais {r} ao ano", context)).toThrow("board_capital_unit_missing:r");
+    expect(checkBoardText("Presidente do conselho")).toBe("Presidente do conselho");
+    expect(() => checkBoardText("Linha com retorno de 16,1%")).toThrow("board_capital_number_without_origin");
   });
   it("orders deliberations by their earliest deadline, undated last, ties in adopted order", () => {
     const ordered = orderBoardDeliberations([deliberation("policy", []), deliberation("route", ["2026-11-15", "2026-10-31"]), deliberation("line", ["2026-10-02"]), deliberation("crop", ["2026-10-16"])]);
@@ -48,17 +53,5 @@ describe("board discussion core", () => {
     expect(orderBoardPages(pages, [{id: "line", label: "linha", seen: null}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
     const seen = orderBoardPages(pages, [{id: "line", label: "linha", seen: true}]);
     expect([seen.main.map((p) => p.id), seen.appendix.map((p) => p.id)]).toEqual([["dec", "debt", "rec"], ["line"]]);
-  });
-  it("withdraws a recommendation and refuses to omit a material fact, a page that carries one or a deadline", () => {
-    const d = {figures: [{id: "irr", kind: "pending", requiredMethodId: "m", reason: "r"}, {id: "note", kind: "pending", requiredMethodId: "m", reason: "r"}], materialFigureIds: ["irr"],
-      pages: [{...page("line", "topic"), lines: ["Retorno de {irr}%"], recommendation: "Esperar"}, {...page("aside", "situation"), lines: ["Nota {note}"]}],
-      deliberations: [deliberation("line", ["2026-10-02"])],
-      omissions: [{id: "a", target: "recommendation", targetId: "line", requestedBy: "chair"}, {id: "b", target: "figure", targetId: "irr", requestedBy: "chair"},
-        {id: "c", target: "page", targetId: "line", requestedBy: "chair"}, {id: "d", target: "deadline", targetId: "line.d0", requestedBy: "chair"},
-        {id: "e", target: "page", targetId: "aside", requestedBy: "chair"}, {id: "f", target: "figure", targetId: "note", requestedBy: "chair"}]} as unknown as BoardDiscussion;
-    const {decisions, removed} = decideBoardOmissions(d);
-    expect(decisions.map((x) => [x.id, x.outcome, x.keptFigureIds])).toEqual([["a", "applied", ["irr"]], ["b", "refused", ["irr"]], ["c", "refused", ["irr"]], ["d", "refused", []], ["e", "applied", []], ["f", "applied", []]]);
-    expect([...removed.recommendations, ...removed.pages, ...removed.figures]).toEqual(["line", "aside", "note"]);
-    expect(decisions[3]!.reason).toBe("O prazo fica, porque vale para qualquer caminho que o conselho escolher.");
   });
 });

@@ -16,7 +16,7 @@ type Origin = {origin: (typeof origins)[number]; source: string};
 const reading = z.tuple([key, z.string().min(1).max(400), z.enum(boardFigureUnits), z.string().regex(/^-?\d{1,2}$/), z.string().regex(/^\d{1,2}$/)])
   .rest(z.string().regex(/^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/));
 const figure = z.discriminatedUnion("kind", [
-  z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length <= 6 && (r[2] === "text" || r.length === 6), {message: "A number states its value; a text reading does not"})}),
+  z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length === (r[2] === "text" || r[2] === "boolean" ? 5 : 6), {message: "A number states its value; a text or yes-no reading does not"})}),
   z.strictObject({id: key, kind: z.literal("pending"), reading: z.tuple([key, text])})]);
 const deliberation = z.strictObject({id: key, topicId: key.nullable(), title: text, subject: text, recommendation: text.nullable(), authority: z.enum(boardAuthorities), authorityBasis: text.nullable(),
   deadlines: z.array(z.strictObject({id: key, date: z.iso.date(), action: text})).max(4)});
@@ -32,8 +32,8 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   sources: z.array(fact(z.strictObject({id: key, methodId: z.enum(boardSourceMethodIds), packetFingerprint: hash}))).min(1).max(16),
   topics: z.array(fact(z.strictObject({id: key, label: text, seen: z.boolean().nullable()}))).max(12),
   deliberations: z.array(fact(deliberation)).min(1).max(12),
-  figures: z.array(fact(figure)).max(96),
-  materialFigureIds: fact(z.array(key).max(96)),
+  figures: z.array(fact(figure)).max(160),
+  materialFigureIds: fact(z.array(key).max(160)),
   indicative: z.array(fact(z.strictObject({figureId: key, reason: text}))).max(24),
   pages: z.array(fact(page)).min(1).max(40),
   summary: fact(z.strictObject({opening: text, closing: text})),

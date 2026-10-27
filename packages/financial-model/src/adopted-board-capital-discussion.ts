@@ -26,7 +26,7 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
     /** [authority, basis?] */
     authority: selection, deadlines: z.array(z.strictObject({id: key, reading: selection})).max(4)})).min(1).max(12),
   /** A reading is [source, path, unit, scale, places, stated?]; a pending figure is [required method, reason]. */
-  figures: z.array(z.strictObject({id: key, kind: z.enum(["reading", "pending"]), reading: selection})).max(96),
+  figures: z.array(z.strictObject({id: key, kind: z.enum(["reading", "pending"]), reading: selection})).max(160),
   materialFigureIds: selection,
   indicative: z.array(z.strictObject({figureId: key, reason: selection})).max(24),
   pages: z.array(z.strictObject({id: key, topicId: key.nullable(), role: selection, title: selection, lines: selection, recommendation: selection.nullable(), options: selection.nullable()})).min(1).max(40),
@@ -94,7 +94,7 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     return {id: f.id, kind: "reading", sourceId: r?.[0] as string, path: r?.[1] as string, unit: r?.[2] as BoardFigureUnit,
       scale: Number(r?.[3]), places: Number(r?.[4]), stated: r?.[5] ?? null} as BoardFigure;
   });
-  const materialFigureIds = list(input.materialFigureIds, "figures.material", z.array(key).max(96));
+  const materialFigureIds = list(input.materialFigureIds, "figures.material", z.array(key).max(160));
   const indicative = input.indicative.map((x) => ({figureId: x.figureId, reason: need(read(x.reason, `figure.${x.figureId}.indicative`, "text", "text", words))}));
   const pages = input.pages.map((pg) => {
     const p = `page.${pg.id}.`;

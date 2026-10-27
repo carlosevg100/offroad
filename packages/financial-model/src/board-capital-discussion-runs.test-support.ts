@@ -37,7 +37,8 @@ export const boardFichaDivergences = [
   {page: 5, item: "caixa da linha", ficha: "R$ 24 mi entre nov/26 e set/27", method: "fluxo acumulado de -R$ 21,7 mi em dez/27 (analyze-investment-project, grade anual)", figureId: "peak-need"},
   {page: 5, item: "payback", ficha: "seis anos contra três", method: "cerca de 6 anos; a meta de três anos não está em resultado revisado", figureId: "payback"},
   {page: 6, item: "programas das redes A e B", ficha: "cerca de R$ 23 mi, CDI + 1 a 1,5", method: "R$ 23,5 mi, CDI + 1,2 a 1,5 (monetize-receivables-for-working-capital, turno 2)", figureId: "programs"},
-  {page: 8, item: "custo efetivo da debênture", ficha: "CDI + 3,4 a 3,6", method: "CDI + 3,49 a 3,59 (evaluate-financing-paths)", figureId: "deb-cost-low"},
+  {page: 8, item: "custo efetivo da debênture", ficha: "CDI + 3,4 a 3,6", method: "CDI + 3,46% a 3,56% ao ano (evaluate-financing-paths)", figureId: "deb-cost-low"},
+  {page: 11, item: "demanda que mudaria a recomendação", ficha: "abaixo de R$ 80 mi", method: "abaixo de R$ 74,44 mi, o mínimo dentro dos critérios (evaluate-financing-paths)", figureId: "issue-floor"},
   {page: 0, item: "rede A na carteira", ficha: "32%", method: "R$ 19,8 mi de R$ 62 mi; o pacote não traz a participação", figureId: "rede-a"},
   {page: 0, item: "rating", ficha: "empata", method: "ganho líquido entre -R$ 0,17 mi e R$ 0,03 mi por ano (analyze-relative-debt-cost)", figureId: "rating-low"},
   {page: 5, item: "opção em etapas da linha", ficha: "seguir em etapas, com o custo", method: "pendente: não é caso revisado de analyze-investment-project", figureId: "stages-npv"},
@@ -61,11 +62,11 @@ function goldCases(): Case[] {
     reuse("outline-in-the-same-urgency-order", p1, t1, ["linha", "safra", "vencimentos", "politica"], (p) => p.readings!.deliberations.map((d) => d.id)),
     reuse("deliberations-with-authority-and-the-supposed-authority-declared", p2, t2, {authority: ["board", "board", "board", "board"], pending: ["linha", "vencimentos", "politica", "safra"]},
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
-    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, curta e concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura de 2021 limita as garantias de qualquer nova dívida"],
+    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, curta e concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura de 2021 deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende perto do custo de capital e disputa o caixa mais apertado", "A safra pode ser financiada pelos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027", "Recomendamos sondar uma debênture de até R$ 80 milhões, em 7 anos"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% contra custo de capital de 15% e disputa o caixa mais apertado", "A safra pode ser financiada por até R$ 23,5 milhões dos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, em 7 anos"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
-    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política nos cenários avaliados, com pouca folga no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "O que mudaria a recomendação", "Próximos passos e datas"],
+    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "Mudaria a recomendação: demanda abaixo de R$ 74,44 milhões, trigo mais caro ou redes pagando mais tarde", "Próximos passos e datas"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
     reuse("every-page-carries-a-number", p2, t2, true, (p) => current(p).pages.every((x) => x.figureIds.length + x.pendingFigureIds.length + x.deadlineIds.length > 0)),
     reuse("numbers-checked-against-the-analyses-debt-covenant-and-cash", p2, t2, {
@@ -81,7 +82,7 @@ function goldCases(): Case[] {
       (p) => {const s = new Map<string, (typeof sources)[number]>(sources.map((x) => [x.id, x])); const ids = p.result.discussion!.identity;
         return {checked: ids.length, pinned: ids.every((x) => s.get(x.sourceId)?.methodId === x.methodId && s.get(x.sourceId)?.packet.fingerprint === x.packetFingerprint), all: p.readings!.material!.allFiguresMatch};}),
     reuse("financing-plan-read-from-its-reviewed-result", p2, t2, {
-      "cash-end-2027": "-79", "service-2027": "90", "available-2027": "36", "n-paths": "7", "debenture-amount": "80", "debenture-term": "7", "deb-cost-low": "3,49", "deb-cost-high": "3,59",
+      "cash-end-2027": "-79", "service-2027": "90", "available-2027": "36", "n-paths": "7", "debenture-amount": "80", "debenture-term": "7", "deb-cost-low": "3,46", "deb-cost-high": "3,56",
       "amort-first": "2029", "amort-last": "2033", "bradesco-gap": "18", "five-year-amort": "33", "five-year-available": "24", "alt-amount": "70", "cost-2028": "49", "net-debt-2028": "79"},
       (p) => pick(p, ["cash-end-2027", "service-2027", "available-2027", "n-paths", "debenture-amount", "debenture-term", "deb-cost-low", "deb-cost-high", "amort-first", "amort-last",
         "bradesco-gap", "five-year-amort", "five-year-available", "alt-amount", "cost-2028", "net-debt-2028"])),
@@ -108,7 +109,7 @@ function goldCases(): Case[] {
     observe("pages-beyond-the-agenda-are-a-gap", boardPacketInput(2, (c) => {c.agendaMinutes = "30";}), {fits: false, gap: true},
       (p) => ({fits: p.readings!.material!.fitsAgenda, gap: p.gaps.some((g) => g.reason === "pages_exceed_agenda")})),
     reuse("turn-3-recommendation-withdrawn-and-facts-kept", p3, t3, {outcome: "applied", recommendation: null,
-      kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow"], firstLine: "Retorno de 16% contra custo de capital de 15%; VPL de R$ 0,7 milhão."},
+      kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% contra custo de capital de 15%; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
       ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16%.", "Seguir em etapas: VPL de R$ [pendente] milhões.", "Esperar as cotações e adiar doze meses: VPL de R$ 1,4 milhão e retorno de 17%."],
@@ -135,6 +136,24 @@ function goldCases(): Case[] {
       (p) => ({stage: p.readings!.stage, questions: p.readings!.questionsBeforeMaterial.length, template: p.readings!.pending.template})),
     reuse("ficha-divergences-follow-the-published-methods", p2, t2, boardFichaDivergences.filter((x) => x.figureId in display(p2)).map((x) => [x.figureId, display(p2)[x.figureId]]),
       (p) => boardFichaDivergences.filter((x) => x.figureId in display(p)).map((x) => [x.figureId, display(p)[x.figureId]])),
+    reuse("paths-page-compares-each-path", p2, t2, [
+      "Sem a linha agora: giro de R$ 17 mi e debênture de R$ 80 mi: caixa mínimo R$ 15 mi; alavancagem 2,20x; custo R$ 49 mi; dívida líquida 2028 R$ 79 mi; nos critérios: sim; anuência: não.",
+      "Manter e rolar no vencimento: caixa mínimo R$ -79 mi; alavancagem 2,38x; custo R$ 25 mi; dívida líquida 2028 R$ 81 mi; nos critérios: não; anuência: não."],
+      (p) => [pageOf(p, "caminhos").lines[0], pageOf(p, "caminhos").lines[3]]),
+    reuse("paths-page-has-seven-paths-with-every-measure", p2, t2, {lines: 7, measures: true},
+      (p) => ({lines: pageOf(p, "caminhos").lines.length, measures: pageOf(p, "caminhos").lines.every((l) => ["caixa mínimo", "alavancagem", "custo", "dívida líquida 2028", "nos critérios", "anuência"].every((m) => l.includes(m)))})),
+    reuse("every-material-fact-shown-in-the-current-version", p3, t3, {shown: true, deadlines: 4},
+      (p) => ({shown: p.readings!.material!.materialFactsShown, deadlines: p.result.discussion!.materialFacts.deadlines.length})),
+    observe("refuses-removing-a-date-that-shares-a-line-with-material-facts", boardPacketInput(2, (c) => {c.omissions = [{id: "sem-mes", target: "figure", targetId: "peak-date", requestedBy: "CFO"}];}),
+      {outcome: "refused", kept: ["payback", "peak-need"]}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
+    observe("refuses-removing-a-label-that-carries-the-sensitivities", boardPacketInput(2, (c) => {c.omissions = [{id: "sem-rotulo", target: "figure", targetId: "label-economy", requestedBy: "CFO"}];}),
+      {outcome: "refused", kept: ["npv-economy", "npv-capex", "npv-slow"]}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
+    observe("refuses-withdrawing-a-recommendation-that-alone-carries-material-facts", boardPacketInput(3, (c) => {
+      const line = c.pages.find((x) => x.id === "linha")!;
+      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a R$ {npv-economy} milhões e com capex maior a R$ {npv-capex} milhões; partida mais lenta, R$ {npv-slow} milhão; adiar doze meses leva o VPL a R$ {npv-defer} milhão e o retorno a {irr-defer}%.";
+      line.lines.splice(2, 1);
+    }), {outcome: "refused", kept: ["npv-economy", "npv-capex", "npv-slow"], recommendationKept: true},
+      (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds, recommendationKept: pageOf(p, "linha").recommendation !== null})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
 }
@@ -190,8 +209,14 @@ function adversarialCases(): Case[] {
       const canonical = JSON.stringify(e); i.analysis.discussion.envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
     }), "Invalid option"],
     ["extra-result-beside-the-named-ones", () => boardPacketInput(2, undefined, (i) => {i.analysis.sources.push({id: "extra", packet: i.analysis.sources[0]!.packet});}), "board_capital_source_not_named"],
-    ["page-without-a-number", () => boardPacketInput(2, (c) => {c.pages[3]!.lines = ["A escritura limita as garantias."];}), "board_capital_page_without_number:escritura"],
-    ["answer-without-a-number", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "Reduz a dependência de um fornecedor; cotações firmes decidem.";}), "board_capital_answer_without_number:estrategica"],
+    ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "A escritura de 2021 limita as garantias de qualquer nova dívida";}), "board_capital_title_without_number:escritura"],
+    ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[11]!.lines = ["Aviso ao fornecedor e adesão aos programas."];}), "board_capital_page_without_number:passos"],
+    ["false-number-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";}), "board_capital_number_without_origin"],
+    ["false-number-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";}), "board_capital_number_without_origin"],
+    ["false-number-in-an-option-not-yet-shown", () => boardPacketInput(2, (c) => {c.pages[4]!.options[1] = "Seguir em etapas: VPL de R$ 0,9 milhão.";}), "board_capital_number_without_origin"],
+    ["paraphrase-that-drops-a-material-fact", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[1] = "O fluxo acumulado do projeto chega a R$ {peak-need} milhões em {peak-date}.";}), "board_capital_material_fact_not_shown:payback"],
+    ["spread-without-its-percent-sign", () => boardPacketInput(2, (c) => {c.pages[5]!.lines[0] = "Programas a CDI mais {spread-b} a {spread-a}% ao ano, em condições indicativas.";}), "board_capital_unit_missing:spread-b"],
+    ["answer-without-an-economic-number", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "Reduz a dependência de um fornecedor; cotações firmes decidem até {deadline:linha.aviso}.";}), "board_capital_answer_without_number:estrategica"],
     ["tampered-envelope", () => boardPacketInput(2, undefined, (i) => {i.analysis.discussion.envelope = {...i.analysis.discussion.envelope, canonical: i.analysis.discussion.envelope.canonical.replace("2026-10-02", "2026-10-09")};}), "adoption_basis_integrity_mismatch"],
     ["free-material-in-request", () => ({...boardPacketInput(2), material: {pages: []}}), "Unrecognized key"],
     ["fabricated-grant-in-result", forge("grantsExecution"), "grantsExecution"],

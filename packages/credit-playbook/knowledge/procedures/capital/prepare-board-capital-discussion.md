@@ -15,9 +15,9 @@ result_contract: board-capital-discussion-packet.v1
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: board-capital-discussion-packet.v1
-unit_test_files: [packages/financial-model/src/board-capital-discussion.test.ts, packages/financial-model/src/board-capital-discussion-packet.test.ts, packages/financial-model/src/board-capital-discussion-premises.test.ts, packages/financial-model/src/board-capital-discussion-runs.test.ts]
-gold_case_ids: [outline-before-material-when-there-is-time, outline-asks-only-what-changes-the-material, four-deliberations-in-urgency-order, outline-in-the-same-urgency-order, deliberations-with-authority-and-the-supposed-authority-declared, titles-pages-1-to-4-conclusion-and-number, titles-pages-5-to-8-conclusion-and-number, titles-pages-9-to-12-conclusion-and-number, every-page-carries-a-number, numbers-checked-against-the-analyses-debt-covenant-and-cash, numbers-checked-against-the-analyses-line-crop-projection-and-cost, each-number-pinned-to-method-version-and-packet, financing-plan-read-from-its-reviewed-result, turn-2-without-pending-numbers, staged-option-pending-never-invented, summary-for-prior-reading-names-every-decision-and-date, appendix-cites-the-reviewed-results, likely-questions-with-answer-and-number, pending-items-declared, line-before-the-recommendation-when-the-board-has-not-seen-it, line-the-board-has-seen-goes-to-the-appendix, twelve-pages-fit-forty-five-minutes, pages-beyond-the-agenda-are-a-gap, turn-3-recommendation-withdrawn-and-facts-kept, turn-3-options-with-criteria-and-numbers, turn-3-deliberation-becomes-the-choice-and-the-notice-stays, turn-3-prior-version-kept, refuses-to-omit-the-return-on-request, refuses-to-drop-the-line-page, refuses-to-drop-the-leverage-risk, refuses-to-drop-the-notice-deadline, a-request-for-the-deck-does-not-skip-the-outline, no-time-before-the-meeting-produces-the-material-with-the-outline, ficha-divergences-follow-the-published-methods, never-presents-or-sends]
-adversarial_case_ids: [material-without-decisions, material-with-no-deliberation, divergent-number, literal-number-in-a-title, literal-deadline-in-a-line, reading-that-does-not-resolve, reading-of-an-unnamed-result, tampered-reviewed-result, reviewed-result-of-another-version, reviewed-result-the-basis-does-not-name, reviewed-result-of-another-company, result-of-an-unreleased-method, extra-result-beside-the-named-ones, page-without-a-number, answer-without-a-number, tampered-envelope, free-material-in-request, fabricated-grant-in-result, fabricated-presentation-in-result, fabricated-sending-in-result]
+unit_test_files: [packages/financial-model/src/board-capital-discussion.test.ts, packages/financial-model/src/board-capital-discussion-properties.test.ts, packages/financial-model/src/board-capital-discussion-packet.test.ts, packages/financial-model/src/board-capital-discussion-premises.test.ts, packages/financial-model/src/board-capital-discussion-runs.test.ts]
+gold_case_ids: [outline-before-material-when-there-is-time, outline-asks-only-what-changes-the-material, four-deliberations-in-urgency-order, outline-in-the-same-urgency-order, deliberations-with-authority-and-the-supposed-authority-declared, titles-pages-1-to-4-conclusion-and-number, titles-pages-5-to-8-conclusion-and-number, titles-pages-9-to-12-conclusion-and-number, every-page-carries-a-number, numbers-checked-against-the-analyses-debt-covenant-and-cash, numbers-checked-against-the-analyses-line-crop-projection-and-cost, each-number-pinned-to-method-version-and-packet, financing-plan-read-from-its-reviewed-result, turn-2-without-pending-numbers, staged-option-pending-never-invented, summary-for-prior-reading-names-every-decision-and-date, appendix-cites-the-reviewed-results, likely-questions-with-answer-and-number, pending-items-declared, line-before-the-recommendation-when-the-board-has-not-seen-it, line-the-board-has-seen-goes-to-the-appendix, twelve-pages-fit-forty-five-minutes, pages-beyond-the-agenda-are-a-gap, turn-3-recommendation-withdrawn-and-facts-kept, turn-3-options-with-criteria-and-numbers, turn-3-deliberation-becomes-the-choice-and-the-notice-stays, turn-3-prior-version-kept, refuses-to-omit-the-return-on-request, refuses-to-drop-the-line-page, refuses-to-drop-the-leverage-risk, refuses-to-drop-the-notice-deadline, a-request-for-the-deck-does-not-skip-the-outline, no-time-before-the-meeting-produces-the-material-with-the-outline, ficha-divergences-follow-the-published-methods, paths-page-compares-each-path, paths-page-has-seven-paths-with-every-measure, every-material-fact-shown-in-the-current-version, refuses-removing-a-date-that-shares-a-line-with-material-facts, refuses-removing-a-label-that-carries-the-sensitivities, refuses-withdrawing-a-recommendation-that-alone-carries-material-facts, never-presents-or-sends]
+adversarial_case_ids: [material-without-decisions, material-with-no-deliberation, divergent-number, literal-number-in-a-title, literal-deadline-in-a-line, reading-that-does-not-resolve, reading-of-an-unnamed-result, tampered-reviewed-result, reviewed-result-of-another-version, reviewed-result-the-basis-does-not-name, reviewed-result-of-another-company, result-of-an-unreleased-method, extra-result-beside-the-named-ones, title-without-an-economic-number, next-steps-without-a-deadline, false-number-in-a-deliberation-title, false-number-in-an-appendix-label, false-number-in-an-option-not-yet-shown, paraphrase-that-drops-a-material-fact, spread-without-its-percent-sign, answer-without-an-economic-number, tampered-envelope, free-material-in-request, fabricated-grant-in-result, fabricated-presentation-in-result, fabricated-sending-in-result]
 e2e_scenario_ids: [domain:outline-before-material-when-there-is-time]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -69,7 +69,10 @@ Pacote da discussão no conselho: antes do material, o roteiro com as deliberaç
 # Cálculos determinísticos
 - O método não recalcula nenhuma análise. Cada número é uma leitura de um resultado revisado: caminho no pacote, escala em potência de dez, casas decimais e o valor escrito na página.
 - Conferência de identidade: valor de origem multiplicado pela escala, arredondado para cima a partir da metade nas casas declaradas, igual ao valor escrito. Diferente é recusado pelo nome do número; caminho que não resolve, ou leitura de resultado não nomeado, é número sem origem e é recusado.
-- Texto do material: dígito literal só como ano ou mês de um ano (2027, dez/26); qualquer outro número vem de uma leitura, de uma deliberação (prazo) ou da contagem das deliberações. Número escrito à mão é recusado.
+- Texto do material: dígito literal só como ano ou mês de um ano (2027, dez/26); qualquer outro número vem de uma leitura, de uma deliberação (prazo) ou da contagem das deliberações. Vale para todo texto gerado, inclusive título de deliberação, rótulo de apêndice, pergunta, síntese, opção ainda não exibida, tema, base de alçada e nota de pendência. Número escrito à mão é recusado.
+- Unidade explícita: percentual seguido de "%" e múltiplo seguido de "x"; sem o sinal, recusa.
+- Suporte numérico: o título de cada página (fora decisões e próximos passos) e cada resposta carregam uma leitura econômica (valor, percentual, múltiplo, prazo, pontos ou contagem de resultado revisado); texto, data ou sim e não não bastam. Próximos passos carregam um prazo de deliberação.
+- Fatos materiais por regra: toda leitura econômica adotada, todo número que a base marca como material e todo prazo de deliberação. A versão composta mostra todos, ou é recusada; cada pedido de omissão é aplicado só se a versão que ele produz ainda mostra todos, conferido depois de renderizar, senão é recusado com a frase e os fatos que sairiam.
 - Resultado revisado: só de método liberado, na versão liberada, analisado pelo esquema do pacote liberado e com a impressão recalculada igual à nomeada na base; outra companhia ou moeda é recusada.
 - Ordem das deliberações: o prazo mais próximo primeiro; sem prazo por último; empate na ordem adotada.
 - Ordem das páginas: decisões, situação, restrição, temas que o conselho não viu (ou que não se sabe se viu), alternativas, recomendação, riscos, o que mudaria a recomendação, próximos passos. Tema já visto vai ao apêndice.
@@ -98,7 +101,7 @@ Pacote da discussão no conselho: antes do material, o roteiro com as deliberaç
 - Material sem página de decisões ou sem deliberação é recusado.
 - Número divergente, número sem origem, resultado adulterado, de outra versão, de outra companhia ou não nomeado pela base é recusado pelo nome.
 - Página sem número e resposta sem número são recusadas.
-- Pedido de retirar fato material, página que o carrega ou prazo de deliberação é recusado com uma frase; a recomendação pode sair.
+- Pedido de omissão que deixaria de mostrar um fato material (direto, por rótulo ou data na mesma linha, pela retirada da recomendação ou da página) ou um prazo é recusado com uma frase; a recomendação pode sair quando os fatos continuam. Base reescrita que deixa de mostrar um fato material é recusada.
 - O pacote não recalcula análises, não apresenta, não importa template, não envia material a terceiros, não aprova crédito e não publica nem altera a base.
 
 # Outputs
@@ -123,9 +126,9 @@ Pacote da discussão no conselho: antes do material, o roteiro com as deliberaç
 - packages/financial-model/src/board-capital-discussion.test.ts: leitura por caminho, arredondamento e conferência, números literais, ordem das deliberações e das páginas, regra de omissão.
 - packages/financial-model/src/board-capital-discussion-packet.test.ts e packages/financial-model/src/board-capital-discussion-premises.test.ts: os três turnos, ida e volta das premissas e composição a partir dos resultados guardados.
 ## Gold
-- outline-before-material-when-there-is-time, outline-asks-only-what-changes-the-material, four-deliberations-in-urgency-order, outline-in-the-same-urgency-order, deliberations-with-authority-and-the-supposed-authority-declared, titles-pages-1-to-4-conclusion-and-number, titles-pages-5-to-8-conclusion-and-number, titles-pages-9-to-12-conclusion-and-number, every-page-carries-a-number, numbers-checked-against-the-analyses-debt-covenant-and-cash, numbers-checked-against-the-analyses-line-crop-projection-and-cost, each-number-pinned-to-method-version-and-packet, financing-plan-read-from-its-reviewed-result, turn-2-without-pending-numbers, staged-option-pending-never-invented, summary-for-prior-reading-names-every-decision-and-date, appendix-cites-the-reviewed-results, likely-questions-with-answer-and-number, pending-items-declared, line-before-the-recommendation-when-the-board-has-not-seen-it, line-the-board-has-seen-goes-to-the-appendix, twelve-pages-fit-forty-five-minutes, pages-beyond-the-agenda-are-a-gap, turn-3-recommendation-withdrawn-and-facts-kept, turn-3-options-with-criteria-and-numbers, turn-3-deliberation-becomes-the-choice-and-the-notice-stays, turn-3-prior-version-kept, refuses-to-omit-the-return-on-request, refuses-to-drop-the-line-page, refuses-to-drop-the-leverage-risk, refuses-to-drop-the-notice-deadline, a-request-for-the-deck-does-not-skip-the-outline, no-time-before-the-meeting-produces-the-material-with-the-outline, ficha-divergences-follow-the-published-methods, never-presents-or-sends
+- outline-before-material-when-there-is-time, outline-asks-only-what-changes-the-material, four-deliberations-in-urgency-order, outline-in-the-same-urgency-order, deliberations-with-authority-and-the-supposed-authority-declared, titles-pages-1-to-4-conclusion-and-number, titles-pages-5-to-8-conclusion-and-number, titles-pages-9-to-12-conclusion-and-number, every-page-carries-a-number, numbers-checked-against-the-analyses-debt-covenant-and-cash, numbers-checked-against-the-analyses-line-crop-projection-and-cost, each-number-pinned-to-method-version-and-packet, financing-plan-read-from-its-reviewed-result, turn-2-without-pending-numbers, staged-option-pending-never-invented, summary-for-prior-reading-names-every-decision-and-date, appendix-cites-the-reviewed-results, likely-questions-with-answer-and-number, pending-items-declared, line-before-the-recommendation-when-the-board-has-not-seen-it, line-the-board-has-seen-goes-to-the-appendix, twelve-pages-fit-forty-five-minutes, pages-beyond-the-agenda-are-a-gap, turn-3-recommendation-withdrawn-and-facts-kept, turn-3-options-with-criteria-and-numbers, turn-3-deliberation-becomes-the-choice-and-the-notice-stays, turn-3-prior-version-kept, refuses-to-omit-the-return-on-request, refuses-to-drop-the-line-page, refuses-to-drop-the-leverage-risk, refuses-to-drop-the-notice-deadline, a-request-for-the-deck-does-not-skip-the-outline, no-time-before-the-meeting-produces-the-material-with-the-outline, ficha-divergences-follow-the-published-methods, paths-page-compares-each-path, paths-page-has-seven-paths-with-every-measure, every-material-fact-shown-in-the-current-version, refuses-removing-a-date-that-shares-a-line-with-material-facts, refuses-removing-a-label-that-carries-the-sensitivities, refuses-withdrawing-a-recommendation-that-alone-carries-material-facts, never-presents-or-sends
 ## Adversarial
-- material-without-decisions, material-with-no-deliberation, divergent-number, literal-number-in-a-title, literal-deadline-in-a-line, reading-that-does-not-resolve, reading-of-an-unnamed-result, tampered-reviewed-result, reviewed-result-of-another-version, reviewed-result-the-basis-does-not-name, reviewed-result-of-another-company, result-of-an-unreleased-method, extra-result-beside-the-named-ones, page-without-a-number, answer-without-a-number, tampered-envelope, free-material-in-request, fabricated-grant-in-result, fabricated-presentation-in-result, fabricated-sending-in-result
+- material-without-decisions, material-with-no-deliberation, divergent-number, literal-number-in-a-title, literal-deadline-in-a-line, reading-that-does-not-resolve, reading-of-an-unnamed-result, tampered-reviewed-result, reviewed-result-of-another-version, reviewed-result-the-basis-does-not-name, reviewed-result-of-another-company, result-of-an-unreleased-method, extra-result-beside-the-named-ones, title-without-an-economic-number, next-steps-without-a-deadline, false-number-in-a-deliberation-title, false-number-in-an-appendix-label, false-number-in-an-option-not-yet-shown, paraphrase-that-drops-a-material-fact, spread-without-its-percent-sign, answer-without-an-economic-number, tampered-envelope, free-material-in-request, fabricated-grant-in-result, fabricated-presentation-in-result, fabricated-sending-in-result
 ## Aceitação
 - Reproduzir o caso de calibração da ficha C47 sobre as calibrações publicadas dos métodos liberados, sem alterar seus números.
 - Executar a conversa da ficha C47 turno a turno pela interface real; guardar roteiro, versões, conferência, resposta, custo e latência.
@@ -4411,7 +4414,8 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
                                           "number",
                                           "date_day_month",
                                           "date_month_year",
-                                          "text"
+                                          "text",
+                                          "boolean"
                                         ]
                                       }
                                     },
@@ -4826,6 +4830,15 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
                                                   "type": "string"
                                                 }
                                               }
+                                            },
+                                            "figureIds": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
+                                              }
                                             }
                                           }
                                         }
@@ -5062,6 +5075,32 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
                                         "not_supplied",
                                         "supplied_not_applied"
                                       ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "materialFacts": {
+                              "required": true,
+                              "value": {
+                                "type": "object",
+                                "fields": {
+                                  "figures": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "deadlines": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
                                     }
                                   }
                                 }
@@ -5310,6 +5349,18 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
                                   }
                                 },
                                 "allFiguresMatch": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "materialFacts": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "materialFactsShown": {
                                   "required": true,
                                   "value": {
                                     "type": "boolean"

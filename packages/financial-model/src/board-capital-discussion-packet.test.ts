@@ -37,7 +37,7 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
   it("turn 3: withdraws the recommendation, keeps the facts and the notice, and keeps the first version", () => {
     const p = prepareBoardCapitalDiscussionPacket(boardPacketInput(3));
     expect(p.readings!.omissions).toEqual([{id: "linha-sem-recomendacao", outcome: "applied", reason: "Retirei a recomendação; a página mostra as opções com os critérios e os números, e os fatos materiais continuam.",
-      keptFigureIds: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow"]}]);
+      keptFigureIds: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"]}]);
     expect(p.result.discussion!.versions.map((v) => v.version)).toEqual([1, 2]);
     expect(p.readings!.material!.priorVersionFingerprint).toBe(p.result.discussion!.versions[0]!.fingerprint);
     expect(current(p).deliberations[0]!.text).toBe("decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out");
