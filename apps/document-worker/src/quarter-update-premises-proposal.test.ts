@@ -367,6 +367,14 @@ describe("quarter update premises proposed from a turn", () => {
     const two = completeQuarterUpdateFacts({extraction: {...base, causes: [...base.causes, {...expense, lineLabel: ebitda}, {...expense, lineLabel: cash}]}, priors: priors(), ids, currency: "BRL"});
     expect(two.status === "complete" ? two.facts.bridges.flatMap((b) => b.causes).filter((x) => x.value.label === "Despesa").length : two).toBe(2);
   });
+  it("a line told twice with internal spaces and another value is asked, in both orders (independent review, round 24)", () => {
+    const base = auroraExtraction(aurora(W, C)), cash = base.lines.find((l) => l.label === base.cashLineLabel.value)!;
+    const spaced = {...cash, label: cash.label.replace(/ /g, "  "), actual: String(Number(cash.actual) + 1), source: "gerencial"};
+    for (const lines of [[...base.lines, spaced], [spaced, ...base.lines.filter((l) => l !== cash), cash]]) {
+      const c = completeQuarterUpdateFacts({extraction: {...base, lines}, priors: priors(), ids, currency: "BRL"});
+      expect(c.status === "missing" && c.missing.some((m) => /^lines\.\d+\.label$/.test(m)), JSON.stringify(c.status === "missing" ? c.missing : c.status)).toBe(true);
+    }
+  });
   it("proposes nothing and names the missing prior result before any extraction", async () => {
     const run = async (loaded: unknown, intent = "answers_pending") => {
       const events: string[] = []; let extracted = false;

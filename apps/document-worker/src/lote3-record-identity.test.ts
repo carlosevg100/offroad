@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {documentKey, withRecordIdentity} from "./lote2-premises";
+import {documentKey, labelKey, normalizedName, repeatedLabels, sameLabel, stableKey, statedLabel, withRecordIdentity} from "./lote2-premises";
 
 type Reading = {label: string; amount: string; origin: "document" | "informed"; source: string; anchor: string | null};
 const run = (readings: Reading[], sourceIdentifies: boolean) => {
@@ -57,5 +57,23 @@ describe("document tuples are compared by their exact stated strings (independen
     expect(documentKey("conjunto", [" borderô 101", "linha 3 "])).toBe(documentKey("conjunto", ["borderô 101", "linha 3"]));
     // Serialized as an array: the parts never run into each other.
     expect(documentKey("conjunto", ["a b", "c"])).not.toBe(documentKey("conjunto", ["a", "b c"]));
+  });
+});
+
+describe("one label equivalence for every comparison, reconciliation and reference (independent review, round 24)", () => {
+  const equal = [["Caixa em 30/set", "Caixa  em  30/set"], ["Caixa em 30/set", "Caixa\tem 30/set"], ["Caixa em 30/set", "Caixa\u00a0em 30/set"],
+    ["Caixa em 30/set", " CAIXA EM 30/SET "], ["Ação Ltda", "acao ltda"]] as const;
+  const different = [["Caixa em 30/set", "Caixa em 30-set"], ["Lote 001", "Lote 1"], ["Rede A.", "Rede A"]] as const;
+  it.each(equal)("%j and %j are one label everywhere", (a, b) => {
+    expect([labelKey(a) === labelKey(b), statedLabel(a) === statedLabel(b), sameLabel(a, b), normalizedName(a) === normalizedName(b), stableKey(a) === stableKey(b)])
+      .toEqual([true, true, true, true, true]);
+    expect(repeatedLabels([a, b])).toEqual([2]);
+    const r = withRecordIdentity({rows: [{label: a, value: "1", origin: "document", source: "x"}, {label: b, value: "1", origin: "document", source: "y"}]}, {keyed: ["rows"], countable: []}, []);
+    expect((r.e.rows as unknown[]).length).toBe(1);
+  });
+  it.each(different)("%j and %j are two labels everywhere", (a, b) => {
+    expect([labelKey(a) === labelKey(b), statedLabel(a) === statedLabel(b), sameLabel(a, b), normalizedName(a) === normalizedName(b), stableKey(a) === stableKey(b)])
+      .toEqual([false, false, false, false, false]);
+    expect(repeatedLabels([a, b])).toEqual([]);
   });
 });

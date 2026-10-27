@@ -56,7 +56,14 @@ export function itemKeys(labels: readonly string[], max = 30): string[] {
   });
 }
 /** The normalized identity of a name: case, accents, punctuation and spacing folded, nothing truncated. */
-export const normalizedName = (name: string) => foldCue(name).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+/** The one label equivalence of the lote 3 bridges (round 24): case and accents folded (NFKD, combining marks
+ * removed, lower case; a no-break space becomes a space), internal whitespace collapsed (spaces, tabs) and the ends
+ * trimmed; nothing else (punctuation and digits stay as stated). Every place that compares, reconciles, detects
+ * repeats or resolves a reference by label goes through it: statedLabel, sameLabel, repeatedLabels, the line, cause,
+ * facility, stream, dependent, option, scenario and version lookups and the debtor names. */
+export const labelKey = (label: string) => foldCue(label).replace(/\s+/gu, " ").trim();
+/** A debtor's or a group's name, by the one label equivalence. */
+export const normalizedName = (name: string) => labelKey(name);
 /** A key for a document tuple (source, anchor, role): the sha256 of the exact stated strings, only outer whitespace
  * trimmed, serialized as a JSON array; the readable prefix is cosmetic only (round 22). */
 export function documentKey(prefix: string, parts: readonly (string | null)[]): string {
@@ -74,7 +81,7 @@ export function stableKey(name: string, max = 40): string {
   return `${prefix}-${hash}`;
 }
 /** Matches a label the extraction repeats to the item it names, ignoring case and accents. */
-export const sameLabel = (a: string, b: string) => foldCue(a).replace(/\s+/g, " ").trim() === foldCue(b).replace(/\s+/g, " ").trim();
+export const sameLabel = (a: string, b: string) => labelKey(a) === labelKey(b);
 
 type UnboundHypothesis = Omit<ProposedHypothesis, "dimensions"> & {dimensions: Omit<ProposedHypothesis["dimensions"], "entityId" | "definitionVersionId"> & {entityId: null; definitionVersionId: null}};
 export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: string; housePremiseKeys: string[]} | {status: "missing"; missing: string[]};
@@ -101,7 +108,7 @@ export type Lote2Completion<F> = {status: "complete"; facts: F; situationId: str
  *   two records, one per line; readings within one role reconcile as above (round 20). The role is the resolved
  *   identity of the referenced record (the line as the method resolves the label), never the raw label: "EBITDA" and
  *   "ebitda" are one line (round 23). */
-export const statedLabel = (label: string) => foldCue(label.trim());
+export const statedLabel = (label: string) => labelKey(label);
 const textKey = /(?:label|Label|Labels|Id|Ids|TaxId|source|origin|owner|definition|scenario|question|approval|releaseEvent|encumbranceHolder|sublimitGroup|recomputedBy|quantities|kind|metric|status|unit|scale|mode|role|classification|nature|basis|driver|drivers|contract|encumbrance|registration|creditTier|anchorProgram|recourse|rateBasis|collateral|registrationRule|minCreditTier|evidenceStatus|ruler|evidence|cause|purpose)$/;
 function canonical(value: unknown, key: string): unknown {
   if (typeof value === "string") return textKey.test(key) ? statedLabel(value) : canonicalDecimal(value);
