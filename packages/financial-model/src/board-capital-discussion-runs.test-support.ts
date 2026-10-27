@@ -198,7 +198,7 @@ function goldCases(): Case[] {
       kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
-      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com capex e início de operação adiados: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
+      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com capex e início de operação adiados e horizonte da análise estendido na mesma medida: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
       "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
@@ -488,6 +488,12 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
     }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    // Review r20: an exact definition compares the case's whole input object; a discount rate changed with the economy,
+    // or alone (positive NPV at 15%, negative at 30%), is never presented as a smaller economy.
+    ...([["smaller-economy-with-a-30-percent-discount-rate", true], ["base-operations-at-a-30-percent-discount-rate-called-smaller-economy", false]] as const).map(([name, withEconomy]) => [name, () => {
+      const packet = auroraInvestmentPacket({economyCaseDiscountRate: {rate: "0.3", withEconomy}}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
+    }, "board_capital_template_condition_failed:topic.project_sensitivities"] as [string, () => unknown, string]),
     // Review r11: each cause by the driver that defines it, scenario against base, over the scope the sentence states.
     ["later-receivables-claimed-on-longer-inventory", () => {
       const packet = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;

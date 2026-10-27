@@ -67,6 +67,30 @@ export function boardObjectTerm(vocabulary: keyof typeof boardVocabularies, text
   const hits = Object.keys(boardVocabularies[vocabulary]).filter((term) => [term, ...boardVocabularyLabels[vocabulary][term] ?? []].some((x) => boardNormalizeLabel(x) === want));
   return hits.length === 1 ? hits[0]! : null;
 }
+/** What an exact-definition check ignores in an input object, and nothing else: link ids (decision, slot, actor and
+ * observation ids, the scenario dimension, record ids inside field paths) and source anchors (keys ending in anchor,
+ * and the origin tag of a value). */
+export const boardInputIgnored = ["decisionId", "slotKey", "actorId", "observationId", "dimensions.scenario", "referenceDimensions.scenario", "ids de registro no caminho do campo", "*Anchor", "origin"] as const;
+export const boardIgnoredInputKey = (key: string) => /anchor$/i.test(key) || key === "origin";
+export type BoardCanonicalInput = Record<string, unknown> & {value?: unknown; dimensions?: Record<string, unknown>};
+/** An input object (adopted contributions) in canonical form: keyed by field path without record ids, ignored keys out,
+ * values as their raw value, keys sorted. */
+export function boardCanonicalInputs(raw: unknown): Map<string, BoardCanonicalInput> | null {
+  if (!Array.isArray(raw)) return null;
+  const sorted = (v: unknown): unknown => Array.isArray(v) ? v.map(sorted) : v !== null && typeof v === "object"
+    ? Object.fromEntries(Object.entries(v as Record<string, unknown>).filter(([k]) => !boardIgnoredInputKey(k)).sort(([x], [y]) => x.localeCompare(y)).map(([k, x]) => [k, sorted(x)])) : v;
+  const out = new Map<string, BoardCanonicalInput>();
+  for (const e of raw) {
+    if (e === null || typeof e !== "object" || typeof (e as {fieldPath?: unknown}).fieldPath !== "string") return null;
+    const {fieldPath, decisionId: _d, slotKey: _s, actorId: _a, observationId: _o, value, dimensions, referenceDimensions, ...rest} = e as Record<string, unknown>;
+    const key = (fieldPath as string).split(".").filter((x) => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(x)).slice(1).join(".");
+    const dims = (d: unknown) => {if (d === null || typeof d !== "object") return d; const {scenario: _x, ...r} = d as Record<string, unknown>; return r;};
+    if (out.has(key)) return null;
+    out.set(key, sorted({...rest, value: (value as {value?: unknown} | undefined)?.value ?? value, valueType: (value as {type?: unknown} | undefined)?.type ?? null,
+      dimensions: dims(dimensions), referenceDimensions: dims(referenceDimensions)}) as BoardCanonicalInput);
+  }
+  return out;
+}
 /** Who may be named as the author of an informed fact. */
 export const boardInformedAuthors = ["chair", "cfo", "ceo"] as const;
 export const boardTextUses = ["delib.title", "delib.subject", "delib.recommendation", "delib.action", "page.title", "page.line", "page.recommendation", "page.option",
@@ -126,7 +150,7 @@ type BoardConditionBody =
   | {atMost: readonly [string, string]; count: number}
   /** Two definitions (objects of the source, flattened, source anchors ignored) differ exactly in the named fields: each
    * changes somewhere and nothing else changes. */
-  | {changedOnly: readonly [readonly [string, ...string[]], readonly [string, ...string[]]]; fields: readonly string[]}
+  | {changedOnly: readonly [string, string, string]; fields: readonly string[]; horizon?: "extended"}
   /** A projection scenario changes exactly the named drivers against the scenario it derives from (its overrides, its
    * volume rule and its input-cost shock are its whole definition). */
   | {scenarioDefines: readonly [string, string]; drivers: readonly string[]}
@@ -189,14 +213,14 @@ const policyUndefined = claim("a política adotada não registra definição de 
  * disbursement and first operation strictly later than the reference); EBITDA does not count. The library checks that
  * every text naming a scenario carries its definition. */
 export const boardScenarioDefinitions = [
-  {scenario: "economia menor", method: "analyze-investment-project", phrase: /economia menor/i, drivers: "custo operacional evitado, custo variável e custo fixo do projeto (annualAvoidedOperatingCost, annualVariableOperatingCost, annualFixedOperatingCost), o custo evitado menor",
+  {scenario: "economia menor", method: "analyze-investment-project", phrase: /economia menor/i, drivers: "só custo operacional evitado, custo variável e custo fixo do projeto (project.annualAvoidedOperatingCost, project.annualVariableOperatingCost, project.annualFixedOperatingCost), o custo evitado menor; todo o resto do objeto de entrada do caso (projeto, partida, rampa, companhia, avaliação: taxa de desconto, perspectiva, data-base, convenções, precisão) igual ao da referência",
     reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
-  {scenario: "capex e depreciação maiores", method: "analyze-investment-project", phrase: /capex e depreciação maiores/i, drivers: "capex de expansão e depreciação do projeto (growthCapexPaid, annualDepreciation), maiores ou iguais em todo período e maiores em algum",
+  {scenario: "capex e depreciação maiores", method: "analyze-investment-project", phrase: /capex e depreciação maiores/i, drivers: "só capex de expansão e depreciação do projeto (project.growthCapexPaid, project.annualDepreciation), maiores ou iguais em todo período e maiores em algum; todo o resto do objeto de entrada do caso (projeto, partida, rampa, companhia, avaliação: taxa de desconto, perspectiva, data-base, convenções, precisão) igual ao da referência",
     reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
-  {scenario: "partida mais lenta", method: "analyze-investment-project", phrase: /partida mais lenta/i, drivers: "mês de início da operação e o que ele determina: meses e fração do ano em operação e fração de carga (operationStartMonth, activeMonths, activeYearFraction, loadYearFraction, loadEquivalentYearFraction), o início posterior",
+  {scenario: "partida mais lenta", method: "analyze-investment-project", phrase: /partida mais lenta/i, drivers: "só o mês de início da operação (project.ramp.operationStartMonth), posterior; meses e frações em operação decorrem dele; todo o resto do objeto de entrada do caso (projeto, partida, rampa, companhia, avaliação: taxa de desconto, perspectiva, data-base, convenções, precisão) igual ao da referência",
     reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
-  {scenario: "capex e início de operação adiados", method: "analyze-investment-project", phrase: /início de operação adiados/i,
-    drivers: "capex de expansão, fração do ano em operação, EBITDA incremental e estoque de partida do caso, cada um começando estritamente depois; depreciação e manutenção do caso começam no mesmo período da base, por isso a frase não diz projeto adiado",
+  {scenario: "capex e início de operação adiados", method: "analyze-investment-project", phrase: /início de operação adiados e horizonte da análise estendido/i,
+    drivers: "só o cronograma de capex de expansão, os multiplicadores do capital de partida e o mês de início da operação (project.growthCapexPaid, project.startup.retainedCapitalMultipliers, project.ramp.operationStartMonth), cada um começando estritamente depois, e o horizonte estendido, descrito na frase: todo o resto do objeto de entrada igual ao da base, com os períodos novos acrescentados ao fim",
     reference: "o caso de papel base", vigency: "todo o horizonte do caso"},
   {scenario: "projeto adiado", method: "evaluate-financing-paths", phrase: /adiamento\s+\{projeto\}/i,
     drivers: "todos os componentes registrados da variante (capex de expansão, EBITDA, depreciação, manutenção e capital de giro de partida), cada um começando estritamente depois",
@@ -215,18 +239,20 @@ export const boardScenariosNotNamed = [
 ] as const;
 const scenario = (name: (typeof boardScenarioDefinitions)[number]["scenario"], ...conditions: BoardCondition[]) => claim(`cenário: ${name}`, ...conditions);
 const caseRows = (caseId: string, field: string): BoardSeries => ({list: [IP, `cases[id=${caseId}].result.project.rows`], key: "periodId", field});
-const caseInputs = (caseId: string) => [IP, `cases[id=${caseId}].result.project.operands`, `cases[id=${caseId}].result.startupCapital.operands`, `cases[id=${caseId}].result.ramp`] as const;
 const inherited = (v: string, caseId: string): BoardCondition => ({bind: v, to: at(IP, `cases[id=${caseId}].result.inheritedScenario`)});
 const vsRef = (caseId: string, v: string, field: string, op: "gt" | "lt" | "eq"): BoardCondition => ({dominates: [caseRows(caseId, field), caseRows(`$${v}`, field)], op});
-const exactly = (caseId: string, v: string, fields: string[]): BoardCondition => ({changedOnly: [caseInputs(caseId), caseInputs(`$${v}`)], fields});
+// The case's whole input object: its adopted contributions, compared field by field with the reference case's.
+const exactly = (caseId: string, v: string, fields: string[], horizon?: "extended"): BoardCondition =>
+  ({changedOnly: [IP, `cases[id=${caseId}].result.contributions`, `cases[id=${v.startsWith("$") ? v : `$${v}`}].result.contributions`], fields, ...horizon ? {horizon} : {}});
 const smallerEconomy = scenario("economia menor", inherited("refe", "economy-4"),
-  exactly("economy-4", "refe", ["annualAvoidedOperatingCost", "annualVariableOperatingCost", "annualFixedOperatingCost"]), vsRef("economy-4", "refe", "operands.annualAvoidedOperatingCost", "lt"));
-const largerCapex = scenario("capex e depreciação maiores", inherited("refc", "capex-120"), exactly("capex-120", "refc", ["growthCapexPaid", "annualDepreciation"]),
+  exactly("economy-4", "refe", ["project.annualAvoidedOperatingCost", "project.annualVariableOperatingCost", "project.annualFixedOperatingCost"]), vsRef("economy-4", "refe", "operands.annualAvoidedOperatingCost", "lt"));
+const largerCapex = scenario("capex e depreciação maiores", inherited("refc", "capex-120"), exactly("capex-120", "refc", ["project.growthCapexPaid", "project.annualDepreciation"]),
   vsRef("capex-120", "refc", "operands.growthCapexPaid", "gt"), vsRef("capex-120", "refc", "operands.annualDepreciation", "gt"));
-const slowerStart = scenario("partida mais lenta", inherited("refs", "slower-start"), exactly("slower-start", "refs", ["operationStartMonth", "activeMonths", "activeYearFraction", "loadYearFraction", "loadEquivalentYearFraction"]),
+const slowerStart = scenario("partida mais lenta", inherited("refs", "slower-start"), exactly("slower-start", "refs", ["project.ramp.operationStartMonth"]),
   cmp(at(IP, "cases[id=slower-start].result.ramp[0].operands.operationStartMonth"), "gt", at(IP, "cases[id=$refs].result.ramp[0].operands.operationStartMonth")));
 const caseStart = (field: string) => ({startsLater: [caseRows("defer-12", field), caseRows("$refd", field)]} as BoardCondition);
-const deferral = scenario("capex e início de operação adiados", {bind: "refd", to: at(IP, "cases[role=base].id")}, caseStart("operands.growthCapexPaid"),
+const deferral = scenario("capex e início de operação adiados", {bind: "refd", to: at(IP, "cases[role=base].id")},
+  exactly("defer-12", "$refd", ["project.growthCapexPaid", "project.startup.retainedCapitalMultipliers", "project.ramp.operationStartMonth"], "extended"), caseStart("operands.growthCapexPaid"),
   caseStart("operands.activeYearFraction"), caseStart("incrementalEbitda"), caseStart("operands.closingIncrementalWorkingCapital.inventory"));
 /** A plan path's project variant against the variant of the path that keeps the debt and goes on with the line. */
 const planVariant = (path: string, kind: "project" | "none"): BoardCondition[] => [{bind: "pv", to: at(FP, `result.evaluation.paths[id=${path}].projectVariantId`)},
@@ -367,12 +393,12 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: com economia menor, {vpl_economia}; com capex e depreciação maiores, {vpl_capex}; com partida mais lenta, {vpl_partida}.",
     {vpl_economia: metric("money", "economy-4", "netPresentValue", "value"), vpl_capex: metric("money", "capex-120", "netPresentValue", "value"), vpl_partida: metric("money", "slower-start", "netPresentValue", "value")},
     {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart]}),
-  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; com capex e início de operação adiados, o VPL fica em {vpl} e o retorno em {retorno}.",
+  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; com capex e início de operação adiados e horizonte da análise estendido na mesma medida, o VPL fica em {vpl} e o retorno em {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")},
     {when: [...claim("o caso com capex e início de operação adiados tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
   "option.go_now": t("page.option", "Seguir agora: VPL de {vpl} e retorno de {retorno}.", {vpl: metric("money", "base", "netPresentValue", "value"), retorno: metric("rate", "base", "annualIrr")}),
   "option.staged": t("page.option", "Seguir em etapas: VPL de {vpl}.", {vpl: metric("money", "staged", "netPresentValue", "value")}),
-  "option.wait_quotes": t("page.option", "Esperar as cotações, com capex e início de operação adiados: VPL de {vpl} e retorno de {retorno}.",
+  "option.wait_quotes": t("page.option", "Esperar as cotações, com capex e início de operação adiados e horizonte da análise estendido na mesma medida: VPL de {vpl} e retorno de {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
   "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
@@ -570,8 +596,8 @@ export function boardTemplateClaims() {
     : "dominates" in c ? `série ${series(c.dominates[0])} ${c.op === "gt" ? "domina por cima" : c.op === "lt" ? "domina por baixo" : "igual a"} ${series(c.dominates[1])}`
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
-    : "changedOnly" in c ? `${c.changedOnly[0][0]} ${c.changedOnly[0].slice(1).join(", ")} difere de ${c.changedOnly[1].slice(1).join(", ")} exatamente em ${c.fields.join(", ")}`
-    : "scenarioDefines" in c ? `o cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva`
+    : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}${c.horizon ? ", com o horizonte estendido (o resto igual, com os períodos novos acrescentados)" : ""}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "scenarioDefines" in c ? `objeto de entrada inteiro do cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva (origem do valor ignorada)`
     : "atKey" in c ? `${series(c.atKey[0])} ${c.op} ${series(c.atKey[1])} em ${describe(c.key)}`
     : "startsLater" in c ? `${series(c.startsLater[0])} começa estritamente depois de ${series(c.startsLater[1])}`
     : "extendsDebt" in c ? `um instrumento aditado substitui ${c.extendsDebt[1]} em ${c.extendsDebt[0]}, com vencimento final posterior e menos principal pago em cada período`
@@ -685,7 +711,7 @@ export function checkBoardTemplateLibrary() {
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [...c.changedOnly[0].slice(1), ...c.changedOnly[1].slice(1)]
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]]
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);

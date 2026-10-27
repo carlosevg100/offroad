@@ -1,4 +1,6 @@
 import Decimal from "decimal.js";
+import {createHash} from "node:crypto";
+import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardConceptAttempts, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
@@ -347,8 +349,13 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const projection = (projectionPacket?.result as {projection?: {projection?: {base?: {periodId: string}[]; scenarios?: {id: string; basedOn: string; overriddenDrivers: string[];
       volumeGrowthRate: unknown; volumeFactor: unknown; inputCostShock: {fromPeriodId: string; rate: string} | null}[]}}; contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined);
     const scenarios = projection?.projection?.projection?.scenarios ?? [], periods = (projection?.projection?.projection?.base ?? []).map((x) => x.periodId);
-    const defined = (id: string) => {const x = scenarios.find((y) => y.id === id); return x ? [...x.overriddenDrivers, ...x.volumeGrowthRate !== null ? ["volume"] : [],
-      ...x.volumeFactor !== null ? ["volume"] : [], ...x.inputCostShock ? ["shock"] : []].sort().join(",") : "missing";};
+    // The scenario's whole input object: every field recorded under it in the projection's contributions (origin tags aside).
+    const recorded = (id: string) => (projection?.contributions ?? []).flatMap((x) => {const m = new RegExp(`\\.scenario\\.${id}\\.(.+)$`).exec(x.fieldPath); return m && !/\.origin$/.test(m[1]!) && m[1] !== "origin" ? [m[1]!] : [];}).sort().join(",");
+    const defined = (id: string) => {const x = scenarios.find((y) => y.id === id); if (!x) return "missing";
+      const fromResult = [...x.overriddenDrivers, ...x.volumeGrowthRate !== null ? ["volume"] : [], ...x.volumeFactor !== null ? ["volume"] : [], ...x.inputCostShock ? ["shock"] : []].sort().join(",");
+      const whole = recorded(id);
+      return fromResult === "shock" && whole === "shock.fromPeriodEnd,shock.passThroughLagMonths,shock.rate" ? "shock"
+        : fromResult === "receivableDays" && whole === "override.receivableDays" ? "receivableDays" : `other:${fromResult}:${whole}`;};
     const year = /\b(20\d\d)\b/.exec(t.split("fica")[0]!.split("EBITDA").at(-1)! + " " + t)?.[1];
     if (/No cenário d[oa] (?:insumo|trigo|açúcar|farinha|embalagem) /.test(t)) {
       const x = scenarios.find((y) => y.id === "informado-trigo-4m"), shown = /EBITDA de (20\d\d)/.exec(t)?.[1];
@@ -365,20 +372,43 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     }
     // Project sensitivities: the inputs of each case against its reference differ exactly in the named operands.
     const cases = (investmentPacket as {cases?: {id: string; role: string; result: Record<string, unknown> & {inheritedScenario: string | null}}[]} | undefined)?.cases ?? [];
-    const leaves = (r: Record<string, unknown> | undefined) => {
-      const out = new Map<string, string>();
-      const walk = (v: unknown, p: string) => {if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${p}[${i}]`)); else if (v && typeof v === "object") Object.entries(v).forEach(([k, x]) => {if (!/anchor$/i.test(k)) walk(x, `${p}.${k}`);}); else out.set(p, String(v));};
-      walk((r?.project as {operands?: unknown} | undefined)?.operands, "p"); walk((r?.startupCapital as {operands?: unknown} | undefined)?.operands, "s"); walk(r?.ramp, "r");
+    // The oracle's own reading of a case's whole input object: every adopted contribution, leaf by leaf, without the
+    // link ids and source anchors it lists itself; a field is changed when any of its leaves differs.
+    const ignoredLeaf = /^(?:decisionId|slotKey|actorId|observationId|fieldPath|origin|\w*[Aa]nchor)$/;
+    const inputLeaves = (r: Record<string, unknown> | undefined) => {
+      const out = new Map<string, Map<string, string>>();
+      for (const c of (r?.contributions as {fieldPath: string}[] | undefined) ?? []) {
+        const field = c.fieldPath.replace(/^[^.]+\.[0-9a-f-]{36}\./, ""), leaves = new Map<string, string>();
+        const walk = (v: unknown, p: string) => {if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${p}[${i}]`)); else if (v && typeof v === "object") Object.entries(v).forEach(([k, x]) => {if (!ignoredLeaf.test(k) && !(k === "scenario" && /dimensions$/i.test(p))) walk(x, `${p}.${k}`);}); else leaves.set(p, String(v));};
+        walk(c, "");
+        out.set(field, leaves);
+      }
       return out;
     };
+    const changedFields = (a: ReturnType<typeof inputLeaves>, b: ReturnType<typeof inputLeaves>) => [...new Set([...a.keys(), ...b.keys()])].filter((k) => {
+      const x = a.get(k), y = b.get(k);
+      return !x || !y || [...new Set([...x.keys(), ...y.keys()])].some((l) => x.get(l) !== y.get(l));
+    }).sort().join(",");
     const changed = (id: string) => {
       const c = cases.find((x) => x.id === id), ref = cases.find((x) => x.id === (c?.result.inheritedScenario ?? "base"));
-      const a = leaves(c?.result), b = leaves(ref?.result);
-      return [...new Set([...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).map((k) => k.split(".").at(-1)!.replace(/\[\d+\]$/, "")))].sort().join(",");
+      return changedFields(inputLeaves(c?.result), inputLeaves(ref?.result));
     };
-    if (/economia menor/.test(t) && changed("economy-4") !== "annualAvoidedOperatingCost,annualFixedOperatingCost,annualVariableOperatingCost") bad.push(`scenario_economy:${t.slice(0, 60)}`);
-    if (/capex e depreciação maiores/.test(t) && changed("capex-120") !== "annualDepreciation,growthCapexPaid") bad.push(`scenario_capex:${t.slice(0, 60)}`);
-    if (/partida mais lenta/.test(t) && !/^activeMonths,activeYearFraction,loadEquivalentYearFraction,loadYearFraction,operationStartMonth$/.test(changed("slower-start"))) bad.push(`scenario_start:${t.slice(0, 60)}`);
+    if (/economia menor/.test(t) && changed("economy-4") !== "project.annualAvoidedOperatingCost,project.annualFixedOperatingCost,project.annualVariableOperatingCost") bad.push(`scenario_economy:${t.slice(0, 60)}`);
+    if (/capex e depreciação maiores/.test(t) && changed("capex-120") !== "project.annualDepreciation,project.growthCapexPaid") bad.push(`scenario_capex:${t.slice(0, 60)}`);
+    if (/partida mais lenta/.test(t) && changed("slower-start") !== "project.ramp.operationStartMonth") bad.push(`scenario_start:${t.slice(0, 60)}`);
+    // A deferral named with its extended horizon: outside the three deferred fields, every leaf equal to the base's once
+    // the base's period series are given the new periods (so only appended leaves and the period end may be new).
+    if (/início de operação adiados/i.test(t)) {
+      const a = inputLeaves(cases.find((x) => x.id === "defer-12")?.result), b = inputLeaves(cases.find((x) => x.id === "base")?.result);
+      const deferred = ["project.growthCapexPaid", "project.ramp.operationStartMonth", "project.startup.retainedCapitalMultipliers"];
+      const ok = /horizonte da análise estendido/.test(t) && [...new Set([...a.keys(), ...b.keys()])].every((k) => {
+        if (deferred.includes(k)) return true;
+        const x = a.get(k), y = b.get(k);
+        return !!x && !!y && [...y.keys()].every((l) => l.endsWith(".periodEnd") || x.get(l) === y.get(l))
+          && [...x.keys()].every((l) => y.has(l) || l.endsWith(".periodEnd") || /^\.value\.value\[\d+\]$/.test(l));
+      });
+      if (!ok) bad.push(`scenario_deferral_whole:${t.slice(0, 60)}`);
+    }
     // Deferrals: the first disbursement and the first operation strictly later than the reference's.
     const firstNonZero = (xs: string[] | undefined) => xs ? xs.findIndex((v) => !new D(v).eq(0)) : -1;
     if (/início de operação adiados/i.test(t)) {
@@ -825,6 +855,63 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     total.result.discussion!.versions.at(-1)!.questions.find((x) => x.id === "rede-a")!.answer = answer.replace("aceita R$ 19,8 milhões", "aceita R$ 23,5 milhões");
     expect(oracle(total, [{packet: joint}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("capacity_shared:"))).toBe(true);
   });
+  it("regression r20: a named scenario is its whole input object; a discount rate changed with or without the economy is refused (full path, oracle not vacuous)", () => {
+    const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
+    for (const withEconomy of [true, false]) {
+      const packet = auroraInvestmentPacket({economyCaseDiscountRate: {rate: "0.3", withEconomy}}) as unknown as Record<string, unknown>;
+      const metrics = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics, npv = (id: string) => new Decimal(metrics.find((m) => m.caseId === id)!.netPresentValue);
+      expect(npv("economy-4").lt(0)).toBe(true);
+      // Without the economy change: the same operations are positive at the base's 15% and negative at 30%.
+      if (!withEconomy) expect(npv("base").gt(0)).toBe(true);
+      expect(() => withBoardSource("linha-embalagem", packet, () => full(2, (c) => {
+        c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+      // Not vacuous: the calibration's texts read against this result (same fingerprint) are refused by the oracle.
+      const p = full(2, () => undefined), forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(p, [{packet: forged}, ...auroraBoardSources().filter((x) => x !== original && x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("scenario_economy:"))).toBe(true);
+    }
+  });
+  /** A result changed by hand, sealed again as its method would (regressions only): fingerprint of the parsed payload. */
+  const reseal = <T extends Record<string, unknown>>(methodId: string, packet: T): T => {
+    const schema = boardReleasedSources[methodId as keyof typeof boardReleasedSources].schema as unknown as {parse: (v: unknown) => Record<string, unknown>};
+    const {fingerprint: _f, ...payload} = schema.parse(packet);
+    return {...packet, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+  };
+  it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
+    const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
+    const economy = original.cases.find((x) => x.id === "economy-4")!.result.contributions;
+    // The fields of the case's input schema, as the case records them: every adopted input of the analysis.
+    const fields = economy.map((x) => x.fieldPath.replace(/^[^.]+\.[0-9a-f-]{36}\./, ""));
+    expect(fields.length).toBeGreaterThan(50);
+    expect(fields).toEqual(expect.arrayContaining(["valuation.discountRate", "valuation.perspective", "valuation.baseDate", "valuation.timing", "periodEnds", "company.ebitda"]));
+    const named = ["project.annualAvoidedOperatingCost", "project.annualVariableOperatingCost", "project.annualFixedOperatingCost"];
+    // A different value of the same type: a date one day later, a number plus one, any other text with a suffix.
+    const other = (x: unknown) => {const t = String(x);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return `${t.slice(0, 8)}${t.slice(8) === "01" ? "02" : "01"}`;
+      return /^-?\d+(?:\.\d+)?$/.test(t) ? new Decimal(t).plus(1).toFixed() : `${t}_x`;};
+    const change = (v: {type: string; value: unknown}) => Array.isArray(v.value) ? {...v, value: [other(v.value[0]), ...v.value.slice(1)]} : {...v, value: other(v.value)};
+    let refused = 0;
+    for (const field of fields.filter((f) => !named.includes(f))) {
+      const packet = structuredClone(original);
+      const entry = packet.cases.find((x) => x.id === "economy-4")!.result.contributions.find((x) => x.fieldPath.endsWith(`.${field}`))!;
+      entry.value = change(entry.value);
+      expect(() => withBoardSource("linha-embalagem", reseal("analyze-investment-project", packet as unknown as Record<string, unknown>), () => full(2, () => undefined)), field).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+      refused++;
+    }
+    expect(refused).toBe(fields.length - named.length);
+    // A projection scenario: any other driver recorded under the wheat scenario refuses the sentences that name it.
+    const projection = auroraBoardSources().find((x) => x.methodId === "build-operating-projection")!.packet as {result: {contributions: {fieldPath: string; value: unknown}[]}};
+    const prefix = projection.result.contributions.find((x) => x.fieldPath.includes(".scenario.informado-trigo-4m.shock.rate"))!.fieldPath.replace(/shock\.rate$/, "");
+    for (const extra of ["override.receivableDays", "override.inventoryDays", "override.payableDays", "volumeGrowthRate", "volumeFactor"]) {
+      const packet = structuredClone(projection);
+      packet.result.contributions.push({...structuredClone(packet.result.contributions[0]!), fieldPath: prefix + extra, value: {type: "number", value: "1"}});
+      expect(() => withBoardSource("projecao", reseal("build-operating-projection", packet as unknown as Record<string, unknown>), () => full(2, () => undefined)), extra).toThrow(/board_capital_template_condition_failed:(what_changes\.wheat|a\.wheat)/);
+    }
+    // A plan path: a field the move line does not read refuses the line.
+    const plan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!.packet as {result: {contributions: {fieldPath: string; value: unknown}[]}};
+    const packet = structuredClone(plan), instruments = packet.result.contributions.find((x) => x.fieldPath.endsWith(".path.ccb-tres-anos.instruments"))!;
+    packet.result.contributions.push({...structuredClone(instruments), fieldPath: instruments.fieldPath.replace(/instruments$/, "covenantPackage"), value: {type: "text", value: "novo"}});
+    expect(() => withBoardSource("plano-2027", reseal("evaluate-financing-paths", packet as unknown as Record<string, unknown>), () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:alternatives.moves.short_bank_loan");
+  }, 300000);
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);
     let probe: CaseData | null = null;

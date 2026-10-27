@@ -72,8 +72,10 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
-export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string} = {}) {
-  const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex() : c32PacketInput(), from = id(1001);
+export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
+  economyCaseDiscountRate?: {rate: string; withEconomy: boolean}} = {}) {
+  const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
+    : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy) : c32PacketInput(), from = id(1001);
   // The same analysis registered for another project: only the base case's label changes.
   if (variant.baseLabel) calibration.input.cases[0]!.label = variant.baseLabel;
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
@@ -89,6 +91,24 @@ function c32WithFrontLoadedCapex() {
     i.project.money.growthCapexPaid = c("project.growthCapexPaid", "currency", {type: "list", value: years.map((y) => y === 2026 ? millions("12") : y === 2027 ? millions("5") : "0")});
   });
   f.input.cases[2] = {...f.input.cases[2]!, analysis: capex};
+  return f;
+}
+/** The C32 cases with economy-4 discounted at another rate (regressions only): with the smaller economy, or with the
+ * base's operations unchanged (positive NPV at the base's 15%, negative at 30%). */
+function c32WithEconomyAtRate(rate: string, withEconomy: boolean) {
+  const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
+  // The same arithmetic as the C32 calibration's economy case (precision 60, eight decimals).
+  const P = Decimal.clone({precision: 60}), growth = (y: number) => new P("1.04").pow(Math.max(0, y - 2027)), factor = new P(4).div(6);
+  const series = (years: number[], g: (y: number) => Decimal) => ({type: "list" as const, value: years.map((y) => {const v = g(y); return v.eq(0) ? "0" : new P(v).times(1000000).toDecimalPlaces(8).toFixed();})});
+  const economy = b.overlay(base, "economy-4-rate", (c, i, years) => {
+    if (withEconomy) {
+      i.project.money.annualAvoidedOperatingCost = c("project.annualAvoidedOperatingCost", "currency", series(years, (y) => growth(y).times(30).times(factor)));
+      i.project.money.annualVariableOperatingCost = c("project.annualVariableOperatingCost", "currency", series(years, (y) => growth(y).times("19.5").times(factor)));
+      i.project.money.annualFixedOperatingCost = c("project.annualFixedOperatingCost", "currency", series(years, (y) => growth(y).times("4.5").times(factor)));
+    }
+    (i as unknown as {valuation: Record<string, unknown>}).valuation.discountRate = c("valuation.discountRate", "ratio", {type: "number", value: rate});
+  });
+  f.input.cases[1] = {...f.input.cases[1]!, analysis: economy};
   return f;
 }
 /** The C32 cases with economy-4 built as an overlay of capex only (economy unchanged, capex and depreciation 20% larger). */

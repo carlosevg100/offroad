@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardCanonicalInputs, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -492,6 +492,10 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (!existing.length) throw unverified("existing_debt");
       const mine = list(`path.${path}.instruments`);
       if (!mine.length) return false;
+      // The whole path object: every field the plan records for the path is read here; the label is its name.
+      const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
+      if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return false;
+      if (list(`path.${path}.terms`).length !== 2 || list(`path.${path}.chargeAmounts`).length !== list(`path.${path}.chargeSlots`).length) return false;
       // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit repaid
       // within the horizon or seasonally (short), bank credit with a scheduled amortization after the horizon.
       const kind = (id: string) => {
@@ -516,27 +520,43 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
     if ("changedOnly" in c) {
-      // Each definition flattened (paths with positions, source anchors ignored); the changed leaf names must be the named fields.
-      const flat = (ref: readonly [string, ...string[]]) => {
-        const out = new Map<string, string>();
-        const walk = (v: unknown, path: string) => {
-          if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
-          else if (isRecord(v)) {for (const [k, x] of Object.entries(v)) if (!/anchor$/i.test(k)) walk(x, `${path}.${k}`);}
-          else out.set(path, v === null ? "null" : String(v));
-        };
-        ref.slice(1).forEach((p, i) => walk(read(ref[0], p), `#${i}`));
-        return out;
-      };
-      const a = flat(c.changedOnly[0]), b = flat(c.changedOnly[1]);
-      const changed = new Set([...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).map((k) => k.split(".").at(-1)!.replace(/\[\d+\]$/, "")));
-      return changed.size === c.fields.length && c.fields.every((f) => changed.has(f));
+      // The case's whole input object (every adopted contribution) against its reference's, in canonical form; only source
+      // anchors and link ids are ignored. Every named field must differ; every other field must be equal, or, for a
+      // deferral that extends the horizon, equal to the reference's with the same periods appended.
+      const [method, pathA, pathB] = c.changedOnly;
+      const a = boardCanonicalInputs(read(method, pathA)), b = boardCanonicalInputs(read(method, pathB));
+      if (!a || !b) throw unverified(pathA);
+      const ends = (m: Map<string, BoardCanonicalInput>) => m.get("periodEnds")?.value;
+      const extra = c.horizon === "extended" ? (Array.isArray(ends(a)) && Array.isArray(ends(b)) ? (ends(a) as unknown[]).length - (ends(b) as unknown[]).length : -1) : 0;
+      if (c.horizon === "extended" && extra < 1) return false;
+      for (const key of new Set([...a.keys(), ...b.keys()])) {
+        const x = a.get(key), y = b.get(key);
+        if (c.fields.includes(key)) {if (!x || !y || JSON.stringify(x) === JSON.stringify(y)) return false; continue;}
+        if (!x || !y) return false;
+        if (extra === 0) {if (JSON.stringify(x) !== JSON.stringify(y)) return false; continue;}
+        // Horizon extended: the same entry with the period end moved and every list the reference's plus the new periods.
+        const {value: xv, dimensions: xd, ...xr} = x, {value: yv, dimensions: yd, ...yr} = y;
+        const {periodEnd: _x, ...xdr} = (xd ?? {}) as Record<string, unknown>, {periodEnd: _y, ...ydr} = (yd ?? {}) as Record<string, unknown>;
+        if (JSON.stringify(xr) !== JSON.stringify(yr) || JSON.stringify(xdr) !== JSON.stringify(ydr)) return false;
+        // A series by period (one value per period of the reference) gains the new periods; any other list stays equal.
+        const periods = (ends(b) as unknown[]).length;
+        if (Array.isArray(xv) && Array.isArray(yv) && yv.length === periods) {if (xv.length !== yv.length + extra || JSON.stringify(xv.slice(0, yv.length)) !== JSON.stringify(yv)) return false;}
+        else if (JSON.stringify(xv) !== JSON.stringify(yv)) return false;
+      }
+      return true;
     }
     if ("scenarioDefines" in c) {
-      const x = read(c.scenarioDefines[0], `result.projection.projection.scenarios[id=${c.scenarioDefines[1]}]`);
-      if (!isRecord(x)) throw unverified(`scenario_${c.scenarioDefines[1]}`);
-      const defined = new Set([...(Array.isArray(x.overriddenDrivers) ? x.overriddenDrivers.map(String) : []),
-        ...x.volumeGrowthRate !== null && x.volumeGrowthRate !== undefined ? ["volumeGrowthRate"] : [], ...x.volumeFactor !== null && x.volumeFactor !== undefined ? ["volumeFactor"] : [],
-        ...x.inputCostShock !== null && x.inputCostShock !== undefined ? ["inputCostShock"] : []]);
+      // The scenario's whole input object: every contribution recorded under the scenario, provenance tags (origin) aside,
+      // must belong to the named drivers, and every named driver must be there.
+      const packet = sourceOf(c.scenarioDefines[0]).packet as {result?: {contributions?: {fieldPath?: unknown}[]}};
+      const id = c.scenarioDefines[1];
+      const fields = (packet.result?.contributions ?? []).flatMap((e) => {
+        const m = typeof e.fieldPath === "string" ? new RegExp(`\\.scenario\\.${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null;
+        return m && !boardIgnoredInputKey(m[1]!.split(".").at(-1)!) ? [m[1]!] : [];
+      });
+      const driverOf = (f: string) => f.startsWith("shock.") ? "inputCostShock" : f.startsWith("override.") ? f.split(".")[1]! : f;
+      const defined = new Set(fields.map(driverOf));
+      if (c.drivers.includes("inputCostShock") && !["shock.rate", "shock.fromPeriodEnd", "shock.passThroughLagMonths"].every((f) => fields.includes(f))) return false;
       return defined.size === c.drivers.length && c.drivers.every((d) => defined.has(d));
     }
     if ("atKey" in c) {

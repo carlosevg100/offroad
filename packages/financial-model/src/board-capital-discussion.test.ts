@@ -128,7 +128,12 @@ describe("board discussion core", () => {
         const costs = o.avoided ? ["0", "13", "13"] : ["0", "19.5", "19.5"], fixed = o.avoided ? ["0", "3", "3"] : ["0", "4.5", "4.5"];
         const operands = periods.map((periodId, k) => ({annualAvoidedOperatingCost: avoided[k], annualVariableOperatingCost: costs[k], annualFixedOperatingCost: fixed[k],
           growthCapexPaid: capex[k], annualDepreciation: dep[k], activeYearFraction: active[k], loadYearFraction: load[k]}));
-        return {id, role: id === "base" ? "base" : "sensitivity", result: {inheritedScenario: id === "base" ? null : "base",
+        // The case's adopted inputs (its whole input object), with ids that differ per case and are ignored.
+        const contributions = ([["project.annualAvoidedOperatingCost", avoided], ["project.annualVariableOperatingCost", costs], ["project.annualFixedOperatingCost", fixed],
+          ["project.growthCapexPaid", capex], ["project.annualDepreciation", dep], ["project.ramp.operationStartMonth", o.start ?? "2027-05-01"], ["valuation.discountRate", "0.15"]] as const)
+          .map(([f, v], k) => ({decisionId: `${id}-${k}`, slotKey: `${id}-${k}`, fieldPath: `investment.ac400000-0000-4000-9000-000000001004.${f}`, dimensions: {scenario: id, unit: "x"},
+            value: {type: Array.isArray(v) ? "list" : "text", value: v}}));
+        return {id, role: id === "base" ? "base" : "sensitivity", result: {inheritedScenario: id === "base" ? null : "base", contributions,
           project: {operands: {periods: operands}, rows: periods.map((periodId, k) => ({periodId, incrementalEbitda: "1", operands: operands[k]}))},
           startupCapital: {operands: {}}, ramp: [{operands: {operationStartMonth: o.start ?? "2027-05-01"}, activeMonths: o.start ? 2 : 8, activeYearFraction: active[1], loadEquivalentYearFraction: load[1]}]}};
       };

@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T20:09:31.905Z",
-    "finishedAt": "2026-10-27T20:10:53.061Z"
+    "startedAt": "2026-10-27T20:39:47.336Z",
+    "finishedAt": "2026-10-27T20:41:09.347Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -686,6 +686,22 @@
       "passed": true
     },
     {
+      "id": "smaller-economy-with-a-30-percent-discount-rate",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "910d20e47d8992f30c8b1caa79f8b78f21ad197d0dfe20ac32054152730a54cd",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "base-operations-at-a-30-percent-discount-rate-called-smaller-economy",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3ac21d46fbaa74052f4bfb94df11615c3a620fa346d67c59fc39e994ff6355f4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "later-receivables-claimed-on-longer-inventory",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -903,6 +919,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "1b8048eef8c917f9e13b4e7f852f77517faf66f0ad7441709132078837c2b999",
+  "evidenceFingerprint": "c3f4c991c247172539d8041de53a8c2008255e1d3f319de85663641aa50e1902",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
