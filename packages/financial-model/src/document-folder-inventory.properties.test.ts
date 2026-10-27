@@ -356,3 +356,73 @@ describe("property: every quote points to the file and the page or sheet it was 
     expect(inv.findings.find((f) => f.id === "f09-superseded")!.quoted).toMatchObject({fileId: "f10", section: "Notas"});
   });
 });
+
+describe("property: the state of knowledge of every source reaches what depends on it", () => {
+  // Independent dependency evaluator: each effect and the sources it depends on, written here from the method's rules.
+  type State = "known" | "future" | "unread" | "missing_source" | "conflict";
+  const order: State[] = ["known", "future", "unread", "missing_source", "conflict"];
+  const worst = (states: State[]) => states.reduce((a, b) => order.indexOf(b) > order.indexOf(a) ? b : a, "known" as State);
+  const graph: Record<string, string[]> = {notice: ["f23.renewal"], assignment: ["f22.assignment"], policy: ["f24.policy"],
+    "covenant-in-force": ["f19.covenant", "f18.instrument"], "covenant-change": ["f19.covenant", "f18.instrument", "f18.covenant"],
+    "semester-sum": ["f11.ebitda", "f12.ebitda"], "page-complete": ["s01.page"]};
+  const declaredBy: Record<string, string[]> = {"f23.renewal": ["f23"], "f22.assignment": ["f22"], "f24.policy": ["f24"], "f19.covenant": ["f19"], "f18.instrument": ["f18", "f19", "f31"],
+    "f18.covenant": ["f18"], "f11.ebitda": ["f11", "f12"], "f12.ebitda": ["f12"], "s01.page": ["s01", "s04", "f20"]};
+  const unreadPage = (d: DocumentReading, page: number, size: number, from: number) => {d.legibility = {pageCount: size, unreadablePages: [{page, reason: "illegible_scan", expectedContent: "a cláusula", expectedFrom: {page: from, section: null}}], wholeFile: null};};
+  const clone = (d: DocumentReading, id: string): DocumentReading => ({...structuredClone(d), fileId: id, fileName: `${id}.pdf`, sha256: hex(`${id}-dep`)});
+  type Edit = (base: DocumentReading[], two: DocumentReading[]) => void;
+  const injections: Record<string, Partial<Record<State, Edit>>> = {
+    "f23.renewal": {unread: (b) => {const c = file(b, "f23"); c.clauses = c.clauses.filter((x) => x.type !== "auto_renewal"); unreadPage(c, 11, 12, 1);},
+      conflict: (b) => {const c = file(b, "f23"); c.clauses.push({...c.clauses.find((x) => x.type === "auto_renewal")! as Extract<DocumentReading["clauses"][number], {type: "auto_renewal"}>, id: "renovacao-2", at: {page: 12, section: null}, statement: "Renovação automática salvo aviso até 15/out/26.", noticeDeadline: "2026-10-15"});},
+      future: (b) => {file(b, "f23").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f23").instrument = {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-ausente"};}},
+    "f22.assignment": {unread: (b) => {const c = file(b, "f22"); c.clauses = []; unreadPage(c, 9, 12, 1);},
+      conflict: (b) => {const c = file(b, "f22"); c.clauses.push({type: "assignment_prohibition", id: "cessao-2", at: {page: 10, section: null}, statement: "Permite a cessão com aviso prévio.", counterparty: "a rede A", receivablesShare: "0.32"});},
+      future: (b) => {file(b, "f22").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f22").instrument = {ref: "contrato-rede-a-ad", label: "aditivo", amends: "contrato-ausente"};}},
+    "f24.policy": {unread: (b) => {const c = file(b, "f24"); c.clauses = []; unreadPage(c, 3, 5, 1);},
+      conflict: (b) => {file(b, "f24").clauses.push({type: "debt_policy", id: "politica-2", at: {page: 4, section: null}, statement: "Política de dívida líquida / EBITDA de no máximo 3,5x", metric: "net_debt_to_ebitda", maxRatio: "3.5"});},
+      future: (b) => {file(b, "f24").period.start = "2027-01-01";}},
+    "f19.covenant": {unread: (b) => {const c = file(b, "f19"); c.clauses = c.clauses.filter((x) => x.type !== "financial_covenant"); unreadPage(c, 2, 4, 1);},
+      conflict: (b) => {file(b, "f19").clauses.push(covenantClause("4", "covenant-2", 4));},
+      future: (b) => {file(b, "f19").period.start = "2027-01-01";}, missing_source: (b) => {file(b, "f19").instrument = {ref: "deb-ad", label: "aditamento", amends: "deb-ausente"};}},
+    "f18.instrument": {missing_source: (b) => {b.splice(b.indexOf(file(b, "f18")), 1);},
+      conflict: (b) => {const c = clone(file(b, "f18"), "f31"); c.clauses = c.clauses.map((x) => x.type === "financial_covenant" ? covenantClause("4", x.id, 18) : x); b.push(c);},
+      future: (b) => {file(b, "f18").period.start = "2027-01-01";}},
+    "f18.covenant": {unread: (b) => {const c = file(b, "f18"); c.clauses = c.clauses.filter((x) => x.type !== "financial_covenant"); unreadPage(c, 18, 30, 2);},
+      conflict: (b) => {file(b, "f18").clauses.push(covenantClause("4", "covenant-2", 19));}},
+    "f11.ebitda": {unread: (b) => {const c = file(b, "f11"); c.figures = []; c.units = []; c.legibility = {pageCount: null, unreadablePages: [], wholeFile: {reason: "no_extractable_content"}};},
+      conflict: (b) => {file(b, "f11").figures.push({id: "ebitda-2", metric: "ebitda", value: "6800000", scale: "1", at: {page: null, section: "Outra aba"}});},
+      missing_source: (b) => {b.splice(b.indexOf(file(b, "f11")), 1);}},
+    "f12.ebitda": {conflict: (b) => {file(b, "f12").figures.push({id: "ebitda-2", metric: "ebitda", value: "29000", scale: "1000", at: {page: null, section: "Resumo"}});}},
+    "s01.page": {conflict: (_, two) => {const s = clone(two[0]!, "s04"); s.debtTable = {lines: [{id: "x", lineKind: "other", label: "Linha", drawn: "1", limit: null, counted: "1"}], reportedTotal: "1", scale: "1", at: {page: 7, section: null}}; two.push(s);},
+      missing_source: (_, two) => {two.splice(0, 1);}},
+  };
+  const effects: Record<string, (o: DocumentFolderInventory) => boolean> = {
+    notice: (o) => o.followUps.some((f) => f.kind === "notice_deadline" && f.fileId === "f23" && f.date === "2026-10-02"),
+    assignment: (o) => !!o.decisionFindings?.some((d) => d.findingId === "f22-cessao"),
+    policy: (o) => o.findings.some((f) => f.id === "f24-politica" && f.effect === "policy_limit"),
+    "covenant-in-force": (o) => o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")?.clauses.some((c) => c.type === "financial_covenant" && c.fileId === "f19") ?? false,
+    "covenant-change": (o) => !!o.decisionFindings?.some((d) => d.findingId === "f19-amendment" && d.statement.includes("elevou o covenant para 3,0x")),
+    "semester-sum": (o) => o.identityChecks.some((c) => c.id === "f12-months" && c.status === "matches"),
+    "page-complete": (o) => o.rows.find((r) => r.fileId === "f20")?.situation.read === "complete",
+  };
+  const declared = (o: DocumentFolderInventory, files: string[]) => o.findings.some((f) => f.effect === null && (files.includes(f.anchor) || f.sources.some((s) => files.includes(s.fileId)))
+      && (f.knowledge !== "known" || /conflict|unreadable|unread|future|without_original|not_in_force/.test(f.code)))
+    || o.readingConflicts.some((c) => c.fileIds.some((x) => files.includes(x))) || o.identityChecks.some((c) => c.status === "not_run" && files.some((x) => c.fileIds.includes(x) || x === "f11"));
+  const scenario = (source: string | null, state: State | null) => {
+    const base = auroraFolderReadings(), two = auroraTurnTwoReadings();
+    if (source && state) injections[source]![state]!(base, two);
+    const prior = run(base);
+    return run([...base, ...two], {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+  };
+  it("with every source known, every effect is present", () => {
+    const o = scenario(null, null);
+    for (const [field, has] of Object.entries(effects)) expect(has(o), field).toBe(true);
+  });
+  for (const [source, states] of Object.entries(injections)) for (const state of Object.keys(states) as State[]) it(`${source} ${state}`, () => {
+    const o = scenario(source, state);
+    for (const [field, has] of Object.entries(effects)) {
+      const derived = worst(graph[field]!.map((x) => x === source ? state : "known"));
+      expect(has(o), `${field} with ${source} ${state}`).toBe(derived === "known");
+      if (derived !== "known") expect(declared(o, declaredBy[source]!), `${field}: ${source} ${state} declared`).toBe(true);
+    }
+  });
+});

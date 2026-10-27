@@ -209,6 +209,21 @@ function goldCases(): Case[] {
       {future: [{fileId: "f19", from: "2027-01-01"}], covenantFrom: "f18", policy: "Política de no máximo 2,5x, mais restritiva que o covenant vigente de 2,75x."},
       (p) => ({future: inv(p).effectiveTexts[0]!.future, covenantFrom: inv(p).effectiveTexts[0]!.clauses.find((c) => c.type === "financial_covenant")!.fileId,
         policy: inv(p).findings.find((f) => f.id === "f24-politica")!.statement})),
+    // Review r5 cases: the state of knowledge of a source reaches everything that depends on it.
+    observe("unread-substitutive-clause-keeps-no-limit-in-force", folderPacketInput({files: readings((r) => {const c = file(r, "f19"); c.clauses = c.clauses.filter((x) => x.type !== "financial_covenant");
+      c.legibility = {pageCount: 4, unreadablePages: [{page: 2, reason: "illegible_scan", expectedContent: "a cláusula de covenant substitutiva", expectedFrom: {page: 1, section: null}}], wholeFile: null};})}),
+      {covenantInForce: false, unread: [{type: "financial_covenant", fileIds: ["f19"]}], policy: "Política de no máximo 2,5x, e o covenant vigente não pôde ser lido integralmente."},
+      (p) => ({covenantInForce: inv(p).effectiveTexts[0]!.clauses.some((c) => c.type === "financial_covenant"), unread: inv(p).effectiveTexts[0]!.unread,
+        policy: inv(p).findings.find((f) => f.id === "f24-politica")!.statement})),
+    observe("page-copies-differing-in-the-debt-table-leave-the-page-unread", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...auroraTurnTwoReadings()[0]!, fileId: "s04", sha256: createHash("sha256").update("s04").digest("hex"),
+      debtTable: {lines: [{id: "x", lineKind: "other" as const, label: "Linha", drawn: "150", limit: null, counted: "150"}], reportedTotal: "150", scale: "1", at: {page: 7, section: null}}}]}}),
+      {ccb: "partial", conflict: [[7, ["s01", "s04"]]]}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read, conflict: inv(p).readingConflicts.map((c) => [c.page, c.fileIds])})),
+    observe("amendment-without-a-read-original-has-no-deadline", folderPacketInput({files: readings((r) => {file(r, "f23").instrument = {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-ausente"};})}),
+      {deadlines: [], finding: "amendment_without_original"}, (p) => ({deadlines: inv(p).followUps.filter((f) => f.kind === "notice_deadline"), finding: inv(p).findings.find((f) => f.anchor === "f23")!.code})),
+    observe("future-board-minutes-have-no-effect", folderPacketInput({files: readings((r) => {file(r, "f24").period = {label: "jan/2027", start: "2027-01-01", end: "2027-01-31"};})}),
+      {policy: false, future: true}, (p) => ({policy: inv(p).findings.some((f) => f.id === "f24-politica"), future: inv(p).findings.some((f) => f.id === "f24-future" && f.knowledge === "future")})),
+    observe("concurrent-values-of-one-metric-are-a-conflict", folderPacketInput({turnTwo: true, files: readings((r) => {file(r, "f11").figures.push({id: "ebitda-2", metric: "ebitda", value: "6800000", scale: "1", at: {page: null, section: "Outra aba"}});})}),
+      {check: "not_run", conflict: true}, (p) => ({check: inv(p).identityChecks.find((c) => c.id === "f12-months")!.status, conflict: inv(p).findings.some((f) => f.code === "figure_conflict" && f.anchor === "f11")})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];

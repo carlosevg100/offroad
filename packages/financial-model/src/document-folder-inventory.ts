@@ -211,12 +211,14 @@ const rowSchema = z.strictObject({fileId: key, fileName: z.string().min(1).max(2
   validated: z.literal(false)});
 const findingCodes = ["duplicate", "draft_superseded", "version_superseded", "position_superseded", "versions_side_by_side", "versions_unresolved", "series_gap", "mixed_units",
   "stale_forecast", "total_includes_unused_limit", "total_not_recomposed", "amended_original", "amendment_in_force", "amendment_superseded", "amendment_not_in_force",
-  "amendment_conflict", "amendment_future", "amendment_without_original", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
+  "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
   "clause_not_in_force", "reading_conflict", "substitute_conflict", "page_unreadable",
   "file_unreadable", "clause", "observation", "subsidiary_in_consolidated", "appraisal_without_registry", "figure_basis_differs"] as const;
 const findingSchema = z.strictObject({id: z.string().min(1).max(80), code: z.enum(findingCodes),
   anchor: key, sources: z.array(source).min(1).max(20), statement: text, topic: z.enum(topics).nullable(), effect: z.enum(effects).nullable(),
   decisionStatement: text.nullable(),
+  /** The state of knowledge the finding stands on; an effect requires "known". */
+  knowledge: z.enum(["known", "future", "unread", "missing_source", "conflict"]),
   /** What the document itself says, quoted with its own source; never the method's voice. */
   quoted: quote.nullable(),
   /** For an amendment: each clause it sets, with the clause it replaces and the new one, both quoted by anchor. */
@@ -234,6 +236,8 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
   effectiveTexts: z.array(z.strictObject({instrumentRef: key, fileIds: z.array(key).min(2),
     clauses: z.array(z.strictObject({type: z.string().min(1).max(90), fileId: key, clauseId: key})).max(100),
     conflicts: z.array(z.strictObject({type: z.string().min(1).max(90), fileIds: z.array(key).min(1)})).max(20),
+    /** Clauses an amendment may change on a page not read: no text in force is stated for them. */
+    unread: z.array(z.strictObject({type: z.string().min(1).max(90), fileIds: z.array(key).min(1)})).max(20),
     /** Signed or registered amendments effective after the reading date: preserved as future text, never current. */
     future: z.array(z.strictObject({fileId: key, from: date})).max(20)})).max(50),
   findings: z.array(findingSchema).max(500),
@@ -259,7 +263,8 @@ export const documentFolderInventoryOutputSchema = z.strictObject({
   update: z.strictObject({priorFingerprint: hash, rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(),
     findingsResolved: z.array(z.string()), findingsAdded: z.array(z.string()), gapsResolved: z.array(z.string()), questionsAnswered: z.array(z.string())}).nullable(),
 }).refine((o) => o.counts.files === o.rows.length, "Every file is a row").refine((o) => new Set(o.rows.map((r) => r.fileId)).size === o.rows.length, "Duplicate row")
-  .refine((o) => new Set(o.findings.map((f) => f.id)).size === o.findings.length, "Duplicate finding id");
+  .refine((o) => new Set(o.findings.map((f) => f.id)).size === o.findings.length, "Duplicate finding id")
+  .refine((o) => o.findings.every((f) => f.effect === null || f.knowledge === "known"), "Only known findings have effect");
 export type DocumentFolderInventory = z.infer<typeof documentFolderInventoryOutputSchema>;
 
 export const documentFolderInventoryInputSchema = z.strictObject({
@@ -324,6 +329,10 @@ const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const byKey = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 
 type Finding = z.infer<typeof findingSchema>;
+/** Knowledge of a derived value, worst of its inputs, in this fixed order from best to worst. Only "known" has effect. */
+export const knowledgeStates = ["known", "future", "unread", "missing_source", "conflict"] as const;
+export type Knowledge = (typeof knowledgeStates)[number];
+export const worstKnowledge = (...states: Knowledge[]): Knowledge => states.reduce<Knowledge>((a, b) => knowledgeStates.indexOf(b) > knowledgeStates.indexOf(a) ? b : a, "known");
 type Row = z.infer<typeof rowSchema>;
 type Quote = z.infer<typeof quote>;
 type Held = {c: Clause; fileId: string} | {conflict: string[]};
@@ -343,8 +352,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const byId = new Map(input.files.map((f) => [f.fileId, f]));
   const order = new Map(input.files.map((f, n) => [f.fileId, n]));
   const findings: Finding[] = [];
-  const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes">>) =>
-    findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, ...f, status: "open", resolvedBy: []});
+  const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge">>) =>
+    findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "known", ...f, status: "open", resolvedBy: []});
   const src = (fileId: string, a: {page: number | null; section: string | null} | null = null) => ({fileId, page: a?.page ?? null, section: a?.section ?? null});
   const cite = (fileId: string, a: {page: number | null; section: string | null}, words: string): Quote => ({...src(fileId, a), text: words});
 
@@ -389,7 +398,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   }
   for (const [k, list] of [...offered].sort(([a], [b]) => byKey(a, b))) {
     const [targetId, pageText] = k.split("|") as [string, string], page = Number(pageText);
-    const onPage = (s: DocumentReading) => JSON.stringify(canonical([...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null}))));
+    // Copies of a page are compared on every typed reading anchored there: clauses, figures, observations and the debt table.
+    const onPage = (s: DocumentReading) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
+      debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
     if (new Set(list.map(onPage)).size > 1) {
       const fileIds = list.map((s) => s.fileId).sort(byKey);
       readingConflicts.push({sha256: null, page, fileIds});
@@ -407,7 +418,16 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const superseded = new Map<string, {fileId: string; reason: "audited_over_draft" | "higher_assurance" | "later_version" | "later_position"}>();
   const sideBySide = new Map<string, string[]>();
   const families: DocumentFolderInventory["families"] = [];
-  const figure = (f: DocumentReading, metric: string) => f.figures.find((x) => x.metric === metric) ?? null;
+  /** One value per metric and document: concurrent values that differ are a conflict, never the first of the list. */
+  const figureList = (f: DocumentReading, metric: string) => f.figures.filter((x) => x.metric === metric);
+  const figureState = (f: DocumentReading, metric: string): Knowledge => {
+    const list = figureList(f, metric);
+    return !list.length ? "missing_source" : list.every((x) => inReais(x.value, x.scale).eq(inReais(list[0]!.value, list[0]!.scale))) ? "known" : "conflict";
+  };
+  const figure = (f: DocumentReading, metric: string) => figureState(f, metric) === "known" ? figureList(f, metric)[0]! : null;
+  for (const f of live) for (const metric of [...new Set(f.figures.map((x) => x.metric))].sort(byKey)) if (figureState(f, metric) === "conflict")
+    add({id: `${f.fileId}-figure-conflict-${metric.replace(/_/g, "-")}`, code: "figure_conflict", anchor: f.fileId, sources: figureList(f, metric).map((x) => src(f.fileId, x.at)), knowledge: "conflict",
+      statement: `O documento traz valores diferentes para a mesma medida; nenhum foi usado até a leitura ser conferida.`});
   const bucket = <T>(items: T[], k: (x: T) => string | null) => {const m = new Map<string, T[]>(); for (const x of items) {const g = k(x); if (g !== null) m.set(g, [...m.get(g) ?? [], x]);} return m;};
   const ids = (list: DocumentReading[]) => list.map((m) => m.fileId).sort(byKey);
   const facts = (f: DocumentReading, date: string | null): VersionFacts => ({status: f.version.status, ordinal: f.version.ordinal, date});
@@ -487,7 +507,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
   const effectiveTexts: DocumentFolderInventory["effectiveTexts"] = [];
   const deadlines = new Map<string, {c: Clause; fileId: string}>();
   const currentCovenants: string[] = [];
-  let covenantUndefined = false;
+  let covenantUndefined = false, covenantUnread = false;
   /** Clauses not in force, by file and clause id: the file that replaced it, "conflict", "unsigned", "future". */
   const notInForce = new Map<string, string>();
   const instruments = live.filter((f) => f.instrument !== null);
@@ -611,14 +631,28 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         statement: `Aditamento com vigência a partir de ${longDate(a.period.start!)}, depois da data desta leitura: texto futuro, ainda não vigente.`});
     }
     const chain = amendments.filter((x) => binds(x.version.status) && !future(x));
-    const inForce = new Map<string, {f: DocumentReading; h: Held}>(), currentConflicts: {type: string; fileIds: string[]}[] = [];
+    const inForce = new Map<string, {f: DocumentReading; h: Held}>(), currentConflicts: {type: string; fileIds: string[]}[] = [], unreadKeys: {type: string; fileIds: string[]}[] = [];
+    const unreadIn = (f: DocumentReading) => stillUnreadable(f).length > 0 || f.legibility.wholeFile !== null;
+    /** Amendments with a page not read that are not shown to come before the text in force: any of them may change it. */
+    const mayChange = (holder: DocumentReading) => chain.filter((x) => x !== holder && unreadIn(x)
+      && (holder === original || resolveFamily([holder, x], chainCriteria, (f) => f.period.start).winner !== holder));
+    const markUnread = (key: string, holder: {f: DocumentReading; h: Held}) => {
+      const by = mayChange(holder.f);
+      if (!by.length) return false;
+      inForce.delete(key); notInForce.set(held(holder.h), "unread");
+      unreadKeys.push({type: key, fileIds: ids(by)});
+      if (typeOf(key) === "financial_covenant") covenantUnread = true;
+      add({id: `${ids(by)[0]}-unread-${key.replace(/[_:]/g, "-")}`, code: "clause_unread", anchor: ids(by)[0]!, sources: [...by.map((x) => src(x.fileId)), src(holder.f.fileId, holder.h.c.at)], knowledge: "unread",
+        statement: `Há aditamento com página não lida que pode alterar a cláusula de ${clauseLabel[typeOf(key)]}; nenhum texto vigente é afirmado para ela até a leitura.`});
+      return true;
+    };
     const changes: {f: DocumentReading; key: string; h: Held; current: boolean; prior: Held | null; defined: boolean; holder: DocumentReading | null}[] = [];
     const keys = [...new Set([original, ...chain].flatMap((f) => [...entriesOf(f).keys()]))].sort(byKey);
     for (const key of keys) {
       const type = typeOf(key), base = entriesOf(original).get(key);
       const setters = chain.filter((f) => entriesOf(f).has(key));
       if (!setters.length) {
-        if (base && "one" in base) inForce.set(key, {f: original, h: base.one});
+        if (base && "one" in base) {const h = {f: original, h: base.one}; inForce.set(key, h); markUnread(key, h);}
         else if (base) currentConflicts.push({type: key, fileIds: [original.fileId]});
         continue;
       }
@@ -627,7 +661,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       const es = contenders.map((f) => entriesOf(f).get(key)!);
       const holder = es.every((e) => "one" in e) && es.every((e) => equivalent((e as {one: Held}).one.c, (es[0] as {one: Held}).one.c))
         ? [...contenders].sort((a, b) => byKey(a.fileId, b.fileId))[0]! : null;
-      if (holder) inForce.set(key, {f: holder, h: (entriesOf(holder).get(key) as {one: Held}).one});
+      let unreadHolder = false;
+      if (holder) {const h = {f: holder, h: (entriesOf(holder).get(key) as {one: Held}).one}; inForce.set(key, h); unreadHolder = markUnread(key, h);}
       else {
         const fileIds = ids(contenders);
         currentConflicts.push({type: key, fileIds});
@@ -655,7 +690,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       }
       for (const f of setters) {
         const e = entriesOf(f).get(key)!;
-        if ("one" in e) changes.push({f, key, h: e.one, current: f === holder, prior: f === holder ? prior : null, defined: f === holder ? defined : false, holder});
+        if ("one" in e) changes.push({f, key, h: e.one, current: f === holder && !unreadHolder, prior: f === holder ? prior : null, defined: f === holder && !unreadHolder ? defined : false, holder: unreadHolder ? null : holder});
       }
     }
     for (const [key, v] of inForce) if (typeOf(key) === "financial_covenant" && v.h.c.type === "financial_covenant") currentCovenants.push(v.h.c.maxRatio);
@@ -663,7 +698,7 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
     const fileIds = [original.fileId, ...ids(chain)];
     effectiveTexts.push({instrumentRef: ref, fileIds: fileIds.length > 1 ? fileIds : [original.fileId, ...ids(upcoming)],
       clauses: [...inForce].map(([k, v]) => ({type: k, fileId: v.f.fileId, clauseId: v.h.c.id})).sort((a, b) => byKey(a.type, b.type)),
-      conflicts: currentConflicts, future: ids(upcoming).map((id) => ({fileId: id, from: byId.get(id)!.period.start!}))});
+      conflicts: currentConflicts, unread: unreadKeys, future: ids(upcoming).map((id) => ({fileId: id, from: byId.get(id)!.period.start!}))});
     if (!chain.length) continue;
     families.push({id: `instrument:${ref}`, basis: "instrument", resolution: "effective_text", prevails: fileIds, superseded: [], sideBySide: [], highlighted: false});
     const touched = [...new Set(changes.map((x) => x.key))].filter((k) => typeOf(k) === "financial_covenant" || typeOf(k) === "negative_pledge");
@@ -676,7 +711,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       const own = changes.filter((x) => x.f === a);
       if (!own.length) continue;
       const current = own.filter((x) => x.current), past = own.filter((x) => !x.current);
-      const fate = (x: (typeof own)[number]) => x.holder ? `substituído pelo texto vigente do aditamento de ${periodText(x.holder)}` : "sem texto vigente por conflito com outro aditamento";
+      const fate = (x: (typeof own)[number]) => x.holder ? `substituído pelo texto vigente do aditamento de ${periodText(x.holder)}`
+        : unreadKeys.some((u) => u.type === x.key) ? "sem texto vigente afirmado porque há aditamento com página não lida" : "sem texto vigente por conflito com outro aditamento";
       const phrases = [...current.map((x) => describeChange(x.h.c, x.prior?.c ?? null, x.defined)), ...past.map((x) => `${describePast(x.h.c)}, ${fate(x)}`)];
       // A binding change has effect only when its predecessor is documented: both clauses quoted by anchor, or a full reading without it.
       const binding = current.filter((x) => (x.h.c.type === "financial_covenant" || x.h.c.type === "negative_pledge") && x.defined);
@@ -691,12 +727,14 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         decisionStatement: binding.length ? `${header} ${priorText}; o aditamento ${lower(sentence(binding.map((x) => describeChange(x.h.c, x.prior?.c ?? null, x.defined))))}. ${chain.length > 1 ? "Os textos precisam ser lidos juntos." : "As duas precisam ser lidas juntas."}` : null});
     }
   }
-  // Instruments with no original of their own in the folder: their clauses are read as they stand.
-  for (const a of instruments.filter((f) => f.instrument!.amends !== null && binds(f.version.status) && !instruments.some((o) => o.instrument!.ref === f.instrument!.amends && o.instrument!.amends === null))) {
-    // An amendment whose original is in the vault is read with it there; one whose original is nowhere is a gap.
-    if (input.vault.some((v) => v.instrumentRef === a.instrument!.amends)) continue;
-    add({id: `${a.fileId}-no-original`, code: "amendment_without_original", anchor: a.fileId, sources: [src(a.fileId)],
-      statement: "Aditamento sem o instrumento original na pasta ou no sistema; o texto vigente não pode ser montado sem ele."});
+  // An amendment whose original is not read here (absent, only in the vault, or suspended) has no text in force:
+  // its clauses create no finding and no deadline until the original is read.
+  for (const a of instruments.filter((f) => f.instrument!.amends !== null && !instruments.some((o) => o.instrument!.ref === f.instrument!.amends && o.instrument!.amends === null))) {
+    for (const h of clausesOf(a)) notInForce.set(held(h), "missing_source");
+    const inVault = input.vault.some((v) => v.instrumentRef === a.instrument!.amends);
+    add({id: `${a.fileId}-no-original`, code: "amendment_without_original", anchor: a.fileId, sources: [src(a.fileId)], knowledge: "missing_source",
+      statement: inVault ? "O original deste aditamento está no sistema, mas não foi lido nesta pasta; o texto vigente não é montado sem ele."
+        : "Aditamento sem o instrumento original lido na pasta ou no sistema; o texto vigente não pode ser montado sem ele."});
   }
 
   const prevailing = (f: DocumentReading) => !superseded.has(f.fileId);
@@ -790,7 +828,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       add({id: `${f.fileId}-clause-conflict-${k.replace(/[_:]/g, "-")}`, code: "clause_conflict", anchor: f.fileId, sources: list.map((h) => src(h.from, h.c.at)),
         statement: `O documento traz ${list.length} cláusulas de ${clauseLabel[typeOf(k)]} com textos diferentes e nada que as separe; nenhuma foi tomada como vigente.`});
     }
-    const docBinds = binds(f.version.status);
+    const docBinds = binds(f.version.status), docFuture = f.period.start !== null && f.period.start > input.asOf;
+    if (f.instrument === null && docBinds && docFuture && own.length) add({id: `${f.fileId}-future`, code: "clause_future", anchor: f.fileId, sources: own.map(({c, from}) => src(from, c.at)), knowledge: "future",
+      statement: `Documento com data de ${longDate(f.period.start!)}, depois da data desta leitura: suas cláusulas ficam como texto futuro, sem efeito atual.`});
     if (f.instrument === null && !docBinds && own.length) add({id: `${f.fileId}-not-in-force`, code: "clause_not_in_force", anchor: f.fileId, sources: own.map(({c, from}) => src(from, c.at)),
       statement: "Documento sem assinatura nem registro: suas cláusulas ficam como histórico e não criam obrigação nem prazo."});
     for (const {c, from} of own) {
@@ -802,12 +842,12 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
         continue;
       }
       if (c.type === "financial_covenant" || c.type === "negative_pledge") continue;
-      if (state && state !== "unsigned" && state !== "conflict" && state !== "future") {
+      if (state && byId.has(state)) {
         add({id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}-superseded`, code: "clause_superseded", anchor: f.fileId, sources: [src(from, c.at), src(state)],
           statement: `Cláusula substituída pelo aditamento de ${periodText(byId.get(state)!)}; fica como histórico.`, quoted: cite(from, c.at, c.statement)});
         continue;
       }
-      if (state || !docBinds) continue;
+      if (state || !docBinds || docFuture) continue;
       const base = {id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}`, code: "clause" as const, anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement)};
       if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction",
         decisionStatement: `Os recebíveis ${of(policy[f.kind].noun)} não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão${c.receivablesShare ? `; a contraparte responde por ${percent(c.receivablesShare)} da carteira` : ""}. Isso reduz a carteira disponível para qualquer financiamento com cessão.`});
@@ -816,9 +856,9 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       else if (c.type === "debt_policy") {
         const lowest = [...currentCovenants].sort((a, b) => new Exact(a).cmp(b))[0];
         const tighter = lowest !== undefined && new Exact(c.maxRatio).lt(lowest);
-        const against = lowest === undefined ? (covenantUndefined ? ", e o covenant vigente não está definido." : ".") : tighter ? `, mais restritiva que o covenant vigente de ${times(lowest)}.` : `, igual ou acima do covenant vigente de ${times(lowest)}.`;
+        const against = covenantUnread || (covenantUndefined && lowest === undefined) ? (covenantUnread ? ", e o covenant vigente não pôde ser lido integralmente." : ", e o covenant vigente não está definido.") : lowest === undefined ? "." : tighter ? `, mais restritiva que o covenant vigente de ${times(lowest)}.` : `, igual ou acima do covenant vigente de ${times(lowest)}.`;
         add({...base, statement: `Política de no máximo ${times(c.maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit",
-          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(policy[f.kind].noun)} de ${periodText(f)} fixa dívida líquida de no máximo ${times(c.maxRatio)} o EBITDA${lowest === undefined ? against : tighter ? `, abaixo do covenant vigente de ${times(lowest)}. Entre os limites lidos, é o mais restritivo.` : `, não abaixo do covenant vigente de ${times(lowest)}.`}`});
+          decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(policy[f.kind].noun)} de ${periodText(f)} fixa dívida líquida de no máximo ${times(c.maxRatio)} o EBITDA${lowest === undefined || covenantUnread ? against : tighter ? `, abaixo do covenant vigente de ${times(lowest)}. Entre os limites lidos, é o mais restritivo.` : `, não abaixo do covenant vigente de ${times(lowest)}.`}`});
       } else add({...base, statement: from === f.fileId ? "Cláusula lida no documento." : `Cláusula lida na cópia legível da página ${c.at.page}.`});
     }
   }
@@ -903,7 +943,8 @@ export function organizeDocumentFolder(raw: DocumentFolderInventoryInput): Docum
       findings.push({...p, status: "resolved", resolvedBy: [...new Set([...p.resolvedBy, ...by])]});
     }
   }
-  for (const r of rows) r.findingIds = findings.filter((x) => x.anchor === r.fileId).map((x) => x.id);
+  // Ordered by id, so a finding resolved in a later turn keeps the row's bytes.
+  for (const r of rows) r.findingIds = findings.filter((x) => x.anchor === r.fileId).map((x) => x.id).sort(byKey);
 
   // Decisions in course: which findings move them, in order of effect; ties by the content's own ids, never by arrival.
   const decisions = input.mode === "organize_for_debt" ? [{id: "discussao-divida", label: "Discussão da dívida", kind: "debt_discussion" as const}, ...input.decisions] : input.decisions;
