@@ -79,6 +79,13 @@ describe("received proposal packet", {timeout: 180_000}, () => {
     const i = f.seal(); i.basket = {...i.basket, occupied: {...i.basket.occupied, decisionId: null, missingReason: "Ausente"}};
     expect(() => calculateAdoptedReceivedProposal(i)).toThrow("received_proposal_tax_rate_out_of_domain");
   });
+  it("reads the lender's frequency and first date from its effective dates only", () => {
+    const k = auroraReceivedProposal(); k.variants = [];
+    k.proposal.covenant = {...k.proposal.covenant!, testDates: ["2027-12-31", "2026-09-30", "2026-08-31", "2026-07-31"]};
+    const q = packet(k);
+    expect([q.result.evaluation!.proposal.firstLenderTestDate, q.readings!.covenant.testsPerYear, q.readings!.covenant.lenderDatesBeforeDraw,
+      q.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture")]).toEqual(["2027-12-31", {indenture: 1, lender: 1}, ["2026-07-31", "2026-08-31", "2026-09-30"], false]);
+  });
   it("is partial without a comparable market and deterministic, validated and published", () => {
     const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};
     const q = packet(k);

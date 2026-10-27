@@ -99,6 +99,30 @@ describe("received proposal properties", {timeout: 600_000}, () => {
       expect(r.covenant.required.every(q => q.date >= i.proposal.drawDate || i.covenant.indenture.testDates.includes(q.date))).toBe(true);
     }
   });
+  it("derives every lender field from the effective dates only, whatever the order received (generated, permuted)", () => {
+    for (let k = 0; k < 5; k++) {
+      const i = auroraReceivedProposal(); i.variants = [];
+      i.proposal.drawDate = addDays("2026-08-15", int(0, 300));
+      const pool = [...i.calendar.periodEnds, "2026-07-31", "2026-08-31", "2026-10-31", "2027-02-28", "2027-08-31"];
+      const chosen = pool.filter(() => rand() < 0.5);
+      if (!chosen.length) chosen.push(pool[int(0, pool.length - 1)]!);
+      // Fisher-Yates with the seeded generator: the order received must not matter.
+      for (let a = chosen.length - 1; a > 0; a--) {const b = int(0, a); [chosen[a], chosen[b]] = [chosen[b]!, chosen[a]!];}
+      i.proposal.covenant = {...i.proposal.covenant!, testDates: chosen};
+      const r = evaluateReceivedProposal(i), draw = i.proposal.drawDate, end = i.calendar.periodEnds.at(-1)!;
+      // Oracle, written here: effective = on or after the draw, sorted; before = the rest, sorted.
+      const effective = [...chosen].filter(d => d >= draw).sort(), before = [...chosen].filter(d => d < draw).sort();
+      const perYear = Math.max(0, ...Object.values(effective.reduce<Record<string, number>>((m, d) => ({...m, [d.slice(0, 4)]: (m[d.slice(0, 4)] ?? 0) + 1}), {})));
+      expect(r.proposal.firstLenderTestDate).toBe(effective[0] ?? null);
+      expect(r.covenant.testsPerYear.lender).toBe(perYear);
+      expect(r.covenant.lenderDatesBeforeDraw).toEqual(before);
+      const otherDates = new Set([...i.covenant.indenture.testDates, ...i.covenant.policy!.testDates]);
+      const lenderRequired = effective.filter(d => d <= end && d > i.calendar.openingDate);
+      expect([...new Set(r.covenant.required.map(q => q.date))].filter(d => !otherDates.has(d))).toEqual(lenderRequired.filter(d => !otherDates.has(d)));
+      expect(r.covenant.untestedLimits.includes("proposal")).toBe(!i.covenant.measurements.some(m => effective.includes(m.date)));
+      for (const row of r.covenant.rows) expect(row.limits.find(l => l.limitId === "proposal")!.testedOnDate).toBe(effective.includes(row.date) && !r.covenant.untestedLimits.includes("proposal"));
+    }
+  });
   it("reproduces the review: a lender test dated before the draw creates no breach", () => {
     const i = auroraReceivedProposal(); i.variants = []; i.covenant.policy = null;
     i.proposal.covenant = {...i.proposal.covenant!, testDates: ["2026-09-30", ...i.proposal.covenant!.testDates]};

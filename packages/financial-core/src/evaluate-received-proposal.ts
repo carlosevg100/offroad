@@ -285,13 +285,17 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   const receivedCollateral = collateralView(received.collateralAtDraw);
   const consentFrom = shiftDays(input.readingDate, input.basket.consentLeadDaysMin), consentBy = shiftDays(input.readingDate, input.basket.consentLeadDaysMax);
 
+  // The lender's effective test dates, one list for every field derived from them: from the draw on, sorted, once
+  // each. Dates before the draw are kept apart as contrast and never feed a test, a frequency or a first date.
+  const lenderDates = p.covenant ? [...new Set(p.covenant.testDates.filter(d => d >= p.drawDate))].sort() : [];
+  const lenderDatesBeforeDraw = p.covenant ? [...new Set(p.covenant.testDates.filter(d => d < p.drawDate))].sort() : [];
   // Covenant: each adopted test with and without the proposal, through the published headroom kernel.
   const limits: CovenantLimit[] = [
     {id: "indenture", label: "Escritura vigente", kind: "contractual", status: "in_force", maximumRatio: input.covenant.indenture.maximumRatio,
       source: input.covenant.indenture.source, testDates: [...input.covenant.indenture.testDates]},
     ...(p.covenant ? [{id: "proposal", label: `Proposta ${p.lender}`, kind: "contractual" as const, status: "in_force" as const, maximumRatio: p.covenant.maximumRatio,
       // One temporal rule for the lender: a date before the draw is never one of its tests, anywhere below.
-      source: "Term sheet", testDates: p.covenant.testDates.filter(d => d >= p.drawDate)}] : []),
+      source: "Term sheet", testDates: lenderDates}] : []),
     ...(input.covenant.policy ? [{id: "board-policy", label: "Política do conselho", kind: "board_policy" as const, status: "in_force" as const,
       maximumRatio: input.covenant.policy.maximumRatio, source: input.covenant.policy.source, testDates: [...input.covenant.policy.testDates]}] : []),
   ];
@@ -364,7 +368,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
     allInSpreadDifferenceBps: a.allInSpread === null ? null : out(num(a.allInSpread, true).minus(received.equivalentSpread).mul(10000)),
     collateral: out(num(a.collateral)), consentRequired: num(a.collateral).gt(basketRemaining), monthsToMoney: {min: a.monthsToMoneyMin, max: a.monthsToMoneyMax}}));
 
-  const firstCovenantDate = p.covenant?.testDates[0] ?? null;
+  const firstCovenantDate = lenderDates[0] ?? null;
   return {schemaVersion: "received-proposal.v1" as const, version: receivedProposalVersion, currency: input.currency, readingDate: input.readingDate, needDate: input.needDate,
     proposal: {lender: p.lender, firmness: p.firmness, validUntil: shiftDays(p.termSheetDate, p.validityDays), amount: out(amount), annualSpread: out(spread),
       drawDate: p.drawDate, months: received.months, finalPaymentDate: received.finalPaymentDate, bankSawIndenture: p.bankSawIndenture,
@@ -390,10 +394,10 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       maxCoverageWithoutConsent: usesBasket ? out(basketRemaining.div(amount)) : null,
       consentWindow: {from: consentFrom, by: consentBy, needDate: input.needDate, slackDays: daysBetween(consentBy, input.needDate)}},
     covenant: {rows: covenantRows, worst: headroom?.worst ?? null, required, missingTests, untestedLimits,
-      lenderDatesBeforeDraw: p.covenant ? p.covenant.testDates.filter(d => d < p.drawDate) : [],
+      lenderDatesBeforeDraw,
       // A breach found is a breach; without one, no conclusion while a required test is missing.
       anyBreachWith: headroom?.anyBreach ? true : missingTests.length ? null : false,
-      testsPerYear: {indenture: testsPerYear(input.covenant.indenture.testDates), lender: p.covenant ? testsPerYear(p.covenant.testDates) : 0}},
+      testsPerYear: {indenture: testsPerYear(input.covenant.indenture.testDates), lender: testsPerYear(lenderDates)}},
     price: {market, history: history ? {peer: input.history!.label, peerDate: input.history!.date, observedBps: history.grossBps,
       expectedBps: history.knownAdjustmentsBps, residualBps: history.residualBps, steps: history.steps.map(s => ({id: s.id, family: s.family, bps: s.bps}))} : null},
     variants, alternatives,

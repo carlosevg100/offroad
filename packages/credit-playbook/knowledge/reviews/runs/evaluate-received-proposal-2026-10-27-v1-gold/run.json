@@ -16,9 +16,9 @@
     "exportName": "buildReceivedProposalRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:13:01.518Z",
-    "finishedAt": "2026-10-27T12:15:18.080Z",
-    "commit": "e8bb8ca4b8e3fe5f307ae7d2434b20235e3a48a9"
+    "startedAt": "2026-10-27T12:27:58.977Z",
+    "finishedAt": "2026-10-27T12:30:14.820Z",
+    "commit": "2e374e3ac54abfcdf2c156ac2362d8ebfcf5a326"
   },
   "modelCalls": 0,
   "cases": [
@@ -251,7 +251,15 @@
       "expectation": "{\"anyBreachWith\":false,\"beforeDraw\":[\"2026-09-30\"],\"testedOnDate\":false}",
       "observed": "{\"anyBreachWith\":false,\"beforeDraw\":[\"2026-09-30\"],\"testedOnDate\":false}",
       "inputFingerprint": "511289e10f5fe55494f5ec0ca1b0cf96123b9377f54f137959d00e4a71302093",
-      "outputFingerprint": "d6b69420b8121206d8e5ce90c9c662e9c7225bedcf3fe4a3f0a21330fcda084f",
+      "outputFingerprint": "20915a51b0070174fe8e5501df0c35ecd498545e84b9a624d514bcef8d303279",
+      "passed": true
+    },
+    {
+      "id": "lender-frequency-and-first-date-from-effective-dates",
+      "expectation": "{\"first\":\"2027-12-31\",\"lender\":1,\"fact\":false,\"beforeDraw\":[\"2026-07-31\",\"2026-08-31\",\"2026-09-30\"]}",
+      "observed": "{\"first\":\"2027-12-31\",\"lender\":1,\"fact\":false,\"beforeDraw\":[\"2026-07-31\",\"2026-08-31\",\"2026-09-30\"]}",
+      "inputFingerprint": "501591f3a46569b5b8da1c86e6c5492aef08b61f7afbcfdf5a5e6b746d41ea7f",
+      "outputFingerprint": "e0cdfc47fbe31075044591ea8009ec9f38413cc997493dd9e1d4f82330642715",
       "passed": true
     },
     {
@@ -288,6 +296,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7967d1af04444aea7730e5dacc4b36e2dcdbdb88602fce3deb9269c3bcbc9c77",
-  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1, r2 and r3 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+  "evidenceFingerprint": "bd0eb6360cad77ffca76fcec6d4cca8112aa30903d0d4af3ab63d1d3472fda61",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r4 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

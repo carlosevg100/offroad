@@ -131,6 +131,12 @@ function goldCases(): Case[] {
       k.covenant.measurements = [...k.covenant.measurements, {date: "2026-09-30", scenario: "base", debt: "130", cash: "35", reportedEbitda: "30", definitionAdjustment: "-3"}];})),
       {anyBreachWith: false, beforeDraw: ["2026-09-30"], testedOnDate: false}, (p) => ({anyBreachWith: p.readings!.covenant.anyBreachWith, beforeDraw: p.readings!.covenant.lenderDatesBeforeDraw,
         testedOnDate: p.readings!.covenant.rows.find((x) => x.date === "2026-09-30")!.headroom.find((h) => h.limitId === "proposal")!.testedOnDate})),
+    // Review r4: frequency and first date of the lender from its effective dates, whatever the order received.
+    observe("lender-frequency-and-first-date-from-effective-dates", packetInput(undefined, undefined, variant((k) => {k.variants = [];
+      k.proposal.covenant = {...k.proposal.covenant!, testDates: ["2027-12-31", "2026-09-30", "2026-08-31", "2026-07-31"]};})),
+      {first: "2027-12-31", lender: 1, fact: false, beforeDraw: ["2026-07-31", "2026-08-31", "2026-09-30"]},
+      (p) => ({first: p.result.evaluation!.proposal.firstLenderTestDate, lender: p.readings!.covenant.testsPerYear.lender,
+        fact: p.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture"), beforeDraw: p.readings!.covenant.lenderDatesBeforeDraw})),
     // Review r2: each structure on its own life; past the calendar only with an adopted hypothesis, never past the payoff.
     observe("life-past-the-fiscal-calendar-needs-an-adopted-hypothesis", packetInput(undefined, undefined, variant((k) => {k.tax.taxableAfterCalendar = null;})),
       {status: "partial", received: "life_beyond_fiscal_calendar", net: null, asks: ["life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar"]},
@@ -224,6 +230,6 @@ export function buildReceivedProposalRuns(): Evidence[] {
       harness: {module: "@offroad/financial-model/src/evaluate-received-proposal-runs.test-support.ts", exportName: "buildReceivedProposalRuns"},
       modelCalls: 0 as const, cases, result: cases.every((c) => c.passed) ? "pass" as const : "fail" as const};
     return {...evidence, evidenceFingerprint: deterministicRunEvidenceFingerprint(evidence),
-      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1, r2 and r3 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
+      notes: "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r4 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."};
   });
 }
