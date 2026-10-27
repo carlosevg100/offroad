@@ -73,10 +73,11 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
 export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
-  economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number} = {}) {
+  economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
     : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy)
-    : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears) : c32PacketInput(), from = id(1001);
+    : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears)
+    : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd) : c32PacketInput(), from = id(1001);
   // The same analysis registered for another project: only the base case's label changes.
   if (variant.baseLabel) calibration.input.cases[0]!.label = variant.baseLabel;
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
@@ -107,6 +108,20 @@ function c32WithDeferralHorizon(years: number) {
     if (e.fieldPath.endsWith(".project.startup.retainedCapitalMultipliers")) e.value = {type: "list", value: ys.map((y) => y < 2028 || y === ys.at(-1) ? "0" : "1")};
   }
   f.input.cases[4] = {...f.input.cases[4]!, analysis: deferred};
+  return f;
+}
+/** The C32 cases with defer-12's one added period ending at another date (regressions only; 2037-12-31 is the
+ * calibration): the horizon's end, every input's period end and the valuation time of that period move with it. */
+function c32WithDeferralLastPeriod(end: string) {
+  const f = c32PacketInput(), b = f.basis, deferred = f.input.cases[4]!.analysis as unknown as {endDate: string};
+  const months = (Number(end.slice(0, 4)) - 2036) * 12 + Number(end.slice(5, 7)) - 12;
+  for (const e of b.entries) {
+    if (e.dimensions.scenario !== "defer-12") continue;
+    if (e.dimensions.periodEnd === "2037-12-31") e.dimensions.periodEnd = end;
+    if (e.fieldPath.endsWith(".periodEnds")) e.value = {type: "list", value: [...(e.value.value as string[]).slice(0, -1), end]};
+    if (e.fieldPath.endsWith(".valuation.adoptedTimes")) e.value = {type: "list", value: [...(e.value.value as string[]).slice(0, -1), new Decimal(10).plus(new Decimal(months).div(12)).toFixed()]};
+  }
+  deferred.endDate = end;
   return f;
 }
 /** The C32 cases with economy-4 discounted at another rate (regressions only): with the smaller economy, or with the

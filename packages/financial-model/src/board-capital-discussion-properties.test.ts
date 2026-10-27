@@ -408,14 +408,23 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
           && [...x.keys()].every((l) => y.has(l) || l.endsWith(".periodEnd") || /^\.value\.value\[\d+\]$/.test(l));
       });
       if (!ok) bad.push(`scenario_deferral_whole:${t.slice(0, 60)}`);
-      // "Na mesma medida": the periods added, the capex shift and the first-operation shift, all in periods, are equal.
+      // "Na mesma medida", by dates: the horizon's extension (last period end against the reference's, each equal to the
+      // period end its inputs declare), the capex shift and the first-operation shift, in months, are equal; every period
+      // of the case lasts as long as the reference's.
       if (/na mesma medida/.test(t)) {
-        const value = (m: ReturnType<typeof inputLeaves>, f: string) => [...(m.get(f) ?? new Map()).entries()].filter(([l]) => /^\.value\.value(\[\d+\])?$/.test(l)).map(([, v]) => v);
-        const added = value(a, "periodEnds").length - value(b, "periodEnds").length;
-        const nonZero = (xs: string[]) => xs.findIndex((v) => !new D(v).eq(0)), capexShift = nonZero(value(a, "project.growthCapexPaid")) - nonZero(value(b, "project.growthCapexPaid"));
+        const value = (m: ReturnType<typeof inputLeaves>, f: string) => [...(m.get(f) ?? new Map()).entries()].filter(([l]) => /^\.value\.value(\[\d+\])?$/.test(l)).map(([, v]) => v as string);
+        const declared = (m: ReturnType<typeof inputLeaves>) => new Set([...m.values()].flatMap((x) => [...x.entries()].filter(([l]) => l === ".dimensions.periodEnd").map(([, v]) => v)));
         const month = (x: string | undefined) => x ? Number(x.slice(0, 4)) * 12 + Number(x.slice(5, 7)) : NaN;
-        const startShift = (month(value(a, "project.ramp.operationStartMonth")[0]) - month(value(b, "project.ramp.operationStartMonth")[0])) / 12;
-        if (!(added >= 1 && added === capexShift && added === startShift)) bad.push(`deferral_measure:${t.slice(0, 60)}`);
+        const ca = value(a, "periodEnds"), cb = value(b, "periodEnds");
+        const gaps = (xs: string[]) => xs.slice(1).map((x, k) => month(x) - month(xs[k]));
+        const step = gaps(cb)[0];
+        const extension = month(ca.at(-1)) - month(cb.at(-1));
+        const nonZero = (xs: string[]) => xs.findIndex((v) => !new D(v).eq(0));
+        const capexShift = month(ca[nonZero(value(a, "project.growthCapexPaid"))]) - month(cb[nonZero(value(b, "project.growthCapexPaid"))]);
+        const startShift = month(value(a, "project.ramp.operationStartMonth")[0]) - month(value(b, "project.ramp.operationStartMonth")[0]);
+        const coherent = [...declared(a)].every((x) => x === ca.at(-1)) && [...declared(b)].every((x) => x === cb.at(-1));
+        if (!(coherent && step !== undefined && step > 0 && [...gaps(ca), ...gaps(cb)].every((g) => g === step) && extension > 0 && extension === capexShift && extension === startShift))
+          bad.push(`deferral_measure:${t.slice(0, 60)}`);
       }
     }
     // Deferrals: the first disbursement and the first operation strictly later than the reference's.
@@ -902,6 +911,21 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       // Not vacuous: the calibration's texts read against this result (same fingerprint) are refused by the oracle.
       const forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
       expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("deferral_measure:")), `${years}`).toBe(true);
+    }
+  });
+  it("regression r22: the horizon's extension, the capex shift and the start shift are measured by dates and must be equal (full path, oracle not vacuous)", () => {
+    const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
+    const control = auroraInvestmentPacket({deferralLastPeriodEnd: "2037-12-31"}) as unknown as Record<string, unknown>;
+    const pc = withBoardSource("linha-embalagem", control, () => full(2, () => undefined));
+    expect(pc.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation).toContain("horizonte da análise estendido na mesma medida");
+    expect(oracle(pc, [{packet: control}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    // One added period of 6, 24 and 48 months against a deferral of 12.
+    for (const end of ["2037-06-30", "2038-12-31", "2040-12-31"]) {
+      const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
+      expect(() => withBoardSource("linha-embalagem", packet, () => full(2, boardDeferralReadings(packet))), end).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes");
+      expect(() => withBoardSource("linha-embalagem", packet, () => full(3, boardDeferralReadings(packet))), end).toThrow(/board_capital_template_condition_failed:(topic\.project_wait_quotes|option\.wait_quotes)/);
+      const forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("deferral_measure:")), end).toBe(true);
     }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {

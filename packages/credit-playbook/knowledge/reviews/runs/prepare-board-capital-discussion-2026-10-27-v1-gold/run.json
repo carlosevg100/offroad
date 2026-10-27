@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T20:59:05.503Z",
-    "finishedAt": "2026-10-27T21:00:29.530Z"
+    "startedAt": "2026-10-27T21:14:03.589Z",
+    "finishedAt": "2026-10-27T21:15:29.879Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -486,6 +486,14 @@
       "passed": true
     },
     {
+      "id": "added-period-of-twelve-months-keeps-the-same-measure",
+      "expectation": "{\"sameMeasure\":true}",
+      "observed": "{\"sameMeasure\":true}",
+      "inputFingerprint": "f4bd56ffed3fd19255f8ed6c443f6d03fc9dbabbb7e820a76f8bdd27efcd4243",
+      "outputFingerprint": "52fcc2f22b705ab2cd7c611d2c3e30eda4dea13ccb940d7f8136eb9945f55f5d",
+      "passed": true
+    },
+    {
       "id": "one-year-deferral-with-a-one-year-extension-keeps-the-same-measure",
       "expectation": "{\"sameMeasure\":true}",
       "observed": "{\"sameMeasure\":true}",
@@ -543,6 +551,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "39598075685c85a4c9a7adbb614de3c083fb6f51b6b3fa0904bdb4b8ded88bbb",
+  "evidenceFingerprint": "40e0d4169169453ba01275817aae0080d101a64bcf3829ebea392e30efa3709d",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

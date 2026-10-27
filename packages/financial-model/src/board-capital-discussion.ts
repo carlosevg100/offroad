@@ -529,20 +529,34 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const ends = (m: Map<string, BoardCanonicalInput>) => m.get("periodEnds")?.value;
       const extra = c.horizon === "extended" ? (Array.isArray(ends(a)) && Array.isArray(ends(b)) ? (ends(a) as unknown[]).length - (ends(b) as unknown[]).length : -1) : 0;
       if (c.horizon === "extended" && extra < 1) return false;
-      // "Na mesma medida": the periods added equal the deferral exactly. Each shifted series is the reference's moved later
-      // by exactly the added periods (zeros before); each shifted date moves by exactly that many periods of the reference.
+      // "Na mesma medida", measured by dates: the horizon's extension (last period end of the case against the reference's,
+      // each equal to the period end its inputs declare), the capex shift and the first-operation shift, all in months, are
+      // equal; and every period of the case, the added ones included, lasts as long as the reference's periods.
       if (c.shifted) {
-        const refEnds = (ends(b) as unknown[]).map(String), monthsOf = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7)) - 1;
-        const steps = refEnds.slice(1).map((x, k) => monthsOf(x) - monthsOf(refEnds[k]!));
-        if (!steps.length || steps.some((m) => m !== steps[0])) return false;
+        const monthsOf = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7)) - 1;
+        const isoEnds = (m: Map<string, BoardCanonicalInput>) => {const v = ends(m); return Array.isArray(v) && v.every((x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x)) ? v as string[] : null;};
+        const refEnds = isoEnds(b), caseEnds = isoEnds(a);
+        if (!refEnds || !caseEnds || refEnds.length < 2) return false;
+        // Each declared horizon end (the period end of every input) is the last period end.
+        for (const [m, list] of [[a, caseEnds], [b, refEnds]] as const)
+          for (const entry of m.values()) {const end = (entry.dimensions as {periodEnd?: unknown} | undefined)?.periodEnd; if (end !== undefined && end !== list.at(-1)) return false;}
+        const step = monthsOf(refEnds[1]!) - monthsOf(refEnds[0]!);
+        const intervals = (xs: string[]) => xs.slice(1).map((x, k) => monthsOf(x) - monthsOf(xs[k]!));
+        if (step <= 0 || [...intervals(refEnds), ...intervals(caseEnds)].some((m) => m !== step)) return false;
+        const extension = monthsOf(caseEnds.at(-1)!) - monthsOf(refEnds.at(-1)!);
+        if (extension <= 0) return false;
         for (const f of c.shifted.series) {
           const x = a.get(f)?.value, y = b.get(f)?.value;
-          if (!Array.isArray(x) || !Array.isArray(y) || x.length !== y.length + extra) return false;
-          if (x.slice(0, extra).some((v) => !new Exact(String(v)).eq(0)) || JSON.stringify(x.slice(extra)) !== JSON.stringify(y)) return false;
+          if (!Array.isArray(x) || !Array.isArray(y) || x.length !== caseEnds.length || y.length !== refEnds.length) return false;
+          const first = (xs: unknown[]) => xs.findIndex((v) => !new Exact(String(v)).eq(0));
+          const fx = first(x), fy = first(y);
+          if (fx < 0 || fy < 0 || monthsOf(caseEnds[fx]!) - monthsOf(refEnds[fy]!) !== extension) return false;
+          // The same series moved: equal values from the first disbursement on.
+          if (JSON.stringify(x.slice(fx, fx + y.length - fy)) !== JSON.stringify(y.slice(fy)) || x.slice(fx + y.length - fy).some((v) => !new Exact(String(v)).eq(0))) return false;
         }
         for (const f of c.shifted.dates) {
           const x = a.get(f)?.value, y = b.get(f)?.value;
-          if (typeof x !== "string" || typeof y !== "string" || x.slice(8) !== y.slice(8) || monthsOf(x) - monthsOf(y) !== extra * steps[0]!) return false;
+          if (typeof x !== "string" || typeof y !== "string" || x.slice(8) !== y.slice(8) || monthsOf(x) - monthsOf(y) !== extension) return false;
         }
       }
       for (const key of new Set([...a.keys(), ...b.keys()])) {

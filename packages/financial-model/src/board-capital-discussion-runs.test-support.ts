@@ -291,6 +291,8 @@ function goldCases(): Case[] {
       {title: true, firstPath: true, namesPackaging: false},
       (p) => ({title: pageOf(p, "linha").title.startsWith("A caldeira rende "), firstPath: pageOf(p, "movimentos").lines[0]!.startsWith("Caminho A: sem a caldeira; "),
         namesPackaging: boardShownTexts(p).some((t) => /linha de embalagem/i.test(t))})),
+    observe("added-period-of-twelve-months-keeps-the-same-measure", withBoardSource("linha-embalagem", auroraInvestmentPacket({deferralLastPeriodEnd: "2037-12-31"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {sameMeasure: true}, (p) => ({sameMeasure: (pageOf(p, "linha").recommendation ?? "").includes("horizonte da análise estendido na mesma medida")})),
     // Review r21: the control, a one-year deferral on a horizon one year longer, keeps "na mesma medida".
     observe("one-year-deferral-with-a-one-year-extension-keeps-the-same-measure", withBoardSource("linha-embalagem", auroraInvestmentPacket({deferralHorizonYears: 1}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
       {sameMeasure: true}, (p) => ({sameMeasure: (pageOf(p, "linha").recommendation ?? "").includes("horizonte da análise estendido na mesma medida")})),
@@ -500,6 +502,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     // Review r21: "estendido na mesma medida" only when the periods added equal the deferral exactly.
     ...[2, 3, 5].flatMap((years) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-a-${years}-year-extension-turn-${turn}`, () => {
       const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(turn, boardDeferralReadings(packet)));
+    }, "board_capital_template_condition_failed:topic.project_wait_quotes"] as [string, () => unknown, string])),
+    // Review r22: one added period of 6, 24 or 48 months against a 12-month deferral, measured by dates.
+    ...(["2037-06-30", "2038-12-31", "2040-12-31"] as const).flatMap((end) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-an-added-period-ending-${end}-turn-${turn}`, () => {
+      const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, boardDeferralReadings(packet)));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes"] as [string, () => unknown, string])),
     // Review r20: an exact definition compares the case's whole input object; a discount rate changed with the economy,

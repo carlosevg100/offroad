@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T20:59:05.503Z",
-    "finishedAt": "2026-10-27T21:00:29.531Z"
+    "startedAt": "2026-10-27T21:14:03.589Z",
+    "finishedAt": "2026-10-27T21:15:29.880Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -734,6 +734,54 @@
       "passed": true
     },
     {
+      "id": "one-year-deferral-with-an-added-period-ending-2037-06-30-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "36a6c70ccb62e9a9ee1c70bb79f77d20656ad5a7ee7cff00f93027ae45e39234",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "one-year-deferral-with-an-added-period-ending-2037-06-30-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a6f6cd06142f0d56e58ece884f14c4199f5db779a48688fa0fecbbb425f53674",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "one-year-deferral-with-an-added-period-ending-2038-12-31-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c75bf6cd3de2c1953ba2140795f869f846790c30b365b9e24d88370bb4920c71",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "one-year-deferral-with-an-added-period-ending-2038-12-31-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5fac4336c9626a4e7be4c4e9453eb68c264fd176a9b88823785b50ed872068ed",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "one-year-deferral-with-an-added-period-ending-2040-12-31-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "cf7ec00cd992eeb7fc52b3cfc33e60406fd83ce0159fa96f10f2d646c9450276",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "one-year-deferral-with-an-added-period-ending-2040-12-31-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "389f725a7a7e46604243d08692396eb51bb20b6f59299471c6c9f84d075dfd54",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "smaller-economy-with-a-30-percent-discount-rate",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -967,6 +1015,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "a7451faf45909d3ba8d449546d7b8e33bd81183c313b309a674d6ed6405dab65",
+  "evidenceFingerprint": "4ef59c89ab73afded36cdebaa16466725e7951ff8961cbb43e0983b4c87c1287",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
