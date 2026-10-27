@@ -157,15 +157,21 @@ const sharesOf = (s: readonly {year: number; share: string}[]) => {
   const total = sum(s.map((x) => x.share));
   if (!total.minus(1).abs().lte("0.000000000001") || s.some((x) => new D(x.share).lt(0))) throw new Error("capital_paths_after_horizon_shares_must_sum_to_one");
   if (new Set(s.map((x) => x.year)).size !== s.length || s.some((x, n) => n > 0 && x.year <= s[n - 1]!.year)) throw new Error("capital_paths_after_horizon_years_in_order");
-  // The last year absorbs the representation remainder, so the principal is repaid exactly.
-  return s.map((x, n) => ({year: x.year, share: n === s.length - 1 ? new D(1).minus(sum(s.slice(0, -1).map((y) => y.share))) : new D(x.share)}));
+  if (!s.some((x) => new D(x.share).gt(0))) throw new Error("capital_paths_after_horizon_shares_must_sum_to_one");
+  // The last effective payment (the last positive share) absorbs the representation remainder; a zero share stays zero.
+  const last = s.map((x) => new D(x.share).gt(0)).lastIndexOf(true);
+  return s.map((x, n) => ({year: x.year, share: n === last ? new D(1).minus(sum(s.filter((_, m) => m !== last).map((y) => y.share))) : new D(x.share)}));
 };
 
 /** Money owed after the horizon split by the adopted shares: every year but the last on eight decimals, the
  * last absorbing the remainder, so the principal closes exactly on the final payment. */
 function splitResidual(residual: Decimal, shares: readonly {year: number; share: string}[]) {
-  const s = sharesOf(shares), head = s.slice(0, -1).map((x) => ({year: x.year, amount: new D(eight(residual.times(x.share)))}));
-  return [...head, {year: s.at(-1)!.year, amount: residual.minus(sum(head.map((h) => h.amount)))}];
+  const s = sharesOf(shares), last = s.map((x) => x.share.gt(0)).lastIndexOf(true);
+  // Earlier payments round down on eight decimals, so they never exceed the balance; the last effective payment
+  // takes what remains (never negative) and a zero share pays exactly zero.
+  const amounts = s.map((x, n) => n === last ? null : x.share.eq(0) ? new D(0) : residual.times(x.share).toDecimalPlaces(8, Decimal.ROUND_DOWN));
+  const paid = sum(amounts.filter((a): a is Decimal => a !== null));
+  return s.map((x, n) => ({year: x.year, amount: amounts[n] ?? residual.minus(paid)}));
 }
 const addMonths = (d: string, n: number) => {const x = new Date(`${d}T00:00:00Z`); x.setUTCMonth(x.getUTCMonth() + n); return x.toISOString().slice(0, 10);};
 const monthEnd = (startOfMonth: string) => dayBefore(addMonths(startOfMonth, 1));
@@ -180,6 +186,7 @@ function seasonalSettlement(input: CapitalStructurePathsInput, periods: Period[]
   const draws = i.draws.map((x, k) => ({x: new D(x), k})).filter((d) => d.x.gt(0));
   if (draws.length !== 1) fail("single_draw");
   if (i.principal.some((x) => new D(x).gt(0))) fail("principal_in_horizon");
+  if (!new D(i.openingPrincipal).eq(0)) fail("opening_principal");
   const {x: amount, k} = draws[0]!, drawStart = periods[k]!.startDate;
   const settlement = monthEnd(addMonths(drawStart, i.afterHorizon.settlementMonthsAfterDraw - 1));
   const horizonEnd = input.periodEnds.at(-1)!;
@@ -192,7 +199,7 @@ function seasonalSettlement(input: CapitalStructurePathsInput, periods: Period[]
   if (yearBefore < 0 || !window.length) fail("no_release_in_the_base");
   const released = sum(window.map((n) => input.operating.workingCapitalCashFlow[n]!));
   if (released.lt(amount)) fail("release_below_draw");
-  return {settlementDate: settlement, consumedInDrawPeriod: fmt(consumed), releasedYearBefore: fmt(released)};
+  return {settlementDate: settlement, drawPeriodIndex: k, releaseWindow: window, consumedInDrawPeriod: fmt(consumed), releasedYearBefore: fmt(released)};
 }
 
 function validate(input: CapitalStructurePathsInput): Context {
@@ -477,12 +484,31 @@ function amortizationTest(ctx: Context, e: Evaluated, unit: Instrument, unitShar
   return {years: rows, passes: rows.every((r) => r.covered), firstShortfallYear: rows.find((r) => !r.covered)?.year ?? null};
 }
 
+/** Every residual a path takes out of the long-debt test as seasonal is paid by working capital the base
+ * shows, once: per draw period, the whole residual of its lines is within the seasonal consumption of that
+ * period, and each period's release one year earlier is allocated to one line only (lines in draw order). */
+function seasonalSourcesForPath(ctx: Context, path: Path, seasonal: {instrument: Instrument; residual: Decimal}[]) {
+  const wc = ctx.input.operating.workingCapitalCashFlow.map((x) => new D(x));
+  const releases = wc.map((x) => D.max(x, 0)), byPeriod = new Map<number, Decimal>();
+  const lines = seasonal.map((r) => ({...r, s: seasonalSettlement(ctx.input, ctx.periods, r.instrument)!}))
+    .sort((a, b) => a.s.drawPeriodIndex - b.s.drawPeriodIndex || a.instrument.id.localeCompare(b.instrument.id));
+  for (const l of lines) {
+    const used = (byPeriod.get(l.s.drawPeriodIndex) ?? new D(0)).plus(l.residual);
+    if (used.gt(wc[l.s.drawPeriodIndex]!.neg())) throw new Error(`capital_paths_seasonal_release_unverified:${path.id}:residual_above_seasonal_consumption`);
+    byPeriod.set(l.s.drawPeriodIndex, used);
+    let need = l.residual;
+    for (const n of l.s.releaseWindow) {const take = D.min(need, releases[n]!); releases[n] = releases[n]!.minus(take); need = need.minus(take);}
+    if (need.gt(0)) throw new Error(`capital_paths_seasonal_release_unverified:${path.id}:release_already_used_or_short`);
+  }
+}
+
 function afterHorizon(ctx: Context, e: Evaluated, path: Path) {
   const residuals = e.financing.debt.map((x) => ({instrument: ctx.instruments.get(x.instrumentId)!, residual: new D(x.closingPrincipal)})).filter((x) => x.residual.gt(0));
   const listed = residuals.map((r) => {const a = r.instrument.afterHorizon, settled = seasonalSettlement(ctx.input, ctx.periods, r.instrument);
     return {instrumentId: r.instrument.id, residual: fmt(r.residual), kind: a.kind, settlementDate: settled?.settlementDate ?? null,
       justification: a.kind === "seasonal_release" ? a.justification : a.kind === "not_tested" ? a.reason : null};});
   for (const r of residuals) if (r.instrument.afterHorizon.kind === "none") throw new Error(`capital_paths_residual_without_after_horizon_terms:${path.id}:${r.instrument.id}`);
+  seasonalSourcesForPath(ctx, path, residuals.filter((r) => r.instrument.afterHorizon.kind === "seasonal_release"));
   const scheduled = residuals.filter((r) => r.instrument.afterHorizon.kind === "scheduled");
   const untested = residuals.filter((r) => r.instrument.afterHorizon.kind === "not_tested").map((r) => r.instrument.id);
   if (!scheduled.length) return {residuals: listed, untested, unitInstrumentId: null, tests: [], status: (untested.length ? "not_tested" : "pass") as GateStatus};
@@ -642,8 +668,10 @@ function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | nu
     return {periodEnd: row.period, interestPaid: row.couponPaid, principal: row.scheduledPrincipal, charges: fmt(charges),
       debtService: fmt(new D(row.couponPaid).plus(row.scheduledPrincipal))};
   });
+  // Every dated charge of the instrument enters the solved flows, also one paid after the last amortization.
+  if (!sum(flows.map((f) => f.charges)).eq(sum(i.charges.map((c) => c.amount)))) return {status: "not_applicable" as const, reason: "A dated charge falls outside the priced life"};
   const final = [...flows].reverse().find((f) => new D(f.debtService).gt(0))!;
-  const finalIndex = flows.indexOf(final);
+  const finalIndex = flows.map((f) => new D(f.debtService).gt(0) || new D(f.charges).gt(0)).lastIndexOf(true);
   const categories = new Set(i.charges.map((c) => c.category));
   const cost = solveEquivalentFinancingSpread({baseDate: grid[0]!.startDate, currency: input.currency, moneyUnit: "adopted",
     intervals: grid.slice(0, finalIndex + 1).map((g) => ({id: g.id, startDate: g.startDate, endDate: g.endDate, yearFraction: fmt(g.yearFraction), annualIndex: g.index,

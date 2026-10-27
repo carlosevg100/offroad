@@ -163,5 +163,7 @@ export function prepareCapitalPathsPacket(raw: unknown): CapitalPathsPacket {
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, currency: result.currency,
     result, readings, gaps, status, exclusions: [...capitalPathsPacketExclusions],
     grantsExecution: false as const, grantsPublication: false as const};
-  return capitalPathsPacketOutputSchema.parse({...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")});
+  // The fingerprint is taken on the canonical object, in the key order the published schema gives it.
+  const {fingerprint: _placeholder, ...canonical} = capitalPathsPacketOutputSchema.parse({...payload, fingerprint: "0".repeat(64)});
+  return capitalPathsPacketOutputSchema.parse({...canonical, fingerprint: createHash("sha256").update(JSON.stringify(canonical)).digest("hex")});
 }

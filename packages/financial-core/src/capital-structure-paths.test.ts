@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 // The package entry sets the Decimal context the dated-debt kernel requires.
 import "./index";
@@ -121,5 +122,79 @@ describe("equivalent cost over the life", {timeout: 600_000}, () => {
     }
     expect(new Set(spreads).size).toBe(4);
     expect(Number(spreads[1])).toBeLessThan(Number(spreads[0]));
+  });
+});
+
+const Dx = Decimal.clone({precision: 60});
+/** Shares for `effective` years, each 1/effective truncated to 20 decimals (repeating decimals), the rest as
+ * trailing zero years, in the post-horizon window. */
+function generatedShares(next: () => number) {
+  const effective = 1 + Math.floor(next() * 5), zeros = Math.floor(next() * (6 - effective));
+  const one = new Dx(1).div(effective).toDecimalPlaces(20, Decimal.ROUND_DOWN).toFixed();
+  return [...Array.from({length: effective}, (_, k) => ({year: 2029 + k, share: one})), ...Array.from({length: zeros}, (_, k) => ({year: 2029 + effective + k, share: "0"}))].slice(0, 5);
+}
+/** Independent present value of published flows at the published spread, on the fixture curve. */
+function presentValue(i: CapitalStructurePathsInput, draw: {startDate: string; amount: string}, flows: {periodEnd: string; debtService: string; charges: string}[], spread: string) {
+  const index = (end: string) => {const k = i.periodEnds.indexOf(end); return k >= 0 ? i.index.annualByPeriod[k]! : i.index.afterHorizon.find((x) => x.year === Number(end.slice(0, 4)))!.annualRate;};
+  let factor = new Dx(1), pv = new Dx(draw.amount);
+  for (const f of flows) {
+    factor = factor.times(new Dx(index(f.periodEnd)).plus(1).times(new Dx(spread).plus(1)).pow("0.25"));
+    pv = pv.minus(new Dx(f.debtService).plus(f.charges).div(factor));
+  }
+  return pv;
+}
+describe("invariants of the review, seeded", {timeout: 900_000}, () => {
+  it("closes the principal on the last effective payment, zero shares pay zero, never negative, for generated shares and amounts", () => {
+    const next = seeded(7);
+    for (let n = 0; n < 60; n++) {
+      const amount = n === 0 ? "80" : n === 1 ? "81.23" : (10 + next() * 190).toFixed(2), shares = generatedShares(next);
+      const i = withIssue(amount), d = i.instruments.find((x) => x.id === "debenture-80")!;
+      (d.afterHorizon as {alternatives: {id: string; label: string; shares: {year: number; share: string}[]}[]}).alternatives = [{id: "gerado", label: "Perfil gerado", shares}];
+      const c = capitalPathInstrumentCost(i, "debenture-80", {profileId: "gerado"});
+      expect(c.status).toBe("calculated");
+      if (c.status !== "calculated") continue;
+      const decembers = c.flows.filter((f) => f.periodEnd.endsWith("-12-31") && f.periodEnd > "2028-12-31");
+      expect(c.flows.reduce((t, f) => t.plus(f.principal), new Dx(0)).eq(amount)).toBe(true);
+      expect(c.flows.every((f) => new Dx(f.principal).gte(0))).toBe(true);
+      const lastEffective = Math.max(...shares.filter((s) => s.share !== "0").map((s) => s.year));
+      expect(c.finalPaymentDate).toBe(`${lastEffective}-12-31`);
+      expect(decembers.filter((f) => Number(f.periodEnd.slice(0, 4)) > lastEffective).every((f) => new Dx(f.principal).eq(0))).toBe(true);
+    }
+  });
+  it("solves the spread on exactly the flows it publishes, every dated charge included, also after the last amortization", () => {
+    const next = seeded(11);
+    for (let n = 0; n < 24; n++) {
+      const i = auroraCapitalPaths(), g = i.instruments.find((x) => x.id === "giro-4t26-17")!;
+      const at = n === 0 ? "2028-12-31" : i.periodEnds[1 + Math.floor(next() * 9)]!;
+      g.charges = [...g.charges, {id: "extra", periodEnd: at, category: "recurring_fee", amount: (0.1 + next() * 2).toFixed(4)}];
+      const c = capitalPathInstrumentCost(i, "giro-4t26-17");
+      expect(c.status).toBe("calculated");
+      if (c.status !== "calculated") continue;
+      expect(c.flows.reduce((t, f) => t.plus(f.charges), new Dx(0)).eq(g.charges.reduce((t, x) => t.plus(x.amount), new Dx(0)))).toBe(true);
+      expect(presentValue(i, {startDate: "2026-09-30", amount: "17"}, c.flows, c.equivalentSpread).abs().lt("0.000000001")).toBe(true);
+    }
+    const i = auroraCapitalPaths(), base = capitalPathInstrumentCost(i, "giro-4t26-17");
+    i.instruments.find((x) => x.id === "giro-4t26-17")!.charges.push({id: "tarde", periodEnd: "2028-12-31", category: "recurring_fee", amount: "1"});
+    const late = capitalPathInstrumentCost(i, "giro-4t26-17");
+    expect(base.status === "calculated" && late.status === "calculated" && new Dx(late.equivalentSpread).gt(new Dx(base.equivalentSpread).plus("0.05"))).toBe(true);
+  });
+  it("uses each working-capital release once and covers the whole residual a path takes out as seasonal", () => {
+    const copy = (i: CapitalStructurePathsInput, id: string, amount: string) => {
+      const g = structuredClone(i.instruments.find((x) => x.id === "giro-4t28")!); g.id = id; g.draws = g.draws.map((x) => x === "0" ? x : amount);
+      g.charges = g.charges.map((c) => ({...c, amount: (Number(c.amount) * Number(amount) / 20).toFixed(8)})); i.instruments.push(g);
+      i.paths.find((p) => p.id === "sem-linha-debenture")!.instrumentIds.push(id);
+    };
+    expect(() => run((i) => {copy(i, "giro-4t28-b", "20");})).toThrow("capital_paths_seasonal_release_unverified:sem-linha-debenture:residual_above_seasonal_consumption");
+    expect(() => run((i) => {const g = i.instruments.find((x) => x.id === "giro-4t28")!; g.draws = g.draws.map((x) => x === "0" ? x : "12.5"); copy(i, "giro-4t28-b", "12.5");}))
+      .toThrow("capital_paths_seasonal_release_unverified:sem-linha-debenture:release_already_used_or_short");
+    expect(() => run((i) => {const f = i.instruments.find((x) => x.id === "finame")!; f.principal = f.principal.map(() => "0"); f.draws = f.draws.map((x, k) => k === 9 ? "20" : x);
+      f.afterHorizon = {kind: "seasonal_release", settlementMonthsAfterDraw: 6, justification: "Saldo longo rotulado como sazonal"};})).toThrow("opening_principal");
+    const next = seeded(23);
+    for (let n = 0; n < 6; n++) {
+      const a = (1 + next() * 10).toFixed(2), b = (1 + next() * 10).toFixed(2);
+      const ok = new Dx(a).plus(b).lte("24.375");
+      const attempt = () => run((i) => {i.sensitivities = []; const g = i.instruments.find((x) => x.id === "giro-4t28")!; g.draws = g.draws.map((x) => x === "0" ? x : a); copy(i, "giro-4t28-b", b);});
+      if (ok) expect(attempt).not.toThrow(); else expect(attempt).toThrow("capital_paths_seasonal_release_unverified");
+    }
   });
 });

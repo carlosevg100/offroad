@@ -1,3 +1,5 @@
+import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareCapitalPathsPacket, capitalPathsPacketOutputSchema} from "./capital-structure-paths-packet";
 import {calculateAdoptedCapitalStructurePaths} from "./adopted-capital-structure-paths";
@@ -50,3 +52,30 @@ describe("capital structure paths packet", {timeout: 600_000}, () => {
     expect(capitalPathsPacketExecutorContracts().executor).toEqual({module: "@offroad/financial-model", exportName: "prepareCapitalPathsPacket", version: "2026.10.27-v1"});
   });
 });
+
+/** Seeded generator: the same sequence on every run. */
+function seeded(seed: number) {let x = seed >>> 0; return () => {x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296;};}
+const hashWithout = (o: Record<string, unknown>) => {const {fingerprint: _f, ...rest} = o; return createHash("sha256").update(JSON.stringify(rest)).digest("hex");};
+describe("capital structure paths packet, seeded invariants", {timeout: 900_000}, () => {
+  it("prepares the packet with generated profiles (repeating shares, trailing zeros) and amounts, and every fingerprint is the canonical one", () => {
+    const next = seeded(31);
+    for (const [n, amount] of ["80", "81.23", (10 + next() * 190).toFixed(2), (10 + next() * 190).toFixed(2)].entries()) {
+      const k = auroraCapitalPathsKernel(); k.sensitivities = [];
+      const d = k.instruments.find((x) => x.id === "debenture-80")!;
+      d.draws = d.draws.map((x) => x === "0" ? x : amount);
+      d.charges = [{id: "emissao", periodEnd: "2027-03-31", category: "origination_fee", amount: (Number(amount) * 0.02).toFixed(8)}];
+      const effective = 1 + Math.floor(next() * 4), one = new Decimal(1).div(effective).toDecimalPlaces(20, Decimal.ROUND_DOWN).toFixed();
+      const shares = [...Array.from({length: effective}, (_, y) => ({year: 2029 + y, share: one})), {year: 2029 + effective, share: "0"}];
+      if (n === 0) shares.splice(0, shares.length, ...[2029, 2030, 2031].map((year) => ({year, share: "0.33333333333333333333"})), {year: 2032, share: "0"});
+      (d.afterHorizon as {alternatives: unknown[]}).alternatives = [{id: "gerado", label: "Perfil gerado", shares}];
+      const p = packet(k);
+      const parsed = capitalPathsPacketOutputSchema.parse(JSON.parse(JSON.stringify(p)));
+      expect([hashWithout(p as unknown as Record<string, unknown>), hashWithout(parsed as unknown as Record<string, unknown>)]).toEqual([p.fingerprint, p.fingerprint]);
+      const result = adoptedCapitalPathsOutputSchema.parse(JSON.parse(JSON.stringify(p.result)));
+      expect(hashWithout(result as unknown as Record<string, unknown>)).toBe(p.result.fingerprint);
+      const test = p.result.evaluation!.paths.find((x) => x.id === "sem-linha-debenture")?.amortizationTests.find((t) => t.profileId === "gerado");
+      if (test) expect(test.years.every((y) => Number(y.scheduledAmortization) >= 0)).toBe(true);
+    }
+  });
+});
+

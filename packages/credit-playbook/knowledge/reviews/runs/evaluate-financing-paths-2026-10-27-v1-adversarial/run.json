@@ -16,8 +16,8 @@
     "exportName": "buildCapitalPathsRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:12:46.709Z",
-    "finishedAt": "2026-10-27T12:13:38.173Z"
+    "startedAt": "2026-10-27T12:36:09.864Z",
+    "finishedAt": "2026-10-27T12:37:14.757Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -126,6 +126,22 @@
       "passed": true
     },
     {
+      "id": "one-release-claimed-by-two-seasonal-lines",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "17f76b72b2c19f49be6288aaf376b9a83f1dbe6cd2f9886c4e7ed012a243da81",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "long-balance-labeled-seasonal-with-a-small-new-draw",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "726dbe4e2bc8508355f4c1607f109594ce15b0d00073d4fee7b22eb038efc35f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "existing-debt-dropped-from-a-path",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -175,6 +191,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "6ad2524791b34ad2ec996d91b9bbd9d8aacd1db5400445bef62aa1f4a76fdba8",
+  "evidenceFingerprint": "4af89b5bb613ccc742cb3b1d625b126babc5cec8e4be5f6ec64a988177081504",
   "notes": "Synthetic deterministic execution calibrated on ficha C32 (oracle modelo_aurora_c32.py) with the C04 annual base after 2028. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

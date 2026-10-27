@@ -3,7 +3,7 @@ import {z} from "zod";
 import {evaluateCapitalStructurePaths, financialCoreVersion, type CapitalStructurePathsInput} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
-import {capitalPathsAdoptedExclusions} from "./capital-structure-paths-results";
+import {adoptedCapitalPathsOutputSchema, capitalPathsAdoptedExclusions} from "./capital-structure-paths-results";
 
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), words = z.string().trim().min(1).max(2000);
 const money = z.string().regex(/^-?\d{1,24}(?:\.\d{1,20})?$/), ratio = z.string().regex(/^-?\d{1,4}(?:\.\d{1,20})?$/);
@@ -186,5 +186,7 @@ export function calculateAdoptedCapitalStructurePaths(raw: unknown) {
     classification: [...b.used.values()].some(e => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
     exclusions: [...capitalPathsAdoptedExclusions],
     grantsExecution: false as const, grantsPublication: false as const};
-  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+  // The fingerprint is taken on the canonical object, in the key order the published schema gives it.
+  const {fingerprint: _placeholder, ...canonical} = adoptedCapitalPathsOutputSchema.parse({...payload, fingerprint: "0".repeat(64)});
+  return adoptedCapitalPathsOutputSchema.parse({...canonical, fingerprint: createHash("sha256").update(JSON.stringify(canonical)).digest("hex")});
 }

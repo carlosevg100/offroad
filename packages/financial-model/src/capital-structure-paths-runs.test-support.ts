@@ -109,6 +109,23 @@ function goldCases(): Case[] {
     reuse("facts-readings-recommendations-apart-without-verdict", {recommendations: ["follow_recommended_path_under_condition", "review_project_before_committing", "ask_for_the_longer_amortization",
       "negotiate_covenant_headroom_in_new_terms", "keep_dated_alternative"], verdict: false, process: {contactsInvestors: false, contactsLenders: false, issuesOrSigns: false}},
       (p) => ({recommendations: p.readings!.assessment.recommendations, verdict: Object.keys(p.readings!).includes("verdict"), process: p.readings!.process})),
+    observe("charge-after-the-last-amortization-enters-the-equivalent-cost", packetInput((k) => {k.sensitivities = []; instrument(k, "giro-4t26-17").charges.push({id: "tarde", periodEnd: "2028-12-31", category: "recurring_fee", amount: "1"});}),
+      {lateChargeInFlows: true, spreadAboveFourteen: true, pathCostUpByOne: 1},
+      (p) => {const c = p.result.evaluation!.instrumentCosts.find((x) => x.instrumentId === "giro-4t26-17")!;
+        return {lateChargeInFlows: c.status === "calculated" && c.flows.some((f) => f.periodEnd === "2028-12-31" && f.charges === "1"),
+          spreadAboveFourteen: c.status === "calculated" && new D(c.equivalentSpread).gt("0.14"),
+          pathCostUpByOne: r(new D(path(p, "sem-linha-debenture").horizonFinancingCost).minus(path(packet, "sem-linha-debenture").horizonFinancingCost).toFixed())};}),
+    observe("profile-with-a-trailing-zero-closes-on-the-last-effective-payment", packetInput((k) => {k.sensitivities = [];
+      (instrument(k, "debenture-80").afterHorizon as {alternatives: unknown[]}).alternatives = [{id: "zero-final", label: "Três terços e um ano zero",
+        shares: [...[2029, 2030, 2031].map((year) => ({year, share: "0.33333333333333333333"})), {year: 2032, share: "0"}]}];}),
+      {scheduled2031: 26.67, scheduled2032: 0, nonNegative: true},
+      (p) => {const t = path(p, "sem-linha-debenture").amortizationTests.find((x) => x.profileId === "zero-final")!;
+        return {scheduled2031: r(t.years.find((y) => y.year === 2031)!.scheduledAmortization), scheduled2032: r(t.years.find((y) => y.year === 2032)!.scheduledAmortization),
+          nonNegative: t.years.every((y) => new D(y.scheduledAmortization).gte(0))};}),
+    reuse("fingerprints-are-taken-on-the-canonical-objects", {packet: true, result: true},
+      (p) => {const h = (o: object) => {const {fingerprint: _f, ...rest} = o as Record<string, unknown>; return createHash("sha256").update(JSON.stringify(rest)).digest("hex");};
+        const again = capitalPathsPacketOutputSchema.parse(JSON.parse(JSON.stringify(p)));
+        return {packet: h(p) === p.fingerprint && h(again) === p.fingerprint, result: h(again.result) === p.result.fingerprint};}),
     observe("minimum-cash-of-policy-changes-the-order", packetInput((k) => {k.minimumCash = "25";}), {recommendation: null, status: "partial", gap: true},
       (p) => ({recommendation: p.readings!.recommendation, status: p.status, gap: p.gaps.some((g) => g.operand.endsWith(".paths"))})),
     observe("absent-minimum-cash-is-a-gap-not-zero", packetInput(undefined, (i) => {i.analysis.company.minimumCash = {...i.analysis.company.minimumCash, decisionId: null, missingReason: "Caixa mínimo de política não informado"};}),
@@ -140,6 +157,12 @@ function adversarialCases(): Case[] {
     // A long issue labeled seasonal to leave the test after the horizon, through the adopted basis and the packet.
     ["long-debt-labeled-seasonal-to-skip-the-amortization-test", () => packetInput((k) => {instrument(k, "debenture-80").afterHorizon = {kind: "seasonal_release", settlementMonthsAfterDraw: 6,
       justification: "Rótulo sazonal sem calendário"};}), "capital_paths_seasonal_release_unverified:debenture-80"],
+    // The same 2028 release claimed twice by two seasonal lines in one path.
+    ["one-release-claimed-by-two-seasonal-lines", () => packetInput((k) => {const g = structuredClone(instrument(k, "giro-4t28")); g.id = "giro-4t28-b"; k.instruments.push(g);
+      k.paths.find((p) => p.id === "sem-linha-debenture")!.instrumentIds.push("giro-4t28-b");}), "capital_paths_seasonal_release_unverified:sem-linha-debenture"],
+    ["long-balance-labeled-seasonal-with-a-small-new-draw", () => packetInput((k) => {const f = instrument(k, "finame"); f.principal = f.principal.map(() => "0");
+      f.draws = f.draws.map((x, n) => n === 9 ? "20" : x); f.afterHorizon = {kind: "seasonal_release", settlementMonthsAfterDraw: 6, justification: "Saldo longo rotulado como sazonal"};}),
+      "capital_paths_seasonal_release_unverified:finame:opening_principal"],
     ["existing-debt-dropped-from-a-path", () => packetInput((k) => {k.paths[0]!.instrumentIds = ["debenture-2021", "finame"];}), "capital_paths_existing_debt_omitted"],
     ["prepayment-without-contract-terms", () => packetInput((k) => {k.paths[0]!.prepayments = [{instrumentId: "finame", periodEnd: "2027-03-31"}];}), "capital_paths_prepayment_terms_required"],
     ["financed-asset-placed-in-the-basket", () => packetInput((k) => {instrument(k, "finame").security.countsAgainstBasket = true;}), "capital_paths_security_inconsistent"],
