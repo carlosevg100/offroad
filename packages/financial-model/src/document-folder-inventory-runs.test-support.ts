@@ -303,6 +303,20 @@ function goldCases(): Case[] {
     observe("clause-amount-on-its-declared-scale", folderPacketInput({files: readings((r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
       Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000"});})}),
       true, (p) => inv(p).findings.find((f) => f.id === "f19-amendment")!.statement.includes("R$ 15 milhões")),
+    // Review r15 cases: whole readings for competing originals, the policy within its entity, gaps closed only by known documents.
+    observe("competing-originals-with-different-readings-have-no-winner", folderPacketInput({files: readings((r) => {const f18 = file(r, "f18");
+      f18.figures = [{id: "caixa", metric: "cash", value: "1", scale: "1000000", at: {page: 1, section: null}}];
+      r.push({...structuredClone(f18), fileId: "f31", fileName: "escritura via 2.pdf", sha256: createHash("sha256").update("f31-twin").digest("hex"), figures: [{id: "caixa", metric: "cash", value: "2", scale: "1000000", at: {page: 1, section: null}}]});})}),
+      {resolution: "unresolved", superseded: null}, (p) => ({resolution: inv(p).families.find((f) => f.id === "original:deb-aurora-1")!.resolution, superseded: inv(p).rows.find((r) => r.fileId === "f31")!.situation.supersededBy})),
+    observe("policy-compared-only-within-its-entity", folderPacketInput({entities: [...auroraEntities, {id: "serra-sa", label: "Serra S.A.", groupId: "serra", groupLabel: "Serra", parentId: null, ownership: null}],
+      files: readings((r) => r.push({...structuredClone(file(r, "f18")), fileId: "f31", fileName: "escritura serra.pdf", sha256: createHash("sha256").update("f31-serra").digest("hex"),
+        entity: {primaryId: "serra-sa", label: "Serra S.A."}, instrument: {ref: "deb-serra-1", label: "escritura", amends: null},
+        clauses: [{type: "financial_covenant", id: "covenant", at: {page: 2, section: null}, statement: "Dívida líquida / EBITDA de no máximo 1,5x.", metric: "net_debt_to_ebitda", maxRatio: "1.5"}]})), turnTwo: true}),
+      true, (p) => {const s = inv(p).findings.find((f) => f.id === "f24-politica")!.statement; return s.includes("covenant vigente de 3,0x") && !s.includes("1,5x");}),
+    observe("registry-dated-after-the-reading-does-not-close-the-gap", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f27")), fileId: "f31", fileName: "matricula.pdf",
+      sha256: createHash("sha256").update("f31-registry").digest("hex"), kind: "property_registry", description: "Matrícula do imóvel", period: {label: "out/2026", start: "2026-10-01", end: "2026-10-31"},
+      version: {label: "certidão", status: "registered", ordinal: null, lastUpdated: null}, referenceDate: {kind: "update", date: "2026-10-31", origin: "stated_month"}, figures: []}))}),
+      {gap: true, finding: true}, (p) => ({gap: inv(p).gaps.some((g) => g.need === "real_collateral" && g.status === "open"), finding: inv(p).findings.some((f) => f.code === "appraisal_without_registry")})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -358,6 +372,12 @@ function adversarialCases(): Case[] {
     ["amendment-of-another-entity", () => folderPacketInput({files: readings((r) => {file(r, "f19").entity = {primaryId: "aurora-log", label: "Aurora Logística"};})}), "document_inventory_unsupported_amendment_entity"],
     ["clause-amount-at-odds-with-its-sheet", () => folderPacketInput({files: readings((r) => {const f = file(r, "f19"); f.units = [{section: "Garantias", currency: "BRL", scale: "1000"}];
       Object.assign(f.clauses.find((c) => c.type === "negative_pledge")!, {at: {page: null, section: "Garantias"}, exceptionAmount: "15000", scale: "1000000"});})}), "document_inventory_unsupported_unit"],
+    ["recovered-amount-at-odds-with-the-destination-sheet", () => folderPacketInput({files: readings((r) => {const f = file(r, "f19"); f.units = [{section: "Valores", currency: "BRL", scale: "1000"}];
+      f.clauses = f.clauses.filter((c) => c.type !== "negative_pledge"); f.legibility = {pageCount: 4, unreadablePages: [{page: 3, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};}),
+      turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f19")), fileId: "s09", fileName: "s09.pdf", sha256: createHash("sha256").update("s09").digest("hex"), units: [],
+        legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: {instrumentRef: "deb-aurora-1-ad1", pages: [3]},
+        clauses: [{type: "negative_pledge" as const, id: "garantia-negativa", at: {page: 3, section: "Valores"}, statement: "Exceção de R$ 15 milhões em valor agregado de garantias.", exceptionAmount: "15", scale: "1000000" as const}]}]}}),
+      "document_inventory_unsupported_unit"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

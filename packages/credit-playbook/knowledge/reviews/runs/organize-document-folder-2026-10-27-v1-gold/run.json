@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T15:12:50.093Z",
-    "finishedAt": "2026-10-27T15:12:50.093Z",
-    "commit": "8ef38e07"
+    "startedAt": "2026-10-27T15:30:58.382Z",
+    "finishedAt": "2026-10-27T15:30:58.382Z",
+    "commit": "04b6fa65"
   },
   "modelCalls": 0,
   "cases": [
@@ -195,7 +195,7 @@
       "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "inputFingerprint": "d5860f35cd2f10f7bc006d460034c2bae26e5b9a7773a0849b17d5296f31d6ea",
-      "outputFingerprint": "9420b8b04c8fa1ecf466ec76a472bb6aa8171308f1fbf276eb86e95102e6c123",
+      "outputFingerprint": "1f3eb010c3ef295213cf4801279ae671af5e34e51506f08144fa3a046b887e8f",
       "passed": true
     },
     {
@@ -219,7 +219,7 @@
       "expectation": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "observed": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "inputFingerprint": "a121d64536b4623ff274b1b14454343bff9bd322012e34e1117ce4031797491a",
-      "outputFingerprint": "a077df2c864ddb9f41f2dbad1e998b326c7d7f4428e62d4b0b88dd29f993ca83",
+      "outputFingerprint": "7d88b66f9694cc0d579b37254f5dff27e2c2f132dcf76d20fa0bdfea4e993f7b",
       "passed": true
     },
     {
@@ -371,7 +371,7 @@
       "expectation": "{\"check\":\"not_run\",\"conflict\":true}",
       "observed": "{\"check\":\"not_run\",\"conflict\":true}",
       "inputFingerprint": "aeef9e88c4a24a1d36724367d048c224f6e8a65f704ec337297a63403e0f935c",
-      "outputFingerprint": "3d2a1a9c8722112b23b46cd4c0915a5ab21c18c998dc385f455a882a2b8c01d2",
+      "outputFingerprint": "49ec9d8ac9b6a703f91b60811154fef5e7d13f37af585b3167ec4b26888d3642",
       "passed": true
     },
     {
@@ -451,7 +451,7 @@
       "expectation": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "observed": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "inputFingerprint": "98e772f49c0bb334f1eff40e25e7d037a5940594bd332b9ff9d9af24d0eb7df3",
-      "outputFingerprint": "4ab535964e9b475f1f637cc545775cff499aad219d0e44ca7d3230b92c1f65ab",
+      "outputFingerprint": "cfe6a5917ff9ac4e74861478a15d179b5915e98bd7566dab68a1a14b14457942",
       "passed": true
     },
     {
@@ -559,6 +559,30 @@
       "passed": true
     },
     {
+      "id": "competing-originals-with-different-readings-have-no-winner",
+      "expectation": "{\"resolution\":\"unresolved\",\"superseded\":null}",
+      "observed": "{\"resolution\":\"unresolved\",\"superseded\":null}",
+      "inputFingerprint": "2d60f672ba7a034efca79ced59dd6397d7c3d5bbc0339469cc1800f31c972d5d",
+      "outputFingerprint": "2992eefc82f395f224a020f69466e706eb9bdcc1985016233295bcf571042ac2",
+      "passed": true
+    },
+    {
+      "id": "policy-compared-only-within-its-entity",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "b53b2c314dee72cc0a0828671bfdc6a99e5c6493e8d5177a1f7407714d7d6b82",
+      "outputFingerprint": "08e76d4f73c5445cce03577cd37f0c188dbde33ad07673ff5009a0c6fcbc1a89",
+      "passed": true
+    },
+    {
+      "id": "registry-dated-after-the-reading-does-not-close-the-gap",
+      "expectation": "{\"gap\":true,\"finding\":true}",
+      "observed": "{\"gap\":true,\"finding\":true}",
+      "inputFingerprint": "0b09f6f11d16c981e90f4b974b679ddc73f47b4a1df1e3db5faf938acd4fac16",
+      "outputFingerprint": "ce8272d1fe419ef3b872cdc6b29ae446f444dd7e9d46a2a7d9a9bdf929aa0abd",
+      "passed": true
+    },
+    {
       "id": "notice-deadline-followed-never-scheduled",
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
@@ -568,6 +592,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "944b34721ed5b25687cdd8e06fc3a9e6431ea8e0e2170c79cfae7b686be04cc3",
+  "evidenceFingerprint": "66b47bcb8befda5bfa2334bb6abc12790470a9bf15dd66f98a9c39617e814516",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

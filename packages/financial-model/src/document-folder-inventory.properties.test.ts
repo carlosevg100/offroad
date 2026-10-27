@@ -442,7 +442,13 @@ describe("property: dependencies proven by tracking; every state injected into e
         : files.filter((f) => f.sha256 === file(files, id).sha256)).map((f) => f.fileId);
       for (const b of emitted) {
         const after = o.traces.find((t) => t.effect === b.effect);
-        const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
+        // What the effect judges after the injection: moving an instrument to another entity takes it out of the
+        // effects of the first entity (an instrument is entity and reference), which then stand as controls.
+        const moved = state === "missing_source" && file(files, id).instrument !== null && after !== undefined;
+        const judgedNow = moved ? after!.guarded : b.guarded, ignoredNow = moved ? after!.ignoreUnread : b.ignoreUnread;
+        const touched = same.some((x) => judgedNow.includes(x) && !(expected === "unread" && ignoredNow.includes(x)));
+        // An effect whose dependencies the move changed (another entity's instrument left it) is neither touched nor a control.
+        if (!touched && moved && JSON.stringify(after!.guarded) !== JSON.stringify(b.guarded)) continue;
         if (!touched) {expect(after?.emitted, `control ${b.effect}`).toBe(true); continue;}
         expect(after?.emitted ?? false, `${b.effect} withheld`).toBe(false);
         const rank = (x: string) => ["known", "future", "unread", "missing_source", "conflict"].indexOf(x);
@@ -977,4 +983,99 @@ describe("property: every monetary field of the schema obeys the scale declared 
   it("an amount without its scale is refused", () => {
     expect(() => run(readings((r) => {Object.assign(file(r, "f19").clauses.find((c) => c.type === "negative_pledge")!, {scale: null});}))).toThrow("document_inventory_unsupported_unit");
   });
+});
+
+// Review r15: competing originals by whole reading, recovered money in the destination's units, the policy within its
+// entity, and closing a gap as an effect under the guard.
+describe("property: competing originals are one text only if their whole readings are equal", () => {
+  const twin = (cash: string | null) => readings((r) => {
+    const f18 = file(r, "f18");
+    r.push({...structuredClone(f18), fileId: "f31", fileName: "escritura via 2.pdf", sha256: hex("twin-f18"), figures: cash === null ? structuredClone(f18.figures) : [{id: "caixa", metric: "cash", value: cash, scale: "1000000", at: {page: 1, section: null}}]});
+    if (cash !== null) f18.figures = [{id: "caixa", metric: "cash", value: "1", scale: "1000000", at: {page: 1, section: null}}];
+  });
+  it("different readings without precedence are a conflict without winner", () => {
+    const o = run(twin("2"));
+    expect(o.rows.find((x) => x.fileId === "f18")!.situation.supersededBy).toBeNull();
+    expect(o.rows.find((x) => x.fileId === "f31")!.situation.supersededBy).toBeNull();
+    expect(o.families.find((f) => f.id === "original:deb-aurora-1")).toMatchObject({resolution: "unresolved", prevails: []});
+    expect(o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")?.knowledge ?? "conflict").toBe("conflict");
+  });
+  it("the same whole reading in two files is one text; nothing is superseded (control)", () => {
+    const o = run(twin(null));
+    expect(o.families.find((f) => f.id === "original:deb-aurora-1")).toMatchObject({resolution: "same_text", prevails: ["f18", "f31"], superseded: []});
+    expect(o.rows.find((x) => x.fileId === "f31")!.situation.supersededBy).toBeNull();
+    expect(o.effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")!.knowledge).toBe("known");
+  });
+});
+describe("property: recovered money is read in the destination document's declared units", () => {
+  const setup = (declared: "1000" | "1000000") => {
+    const base = readings((r) => {const f = file(r, "f19"); f.units = [{section: "Valores", currency: "BRL", scale: declared}];
+      f.clauses = f.clauses.filter((c) => c.type !== "negative_pledge"); f.legibility = {pageCount: 4, unreadablePages: [{page: 3, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};});
+    const copy = {...structuredClone(file(auroraFolderReadings(), "f19")), fileId: "s09", fileName: "s09.pdf", sha256: hex("ad1-p3-money"), units: [],
+      legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: {instrumentRef: "deb-aurora-1-ad1", pages: [3]},
+      clauses: [{type: "negative_pledge" as const, id: "garantia-negativa", at: {page: 3, section: "Valores"}, statement: "Exceção de R$ 15 milhões em valor agregado de garantias.", exceptionAmount: "15", scale: "1000000" as const}]};
+    return [...base, copy];
+  };
+  it("a copy's amount on a section the document declares in thousands is refused", () => {
+    expect(() => run(setup("1000"))).toThrow("document_inventory_unsupported_unit");
+  });
+  it("the same amount on a section declared in millions is read (control)", () => {
+    expect(run(setup("1000000")).findings.find((f) => f.id === "f19-amendment")!.statement).toContain("R$ 15 milhões");
+  });
+});
+describe("property: the policy is compared only with covenants of its own entity", () => {
+  const otherCompany = (entity: string) => ({...structuredClone(file(auroraFolderReadings(), "f18")), fileId: "f31", fileName: "f31.pdf", sha256: hex(`other-company-${entity}`),
+    entity: {primaryId: entity, label: "Outra"}, instrument: {ref: "deb-outra-1", label: "escritura", amends: null},
+    clauses: [covenantClause("1.5", "covenant", 2)]});
+  const entities = [...auroraKernelInput().entities, {id: "serra-sa", label: "Serra S.A.", groupId: "serra", groupLabel: "Serra", parentId: null, ownership: null}];
+  for (const entity of ["serra-sa", "aurora-log", null] as const) it(entity ? `a 1,5x covenant of ${entity} is not imported` : "control: the CCB legible, Aurora alone", () => {
+    const base = auroraFolderReadings(), files = entity ? [...base, otherCompany(entity)] : base;
+    const prior = run(files, {entities});
+    const o = run([...files, ...auroraTurnTwoReadings()], {entities, asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    const statement = o.findings.find((f) => f.id === "f24-politica")!.statement;
+    expect(statement).toContain("covenant vigente de 3,0x");
+    expect(statement).not.toContain("1,5x");
+  });
+});
+describe("property: closing a gap is an effect under the guard, for every need of the schema", () => {
+  const needOptions = (documentFolderInventoryOutputSchema.shape.gaps.element.shape.need as unknown as {options: string[]}).options;
+  type Scenario = {base: () => DocumentReading[]; closer: () => DocumentReading; gap: (o: DocumentFolderInventory) => boolean; turnTwo?: true};
+  const open = (need: string, anchor?: string) => (o: DocumentFolderInventory) => o.gaps.some((g) => g.need === need && g.status === "open" && (anchor === undefined || g.id.includes(anchor)));
+  const scenarios: Record<string, Scenario> = {
+    monthly_series: {base: () => auroraFolderReadings(), closer: () => auroraTurnTwoReadings()[1]!, gap: open("monthly_series", "2026-3")},
+    reading_substitute: {base: () => auroraFolderReadings(), closer: () => auroraTurnTwoReadings()[0]!, gap: open("reading_substitute", "f20")},
+    real_collateral: {base: () => auroraFolderReadings(), gap: open("real_collateral"),
+      closer: () => ({...structuredClone(file(auroraFolderReadings(), "f27")), fileId: "s07", fileName: "matricula.pdf", sha256: hex("registry"), kind: "property_registry", description: "Matrícula do imóvel",
+        period: {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"}, version: {label: "certidão", status: "registered", ordinal: null, lastUpdated: null},
+        referenceDate: {kind: "update", date: "2026-08-31", origin: "stated_month"}, figures: []})},
+    group_perimeter: {base: () => auroraFolderReadings(), gap: open("group_perimeter"),
+      closer: () => ({...structuredClone(file(auroraFolderReadings(), "f04")), fileId: "s08", fileName: "log auditada.pdf", sha256: hex("sub-audited"), version: {label: "auditada", status: "audited", ordinal: null, lastUpdated: null}})},
+    liquidity_projection: {base: () => auroraFolderReadings(), gap: open("liquidity_projection"),
+      closer: () => ({...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "s06", fileName: "fluxo ago26.xlsx", sha256: hex("forecast"), period: {label: "ago/26 a nov/26", start: "2026-08-31", end: "2026-11-30"},
+        version: {label: "atualizado", status: "management", ordinal: null, lastUpdated: "2026-08-31"}, referenceDate: {kind: "update", date: "2026-08-31", origin: "stated"}})},
+  };
+  it("every need of the schema has a closing scenario", () => {expect(Object.keys(scenarios).sort()).toEqual([...needOptions].sort());});
+  // States injected into the closing document, where the domain admits them; each must keep the gap open.
+  const injections: Record<string, (d: DocumentReading, list: DocumentReading[]) => boolean> = {
+    // A page copy carries the target's version; its own date after the reading date is its stated reference date.
+    future: (d) => {if (d.substitutesPages) d.referenceDate = {kind: "update", date: "2027-01-15", origin: "stated"}; else d.version.lastUpdated = "2027-01-15"; return true;},
+    unread: (d) => {if (d.substitutesPages) return false; d.legibility = {pageCount: 9, unreadablePages: [{page: 9, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};
+      for (const x of [...d.figures, ...d.clauses, ...d.observations, ...d.debtTable ? [d.debtTable] : []]) x.at = {page: x.at.page ?? 1, section: x.at.section}; return true;},
+    conflict: (d, list) => {list.push({...structuredClone(d), fileId: `${d.fileId}-x`, fileName: `${d.fileId}-x.pdf`, description: `${d.description} (outra leitura)`}); return true;},
+    missing_source: (d) => {if (d.substitutesPages) return false; d.entity = {...d.entity, primaryId: "fora-do-cadastro"}; return true;},
+  };
+  for (const need of Object.keys(scenarios)) {
+    const sc = scenarios[need]!;
+    const go = (edit: (d: DocumentReading, list: DocumentReading[]) => boolean) => {
+      const base = sc.base(), prior = run(base), closer = sc.closer(), extra = [closer];
+      if (!edit(closer, extra)) return null;
+      return run([...base, ...extra], {asOf: "2026-09-02", prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}, informed: []});
+    };
+    it(`${need}: the known closer closes it (control)`, () => {expect(sc.gap(run(sc.base()))).toBe(true); expect(sc.gap(go(() => true)!)).toBe(false);});
+    for (const state of Object.keys(injections)) it(`${need}: a ${state} closer keeps it open`, () => {
+      const o = go(injections[state]!);
+      if (o === null) return;
+      expect(sc.gap(o)).toBe(true);
+    });
+  }
 });

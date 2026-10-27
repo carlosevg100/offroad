@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T15:12:50.093Z",
-    "finishedAt": "2026-10-27T15:12:50.093Z",
-    "commit": "8ef38e07"
+    "startedAt": "2026-10-27T15:30:58.382Z",
+    "finishedAt": "2026-10-27T15:30:58.382Z",
+    "commit": "04b6fa65"
   },
   "modelCalls": 0,
   "cases": [
@@ -335,6 +335,14 @@
       "passed": true
     },
     {
+      "id": "recovered-amount-at-odds-with-the-destination-sheet",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "94fcc94131bc24e769aed5a65e00452eefb9026ccbf14b1376f267a5753c0596",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "record-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -344,6 +352,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "b97900c1029c893ddc9150923aefc29fb799c86dd4c4a68bca9962addd3c7cbd",
+  "evidenceFingerprint": "0fc8cff6ad9842689369f0a9767206203905c882516b4440012521c3e1ae73e0",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }
