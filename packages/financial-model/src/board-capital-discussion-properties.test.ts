@@ -252,6 +252,13 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (row) {const key = `${b.field}|${b.templateId}`; rowsOf.set(key, (rowsOf.get(key) ?? new Set()).add(row));}
   }
   for (const [key, rows] of rowsOf) if (rows.size > 1) bad.push(`creditor_row:${key}`);
+  // Between versions only recommendations may leave: every title, line, question, answer and appendix label stays.
+  if (d.versions.length === 2) {
+    // The decisions page lists the deliberations, whose ask is the recommendation when there is one; it is not a fact line.
+    const facts = (x: (typeof d.versions)[number]) => [...x.pages.flatMap((pg) => [pg.title, ...pg.role === "decisions" ? [] : pg.lines]), ...x.questions.flatMap((q) => [q.question, q.answer]), ...x.appendix.map((a) => a.label)];
+    const now = new Set(facts(d.versions[1]!));
+    for (const f of facts(d.versions[0]!)) if (!now.has(f)) bad.push(`fact_left:${f.slice(0, 60)}`);
+  }
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
   // Policy and sensitivities, read in the text against the covenant and investment results the identity names: a
   // policy said to lack a definition has none recorded, and each cause of a sensitivity is the operand its case changes.
@@ -302,37 +309,51 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (/partida mais lenta/.test(t) && !/^activeMonths,activeYearFraction,loadEquivalentYearFraction,loadYearFraction,operationStartMonth$/.test(changed("slower-start"))) bad.push(`scenario_start:${t.slice(0, 60)}`);
     // Deferrals: the first disbursement and the first operation strictly later than the reference's.
     const firstNonZero = (xs: string[] | undefined) => xs ? xs.findIndex((v) => !new D(v).eq(0)) : -1;
-    if (/linha adiada/i.test(t)) {
-      const rows = (id: string) => ((cases.find((x) => x.id === id)?.result.project as {rows?: {operands: Record<string, string>}[]} | undefined)?.rows ?? []);
-      const capex = (id: string) => rows(id).map((r) => r.operands.growthCapexPaid!), active = (id: string) => rows(id).map((r) => r.operands.activeYearFraction!);
-      if (!(firstNonZero(capex("defer-12")) > firstNonZero(capex("base")) && firstNonZero(active("defer-12")) > firstNonZero(active("base")))) bad.push(`scenario_deferral:${t.slice(0, 60)}`);
+    if (/início de operação adiados/i.test(t)) {
+      const rows = (id: string) => ((cases.find((x) => x.id === id)?.result.project as {rows?: {incrementalEbitda: string; operands: Record<string, string>}[]} | undefined)?.rows ?? []);
+      const later = (f: (r: ReturnType<typeof rows>[number]) => string) => firstNonZero(rows("defer-12").map(f)) > firstNonZero(rows("base").map(f));
+      if (!(later((r) => r.operands.growthCapexPaid!) && later((r) => r.operands.activeYearFraction!) && later((r) => r.incrementalEbitda))) bad.push(`scenario_deferral:${t.slice(0, 60)}`);
     }
     const planContributions = (sourceOf("evaluate-financing-paths")?.result as {contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined)?.contributions ?? [];
     const variant = (id: string, field: string) => planContributions.find((x) => x.fieldPath.endsWith(`.variant.${id}.${field}`))?.value.value;
-    // Plan paths: the oracle's own table of each label's complete moves, read against the source (instrument roles,
-    // prepayments, charges and project variant); a deferred line starts operating (EBITDA) and disbursing later.
-    const term = (suffix: string) => planContributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
+    // Plan paths: the oracle's own reading of each instrument's terms (role, lender kind, schedule after the horizon,
+    // final payment, amortization), never identifiers; its own table of each label's complete moves.
+    const term = (suffix: string) => planContributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | string | undefined;
+    const termsOf = (id: string) => (term(`.instrument.${id}.terms`) as string[] | undefined) ?? [];
     const existing = planContributions.flatMap((x) => {const m = /\.instrument\.([a-z0-9-]+)\.terms$/.exec(x.fieldPath); return m && (x.value.value as string[])[0] === "existing" ? [m[1]!] : [];});
-    const family = (id: string) => id.replace(/-.*$/, "");
+    const creditorRow = "ccb-bradesco";
+    const describe = (id: string) => {const [role, lender, , , , , , , after] = termsOf(id);
+      return role === "amended" ? "aditamento" : lender === "capital_markets" ? (role === "existing" ? "debenture atual" : "debenture nova") : lender === "development_bank" ? "fomento"
+        : lender === "bank" ? (role === "existing" ? (id === creditorRow ? "credor" : "banco") : after === "scheduled" ? "banco programado" : after === "none" || after === "seasonal_release" ? "banco curto" : "banco outro") : "outro";};
     const pathMoves = (id: string) => {
-      const ids = term(`.path.${id}.instruments`) ?? [];
-      return {added: [...new Set(ids.filter((x) => !existing.includes(x)).map((x) => x.endsWith("-aditada") ? "aditada" : x === "ccb-alongamento" ? "alongamento" : family(x)))].sort().join(","),
-        removed: existing.filter((x) => !ids.includes(x)).sort().join(","), prepaid: (term(`.path.${id}.prepayments`) ?? []).map((x) => x.split("|")[0]).sort().join(","),
-        charges: (term(`.path.${id}.chargeSlots`) ?? []).map((x) => x.split("|")[0]).sort().join(","), variant: (term(`.path.${id}.terms`) ?? [])[1]};
+      const ids = (term(`.path.${id}.instruments`) as string[] | undefined) ?? [];
+      return {added: [...new Set(ids.filter((x) => !existing.includes(x)).map(describe))].sort().join(","), removed: existing.filter((x) => !ids.includes(x)).map(describe).sort().join(","),
+        prepaid: ((term(`.path.${id}.prepayments`) as string[] | undefined) ?? []).map((x) => describe(x.split("|")[0]!)).sort().join(","),
+        charges: ((term(`.path.${id}.chargeSlots`) as string[] | undefined) ?? []).map((x) => `${x.split("|")[0]} ${describe(x.split("|")[1]!)}`).sort().join(","),
+        variant: ((term(`.path.${id}.terms`) as string[] | undefined) ?? [])[1]};
     };
     const expected: Record<string, [string, ReturnType<typeof pathMoves>]> = {
-      "Caminho A:": ["sem-linha-debenture", {added: "debenture,giro", removed: "", prepaid: "ccb-bradesco,debenture-2021", charges: "", variant: "sem-linha"}],
-      "Caminho B:": ["adiar-linha", {added: "giro", removed: "", prepaid: "", charges: "", variant: "adiar-12"}],
-      "Caminho C:": ["debenture-com-linha", {added: "debenture,finame,giro", removed: "", prepaid: "ccb-bradesco,debenture-2021", charges: "", variant: "seguir"}],
+      "Caminho A:": ["sem-linha-debenture", {added: "banco curto,debenture nova", removed: "", prepaid: "credor,debenture atual", charges: "", variant: "sem-linha"}],
+      "Caminho B:": ["adiar-linha", {added: "banco curto", removed: "", prepaid: "", charges: "", variant: "adiar-12"}],
+      "Caminho C:": ["debenture-com-linha", {added: "banco curto,debenture nova,fomento", removed: "", prepaid: "credor,debenture atual", charges: "", variant: "seguir"}],
       "Caminho D:": ["manter", {added: "", removed: "", prepaid: "", charges: "", variant: "seguir"}],
-      "Caminho E:": ["ccb-tres-anos", {added: "ccb", removed: "", prepaid: "", charges: "", variant: "seguir"}],
-      "Caminho F:": ["alongar-com-banco", {added: "alongamento,finame,giro", removed: "", prepaid: "ccb-bradesco", charges: "waiver", variant: "seguir"}],
-      "Caminho G:": ["alongar-bradesco", {added: "aditada,finame,giro", removed: "ccb-bradesco", prepaid: "", charges: "", variant: "seguir"}],
+      "Caminho E:": ["ccb-tres-anos", {added: "banco programado", removed: "", prepaid: "", charges: "", variant: "seguir"}],
+      "Caminho F:": ["alongar-com-banco", {added: "banco curto,banco programado,fomento", removed: "", prepaid: "credor", charges: "waiver debenture atual", variant: "seguir"}],
+      "Caminho G:": ["alongar-bradesco", {added: "aditamento,banco curto,fomento", removed: "credor", prepaid: "", charges: "", variant: "seguir"}],
     };
     for (const [label, [id, want]] of Object.entries(expected)) if (t.startsWith(`${label} `) && !/caixa mínimo/.test(t) && JSON.stringify(pathMoves(id)) !== JSON.stringify(want)) bad.push(`path_moves:${label}`);
     if (/mantida a dívida como está/.test(t) && JSON.stringify(pathMoves("manter")) !== JSON.stringify(expected["Caminho D:"]![1])) bad.push(`path_kept:${t.slice(0, 60)}`);
-    if (/linha de embalagem adiada/i.test(t) && !(firstNonZero(variant("adiar-12", "growthCapex") as string[]) > firstNonZero(variant("seguir", "growthCapex") as string[])
-      && firstNonZero(variant("adiar-12", "ebitda") as string[]) > firstNonZero(variant("seguir", "ebitda") as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    // An extension: the amended instrument pays finally later and repays no more principal than the original in any period.
+    if (/alongada por aditamento/.test(t)) {
+      const amended = planContributions.find((x) => x.fieldPath.endsWith(".replaces") && x.value.value === creditorRow)?.fieldPath.match(/\.instrument\.([a-z0-9-]+)\.replaces$/)?.[1];
+      const late = amended ? term(`.instrument.${amended}.finalPaymentDate`) as string : undefined, before = term(`.instrument.${creditorRow}.finalPaymentDate`) as string | undefined;
+      const a = amended ? (term(`.instrument.${amended}.amortization`) as string[]) : [], o = (term(`.instrument.${creditorRow}.amortization`) as string[] | undefined) ?? [];
+      const repaid = (xs: string[]) => xs.reduce((sum, v) => sum.plus(v), new D(0));
+      if (!late || !before || !(late > before) || !repaid(a).lt(repaid(o))) bad.push(`path_extension:${t.slice(0, 60)}`);
+    }
+    // A plan deferral: every recorded component of the variant starts later than the reference variant's.
+    if (/linha de embalagem adiada/i.test(t) && !["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"]
+      .every((f) => firstNonZero(variant("adiar-12", f) as string[]) > firstNonZero(variant("seguir", f) as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
     // A flow is never read as a balance: a working-capital amount above a reference is said of its variation.
     if (/capital de giro/.test(t) && /acima/.test(t) && !/variação do capital de giro/.test(t)) bad.push(`nature:${t.slice(0, 60)}`);
     if (/sem a linha da safra/i.test(t)) bad.push(`scenario_weekly_line:${t.slice(0, 60)}`);
@@ -414,7 +435,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   });
   it("regression r1 and r2: transformations never take a material fact out of the current version", () => {
     const date = packet(2, (c) => {c.omissions = [{id: "sem-mes", target: "figure", targetId: "peak-date", requestedBy: "requester.cfo"}];});
-    expect(date.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["payback", "peak-need"]});
+    expect(date.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: []});
     const recommendation = packet(3, (c) => {
       const line = c.pages.find((x) => x.id === "linha")!;
       line.options = line.options.slice(0, 2);
@@ -561,6 +582,27 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const forged = structuredClone(calibrated), line = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!;
     line.lines[2] = line.lines[2]!.replace("a variação do capital de giro", "o capital de giro");
     expect(oracle(forged).bad.some((x) => x.startsWith("nature:"))).toBe(true);
+  });
+  it("regression r15: only recommendations leave; moves, extensions and deferrals read by terms (full path, oracle not vacuous)", () => {
+    const refused = full(3, (c) => {c.omissions = [{id: "sem-movimentos", target: "page", targetId: "movimentos", requestedBy: "requester.chair"},
+      {id: "sem-recomendacao", target: "page", targetId: "recomendacao", requestedBy: "requester.chair"}];});
+    expect(refused.readings!.omissions.map((o) => o.outcome)).toEqual(["refused", "refused"]);
+    expect(oracle(refused)).toEqual({bad: [], missing: []});
+    const variants = [["amendmentWithoutExtension", "alternatives.moves.extend_bradesco", ["alongar-bradesco"]], ["developmentLoanAsBank", "alternatives.moves.debenture_with_line", ["debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]],
+      ["deferralOnlyCapexAndEbitda", "alternatives.moves.defer_line", ["adiar-linha"]]] as const;
+    const calibrated = packet(3, () => undefined), plan = calibrated.result.discussion!.identity.find((x) => x.methodId === "evaluate-financing-paths")!.packetFingerprint;
+    for (const [name, template, paths] of variants) {
+      const forged = auroraPlanPacket({[name]: true} as Parameters<typeof auroraPlanPacket>[0]) as unknown as Record<string, unknown>;
+      expect(() => withBoardSource("plano-2027", forged, () => full(2, (c) => {for (const id of paths) boardRestatePath(c, forged, id);
+        c.extraReadings["bradesco-gap"] = boardRestated(forged, "plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", 0);})), name).toThrow(`board_capital_template_condition_failed:${template}`);
+      // Not vacuous: the calibrated texts read against the forged plan are flagged by the oracle on that path.
+      const read = oracle(calibrated, [{packet: {...forged, fingerprint: plan}}, ...auroraBoardSources()]).bad;
+      expect(read.some((x) => x.startsWith("path_") || x.startsWith("scenario_plan_deferral:")), name).toBe(true);
+    }
+    // Not vacuous: a second version that loses a fact sentence is read as a loss.
+    const lost = structuredClone(calibrated), v2 = lost.result.discussion!.versions.at(-1)!;
+    v2.pages = v2.pages.filter((x) => x.id !== "movimentos");
+    expect(oracle(lost).bad.some((x) => x.startsWith("fact_left:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

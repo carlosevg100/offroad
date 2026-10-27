@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T17:38:54.528Z",
-    "finishedAt": "2026-10-27T17:39:38.014Z"
+    "startedAt": "2026-10-27T18:02:21.071Z",
+    "finishedAt": "2026-10-27T18:03:26.627Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -758,6 +758,30 @@
       "passed": true
     },
     {
+      "id": "extension-whose-amendment-does-not-extend",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "98037b71539ebc9ad87203f4320fbb5becf243d7649823b592e1a7695634f7e4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "development-bank-description-on-a-bank-loan",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7437bdb6fd347530b87fe9fabbd4670fb32e13e4ac42fbbff9789f727ade4d34",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "deferral-proven-only-by-capex-and-ebitda",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a6b3ed618052da9d20ee6c5e68b5dd7cda6b1a1f4113ee94d9a7c4b116f05ad6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "informed-fact-attributed-to-another-person",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -831,6 +855,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "28c343297dad3817971800b1fa77efad04117bbff6d8492c029b268cb8f26df7",
+  "evidenceFingerprint": "b0e0f0ab2adf24f93e676b4ba0b68e069bf60e693c93414af81b35dea8214742",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

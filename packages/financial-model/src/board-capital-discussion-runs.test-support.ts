@@ -196,7 +196,7 @@ function goldCases(): Case[] {
       kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
-      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com a linha adiada: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
+      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com capex e início de operação adiados: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
       "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
@@ -207,7 +207,7 @@ function goldCases(): Case[] {
       {outcome: "refused", stillShown: true, versions: 1},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, stillShown: pageOf(p, "linha").lines[0]!.includes("16%"), versions: p.result.discussion!.versions.length})),
     observe("refuses-to-drop-the-line-page", boardPacketInput(3, (c) => {c.omissions = [{id: "sem-linha", target: "page", targetId: "linha", requestedBy: "requester.chair"}];}),
-      {outcome: "refused", reason: "Os fatos materiais ficam no material, porque são o que o conselho precisa para decidir; sem eles, a escolha ficaria sem base.", pageKept: true},
+      {outcome: "refused", reason: "Só a recomendação pode sair a pedido; páginas, linhas e fatos ficam no material como foram compostos.", pageKept: true},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, reason: p.readings!.omissions[0]!.reason, pageKept: current(p).pages.some((x) => x.id === "linha")})),
     observe("refuses-to-drop-the-leverage-risk", boardPacketInput(3, (c) => {c.omissions = [{id: "sem-risco", target: "page", targetId: "alavancagem", requestedBy: "requester.cfo"}];}),
       {outcome: "refused", pageKept: true}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, pageKept: current(p).pages.some((x) => x.id === "alavancagem")})),
@@ -229,9 +229,9 @@ function goldCases(): Case[] {
     reuse("every-material-fact-shown-in-the-current-version", p3, t3, {shown: true, deadlines: 4},
       (p) => ({shown: p.readings!.material!.materialFactsShown, deadlines: p.result.discussion!.materialFacts.deadlines.length})),
     observe("refuses-removing-a-date-that-shares-a-line-with-material-facts", boardPacketInput(2, (c) => {c.omissions = [{id: "sem-mes", target: "figure", targetId: "peak-date", requestedBy: "requester.cfo"}];}),
-      {outcome: "refused", kept: ["payback", "peak-need"]}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
+      {outcome: "refused", kept: []}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
     observe("refuses-removing-a-date-that-carries-a-leverage-reading", boardPacketInput(2, (c) => {c.omissions = [{id: "sem-data", target: "figure", targetId: "dez27-date", requestedBy: "requester.cfo"}];}),
-      {outcome: "refused", kept: ["lev-dez27"]}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
+      {outcome: "refused", kept: []}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
     observe("refuses-withdrawing-a-recommendation-that-alone-carries-material-facts", boardPacketInput(3, (c) => {
       const line = c.pages.find((x) => x.id === "linha")!;
       line.options = line.options.slice(0, 2);
@@ -254,6 +254,11 @@ function goldCases(): Case[] {
     observe("working-capital-of-another-year-is-shown-as-a-variation", boardPacketInput(2, boardWorkingCapital2027),
       "No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2027 fica R$ 1 milhão acima da do cenário de referência.",
       (p) => pageOf(p, "mudaria").lines[3]),
+    observe("omission-of-pages-is-refused-and-no-fact-sentence-leaves", boardPacketInput(3, (c) => {
+      c.omissions = [{id: "sem-movimentos", target: "page", targetId: "movimentos", requestedBy: "requester.chair"}, {id: "sem-recomendacao", target: "page", targetId: "recomendacao", requestedBy: "requester.chair"}];
+    }), {outcomes: ["refused", "refused"], versions: 1, movesShown: true, amortizationShown: true},
+      (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), versions: p.result.discussion!.versions.length,
+        movesShown: current(p).pages.some((x) => x.id === "movimentos"), amortizationShown: boardShownTexts(p).some((t) => t.includes("Amortização de 2029 a 2033"))})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -479,6 +484,19 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({extensionWithExtraPrepayment: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "alongar-bradesco");}));
     }, "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
+    // Review r15: moves and descriptions by the instruments' terms, never by identifiers; a deferral by every component.
+    ["extension-whose-amendment-does-not-extend", () => {
+      const packet = auroraPlanPacket({amendmentWithoutExtension: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "alongar-bradesco"); c.extraReadings["bradesco-gap"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", 0);}));
+    }, "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
+    ["development-bank-description-on-a-bank-loan", () => {
+      const packet = auroraPlanPacket({developmentLoanAsBank: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {for (const id of ["debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]) boardRestatePath(c, packet, id);}));
+    }, "board_capital_template_condition_failed:alternatives.moves.debenture_with_line"],
+    ["deferral-proven-only-by-capex-and-ebitda", () => {
+      const packet = auroraPlanPacket({deferralOnlyCapexAndEbitda: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
+    }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
     ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],

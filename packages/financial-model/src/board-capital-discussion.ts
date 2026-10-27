@@ -433,38 +433,67 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const weak = c.op === "gt" ? "ge" : "le";
       return pairs.every(([x, y]) => compareBoard(x, weak, y)) && pairs.some(([x, y]) => compareBoard(x, c.op, y));
     }
-    if ("pathMoves" in c) {
-      // The complete set of a plan path's moves: new instruments and existing ones removed (against the existing debt),
-      // prepayments, charges and the project variant (against the status quo's). Each recorded move must match a declared pattern and each declared pattern a move.
-      const [method, rawPath] = c.pathMoves, path = rawPath.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+    if ("pathMoves" in c || "extendsDebt" in c) {
+      // A plan path's moves read from the terms the plan records, never from identifiers: each new instrument by its role,
+      // lender kind and schedule; each prepayment and charge by the instrument it touches; the project variant against the
+      // status quo's. The creditor named in a sentence is joined to its debt-table row through the shared instrument id.
+      const method = "pathMoves" in c ? c.pathMoves[0] : c.extendsDebt[0];
       const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
-      const term = (suffix: string): string[] | null => {
-        const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
-        if (hits.length > 1) return null;
-        const v = hits[0]?.value?.value;
-        return v === undefined ? [] : Array.isArray(v) && v.every((x) => typeof x === "string") ? v as string[] : null;
+      const contributions = packet.result?.contributions ?? [];
+      const term = (suffix: string): unknown => {
+        const hits = contributions.filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+        return hits.length === 1 ? hits[0]!.value?.value : undefined;
       };
-      const quo = (packet.result?.contributions ?? []).flatMap((e) => {
+      const list = (suffix: string) => {const v = term(suffix); return Array.isArray(v) ? v.map(String) : [];};
+      const terms = (id: string) => list(`instrument.${id}.terms`);
+      const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "\u0000");
+      if ("extendsDebt" in c) {
+        // An extension: an amended instrument replacing the named one, paying finally later and repaying less principal in every period.
+        const original = fill(c.extendsDebt[1]);
+        const amended = contributions.flatMap((e) => {
+          const m = typeof e.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.replaces$/.exec(e.fieldPath) : null;
+          return m && e.value?.value === original ? [m[1]!] : [];
+        });
+        if (amended.length !== 1 || terms(amended[0]!)[0] !== "amended") return false;
+        const later = term(`instrument.${amended[0]}.finalPaymentDate`), before = term(`instrument.${original}.finalPaymentDate`);
+        const a = list(`instrument.${amended[0]}.amortization`), o = list(`instrument.${original}.amortization`);
+        return typeof later === "string" && typeof before === "string" && later > before && a.length === o.length && a.length > 0
+          && a.every((x, i) => new Exact(x).lte(o[i]!)) && a.some((x, i) => new Exact(x).lt(o[i]!));
+      }
+      const path = fill(c.pathMoves[1]);
+      const quo = contributions.flatMap((e) => {
         const m = typeof e.fieldPath === "string" ? /\.path\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
         return m && Array.isArray(v) && v[0] === "status_quo" ? [m[1]!] : [];
       });
       if (quo.length !== 1) throw unverified("status_quo_path");
-      const mine = term(`path.${path}.instruments`), theirs = term(`path.${quo[0]}.instruments`), terms = term(`path.${path}.terms`), quoTerms = term(`path.${quo[0]}.terms`);
-      const prepaid = term(`path.${path}.prepayments`), charges = term(`path.${path}.chargeSlots`);
-      if (!mine || !theirs || !terms || !quoTerms || !prepaid || !charges) return false;
-      const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "\u0000");
-      const matches = (pattern: string, item: string) => {const p = fill(pattern); return p.endsWith("*") ? item.startsWith(p.slice(0, -1)) : item === p;};
-      const exact = (items: string[], patterns: readonly string[]) => items.every((x) => patterns.some((p) => matches(p, x))) && patterns.every((p) => items.some((x) => matches(p, x)));
-      // Moves are measured against the existing debt (instruments the plan records as existing), not against another path,
-      // so the status quo itself shows any new instrument it takes.
-      const existing = (packet.result?.contributions ?? []).flatMap((e) => {
+      const existing = contributions.flatMap((e) => {
         const m = typeof e.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
         return m && Array.isArray(v) && v[0] === "existing" ? [m[1]!] : [];
       });
       if (!existing.length) throw unverified("existing_debt");
-      return exact(mine.filter((x) => !existing.includes(x)), c.added) && exact(existing.filter((x) => !mine.includes(x)), c.removed)
-        && exact(prepaid.map((x) => x.split("|")[0]!), c.prepaid) && exact(charges.map((x) => x.split("|").slice(0, 2).join("|")), c.charges)
-        && (c.variant === "same" ? terms[1] === quoTerms[1] : terms[1] !== quoTerms[1]);
+      const mine = list(`path.${path}.instruments`);
+      if (!mine.length) return false;
+      // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit repaid
+      // within the horizon or seasonally (short), bank credit with a scheduled amortization after the horizon.
+      const kind = (id: string) => {
+        const [role, lender, , , , , , , after] = terms(id);
+        if (role === "amended") return "aditamento";
+        if (lender === "capital_markets") return "debenture_nova";
+        if (lender === "development_bank") return "fomento";
+        if (lender === "bank") return after === "none" || after === "seasonal_release" ? "bancario_curto" : after === "scheduled" ? "bancario_programado" : `bancario:${after}`;
+        return `outro:${lender}`;
+      };
+      // An existing instrument touched by a prepayment or a charge: the named row by the shared id, an existing debenture by its kind.
+      const touched = (id: string) => vars.i !== undefined && id === vars.i ? "$i" : terms(id)[0] === "existing" && terms(id)[1] === "capital_markets" ? "debenture_atual" : `outro:${id}`;
+      const set = (xs: string[]) => [...new Set(xs)].sort().join(",");
+      const want = (xs: readonly string[]) => set(xs.map((x) => x === "$i" ? "$i" : x));
+      const added = set(mine.filter((x) => !existing.includes(x)).map(kind));
+      const removed = set(existing.filter((x) => !mine.includes(x)).map(touched));
+      const prepaid = set(list(`path.${path}.prepayments`).map((x) => touched(x.split("|")[0]!)));
+      const charges = set(list(`path.${path}.chargeSlots`).map((x) => {const [k, id] = x.split("|"); return `${k}|${touched(id!)}`;}));
+      const variantOf = (id: string) => list(`path.${id}.terms`)[1];
+      return added === want(c.added) && removed === want(c.removed) && prepaid === want(c.prepaid) && charges === want(c.charges)
+        && (c.variant === "same" ? variantOf(path) === variantOf(quo[0]!) : variantOf(path) !== variantOf(quo[0]!));
     }
     if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
     if ("changedOnly" in c) {
@@ -612,8 +641,7 @@ const sentences = {
   recommendationRemoved: "Retirei a recomendação; a página mostra as opções com os critérios e os números, e os fatos materiais continuam.",
   materialKept: "Os fatos materiais ficam no material, porque são o que o conselho precisa para decidir; sem eles, a escolha ficaria sem base.",
   deadlineKept: "O prazo fica, porque vale para qualquer caminho que o conselho escolher.",
-  figureRemoved: "Retirei o que foi pedido; não era fato material para a decisão.",
-  pageRemoved: "Retirei a página; ela não traz fato material para a decisão.",
+  onlyRecommendation: "Só a recomendação pode sair a pedido; páginas, linhas e fatos ficam no material como foram compostos.",
   unknownTarget: "O pedido não corresponde a nenhuma parte do material.",
 } as const;
 export type BoardOmissionDecision = {id: string; target: BoardOmissionTarget; targetId: string; requestedBy: string; outcome: "applied" | "refused"; reason: string; keptFigureIds: string[]};
@@ -755,16 +783,10 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
       const decision = attempt((r) => r.recommendations.add(p.id), sentences.recommendationRemoved);
       return decision.outcome === "applied" ? {...decision, keptFigureIds: kept} : decision;
     }
-    if (o.target === "page") {
-      const p = d.pages.find((x) => x.id === o.targetId);
-      if (!p) return done("refused", sentences.unknownTarget);
-      if (p.role === "decisions") return done("refused", sentences.materialKept);
-      return attempt((r) => r.pages.add(p.id), sentences.pageRemoved);
-    }
-    if (o.target === "figure") {
-      if (!d.figures.some((f) => f.id === o.targetId)) return done("refused", sentences.unknownTarget);
-      if (economic.has(o.targetId)) return done("refused", sentences.materialKept, [o.targetId]);
-      return attempt((r) => r.figures.add(o.targetId), sentences.figureRemoved);
+    // A request removes only a sentence of recommendation; no page, line, fact or deadline is ever taken out.
+    if (o.target === "page" || o.target === "figure") {
+      const known = o.target === "page" ? d.pages.some((x) => x.id === o.targetId) : d.figures.some((f) => f.id === o.targetId);
+      return done("refused", known ? sentences.onlyRecommendation : sentences.unknownTarget);
     }
     const [deliberationId, deadlineId] = o.targetId.split(".");
     const known = d.deliberations.some((x) => x.id === deliberationId && x.deadlines.some((t) => t.id === deadlineId));

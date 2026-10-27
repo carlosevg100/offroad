@@ -136,8 +136,19 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
 }
 /** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
-export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true} = {}) {
+export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
+  amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true} = {}) {
   const k = auroraCapitalPathsKernel();
+  const instrument = (id: string) => (k as unknown as {instruments: Record<string, unknown>[]}).instruments.find((x) => x.id === id)!;
+  if (variant.amendmentWithoutExtension) {
+    const original = instrument("ccb-bradesco"), amended = instrument("ccb-bradesco-aditada");
+    Object.assign(amended, {finalPaymentDate: original.finalPaymentDate, principal: original.principal, afterHorizon: {kind: "none"}});
+  }
+  if (variant.developmentLoanAsBank) Object.assign(instrument("finame-linha"), {lenderKind: "bank", label: "CCB para uso livre"});
+  if (variant.deferralOnlyCapexAndEbitda) {
+    const goOn = k.projectVariants.find((v) => v.id === "seguir") as unknown as {effects: Record<string, string[]>}, later = k.projectVariants.find((v) => v.id === "adiar-12") as unknown as {effects: Record<string, string[]>};
+    later.effects = {...later.effects, depreciation: goOn.effects.depreciation!, maintenanceCapex: goOn.effects.maintenanceCapex!, startupWorkingCapitalCashFlow: goOn.effects.startupWorkingCapitalCashFlow!};
+  }
   const path = (id: string) => (k as unknown as {paths: {id: string; instrumentIds: string[]; prepayments: {instrumentId: string; periodEnd: string}[]}[]}).paths.find((x) => x.id === id)!;
   if (variant.keptDebtWithNewLoan) path("manter").instrumentIds = [...path("manter").instrumentIds, "giro-4t26-17"];
   if (variant.extensionWithExtraPrepayment) path("alongar-bradesco").prepayments = [{instrumentId: "debenture-2021", periodEnd: "2027-03-31"}];
