@@ -37,7 +37,7 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
   omissions: z.array(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: key, requestedBy: text, outcome: z.enum(["applied", "refused"]), reason: text, keptFigureIds: ids})).max(12),
   /** The first version as composed and, after an omission request, the second: the earlier version is kept. */
   versions: z.array(boardMaterialSchema).max(2),
-  gaps: z.array(z.strictObject({item: text, reason: z.enum(["figure_pending_reviewed_result", "layout_exceeds_page", "pages_exceed_agenda", "recommendation_removed_without_options", "label_not_in_dictionary", "informed_reason_not_in_dictionary", "object_not_in_vocabulary"])})).max(256),
+  gaps: z.array(z.strictObject({item: text, reason: z.enum(["figure_pending_reviewed_result", "layout_exceeds_page", "pages_exceed_agenda", "recommendation_removed_without_options", "label_not_in_dictionary", "informed_reason_not_in_dictionary", "object_not_in_vocabulary", "species_not_registered"])})).max(256),
   pending: z.strictObject({indicative: z.array(z.strictObject({figureId: key, reason: text})).max(24),
     sources: z.array(z.strictObject({sourceId: key, methodId: key, status: key, reasons: z.array(text).max(64)})).max(16),
     authority: ids, template: z.enum(["not_supplied", "supplied_not_applied"])}),

@@ -31,8 +31,8 @@ export const boardDebtorNames: Record<string, string> = {"rede-a": "rede A", "re
  * an object only when the whole field, normalized only by case, spacing and accents, equals the term or one of the
  * registered labels declared for it below; a term inside a longer text (a mention, a comparison, a negation, a
  * qualifier) never matches. Without a match the slot shows its generic words and leaves a gap. */
-export type BoardObjectForm = "nome" | "Nome" | "o" | "O" | "de" | "em";
-export const boardVocabularies: Record<"input" | "project", Record<string, Record<BoardObjectForm, string>>> = {
+export type BoardObjectForm = "nome" | "Nome" | "o" | "O" | "de" | "em" | "um" | "nova" | "atual_o" | "atual_de" | "titulares";
+export const boardVocabularies: Record<"input" | "project" | "species", Record<string, Partial<Record<BoardObjectForm, string>>>> = {
   input: {
     trigo: {nome: "trigo", Nome: "Trigo", o: "o trigo", O: "O trigo", de: "do trigo", em: "no trigo"},
     "açúcar": {nome: "açúcar", Nome: "Açúcar", o: "o açúcar", O: "O açúcar", de: "do açúcar", em: "no açúcar"},
@@ -42,6 +42,14 @@ export const boardVocabularies: Record<"input" | "project", Record<string, Recor
   project: {
     "linha de embalagem": {nome: "linha de embalagem", Nome: "Linha de embalagem", o: "a linha de embalagem", O: "A linha de embalagem", de: "da linha de embalagem", em: "na linha de embalagem"},
     caldeira: {nome: "caldeira", Nome: "Caldeira", o: "a caldeira", O: "A caldeira", de: "da caldeira", em: "na caldeira"},
+  },
+  // The species of an instrument: named only when the instrument's registered label equals the term or a declared label.
+  species: {
+    "debênture": {um: "uma debênture", nova: "debênture nova", atual_o: "a debênture atual", atual_de: "da debênture atual", de: "da debênture", titulares: "debenturistas"},
+    "nota comercial": {um: "uma nota comercial", nova: "nota comercial nova", atual_o: "a nota comercial atual", atual_de: "da nota comercial atual", de: "da nota comercial", titulares: "titulares da nota comercial"},
+    CCB: {um: "uma CCB", nova: "CCB nova", atual_o: "a CCB atual", atual_de: "da CCB atual", de: "da CCB", titulares: "credores da CCB"},
+    Finame: {um: "um Finame", nova: "Finame novo", atual_o: "o Finame atual", atual_de: "do Finame atual", de: "do Finame", titulares: "credores do Finame"},
+    CRI: {um: "um CRI", nova: "CRI novo", atual_o: "o CRI atual", atual_de: "do CRI atual", de: "do CRI", titulares: "titulares do CRI"},
   },
 };
 /** Registered labels declared as canonical forms of a term (exact whole-field equality after normalization). A case
@@ -53,11 +61,19 @@ export const boardVocabularyLabels: Record<keyof typeof boardVocabularies, Recor
     "linha de embalagem": ["Linha de embalagem, cronograma original", "Linha de embalagem no cronograma informado", "Linha de embalagem adiada doze meses"],
     caldeira: ["Caldeira, cronograma original", "Caldeira no cronograma informado", "Caldeira adiada doze meses"],
   },
+  species: {
+    "debênture": ["Debênture 2021", "Debênture da 2ª emissão, R$ 90 mi", "Debênture da 2ª emissão, R$ 80 mi"],
+    "nota comercial": [], CCB: ["CCB Bradesco", "CCB de três anos, R$ 30 mi", "CCB de cinco anos, R$ 70 mi", "CCB Bradesco alongada até 2029"],
+    Finame: ["Finame", "Finame da linha de embalagem"], CRI: [],
+  },
 };
 /** The generic words a slot shows when no term matches, per vocabulary and form. */
-export const boardObjectGenerics: Record<keyof typeof boardVocabularies, Record<BoardObjectForm, string>> = {
+export const boardObjectGenerics: Record<keyof typeof boardVocabularies, Partial<Record<BoardObjectForm, string>>> = {
   input: {nome: "insumo", Nome: "Insumo", o: "o insumo", O: "O insumo", de: "do insumo", em: "no insumo"},
   project: {nome: "projeto analisado", Nome: "Projeto analisado", o: "o projeto analisado", O: "O projeto analisado", de: "do projeto analisado", em: "no projeto analisado"},
+  // Capital markets without a registered species: the kind only, and a gap of species.
+  species: {um: "um instrumento de mercado de capitais", nova: "instrumento de mercado de capitais novo", atual_o: "o instrumento de mercado de capitais atual",
+    atual_de: "do instrumento de mercado de capitais atual", de: "do instrumento de mercado de capitais", titulares: "titulares do instrumento de mercado de capitais"},
 };
 /** Case, spacing and accents only. */
 export const boardNormalizeLabel = (x: string) => x.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -107,6 +123,8 @@ export const boardDeferralRules: {series: Record<string, "flow" | "stock" | "fir
     "company.ebitda": "flow", "company.nonCashEbitdaBridge": "flow", "company.cashLeasePayments": "flow", "company.netWorkingCapitalChange": "flow",
     "company.maintenanceCapex": "flow", "company.growthCapex": "flow", "company.taxableBaseBeforeProject": "flow", "company.netFinancingCashAvailable": "flow",
     "company.netCapitalCashAvailable": "flow", "company.netRestrictedCashMovement": "flow", "company.closingDebtStock": "stock", "company.cashTaxRate": "first", "company.lossTaxTreatment": "first",
+    // The plan's project variants (fixed horizon): every component is a flow.
+    "variant.growthCapex": "flow", "variant.ebitda": "flow", "variant.depreciation": "flow", "variant.maintenanceCapex": "flow", "variant.startupWorkingCapitalCashFlow": "flow",
   },
   shiftedDates: ["project.ramp.operationStartMonth", "company.finalPaymentDates"],
   fixedDates: ["valuation.baseDate"],
@@ -117,6 +135,32 @@ export function boardShiftDate(iso: string, months: number) {
   const m = monthIndex(iso) + months, y = Math.floor(m / 12), mo = m % 12 + 1, last = new Date(Date.UTC(y, mo, 0)).getUTCDate();
   const wasLast = Number(iso.slice(8, 10)) === new Date(Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)), 0)).getUTCDate();
   return `${y}-${String(mo).padStart(2, "0")}-${String(wasLast ? last : Math.min(Number(iso.slice(8, 10)), last)).padStart(2, "0")}`;
+}
+/** The k by which a plan variant is the reference variant uniformly deferred within the plan's fixed horizon, or null:
+ * every series follows deferred[t] = reference[t - k] for t >= k and its neutral value before, the tail beyond the
+ * horizon falling out; the label is the variant's name; every other field equal; a series the rules do not list refuses. */
+export function boardIsUniformPlanDeferral(a: Map<string, BoardCanonicalInput>, b: Map<string, BoardCanonicalInput>): number | null {
+  const same = (x: unknown, y: unknown) => JSON.stringify(x) === JSON.stringify(y);
+  const series: [unknown[], unknown[], string][] = [];
+  for (const key of new Set([...a.keys(), ...b.keys()])) {
+    const x = a.get(key), y = b.get(key);
+    if (!x || !y) return null;
+    if (key === "variant.label") continue;
+    const {value: xv, ...xr} = x, {value: yv, ...yr} = y;
+    if (!same(xr, yr)) return null;
+    const rule = boardDeferralRules.series[key];
+    if (rule) {
+      if (!Array.isArray(xv) || !Array.isArray(yv) || xv.length !== yv.length || rule !== "flow") return null;
+      series.push([xv, yv, key]); continue;
+    }
+    if (Array.isArray(yv) && yv.length > 1) return null; // a series the rules do not enumerate
+    if (!same(xv, yv)) return null;
+  }
+  if (!series.length) return null;
+  const n = series[0]![1].length;
+  for (let k = 1; k < n; k++)
+    if (series.every(([x, y]) => x.every((v, t) => String(v) === (t >= k ? String(y[t - k]) : "0"))) && series.some(([, y]) => y.slice(0, n - k).some((v) => String(v) !== "0"))) return k;
+  return null;
 }
 /** The k by which the case is the reference uniformly deferred, or null. */
 export function boardIsUniformDeferral(a: Map<string, BoardCanonicalInput>, b: Map<string, BoardCanonicalInput>): number | null {
@@ -173,7 +217,7 @@ export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [str
    * the field's registered nature must be the same. */
   nature?: "balance" | "flow" | "value";
   /** For an object: the vocabulary whose term the bound registered text must name, and the form the sentence uses. */
-  vocabulary?: "input" | "project";
+  vocabulary?: "input" | "project" | "species";
   form?: BoardObjectForm;
   /** For an informed fact: the person the template attributes it to; the fact must be adopted as informed by that person. */
   author?: (typeof boardInformedAuthors)[number];
@@ -219,6 +263,8 @@ type BoardConditionBody =
   | {changedOnly: readonly [string, string, string]; fields: readonly string[]}
   /** The case is the reference moved uniformly by k periods (boardDeferralRules), k at least one. */
   | {deferredBy: readonly [string, string, string]}
+  /** A plan variant is the reference variant moved uniformly by k periods within the plan's fixed horizon. */
+  | {planDeferred: readonly [string, string, string]}
   /** A projection scenario changes exactly the named drivers against the scenario it derives from (its overrides, its
    * volume rule and its input-cost shock are its whole definition). */
   | {scenarioDefines: readonly [string, string]; drivers: readonly string[]}
@@ -243,7 +289,10 @@ export type BoardTemplate = {text: string; slots: Record<string, BoardSlotSpec>;
   /** For a deliberation's texts: the title template of the deliberation they belong to. */
   of?: string;
   /** For an answer: the question template it answers. */
-  answers?: string};
+  answers?: string;
+  /** The declared wording when an order the text asserts between two shown figures holds on the values but not on the
+   * figures as shown (same rounded number): it states no order. */
+  nearlyEqual?: string};
 
 const DT = "build-company-debt-table", CV = "measure-covenant-headroom", WC = "project-weekly-cash", IP = "analyze-investment-project",
   OP = "build-operating-projection", PC = "challenge-financial-projection", RF = "monetize-receivables-for-working-capital", RC = "analyze-relative-debt-cost",
@@ -254,14 +303,14 @@ const dl = (action: string): BoardSlotSpec => ({type: "deadline", action});
 const op = (x: string): BoardOperand => /^-?\d+(?:\.\d+)?$/.test(x) ? {value: x} : /^\$[a-z]+$/.test(x) ? {var: x.slice(1)} : {slot: x};
 const cmp = (a: string | BoardOperand, how: BoardComparison, b: string | BoardOperand): BoardCondition => ({compare: [typeof a === "string" ? op(a) : a, how, typeof b === "string" ? op(b) : b]});
 const at = (method: string, path: string, year?: true): BoardOperand => year ? {at: [method, path], year} : {at: [method, path]};
-type Extra = {when?: BoardCondition[]; of?: string; answers?: string};
+type Extra = {when?: BoardCondition[]; of?: string; answers?: string; nearlyEqual?: string};
 /** Names the material assertion a condition sustains. */
 const claim = (text: string, ...conditions: BoardCondition[]): BoardCondition[] => conditions.map((c) => ({...c, claim: text}));
 const has = (method: string, list: string, field: string | null, value: string): BoardCondition => ({includes: [method, list, field], value: {value}});
 const lacks = (method: string, list: string, field: string | null, value: string | BoardOperand): BoardCondition =>
   ({includes: [method, list, field], value: typeof value === "string" ? {value} : value, none: true});
 const t = (use: BoardTextUse | BoardTextUse[], text: string, slots: Record<string, BoardSlotSpec> = {}, extra: Extra = {}): BoardTemplate =>
-  ({text, slots, use: Array.isArray(use) ? use : [use], when: extra.when ?? [], ...extra.of ? {of: extra.of} : {}, ...extra.answers ? {answers: extra.answers} : {}});
+  ({text, slots, use: Array.isArray(use) ? use : [use], when: extra.when ?? [], ...extra.of ? {of: extra.of} : {}, ...extra.answers ? {answers: extra.answers} : {}, ...extra.nearlyEqual ? {nearlyEqual: extra.nearlyEqual} : {}});
 
 // Shared concepts, each with the assertion it sustains.
 const maturityYear: BoardCondition = {largest: [DT, "result.table.profile.scheduleByYear", "principal", "year"], equals: {slot: "ano"}, claim: "o ano mostrado é o de maior vencimento de principal"};
@@ -379,7 +428,7 @@ const pathMovesLine = (text: string, id: string, m: Parameters<typeof moves>[1],
 
 // Named objects: each bound to the registered field that names it; the identity across sources is a condition.
 const obj = (vocabulary: keyof typeof boardVocabularies, form: BoardObjectForm, method: string, path: string): BoardSlotSpec =>
-  ({type: "object", vocabulary, form, from: [[method, path]], generic: boardObjectGenerics[vocabulary][form]});
+  ({type: "object", vocabulary, form, from: [[method, path]], generic: boardObjectGenerics[vocabulary][form]!});
 const project = (form: BoardObjectForm) => obj("project", form, IP, "cases[id=base].label");
 const input = (form: BoardObjectForm) => obj("input", form, OP, "result.projection.projection.scenarios[id=informado-trigo-4m].label");
 const sameProject = claim("cada variante com projeto do plano de capital tem rótulo canônico igual ao do caso base da análise de investimento",
@@ -409,7 +458,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve]}),
   "delib.maturities": t("delib.title", "Vencimentos {de:ano}", {ano: yr("$y")}, {when: [maturityYear]}),
   "delib.maturities.subject": t("delib.subject", "decidir a rota para os vencimentos {de:ano}", {ano: yr("$y")}, {of: "delib.maturities", when: [maturityYear]}),
-  "delib.maturities.sounding": t("delib.recommendation", "autorizar a sondagem de uma debênture de até {valor}, com prazo de {prazo}, com o plano alternativo apresentado no material",
+  "delib.maturities.sounding": t("delib.recommendation", "autorizar a sondagem de {species:um:long} de até {valor}, com prazo de {prazo}, com o plano alternativo apresentado no material",
     {valor: issue, prazo: term}, {of: "delib.maturities", when: [...longIsDebenture, ...claim("o resultado tem plano alternativo", {bind: "alt", to: at(FP, "readings.alternative.pathId")})]}),
   "delib.policy": t("delib.title", "Política de endividamento"),
   "delib.policy.definition": t("delib.subject", "definir qual EBITDA mede o limite de {limite}", {limite: policy}, {of: "delib.policy", when: [...policyIsBoard, ...policyUndefined]}),
@@ -453,7 +502,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {when: [...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
       cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"})), ...policyIsBoard]}),
   "topic.project_return": t("page.title", "{projeto} rende {retorno}, acima do custo de capital de {custo}",
-    {projeto: project("O"), retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")}, {when: claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo"))}),
+    {projeto: project("O"), retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")}, {when: claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")), nearlyEqual: "{projeto} rende {retorno}, praticamente igual ao custo de capital de {custo}"}),
   "topic.project_value": t("page.line", "Retorno de {retorno} contra custo de capital de {custo}; VPL de {vpl}.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate"), vpl: metric("money", "base", "netPresentValue", "value")}),
   "topic.project_payback": t("page.line", "Payback de cerca de {payback}; o fluxo acumulado do projeto chega a {pico} {em:data}.",
@@ -503,29 +552,34 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "alternatives.row.extend_with_bank": pathRow("Caminho F", "alongar-com-banco"),
   "alternatives.row.extend_bradesco": pathRow("Caminho G", "alongar-bradesco"),
   "alternatives.moves.title": t("page.title", "Os {caminhos} caminhos combinam estes movimentos da dívida e do projeto", {caminhos: s("count", FP, "readings.horizon.candidatePaths")}),
-  "alternatives.moves.no_line_debenture": pathMovesLine("Caminho A: sem {projeto}; crédito bancário de curto prazo; debênture nova; pré-pagamento da debênture atual e da dívida com {credor}.",
+  "alternatives.moves.no_line_debenture": pathMovesLine("Caminho A: sem {projeto}; crédito bancário de curto prazo; {species:nova:new@sem-linha-debenture}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
     "sem-linha-debenture", {added: [bankShort, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}, claim("o caminho fica sem o projeto da linha", ...planVariant("sem-linha-debenture", "none")), true, "o"),
+  // The plan's deferral: the path's variant is the reference variant moved uniformly (boardDeferralRules, fixed horizon).
   "alternatives.moves.defer_line": pathMovesLine("Caminho B: adiamento {projeto}; crédito bancário de curto prazo.", "adiar-linha", {added: [bankShort], variant: "other"},
-    scenario("projeto adiado", ...planVariant("adiar-linha", "project"), ...["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"].map((field) =>
-      ({startsLater: [{contributed: [FP, `variant.$pv.${field}`]}, {contributed: [FP, `variant.$pr.${field}`]}]}) as BoardCondition)), false, "de"),
-  "alternatives.moves.debenture_with_line": pathMovesLine("Caminho C: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; debênture nova; pré-pagamento da debênture atual e da dívida com {credor}.",
+    scenario("projeto adiado", ...planVariant("adiar-linha", "project"), {planDeferred: [FP, "$pv", "$pr"]}), false, "de"),
+  // Otherwise: the variant by its verified components only, with no word of deferral.
+  "alternatives.moves.defer_line_generic": pathMovesLine("Caminho B: outra variante {projeto}, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.",
+    "adiar-linha", {added: [bankShort], variant: "other"},
+    [...claim("a variante do caminho é de projeto, contra a variante de referência do caminho que mantém a dívida", ...planVariant("adiar-linha", "project")), ...claim("cada componente da variante começa estritamente depois do componente da variante de referência", ...["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"].map((field) =>
+      ({startsLater: [{contributed: [FP, `variant.$pv.${field}`]}, {contributed: [FP, `variant.$pr.${field}`]}]}) as BoardCondition))], false, "de"),
+  "alternatives.moves.debenture_with_line": pathMovesLine("Caminho C: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; {species:nova:new@debenture-com-linha}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
     "debenture-com-linha", {added: [bankShort, "fomento", "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "same"}, [], true),
   "alternatives.moves.keep_and_roll": t("page.line", "Caminho D: dívida mantida como está, com {projeto} no cronograma informado.", {projeto: project("o")}, {when: [...keptDebt, ...sameProject]}),
   "alternatives.moves.short_bank_loan": pathMovesLine("Caminho E: financiamento bancário novo com amortização programada; {projeto} no cronograma informado.", "ccb-tres-anos",
     {added: [bankScheduled], variant: "same"}),
-  "alternatives.moves.extend_with_bank": pathMovesLine("Caminho F: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}; waiver da debênture.",
+  "alternatives.moves.extend_with_bank": pathMovesLine("Caminho F: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}; waiver {species:de:existing}.",
     "alongar-com-banco", {added: [bankShort, "fomento", bankScheduled], prepaid: ["$i"], charges: ["waiver|debenture_atual"], variant: "same"}, [], true),
   "alternatives.moves.extend_bradesco": pathMovesLine("Caminho G: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; dívida com {credor} alongada por aditamento.",
     "alongar-bradesco", {added: [bankShort, "fomento", "aditamento"], removed: ["$i"], variant: "same"}, claim("a dívida nomeada é alongada: vencimento final posterior e menos principal pago", {extendsDebt: [FP, "$i"]}), true),
-  "recommendation.debenture": t("page.title", "Recomendamos sondar uma debênture de até {valor}, com prazo de {prazo}", {valor: issue, prazo: term}, {when: longIsDebenture}),
-  "recommendation.debenture_cost": t("page.line", "Resgata a debênture atual e pré-paga a dívida com {credor}; custo efetivo entre CDI mais {baixo} e CDI mais {alto}.",
+  "recommendation.debenture": t("page.title", "Recomendamos sondar {species:um:long} de até {valor}, com prazo de {prazo}", {valor: issue, prazo: term}, {when: longIsDebenture}),
+  "recommendation.debenture_cost": t("page.line", "Resgata {species:atual_o:existing} e pré-paga a dívida com {credor}; custo efetivo entre CDI mais {baixo} e CDI mais {alto}.",
     {credor: creditorOf("$i"), baixo: s("rate", FP, L + "equivalentSpread"), alto: s("rate", FP, L + "equivalentSpreadAtCondition")},
     {when: [...claim("a faixa vai do menor ao maior custo", cmp("baixo", "le", "alto")), ...claim("as leituras de pré-pagamento são do caminho recomendado", {bind: "p", to: at(FP, "readings.recommendation.pathId")}), prepaidIn("$p"),
       ...claim("o caminho recomendado tem exatamente estes movimentos, entre eles o pré-pagamento da debênture atual e da dívida nomeada",
         moves("$p", {added: [bankShort, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}))]}),
   "recommendation.amortization": t("page.line", "Amortização {de:inicio} {a:fim}.",
     {inicio: s("date", FP, L + "firstAmortizationYear"), fim: s("date", FP, L + "lastAmortizationYear")}, {when: claim("o início vem antes do fim", cmp("inicio", "le", "fim"))}),
-  "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver da debênture; decisão até {prazo}.",
+  "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
     {projeto: project("o"), credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: [...bankFallback, ...sameProject]}),
   "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
     {politica: policy, adverso: measurement("multiple", "dez27-adverso", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear, adverseScenario, ...policyIsBoard]}),
@@ -543,7 +597,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
         cmp(at(CV, "result.headroom.measurements[id=dez26-base].ebitda"), "ne", at(CV, "result.headroom.measurements[id=dez26-base].reportedEbitda")))]}),
   "what_changes.title": t("page.title", "A recomendação depende de demanda acima de {piso}",
     {piso: s("money", FP, L + "issueFloorInsideGates", "value")}, {when: claim("o piso fica abaixo do alvo de emissão", cmp("piso", "lt", at(FP, L + "issueTarget")))}),
-  "what_changes.demand": t("page.line", "Demanda da debênture abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
+  "what_changes.demand": t("page.line", "Demanda {species:de:long} abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
     {piso: s("money", FP, L + "issueFloorInsideGates", "value"), alvo: issue}, {when: [...claim("o piso fica abaixo do alvo", cmp("piso", "lt", "alvo")), ...longIsDebenture]}),
   "what_changes.wheat": t("page.line", "No cenário {insumo} {choque} mais caro com repasse em {defasagem}, o EBITDA {de:ano} fica em cerca de {ebitda}.",
     {insumo: input("de"), choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
@@ -555,7 +609,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "next_steps.title": t("page.title", "Próximos passos e datas"),
   "next_steps.notice": t("page.line", "{prazo}: aviso ao fornecedor {projeto}.", {prazo: dl("delib.action.supplier_notice"), projeto: project("de")}),
   "next_steps.programs": t("page.line", "{prazo}: adesão aos programas de antecipação.", {prazo: dl("delib.action.join_programs")}),
-  "next_steps.sounding": t("page.line", "{prazo}: conclusão da sondagem da debênture.", {prazo: dl("delib.action.finish_sounding")}),
+  "next_steps.sounding": t("page.line", "{prazo}: conclusão da sondagem {species:de:long}.", {prazo: dl("delib.action.finish_sounding")}),
   "next_steps.route": t("page.line", "{prazo}: decisão da rota para os vencimentos {de:ano}.", {prazo: dl("delib.action.decide_route"), ano: yr("$y")}, {when: [maturityYear]}),
   // Summary for prior reading.
   "summary.opening.debt_and_cash": t("summary.opening", "A companhia tem {principal} de dívida vencendo {em:ano} e um aperto de caixa já {em:semana}.",
@@ -585,7 +639,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
         {bind: "last", to: at(FP, L + "lastAmortizationYear")},
         cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$last].scheduledAmortization"), "eq", {value: "0"}))]}),
   "q.demand": t("question", "E se as gestoras não comprarem o volume todo?"),
-  "a.demand": t("answer", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo de cerca de {valor}, com amortização programada, que pré-paga a dívida com {credor}, com waiver e anuência dos debenturistas, decidido até {prazo}, antes do vencimento dessa dívida {em:vencimento}.",
+  "a.demand": t("answer", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo de cerca de {valor}, com amortização programada, que pré-paga a dívida com {credor}, com waiver e anuência dos {species:titulares:existing}, decidido até {prazo}, antes do vencimento dessa dívida {em:vencimento}.",
     {projeto: project("o"), valor: s("money", FP, "readings.alternative.issueTarget", "value"), prazo: dl("delib.action.decide_route"), credor: creditorOf("$i"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
     {answers: "q.demand", when: [...bankFallback, ...claim("a decisão vem antes do vencimento", cmp("prazo", "lt", "vencimento")), ...sameProject]}),
   "q.cost": t("question", "Quanto custa?"),
@@ -603,13 +657,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("a ponte não atribui causa ao restante", cmp(at(RC, "result.bridge.causalAttribution"), "eq", {value: "false"})),
       ...claim("o restante sem explicação é o que a fonte registra", cmp("resto", "gt", "0"))]}),
   "q.rating": t("question", "Vale contratar rating?"),
-  "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores da debênture. Sugerimos avaliação preliminar não publicada.",
+  "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores {species:de:long}. Sugerimos avaliação preliminar não publicada.",
     {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
     {answers: "q.rating", when: claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto"))}),
   "q.strategic": t("question", "{projeto} não é um investimento estratégico?", {projeto: project("O")}),
   "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")},
-    {answers: "q.strategic", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
+    {answers: "q.strategic", nearlyEqual: "O retorno de {retorno} fica praticamente igual ao custo de capital de {custo}, e o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
       ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0"))),
       ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "q.wheat": t("question", "E se o custo {insumo} subir?", {insumo: input("de")}),
@@ -671,6 +725,7 @@ export function boardTemplateClaims() {
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "planDeferred" in c ? `variante ${c.planDeferred[1]} de ${c.planDeferred[0]} é a variante ${c.planDeferred[2]} deslocada uniformemente em k períodos dentro do horizonte do plano (k ao menos um), série a série pelas regras declaradas, sem mudança de magnitude; o resto igual, rótulo à parte`
     : "deferredBy" in c ? `objeto de entrada inteiro ${c.deferredBy[0]} ${c.deferredBy[1]} é ${c.deferredBy[2]} deslocado uniformemente em k períodos (k ao menos um), série a série pelas regras declaradas; ignorados: ${boardInputIgnored.join(", ")}`
     : "scenarioDefines" in c ? `objeto de entrada inteiro do cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva (origem do valor ignorada)`
     : "atKey" in c ? `${series(c.atKey[0])} ${c.op} ${series(c.atKey[1])} em ${describe(c.key)}`
@@ -782,11 +837,11 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]]
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]]
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
@@ -796,6 +851,17 @@ export function checkBoardTemplateLibrary() {
       if ("at" in o) for (const m of o.at[1].matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:at:${m[1]}`);
     }
     for (const m of x.text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)) if (!m[0].startsWith("{count:") && !Object.hasOwn(x.slots, m[1]!)) problems.push(`${id}:text:${m[1]}`);
+    // A declared "praticamente igual" wording: the same slots, no order asserted.
+    if (x.nearlyEqual !== undefined) {
+      const slotsOf = (text: string) => [...text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)].map((m) => m[1]).sort().join(",");
+      if (slotsOf(x.nearlyEqual) !== slotsOf(x.text) || !/praticamente igual/.test(x.nearlyEqual) || /(?<![\p{L}])(acima|abaixo|supera|superior|inferior)(?![\p{L}])/u.test(x.nearlyEqual)) problems.push(`${id}:nearly_equal`);
+    }
+    // Species tokens: {species:form:selector}, with a form every species and the generic words declare.
+    for (const m of x.text.matchAll(/\{species:([a-z_]+):([^}]+)\}/g)) {
+      const form = m[1] as BoardObjectForm;
+      if (!boardObjectGenerics.species[form] || Object.values(boardVocabularies.species).some((v) => !v[form])) problems.push(`${id}:species_form:${form}`);
+      if (!/^(long|existing|new@[$a-z0-9-]+)$/.test(m[2]!)) problems.push(`${id}:species_selector:${m[2]}`);
+    }
     // A text that names a cause carries the condition of that cause, on its driver.
     for (const c of boardScenarioDefinitions) if (c.phrase.test(x.text) && !x.when.some((w) => w.claim === `cenário: ${c.scenario}`)) problems.push(`${id}:scenario:${c.scenario}`);
     // No template asserts a cause: verbs that attribute an effect to a driver are refused in the fixed text.

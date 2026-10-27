@@ -316,6 +316,27 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r25: the variant by its components, the species by its registered label, and an order only as shown.
+    observe("deferred-variant-with-double-capex-described-by-its-components", (() => {
+      const plan = auroraPlanPacket({deferredCapexFactor: 2}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", plan, () => boardPacketInput(2, (c) => {boardRestatePath(c, plan, "adiar-linha");
+        const page = c.pages.find((x) => x.id === "movimentos")!; page.lines = page.lines.map((l) => l.replace("alternatives.moves.defer_line|", "alternatives.moves.defer_line_generic|"));}));
+    })(), {line: "Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo."},
+      (p) => ({line: pageOf(p, "movimentos").lines[1]})),
+    observe("long-instrument-registered-as-a-commercial-note", withBoardSource("plano-2027", auroraPlanPacket({longInstrumentLabel: "Nota comercial"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {title: true, debenture: false}, (p) => ({title: pageOf(p, "recomendacao").title.startsWith("Recomendamos sondar uma nota comercial de até"),
+        debenture: boardShownTexts(p).some((t) => /sond(ar|agem) .*debênture|Demanda da debênture/.test(t))})),
+    observe("long-instrument-without-a-registered-species", withBoardSource("plano-2027", auroraPlanPacket({longInstrumentLabel: "Nota comercial de longo prazo"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {title: true, gap: true}, (p) => ({title: pageOf(p, "recomendacao").title.startsWith("Recomendamos sondar um instrumento de mercado de capitais de até"),
+        gap: p.result.discussion!.gaps.some((g) => g.reason === "species_not_registered")})),
+    observe("return-and-cost-of-capital-equal-as-shown", (() => {
+      const investment = auroraInvestmentPacket({discountRate: "0.158"}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", investment, () => boardPacketInput(2, (c) => {
+        c.extraReadings.wacc = ["linha-embalagem", "comparison.metrics[caseId=base].discountRate", "0", "16"];
+        for (const [id, caseId] of [["npv", "base"], ["npv-economy", "economy-4"], ["npv-capex", "capex-120"], ["npv-slow", "slower-start"], ["npv-defer", "defer-12"]] as const)
+          c.extraReadings[id] = ["linha-embalagem", `comparison.metrics[caseId=${caseId}].netPresentValue`, "1", boardStatedMillions(investment, caseId)];
+      }));
+    })(), {title: "A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano"}, (p) => ({title: pageOf(p, "linha").title})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -511,6 +532,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r25: a plan variant whose capex also changes is not a deferral.
+    ...([2, 10] as const).flatMap((factor) => ([2, 3] as const).map((turn) => [`deferred-variant-with-capex-times-${factor}-named-a-deferral-turn-${turn}`, () => {
+      const plan = auroraPlanPacket({deferredCapexFactor: factor}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", plan, () => build(turn, (c) => boardRestatePath(c, plan, "adiar-linha")));
+    }, "board_capital_template_condition_failed:alternatives.moves.defer_line"] as [string, () => unknown, string])),
     // Review r24: a pending figure takes only the slot of its own field; a condition on it is undefined and never holds.
     ["staged-npv-pending-as-the-cost-of-capital-at-30-percent", () => {
       const packet = auroraInvestmentPacket({discountRate: "0.3"}) as unknown as Record<string, unknown>;

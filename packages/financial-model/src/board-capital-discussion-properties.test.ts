@@ -159,7 +159,7 @@ const meaning: Record<string, Record<string, string>> = {
 const PROJECT = "analyze-investment-project|cases[id=base].label", INPUT = OP + "result.projection.projection.scenarios[id=informado-trigo-4m].label";
 for (const [slot, want, ids] of [
   ["projeto", PROJECT, ["delib.packaging_line", "delib.packaging_line.subject", "topic.project_return", "recommendation.alternative", "a.roll_bank", "a.demand", "q.strategic", "next_steps.notice",
-    ...["no_line_debenture", "defer_line", "debenture_with_line", "keep_and_roll", "short_bank_loan", "extend_with_bank", "extend_bradesco"].map((x) => `alternatives.moves.${x}`)]],
+    ...["no_line_debenture", "defer_line", "defer_line_generic", "debenture_with_line", "keep_and_roll", "short_bank_loan", "extend_with_bank", "extend_bradesco"].map((x) => `alternatives.moves.${x}`)]],
   ["insumo", INPUT, ["what_changes.wheat", "a.wheat", "q.wheat"]],
 ] as const) for (const id of ids) meaning[id] = {...meaning[id], [slot]: want};
 /** The oracle's own closed vocabularies (its copy, written apart from the method's): each term with the whole registered
@@ -498,8 +498,21 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       if (!late || !before || !(late > before) || !repaid(a).lt(repaid(o))) bad.push(`path_extension:${t.slice(0, 60)}`);
     }
     // A plan deferral: every recorded component of the variant starts later than the reference variant's.
-    if (/adiamento d[oa] /i.test(t) && !["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"]
-      .every((f) => firstNonZero(variant("adiar-12", f) as string[]) > firstNonZero(variant("seguir", f) as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    // A plan deferral, the oracle's own reading: the path's variant is the reference variant moved by k periods, every
+    // recorded component the same values later (zeros before, the tail past the horizon out), every other field equal.
+    if (/adiamento d[oa] /i.test(t)) {
+      const pathVariant = (id: string) => ((term(`.path.${id}.terms`) as string[] | undefined) ?? [])[1];
+      const fields = (id: string | undefined) => new Map(planContributions.filter((x) => id && x.fieldPath.includes(`.variant.${id}.`)).map((x) => [x.fieldPath.split(`.variant.${id}.`)[1]!, x.value.value]));
+      const a = fields(pathVariant("adiar-linha")), b = fields(pathVariant("manter"));
+      const lists = [...b.entries()].filter(([, v]) => Array.isArray(v)) as [string, string[]][];
+      const n = lists[0]?.[1].length ?? 0;
+      const shifted = (k: number) => lists.every(([f, y]) => {const x = a.get(f) as string[] | undefined; return !!x && x.length === n && x.every((v, i) => new D(v).eq(i >= k ? y[i - k]! : "0"));});
+      const others = [...new Set([...a.keys(), ...b.keys()])].every((f) => f === "label" || Array.isArray(b.get(f)) || JSON.stringify(a.get(f)) === JSON.stringify(b.get(f)));
+      if (!(a.size === b.size && others && Array.from({length: Math.max(0, n - 1)}, (_, i) => i + 1).some(shifted))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    }
+    // A plan variant described by its components only: each component starts strictly later than the reference's.
+    if (/outra variante d[oa] .*começando depois/.test(t) && !["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"]
+      .every((f) => firstNonZero(variant("adiar-12", f) as string[]) > firstNonZero(variant("seguir", f) as string[]))) bad.push(`plan_components:${t.slice(0, 60)}`);
     // A flow is never read as a balance: a working-capital amount above a reference is said of its variation.
     if (/capital de giro/.test(t) && /acima/.test(t) && !/variação do capital de giro/.test(t)) bad.push(`nature:${t.slice(0, 60)}`);
     if (/sem a linha da safra/i.test(t)) bad.push(`scenario_weekly_line:${t.slice(0, 60)}`);
@@ -528,6 +541,29 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
         if (/veda a cessão/.test(t) && facts?.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
       }
     }
+  }
+  // Species, the oracle's own reading: a capital-markets instrument is called by its species only when its registered
+  // label is the species or one of the labels the oracle itself lists for it.
+  const speciesLabels: Record<string, string[]> = {"debênture": ["debênture", "debênture 2021", "debênture da 2ª emissão, r$ 90 mi", "debênture da 2ª emissão, r$ 80 mi"], "nota comercial": ["nota comercial"]};
+  const planSpecies = (() => {
+    const fp = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "evaluate-financing-paths")?.packetFingerprint)?.packet as
+      {readings?: {recommendation?: {longInstrument?: {id?: string}}}; result?: {contributions?: {fieldPath: string; value: {value: unknown}}[]}} | undefined;
+    const cs = fp?.result?.contributions ?? [], label = (id: string | undefined) => cs.find((x) => id && x.fieldPath.endsWith(`.instrument.${id}.label`))?.value.value as string | undefined;
+    const existing = cs.flatMap((x) => {const m = /\.instrument\.([a-z0-9-]+)\.terms$/.exec(x.fieldPath); const v = x.value.value as string[]; return m && v[0] === "existing" && v[1] === "capital_markets" ? [m[1]!] : [];});
+    const speciesOf = (l: string | undefined) => l === undefined ? null : Object.entries(speciesLabels).find(([, ls]) => ls.includes(l.toLowerCase()))?.[0] ?? null;
+    return {long: speciesOf(label(fp?.readings?.recommendation?.longInstrument?.id)), existing: existing.length === 1 ? speciesOf(label(existing[0])) : null};
+  })();
+  for (const t of texts) {
+    const longSays = /sond(ar|agem de) (uma )?(debênture|nota comercial)|(Demanda|sondagem|investidores) d[a] (debênture|nota comercial)/.exec(t);
+    if (longSays && planSpecies.long !== (longSays[3] ?? longSays[5])) bad.push(`species_long:${t.slice(0, 60)}`);
+    const existingSays = /(debênture|nota comercial) atual|debenturistas|waiver da (debênture|nota comercial)/.exec(t);
+    if (existingSays && planSpecies.existing !== (existingSays[0] === "debenturistas" ? "debênture" : existingSays[1] ?? existingSays[2])) bad.push(`species_existing:${t.slice(0, 60)}`);
+  }
+  // Orders as shown: a text that says one shown figure is above or below another says so of the numbers as shown.
+  for (const t of texts) {
+    const num = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
+    const above = /rende (-?[\d.,]+)% ao ano, acima do custo de capital de (-?[\d.,]+)%/.exec(t) ?? /retorno de (-?[\d.,]+)% ao ano fica acima do custo de capital de (-?[\d.,]+)%/.exec(t);
+    if (above && !num(above[1]!).gt(num(above[2]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
   }
   // Credit lines: the debt table records no modality nor purpose, so no text may present a line as a working-capital or
   // overdraft line; the generic line names the creditor the table registers for it.
@@ -1053,6 +1089,59 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(refused).toBeGreaterThan(150);
     expect(undefinedCount).toBeGreaterThan(30);
   }, 1200000);
+  it("regression r25: a plan deferral is the reference variant moved uniformly, an instrument's species is registered, and a shown order holds as shown (full path, oracle not vacuous)", () => {
+    const shown = (p: Packet) => {const v = p.result.discussion!.versions.at(-1)!; return [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]),
+      ...v.deliberations.flatMap((x) => [x.title, x.text]), ...v.questions.flatMap((x) => [x.question, x.answer])];};
+    const generic = (c: CaseData) => {const page = c.pages.find((x) => x.id === "movimentos")!; page.lines = page.lines.map((l) => l.replace("alternatives.moves.defer_line|", "alternatives.moves.defer_line_generic|"));};
+    for (const factor of [2, 10]) {
+      const plan = auroraPlanPacket({deferredCapexFactor: factor}) as unknown as Record<string, unknown>;
+      const restate = (c: CaseData) => boardRestatePath(c, plan, "adiar-linha");
+      for (const turn of [2, 3] as const) {
+        expect(() => withBoardSource("plano-2027", plan, () => full(turn, restate)), `${factor} ${turn}`).toThrow("board_capital_template_condition_failed:alternatives.moves.defer_line");
+        const p = withBoardSource("plano-2027", plan, () => full(turn, (c) => {restate(c); generic(c);}));
+        const line = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "movimentos")!.lines[1]!;
+        expect(line).toBe("Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.");
+        expect(oracle(p, [{packet: plan}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      }
+      // Not vacuous: the calibration's deferral line read against this plan (same fingerprint).
+      const calibrationPlan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
+      const forged = {...plan, fingerprint: (calibrationPlan.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("scenario_plan_deferral:")), `${factor}`).toBe(true);
+    }
+    // The long instrument registered as a commercial note, exactly, and under a longer label.
+    for (const [label, says] of [["Nota comercial", "Recomendamos sondar uma nota comercial de até"], ["Nota comercial de longo prazo", "Recomendamos sondar um instrumento de mercado de capitais de até"]] as const) {
+      const plan = auroraPlanPacket({longInstrumentLabel: label}) as unknown as Record<string, unknown>;
+      for (const turn of [2, 3] as const) {
+        const p = withBoardSource("plano-2027", plan, () => full(turn, () => undefined));
+        expect(shown(p).some((x) => x.startsWith(says)), `${label} ${turn}`).toBe(true);
+        expect(shown(p).filter((x) => /sondar|sondagem|Demanda d|investidores d/.test(x)).some((x) => /debênture/.test(x)), `${label} ${turn}`).toBe(false);
+        expect(p.result.discussion!.gaps.some((g) => g.reason === "species_not_registered"), `${label} ${turn}`).toBe(label !== "Nota comercial");
+        expect(oracle(p, [{packet: plan}, ...auroraBoardSources()]), `${label} ${turn}`).toEqual({bad: [], missing: []});
+      }
+      const calibrationPlan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
+      const forged = {...plan, fingerprint: (calibrationPlan.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("species_long:")), label).toBe(true);
+    }
+    // Cost of capital of 15,8% against a return of 15,8032%: both shown as 16%, so no order is asserted.
+    const investment = auroraInvestmentPacket({discountRate: "0.158"}) as unknown as Record<string, unknown>;
+    const restate = (c: CaseData) => {
+      c.extraReadings.wacc = ["linha-embalagem", "comparison.metrics[caseId=base].discountRate", "0", "16"];
+      for (const [id, caseId] of [["npv", "base"], ["npv-economy", "economy-4"], ["npv-capex", "capex-120"], ["npv-slow", "slower-start"], ["npv-defer", "defer-12"]] as const)
+        c.extraReadings[id] = ["linha-embalagem", `comparison.metrics[caseId=${caseId}].netPresentValue`, "1", boardStatedMillions(investment, caseId)];
+    };
+    for (const turn of [2, 3] as const) {
+      const p = withBoardSource("linha-embalagem", investment, () => full(turn, restate));
+      const texts = shown(p);
+      expect(texts).toContain("A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano");
+      expect(texts.some((x) => x.startsWith("O retorno de 16% ao ano fica praticamente igual ao custo de capital de 16% ao ano"))).toBe(true);
+      expect(texts.some((x) => /acima do custo de capital/.test(x))).toBe(false);
+      expect(oracle(p, [{packet: investment}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the old wording, 16% above 16%.
+      const forged = structuredClone(p), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!;
+      page.title = "A linha de embalagem rende 16% ao ano, acima do custo de capital de 16% ao ano";
+      expect(oracle(forged, [{packet: investment}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("order_as_shown:"))).toBe(true);
+    }
+  });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
     const economy = original.cases.find((x) => x.id === "economy-4")!.result.contributions;

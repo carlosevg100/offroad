@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T22:08:53.004Z",
-    "finishedAt": "2026-10-27T22:10:22.267Z"
+    "startedAt": "2026-10-27T22:40:46.051Z",
+    "finishedAt": "2026-10-27T22:43:06.150Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,38 @@
       "passed": true
     },
     {
+      "id": "deferred-variant-with-capex-times-2-named-a-deferral-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2103a6420195c0ddceffe8e5157dc8f8124dfdbcd07962900de24e54a0bc7b66",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "deferred-variant-with-capex-times-2-named-a-deferral-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "dd79563e2d1bec4c521e707c9ebb6c41eb5195fe5e97f9f6bf6583c423d2726d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "deferred-variant-with-capex-times-10-named-a-deferral-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4a975805d54650ba40283c8e8680dbf70a2cfa23b3f18ad4f1116004b03901be",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "deferred-variant-with-capex-times-10-named-a-deferral-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e3a3f9214afb4b3aefde18e23c5744ac7afb1a68c2eb3245c6145eaa36eca36c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "staged-npv-pending-as-the-cost-of-capital-at-30-percent",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1127,6 +1159,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "83a3a78bff6a326f2490d5f83a9d861cd4c3179f52407be46093ad50e0231f59",
+  "evidenceFingerprint": "562806b304398bc17cceb46a1183e71e9477e99800511f4dc50517dd7962347f",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

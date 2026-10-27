@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T22:08:53.004Z",
-    "finishedAt": "2026-10-27T22:10:22.266Z"
+    "startedAt": "2026-10-27T22:40:46.051Z",
+    "finishedAt": "2026-10-27T22:43:06.149Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,38 @@
       "passed": true
     },
     {
+      "id": "deferred-variant-with-double-capex-described-by-its-components",
+      "expectation": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
+      "observed": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
+      "inputFingerprint": "f74b67933fd02241ca05b979ebd95ea01e855da75636dcd20ae75ffe50b43ea1",
+      "outputFingerprint": "b4da1cd74e99031ac419ce714a392113a574dfe083f2937ed53fe56097a83d94",
+      "passed": true
+    },
+    {
+      "id": "long-instrument-registered-as-a-commercial-note",
+      "expectation": "{\"title\":true,\"debenture\":false}",
+      "observed": "{\"title\":true,\"debenture\":false}",
+      "inputFingerprint": "d43c703038a8d4a70a7527096d25c52244b036e6ebe65444449c5563a789d60e",
+      "outputFingerprint": "e3e8b942ce7f269bf9edf051ecc23e87ca20e21d8d6f59bb465e63c3eb2d384e",
+      "passed": true
+    },
+    {
+      "id": "long-instrument-without-a-registered-species",
+      "expectation": "{\"title\":true,\"gap\":true}",
+      "observed": "{\"title\":true,\"gap\":true}",
+      "inputFingerprint": "7d53af9faf2e6f4ddbc0e7cbf7861ced1fd76072caf8caaef9852903bfe5401b",
+      "outputFingerprint": "9be214fe3620dce30a28f11a44f4b140a153625998478fb4360026669b836f04",
+      "passed": true
+    },
+    {
+      "id": "return-and-cost-of-capital-equal-as-shown",
+      "expectation": "{\"title\":\"A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano\"}",
+      "observed": "{\"title\":\"A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano\"}",
+      "inputFingerprint": "408f2e429b44519a593eecfa340aaca203f42e7be467984940a22387347dbe5d",
+      "outputFingerprint": "a3718a40f0297193f0b0661bd061c8ccc7a229c38cbc3e990c0dae2ee861c0b9",
+      "passed": true
+    },
+    {
       "id": "every-number-of-the-final-text-verified",
       "expectation": "{\"verified\":true,\"match\":true}",
       "observed": "{\"verified\":true,\"match\":true}",
@@ -535,6 +567,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "30b418d8a824f9b8631c9c1e6af519788ab6e11068e1ca43c4b965753532dbd4",
+  "evidenceFingerprint": "80632e4e7310e83488fa611c8ca8d1eedb2efd738c163597b301a973855b3c48",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

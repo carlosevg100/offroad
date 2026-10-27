@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardCanonicalInputs, boardIsUniformDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -301,7 +301,7 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
  * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
-export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]} {
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]; unknownSpecies: string[]} {
   const {templateId, bindings, template} = parseBoardTextRef(ref);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
@@ -553,6 +553,20 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       }
       return true;
     }
+    if ("planDeferred" in c) {
+      // The plan's variants: every contribution recorded under each variant, keyed by field without the variant id.
+      const [method, rawA, rawB] = c.planDeferred;
+      const idOf = (x: string) => x.replace(/\$([a-z]+)/g, (_m: string, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
+      const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown}[]}};
+      const of = (id: string) => {
+        const mine = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.includes(`.variant.${id}.`));
+        if (!mine.length) throw indefinite(`variant_${id}_absent`);
+        const m = boardCanonicalInputs(mine.map((e) => ({...e, fieldPath: (e.fieldPath as string).replace(`.variant.${id}.`, ".variant.")})));
+        if (!m) throw unverified(`variant_${id}`);
+        return m;
+      };
+      return boardIsUniformPlanDeferral(of(idOf(rawA)), of(idOf(rawB))) !== null;
+    }
     if ("deferredBy" in c) {
       const [method, pathA, pathB] = c.deferredBy;
       const a = boardCanonicalInputs(read(method, pathA)), b = boardCanonicalInputs(read(method, pathB));
@@ -640,8 +654,47 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (value === "undefined") throw new Error(`board_capital_template_condition_undefined:${templateId}:${i}`);
     if (!value) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);
   });
-  const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [];
-  const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
+  const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [], unknownSpecies: string[] = [];
+  // An instrument's species is named only by its registered label, equal to a species or a declared label of one;
+  // otherwise the generic words of a capital-markets instrument and a gap of species. The instrument is the
+  // recommended long one, the existing capital-markets one, or the new capital-markets one of a path.
+  // An order the text asserts between two shown figures must hold on the figures as shown; when the rounding makes them
+  // equal, the template's declared "praticamente igual" wording is used, and without one the sentence is refused.
+  let shownText = template.text;
+  template.when.forEach((c, i) => {
+    if (!("compare" in c) || !["gt", "lt"].includes(c.compare[1])) return;
+    const [x, , y] = c.compare;
+    if (typeof x !== "object" || typeof y !== "object" || !("slot" in x) || !("slot" in y)) return;
+    const fx = context.figures.get(bindings[x.slot]!), fy = context.figures.get(bindings[y.slot]!);
+    if (!fx || !fy || "pending" in fx || "pending" in fy || fx.unit !== fy.unit || ["calendar", "date", "label", "flag"].includes(fx.unit)) return;
+    const shown = (d: string) => {const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(d); return m ? new Exact(m[0].replace(/\./g, "").replace(",", ".")) : null;};
+    const a = shown(fx.display), b = shown(fy.display);
+    if (!a || !b) return;
+    if (c.compare[1] === "gt" ? a.gt(b) : a.lt(b)) return;
+    if (!template.nearlyEqual) throw new Error(`board_capital_display_order_lost:${templateId}:${i}`);
+    shownText = template.nearlyEqual;
+  });
+  const speciesText = shownText.replace(/\{species:([a-z_]+):([^}]+)\}/g, (_m: string, form: string, selector: string) => {
+    const plan = sourceOf("evaluate-financing-paths").packet as {readings?: {recommendation?: {longInstrument?: {id?: unknown}}}; result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+    const contributions = plan.result?.contributions ?? [];
+    const term = (suffix: string) => {const hits = contributions.filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`)); return hits.length === 1 ? hits[0]!.value?.value : undefined;};
+    const capitalMarkets = (role: string) => contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
+      return m && Array.isArray(v) && v[0] === role && v[1] === "capital_markets" ? [m[1]!] : [];});
+    let ids: string[] = [];
+    if (selector === "long") {const id = plan.readings?.recommendation?.longInstrument?.id; ids = typeof id === "string" ? [id] : [];}
+    else if (selector === "existing") ids = capitalMarkets("existing");
+    else {
+      const path = selector.slice(4).replace(/\$([a-z]+)/g, (_x: string, k: string) => vars[k] ?? "\u0000"), mine = term(`path.${path}.instruments`);
+      ids = Array.isArray(mine) ? capitalMarkets("new").filter((x) => (mine as unknown[]).includes(x)) : [];
+    }
+    const label = ids.length === 1 ? term(`instrument.${ids[0]}.label`) : undefined;
+    const species = typeof label === "string" ? boardObjectTerm("species", label) : null;
+    const key = `species-${selector.replace(/[^a-z0-9-]/g, "")}`;
+    if (!species) {unknownSpecies.push(key); return boardObjectGenerics.species[form as BoardObjectForm]!;}
+    objects.set(key, boardVocabularies.species[species]![form as BoardObjectForm]!);
+    return `{object:${key}}`;
+  });
+  const text = speciesText.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
     const spec = template.slots[slot], bound = bindings[slot];
     if (!spec || bound === undefined) throw new Error(`board_capital_slot_invalid:${templateId}:${slot}`);
@@ -663,7 +716,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const raw = figure && !("pending" in figure) ? figure.origin?.value : undefined;
       const term = typeof raw === "string" ? boardObjectTerm(spec.vocabulary!, raw) : null;
       if (!term) {unmatched.push(bound); return spec.generic!;}
-      objects.set(bound, boardVocabularies[spec.vocabulary!][term]![spec.form!]);
+      objects.set(bound, boardVocabularies[spec.vocabulary!][term]![spec.form!]!);
       return `{object:${bound}}`;
     }
     if (spec.type === "debtor") {
@@ -681,7 +734,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, {...context, debtors, objects}), bindings: out, unnamed, unconfirmed, unmatched};
+  return {...renderBoardTemplate(text, {...context, debtors, objects}), bindings: out, unnamed, unconfirmed, unmatched, unknownSpecies};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -781,14 +834,15 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   // Every displayed field records which slot of which template binds which reading or deadline.
-  const nameGaps: {item: string; reason: "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary"}[] = [];
+  const nameGaps: {item: string; reason: "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary" | "species_not_registered"}[] = [];
   const render = (t: string, field?: string) => {
     const r = renderBoardRef(t, context);
     if (field) {
       bindings.push(...r.bindings.map((b) => ({field, ...b})));
       nameGaps.push(...r.unnamed.map((id) => ({item: `${field}.label.${id}`, reason: "label_not_in_dictionary" as const})),
         ...r.unconfirmed.map((id) => ({item: `${field}.informed.${id}`, reason: "informed_reason_not_in_dictionary" as const})),
-        ...r.unmatched.map((id) => ({item: `${field}.object.${id}`, reason: "object_not_in_vocabulary" as const})));
+        ...r.unmatched.map((id) => ({item: `${field}.object.${id}`, reason: "object_not_in_vocabulary" as const})),
+        ...r.unknownSpecies.map((id) => ({item: `${field}.species.${id}`, reason: "species_not_registered" as const})));
     }
     return r;
   };
@@ -808,7 +862,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
       authorityBasis: x.authorityBasis === null ? null : render(x.authorityBasis).display, deadlines};
   });
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
-  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary"}[] = [];
+  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary" | "species_not_registered"}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
     const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
     const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));

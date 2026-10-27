@@ -220,8 +220,16 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
 /** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
-  amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string} = {}) {
+  amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
+  deferredCapexFactor?: number; longInstrumentLabel?: string} = {}) {
   const k = auroraCapitalPathsKernel();
+  // Regressions only: the deferred variant's capex multiplied (a deferral that also changes magnitude).
+  if (variant.deferredCapexFactor) {
+    const later = k.projectVariants.find((v) => v.id === "adiar-12") as unknown as {effects: Record<string, string[]>};
+    later.effects = {...later.effects, growthCapex: later.effects.growthCapex!.map((x) => new Decimal(x).times(variant.deferredCapexFactor!).toFixed())};
+  }
+  // Regressions only: the recommended long instrument registered under another label (its species).
+  if (variant.longInstrumentLabel) Object.assign((k as unknown as {instruments: Record<string, unknown>[]}).instruments.find((x) => x.id === "debenture-80")!, {label: variant.longInstrumentLabel});
   // The same plan registered for another project: only the project variants' labels change.
   if (variant.projectNamed) for (const v of k.projectVariants as unknown as {label: string}[]) v.label = v.label.replace(/linha de embalagem/i, variant.projectNamed);
   const instrument = (id: string) => (k as unknown as {instruments: Record<string, unknown>[]}).instruments.find((x) => x.id === id)!;
