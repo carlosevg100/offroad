@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardPacketInput, boardPacketViaPremises} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, type BoardTurn} from "./board-capital-discussion.test-support";
+import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
 /** A fixed-seed generator (mulberry32), so every property run is the same run. */
@@ -20,7 +21,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label)|Invalid option|Too big|Invalid input|states its value/;
+const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -44,41 +45,35 @@ function textFields(c: CaseData): [string, (v: string) => void, string][] {
   return out;
 }
 
-/** The eleven families of displayed fields the reviews wrote numbers into. */
+/** The eleven families of displayed fields the reviews wrote into. */
 const families: [string, (c: CaseData, add: string) => void][] = [
   ["deliberation.title", (c, x) => {c.deliberations[0]!.title += x;}], ["deliberation.recommendation", (c, x) => {c.deliberations[0]!.recommendation += x;}],
   ["deadline.action", (c, x) => {c.deliberations[0]!.deadlines[0]!.action += x;}], ["page.title", (c, x) => {c.pages[1]!.title += x;}],
   ["page.line", (c, x) => {c.pages[1]!.lines[0] += x;}], ["page.recommendation", (c, x) => {c.pages[4]!.recommendation += x;}],
   ["summary.opening", (c, x) => {c.summary.opening += x;}], ["summary.closing", (c, x) => {c.summary.closing += x;}],
   ["appendix.label", (c, x) => {c.appendix[0]!.label += x;}], ["question.question", (c, x) => {c.questions[0]!.question += x;}], ["question.answer", (c, x) => {c.questions[0]!.answer += x;}]];
-/** Every attack of the four review rounds, in the contribution syntax of this version. */
-const attacks = {
-  digits: " Dívida {divida-total}{basket-free}.", sign: " Dívida -{divida-total}.",
-  yearAsMoney: " Dívida R$ {year-2027}.", yearAsAmount: " Dívida em {year-2027} milhões.", wrongUnit: " Dívida {divida-total}x.",
-  billions: " Dívida {divida-total} bilhões.", monthsForYears: " Prazo de {wal} meses.", reais: " A dívida vence em {year-2027} reais.", spacedPercent: " Alta em {year-2027} % ao ano.",
-  brlCode: " A dívida é de {year-2027} BRL.", usdCode: " A dívida é de {year-2027} USD.", percentInWords: " A taxa é de {year-2027} por cento ao ano.",
-  capitalized: " A dívida é de {year-2027} Bilhões de Reais.", monthlyReturn: " Retorno de {irr} ao mês.", monthlySpread: " CDI mais {deb-cost-low} ao mês.",
-  isoAfter: " Dívida {divida-total} BRL.", percentWordsAfter: " Retorno de {irr} por cento.", capsScale: " Dívida {divida-total} MILHÕES.", calendarAsValue: " A dívida é de {year-2027}.",
-  fullwidthDigits: " O prazo médio é de \uff11,\uff16 ano.", fullwidthAmount: " A dívida é de \uff11\uff13\uff10,\uff11.", arabicIndic: " A dívida é de \u0661\u0663\u0660.",
-  arabicPercent: " A taxa equivale a {em:year-2027}\u066a.", yearAsAmountWithPreposition: " A dívida equivale a {em:year-2027} CAD.", yen: " A dívida equivale a {em:year-2027} ienes.",
-  cents: " Custo de {divida-total} e centavos.", thousands: " Milhares de reais em {divida-total}.", perWeek: " Retorno de {irr} por semana.", perSemester: " Retorno de {irr} por semestre.",
-  durationInParentheses: " Prazo médio de {wal} (sete anos).", valueAfterDatePreposition: " Dívida em {divida-total}.",
-} as const;
+/** Every attack of the six review rounds, as the prose a contribution would have to write: there is no field for it. */
+const attacks = [" Retorno de menos {irr}.", " VPL de menos {npv}.", " O prazo médio é de dezasseis.", " A dívida é a terça parte de {divida-total}.", " Retorno de {irr} por minuto.",
+  " Prazo médio de {wal} (leia-se em minutos).", " Dívida {divida-total} bilhões.", " Prazo de {wal} meses.", " A dívida é de {year-2027} BRL.", " A taxa é de １６%.",
+  " A dívida equivale a {em:year-2027} ienes.", " Custo de {divida-total} e centavos.", " Retorno de {irr} por semana.", " Dívida -{divida-total}."];
 
 /** An independent reader of the final text. It formats every reading again from its source value, kind, scale,
- * periodicity and decimals with its own rules; then removes from each displayed field every reading's text, every
- * deadline and every ordinal the method writes, and requires that nothing numeric, no currency, scale, percent or
- * periodicity word remains. Every material fact must appear by its own formatted text. */
+ * periodicity and presentation with its own rules; then removes from each displayed field every reading's text,
+ * every deadline, the counts and ordinals, and requires that what remains passes its own whitelist and lexicon.
+ * Every material fact must appear by its own formatted text. */
 function oracle(p: Packet) {
   const v = current(p), d = p.result.discussion!;
   const D = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
+  const short = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  const long = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   const reformat = (x: (typeof d.identity)[number]) => {
     if (x.unit === "label") return x.value;
     if (x.unit === "flag") return x.value === "true" ? "sim" : "não";
     if (x.unit === "calendar") return x.value;
     if (x.unit === "date") {
-      const m = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"][Number(x.value.slice(5, 7)) - 1]!;
-      return x.presentation === "day_month" ? `${Number(x.value.slice(8, 10))}/${m}` : x.presentation === "month_year" ? `${m}/${x.value.slice(2, 4)}` : x.value.slice(0, 4);
+      const m = Number(x.value.slice(5, 7)) - 1, day = Number(x.value.slice(8, 10));
+      return ({day_month: `${day}/${short[m]}`, day_long: `${day} de ${long[m]}`, month_year: `${short[m]}/${x.value.slice(2, 4)}`, month_long: `${long[m]} de ${x.value.slice(0, 4)}`,
+        year: x.value.slice(0, 4)} as Record<string, string>)[x.presentation]!;
     }
     const scaled = x.scale === "reais" ? new D(x.value).div(1000000) : x.scale === "ratio" ? new D(x.value).times(100) : new D(x.value);
     const n = scaled.toFixed(Number(x.presentation)).replace(".", ",");
@@ -95,7 +90,7 @@ function oracle(p: Packet) {
   const joined = texts.join(" | ");
   // Its own whitelist and lexicon, written apart from the method's.
   const allowed = /^[a-zA-ZÀ-ÿ ,.;:?!()"'“”‘’-]*$/u;
-  const lexicon = /(?<![a-zA-ZÀ-ÿ])(dois|duas|tr[eê]s|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|quinze|vinte|trinta|cem|mil|milh\S*|bilh\S*|centavos?|milhares?|meio|metade|dobro|reais|real|d[oó]lar\S*|euros?|ienes?|brl|usd|cad|eur|janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|anos?|m[eê]s|meses|dias?|semanas?|semestres?|trimestres?|anual|mensal|semestral|trimestral|cento|percentua\S*|pontos?|x)(?![a-zA-ZÀ-ÿ])/iu;
+  const lexicon = /(?<![a-zA-ZÀ-ÿ])(menos|dois|duas|tr[eê]s|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|dezasseis|dezesseis|quinze|vinte|trinta|cem|mil|milh\S*|bilh\S*|centavos?|milhares?|meio|metade|ter[cç]a|ter[cç]o|dobro|reais|real|d[oó]lar\S*|euros?|ienes?|brl|usd|cad|eur|janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|anos?|m[eê]s|meses|dias?|semanas?|semestres?|trimestres?|minutos?|horas?|anual|mensal|semestral|trimestral|cento|percentua\S*|pontos?|x)(?![a-zA-ZÀ-ÿ])/iu;
   for (const t of texts) {
     let rest = t;
     for (const k of known) rest = rest.split(k).join(" ");
@@ -109,16 +104,38 @@ function oracle(p: Packet) {
 }
 
 describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
-  it("refuses a literal number written into any generated text field", () => {
-    const r = random(4720);
+  it("no text field accepts prose: a number, a sign, a fraction or a unit written by a contribution is refused in every field", () => {
     let probe: CaseData | null = null;
     boardPacketInput(2, (c) => {probe = structuredClone(c);});
     const names = textFields(probe!).map(([name]) => name);
+    const r = random(4720);
     for (const name of names) {
-      const number = pick(r, ["16,1%", "R$ 130,1 milhões", "2,21x", "1,4 ano", "dia 3", "2027"]);
-      expect(() => packet(2, (c) => {const f = textFields(c).find(([n]) => n === name)!; f[1](`${f[2]} com ${number}`);}), name).toThrow(/board_capital_number_without_origin/);
+      const add = pick(r, attacks);
+      expect(() => packet(2, (c) => {const f = textFields(c).find(([n]) => n === name)!; f[1](`${f[2]}${add}`);}), name).toThrow(refusal);
     }
     expect(names.length).toBeGreaterThan(80);
+  });
+  it("regression r1 to r6: every attack in every displayed field family is refused through the full path", () => {
+    let refused = 0;
+    for (const [family, set] of families) for (const add of attacks) {
+      expect(() => full(2, (c) => set(c, add)), `${family} ${add}`).toThrow(refusal);
+      refused++;
+    }
+    expect(refused).toBe(11 * attacks.length);
+  });
+  it("refuses an unknown template, a missing, extra or repeated slot and a reading of the wrong kind in a slot", () => {
+    for (const [name, edit] of [
+      ["unknown-template", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total_with_minus|total=divida-total|ano=year-2027";}],
+      ["missing-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total";}],
+      ["extra-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2027|sinal=irr";}],
+      ["repeated-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|total=basket|ano=year-2027";}],
+      ["years-in-a-months-slot", (c: CaseData) => {c.pages[10]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}],
+      ["rate-in-a-money-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=irr|ano=year-2027";}],
+      ["value-in-a-date-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=divida-total";}],
+      ["reading-in-a-deadline-slot", (c: CaseData) => {c.pages[11]!.lines[0] = "next_steps.notice|prazo=tight-week";}],
+      ["deadline-in-a-value-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=deadline:linha.aviso|ano=year-2027";}],
+      ["prose-in-a-binding", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=menos divida-total|ano=year-2027";}],
+    ] as const) expect(() => full(2, edit), name).toThrow(refusal);
   });
   it("keeps every material fact in the current version under any sequence of omission requests", () => {
     const r = random(4721);
@@ -130,7 +147,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       const omissions = Array.from({length: 1 + Math.floor(r() * 4)}, (_, i) => {
         const target = pick(r, ["recommendation", "page", "figure", "figure", "deadline"] as const);
         const targetId = target === "figure" ? pick(r, figures) : target === "deadline" ? pick(r, deadlines) : pick(r, pages);
-        return {id: `pedido-${i}`, target, targetId, requestedBy: "Presidente do conselho"};
+        return {id: `pedido-${i}`, target, targetId, requestedBy: "requester.chair"};
       });
       const p = packet(3, (c) => {c.omissions = omissions;});
       const s = shown(p);
@@ -139,74 +156,58 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       expect(oracle(p)).toEqual({bad: [], missing: []});
     }
   });
-  it("regression r1: removing a date or a label that shares a line with material facts is refused", () => {
-    const date = packet(2, (c) => {c.omissions = [{id: "sem-mes", target: "figure", targetId: "peak-date", requestedBy: "CFO"}];});
+  it("regression r1 and r2: transformations never take a material fact out of the current version", () => {
+    const date = packet(2, (c) => {c.omissions = [{id: "sem-mes", target: "figure", targetId: "peak-date", requestedBy: "requester.cfo"}];});
     expect(date.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["payback", "peak-need"]});
-    const label = packet(2, (c) => {c.omissions = [{id: "sem-rotulo", target: "figure", targetId: "label-economy", requestedBy: "CFO"}];});
-    expect(label.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["npv-economy", "npv-capex", "npv-slow"]});
-  });
-  it("regression r1: withdrawing a recommendation that alone carries material facts is refused", () => {
-    const p = packet(3, (c) => {
+    const recommendation = packet(3, (c) => {
       const line = c.pages.find((x) => x.id === "linha")!;
-      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a {npv-economy} e com capex maior a {npv-capex}; partida mais lenta, {npv-slow}; {label-defer}: VPL de {npv-defer} e retorno de {irr-defer}.";
-      line.lines.splice(2, 1);
+      line.options = line.options.slice(0, 2);
     });
-    expect(p.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["npv-economy", "npv-capex", "npv-slow"]});
-    expect(current(p).pages.find((x) => x.id === "linha")!.recommendation).not.toBeNull();
-  });
-  it("regression r1 and r2: false numbers in titles and labels, paraphrase that drops a fact, hidden subjects", () => {
-    expect(() => packet(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";})).toThrow("board_capital_number_without_origin");
-    expect(() => packet(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";})).toThrow("board_capital_number_without_origin");
-    expect(current(packet(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de {irr}";})).deliberations[0]!.title).toBe("Linha de embalagem com retorno de 16% ao ano");
-    expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "linha")!.lines[1] = "O fluxo acumulado do projeto chega a {peak-need} {em:peak-date}.";})).toThrow("board_capital_material_fact_not_shown:payback");
-    for (const order of [["peak-date", "label-economy"], ["label-economy", "peak-date"]]) {
+    expect(recommendation.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["npv-defer", "irr-defer"]});
+    expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "linha")!.lines[1] = "topic.project_value|retorno=irr|custo=wacc|vpl=npv";})).toThrow("board_capital_material_fact_not_shown:payback");
+    for (const order of [["peak-date", "dez27-date"], ["dez27-date", "peak-date"]]) {
       const p = packet(2, (c) => {
-        c.deliberations[0]!.subject = "decidir com payback de {payback} e fluxo de {peak-need}; VPLs de {npv-economy}, {npv-capex}, {npv-slow}";
-        c.omissions = order.map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "Presidente, para deixar o texto mais leve"}));
+        c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";
+        c.omissions = order.map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "requester.chair"}));
       });
       expect(p.readings!.omissions.map((o) => o.outcome)).toEqual(["refused", "refused"]);
       expect(oracle(p)).toEqual({bad: [], missing: []});
     }
   });
-  it("regression r2 to r4: every attack in every displayed field family is refused through the full path", () => {
-    let refused = 0;
-    for (const [family, set] of families) for (const [kind, add] of Object.entries(attacks)) {
-      expect(() => full(2, (c) => set(c, add)), `${family} ${kind}`).toThrow(refusal);
-      refused++;
-    }
-    expect(refused).toBe(11 * Object.keys(attacks).length);
-  });
   it("regression r3 and r4: a contribution cannot choose the unit, the scale, the periodicity or a date format of a field", () => {
     const tries: [string, string[]][] = [
       ["principal-as-label", ["tabela-divida", "result.table.reconciliation.principal", "-"]],
-      ["spread-as-label", ["recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi", "-"]],
       ["npv-as-label", ["linha-embalagem", "comparison.metrics[caseId=base].netPresentValue", "-"]],
       ["wal-as-date", ["tabela-divida", "result.table.profile.weightedAverageLifeYears", "day_month", "2026-12-31"]],
       ["debt-scaled-by-a-thousand", ["tabela-divida", "result.table.reconciliation.principal", "0", "130000"]],
       ["unregistered-field", ["linha-embalagem", "comparison.metrics[caseId=base].irrMinusDiscountRate", "2", "0.8"]],
+      ["case-label-no-longer-a-label", ["linha-embalagem", "cases[id=defer-12].label", "-"]],
       ["year-from-a-value-field", ["tabela-divida", "result.table.reconciliation.principal", "year", "130"]],
       ["too-many-decimals", ["tabela-divida", "result.table.reconciliation.principal", "3", "130"]]];
     for (const [id, reading] of tries)
-      expect(() => full(2, (c) => {(c.extraReadings as Record<string, unknown>)[id] = reading; c.pages[1]!.lines[0] += ` Valor: {${id}}.`;}), id).toThrow(refusal);
+      expect(() => full(2, (c) => {(c.extraReadings as Record<string, unknown>)[id] = reading; c.pages[1]!.title = `situation.debt_total|total=${id}|ano=year-2027`;}), id).toThrow(refusal);
   });
-  it("property: generated contributions that try to change unit, scale, periodicity or date marker are refused (fixed seed)", () => {
-    const r = random(4723);
-    const numeric = Object.entries(auroraBoardReadings).filter(([, x]) => /^[0-2]$/.test(x[2])).map(([id]) => id);
-    const words = [" meses", " anos", " ao mês", " ao ano", " por cento", " bilhões", " Milhões", " BRL", " usd", " reais", "%", "x", " p.p.", " a.m."];
-    for (let run = 0; run < 40; run++) {
-      const id = pick(r, numeric), family = pick(r, families), mode = pick(r, ["suffix", "prefix", "presentation", "scale"] as const);
-      const attempt = () => full(2, (c) => {
-        if (mode === "suffix") family[1](c, ` Valor {${id}}${pick(r, words)}.`);
-        else if (mode === "prefix") family[1](c, ` Valor ${pick(r, ["R$", "US$", "-", "+", "BRL", "em reais"])} {${id}}.`);
-        else {
-          const base = auroraBoardReadings[id]!;
-          const reading = mode === "presentation" ? [base[0], base[1], pick(r, ["day_month", "month_year", "year", "-", "3"]), base[3]!]
-            : [base[0], base[1], base[2], new Decimal(base[3]!).times(pick(r, ["1000", "100", "0.001", "12"])).toFixed()];
-          (c.extraReadings as Record<string, unknown>)[`${id}-variante`] = reading; family[1](c, ` Valor {${id}-variante}.`);
-        }
-      });
-      expect(attempt, `${mode} ${id}`).toThrow(refusal);
+  it("property: generated contributions (template ids and bindings at random) are refused or read clean by the independent oracle (fixed seed)", () => {
+    const r = random(4724);
+    const ids = Object.keys(boardTemplates), readings = Object.keys(auroraBoardReadings);
+    const deadlines = ["deadline:linha.aviso", "deadline:safra.adesao", "deadline:vencimentos.sondagem", "deadline:vencimentos.rota"];
+    let refused = 0, accepted = 0;
+    for (let run = 0; run < 60; run++) {
+      const id = pick(r, ids), template = boardTemplates[id]!;
+      const bindings = Object.keys(template.slots).map((slot) => `${slot}=${r() < 0.2 ? pick(r, deadlines) : pick(r, readings)}`);
+      if (r() < 0.15) bindings.push(`extra=${pick(r, readings)}`);
+      const ref = [r() < 0.1 ? `${id}_x` : id, ...bindings].join("|");
+      const family = pick(r, families);
+      try {
+        const p = full(2, (c) => {family[1](c, ""); const f = textFields(c); pick(r, f)[1](ref);});
+        accepted++;
+        expect(oracle(p), ref).toEqual({bad: [], missing: []});
+      } catch (error) {
+        expect(String(error), ref).toMatch(refusal);
+        refused++;
+      }
     }
+    expect(refused).toBeGreaterThan(0); expect(accepted).toBeGreaterThan(0);
   });
   it("regression r5: a discussion in another currency is refused, never shown as reais", () => {
     expect(() => prepareBoardCapitalDiscussionPacket(boardPacketViaPremises(2, () => undefined, undefined, (f) => {(f as {currency: string}).currency = "USD";}))).toThrow("board_capital_currency_not_supported:USD");

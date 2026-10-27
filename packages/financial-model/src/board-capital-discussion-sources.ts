@@ -62,15 +62,16 @@ export function verifyBoardSource(named: {id: string; methodId: string; packetFi
     packetFingerprint: fingerprint as string, status: String(payload.status), gaps, packet: parsed.data};
 }
 
-/** What a field of a released result is: its kind, the scale it is stored in and, for rates and flows, its
+/** What a field of a released result is (a label only where the source defines a name or a title): its kind, the scale it is stored in and, for rates and flows, its
  * periodicity. The material shows a reading only through this registry: the contribution chooses which
  * reading and how many decimals, never the unit, the scale, the periodicity or the date format. */
 export type BoardFieldKind = "money" | "rate" | "multiple" | "years" | "months" | "bps" | "count" | "calendar" | "date" | "label" | "flag";
-export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly ("day_month" | "month_year" | "year")[]};
+export type BoardDateFormat = "day_month" | "day_long" | "month_year" | "month_long" | "year";
+export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly BoardDateFormat[]};
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
 const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
 const plain = (kind: BoardFieldKind): BoardFieldSpec => ({kind, scale: "native", period: "none", formats: []});
-const date = (...formats: ("day_month" | "month_year" | "year")[]): BoardFieldSpec => ({kind: "date", scale: "native", period: "none", formats});
+const date = (...formats: BoardDateFormat[]): BoardFieldSpec => ({kind: "date", scale: "native", period: "none", formats});
 /** Field paths with every selector written as [*]. */
 export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<string, BoardFieldSpec>>> = {
   "build-company-debt-table": {
@@ -79,23 +80,23 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
     "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
     "result.table.negativePledgeBaskets[*].basket": money("millions"), "result.table.negativePledgeBaskets[*].occupied": money("millions"),
-    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "year"),
-    "result.table.profile.twelveMonthHorizon": date("month_year")},
+    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
+    "result.table.profile.twelveMonthHorizon": date("month_year", "month_long")},
   "measure-covenant-headroom": {
     "result.headroom.limits[*].maximumRatio": plain("multiple"), "result.headroom.measurements[*].ratio": plain("multiple"),
-    "result.headroom.measurements[*].reportedEbitda": money("millions"), "result.headroom.measurements[*].date": date("month_year", "year")},
+    "result.headroom.measurements[*].reportedEbitda": money("millions"), "result.headroom.measurements[*].date": date("month_year", "month_long", "year")},
   "project-weekly-cash": {
     "result.weekly.minimumCash": money("millions"), "readings.sensitivities[*].minimum": money("millions"),
-    "readings.sensitivities[*].weekStart": date("day_month"), "readings.tightestWeek.weekStart": date("day_month")},
+    "readings.sensitivities[*].weekStart": date("day_month", "day_long"), "readings.tightestWeek.weekStart": date("day_month", "day_long")},
   "analyze-investment-project": {
     "comparison.metrics[*].annualIrr": rate("annual"), "comparison.metrics[*].discountRate": rate("annual"),
     "comparison.metrics[*].netPresentValue": money("reais"), "comparison.metrics[*].paybackYears": plain("years"),
-    "comparison.metrics[*].peakCumulativeCashNeed.amount": money("reais"), "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "year"),
-    "cases[*].label": plain("label")},
+    "comparison.metrics[*].peakCumulativeCashNeed.amount": money("reais"), "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "month_long", "year"),
+},
   "build-operating-projection": {
     "result.projection.projection.scenarios[*].inputCostShock.rate": rate("none"),
     "result.projection.projection.scenarios[*].inputCostShock.passThroughLagMonths": plain("months"),
-    "result.projection.projection.scenarios[*].label": plain("label"), "readings.projected.scenarios[*].rows[*].ebitda": money("millions"),
+    "readings.projected.scenarios[*].rows[*].ebitda": money("millions"),
     "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": money("millions")},
   "challenge-financial-projection": {"readings.gap.plan.ebitda": money("millions"), "readings.gap.reference.ebitda": money("millions")},
   "monetize-receivables-for-working-capital": {
@@ -115,7 +116,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.evaluation.paths[*].amortizationTests[*].years[*].scheduledAmortization": money("millions"),
     "result.evaluation.paths[*].amortizationTests[*].years[*].availableAfterInterest": money("millions"),
     "readings.alternative.issueTarget": money("millions"), "readings.recommendation.horizonFinancingCost": money("millions"),
-    "readings.recommendation.netDebtAtHorizon": money("millions"), "readings.paths[*].label": plain("label"),
+    "readings.recommendation.netDebtAtHorizon": money("millions"),
     "readings.paths[*].minimumCash.amount": money("millions"), "readings.paths[*].worstLeverage": plain("multiple"),
     "readings.paths[*].horizonFinancingCost": money("millions"), "readings.paths[*].netDebtAtHorizon": money("millions"),
     "readings.paths[*].eligible": plain("flag"), "readings.paths[*].consentRequired": plain("flag")},

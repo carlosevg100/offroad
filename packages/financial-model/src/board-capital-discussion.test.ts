@@ -1,7 +1,8 @@
 import {describe, expect, it} from "vitest";
-import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
+import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
   type BoardDeliberation, type BoardFigureDisplay, type BoardPage} from "./board-capital-discussion";
 import type {BoardFieldSpec} from "./board-capital-discussion-sources";
+import {boardTemplates, parseBoardTextRef} from "./board-capital-discussion-templates";
 
 const deliberation = (id: string, dates: string[]): BoardDeliberation => ({id, title: id, subject: `decidir ${id}`, recommendation: null, topicId: null, authority: "board", authorityBasis: null,
   deadlines: dates.map((date, i) => ({id: `d${i}`, date, action: "agir"}))});
@@ -78,13 +79,32 @@ describe("board discussion core", () => {
     expect(check("A dívida é {d}, concentrada {em:y}, a CDI mais {r}; prazo de {w}; {l}")).toBe(5);
     // Two markers side by side stay two whole numbers; they never form a new one.
     expect(check("{d},{b}")).toBe(2);
-    for (const [t, why] of [["{d}{b}", "glued_to_marker"], ["A dívida equivale a {em:y}", "preposition_before_marker"], ["fecha em {d}", "preposition_before_marker"],
-      ["dívida de até {d}", "preposition_before_marker"], ["A dívida é de {em:y} CAD.", "number_without_origin"], ["Retorno de {r} ao mês", "number_without_origin"]] as const)
+    for (const [t, why] of [["{d}{b}", "glued_to_marker"], ["A dívida equivale a {em:y}", "preposition_before_marker"],  ["A dívida é de {em:y} CAD.", "number_without_origin"], ["Retorno de {r} ao mês", "number_without_origin"]] as const)
       expect(() => check(t), t).toThrow(why);
     expect(() => verifyBoardRendered("f", {display: "R$ 131 milhões", spans: [{start: 0, end: 14, kind: "figure", id: "d", unit: "money"}]}, figures)).toThrow("marker_text");
     expect(() => verifyBoardRendered("f", {display: "Dívida \uff11\uff13\uff10 e R$ 130 milhões", spans: [{start: 13, end: 27, kind: "figure", id: "d", unit: "money"}]}, figures)).toThrow("without_marker");
   });
   it("shows money only in reais", () => {
     expect(() => formatBoardReading("130", {kind: "money", scale: "millions", period: "none", formats: []}, "0", "130", "USD")).toThrow("board_capital_currency_not_supported:USD");
+  });
+  it("the closed library: every text passes the whitelist and the lexicon, every slot is typed and used once, and references are checked by name", () => {
+    for (const [id, t] of Object.entries(boardTemplates)) {
+      expect(boardFreeTextIssue(t.text.replace(/\{[^}]*\}/g, " ")), id).toBeNull();
+      const used = [...t.text.matchAll(/\{(?:(?:em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g)].map((m) => m[1]!);
+      expect(new Set(used), id).toEqual(new Set(Object.keys(t.slots)));
+      for (const m of t.text.matchAll(/\{(em|ate|desde|para|fim|de|a):([a-z_]+)\}/g)) expect(t.slots[m[2]!], id).toBe("date");
+    }
+    expect(parseBoardTextRef("situation.debt_total|total=divida-total|ano=year-2027").bindings).toEqual({total: "divida-total", ano: "year-2027"});
+    expect(() => parseBoardTextRef("A dívida é de R$ 130 milhões")).toThrow("board_capital_text_ref_invalid");
+    expect(() => parseBoardTextRef("situation.made_up")).toThrow("board_capital_template_unknown");
+    expect(() => parseBoardTextRef("situation.debt_total|total=divida-total")).toThrow("board_capital_slot_unbound");
+    expect(() => parseBoardTextRef("situation.debt_total|total=a|ano=b|extra=c")).toThrow("board_capital_slot_invalid");
+    expect(() => parseBoardTextRef("situation.debt_total|total=a|total=b|ano=c")).toThrow("board_capital_slot_invalid");
+    const figures = new Map<string, BoardFigureDisplay>([["d", {display: "R$ 130 milhões", unit: "money"}], ["y", {display: "2027", unit: "calendar"}], ["r", {display: "16% ao ano", unit: "rate"}]]);
+    const context = {figures, deliberations: [], nextMeetingDate: null};
+    expect(renderBoardRef("situation.debt_total|total=d|ano=y", context).display).toBe("A dívida é de R$ 130 milhões, curta e concentrada em 2027");
+    expect(() => renderBoardRef("situation.debt_total|total=r|ano=y", context)).toThrow("board_capital_slot_type_mismatch");
+    expect(() => renderBoardRef("situation.debt_total|total=d|ano=d", context)).toThrow("board_capital_slot_type_mismatch");
+    expect(() => renderBoardRef("situation.debt_total|total=deadline:a.b|ano=y", context)).toThrow("board_capital_slot_type_mismatch");
   });
 });

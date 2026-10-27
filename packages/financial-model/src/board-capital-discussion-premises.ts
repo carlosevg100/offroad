@@ -14,7 +14,7 @@ const fact = <T extends z.ZodType>(value: T) => z.strictObject({value, origin: z
 type Origin = {origin: (typeof origins)[number]; source: string};
 
 /** [source, path, decimals or date format, stated]: the unit, scale and periodicity come from the field registry of the source's method. */
-const reading = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "month_year", "year"])])
+const reading = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "day_long", "month_year", "month_long", "year"])])
   .rest(z.string().regex(/^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/));
 const figure = z.discriminatedUnion("kind", [
   z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length === (r[2] === "-" ? 3 : 4), {message: "A number or a date states its value; a label or a yes-no reading does not"})}),

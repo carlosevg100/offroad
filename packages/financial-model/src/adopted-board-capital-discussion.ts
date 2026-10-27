@@ -5,10 +5,13 @@ import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
 import {boardAuthorities, boardOmissionTargets, boardPageRoles, prepareBoardCapitalDiscussion,
   type BoardDiscussion, type BoardFigure, type BoardSourceReading} from "./board-capital-discussion";
+import {boardTextRefPattern} from "./board-capital-discussion-templates";
 import {boardSourceMethodIds, boardSourcePacketSchema, parseBoardSourceText, verifyBoardSource} from "./board-capital-discussion-sources";
 import {boardCapitalDiscussionExclusions} from "./board-capital-discussion-results";
 
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), words = z.string().trim().min(1).max(2000), hash = z.string().regex(/^[a-f0-9]{64}$/);
+/** Every shown text is a reference to the method's closed library; the basis never holds prose. */
+const textRef = z.string().regex(boardTextRefPattern);
 
 /** One board discussion as adopted: the meeting, the deliberations, the reviewed results it reads (named by
  * method and packet fingerprint), each figure as a reading of one of them, the pages, the summary, the appendix,
@@ -46,7 +49,7 @@ export const boardCapitalDiscussionAnalysesSchema = z.strictObject({
 export type BoardCapitalDiscussionAnalyses = z.infer<typeof boardCapitalDiscussionAnalysesSchema>;
 
 /** [source, path, decimals or date format, stated]: never a unit, a scale or a periodicity. */
-const readingTuple = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "month_year", "year"])]).rest(z.string().max(2000));
+const readingTuple = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "day_long", "month_year", "month_long", "year"])]).rest(z.string().max(2000));
 const reference = /^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/;
 
 /** The board discussion read from its adopted basis, with the reviewed results checked by identity: each
@@ -76,18 +79,18 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     const r = list(s.reading, `source.${s.id}`, z.tuple([z.enum(boardSourceMethodIds), hash]));
     return r === null ? null : {id: s.id, methodId: r[0]!, packetFingerprint: r[1]!};
   });
-  const topics = input.topics.map((t) => ({id: t.id, label: need(read(t.label, `topic.${t.id}.label`, "text", "text", words)),
+  const topics = input.topics.map((t) => ({id: t.id, label: need(read(t.label, `topic.${t.id}.label`, "text", "text", textRef)),
     seen: t.seen === null ? null : need(read(t.seen, `topic.${t.id}.seen`, "convention", "boolean", z.boolean()))}));
   const deliberations = input.deliberations.map((d) => {
-    const p = `deliberation.${d.id}.`, authority = list(d.authority, p + "authority", z.tuple([z.enum(boardAuthorities)]).rest(words));
-    return {id: d.id, topicId: d.topicId, title: need(read(d.title, p + "title", "text", "text", words)), subject: need(read(d.subject, p + "subject", "text", "text", words)),
-      recommendation: d.recommendation === null ? null : need(read(d.recommendation, p + "recommendation", "text", "text", words)),
+    const p = `deliberation.${d.id}.`, authority = list(d.authority, p + "authority", z.tuple([z.enum(boardAuthorities)]).rest(textRef));
+    return {id: d.id, topicId: d.topicId, title: need(read(d.title, p + "title", "text", "text", textRef)), subject: need(read(d.subject, p + "subject", "text", "text", textRef)),
+      recommendation: d.recommendation === null ? null : need(read(d.recommendation, p + "recommendation", "text", "text", textRef)),
       authority: authority?.[0] as (typeof boardAuthorities)[number], authorityBasis: authority?.[1] ?? null,
-      deadlines: d.deadlines.map((x) => {const r = list(x.reading, `${p}deadline.${x.id}`, z.tuple([z.iso.date(), words])); return {id: x.id, date: r?.[0] as string, action: r?.[1] as string};})};
+      deadlines: d.deadlines.map((x) => {const r = list(x.reading, `${p}deadline.${x.id}`, z.tuple([z.iso.date(), textRef])); return {id: x.id, date: r?.[0] as string, action: r?.[1] as string};})};
   });
   const figures: BoardFigure[] = input.figures.map((f) => {
     if (f.kind === "pending") {
-      const r = list(f.reading, `figure.${f.id}.pending`, z.tuple([key, words]));
+      const r = list(f.reading, `figure.${f.id}.pending`, z.tuple([key, textRef]));
       return {id: f.id, kind: "pending", requiredMethodId: r?.[0] as string, reason: r?.[1] as string};
     }
     const r = list(f.reading, `figure.${f.id}.reading`, readingTuple);
@@ -95,19 +98,19 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     return {id: f.id, kind: "reading", sourceId: r?.[0] as string, path: r?.[1] as string, presentation: r?.[2] as string, stated: r?.[3] ?? null} as BoardFigure;
   });
   const materialFigureIds = list(input.materialFigureIds, "figures.material", z.array(key).max(160));
-  const indicative = input.indicative.map((x) => ({figureId: x.figureId, reason: need(read(x.reason, `figure.${x.figureId}.indicative`, "text", "text", words))}));
+  const indicative = input.indicative.map((x) => ({figureId: x.figureId, reason: need(read(x.reason, `figure.${x.figureId}.indicative`, "text", "text", textRef))}));
   const pages = input.pages.map((pg) => {
     const p = `page.${pg.id}.`;
-    return {id: pg.id, topicId: pg.topicId, role: need(read(pg.role, p + "role", "convention", "text", z.enum(boardPageRoles))), title: need(read(pg.title, p + "title", "text", "text", words)),
-      lines: need(read(pg.lines, p + "lines", "text", "list", z.array(words).max(12))),
-      recommendation: pg.recommendation === null ? null : need(read(pg.recommendation, p + "recommendation", "text", "text", words)),
-      options: pg.options === null ? [] : need(read(pg.options, p + "options", "text", "list", z.array(words).max(6)))};
+    return {id: pg.id, topicId: pg.topicId, role: need(read(pg.role, p + "role", "convention", "text", z.enum(boardPageRoles))), title: need(read(pg.title, p + "title", "text", "text", textRef)),
+      lines: need(read(pg.lines, p + "lines", "text", "list", z.array(textRef).max(12))),
+      recommendation: pg.recommendation === null ? null : need(read(pg.recommendation, p + "recommendation", "text", "text", textRef)),
+      options: pg.options === null ? [] : need(read(pg.options, p + "options", "text", "list", z.array(textRef).max(6)))};
   });
-  const summary = {opening: need(read(input.summary.opening, "summary.opening", "text", "text", words)), closing: need(read(input.summary.closing, "summary.closing", "text", "text", words))};
-  const appendix = input.appendix.map((a) => {const r = list(a.reading, `appendix.${a.id}`, z.tuple([words]).rest(key)); return {id: a.id, label: r?.[0] as string, sourceIds: r?.slice(1) ?? []};});
-  const questions = input.questions.map((q) => ({id: q.id, question: need(read(q.question, `question.${q.id}.question`, "text", "text", words)),
-    answer: need(read(q.answer, `question.${q.id}.answer`, "text", "text", words))}));
-  const omissions = input.omissions.map((o) => {const r = list(o.reading, `omission.${o.id}`, z.tuple([z.enum(boardOmissionTargets), z.string().regex(/^[a-z0-9][a-z0-9.-]{0,80}$/), words]));
+  const summary = {opening: need(read(input.summary.opening, "summary.opening", "text", "text", textRef)), closing: need(read(input.summary.closing, "summary.closing", "text", "text", textRef))};
+  const appendix = input.appendix.map((a) => {const r = list(a.reading, `appendix.${a.id}`, z.tuple([textRef]).rest(key)); return {id: a.id, label: r?.[0] as string, sourceIds: r?.slice(1) ?? []};});
+  const questions = input.questions.map((q) => ({id: q.id, question: need(read(q.question, `question.${q.id}.question`, "text", "text", textRef)),
+    answer: need(read(q.answer, `question.${q.id}.answer`, "text", "text", textRef))}));
+  const omissions = input.omissions.map((o) => {const r = list(o.reading, `omission.${o.id}`, z.tuple([z.enum(boardOmissionTargets), z.string().regex(/^[a-z0-9][a-z0-9.-]{0,80}$/), textRef]));
     return {id: o.id, target: r?.[0] as (typeof boardOmissionTargets)[number], targetId: r?.[1] as string, requestedBy: r?.[2] as string};});
   // The results it reads are those the basis names, by fingerprint, and no other.
   const byId = new Map(packets.map((p) => [p.id, p.packet]));
