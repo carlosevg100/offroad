@@ -19,10 +19,10 @@ describe("capital structure paths packet", {timeout: 600_000}, () => {
     expect([rec.pathId, n(rec.minimumCash.amount, 2), n(rec.horizonFinancingCost, 2), n(rec.netDebtAtHorizon, 2), rec.leverage.map((x) => n(x.ratio, 2)), n(rec.stressWorst.ratio, 2)])
       .toEqual(["sem-linha-debenture", "15.46", "49.44", "79.31", ["2.20", "1.85", "1.42"], "2.37"]);
     const l = rec.longInstrument!;
-    expect([l.amount, l.termYears, l.firstAmortizationYear, l.lastAmortizationYear, n(l.equivalentSpread, 4), n(l.equivalentSpreadAtCondition, 4), l.insideGatesAtCondition])
-      .toEqual(["80", "7", 2029, 2033, "0.0349", "0.0359", true]);
-    expect([r.alternative!.pathId, r.alternative!.amount, r.alternative!.conditions, r.alternative!.decisionBy]).toEqual(["banco-sem-linha", "70", ["basket_without_consent", "amortization_after_horizon"], "2026-11-15"]);
-    expect([rec.mustPrecede, rec.daysToMaturity, rec.demandMinimumAmount]).toEqual([{instrumentId: "ccb-bradesco", date: "2027-09-15"}, 304, "74.44"]);
+    expect([l.issueTarget, l.issueFloorInsideGates, l.termYears, l.firstAmortizationYear, l.lastAmortizationYear, n(l.equivalentSpread, 4), n(l.equivalentSpreadAtCondition, 4), l.insideGatesAtCondition])
+      .toEqual(["80", "74.44", "7", 2029, 2033, "0.0346", "0.0356", true]);
+    expect([r.alternative!.pathId, r.alternative!.issueTarget, r.alternative!.conditions, r.alternative!.decisionBy]).toEqual(["banco-sem-linha", "70", ["basket_without_consent", "amortization_after_horizon"], "2026-11-15"]);
+    expect([rec.mustPrecede, rec.daysToMaturity]).toEqual([{instrumentId: "ccb-bradesco", date: "2027-09-15"}, 304]);
   });
   it("keeps facts, readings and recommendations apart, with what would change them and no verdict", () => {
     expect(r.assessment).toEqual({facts: ["status_quo_below_minimum_cash", "status_quo_peak_service_exceeds_available_cash", "indenture_basket_partly_occupied"],
@@ -38,6 +38,11 @@ describe("capital structure paths packet", {timeout: 600_000}, () => {
   it("refuses a recommendation that does not come from the gates", () => {
     const forged = {...p, readings: {...r, recommendation: {...r.recommendation!, pathId: "debenture-com-linha"}}};
     expect(() => capitalPathsPacketOutputSchema.parse(forged)).toThrow("capital_paths_recommendation_not_from_gates");
+  });
+  it("refuses, through the adopted basis, a long issue labeled seasonal to leave the test after the horizon", () => {
+    const k = auroraCapitalPathsKernel();
+    k.instruments.find((x) => x.id === "debenture-80")!.afterHorizon = {kind: "seasonal_release", settlementMonthsAfterDraw: 6, justification: "Rótulo sazonal sem calendário"};
+    expect(() => packet(k)).toThrow("capital_paths_seasonal_release_unverified:debenture-80");
   });
   it("is deterministic, validated and published", () => {
     expect(packet().fingerprint).toBe(p.fingerprint);

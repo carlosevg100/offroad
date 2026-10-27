@@ -96,7 +96,7 @@ export function composeBoundCapitalPaths(raw: unknown): CapitalPathsPacketInput 
       replaces: optional(q + "replaces", "identity", "text"), finalPaymentDate: optional(q + "finalPaymentDate", "date", "date"),
       chargeSlots: optional(q + "chargeSlots", "identity", "list"), chargeAmounts: optional(q + "chargeAmounts", "currency", "list"),
       prepaymentBasis: optional(q + "prepaymentBasis", "convention", "text"), prepaymentRate: optional(q + "prepaymentRate", "ratio", "number"),
-      afterYears: optional(q + "afterYears", "identity", "list"), afterShares: optional(q + "afterShares", "ratio", "list"), afterReason: optional(q + "afterReason", "text", "text"),
+      afterYears: optional(q + "afterYears", "identity", "list"), afterShares: optional(q + "afterShares", "ratio", "list"), afterReason: optional(q + "afterReason", "text", "text"), afterSettlementMonths: optional(q + "afterSettlementMonths", "months", "number"),
       alternativeSlots: optional(q + "alternativeSlots", "identity", "list"), alternativeShares: optional(q + "alternativeShares", "ratio", "list"),
       alternativeLabels: optional(q + "alternativeLabels", "text", "list")};}),
     paths: keys("path", "order.paths").map((id) => {const q = `path.${id}.`; return {id, label: t(q + "label", "text"), terms: l(q + "terms", "convention"),

@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: capital-structure-paths-packet.v1
 unit_test_files: [packages/financial-core/src/capital-structure-paths.test.ts, packages/financial-model/src/capital-structure-paths-packet.test.ts, packages/financial-model/src/capital-structure-paths-runs.test.ts, packages/financial-model/src/capital-structure-paths-premises.test.ts]
-gold_case_ids: [first-shortfall-in-december-2026-without-action, cash-at-the-end-of-2027-without-action, 2027-service-against-cash-available-before-the-project, seven-paths-and-two-companions-on-the-same-base, recommended-path-comes-from-the-gates, leverage-on-the-indenture-definition-in-december, oracle-paths-on-the-same-base, three-year-ccb-adds-to-2027-and-leaves-bradesco-open, taxes-recomputed-per-path, aggregate-basket-with-bradesco-inside, five-year-amortization-fails-in-2029-seven-passes, effective-cost-of-the-issue-over-its-life, bradesco-only-extension-leaves-a-gap, dated-alternative-before-the-bradesco-maturity, demand-below-which-the-recommendation-changes, what-would-change-the-recommendation, facts-readings-recommendations-apart-without-verdict, minimum-cash-of-policy-changes-the-order, absent-minimum-cash-is-a-gap-not-zero]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, recommendation-supplied-as-text, taxes-supplied-per-path-instead-of-recalculated, fabricated-grant-in-result, fabricated-verdict-in-readings, recommendation-not-from-the-gates, path-that-misses-the-policy-recommended, fabricated-contact-with-investors, basket-read-as-empty-under-the-bradesco-assignment, semiannual-interest-paid-instead-of-accrued, amortization-after-the-horizon-ignored, existing-debt-dropped-from-a-path, prepayment-without-contract-terms, financed-asset-placed-in-the-basket, covenant-test-off-the-calendar, parallel-lists-of-different-length, selection-pointing-at-another-operand]
+gold_case_ids: [first-shortfall-in-december-2026-without-action, cash-at-the-end-of-2027-without-action, 2027-service-against-cash-available-before-the-project, seven-paths-and-two-companions-on-the-same-base, recommended-path-comes-from-the-gates, leverage-on-the-indenture-definition-in-december, oracle-paths-on-the-same-base, three-year-ccb-adds-to-2027-and-leaves-bradesco-open, taxes-recomputed-per-path, aggregate-basket-with-bradesco-inside, five-year-amortization-fails-in-2029-seven-passes, effective-cost-of-the-issue-over-its-life, bradesco-only-extension-leaves-a-gap, dated-alternative-before-the-bradesco-maturity, issue-target-apart-from-the-floor-inside-the-gates, wheat-sensitivity-at-the-c24-level, seasonal-line-leaves-the-test-only-with-a-verified-settlement, cost-flows-are-the-cash-flows, what-would-change-the-recommendation, facts-readings-recommendations-apart-without-verdict, minimum-cash-of-policy-changes-the-order, absent-minimum-cash-is-a-gap-not-zero]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, recommendation-supplied-as-text, taxes-supplied-per-path-instead-of-recalculated, fabricated-grant-in-result, fabricated-verdict-in-readings, recommendation-not-from-the-gates, path-that-misses-the-policy-recommended, fabricated-contact-with-investors, basket-read-as-empty-under-the-bradesco-assignment, semiannual-interest-paid-instead-of-accrued, amortization-after-the-horizon-ignored, long-debt-labeled-seasonal-to-skip-the-amortization-test, existing-debt-dropped-from-a-path, prepayment-without-contract-terms, financed-asset-placed-in-the-basket, covenant-test-off-the-calendar, parallel-lists-of-different-length, selection-pointing-at-another-operand]
 e2e_scenario_ids: [domain:recommended-path-comes-from-the-gates]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -76,10 +76,11 @@ Pacote do plano de financiamento, na ordem da árvore: o que acontece sem ação
 - Caixa: núcleo publicado de caixa por período; caixa disponível para o serviço = caixa operacional depois de imposto, arrendamentos, giro e manutenção, antes do capex e do giro da partida do projeto (classificação adotada).
 - Alavancagem: núcleo publicado de índice projetado; janela de doze meses completada pelo histórico; dívida principal menos caixa disponível; EBITDA sem IFRS 16 quando a escritura assim define; a política usa a definição da escritura até o conselho escrever a sua.
 - Exceção da escritura: em cada período em que a escritura vigora, soma das garantias que ocupam a exceção (base agregada) ou a maior delas (por operação), mais o que já está ocupado por terceiros; acima do limite, exige anuência ou resgate.
-- Depois do horizonte: o saldo de cada instrumento é amortizado pelo perfil adotado; o maior saldo passa pelo núcleo publicado de capacidade de endividamento, os demais entram como serviço fixo em saldo médio; o teste compara a amortização programada com o caixa disponível depois dos juros, ano a ano.
-- Custo efetivo: spread equivalente sobre a curva datada pelo núcleo publicado de custo equivalente, com os encargos do desembolso, no spread adotado e no spread máximo da condição.
+- Depois do horizonte: o saldo de cada instrumento é amortizado pelo perfil adotado, com a última parcela absorvendo o resto do arredondamento, de modo que o principal fecha exatamente no último pagamento; uma linha só sai do teste como sazonal com data de liquidação até doze meses depois do desembolso e no primeiro ano depois do horizonte, justificativa adotada e fonte de caixa conferida na base (desembolso não maior que o giro sazonal consumido no período e liberação de ao menos o mesmo valor nos meses equivalentes do ano anterior); o maior saldo passa pelo núcleo publicado de capacidade de endividamento, os demais entram como serviço fixo em saldo médio; o teste compara a amortização programada com o caixa disponível depois dos juros, ano a ano.
+- Custo efetivo: spread equivalente sobre a curva datada pelo núcleo publicado de custo equivalente, resolvido sobre os mesmos fluxos do cálculo de caixa (núcleo de dívida indexada com a base de juros e o tratamento de cupom do instrumento, encargos pagos no fim do período), no spread adotado e no spread máximo da condição; os fluxos acompanham o resultado.
 - Portões: caixa mínimo de política no caso base; caixa não negativo no estresse; escritura e política no base e no estresse; exceção sem anuência; amortização depois do horizonte testada e coberta. Ordem: menos portões perdidos, depois custo financeiro até o horizonte (juros pagos e encargos), depois dívida líquida no fim, depois o identificador.
-- Valor mínimo da emissão: bisseção no quantum adotado, escalando desembolsos, amortizações, garantia e encargos do instrumento longo.
+- Alvo e piso da emissão: o alvo é o valor adotado no plano; o piso é o menor valor que mantém o caminho dentro dos portões, por bisseção no quantum adotado, escalando desembolsos, amortizações, garantia e encargos do instrumento longo. As leituras trazem os dois separados.
+- Sensibilidades: cada uma devolve o EBITDA por ano que deixa no caminho recomendado; a sensibilidade de custo de insumo adota o nível de EBITDA do cenário de origem (por exemplo, 52,64 em 2027 no cenário informado da projeção por drivers), não o choque relativo à outra base.
 - Precisão: aritmética decimal; valores monetários adotados com até oito casas; resultados com até vinte casas.
 
 # Julgamentos permitidos
@@ -97,7 +98,7 @@ Pacote do plano de financiamento, na ordem da árvore: o que acontece sem ação
 - Rolagem do maior credor tratada como certa.
 - Exceção da escritura lida como livre com a cessão existente dentro dela.
 - Imposto tomado de outro cenário; juros semestrais tratados como pagos no trimestre.
-- Debênture com amortização concentrada logo depois do horizonte sem teste de caixa.
+- Debênture com amortização concentrada logo depois do horizonte sem teste de caixa, ou dívida longa rotulada como sazonal para sair do teste.
 - Escolha pelo menor spread ou pelo menor custo sem os portões.
 - Veredito binário; certeza sobre o comportamento do banco ou da demanda.
 
@@ -127,13 +128,13 @@ Pacote do plano de financiamento, na ordem da árvore: o que acontece sem ação
 
 # Testes
 ## Unit
-- packages/financial-core/src/capital-structure-paths.test.ts: oráculo da C32 sem ação e no plano recomendado, outros caminhos, imposto por caminho, juros acumulados, exceção agregada, amortização depois do horizonte, ordem, plano alternativo, custo efetivo, sensibilidades e recusas.
+- packages/financial-core/src/capital-structure-paths.test.ts: oráculo da C32 sem ação e no plano recomendado, outros caminhos, imposto por caminho, juros acumulados, exceção agregada, amortização depois do horizonte, ordem, plano alternativo, custo efetivo, sensibilidades e recusas; propriedades de semente fixa para o fechamento do principal em qualquer valor e perfil, para os fluxos do custo contra os do caixa em cada convenção de juros e para a linha sazonal sem liquidação verificável.
 - packages/financial-model/src/capital-structure-paths-packet.test.ts: leituras, avaliação sem veredito, recomendação só dos portões, contrato publicado.
 - packages/financial-model/src/capital-structure-paths-premises.test.ts: fatos com origem, premissas, base, composição e pacote igual à calibração.
 ## Gold
-- Ficha C32 com o oráculo modelo_aurora_c32.py e a base anual da C04: dezembro de 2026, fim de 2027, serviço de 2027, sete caminhos, recomendação pelos portões, alavancagem, caminhos do oráculo, CCB de três anos, imposto por caminho, exceção, cinco contra sete anos, custo efetivo, Bradesco sozinho, plano alternativo datado, valor mínimo da emissão, o que mudaria, avaliação, caixa mínimo de R$ 25 milhões e caixa mínimo ausente.
+- Ficha C32 com o oráculo modelo_aurora_c32.py e a base anual da C04: dezembro de 2026, fim de 2027, serviço de 2027, sete caminhos, recomendação pelos portões, alavancagem, caminhos do oráculo, CCB de três anos, imposto por caminho, exceção, cinco contra sete anos, custo efetivo, Bradesco sozinho, plano alternativo datado, alvo da emissão separado do piso dentro dos portões, sensibilidade de trigo no nível da C24, linha sazonal com liquidação verificada, fluxos do custo iguais aos do caixa, o que mudaria, avaliação, caixa mínimo de R$ 25 milhões e caixa mínimo ausente.
 ## Adversarial
-- Base adulterada, resultado livre, recomendação por texto, imposto por caminho fornecido, concessão, veredito, recomendação fora dos portões, caminho que viola a política recomendado, contato com investidores, exceção lida como vazia sob a cessão do Bradesco, juros semestrais pagos, amortização depois do horizonte ignorada, dívida existente fora de um caminho, pré-pagamento sem termos, bem financiado na exceção, apuração fora do calendário, curva incompleta depois do horizonte, seleção apontando para outro operando.
+- Base adulterada, resultado livre, recomendação por texto, imposto por caminho fornecido, concessão, veredito, recomendação fora dos portões, caminho que viola a política recomendado, contato com investidores, exceção lida como vazia sob a cessão do Bradesco, juros semestrais pagos, amortização depois do horizonte ignorada, dívida longa rotulada como sazonal, dívida existente fora de um caminho, pré-pagamento sem termos, bem financiado na exceção, apuração fora do calendário, curva incompleta depois do horizonte, seleção apontando para outro operando.
 ## Aceitação
 - Executar a conversa da ficha C32 turno a turno pela interface real com fontes e direitos do ambiente de teste.
 
@@ -3829,6 +3830,67 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                               ]
                             }
                           },
+                          "afterSettlementMonths": {
+                            "required": true,
+                            "value": {
+                              "type": "union",
+                              "variants": [
+                                {
+                                  "type": "object",
+                                  "fields": {
+                                    "decisionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "definitionVersionId": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "definitionKind": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "enum",
+                                        "values": [
+                                          "reported",
+                                          "managerial",
+                                          "contractual"
+                                        ]
+                                      }
+                                    },
+                                    "missingReason": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
                           "alternativeSlots": {
                             "required": true,
                             "value": {
@@ -7323,6 +7385,35 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                         }
                                       }
                                     },
+                                    "ebitdaByYear": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "year": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "integer"
+                                              }
+                                            },
+                                            "periods": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "integer"
+                                              }
+                                            },
+                                            "ebitda": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
                                     "taxesInHorizon": {
                                       "required": true,
                                       "value": {
@@ -7724,6 +7815,34 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                         "seasonal_release",
                                                         "not_tested",
                                                         "scheduled"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "settlementDate": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "date"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "justification": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
                                                       ]
                                                     }
                                                   }
@@ -8202,6 +8321,26 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                               "type": "string"
                                                             }
                                                           },
+                                                          "couponBase": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "opening_principal",
+                                                                "average_principal"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "couponTreatment": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "cash_paid",
+                                                                "accrued_until_paid"
+                                                              ]
+                                                            }
+                                                          },
                                                           "equivalentSpread": {
                                                             "required": true,
                                                             "value": {
@@ -8230,6 +8369,47 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                             "required": true,
                                                             "value": {
                                                               "type": "date"
+                                                            }
+                                                          },
+                                                          "flows": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "array",
+                                                              "items": {
+                                                                "type": "object",
+                                                                "fields": {
+                                                                  "periodEnd": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "date"
+                                                                    }
+                                                                  },
+                                                                  "interestPaid": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "principal": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "charges": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  },
+                                                                  "debtService": {
+                                                                    "required": true,
+                                                                    "value": {
+                                                                      "type": "string"
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
                                                             }
                                                           }
                                                         }
@@ -8279,13 +8459,13 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                     "type": "string"
                                                   }
                                                 },
-                                                "adoptedAmount": {
+                                                "issueTarget": {
                                                   "required": true,
                                                   "value": {
                                                     "type": "string"
                                                   }
                                                 },
-                                                "minimumAmountInsideGates": {
+                                                "issueFloorInsideGates": {
                                                   "required": true,
                                                   "value": {
                                                     "type": "string"
@@ -8552,6 +8732,26 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                         "type": "string"
                                                       }
                                                     },
+                                                    "couponBase": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "opening_principal",
+                                                          "average_principal"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "couponTreatment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "cash_paid",
+                                                          "accrued_until_paid"
+                                                        ]
+                                                      }
+                                                    },
                                                     "equivalentSpread": {
                                                       "required": true,
                                                       "value": {
@@ -8580,6 +8780,47 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                       "required": true,
                                                       "value": {
                                                         "type": "date"
+                                                      }
+                                                    },
+                                                    "flows": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "periodEnd": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "date"
+                                                              }
+                                                            },
+                                                            "interestPaid": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "principal": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "charges": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "debtService": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
                                                       }
                                                     }
                                                   }
@@ -8635,6 +8876,26 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                             "type": "string"
                                           }
                                         },
+                                        "couponBase": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "opening_principal",
+                                              "average_principal"
+                                            ]
+                                          }
+                                        },
+                                        "couponTreatment": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "cash_paid",
+                                              "accrued_until_paid"
+                                            ]
+                                          }
+                                        },
                                         "equivalentSpread": {
                                           "required": true,
                                           "value": {
@@ -8663,6 +8924,47 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                           "required": true,
                                           "value": {
                                             "type": "date"
+                                          }
+                                        },
+                                        "flows": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "fields": {
+                                                "periodEnd": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "date"
+                                                  }
+                                                },
+                                                "interestPaid": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "principal": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "charges": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "debtService": {
+                                                  "required": true,
+                                                  "value": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                            }
                                           }
                                         }
                                       }
@@ -8724,6 +9026,26 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                         "type": "string"
                                                       }
                                                     },
+                                                    "couponBase": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "opening_principal",
+                                                          "average_principal"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "couponTreatment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "cash_paid",
+                                                          "accrued_until_paid"
+                                                        ]
+                                                      }
+                                                    },
                                                     "equivalentSpread": {
                                                       "required": true,
                                                       "value": {
@@ -8752,6 +9074,47 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                       "required": true,
                                                       "value": {
                                                         "type": "date"
+                                                      }
+                                                    },
+                                                    "flows": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "periodEnd": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "date"
+                                                              }
+                                                            },
+                                                            "interestPaid": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "principal": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "charges": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "debtService": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
                                                       }
                                                     }
                                                   }
@@ -9155,6 +9518,35 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                 "value": {
                                                   "type": "string"
                                                 }
+                                              },
+                                              "ebitdaByYear": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "fields": {
+                                                      "year": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "periods": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "integer"
+                                                        }
+                                                      },
+                                                      "ebitda": {
+                                                        "required": true,
+                                                        "value": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
                                               }
                                             }
                                           },
@@ -9474,6 +9866,29 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                     }
                                   }
                                 },
+                                "ebitdaByYear": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "fields": {
+                                        "year": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "integer"
+                                          }
+                                        },
+                                        "ebitda": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
                                 "longInstrument": {
                                   "required": true,
                                   "value": {
@@ -9488,10 +9903,24 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                               "type": "string"
                                             }
                                           },
-                                          "amount": {
+                                          "issueTarget": {
                                             "required": true,
                                             "value": {
                                               "type": "string"
+                                            }
+                                          },
+                                          "issueFloorInsideGates": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
                                             }
                                           },
                                           "drawPeriodId": {
@@ -9606,20 +10035,6 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                     ]
                                   }
                                 },
-                                "demandMinimumAmount": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "union",
-                                    "variants": [
-                                      {
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
                                 "soundingBy": {
                                   "required": true,
                                   "value": {
@@ -9708,7 +10123,7 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                     "type": "string"
                                   }
                                 },
-                                "amount": {
+                                "issueTarget": {
                                   "required": true,
                                   "value": {
                                     "type": "string"
@@ -9962,13 +10377,13 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                           "type": "string"
                                         }
                                       },
-                                      "adoptedAmount": {
+                                      "issueTarget": {
                                         "required": true,
                                         "value": {
                                           "type": "string"
                                         }
                                       },
-                                      "minimumAmountInsideGates": {
+                                      "issueFloorInsideGates": {
                                         "required": true,
                                         "value": {
                                           "type": "string"
@@ -10037,6 +10452,29 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                             "basket_without_consent",
                                             "amortization_after_horizon"
                                           ]
+                                        }
+                                      }
+                                    },
+                                    "ebitdaByYear": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "year": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "integer"
+                                              }
+                                            },
+                                            "ebitda": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
                                         }
                                       }
                                     }

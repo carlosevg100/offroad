@@ -20,7 +20,7 @@ const base = {role: "new" as const, replaces: null, openingPrincipal: "0", final
 const giro = (id: string, label: string, at: number, amount: string, spread: string, fee: string, iof: string, security: string, seasonal: boolean): Instrument => ({...base, id, label,
   lenderKind: "bank", rate: {kind: "index_plus_spread", spreads: same(spread)}, draws: q({[at]: amount}), principal: q(seasonal ? {} : {[at + 1]: amount}),
   charges: [{id: "comissao", periodEnd: auroraPeriodEnds[at]!, category: "origination_fee", amount: fee}, {id: "iof", periodEnd: auroraPeriodEnds[at]!, category: "tax", amount: iof}],
-  security: {kind: "receivables", amount: security, countsAgainstBasket: true}, afterHorizon: seasonal ? {kind: "seasonal_release"} : {kind: "none"}});
+  security: {kind: "receivables", amount: security, countsAgainstBasket: true}, afterHorizon: seasonal ? {kind: "seasonal_release", settlementMonthsAfterDraw: 6, justification: "Linha da safra quitada até março com a recomposição do giro da safra, como nos anos anteriores"} : {kind: "none"}});
 export const auroraPeriodEnds = ["2026-09-30", "2026-12-31", "2027-03-31", "2027-06-30", "2027-09-30", "2027-12-31", "2028-03-31", "2028-06-30", "2028-09-30", "2028-12-31"];
 const existing = ["debenture-2021", "ccb-bradesco", "finame"];
 const prepayBoth = [{instrumentId: "debenture-2021", periodEnd: "2027-03-31"}, {instrumentId: "ccb-bradesco", periodEnd: "2027-03-31"}];
@@ -111,7 +111,7 @@ export function auroraCapitalPathsKernel(): CapitalStructurePathsInput {
       workingCapitalInvestment: ["2.5", "2.5", "2.5", "2.5", "2.5"], depreciation: ["12", "12", "12", "12", "12"], otherInterest: ["1.4", "1.4", "1.4", "1.4", "1.4"]},
     plan: {maximumSpread: "0.03", soundingBy: "2026-10-31", routeDecisionBy: "2026-11-15"},
     sensitivities: [
-      {id: "trigo", label: "Trigo 15% mais caro com repasse em quatro meses", ebitdaDelta: q({2: "-1.4481285", 3: "-1.4481285", 4: "-1.4481285", 5: "-1.4481285"}), workingCapitalDelta: same("0"), minimumCash: null},
+      {id: "trigo", label: "Trigo 15% mais caro com repasse em quatro meses: EBITDA de 2027 de 52,64, nível do cenário informado da C24", ebitdaDelta: q({2: "-0.98985638", 3: "-0.98985638", 4: "-0.98985638", 5: "-0.98985636"}), workingCapitalDelta: same("0"), minimumCash: null},
       {id: "prazo-redes-60", label: "Prazo das redes de 50 para 60 dias", ebitdaDelta: same("0"), workingCapitalDelta: q({1: "-12.24305555", 5: "-0.63611112", 9: "-0.62083333"}), minimumCash: null},
       {id: "caixa-minimo-25", label: "Política da companhia com caixa mínimo de R$ 25 mi", ebitdaDelta: same("0"), workingCapitalDelta: same("0"), minimumCash: "25"}],
     demandQuantum: "0.01",

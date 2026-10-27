@@ -73,19 +73,37 @@ function goldCases(): Case[] {
         return {fiveScheduled: r(five.firstYear.scheduledAmortization), fiveAvailable: r(five.firstYear.availableAfterInterest), nearC04: near(five.firstYear.availableAfterInterest, 24.1, 0.5),
           fivePasses: five.passes, sevenPasses: a.find((x) => x.profileId === "adopted")!.passes,
           window: [p.readings!.recommendation!.longInstrument!.firstAmortizationYear, p.readings!.recommendation!.longInstrument!.lastAmortizationYear]};}),
-    reuse("effective-cost-of-the-issue-over-its-life", {amount: "80", term: "7", atAdoptedSpread: 3.49, atCondition: 3.59, withinFichaBand: true},
-      (p) => {const l = p.readings!.recommendation!.longInstrument!; return {amount: l.amount, term: l.termYears, atAdoptedSpread: r(new D(l.equivalentSpread!).mul(100).toFixed()),
+    // Ficha: CDI + 3,4 to 3,6. The cost is solved on the same indexed-debt flows as the cash, charges paid on the period end.
+    reuse("effective-cost-of-the-issue-over-its-life", {issueTarget: "80", term: "7", atAdoptedSpread: 3.46, atCondition: 3.56, withinFichaBand: true},
+      (p) => {const l = p.readings!.recommendation!.longInstrument!; return {issueTarget: l.issueTarget, term: l.termYears, atAdoptedSpread: r(new D(l.equivalentSpread!).mul(100).toFixed()),
         atCondition: r(new D(l.equivalentSpreadAtCondition!).mul(100).toFixed()), withinFichaBand: new D(l.equivalentSpread!).gte("0.033") && new D(l.equivalentSpreadAtCondition!).lte("0.0365")};}),
     // Ficha turn 4 says about R$ 18 mi short; fragmentos.py says 19 (it keeps the R$ 27 mi seasonal line of the route with the packaging line).
     reuse("bradesco-only-extension-leaves-a-gap", {shortfall: 18.23, nearFicha18: true, lowest: "2028-06-30", firstBelow: "2027-06-30"},
       (p) => ({shortfall: r(path(p, "bradesco-sem-linha").shortfallVsPolicyMinimum), nearFicha18: near(path(p, "bradesco-sem-linha").shortfallVsPolicyMinimum, 18, 1),
         lowest: path(p, "bradesco-sem-linha").minimumCash.periodId, firstBelow: path(p, "bradesco-sem-linha").belowPolicyMinimum[0]})),
     reuse("dated-alternative-before-the-bradesco-maturity", {pathId: "banco-sem-linha", amount: "70", conditions: ["basket_without_consent", "amortization_after_horizon"], decisionBy: "2026-11-15",
-      mustPrecede: "2027-09-15", days: 304}, (p) => ({pathId: p.readings!.alternative!.pathId, amount: p.readings!.alternative!.amount, conditions: p.readings!.alternative!.conditions,
+      mustPrecede: "2027-09-15", days: 304}, (p) => ({pathId: p.readings!.alternative!.pathId, amount: p.readings!.alternative!.issueTarget, conditions: p.readings!.alternative!.conditions,
       decisionBy: p.readings!.alternative!.decisionBy, mustPrecede: p.readings!.recommendation!.mustPrecede!.date, days: p.readings!.recommendation!.daysToMaturity})),
-    reuse("demand-below-which-the-recommendation-changes", {adopted: "80", minimum: "74.44", conditionInsideGates: true},
-      (p) => ({adopted: p.readings!.wouldChange.demand!.adoptedAmount, minimum: p.readings!.wouldChange.demand!.minimumAmountInsideGates,
+    // The issue target (80) and the computed floor inside every gate (74,44) are two readings, never one for the other.
+    reuse("issue-target-apart-from-the-floor-inside-the-gates", {issueTarget: "80", issueFloorInsideGates: "74.44", sameOnBothReadings: true, conditionInsideGates: true},
+      (p) => ({issueTarget: p.readings!.wouldChange.demand!.issueTarget, issueFloorInsideGates: p.readings!.wouldChange.demand!.issueFloorInsideGates,
+        sameOnBothReadings: p.readings!.recommendation!.longInstrument!.issueFloorInsideGates === p.readings!.wouldChange.demand!.issueFloorInsideGates
+          && p.readings!.recommendation!.longInstrument!.issueTarget === p.readings!.wouldChange.demand!.issueTarget,
         conditionInsideGates: p.readings!.recommendation!.longInstrument!.insideGatesAtCondition})),
+    // C47 page 11 cites 2027 EBITDA near 52,6 (C24, informed scenario with pass-through in four months); the sensitivity adopts that level.
+    reuse("wheat-sensitivity-at-the-c24-level", {ebitda2027: 52.64, nearC47: true, base2027: 56.6},
+      (p) => ({ebitda2027: r(p.readings!.wouldChange.sensitivities.find((s) => s.id === "trigo")!.ebitdaByYear.find((y) => y.year === 2027)!.ebitda),
+        nearC47: near(p.readings!.wouldChange.sensitivities.find((s) => s.id === "trigo")!.ebitdaByYear.find((y) => y.year === 2027)!.ebitda, 52.6, 0.05),
+        base2027: r(p.readings!.recommendation!.ebitdaByYear.find((y) => y.year === 2027)!.ebitda)})),
+    reuse("seasonal-line-leaves-the-test-only-with-a-verified-settlement", {kind: "seasonal_release", settlementDate: "2029-03-31", longDebtTested: "debenture-80"},
+      (p) => {const a = path(p, "sem-linha-debenture").afterHorizon; const g = a.residuals.find((x) => x.instrumentId === "giro-4t28")!;
+        return {kind: g.kind, settlementDate: g.settlementDate, longDebtTested: a.unitInstrumentId};}),
+    reuse("cost-flows-are-the-cash-flows", {couponBase: "opening_principal", couponTreatment: "accrued_until_paid", principal: 80, firstInterestJune2027: true},
+      (p) => {const c = p.result.evaluation!.instrumentCosts.find((x) => x.instrumentId === "debenture-80")!;
+        if (c.status !== "calculated") return null;
+        const recPath = path(p, "sem-linha-debenture"), jun = recPath.closingAvailableByPeriod.find((x) => x.periodId === "2027-06-30")!, flow = c.flows.find((f) => f.periodEnd === "2027-06-30")!;
+        return {couponBase: c.couponBase, couponTreatment: c.couponTreatment, principal: r(c.flows.reduce((t, f) => t.plus(f.principal), new D(0)).toFixed()),
+          firstInterestJune2027: new D(flow.interestPaid).gt(0) && new D(jun.interestPaid).gte(flow.interestPaid)};}),
     reuse("what-would-change-the-recommendation", [["trigo", false, ["policy_stress"]], ["prazo-redes-60", false, ["minimum_cash_base", "policy_stress"]], ["caixa-minimo-25", false, ["minimum_cash_base"]]],
       (p) => p.readings!.wouldChange.sensitivities.map((s) => [s.id, s.recommendationHolds, s.failedGatesOnRecommended])),
     reuse("facts-readings-recommendations-apart-without-verdict", {recommendations: ["follow_recommended_path_under_condition", "review_project_before_committing", "ask_for_the_longer_amortization",
@@ -119,6 +137,9 @@ function adversarialCases(): Case[] {
     ["basket-read-as-empty-under-the-bradesco-assignment", () => packetInput((k) => {k.basket!.occupied = "0";}), "capital_paths_basket_usage_understated"],
     ["semiannual-interest-paid-instead-of-accrued", () => packetInput((k) => {instrument(k, "debenture-2021").couponTreatment = "cash_paid";}), "capital_paths_coupon_calendar_mismatch"],
     ["amortization-after-the-horizon-ignored", () => packetInput((k) => {instrument(k, "debenture-80").afterHorizon = {kind: "none"};}), "capital_paths_residual_without_after_horizon_terms"],
+    // A long issue labeled seasonal to leave the test after the horizon, through the adopted basis and the packet.
+    ["long-debt-labeled-seasonal-to-skip-the-amortization-test", () => packetInput((k) => {instrument(k, "debenture-80").afterHorizon = {kind: "seasonal_release", settlementMonthsAfterDraw: 6,
+      justification: "Rótulo sazonal sem calendário"};}), "capital_paths_seasonal_release_unverified:debenture-80"],
     ["existing-debt-dropped-from-a-path", () => packetInput((k) => {k.paths[0]!.instrumentIds = ["debenture-2021", "finame"];}), "capital_paths_existing_debt_omitted"],
     ["prepayment-without-contract-terms", () => packetInput((k) => {k.paths[0]!.prepayments = [{instrumentId: "finame", periodEnd: "2027-03-31"}];}), "capital_paths_prepayment_terms_required"],
     ["financed-asset-placed-in-the-basket", () => packetInput((k) => {instrument(k, "finame").security.countsAgainstBasket = true;}), "capital_paths_security_inconsistent"],

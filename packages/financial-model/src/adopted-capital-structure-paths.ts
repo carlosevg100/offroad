@@ -16,7 +16,7 @@ const instrument = z.strictObject({id: key, label: selection,
   /** [opening principal, security amount]. */
   principal: selection, rates: selection, draws: selection, amortization: selection,
   replaces: optional, finalPaymentDate: optional, chargeSlots: optional, chargeAmounts: optional, prepaymentBasis: optional, prepaymentRate: optional,
-  afterYears: optional, afterShares: optional, afterReason: optional, alternativeSlots: optional, alternativeShares: optional, alternativeLabels: optional});
+  afterYears: optional, afterShares: optional, afterReason: optional, afterSettlementMonths: optional, alternativeSlots: optional, alternativeShares: optional, alternativeLabels: optional});
 const path = z.strictObject({id: key, label: selection, /** [role, project variant]. */ terms: selection, instruments: selection,
   prepayments: optional, chargeSlots: optional, chargeAmounts: optional});
 const variant = z.strictObject({id: key, label: selection, kind: selection, ebitda: optional, depreciation: optional, maintenanceCapex: optional, growthCapex: optional,
@@ -96,7 +96,8 @@ export function calculateAdoptedCapitalStructurePaths(raw: unknown) {
     if (alternatives.some(x => (x === null) !== (i.alternativeSlots === null))) throw new Error(`capital_paths_after_horizon_terms_incomplete:${i.id}`);
     const rateList = list(i.rates, q + "rates", "ratio", rates);
     const afterKind = t?.[8];
-    if (afterKind && ((afterKind === "scheduled") !== (i.afterYears !== null && i.afterShares !== null) || (afterKind === "not_tested") !== (i.afterReason !== null)
+    if (afterKind && ((afterKind === "scheduled") !== (i.afterYears !== null && i.afterShares !== null) || (afterKind === "not_tested" || afterKind === "seasonal_release") !== (i.afterReason !== null)
+      || (afterKind === "seasonal_release") !== (i.afterSettlementMonths !== null)
       || (afterKind !== "scheduled" && i.alternativeSlots !== null))) throw new Error(`capital_paths_after_horizon_terms_incomplete:${i.id}`);
     const afterYears = maybe(i.afterYears, q + "afterYears", "identity", "list", years), afterShares = maybe(i.afterShares, q + "afterShares", "ratio", "list", rates);
     const altSlots = maybe(i.alternativeSlots, q + "alternativeSlots", "identity", "list", slot(2)), altShares = maybe(i.alternativeShares, q + "alternativeShares", "ratio", "list", rates);
@@ -110,7 +111,9 @@ export function calculateAdoptedCapitalStructurePaths(raw: unknown) {
             shares: (altSlots ?? []).flatMap((s, n) => s.split("|")[0] === id ? [{year: Number(s.split("|")[1]), share: altShares?.[n] ?? ""}] : [])}))};
       }
       if (afterKind === "not_tested") return {kind: "not_tested", reason: maybe(i.afterReason, q + "afterReason", "text", "text", words) ?? ""};
-      return {kind: afterKind === "seasonal_release" ? "seasonal_release" : "none"};
+      if (afterKind === "seasonal_release") return {kind: "seasonal_release", justification: maybe(i.afterReason, q + "afterReason", "text", "text", words) ?? "",
+        settlementMonthsAfterDraw: Number(maybe(i.afterSettlementMonths, q + "afterSettlementMonths", "months", "number", z.string().regex(/^\d{1,2}$/)) ?? "0")};
+      return {kind: "none"};
     };
     const afterHorizon = after();
     const prepaymentBasis = maybe(i.prepaymentBasis, q + "prepaymentBasis", "convention", "text", z.enum(["flat", "per_year_of_weighted_remaining_life"]));

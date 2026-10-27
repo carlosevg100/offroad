@@ -117,6 +117,7 @@ export function encodeCapitalPaths(k: CapitalStructurePathsInput): CapitalPathsC
       }
     }
     if (a.kind === "not_tested") txt(g, q + "afterReason", "text", a.reason);
+    if (a.kind === "seasonal_release") {txt(g, q + "afterReason", "text", a.justification); num(g, q + "afterSettlementMonths", "months", String(a.settlementMonthsAfterDraw));}
   }
   for (const p of k.paths) {
     const q = `path.${p.id}.`, g = `path:${p.id}`;

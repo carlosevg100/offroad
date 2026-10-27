@@ -3,8 +3,9 @@ import {z} from "zod";
 import {buildCapitalPeriodCash} from "./capital-period-cash";
 import type {DatedDebtInstrument} from "./dated-debt";
 import {projectDebtCapacityAmount, type DebtCapacityInput} from "./debt-capacity";
-import {buildDeferredFinancingSchedule, solveEquivalentFinancingSpread} from "./equivalent-financing-cost";
+import {solveEquivalentFinancingSpread} from "./equivalent-financing-cost";
 import {buildFinancingCashFlows, financingCostCategories, type FinancingCharge, type FinancingCostAssessment} from "./financing-costs";
+import {buildIndexedDebtSchedule, type IndexedDebtPeriodInput} from "./indexed-debt";
 import type {OperatingWorkingCapital} from "./operating-cash-projection";
 import {calculatePeriodFinancingTaxes} from "./period-financing-taxes";
 import {projectLeverageCovenant} from "./projected-leverage-covenant";
@@ -46,7 +47,9 @@ const instrumentSchema = z.strictObject({
   /** What happens to the principal still outstanding at the horizon end. */
   afterHorizon: z.discriminatedUnion("kind", [
     z.strictObject({kind: z.literal("none")}),
-    z.strictObject({kind: z.literal("seasonal_release")}),
+    /** A seasonal line repaid after the horizon by the release of the working capital it financed: the
+     * settlement date, the justification and the cash source are checked against the adopted base. */
+    z.strictObject({kind: z.literal("seasonal_release"), settlementMonthsAfterDraw: z.number().int().min(1).max(12), justification: text}),
     z.strictObject({kind: z.literal("not_tested"), reason: text}),
     z.strictObject({kind: z.literal("scheduled"), shares, alternatives: z.array(z.strictObject({id: key, label: text, shares})).max(3)})]),
 });
@@ -158,6 +161,40 @@ const sharesOf = (s: readonly {year: number; share: string}[]) => {
   return s.map((x, n) => ({year: x.year, share: n === s.length - 1 ? new D(1).minus(sum(s.slice(0, -1).map((y) => y.share))) : new D(x.share)}));
 };
 
+/** Money owed after the horizon split by the adopted shares: every year but the last on eight decimals, the
+ * last absorbing the remainder, so the principal closes exactly on the final payment. */
+function splitResidual(residual: Decimal, shares: readonly {year: number; share: string}[]) {
+  const s = sharesOf(shares), head = s.slice(0, -1).map((x) => ({year: x.year, amount: new D(eight(residual.times(x.share)))}));
+  return [...head, {year: s.at(-1)!.year, amount: residual.minus(sum(head.map((h) => h.amount)))}];
+}
+const addMonths = (d: string, n: number) => {const x = new Date(`${d}T00:00:00Z`); x.setUTCMonth(x.getUTCMonth() + n); return x.toISOString().slice(0, 10);};
+const monthEnd = (startOfMonth: string) => dayBefore(addMonths(startOfMonth, 1));
+
+/** Settlement date of a seasonal line, and the cash source that pays it, verified on the base: one draw,
+ * no principal in the horizon, settlement after the horizon and within twelve months of the draw, the
+ * draw no larger than the seasonal working capital consumed in its period, and the same months one year
+ * earlier releasing at least the draw. Anything else cannot leave the long-debt test. */
+function seasonalSettlement(input: CapitalStructurePathsInput, periods: Period[], i: Instrument) {
+  if (i.afterHorizon.kind !== "seasonal_release") return null;
+  const fail = (why: string) => {throw new Error(`capital_paths_seasonal_release_unverified:${i.id}:${why}`);};
+  const draws = i.draws.map((x, k) => ({x: new D(x), k})).filter((d) => d.x.gt(0));
+  if (draws.length !== 1) fail("single_draw");
+  if (i.principal.some((x) => new D(x).gt(0))) fail("principal_in_horizon");
+  const {x: amount, k} = draws[0]!, drawStart = periods[k]!.startDate;
+  const settlement = monthEnd(addMonths(drawStart, i.afterHorizon.settlementMonthsAfterDraw - 1));
+  const horizonEnd = input.periodEnds.at(-1)!;
+  if (settlement <= horizonEnd || settlement > monthEnd(addMonths(dayAfter(horizonEnd), 11))) fail("settlement_outside_first_year_after_horizon");
+  const consumed = new D(input.operating.workingCapitalCashFlow[k]!).neg();
+  if (consumed.lt(amount)) fail("draw_above_seasonal_consumption");
+  const yearBefore = periods.findIndex((p) => p.endDate === monthEnd(addMonths(dayAfter(periods[k]!.endDate), -13)));
+  const until = monthEnd(addMonths(dayAfter(settlement), -13));
+  const window = periods.filter((p, n) => n > yearBefore && p.endDate <= until).map((p) => periods.indexOf(p));
+  if (yearBefore < 0 || !window.length) fail("no_release_in_the_base");
+  const released = sum(window.map((n) => input.operating.workingCapitalCashFlow[n]!));
+  if (released.lt(amount)) fail("release_below_draw");
+  return {settlementDate: settlement, consumedInDrawPeriod: fmt(consumed), releasedYearBefore: fmt(released)};
+}
+
 function validate(input: CapitalStructurePathsInput): Context {
   const periods = buildPeriods(input), n = periods.length;
   const sized = [input.index.annualByPeriod, input.operating.ebitda, input.operating.depreciation, input.operating.leasePayments, input.operating.workingCapitalCashFlow,
@@ -185,6 +222,7 @@ function validate(input: CapitalStructurePathsInput): Context {
     // The financed asset itself is the indenture's own exception; it never occupies the aggregate basket.
     if (i.security.kind === "financed_asset" && i.security.countsAgainstBasket) throw new Error(`capital_paths_security_inconsistent:${i.id}`);
     if (i.afterHorizon.kind === "scheduled") {sharesOf(i.afterHorizon.shares); i.afterHorizon.alternatives.forEach((a) => sharesOf(a.shares));}
+    seasonalSettlement(input, periods, i);
     if (i.afterHorizon.kind === "scheduled" && [...i.afterHorizon.shares, ...i.afterHorizon.alternatives.flatMap((a) => a.shares)].some((s) => !ph.years.includes(s.year))) throw new Error(`capital_paths_after_horizon_outside_base:${i.id}`);
   }
   let statusQuo = 0;
@@ -247,7 +285,7 @@ function remainingSchedule(ctx: Context, i: Instrument, from: number, residualBe
   ctx.periods.forEach((p, k) => {if (k > from) {t = t.plus(p.yearFraction); if (new D(i.principal[k]!).gt(0)) out.push({amount: new D(i.principal[k]!), years: t});}});
   if (i.afterHorizon.kind === "scheduled" && residualBeforeAfterHorizon.gt(0)) {
     const horizonYear = Number(ctx.input.periodEnds.at(-1)!.slice(0, 4));
-    for (const s of sharesOf(i.afterHorizon.shares)) out.push({amount: residualBeforeAfterHorizon.times(s.share), years: t.plus(s.year - horizonYear)});
+    for (const s of splitResidual(residualBeforeAfterHorizon, i.afterHorizon.shares)) out.push({amount: s.amount, years: t.plus(s.year - horizonYear)});
   }
   return out;
 }
@@ -395,9 +433,9 @@ function amortizationTest(ctx: Context, e: Evaluated, unit: Instrument, unitShar
   const fixedRows = years.map((y) => {
     let interest = new D(0), principal = new D(0), closing = new D(0);
     for (const f of fixed) {
-      const s = sharesOf((f.instrument.afterHorizon as {shares: {year: number; share: string}[]}).shares);
-      const paidBefore = sum(s.filter((x) => x.year < y).map((x) => x.share)).times(f.residual);
-      const paidNow = sum(s.filter((x) => x.year === y).map((x) => x.share)).times(f.residual);
+      const s = splitResidual(f.residual, (f.instrument.afterHorizon as {shares: {year: number; share: string}[]}).shares);
+      const paidBefore = sum(s.filter((x) => x.year < y).map((x) => x.amount));
+      const paidNow = sum(s.filter((x) => x.year === y).map((x) => x.amount));
       const open = f.residual.minus(paidBefore), close = open.minus(paidNow);
       // Annual average-balance approximation, the convention the capacity method adopts.
       interest = interest.plus(open.plus(close).div(2).times(annualRateAfter(input, f.instrument, y)));
@@ -441,7 +479,9 @@ function amortizationTest(ctx: Context, e: Evaluated, unit: Instrument, unitShar
 
 function afterHorizon(ctx: Context, e: Evaluated, path: Path) {
   const residuals = e.financing.debt.map((x) => ({instrument: ctx.instruments.get(x.instrumentId)!, residual: new D(x.closingPrincipal)})).filter((x) => x.residual.gt(0));
-  const listed = residuals.map((r) => ({instrumentId: r.instrument.id, residual: fmt(r.residual), kind: r.instrument.afterHorizon.kind}));
+  const listed = residuals.map((r) => {const a = r.instrument.afterHorizon, settled = seasonalSettlement(ctx.input, ctx.periods, r.instrument);
+    return {instrumentId: r.instrument.id, residual: fmt(r.residual), kind: a.kind, settlementDate: settled?.settlementDate ?? null,
+      justification: a.kind === "seasonal_release" ? a.justification : a.kind === "not_tested" ? a.reason : null};});
   for (const r of residuals) if (r.instrument.afterHorizon.kind === "none") throw new Error(`capital_paths_residual_without_after_horizon_terms:${path.id}:${r.instrument.id}`);
   const scheduled = residuals.filter((r) => r.instrument.afterHorizon.kind === "scheduled");
   const untested = residuals.filter((r) => r.instrument.afterHorizon.kind === "not_tested").map((r) => r.instrument.id);
@@ -459,6 +499,10 @@ function afterHorizon(ctx: Context, e: Evaluated, path: Path) {
 }
 
 function yearOf(id: string) {return Number(id.slice(0, 4));}
+/** EBITDA of each calendar year the horizon covers, with the number of periods it sums. */
+function ebitdaByYear(rows: {periodId: string; ebitda: string}[]) {
+  return [...new Set(rows.map((r) => yearOf(r.periodId)))].map((y) => {const r = rows.filter((x) => yearOf(x.periodId) === y); return {year: y, periods: r.length, ebitda: fmt(sum(r.map((x) => x.ebitda)))};});
+}
 function byYear(rows: Evaluated["rows"]) {
   const years = [...new Set(rows.map((r) => yearOf(r.periodId)))];
   return years.map((y) => {
@@ -546,6 +590,10 @@ function selection(ctx: Context, runs: Map<string, Run>) {
   return {candidates, ranking, recommended, long, alternative};
 }
 
+/** The equivalent cost of new DI-plus-spread debt over its life, on the flows of the same indexed-debt kernel
+ * that the cash calculation uses: draw at the start of its period, the instrument's own coupon base and
+ * coupon treatment, principal in the horizon as adopted and after it split by the adopted shares (or paid on
+ * the verified settlement of a seasonal line), every charge on its period end as cash. */
 function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | null, sharesOverride: {year: number; share: string}[] | null) {
   const {input, periods} = ctx;
   if (i.role !== "new" || i.rate.kind !== "index_plus_spread") return {status: "not_applicable" as const, reason: "Instrument is not new DI-plus-spread debt"};
@@ -554,38 +602,74 @@ function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | nu
   const k0 = drawAt[0]!.k, spreads = i.rate.spreads.slice(k0);
   if (spreadOverride === null && spreads.some((s) => !new D(s).eq(spreads[0]!))) return {status: "not_applicable" as const, reason: "Spread changes over the life"};
   const spread = spreadOverride ?? spreads[0]!;
-  if (i.charges.some((c) => c.periodEnd !== periods[k0]!.id)) return {status: "not_applicable" as const, reason: "Charges after the draw are not priced here"};
+  if (i.charges.some((c) => periods.findIndex((p) => p.id === c.periodEnd) < k0)) return {status: "not_applicable" as const, reason: "Charge before the draw"};
   const gross = new D(i.draws[k0]!), residual = gross.minus(sum(i.principal.slice(k0)));
-  if (residual.gt(0) && i.afterHorizon.kind !== "scheduled") return {status: "not_applicable" as const, reason: "No adopted repayment after the horizon"};
-  const lifetime: {id: string; startDate: string; endDate: string; yearFraction: string; annualIndex: string; yearFractionConvention: "adopted_year_fraction"; sourceAnchor: string; scheduledPrincipal: string; paysAccruedInterest: boolean}[] = [];
-  let open = gross;
-  const push = (id: string, start: string, end: string, yf: Decimal, index: string, principal: Decimal) => {
-    open = open.minus(principal);
-    const pays = i.interestEvery === "quarter" || end.slice(5, 7) === "06" || end.slice(5, 7) === "12" || open.eq(0);
-    lifetime.push({id, startDate: start, endDate: end, yearFraction: fmt(yf), annualIndex: index, yearFractionConvention: "adopted_year_fraction", sourceAnchor: "adopted period grid",
-      scheduledPrincipal: fmt(principal), paysAccruedInterest: pays});
-  };
-  for (let k = k0; k < periods.length && open.gt(0); k++) push(periods[k]!.id, k === k0 ? dayBefore(periods[k]!.startDate) : periods[k - 1]!.endDate, periods[k]!.endDate, periods[k]!.yearFraction, input.index.annualByPeriod[k]!, new D(i.principal[k]!));
-  if (open.gt(0)) {
-    const s = sharesOf(sharesOverride ?? (i.afterHorizon as {shares: {year: number; share: string}[]}).shares), lastYear = s.at(-1)!.year;
-    const horizonYear = Number(input.periodEnds.at(-1)!.slice(0, 4)), res = open;
-    for (let y = horizonYear + 1; y <= lastYear; y++) for (const [q, end] of [[1, "03-31"], [2, "06-30"], [3, "09-30"], [4, "12-31"]] as const) {
-      const principal = q === 4 ? res.times(s.find((x) => x.year === y)?.share ?? 0) : new D(0);
-      push(`${y}-${end}`, lifetime.at(-1)!.endDate, `${y}-${end}`, new D("0.25"), afterHorizonIndex(input, y), principal);
-    }
+  const a = i.afterHorizon, horizonYear = Number(input.periodEnds.at(-1)!.slice(0, 4));
+  const after = new Map<string, Decimal>();
+  if (residual.gt(0)) {
+    if (a.kind === "scheduled") for (const x of splitResidual(residual, sharesOverride ?? a.shares)) after.set(`${x.year}-12-31`, x.amount);
+    else if (a.kind === "seasonal_release") after.set(seasonalSettlement(input, periods, i)!.settlementDate, residual);
+    else return {status: "not_applicable" as const, reason: "No adopted repayment after the horizon"};
   }
-  const upfront = sum(i.charges.map((c) => c.amount));
-  const schedule = buildDeferredFinancingSchedule({baseDate: lifetime[0]!.startDate, currency: input.currency, moneyUnit: "adopted", grossAdvance: fmt(gross),
-    upfrontWithheldCosts: fmt(upfront), annualSpread: spread, unpaidInterestBase: "principal_plus_accrued", periods: lifetime});
+  const lastDate = [...after.keys()].sort().at(-1) ?? null;
+  const grid: {id: string; startDate: string; endDate: string; yearFraction: Decimal; index: string; principal: Decimal}[] = [];
+  for (let k = k0; k < periods.length; k++) grid.push({id: periods[k]!.id, startDate: k === k0 ? dayBefore(periods[k]!.startDate) : periods[k - 1]!.endDate,
+    endDate: periods[k]!.endDate, yearFraction: periods[k]!.yearFraction, index: input.index.annualByPeriod[k]!, principal: new D(i.principal[k]!)});
+  if (lastDate) {
+    if (periods.some((p) => p.months !== 3)) return {status: "not_applicable" as const, reason: "Life after the horizon needs quarterly periods"};
+    for (let y = horizonYear + 1; `${y}-01-01` <= lastDate; y++) for (const end of ["03-31", "06-30", "09-30", "12-31"]) {
+      const date = `${y}-${end}`;
+      if (date > lastDate) break;
+      grid.push({id: date, startDate: grid.at(-1)!.endDate, endDate: date, yearFraction: new D("0.25"), index: afterHorizonIndex(input, y), principal: after.get(date) ?? new D(0)});
+    }
+    if (sum([...after.values()]).minus(sum(grid.filter((g) => after.has(g.endDate)).map((g) => g.principal))).abs().gt(0)) return {status: "not_applicable" as const, reason: "Settlement off the quarterly grid"};
+  }
+  // The same kernel and rounding as the cash calculation: per-period rates on 16 decimals, amounts on 8.
+  let open = new D(0);
+  const kernelPeriods: IndexedDebtPeriodInput[] = grid.map((g, n) => {
+    const draw = n === 0 ? gross : new D(0);
+    open = open.plus(draw).minus(g.principal);
+    const pays = i.couponTreatment === "accrued_until_paid"
+      ? {paysAccruedCoupon: g.endDate.slice(5, 7) === "06" || g.endDate.slice(5, 7) === "12" || (open.eq(0) && g.principal.gt(0))} : {};
+    return {period: g.id, indexationRate: "0", couponRate: periodRate(composed(g.index, spread), g.yearFraction).toDecimalPlaces(16, Decimal.ROUND_HALF_UP).toFixed(),
+      drawdown: eight(draw), scheduledPrincipal: eight(g.principal), prepayment: "0", ...pays};
+  });
+  if (!open.eq(0)) return {status: "not_applicable" as const, reason: "Principal does not close on the last payment"};
+  const schedule = buildIndexedDebtSchedule({instrumentId: i.id, openingPrincipal: "0", indexer: "CDI", indexationTreatment: "not_applicable",
+    couponTreatment: i.couponTreatment, couponBase: i.couponBase, periods: kernelPeriods});
+  const flows = schedule.rows.map((row) => {
+    const charges = sum(i.charges.filter((c) => c.periodEnd === row.period).map((c) => c.amount));
+    return {periodEnd: row.period, interestPaid: row.couponPaid, principal: row.scheduledPrincipal, charges: fmt(charges),
+      debtService: fmt(new D(row.couponPaid).plus(row.scheduledPrincipal))};
+  });
+  const final = [...flows].reverse().find((f) => new D(f.debtService).gt(0))!;
+  const finalIndex = flows.indexOf(final);
   const categories = new Set(i.charges.map((c) => c.category));
-  const cost = solveEquivalentFinancingSpread({baseDate: lifetime[0]!.startDate, currency: input.currency, moneyUnit: "adopted",
-    intervals: lifetime.map(({scheduledPrincipal: _p, paysAccruedInterest: _i, ...interval}) => interval), netFlows: schedule.netFlows,
-    costInventory: financingCostCategories.map((category) => categories.has(category) ? {category, status: "specified" as const, reason: "Adopted charge at the draw"}
+  const cost = solveEquivalentFinancingSpread({baseDate: grid[0]!.startDate, currency: input.currency, moneyUnit: "adopted",
+    intervals: grid.slice(0, finalIndex + 1).map((g) => ({id: g.id, startDate: g.startDate, endDate: g.endDate, yearFraction: fmt(g.yearFraction), annualIndex: g.index,
+      yearFractionConvention: "adopted_year_fraction" as const, sourceAnchor: "adopted period grid"})),
+    netFlows: [{id: "draw", date: grid[0]!.startDate, amount: fmt(gross), sourceAnchor: "adopted draw"},
+      ...flows.slice(0, finalIndex + 1).map((f) => ({id: f.periodEnd, date: f.periodEnd, amount: fmt(new D(f.debtService).plus(f.charges).neg()), sourceAnchor: "indexed debt kernel"}))],
+    costInventory: financingCostCategories.map((category) => categories.has(category) ? {category, status: "specified" as const, reason: "Adopted charge of the instrument"}
       : {category, status: "zero" as const, reason: "No charge of this category in the adopted terms"}),
     convention: "multiplicative_index_and_spread_on_net_borrower_flows", lowerSpread: "-0.5", upperSpread: "2"});
   if (cost.status !== "calculated") return {status: "not_applicable" as const, reason: "Equivalent cost could not be solved"};
-  return {status: "calculated" as const, nominalSpread: spread, equivalentSpread: cost.annualSpread!, upfrontCharges: fmt(upfront),
-    weightedAverageLifeYears: schedule.weightedAverageLifeYears, termYears: fmt(sum(lifetime.map((l) => l.yearFraction))), finalPaymentDate: schedule.finalPaymentDate};
+  let t = new D(0), weighted = new D(0);
+  grid.slice(0, finalIndex + 1).forEach((g, n) => {t = t.plus(g.yearFraction); weighted = weighted.plus(new D(flows[n]!.principal).times(t));});
+  return {status: "calculated" as const, nominalSpread: spread, couponBase: i.couponBase, couponTreatment: i.couponTreatment, equivalentSpread: cost.annualSpread!,
+    upfrontCharges: fmt(sum(i.charges.map((c) => c.amount))), weightedAverageLifeYears: fmt(weighted.div(gross)), termYears: fmt(t), finalPaymentDate: final.periodEnd,
+    flows: flows.slice(0, finalIndex + 1)};
+}
+
+/** Equivalent cost of one adopted new instrument, alone, on its adopted or alternative profile and at an
+ * optional spread: the same calculation the evaluation publishes. */
+export function capitalPathInstrumentCost(raw: unknown, instrumentId: string, options: {profileId?: string; spread?: string} = {}) {
+  const input = capitalStructurePathsInputSchema.parse(raw), ctx = validate(input);
+  const i = ctx.instruments.get(instrumentId);
+  if (!i) throw new Error("capital_paths_unknown_instrument");
+  const profile = options.profileId && i.afterHorizon.kind === "scheduled" ? i.afterHorizon.alternatives.find((x) => x.id === options.profileId) : null;
+  if (options.profileId && !profile) throw new Error("capital_paths_unknown_profile");
+  return instrumentCost(ctx, i, options.spread ?? null, profile ? profile.shares : null);
 }
 
 function publishRun(ctx: Context, path: Path, r: Run) {
@@ -596,7 +680,7 @@ function publishRun(ctx: Context, path: Path, r: Run) {
     stressClosingAvailableByPeriod: r.stress.rows.map((x) => ({periodId: x.periodId, ebitda: x.ebitda, cashTax: x.cashTax, closingAvailable: x.closingAvailable, closingDebt: x.closingDebt})),
     minimumCash: r.summary.minimumCash, stressMinimumCash: {periodId: r.minStress.periodId, amount: r.minStress.closingAvailable},
     belowPolicyMinimum: r.below, shortfallVsPolicyMinimum: r.summary.shortfallVsPolicyMinimum,
-    debtServiceByYear: byYear(r.base.rows),
+    debtServiceByYear: byYear(r.base.rows), ebitdaByYear: ebitdaByYear(r.base.rows),
     taxesInHorizon: r.base.taxes.totalCashTax, horizonFinancingCost: r.summary.horizonFinancingCost,
     accruedInterestInHorizon: fmt(sum(r.base.rows.map((x) => x.interestAccrued))),
     netDebtAtHorizon: r.summary.netDebtAtHorizon, stressNetDebtAtHorizon: r.summary.stressNetDebtAtHorizon,
@@ -647,7 +731,7 @@ export function evaluateCapitalStructurePaths(raw: unknown) {
         if (mid.lte(lo)) break;
         if (passes(mid)) hi = mid; else lo = mid;
       }
-      demand = {instrumentId: long.id, adoptedAmount: fmt(full), minimumAmountInsideGates: fmt(hi), quantum: fmt(q)};
+      demand = {instrumentId: long.id, issueTarget: fmt(full), issueFloorInsideGates: fmt(hi), quantum: fmt(q)};
     }
     const routeDeadline = [...input.instruments].filter((i) => i.role === "existing" && i.finalPaymentDate !== null
       && runs.get(path.id)!.base.built.some((b) => b.dated.instrumentId === i.id && b.prepaid)).map((i) => ({instrumentId: i.id, date: i.finalPaymentDate!})).sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
@@ -668,7 +752,7 @@ export function evaluateCapitalStructurePaths(raw: unknown) {
     return {id: s.id, label: s.label, recommendedPathId: sc.recommended?.id ?? null,
       recommendationHolds: chosen.recommended !== null && sc.recommended?.id === chosen.recommended.id,
       onRecommended: rec ? {gates: rec.gates, minimumCash: rec.summary.minimumCash, stressMinimumCash: {periodId: rec.minStress.periodId, amount: rec.minStress.closingAvailable},
-        indenture: rec.indenture, policy: rec.policy, netDebtAtHorizon: rec.summary.netDebtAtHorizon} : null};
+        indenture: rec.indenture, policy: rec.policy, netDebtAtHorizon: rec.summary.netDebtAtHorizon, ebitdaByYear: ebitdaByYear(rec.base.rows)} : null};
   });
   return {schemaVersion: "capital-structure-paths.v1" as const, engineVersion: capitalStructurePathsVersion, currency: input.currency,
     openingDate: input.openingDate, periodEnds: [...input.periodEnds], minimumCash: input.minimumCash,
