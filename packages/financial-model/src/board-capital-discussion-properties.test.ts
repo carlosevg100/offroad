@@ -1,9 +1,9 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardRestatePath, boardRestated, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -117,7 +117,7 @@ const meaning: Record<string, Record<string, string>> = {
   "what_changes.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
     defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
     ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda"},
-  "what_changes.receivable_days": {giro: OP + "readings.projected.scenarios[id=prazo-60].rows[periodId=*].effects.changeInWorkingCapital"},
+  "what_changes.receivable_days": {ano: "year", giro: OP + "readings.projected.scenarios[id=prazo-60].rows[periodId=*].effects.changeInWorkingCapital"},
   "next_steps.notice": {prazo: notice}, "next_steps.programs": {prazo: programs}, "next_steps.sounding": {prazo: sounding}, "next_steps.route": {prazo: route, ano: "year"},
   "summary.opening.debt_and_cash": {principal: DT + "result.table.profile.scheduleByYear[year=*].principal", ano: "year", semana: WC + "readings.tightestWeek.weekStart"},
   "summary.closing.leverage": {alavancagem: CV + "result.headroom.measurements[id=dez26-base].ratio", data: CV + "result.headroom.measurements[id=dez26-base].date",
@@ -259,42 +259,58 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       const definition = (covenantPacket?.result as {definitions?: {limitId: string; definition: string | null}[]} | undefined)?.definitions?.find((x) => x.limitId === "politica");
       if (!definition || definition.definition !== null) bad.push(`policy_definition:${t.slice(0, 60)}`);
     }
-    // Causes, by the oracle's own reading of the drivers: totals over the horizon for the project, receivable days for the chains.
-    const cases = (investmentPacket as {cases?: {id: string; result: {project: {rows: {periodId: string; incrementalEbitda: string; operands: Record<string, string>}[]}}}[]} | undefined)?.cases ?? [];
-    const rows = (id: string) => cases.find((c) => c.id === id)?.result.project.rows ?? [];
-    const total = (id: string, f: (r: ReturnType<typeof rows>[number]) => string) => rows(id).reduce((sum, r) => sum.plus(f(r)), new D(0));
-    const same = (id: string, f: (r: ReturnType<typeof rows>[number]) => string) => rows("base").every((r) => rows(id).find((x) => x.periodId === r.periodId) && f(rows(id).find((x) => x.periodId === r.periodId)!) === f(r));
-    if (/economia menor/i.test(t) && !(rows("economy-4").length && total("economy-4", (r) => r.incrementalEbitda).lt(total("base", (r) => r.incrementalEbitda))
-      && same("economy-4", (r) => r.operands.loadYearFraction!))) bad.push(`cause_economy:${t.slice(0, 60)}`);
-    if (/capex maior/i.test(t) && !(rows("capex-120").length && total("capex-120", (r) => r.operands.growthCapexPaid!).gt(total("base", (r) => r.operands.growthCapexPaid!)))) bad.push(`cause_capex:${t.slice(0, 60)}`);
-    if (/partida mais lenta/i.test(t) && !(rows("slower-start").length && total("slower-start", (r) => r.operands.activeYearFraction!).lt(total("base", (r) => r.operands.activeYearFraction!)))) bad.push(`cause_start:${t.slice(0, 60)}`);
-    if (/redes pagando mais tarde/i.test(t)) {
-      // Against the scenario the effect is measured from (basedOn), resolving each driver down the chain to the base.
-      const contributions = (projectionPacket?.result as {contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined)?.contributions ?? [];
-      const scenarios = (projectionPacket?.result as {projection?: {projection?: {scenarios?: {id: string; basedOn: string}[]}}} | undefined)?.projection?.projection?.scenarios ?? [];
-      const own = (suffix: string) => contributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
-      const days = (id: string): string[] | undefined => id === "base" ? own(".base.receivableDays") : own(`.scenario.${id}.override.receivableDays`) ?? (() => {
-        const parent = scenarios.find((x) => x.id === id)?.basedOn; return parent ? days(parent) : undefined;})();
-      const scenario = d.identity.map((x) => /scenarios\[id=([^\]]+)\]\.rows\[[^\]]+\]\.effects\.changeInWorkingCapital/.exec(x.path)?.[1]).find(Boolean);
-      const parent = scenarios.find((x) => x.id === scenario)?.basedOn;
-      const later = scenario ? days(scenario) : undefined, reference = parent ? days(parent) : undefined;
-      if (!later || !reference || !later.reduce((sum, v) => sum.plus(v), new D(0)).gt(reference.reduce((sum, v) => sum.plus(v), new D(0)))) bad.push(`cause_receivables:${t.slice(0, 60)}`);
+    // Scenario definitions, by the oracle's own reading of the sources: a named scenario changes exactly what the sentence
+    // names, active in the year it shows; a deferral has a later schedule. No sentence attributes a cause.
+    if (/\b(?:leva|levam|reduzem|cai para|deixa|pesam|explica|por causa|devido)\b/i.test(t)) bad.push(`causal:${t.slice(0, 60)}`);
+    const projection = (projectionPacket?.result as {projection?: {projection?: {base?: {periodId: string}[]; scenarios?: {id: string; basedOn: string; overriddenDrivers: string[];
+      volumeGrowthRate: unknown; volumeFactor: unknown; inputCostShock: {fromPeriodId: string; rate: string} | null}[]}}; contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined);
+    const scenarios = projection?.projection?.projection?.scenarios ?? [], periods = (projection?.projection?.projection?.base ?? []).map((x) => x.periodId);
+    const defined = (id: string) => {const x = scenarios.find((y) => y.id === id); return x ? [...x.overriddenDrivers, ...x.volumeGrowthRate !== null ? ["volume"] : [],
+      ...x.volumeFactor !== null ? ["volume"] : [], ...x.inputCostShock ? ["shock"] : []].sort().join(",") : "missing";};
+    const year = /\b(20\d\d)\b/.exec(t.split("fica")[0]!.split("EBITDA").at(-1)! + " " + t)?.[1];
+    if (/No cenário de trigo/.test(t) || /^No cenário de trigo|Com trigo/.test(t)) {
+      const x = scenarios.find((y) => y.id === "informado-trigo-4m"), shown = /EBITDA de (20\d\d)/.exec(t)?.[1];
+      if (defined("informado-trigo-4m") !== "shock" || !x?.inputCostShock || !shown || x.inputCostShock.fromPeriodId > `${shown}-12-31`) bad.push(`scenario_wheat:${t.slice(0, 60)}`);
     }
-    // The released weekly result does not record which flows a case carries: a text that says the case is without the
-    // crop line is unsupported, whatever the totals show.
-    if (/sem a linha da safra/i.test(t)) bad.push(`cause_weekly_line:${t.slice(0, 60)}`);
-    // Plan paths without the line or with it deferred: by the kind and EBITDA of their project variants.
+    if (/prazo maior de recebimento/.test(t)) {
+      const contributions = projection?.contributions ?? [];
+      const own = (suffix: string) => contributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | undefined;
+      const days = (id: string): string[] | undefined => id === "base" ? own(".base.receivableDays") : own(`.scenario.${id}.override.receivableDays`)
+        ?? (() => {const parent = scenarios.find((x) => x.id === id)?.basedOn; return parent ? days(parent) : undefined;})();
+      const shown = /capital de giro de (20\d\d)/.exec(t)?.[1], k = shown ? periods.indexOf(`${shown}-12-31`) : -1, parent = scenarios.find((x) => x.id === "prazo-60")?.basedOn;
+      const mine = days("prazo-60"), theirs = parent ? days(parent) : undefined;
+      if (defined("prazo-60") !== "receivableDays" || k < 0 || !mine || !theirs || !new D(mine[k]!).gt(theirs[k]!)) bad.push(`scenario_receivables:${t.slice(0, 60)}`);
+    }
+    // Project sensitivities: the inputs of each case against its reference differ exactly in the named operands.
+    const cases = (investmentPacket as {cases?: {id: string; role: string; result: Record<string, unknown> & {inheritedScenario: string | null}}[]} | undefined)?.cases ?? [];
+    const leaves = (r: Record<string, unknown> | undefined) => {
+      const out = new Map<string, string>();
+      const walk = (v: unknown, p: string) => {if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${p}[${i}]`)); else if (v && typeof v === "object") Object.entries(v).forEach(([k, x]) => {if (!/anchor$/i.test(k)) walk(x, `${p}.${k}`);}); else out.set(p, String(v));};
+      walk((r?.project as {operands?: unknown} | undefined)?.operands, "p"); walk((r?.startupCapital as {operands?: unknown} | undefined)?.operands, "s"); walk(r?.ramp, "r");
+      return out;
+    };
+    const changed = (id: string) => {
+      const c = cases.find((x) => x.id === id), ref = cases.find((x) => x.id === (c?.result.inheritedScenario ?? "base"));
+      const a = leaves(c?.result), b = leaves(ref?.result);
+      return [...new Set([...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).map((k) => k.split(".").at(-1)!.replace(/\[\d+\]$/, "")))].sort().join(",");
+    };
+    if (/economia menor/.test(t) && changed("economy-4") !== "annualAvoidedOperatingCost,annualFixedOperatingCost,annualVariableOperatingCost") bad.push(`scenario_economy:${t.slice(0, 60)}`);
+    if (/capex e depreciação maiores/.test(t) && changed("capex-120") !== "annualDepreciation,growthCapexPaid") bad.push(`scenario_capex:${t.slice(0, 60)}`);
+    if (/partida mais lenta/.test(t) && !/^activeMonths,activeYearFraction,loadEquivalentYearFraction,loadYearFraction,operationStartMonth$/.test(changed("slower-start"))) bad.push(`scenario_start:${t.slice(0, 60)}`);
+    // Deferrals: the first disbursement and the first operation strictly later than the reference's.
+    const firstNonZero = (xs: string[] | undefined) => xs ? xs.findIndex((v) => !new D(v).eq(0)) : -1;
+    if (/linha adiada/i.test(t)) {
+      const rows = (id: string) => ((cases.find((x) => x.id === id)?.result.project as {rows?: {operands: Record<string, string>}[]} | undefined)?.rows ?? []);
+      const capex = (id: string) => rows(id).map((r) => r.operands.growthCapexPaid!), active = (id: string) => rows(id).map((r) => r.operands.activeYearFraction!);
+      if (!(firstNonZero(capex("defer-12")) > firstNonZero(capex("base")) && firstNonZero(active("defer-12")) > firstNonZero(active("base")))) bad.push(`scenario_deferral:${t.slice(0, 60)}`);
+    }
     const planContributions = (sourceOf("evaluate-financing-paths")?.result as {contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined)?.contributions ?? [];
     const variant = (id: string, field: string) => planContributions.find((x) => x.fieldPath.endsWith(`.variant.${id}.${field}`))?.value.value;
-    if (/^Sem a linha agora/.test(t) && !(variant("sem-linha", "kind") === "none" && variant("seguir", "kind") === "project")) bad.push(`cause_plan_without:${t.slice(0, 60)}`);
-    if (/^Adiar a linha/.test(t)) {
-      const later = variant("adiar-12", "ebitda") as string[] | undefined, now = variant("seguir", "ebitda") as string[] | undefined;
-      if (!later || !now || !later.reduce((x, v) => x.plus(v), new D(0)).lt(now.reduce((x, v) => x.plus(v), new D(0)))) bad.push(`cause_plan_defer:${t.slice(0, 60)}`);
-    }
-    if (/trigo\s+(?:R\$\s)?[^.;]*mais caro|trigo mais caro/i.test(t)) {
-      const shock = (projectionPacket?.result as {projection?: {projection?: {scenarios?: {id: string; inputCostShock: {rate: string} | null}[]}}} | undefined)?.projection?.projection?.scenarios?.find((x) => x.id === "informado-trigo-4m")?.inputCostShock;
-      if (!shock || !new D(shock.rate).gt(0)) bad.push(`cause_wheat:${t.slice(0, 60)}`);
-    }
+    if (/^Sem a linha agora/.test(t) && !(variant("sem-linha", "kind") === "none" && variant("seguir", "kind") === "project")) bad.push(`scenario_plan_without:${t.slice(0, 60)}`);
+    if (/^Linha de embalagem adiada/.test(t) && !(firstNonZero(variant("adiar-12", "growthCapex") as string[]) > firstNonZero(variant("seguir", "growthCapex") as string[])
+      && firstNonZero(variant("adiar-12", "startupWorkingCapitalCashFlow") as string[]) > firstNonZero(variant("seguir", "startupWorkingCapitalCashFlow") as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
+    if (/sem a linha da safra/i.test(t)) bad.push(`scenario_weekly_line:${t.slice(0, 60)}`);
+    void year;
   }
   // Exposure, capacity and contract, read in the text and against the receivables result the identity names: the
   // balance the chain owes is the exposure, the program's volume is a capacity, and a ban on assignment needs the
@@ -444,13 +460,13 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const forged = [{packet: {...defined, fingerprint: fingerprintOf("measure-covenant-headroom")}}, {packet: {...relabelled, fingerprint: fingerprintOf("analyze-investment-project")}}, ...auroraBoardSources()];
     const read = oracle(calibrated, forged).bad;
     expect(read.some((x) => x.startsWith("policy_definition:"))).toBe(true);
-    expect(read.some((x) => x.startsWith("cause_economy:"))).toBe(true);
-    expect(read.some((x) => x.startsWith("cause_capex:") || x.startsWith("cause_start:"))).toBe(false);
+    expect(read.some((x) => x.startsWith("scenario_economy:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("scenario_capex:") || x.startsWith("scenario_start:"))).toBe(false);
   });
   it("regression r11: each cause by its driver, through the full path; the oracle reads the drivers of the sources", () => {
     const inventory = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("projecao", inventory, () => full(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(inventory);})))
-      .toThrow("board_capital_template_condition_failed:what_changes.title");
+      .toThrow("board_capital_template_condition_failed:what_changes.receivable_days");
     const frontLoaded = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("linha-embalagem", frontLoaded, () => full(2, (c) => {
       c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(frontLoaded, "capex-120")];
@@ -460,25 +476,44 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
     const forged = [{packet: {...inventory, fingerprint: fingerprintOf("build-operating-projection")}}, {packet: {...frontLoaded, fingerprint: fingerprintOf("analyze-investment-project")}}, ...auroraBoardSources()];
     const read = oracle(calibrated, forged).bad;
-    expect(read.some((x) => x.startsWith("cause_receivables:"))).toBe(true);
-    expect(read.some((x) => x.startsWith("cause_capex:"))).toBe(true);
-    expect(read.some((x) => /^cause_(economy|start|wheat):/.test(x))).toBe(false);
+    expect(read.some((x) => x.startsWith("scenario_receivables:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("scenario_capex:"))).toBe(true);
+    expect(read.some((x) => /^scenario_(economy|start|wheat):/.test(x))).toBe(false);
   });
   it("regression r12: the cause is read on its component and against the reference of its effect (full path); the oracle catches both", () => {
     const shorter = auroraProjectionPacket({shorterThanParentWithInventory: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("projecao", shorter, () => full(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(shorter);})))
-      .toThrow("board_capital_template_condition_failed:what_changes.title");
+      .toThrow("board_capital_template_condition_failed:what_changes.receivable_days");
     const weekly = boardWeeklyVariant(), kept = withBoardSource("caixa-semanal", weekly, () => full(2, boardWeeklyVariantCase));
     expect(kept.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "caixa")!.lines[0]!.startsWith("No caso alternativo de menor caixa")).toBe(true);
     expect(oracle(kept, [{packet: weekly}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
     // Not vacuous: the calibrated text read against a projection whose receivables fall below the parent, and a line
     // that says the weekly case is without the crop line, are both read as false.
     const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
-    expect(oracle(calibrated, [{packet: {...shorter, fingerprint: fingerprintOf("build-operating-projection")}}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("cause_receivables:"))).toBe(true);
+    expect(oracle(calibrated, [{packet: {...shorter, fingerprint: fingerprintOf("build-operating-projection")}}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("scenario_receivables:"))).toBe(true);
     const forged = structuredClone(calibrated), line = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "caixa")!;
     line.lines[0] = line.lines[0]!.replace("No caso alternativo de menor caixa da análise de curto prazo", "Sem a linha da safra");
-    expect(oracle(forged).bad.some((x) => x.startsWith("cause_weekly_line:"))).toBe(true);
+    expect(oracle(forged).bad.some((x) => x.startsWith("scenario_weekly_line:"))).toBe(true);
     expect(oracle(calibrated)).toEqual({bad: [], missing: []});
+  });
+  it("regression r13: a scenario is named only by its exact definition, active in the year shown; a deferral needs its schedule deferred (full path, oracle not vacuous)", () => {
+    const late = auroraProjectionPacket({shockFrom2028: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("projecao", late, () => full(2, (c) => {
+      c.extraReadings["ebitda-wheat"] = boardRestated(late, "projecao", "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=2027-12-31].ebitda", 1);
+    }))).toThrow("board_capital_template_condition_failed:what_changes.wheat");
+    const elsewhere = auroraProjectionPacket({receivablesOnlyIn2027: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("projecao", elsewhere, () => full(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(elsewhere);})))
+      .toThrow("board_capital_template_condition_failed:what_changes.receivable_days");
+    const flat = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("plano-2027", flat, () => full(2, (c) => {boardRestatePath(c, flat, "adiar-linha");})))
+      .toThrow("board_capital_template_condition_failed:alternatives.row.defer_line");
+    // Not vacuous: the calibrated texts read against each forged source are read as false, each on its own scenario.
+    const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
+    const readWith = (packet: Record<string, unknown>, method: string) => oracle(calibrated, [{packet: {...packet, fingerprint: fingerprintOf(method)}}, ...auroraBoardSources()]).bad;
+    expect(readWith(late, "build-operating-projection").some((x) => x.startsWith("scenario_wheat:"))).toBe(true);
+    expect(readWith(elsewhere, "build-operating-projection").some((x) => x.startsWith("scenario_receivables:"))).toBe(true);
+    expect(readWith(flat, "evaluate-financing-paths").some((x) => x.startsWith("scenario_plan_deferral:"))).toBe(true);
+    expect(readWith(late, "build-operating-projection").some((x) => x.startsWith("scenario_receivables:"))).toBe(false);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

@@ -58,7 +58,19 @@ type BoardConditionBody =
    * "lt" every value at most and one smaller, "eq" all equal. A series that does not resolve fails the condition. */
   | {dominates: readonly [BoardSeries, BoardSeries]; op: "gt" | "lt" | "eq"}
   /** An adopted list among the contributions of the result (by the end of its field path) contains, or with none lacks, the value. */
-  | {contributedHas: readonly [string, string]; value: BoardOperand; none?: true};
+  | {contributedHas: readonly [string, string]; value: BoardOperand; none?: true}
+  /** A list of the source has at most this many elements. */
+  | {atMost: readonly [string, string]; count: number}
+  /** Two definitions (objects of the source, flattened, source anchors ignored) differ exactly in the named fields: each
+   * changes somewhere and nothing else changes. */
+  | {changedOnly: readonly [readonly [string, ...string[]], readonly [string, ...string[]]]; fields: readonly string[]}
+  /** A projection scenario changes exactly the named drivers against the scenario it derives from (its overrides, its
+   * volume rule and its input-cost shock are its whole definition). */
+  | {scenarioDefines: readonly [string, string]; drivers: readonly string[]}
+  /** Two series at one key: the first compared with the second. */
+  | {atKey: readonly [BoardSeries, BoardSeries]; key: BoardOperand; op: BoardComparison}
+  /** The first key at which a series is not zero comes strictly after the second series' first such key. */
+  | {startsLater: readonly [BoardSeries, BoardSeries]};
 /** A per-period series of a source: a list read by path (each element's key and dotted field), or an adopted list among
  * the contributions of the result, by the end of its field path (index as key). Variables are substituted. */
 export type BoardSeries = {list: readonly [string, string]; key: string; field: string} | {contributed: readonly [string, string]}
@@ -100,62 +112,58 @@ const policyIsBoard = claim("a política é do conselho e está em vigor", cmp(a
   cmp(at(CV, "result.headroom.limits[id=politica].status"), "eq", {value: "in_force"}));
 const policyUndefined = claim("a política adotada não registra definição de EBITDA (questão aberta do resultado do covenant)",
   has(CV, "result.openQuestions", "limitId", "politica"), has(CV, "result.openQuestions", "question", "ebitda_definition_not_written"));
-/** The causes a fixed text may name, each checked on the component that defines it (never an aggregate), against the
- * same reference the effect shown is measured from, in the direction and over the scope the sentence states. A text
- * that names a cause carries its condition (self-checked by the library). */
-export const boardCauses = [
-  {cause: "economia menor", method: "analyze-investment-project", phrase: /economia menor/i,
-    component: "EBITDA incremental da linha do projeto em cada período (a economia operacional do próprio projeto), com carga e fração do ano em operação iguais",
-    reference: "o caso de que o cenário herda (inheritedScenario)", direction: "menor ou igual em todo período e menor em algum", scope: "todo o horizonte do caso de referência"},
-  {cause: "capex maior", method: "analyze-investment-project", phrase: /capex maior/i,
-    component: "capex de expansão do projeto em cada período (o total maior por dominância período a período); só cronograma diferente pede outra frase (capex antecipado)",
-    reference: "o caso de que o cenário herda (inheritedScenario)", direction: "maior ou igual em todo período e maior em algum", scope: "todo o horizonte do caso de referência"},
-  {cause: "partida mais lenta", method: "analyze-investment-project", phrase: /partida mais lenta/i,
-    component: "fração do ano em operação em cada período, com o mesmo capex de expansão",
-    reference: "o caso de que o cenário herda (inheritedScenario)", direction: "menor ou igual em todo período e menor em algum", scope: "todo o horizonte do caso de referência"},
-  {cause: "adiar a linha", method: "analyze-investment-project; evaluate-financing-paths", phrase: /adiar a linha/i,
-    component: "no projeto: fração do ano em operação e capex de expansão do primeiro período; no plano: a variante de projeto do caminho (tipo projeto) e o EBITDA dessa variante",
-    reference: "no projeto: o caso de papel base; no plano: a variante do caminho que mantém a dívida e segue com a linha",
-    direction: "operação e desembolso depois; EBITDA da variante menor ou igual em todo período e menor em algum", scope: "todo o horizonte de cada resultado"},
-  {cause: "sem a linha", method: "evaluate-financing-paths", phrase: /sem a linha/i,
-    component: "a variante de projeto do caminho (tipo sem projeto)",
-    reference: "a variante do caminho que mantém a dívida e segue com a linha (tipo projeto)",
-    direction: "variante sem projeto contra variante com projeto", scope: "todo o horizonte do plano"},
-  {cause: "trigo mais caro", method: "build-operating-projection", phrase: /trigo\s+(?:\{[a-z_]+\}\s+)?mais caro/i,
-    component: "choque de custo do insumo adotado no cenário (inputCostShock.rate) e o EBITDA do cenário",
-    reference: "o cenário de que o cenário deriva (basedOn), o mesmo do efeito mostrado", direction: "choque positivo; EBITDA menor ou igual em todo período e menor em algum",
-    scope: "todos os períodos da projeção"},
-  {cause: "redes pagando mais tarde", method: "build-operating-projection", phrase: /redes pagando mais tarde/i,
-    component: "prazo de recebimento das redes que o cenário usa (o próprio, ou o do cenário de que deriva, até a base); capital de giro, estoque ou id do cenário não bastam",
-    reference: "o cenário de que o cenário deriva (basedOn), o mesmo do efeito de capital de giro mostrado",
-    direction: "maior ou igual em todo período e maior em algum", scope: "todos os períodos da projeção"},
+/** No template asserts a cause. A text describes a scenario by what it is in its source, and only when the scenario
+ * differs from its reference exactly in the drivers the sentence names, active in the period the sentence shows; a
+ * scenario that changes more can only be named by a generic label. A deferral needs its schedule deferred (first
+ * disbursement and first operation strictly later than the reference); EBITDA does not count. The library checks that
+ * every text naming a scenario carries its definition. */
+export const boardScenarioDefinitions = [
+  {scenario: "economia menor", method: "analyze-investment-project", phrase: /economia menor/i, drivers: "custo operacional evitado, custo variável e custo fixo do projeto (annualAvoidedOperatingCost, annualVariableOperatingCost, annualFixedOperatingCost), o custo evitado menor",
+    reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
+  {scenario: "capex e depreciação maiores", method: "analyze-investment-project", phrase: /capex e depreciação maiores/i, drivers: "capex de expansão e depreciação do projeto (growthCapexPaid, annualDepreciation), maiores ou iguais em todo período e maiores em algum",
+    reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
+  {scenario: "partida mais lenta", method: "analyze-investment-project", phrase: /partida mais lenta/i, drivers: "mês de início da operação e o que ele determina: meses e fração do ano em operação e fração de carga (operationStartMonth, activeMonths, activeYearFraction, loadYearFraction, loadEquivalentYearFraction), o início posterior",
+    reference: "o caso de que o cenário herda (inheritedScenario)", vigency: "todo o horizonte do caso; o texto mostra o VPL do horizonte"},
+  {scenario: "linha adiada", method: "analyze-investment-project; evaluate-financing-paths", phrase: /adiad[ao]|adiar/i, drivers: "cronograma: primeiro desembolso de capex de expansão e primeiro período em operação (no plano, o primeiro capital de giro de partida) estritamente posteriores; EBITDA não conta",
+    reference: "o caso de papel base; no plano, a variante do caminho que mantém a dívida e segue com a linha", vigency: "todo o horizonte de cada resultado"},
+  {scenario: "trigo mais caro com repasse", method: "build-operating-projection", phrase: /trigo\s+(?:\{[a-z_]+\}\s+)?mais caro/i, drivers: "só o choque de custo do insumo (inputCostShock), positivo; nenhum override, nenhuma regra de volume",
+    reference: "o cenário de que deriva (basedOn)", vigency: "o choque começa até o fim do período mostrado (fromPeriodId)"},
+  {scenario: "prazo maior de recebimento das redes", method: "build-operating-projection", phrase: /prazo maior de recebimento/i, drivers: "só o prazo de recebimento (override receivableDays); nenhum outro override, nenhuma regra de volume, nenhum choque",
+    reference: "o cenário de que deriva (basedOn)", vigency: "o prazo é maior que o da referência no período mostrado"},
+  {scenario: "dívida mantida como está", method: "evaluate-financing-paths", phrase: /mantida a dívida como está/i, drivers: "o caminho de status quo, sem pré-pagamentos",
+    reference: "o próprio plano", vigency: "todo o horizonte do plano"},
 ] as const;
-/** Causes no template asserts because the released result does not hold the component that defines them. */
-export const boardCausesNotAsserted = [
-  {cause: "sem a linha (caixa de curto prazo)", method: "project-weekly-cash",
-    reason: "o resultado publicado não registra quais fluxos cada caso carrega; entradas totais menores seriam substituto, então a frase saiu do modelo e a linha mostra o caso alternativo de menor caixa"},
+/** Scenarios no template names because the released result does not hold their definition. */
+export const boardScenariosNotNamed = [
+  {scenario: "sem a linha da safra (caixa de curto prazo)", method: "project-weekly-cash",
+    reason: "o resultado publicado não registra quais fluxos cada caso carrega; a linha mostra o caso alternativo de menor caixa, sem nomear o que o define"},
 ] as const;
-const cause = (name: (typeof boardCauses)[number]["cause"], ...conditions: BoardCondition[]) => claim(`causa: ${name}`, ...conditions);
+const scenario = (name: (typeof boardScenarioDefinitions)[number]["scenario"], ...conditions: BoardCondition[]) => claim(`cenário: ${name}`, ...conditions);
 const caseRows = (caseId: string, field: string): BoardSeries => ({list: [IP, `cases[id=${caseId}].result.project.rows`], key: "periodId", field});
+const caseInputs = (caseId: string) => [IP, `cases[id=${caseId}].result.project.operands`, `cases[id=${caseId}].result.startupCapital.operands`, `cases[id=${caseId}].result.ramp`] as const;
 const inherited = (v: string, caseId: string): BoardCondition => ({bind: v, to: at(IP, `cases[id=${caseId}].result.inheritedScenario`)});
 const vsRef = (caseId: string, v: string, field: string, op: "gt" | "lt" | "eq"): BoardCondition => ({dominates: [caseRows(caseId, field), caseRows(`$${v}`, field)], op});
-const smallerEconomy = cause("economia menor", inherited("refe", "economy-4"), vsRef("economy-4", "refe", "incrementalEbitda", "lt"),
-  vsRef("economy-4", "refe", "operands.loadYearFraction", "eq"), vsRef("economy-4", "refe", "operands.activeYearFraction", "eq"));
-const largerCapex = cause("capex maior", inherited("refc", "capex-120"), vsRef("capex-120", "refc", "operands.growthCapexPaid", "gt"));
-const slowerStart = cause("partida mais lenta", inherited("refs", "slower-start"), vsRef("slower-start", "refs", "operands.activeYearFraction", "lt"),
-  vsRef("slower-start", "refs", "operands.growthCapexPaid", "eq"));
-const caseField = (caseId: string, period: string, field: string) => at(IP, `cases[id=${caseId}].result.project.rows[periodId=${period}].${field}`);
-const deferral = cause("adiar a linha", {bind: "refd", to: at(IP, "cases[role=base].id")}, vsRef("defer-12", "refd", "operands.activeYearFraction", "lt"),
-  cmp(caseField("defer-12", "2026-12-31", "operands.growthCapexPaid"), "lt", at(IP, "cases[id=$refd].result.project.rows[periodId=2026-12-31].operands.growthCapexPaid")));
+const exactly = (caseId: string, v: string, fields: string[]): BoardCondition => ({changedOnly: [caseInputs(caseId), caseInputs(`$${v}`)], fields});
+const smallerEconomy = scenario("economia menor", inherited("refe", "economy-4"),
+  exactly("economy-4", "refe", ["annualAvoidedOperatingCost", "annualVariableOperatingCost", "annualFixedOperatingCost"]), vsRef("economy-4", "refe", "operands.annualAvoidedOperatingCost", "lt"));
+const largerCapex = scenario("capex e depreciação maiores", inherited("refc", "capex-120"), exactly("capex-120", "refc", ["growthCapexPaid", "annualDepreciation"]),
+  vsRef("capex-120", "refc", "operands.growthCapexPaid", "gt"), vsRef("capex-120", "refc", "operands.annualDepreciation", "gt"));
+const slowerStart = scenario("partida mais lenta", inherited("refs", "slower-start"), exactly("slower-start", "refs", ["operationStartMonth", "activeMonths", "activeYearFraction", "loadYearFraction", "loadEquivalentYearFraction"]),
+  cmp(at(IP, "cases[id=slower-start].result.ramp[0].operands.operationStartMonth"), "gt", at(IP, "cases[id=$refs].result.ramp[0].operands.operationStartMonth")));
+const deferral = scenario("linha adiada", {bind: "refd", to: at(IP, "cases[role=base].id")},
+  {startsLater: [caseRows("defer-12", "operands.growthCapexPaid"), caseRows("$refd", "operands.growthCapexPaid")]},
+  {startsLater: [caseRows("defer-12", "operands.activeYearFraction"), caseRows("$refd", "operands.activeYearFraction")]});
 /** A plan path's project variant against the variant of the path that keeps the debt and goes on with the line. */
 const planVariant = (path: string, kind: "project" | "none"): BoardCondition[] => [{bind: "pv", to: at(FP, `result.evaluation.paths[id=${path}].projectVariantId`)},
   {bind: "pr", to: at(FP, "result.evaluation.paths[id=manter].projectVariantId")}, cmp({contributed: [FP, "variant.$pr.kind"]}, "eq", {value: "project"}),
   cmp({contributed: [FP, "variant.$pv.kind"]}, "eq", {value: kind})];
-const wheatShock = (scenario: string) => cause("trigo mais caro", cmp(at(OP, `result.projection.projection.scenarios[id=${scenario}].inputCostShock.rate`), "gt", {value: "0"}),
-  {bind: "wpar", to: at(OP, `result.projection.projection.scenarios[id=${scenario}].basedOn`)},
-  {dominates: [{projectionRows: [OP, scenario], field: "ebitda"}, {projectionRows: [OP, "$wpar"], field: "ebitda"}], op: "lt"});
-const laterReceivables = (scenario: string) => cause("redes pagando mais tarde", {bind: "rpar", to: at(OP, `result.projection.projection.scenarios[id=${scenario}].basedOn`)},
-  {dominates: [{projectionDriver: [OP, scenario, "receivableDays"]}, {projectionDriver: [OP, "$rpar", "receivableDays"]}], op: "gt"});
+const wheatScenario = (id: string) => scenario("trigo mais caro com repasse", {scenarioDefines: [OP, id], drivers: ["inputCostShock"]},
+  cmp(at(OP, `result.projection.projection.scenarios[id=${id}].inputCostShock.rate`), "gt", {value: "0"}),
+  cmp(at(OP, `result.projection.projection.scenarios[id=${id}].inputCostShock.fromPeriodId`), "le", {value: "$y-12-31"}));
+const longerReceivables = (id: string) => scenario("prazo maior de recebimento das redes", {scenarioDefines: [OP, id], drivers: ["receivableDays"]},
+  {bind: "rpar", to: at(OP, `result.projection.projection.scenarios[id=${id}].basedOn`)},
+  {atKey: [{projectionDriver: [OP, id, "receivableDays"]}, {projectionDriver: [OP, "$rpar", "receivableDays"]}], key: {value: "$y-12-31"}, op: "gt"});
+const keptDebt = scenario("dívida mantida como está", cmp(at(FP, "readings.paths[id=manter].role"), "eq", {value: "status_quo"}), {atMost: [FP, "result.evaluation.paths[id=manter].prepayments"], count: 0});
 const bankFallback = claim("o plano alternativo do resultado é um alongamento bancário (CCB de alongamento) que exige anuência",
   {bind: "alt", to: at(FP, "readings.alternative.pathId")}, has(FP, "result.evaluation.paths[id=$alt].instrumentIds", null, "ccb-alongamento"),
   cmp(at(FP, "readings.paths[id=$alt].consentRequired"), "eq", {value: "true"}));
@@ -199,7 +207,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "delib.packaging_line": t("delib.title", "Linha de embalagem"),
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho da linha de embalagem", {}, {of: "delib.packaging_line"}),
   "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra até as cotações firmes", {}, {of: "delib.packaging_line",
-    when: [...claim("esperar as cotações e adiar a linha tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
+    when: claim("o caso com a linha adiada tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))}),
   "delib.crop": t("delib.title", "Safra {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
   "delib.crop.subject": t("delib.subject", "decidir o financiamento da safra {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
@@ -224,9 +232,9 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "situation.debt_profile": t("page.line", "Prazo médio de {prazo}; maior credor: {credor}, com {participacao} da dívida.",
     {prazo: s("years", DT, "result.table.profile.weightedAverageLifeYears"), credor: {type: "label", from: [[DT, "result.table.profile.largestCreditor.creditor"]], generic: "sem nome confirmado"},
       participacao: s("rate", DT, "result.table.profile.largestCreditor.share")}),
-  "situation.cash_shortfall": t("page.title", "Sem ação, o caixa fica abaixo do mínimo {em:semana} e chega a {saldo} {fim:ano}",
+  "situation.cash_shortfall": t("page.title", "O caixa fica abaixo do mínimo {em:semana} e, mantida a dívida como está, chega a {saldo} {fim:ano}",
     {semana: tightWeek, saldo: s("money", FP, "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=$y-12-31].closingAvailable"), ano: yr("$y")},
-    {when: [tightBelowMinimum, ...claim("sem ação é o caminho de manter e rolar", cmp(at(FP, "readings.paths[id=manter].role"), "eq", {value: "status_quo"}))]}),
+    {when: [tightBelowMinimum, ...keptDebt]}),
   // The released weekly result does not record which flows each case carries, so the cause of this case is not asserted.
   "situation.cash_without_line": t("page.line", "No caso alternativo de menor caixa da análise de curto prazo, o caixa {em:semana} é de {saldo}, contra o mínimo de {minimo}.",
     {semana: s("date", WC, "readings.sensitivities[caseId=sem-linha].weekStart"), saldo: s("money", WC, "readings.sensitivities[caseId=sem-linha].minimum"),
@@ -237,7 +245,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {ano: yr("$y"), servico: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].service"),
       disponivel: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].availableForService")},
     {when: claim("o serviço supera o caixa disponível", cmp("servico", "gt", "disponivel"))}),
-  "constraint.indenture_basket": t("page.title", "A escritura da debênture deixa só {saldo} de exceção para garantias de nova dívida",
+  "constraint.indenture_basket": t("page.title", "A escritura da debênture tem só {saldo} livres na exceção para garantias de nova dívida",
     {saldo: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].remaining")},
     {when: claim("o saldo da exceção é menor que a exceção da escritura", cmp("saldo", "ge", "0"), cmp("saldo", "lt", at(DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket")))}),
   "constraint.basket_usage": t("page.line", "Exceção de {cesta} para garantias, com {ocupado} ocupados pelas garantias da dívida com {credor}.",
@@ -254,15 +262,15 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate"), vpl: metric("money", "base", "netPresentValue")}),
   "topic.project_payback": t("page.line", "Payback de cerca de {payback}; o fluxo acumulado do projeto chega a {pico} {em:data}.",
     {payback: metric("years", "base", "paybackYears"), pico: metric("money", "base", "peakCumulativeCashNeed.amount"), data: metric("date", "base", "peakCumulativeCashNeed.periodEndDate")}),
-  "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: economia menor, {vpl_economia}; capex maior, {vpl_capex}; partida mais lenta, {vpl_partida}.",
+  "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: com economia menor, {vpl_economia}; com capex e depreciação maiores, {vpl_capex}; com partida mais lenta, {vpl_partida}.",
     {vpl_economia: metric("money", "economy-4", "netPresentValue"), vpl_capex: metric("money", "capex-120", "netPresentValue"), vpl_partida: metric("money", "slower-start", "netPresentValue")},
     {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart]}),
-  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; adiar a linha leva o VPL a {vpl} e o retorno a {retorno}.",
+  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; com a linha adiada, o VPL fica em {vpl} e o retorno em {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue"), retorno: metric("rate", "defer-12", "annualIrr")},
-    {when: [...claim("adiar tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
+    {when: [...claim("o caso com a linha adiada tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...deferral]}),
   "option.go_now": t("page.option", "Seguir agora: VPL de {vpl} e retorno de {retorno}.", {vpl: metric("money", "base", "netPresentValue"), retorno: metric("rate", "base", "annualIrr")}),
   "option.staged": t("page.option", "Seguir em etapas: VPL de {vpl}.", {vpl: metric("money", "staged", "netPresentValue")}),
-  "option.wait_quotes": t("page.option", "Esperar as cotações e adiar a linha: VPL de {vpl} e retorno de {retorno}.",
+  "option.wait_quotes": t("page.option", "Esperar as cotações, com a linha adiada: VPL de {vpl} e retorno de {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
   "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair"}}),
@@ -278,10 +286,11 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {caminhos: s("count", FP, "readings.horizon.candidatePaths"), ano: yr("$y")},
     {when: [maturityYear, {onlyFlagged: [FP, "readings.paths", "eligible", "id"], equals: at(FP, "readings.recommendation.pathId"), claim: "só o caminho recomendado passa em todos os critérios"}]}),
   "alternatives.row.no_line_debenture": pathRow("Sem a linha agora, com giro e debênture nova", "sem-linha-debenture",
-    [...cause("sem a linha", ...planVariant("sem-linha-debenture", "none")),
+    [...claim("o caminho fica sem o projeto da linha", ...planVariant("sem-linha-debenture", "none")),
       ...instrument("sem-linha-debenture", "debenture-80", "o caminho emite a debênture nova")]),
-  "alternatives.row.defer_line": pathRow("Adiar a linha de embalagem", "adiar-linha", cause("adiar a linha", ...planVariant("adiar-linha", "project"),
-    {dominates: [{contributed: [FP, "variant.$pv.ebitda"]}, {contributed: [FP, "variant.$pr.ebitda"]}], op: "lt"})),
+  "alternatives.row.defer_line": pathRow("Linha de embalagem adiada", "adiar-linha", scenario("linha adiada", ...planVariant("adiar-linha", "project"),
+    {startsLater: [{contributed: [FP, "variant.$pv.growthCapex"]}, {contributed: [FP, "variant.$pr.growthCapex"]}]},
+    {startsLater: [{contributed: [FP, "variant.$pv.startupWorkingCapitalCashFlow"]}, {contributed: [FP, "variant.$pr.startupWorkingCapitalCashFlow"]}]})),
   "alternatives.row.debenture_with_line": pathRow("Separar por uso e emitir debênture que substitui a atual e a dívida com {credor}", "debenture-com-linha",
     [...variant("debenture-com-linha", "seguir"), prepaidIn("debenture-com-linha"), ...claim("o caminho resgata a debênture atual", has(FP, "result.evaluation.paths[id=debenture-com-linha].prepayments", "instrumentId", "debenture-2021"))], true),
   "alternatives.row.keep_and_roll": pathRow("Manter e rolar no vencimento", "manter", claim("o caminho é o de manter", cmp(at(FP, "readings.paths[id=manter].role"), "eq", {value: "status_quo"}))),
@@ -299,9 +308,9 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "recommendation.alternative": t("page.line", "Plano alternativo: alongamento bancário, com decisão até {prazo}.", {prazo: dl("delib.action.decide_route")}, {when: bankFallback}),
   "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
     {politica: policy, adverso: measurement("multiple", "dez27-adverso", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear]}),
-  "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e cai para {fim} {em:data_fim}.",
+  "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e em {fim} {em:data_fim}.",
     {inicio: measurement("multiple", "dez26-base", "ratio"), data_inicio: measurement("date", "dez26-base", "date"), fim: measurement("multiple", "dez27-base", "ratio"),
-      data_fim: measurement("date", "dez27-base", "date")}, {when: claim("a alavancagem cai", cmp("fim", "lt", "inicio"))}),
+      data_fim: measurement("date", "dez27-base", "date")}, {when: claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio"))}),
   "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}.",
     {ano: yr("$y"), adverso: measurement("multiple", "dez27-adverso", "ratio"), politica: policy}, {when: [adverseYear, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
@@ -311,20 +320,17 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("a leitura gerencial usa o EBITDA reportado e a da escritura o EBITDA ajustado",
         cmp(at(CV, "result.headroom.measurements[id=dez26-gerencial].ebitda"), "eq", at(CV, "result.headroom.measurements[id=dez26-gerencial].reportedEbitda")),
         cmp(at(CV, "result.headroom.measurements[id=dez26-base].ebitda"), "ne", at(CV, "result.headroom.measurements[id=dez26-base].reportedEbitda")))]}),
-  "what_changes.title": t("page.title", "A recomendação depende de demanda acima de {piso}; trigo mais caro e redes pagando mais tarde reduzem a folga",
-    {piso: s("money", FP, L + "issueFloorInsideGates")},
-    {when: [...claim("o piso fica abaixo do alvo de emissão", cmp("piso", "lt", at(FP, L + "issueTarget"))),
-      ...wheatShock("informado-trigo-4m"), ...laterReceivables("prazo-60"),
-      ...claim("redes pagando mais tarde consomem capital de giro", cmp(at(OP, "readings.projected.scenarios[id=prazo-60].rows[periodId=2026-12-31].effects.changeInWorkingCapital"), "gt", {value: "0"}))]}),
+  "what_changes.title": t("page.title", "A recomendação depende de demanda acima de {piso}",
+    {piso: s("money", FP, L + "issueFloorInsideGates")}, {when: claim("o piso fica abaixo do alvo de emissão", cmp("piso", "lt", at(FP, L + "issueTarget")))}),
   "what_changes.demand": t("page.line", "Demanda da debênture abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
     {piso: s("money", FP, L + "issueFloorInsideGates"), alvo: issue}, {when: [...claim("o piso fica abaixo do alvo", cmp("piso", "lt", "alvo")), ...longIsDebenture]}),
-  "what_changes.wheat": t("page.line", "Trigo {choque} mais caro, com repasse em {defasagem}: EBITDA {de:ano} perto de {ebitda}.",
+  "what_changes.wheat": t("page.line", "No cenário de trigo {choque} mais caro com repasse em {defasagem}, o EBITDA {de:ano} fica em cerca de {ebitda}.",
     {choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
-      ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda")}, {when: wheatShock("informado-trigo-4m")}),
-  "what_changes.receivable_days": t("page.line", "Redes pagando mais tarde: {giro} a mais de capital de giro.",
-    {giro: s("money", OP, "readings.projected.scenarios[id=prazo-60].rows[periodId=$p].effects.changeInWorkingCapital")},
-    {when: [...laterReceivables("prazo-60"), ...claim("o efeito do prazo maior aumenta o capital de giro", cmp("giro", "gt", "0"))]}),
+      ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda")}, {when: wheatScenario("informado-trigo-4m")}),
+  "what_changes.receivable_days": t("page.line", "No cenário de prazo maior de recebimento das redes, o capital de giro {de:ano} fica {giro} acima do cenário de referência.",
+    {ano: yr("$y"), giro: s("money", OP, "readings.projected.scenarios[id=prazo-60].rows[periodId=$y-12-31].effects.changeInWorkingCapital")},
+    {when: [...longerReceivables("prazo-60"), ...claim("o efeito sobre o capital de giro é de alta", cmp("giro", "gt", "0"))]}),
   "next_steps.title": t("page.title", "Próximos passos e datas"),
   "next_steps.notice": t("page.line", "{prazo}: aviso ao fornecedor de embalagem.", {prazo: dl("delib.action.supplier_notice")}),
   "next_steps.programs": t("page.line", "{prazo}: adesão aos programas de antecipação.", {prazo: dl("delib.action.join_programs")}),
@@ -342,7 +348,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "appendix.sources": t("appendix", "Fontes e datas das análises"),
   // Likely questions and answers; an answer answers its own question.
   "q.roll_bank": t("question", "Por que não rolar a dívida com {credor} no vencimento?", {credor: creditorOf("$i")}),
-  "a.roll_bank": t("answer", "Rolar só a dívida com {credor} deixa o caixa abaixo do mínimo da política; faltam cerca de {falta}, com vencimento {em:vencimento}.",
+  "a.roll_bank": t("answer", "No caminho que alonga a dívida com {credor}, o caixa fica abaixo do mínimo da política: faltam cerca de {falta}, com vencimento {em:vencimento}.",
     {credor: creditorOf("$i"), falta: s("money", FP, "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
     {answers: "q.roll_bank", when: [...claim("falta caixa contra o mínimo da política", cmp("falta", "gt", "0")), ...amendedIn("bradesco-sem-linha")]}),
   "q.term": t("question", "Por que {prazo} e não um prazo menor?", {prazo: term}),
@@ -375,19 +381,18 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {baixo: s("money", RC, "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts"), alto: s("money", RC, "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts")},
     {answers: "q.rating", when: claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto"))}),
   "q.strategic": t("question", "A linha de embalagem não é estratégica?"),
-  "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo com economia menor, capex maior ou partida mais lenta. Cotações firmes decidem.",
+  "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")},
     {answers: "q.strategic", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
       ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0"))),
       ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "q.wheat": t("question", "E se o trigo subir?"),
-  "a.wheat": t("answer", "Com trigo {choque} mais caro e repasse em {defasagem}, o EBITDA {de:ano} cai para cerca de {ebitda}; no adverso, com EBITDA de {ebitda_adverso}, a alavancagem fica em {alavancagem}, abaixo do covenant de {covenant}.",
+  "a.wheat": t("answer", "No cenário de trigo {choque} mais caro com repasse em {defasagem}, o EBITDA {de:ano} fica em cerca de {ebitda}; no adverso, com EBITDA de {ebitda_adverso}, a alavancagem fica em {alavancagem}, abaixo do covenant de {covenant}.",
     {choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
       ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda"),
       ebitda_adverso: measurement("money", "dez27-adverso", "reportedEbitda"), alavancagem: measurement("multiple", "dez27-adverso", "ratio"), covenant},
-    {answers: "q.wheat", when: [...wheatShock("informado-trigo-4m"),
-      ...claim("o EBITDA cai contra o cenário informado", cmp("ebitda", "lt", at(OP, "readings.projected.scenarios[id=informado].rows[periodId=$y-12-31].ebitda"))),
+    {answers: "q.wheat", when: [...wheatScenario("informado-trigo-4m"),
       ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant"))]}),
   "q.anchor": t("question", "Dependemos demais da rede A?"),
   // Exposure is the balance the chain owes in the portfolio; the program's volume is a capacity and is named as such.
@@ -435,6 +440,11 @@ export function boardTemplateClaims() {
     : "bind" in c ? `$${c.bind} := ${describe(c.to)}` : "atLeast" in c ? `${c.atLeast[0]} ${c.atLeast[1]} tem ao menos ${c.count}`
     : "dominates" in c ? `série ${series(c.dominates[0])} ${c.op === "gt" ? "domina por cima" : c.op === "lt" ? "domina por baixo" : "igual a"} ${series(c.dominates[1])}`
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : "contém"} ${describe(c.value)}`
+    : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
+    : "changedOnly" in c ? `${c.changedOnly[0][0]} ${c.changedOnly[0].slice(1).join(", ")} difere de ${c.changedOnly[1].slice(1).join(", ")} exatamente em ${c.fields.join(", ")}`
+    : "scenarioDefines" in c ? `o cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva`
+    : "atKey" in c ? `${series(c.atKey[0])} ${c.op} ${series(c.atKey[1])} em ${describe(c.key)}`
+    : "startsLater" in c ? `${series(c.startsLater[0])} começa estritamente depois de ${series(c.startsLater[1])}`
     : `${c.includes[0]} ${c.includes[1]}${c.includes[2] ? `[*].${c.includes[2]}` : ""} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`;
   const rows: {templateId: string; claim: string; checks: string[]}[] = [];
   for (const [templateId, x] of Object.entries(boardTemplates)) for (const c of x.when) {
@@ -532,10 +542,13 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c ? [] : "contributedHas" in c ? [c.value] : [c.equals]);
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "scenarioDefines" in c || "startsLater" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : []);
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [...c.changedOnly[0].slice(1), ...c.changedOnly[1].slice(1)]
+      : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
+      : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
     for (const o of operands) {
       if ("slot" in o && !Object.hasOwn(x.slots, o.slot)) problems.push(`${id}:operand:${o.slot}`);
@@ -544,7 +557,9 @@ export function checkBoardTemplateLibrary() {
     }
     for (const m of x.text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)) if (!m[0].startsWith("{count:") && !Object.hasOwn(x.slots, m[1]!)) problems.push(`${id}:text:${m[1]}`);
     // A text that names a cause carries the condition of that cause, on its driver.
-    for (const c of boardCauses) if (c.phrase.test(x.text) && !x.when.some((w) => w.claim === `causa: ${c.cause}`)) problems.push(`${id}:cause:${c.cause}`);
+    for (const c of boardScenarioDefinitions) if (c.phrase.test(x.text) && !x.when.some((w) => w.claim === `cenário: ${c.scenario}`)) problems.push(`${id}:scenario:${c.scenario}`);
+    // No template asserts a cause: verbs that attribute an effect to a driver are refused in the fixed text.
+    if (/(?:leva|levam|reduzem|reduz o|cai para|deixa|deixam|pesam|explica|explicam|por causa|devido)/i.test(x.text)) problems.push(`${id}:causal_verb`);
     // No fixed text names a creditor or a bank: names enter only through label slots.
     for (const name of boardNameDictionary) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(x.text) && !boardNamesAllowedInText.includes(name)) problems.push(`${id}:names:${name}`);
     if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);

@@ -121,10 +121,20 @@ describe("board discussion core", () => {
       ["ep", {display: "R$ 6,4 milhões", unit: "money", origin: origin(IP, "comparison.metrics[caseId=economy-4].netPresentValue", "6400000")}],
       ["p", {pending: true, methodId: IP}]]);
     const source = (id: string, methodId: string, packet: unknown) => ({id, methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}) as BoardSourceReading;
-    const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {cases: ([["base", ["0", "3", "6"], ["0", "0.5", "1"], ["0", "0.6", "1"], ["10", "8", "0"]], ["economy-4", ["0", "2", "4"], ["0", "0.5", "1"], ["0", "0.6", "1"], ["10", "8", "0"]],
-      ["capex-120", ["0", "3", "6"], ["0", "0.5", "1"], ["0", "0.6", "1"], ["12", "9.6", "0"]], ["slower-start", ["0", "1", "5"], ["0", "0.1", "0.9"], ["0", "0.2", "0.9"], ["10", "8", "0"]]] as const)
-      .map(([id, ebitda, load, active, capex]) => ({id, role: id === "base" ? "base" : "sensitivity", result: {inheritedScenario: id === "base" ? null : "base", project: {rows: ["2026-12-31", "2027-12-31", "2028-12-31"].map((periodId, k) => ({periodId, incrementalEbitda: ebitda[k],
-        operands: {loadYearFraction: load[k], activeYearFraction: active[k], growthCapexPaid: capex[k]}}))}}}))})];
+    const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {cases: (() => {
+      const periods = ["2026-12-31", "2027-12-31", "2028-12-31"];
+      const make = (id: string, o: {avoided?: string[]; capex?: string[]; dep?: string[]; active?: string[]; load?: string[]; start?: string}) => {
+        const avoided = o.avoided ?? ["0", "30", "30"], capex = o.capex ?? ["10", "8", "0"], dep = o.dep ?? ["1.8", "1.8", "1.8"], active = o.active ?? ["0", "0.6", "1"], load = o.load ?? ["0", "0.5", "1"];
+        const costs = o.avoided ? ["0", "13", "13"] : ["0", "19.5", "19.5"], fixed = o.avoided ? ["0", "3", "3"] : ["0", "4.5", "4.5"];
+        const operands = periods.map((periodId, k) => ({annualAvoidedOperatingCost: avoided[k], annualVariableOperatingCost: costs[k], annualFixedOperatingCost: fixed[k],
+          growthCapexPaid: capex[k], annualDepreciation: dep[k], activeYearFraction: active[k], loadYearFraction: load[k]}));
+        return {id, role: id === "base" ? "base" : "sensitivity", result: {inheritedScenario: id === "base" ? null : "base",
+          project: {operands: {periods: operands}, rows: periods.map((periodId, k) => ({periodId, incrementalEbitda: "1", operands: operands[k]}))},
+          startupCapital: {operands: {}}, ramp: [{operands: {operationStartMonth: o.start ?? "2027-05-01"}, activeMonths: o.start ? 2 : 8, activeYearFraction: active[1], loadEquivalentYearFraction: load[1]}]}};
+      };
+      return [make("base", {}), make("economy-4", {avoided: ["0", "20", "20"]}), make("capex-120", {capex: ["12", "9.6", "0"], dep: ["2.16", "2.16", "2.16"]}),
+        make("slower-start", {active: ["0", "0.2", "1"], load: ["0", "0.1", "0.95"], start: "2027-11-01"})];
+    })()})];
     const action = (t: string): BoardDeliberation => ({...deliberation("v", ["2026-11-15"]), title: "delib.maturities|ano=y", deadlines: [{id: "rota", date: "2026-11-15", action: t}]});
     const context = {figures, deliberations: [action("delib.action.decide_route")], nextMeetingDate: null, sources};
     const render = (ref: string) => renderBoardRef(ref, context).display;

@@ -20,7 +20,7 @@ import {auroraReceivablesFunding, auroraReceivablesFundingBasis} from "./receiva
 import {prepareRelativeDebtCostPacket} from "./relative-debt-cost-packet";
 import {c03Id, c03PacketInput} from "./relative-debt-cost.test-support";
 import {prepareCapitalPathsPacket} from "./capital-structure-paths-packet";
-import {auroraCapitalPathsBasis} from "./capital-structure-paths.test-support";
+import {auroraCapitalPathsBasis, auroraCapitalPathsKernel} from "./capital-structure-paths.test-support";
 
 /** Aurora Alimentos, board meeting of 30/set/2026 (ficha C47, synthetic). The reviewed results are the published
  * calibrations of the released methods, run as they are: C10 debt table, C12 covenant test, C18 weekly cash, C32
@@ -49,7 +49,7 @@ function buildSources() {
   for (const e of relative.entries) if (e.dimensions.entityId === c03Id(1)) e.dimensions.entityId = company;
   // Entries first, then the inputs: the sealed snapshot is a string, so the rebind never touches it.
   const relativeCost = prepareRelativeDebtCostPacket(rebind(relative.seal(), c03Id(1), company));
-  const plan = prepareCapitalPathsPacket(auroraCapitalPathsBasis().seal());
+  const plan = auroraPlanPacket();
   return [
     {id: "tabela-divida", methodId: "build-company-debt-table", packet: debtTable},
     {id: "covenant", methodId: "measure-covenant-headroom", packet: covenant},
@@ -103,8 +103,10 @@ function c32WithMislabelledEconomy() {
 }
 /** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
  * days instead of the chains' receivable days, which stay as in the base. */
-export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true} = {}) {
+export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true} = {}) {
   const b = operatingProjectionBasis({informed: true});
+  if (variant.shockFrom2028) b.entries.find((e) => e.fieldPath.endsWith("scenario.informado-trigo-4m.shock.fromPeriodEnd"))!.value = {type: "date", value: "2028-12-31"};
+  if (variant.receivablesOnlyIn2027) b.entries.find((e) => e.fieldPath.endsWith("scenario.prazo-60.override.receivableDays"))!.value = {type: "list", value: ["50", "60", "60"]};
   if (variant.shorterThanParentWithInventory) {
     // Receivable days of 55 against a parent scenario of 60, with longer inventory: the working-capital effect comes from inventory.
     const scenarios = (b.input as unknown as {scenarios: {id: string; basedOn: string; overrides: unknown[]}[]}).scenarios;
@@ -131,6 +133,17 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
     c.streamIds = [...c.streamIds.filter((x) => x !== "recebimentos"), "linha-17"];
   }
   return prepareWeeklyCashPacket({schemaVersion: "weekly-cash-packet-input.v1", question: "Como fica o caixa até dezembro e o que vence?", analysis: b.seal()});
+}
+/** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
+ * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
+export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true} = {}) {
+  const k = auroraCapitalPathsKernel();
+  if (variant.deferralWithoutLaterSchedule) {
+    const goOn = k.projectVariants.find((v) => v.id === "seguir")!, later = k.projectVariants.find((v) => v.id === "adiar-12")!;
+    (later as {effects: Record<string, unknown>}).effects = {...(later as {effects: Record<string, unknown>}).effects,
+      growthCapex: (goOn as {effects: {growthCapex: string[]}}).effects.growthCapex, startupWorkingCapitalCashFlow: (goOn as {effects: {startupWorkingCapitalCashFlow: string[]}}).effects.startupWorkingCapitalCashFlow};
+  }
+  return prepareCapitalPathsPacket(auroraCapitalPathsBasis(k).seal());
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
@@ -328,7 +341,7 @@ export function auroraBoardCase(turn: BoardTurn) {
         lines: ["risk.policy_readings|gerencial=lev-ger-dez26|escritura=lev-dez26|data=dez26-date"]},
       {id: "mudaria", role: "what_changes", topicId: null, title: "what_changes.title|piso=issue-floor", recommendation: null, options: [],
         lines: ["what_changes.demand|piso=issue-floor|alvo=debenture-amount", "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat",
-          "what_changes.receivable_days|giro=wc-60"]},
+          "what_changes.receivable_days|ano=year-2026|giro=wc-60"]},
       {id: "passos", role: "next_steps", topicId: null, title: "next_steps.title", recommendation: null, options: [],
         lines: ["next_steps.notice|prazo=deadline:linha.aviso", "next_steps.programs|prazo=deadline:safra.adesao",
           "next_steps.sounding|prazo=deadline:vencimentos.sondagem", "next_steps.route|prazo=deadline:vencimentos.rota|ano=year-2027"]},

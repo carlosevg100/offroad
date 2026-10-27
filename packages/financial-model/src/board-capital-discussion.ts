@@ -364,6 +364,51 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return o.year ? v.slice(0, 4) : v;
   };
   const list = (method: string, path: string) => {const xs = read(method, path); if (!Array.isArray(xs) || !xs.length) throw unverified(path); return xs as Record<string, unknown>[];};
+  /** A per-period series of a source, by key; null when it does not resolve. */
+  const boardSeriesOf = (x: BoardSeries): Map<string, string> | null => {
+    const sub = (v: string) => v.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+    if ("projectionRows" in x) {
+      const id = sub(x.projectionRows[1]);
+      return boardSeriesOf({list: [x.projectionRows[0], id === "base" ? "result.projection.projection.base" : `result.projection.projection.scenarios[id=${id}].rows`], key: "periodId", field: x.field});
+    }
+    if ("projectionDriver" in x) {
+      // The driver a scenario uses: its own override, else the scenario it is based on, down to the base.
+      const [method, start, driver] = x.projectionDriver, packet = sourceOf(method).packet;
+      let id = sub(start);
+      for (let depth = 0; depth < 8; depth++) {
+        const periods = readBoardSourcePath(packet, "result.projection.projection.base");
+        const byPeriod = (m: Map<string, string> | null) => {
+          if (!m || !Array.isArray(periods)) return m;
+          const out = new Map<string, string>();
+          for (const [i, v] of m) {const row = periods[Number(i)] as {periodId?: unknown} | undefined; if (typeof row?.periodId !== "string") return null; out.set(row.periodId, v);}
+          return out;
+        };
+        if (id === "base") return byPeriod(boardSeriesOf({contributed: [method, `base.${driver}`]}));
+        const own = byPeriod(boardSeriesOf({contributed: [method, `scenario.${id}.override.${driver}`]}));
+        if (own) return own;
+        const parent = readBoardSourcePath(packet, `result.projection.projection.scenarios[id=${id}].basedOn`);
+        if (typeof parent !== "string") return null;
+        id = parent;
+      }
+      return null;
+    }
+    if ("contributed" in x) {
+      const packet = sourceOf(x.contributed[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const suffix = x.contributed[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
+      const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+      const v = hits.length === 1 ? hits[0]!.value?.value : undefined;
+      return Array.isArray(v) && v.every((y) => typeof y === "string") ? new Map(v.map((y, i) => [String(i), y as string])) : null;
+    }
+    const xs = read(x.list[0], x.list[1]);
+    if (!Array.isArray(xs)) return null;
+    const out = new Map<string, string>();
+    for (const e of xs) {
+      const k = readBoardSourcePath(e, x.key), v = readBoardSourcePath(e, x.field);
+      if ((typeof k !== "string" && typeof k !== "number") || (typeof v !== "string" && typeof v !== "number")) return null;
+      out.set(String(k), String(v));
+    }
+    return out;
+  };
   const holds = (c: BoardCondition): boolean => {
     if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return a === undefined || b === undefined || compareBoard(a, c.compare[1], b);}
     if ("every" in c) {const than = operand(c.than); return than === undefined || list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
@@ -377,43 +422,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     if ("dominates" in c) {
       // Period by period, matched by key; a series that does not resolve, or keys that do not match, fail the condition.
-      const series = (x: BoardSeries): Map<string, string> | null => {
-        const sub = (v: string) => v.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
-        if ("projectionRows" in x) {
-          const id = sub(x.projectionRows[1]);
-          return series({list: [x.projectionRows[0], id === "base" ? "result.projection.projection.base" : `result.projection.projection.scenarios[id=${id}].rows`], key: "periodId", field: x.field});
-        }
-        if ("projectionDriver" in x) {
-          // The driver a scenario uses: its own override, else the scenario it is based on, down to the base.
-          const [method, start, driver] = x.projectionDriver, packet = sourceOf(method).packet;
-          let id = sub(start);
-          for (let depth = 0; depth < 8; depth++) {
-            if (id === "base") return series({contributed: [method, `base.${driver}`]});
-            const own = series({contributed: [method, `scenario.${id}.override.${driver}`]});
-            if (own) return own;
-            const parent = readBoardSourcePath(packet, `result.projection.projection.scenarios[id=${id}].basedOn`);
-            if (typeof parent !== "string") return null;
-            id = parent;
-          }
-          return null;
-        }
-        if ("contributed" in x) {
-          const packet = sourceOf(x.contributed[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
-          const suffix = x.contributed[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
-          const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
-          const v = hits.length === 1 ? hits[0]!.value?.value : undefined;
-          return Array.isArray(v) && v.every((y) => typeof y === "string") ? new Map(v.map((y, i) => [String(i), y as string])) : null;
-        }
-        const xs = read(x.list[0], x.list[1]);
-        if (!Array.isArray(xs)) return null;
-        const out = new Map<string, string>();
-        for (const e of xs) {
-          const k = readBoardSourcePath(e, x.key), v = readBoardSourcePath(e, x.field);
-          if ((typeof k !== "string" && typeof k !== "number") || (typeof v !== "string" && typeof v !== "number")) return null;
-          out.set(String(k), String(v));
-        }
-        return out;
-      };
+      const series = boardSeriesOf;
       const a = series(c.dominates[0]), b = series(c.dominates[1]);
       // Over the horizon of the second series (the base): every one of its periods must exist in the first.
       if (!a || !b || b.size === 0 || [...b.keys()].some((k) => !a.has(k))) return false;
@@ -421,6 +430,46 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (c.op === "eq") return pairs.every(([x, y]) => compareBoard(x, "eq", y));
       const weak = c.op === "gt" ? "ge" : "le";
       return pairs.every(([x, y]) => compareBoard(x, weak, y)) && pairs.some(([x, y]) => compareBoard(x, c.op, y));
+    }
+    if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
+    if ("changedOnly" in c) {
+      // Each definition flattened (paths with positions, source anchors ignored); the changed leaf names must be the named fields.
+      const flat = (ref: readonly [string, ...string[]]) => {
+        const out = new Map<string, string>();
+        const walk = (v: unknown, path: string) => {
+          if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`));
+          else if (isRecord(v)) {for (const [k, x] of Object.entries(v)) if (!/anchor$/i.test(k)) walk(x, `${path}.${k}`);}
+          else out.set(path, v === null ? "null" : String(v));
+        };
+        ref.slice(1).forEach((p, i) => walk(read(ref[0], p), `#${i}`));
+        return out;
+      };
+      const a = flat(c.changedOnly[0]), b = flat(c.changedOnly[1]);
+      const changed = new Set([...new Set([...a.keys(), ...b.keys()])].filter((k) => a.get(k) !== b.get(k)).map((k) => k.split(".").at(-1)!.replace(/\[\d+\]$/, "")));
+      return changed.size === c.fields.length && c.fields.every((f) => changed.has(f));
+    }
+    if ("scenarioDefines" in c) {
+      const x = read(c.scenarioDefines[0], `result.projection.projection.scenarios[id=${c.scenarioDefines[1]}]`);
+      if (!isRecord(x)) throw unverified(`scenario_${c.scenarioDefines[1]}`);
+      const defined = new Set([...(Array.isArray(x.overriddenDrivers) ? x.overriddenDrivers.map(String) : []),
+        ...x.volumeGrowthRate !== null && x.volumeGrowthRate !== undefined ? ["volumeGrowthRate"] : [], ...x.volumeFactor !== null && x.volumeFactor !== undefined ? ["volumeFactor"] : [],
+        ...x.inputCostShock !== null && x.inputCostShock !== undefined ? ["inputCostShock"] : []]);
+      return defined.size === c.drivers.length && c.drivers.every((d) => defined.has(d));
+    }
+    if ("atKey" in c) {
+      const a = boardSeriesOf(c.atKey[0]), b = boardSeriesOf(c.atKey[1]), k = operand(c.key);
+      if (!a || !b || k === undefined || !a.has(k) || !b.has(k)) return false;
+      return compareBoard(a.get(k)!, c.op, b.get(k)!);
+    }
+    if ("startsLater" in c) {
+      const first = (m: Map<string, string> | null) => {
+        if (!m) return null;
+        const keys = [...m.keys()].sort((x, y) => /^\d+$/.test(x) && /^\d+$/.test(y) ? Number(x) - Number(y) : x < y ? -1 : x > y ? 1 : 0);
+        return keys.find((key) => !new Exact(m.get(key)!).eq(0)) ?? null;
+      };
+      const a = first(boardSeriesOf(c.startsLater[0])), b = first(boardSeriesOf(c.startsLater[1]));
+      if (a === null || b === null) return false;
+      return /^\d+$/.test(a) && /^\d+$/.test(b) ? Number(a) > Number(b) : a > b;
     }
     if ("contributedHas" in c) {
       const packet = sourceOf(c.contributedHas[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};

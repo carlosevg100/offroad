@@ -4,7 +4,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -73,6 +73,17 @@ export const boardWeeklyVariantCase = (c: CaseData) => {
     new Decimal(at("readings.sensitivities[caseId=sem-linha].minimum")).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1)];
   c.extraReadings["sem-linha-week"] = ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].weekStart", "day_long", at("readings.sensitivities[caseId=sem-linha].weekStart")];
 };
+/** One reading restated from a given packet with its decimals (test side only). */
+export const boardRestated = (packet: Record<string, unknown>, source: string, path: string, places: number): [string, string, string, string] =>
+  [source, path, String(places), new Decimal(readBoardSourcePath(packet, path) as string).toDecimalPlaces(places, Decimal.ROUND_HALF_UP).toFixed(places)];
+/** The four numbers of one plan path restated from a given plan packet. */
+export const boardRestatePath = (c: CaseData, packet: Record<string, unknown>, id: string) => {
+  const at = `readings.paths[id=${id}].`;
+  c.extraReadings[`${id}-cash`] = boardRestated(packet, "plano-2027", at + "minimumCash.amount", 0);
+  c.extraReadings[`${id}-lev`] = boardRestated(packet, "plano-2027", at + "worstLeverage", 2);
+  c.extraReadings[`${id}-cost`] = boardRestated(packet, "plano-2027", at + "horizonFinancingCost", 0);
+  c.extraReadings[`${id}-net`] = boardRestated(packet, "plano-2027", at + "netDebtAtHorizon", 0);
+};
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
   "Bradesco Deve Dezassete Cêntimos", "Bradesco Deve Dezassete Biliões"];
@@ -122,11 +133,11 @@ function goldCases(): Case[] {
     reuse("outline-in-the-same-urgency-order", p1, t1, ["linha", "safra", "vencimentos", "politica"], (p) => p.readings!.deliberations.map((d) => d.id)),
     reuse("deliberations-with-authority-and-the-supposed-authority-declared", p2, t2, {authority: ["board", "board", "board", "board"], pending: ["linha", "vencimentos", "politica", "safra"]},
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
-    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em 21 de dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura da debênture deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
+    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027", "A escritura da debênture tem só R$ 3 milhões livres na exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
     reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas das redes A e B antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões da safra, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
-    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões; trigo mais caro e redes pagando mais tarde reduzem a folga", "Próximos passos e datas"],
+    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões", "Próximos passos e datas"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
     reuse("every-page-carries-a-number", p2, t2, true, (p) => current(p).pages.every((x) => x.figureIds.length + x.pendingFigureIds.length + x.deadlineIds.length > 0)),
     reuse("numbers-checked-against-the-analyses-debt-covenant-and-cash", p2, t2, {
@@ -172,7 +183,7 @@ function goldCases(): Case[] {
       kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
-      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações e adiar a linha: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
+      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com a linha adiada: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
       "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
@@ -415,7 +426,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["later-receivables-claimed-on-longer-inventory", () => {
       const packet = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;
       return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
-    }, "board_capital_template_condition_failed:what_changes.title"],
+    }, "board_capital_template_condition_failed:what_changes.receivable_days"],
     ["larger-capex-claimed-on-front-loaded-capex-with-smaller-total", () => {
       const packet = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(packet, "capex-120")];}));
@@ -424,7 +435,21 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["receivables-shorter-than-the-parent-with-longer-inventory", () => {
       const packet = auroraProjectionPacket({shorterThanParentWithInventory: true}) as unknown as Record<string, unknown>;
       return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
-    }, "board_capital_template_condition_failed:what_changes.title"],
+    }, "board_capital_template_condition_failed:what_changes.receivable_days"],
+    // Review r13: a scenario named only when it differs from its reference exactly in the named drivers, active in the
+    // period shown; a deferral only with its schedule deferred.
+    ["wheat-scenario-whose-shock-starts-after-the-year-shown", () => {
+      const packet = auroraProjectionPacket({shockFrom2028: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["ebitda-wheat"] = boardRestated(packet, "projecao", "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=2027-12-31].ebitda", 1);}));
+    }, "board_capital_template_condition_failed:what_changes.wheat"],
+    ["receivables-longer-only-in-another-year", () => {
+      const packet = auroraProjectionPacket({receivablesOnlyIn2027: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
+    }, "board_capital_template_condition_failed:what_changes.receivable_days"],
+    ["deferral-without-a-deferred-schedule", () => {
+      const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
+    }, "board_capital_template_condition_failed:alternatives.row.defer_line"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
     ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],
