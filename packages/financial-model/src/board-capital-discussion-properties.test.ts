@@ -105,4 +105,78 @@ describe("board discussion properties (fixed seed)", {timeout: 600000}, () => {
     expect(() => packet(2, (c) => {c.questions[6]!.answer = "Reduz a dependência; cotações firmes decidem em {tight-week}.";})).toThrow("board_capital_answer_without_number:estrategica");
     expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "safra")!.lines[0] = "Programas a CDI mais {spread-b} a {spread-a}% ao ano, em condições indicativas.";})).toThrow("board_capital_unit_missing:spread-b");
   });
+
+  /** The eleven families of displayed fields the r2 review wrote numbers into. */
+  const families: [string, (c: CaseData, add: string) => void][] = [
+    ["deliberation.title", (c, x) => {c.deliberations[0]!.title += x;}], ["deliberation.recommendation", (c, x) => {c.deliberations[0]!.recommendation += x;}],
+    ["deadline.action", (c, x) => {c.deliberations[0]!.deadlines[0]!.action += x;}], ["page.title", (c, x) => {c.pages[1]!.title += x;}],
+    ["page.line", (c, x) => {c.pages[1]!.lines[0] += x;}], ["page.recommendation", (c, x) => {c.pages[4]!.recommendation += x;}],
+    ["summary.opening", (c, x) => {c.summary.opening += x;}], ["summary.closing", (c, x) => {c.summary.closing += x;}],
+    ["appendix.label", (c, x) => {c.appendix[0]!.label += x;}], ["question.question", (c, x) => {c.questions[0]!.question += x;}], ["question.answer", (c, x) => {c.questions[0]!.answer += x;}]];
+  const attacks = {decimal: " Dívida R$ {divida-total},{basket-free} mi.", digits: " Dívida R$ {divida-total}{basket-free} mi.", sign: " Dívida R$ -{divida-total} mi.",
+    yearAsMoney: " Dívida R$ 2027 mi.", yearAsAmount: " Dívida de 2027 milhões.", wrongUnit: " Dívida de R$ {divida-total}x."};
+
+  /** An independent reader of the final text: its own tokenizer, and the numbers a reader may legitimately see. */
+  function oracle(p: ReturnType<typeof packet>) {
+    const v = current(p), d = p.result.discussion!;
+    const texts = [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]), ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]),
+      ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];
+    const textReadings = d.identity.filter((x) => x.unit === "text").map((x) => x.display);
+    const allowed = new Set([...d.identity.filter((x) => x.unit !== "text").map((x) => x.display), ...v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display)),
+      ...Array.from({length: 20}, (_, i) => String(i + 1))]);
+    const bad: string[] = [];
+    for (const t of texts) {
+      let rest = t;
+      for (const label of textReadings) rest = rest.split(label).join(" ");
+      for (const m of rest.matchAll(/[-\u2212]?\d+(?:[.,]\d+)*(?:\/[a-z]{3})?|[a-z]{3}\/\d{2}/g)) {
+        const token = m[0], before = rest.slice(0, m.index), after = rest.slice(m.index! + token.length);
+        const year = /^(?:19|20)\d{2}$/.test(token) && !/R\$\s?$/.test(before) && !/^\s*(?:milh|mi\b|%|x)/.test(after);
+        if (!allowed.has(token) && !year && !/^[a-z]{3}\/\d{2}$/.test(token)) bad.push(token);
+      }
+    }
+    const joined = texts.join(" | ");
+    const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(x.display);});
+    return {bad, missing};
+  }
+
+  it("regression r2: every attack in every displayed field family is refused on the final text", () => {
+    for (const [family, set] of families) for (const [kind, add] of Object.entries(attacks))
+      expect(() => packet(2, (c) => set(c, add)), `${family} ${kind}`).toThrow(/board_capital_(rendered_number_invalid|number_without_origin)/);
+  });
+  it("regression r2: a subject that is not shown cannot stand in for the facts, in either order of requests", () => {
+    for (const order of [["peak-date", "label-economy"], ["label-economy", "peak-date"]]) {
+      const p = packet(2, (c) => {
+        c.deliberations[0]!.subject = "decidir com payback de {payback} anos e fluxo de R$ {peak-need} milhões; VPLs de R$ {npv-economy} milhões, R$ {npv-capex} milhões, R$ {npv-slow} milhão";
+        c.omissions = order.map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "Presidente, para deixar o texto mais leve"}));
+      });
+      expect(p.readings!.omissions.map((o) => o.outcome)).toEqual(["refused", "refused"]);
+      const text = JSON.stringify(current(p));
+      for (const n of ["Payback de cerca de 6 anos", "R$ -21,7 milhões", "R$ -6,4 milhões", "R$ -2,1 milhões", "R$ -1,0 milhão"]) expect(text).toContain(n);
+      expect(oracle(p)).toEqual({bad: [], missing: []});
+    }
+  });
+  it("property: any accepted mix of requests and injected numbers reads clean to an independent oracle (fixed seed)", () => {
+    const r = random(4722);
+    let probe: CaseData | null = null;
+    boardPacketInput(3, (c) => {probe = structuredClone(c);});
+    const pages = probe!.pages.map((p) => p.id), figures = [...Object.keys(auroraBoardReadings), "stages-npv"];
+    const deadlines = probe!.deliberations.flatMap((d) => d.deadlines.map((t) => `${d.id}.${t.id}`));
+    let refused = 0, accepted = 0;
+    for (let run = 0; run < 30; run++) {
+      const omissions = Array.from({length: Math.floor(r() * 4)}, (_, i) => {
+        const target = pick(r, ["recommendation", "page", "figure", "figure", "deadline"] as const);
+        const targetId = target === "figure" ? pick(r, figures) : target === "deadline" ? pick(r, deadlines) : pick(r, pages);
+        return {id: `pedido-${i}`, target, targetId, requestedBy: "Presidente do conselho"};
+      });
+      const inject = r() < 0.6 ? [pick(r, families), pick(r, [...Object.values(attacks), " Retorno de {irr}% e {lev-dez26}x.", " Caixa de R$ {min-cash} milhões."])] as const : null;
+      let p: ReturnType<typeof packet> | null = null;
+      try {p = packet(3, (c) => {c.omissions = omissions; if (inject) inject[0][1](c, inject[1]);});} catch (error) {
+        expect(String(error)).toMatch(/board_capital_/); refused++; continue;
+      }
+      accepted++;
+      expect(oracle(p), JSON.stringify({omissions, inject: inject?.[1]})).toEqual({bad: [], missing: []});
+      expect(p.readings!.material!.allFiguresMatch && p.readings!.material!.materialFactsShown).toBe(true);
+    }
+    expect(refused).toBeGreaterThan(0); expect(accepted).toBeGreaterThan(0);
+  });
 });

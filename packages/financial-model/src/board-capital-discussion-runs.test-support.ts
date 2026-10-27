@@ -154,6 +154,12 @@ function goldCases(): Case[] {
       line.lines.splice(2, 1);
     }), {outcome: "refused", kept: ["npv-economy", "npv-capex", "npv-slow"], recommendationKept: true},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds, recommendationKept: pageOf(p, "linha").recommendation !== null})),
+    ...(["peak-date", "label-economy"] as const).map((first, k) => observe(`refuses-hidden-subject-omissions-order-${k + 1}`, boardPacketInput(2, (c) => {
+      c.deliberations[0]!.subject = "decidir com payback de {payback} anos e fluxo de R$ {peak-need} milhões; VPLs de R$ {npv-economy} milhões, R$ {npv-capex} milhões, R$ {npv-slow} milhão";
+      c.omissions = [first, first === "peak-date" ? "label-economy" : "peak-date"].map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "Presidente do conselho"}));
+    }), {outcomes: ["refused", "refused"], shown: true},
+      (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), shown: ["Payback de cerca de 6 anos", "R$ -21,7 milhões", "R$ -6,4 milhões"].every((n) => JSON.stringify(current(p)).includes(n))}))),
+    reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
 }
@@ -195,6 +201,11 @@ function adversarialCases(): Case[] {
       e.entries.find((x) => x.fieldPath.endsWith(".figure.wal.reading"))!.value.value[5] = "1.4";
       const canonical = JSON.stringify(e); i.analysis.discussion.envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
     }), "board_capital_figure_diverges:wal"],
+    ["concatenated-decimal-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title += " Dívida R$ {divida-total},{basket-free} mi.";}), "crosses_markers"],
+    ["concatenated-digits-in-an-answer", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " Dívida R$ {divida-total}{basket-free} mi.";}), "crosses_markers"],
+    ["sign-written-before-a-reading-in-the-summary", () => boardPacketInput(2, (c) => {c.summary.closing += " Dívida R$ -{divida-total} mi.";}), "crosses_markers"],
+    ["year-used-as-money-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label += " de R$ 2027 mi";}), "year_as_amount"],
+    ["money-without-its-currency-mark", () => boardPacketInput(2, (c) => {c.pages[1]!.lines[0] += " Dívida de {divida-total} milhões.";}), "currency_mark"],
     ["literal-number-in-a-title", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "A dívida é de R$ 130 milhões, curta e concentrada em 2027";}), "board_capital_number_without_origin"],
     ["literal-deadline-in-a-line", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[0] = "2/out: aviso ao fornecedor de embalagem.";}), "board_capital_number_without_origin"],
     ["reading-that-does-not-resolve", () => alterReading("wal", (r) => {r[1] = "result.table.profile.averageLife";}), "board_capital_figure_without_origin:wal"],

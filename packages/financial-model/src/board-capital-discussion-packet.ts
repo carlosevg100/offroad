@@ -31,8 +31,8 @@ export const boardCapitalDiscussionPacketOutputSchema = z.strictObject({
     material: z.strictObject({version: z.number().int(), fingerprint: hash, mainPages: z.number().int(), appendixPages: z.number().int(),
       titles: z.array(z.strictObject({pageId: key, number: z.number().int(), placement: z.enum(["main", "appendix"]), title: text})).max(40),
       fitsAgenda: z.boolean().nullable(), questions: z.number().int(), figuresChecked: z.number().int(), allFiguresMatch: z.literal(true),
-      /** Every material fact of the rule (economic readings, marked figures, deadlines) is shown by this version. */
-      materialFacts: z.number().int(), materialFactsShown: z.literal(true),
+      /** Every material fact of the rule is shown in the final text of this version; allFiguresMatch holds only because every number of that text was verified against its marker. */
+      materialFacts: z.number().int(), materialFactsShown: z.literal(true), verifiedNumbers: z.number().int(),
       priorVersionFingerprint: hash.nullable()}).nullable(),
     pending: z.strictObject({indicative: z.array(key).max(24), sources: z.array(key).max(16), authority: z.array(key).max(12), template: z.enum(["not_supplied", "supplied_not_applied"])}),
     omissions: z.array(z.strictObject({id: key, outcome: z.enum(["applied", "refused"]), reason: text, keptFigureIds: z.array(key).max(160)})).max(12),
@@ -66,7 +66,7 @@ export function prepareBoardCapitalDiscussionPacket(raw: unknown): BoardCapitalD
     material: current ? {version: current.version, fingerprint: current.fingerprint, mainPages: current.agenda.mainPages, appendixPages: current.pages.length - current.agenda.mainPages,
       titles: current.pages.map((p) => ({pageId: p.id, number: p.number, placement: p.placement, title: p.title})), fitsAgenda: current.agenda.fits,
       questions: current.questions.length, figuresChecked: d.identity.length, allFiguresMatch: true as const,
-      materialFacts: d.materialFacts.figures.length + d.materialFacts.deadlines.length, materialFactsShown: true as const,
+      materialFacts: d.materialFacts.figures.length + d.materialFacts.deadlines.length, materialFactsShown: true as const, verifiedNumbers: current.verifiedNumbers,
       priorVersionFingerprint: d.versions.length > 1 ? d.versions[0]!.fingerprint : null} : null,
     pending: {indicative: d.pending.indicative.map((x) => x.figureId), sources: d.pending.sources.map((s) => s.sourceId), authority: d.pending.authority, template: d.pending.template},
     omissions: d.omissions.map((o) => ({id: o.id, outcome: o.outcome, reason: o.reason, keptFigureIds: o.keptFigureIds})),

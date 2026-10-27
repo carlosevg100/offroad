@@ -107,11 +107,31 @@ export function boardLiteralNumbers(template: string): string[] {
   return literal.match(/\d+/g) ?? [];
 }
 
-type Resolved = {display: string; figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
+/** A text as rendered, with the span of every marker it carries: a reading, a source text, a pending
+ * figure, a deadline, a count of deliberations or an ordinal the method writes. The verifier reads the
+ * final text against these spans. */
+export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
+export type BoardRich = {display: string; spans: BoardSpan[]};
+type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit} | {pending: true};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null};
 /** The sign a unit must carry right after its number, so a spread is never read as a rate in points. */
 const unitSuffix: Partial<Record<BoardFigureUnit, string>> = {percent: "%", multiple: "x"};
+const moneyUnits: readonly BoardFigureUnit[] = ["brl_millions", "brl"];
+
+/** Joins rendered pieces and literal glue into one text, shifting every span. */
+export function joinBoardRich(parts: (string | BoardRich)[]): BoardRich {
+  let display = ""; const spans: BoardSpan[] = [];
+  for (const part of parts) {
+    if (typeof part === "string") {display += part; continue;}
+    spans.push(...part.spans.map((x) => ({...x, start: x.start + display.length, end: x.end + display.length})));
+    display += part.display;
+  }
+  return {display, spans};
+}
+const ordinal = (n: number): BoardRich => ({display: String(n), spans: [{start: 0, end: String(n).length, kind: "ordinal", id: String(n), unit: null}]});
+const ids = (r: BoardRich, kinds: BoardSpan["kind"][]) => [...new Set(r.spans.filter((x) => kinds.includes(x.kind)).map((x) => x.id))];
+const resolved = (r: BoardRich): Resolved => ({...r, figureIds: ids(r, ["figure", "text_figure"]), pendingFigureIds: ids(r, ["pending"]), deadlineIds: ids(r, ["deadline"])});
 
 /** Checks a text that carries no placeholder: any literal number other than a year or a month of a year is refused. */
 export function checkBoardText(text: string): string {
@@ -119,38 +139,84 @@ export function checkBoardText(text: string): string {
   return text;
 }
 
-/** Renders one template. Tokens: `{figure}`, `{count:deliberations}`, `{count:dated}`,
- * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number, an
- * unknown token or a percentage or multiple without its sign refuses the material by name. */
+/** Renders one template into text and spans. Tokens: `{figure}`, `{count:deliberations}`, `{count:dated}`,
+ * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number, an unknown
+ * token or a percentage or multiple without its sign refuses the material by name. */
 export function renderBoardTemplate(template: string, context: Context): Resolved {
   if (boardLiteralNumbers(template).length) throw new Error(`board_capital_number_without_origin:${template.slice(0, 80)}`);
-  const figureIds: string[] = [], pendingFigureIds: string[] = [], deadlineIds: string[] = [];
-  const display = template.replace(/\{([^}]*)\}/g, (match: string, token: string, offset: number) => {
-    if (token === "count:deliberations") return feminine[context.deliberations.length] ?? String(context.deliberations.length);
-    if (token === "count:dated") {const n = context.deliberations.filter((d) => d.deadlines.length).length; return feminine[n] ?? String(n);}
+  const parts: (string | BoardRich)[] = [];
+  let last = 0;
+  const marker = (display: string, kind: BoardSpan["kind"], id: string, unit: BoardFigureUnit | null): BoardRich => ({display, spans: [{start: 0, end: display.length, kind, id, unit}]});
+  for (const m of template.matchAll(/\{([^}]*)\}/g)) {
+    parts.push(template.slice(last, m.index)); last = m.index! + m[0].length;
+    const token = m[1]!;
+    const count = (n: number) => marker(feminine[n] ?? String(n), "count", token, null);
+    if (token === "count:deliberations") {parts.push(count(context.deliberations.length)); continue;}
+    if (token === "count:dated") {parts.push(count(context.deliberations.filter((d) => d.deadlines.length).length)); continue;}
     if (token === "count:due-before-next-meeting") {
       if (context.nextMeetingDate === null) throw new Error("board_capital_number_without_origin:next_meeting_date");
-      const n = context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length;
-      return feminine[n] ?? String(n);
+      parts.push(count(context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length)); continue;
     }
     if (token.startsWith("deadline:")) {
       const [deliberationId, deadlineId] = token.slice(9).split(".");
       const deadline = context.deliberations.find((d) => d.id === deliberationId)?.deadlines.find((x) => x.id === deadlineId);
       if (!deadline) throw new Error(`board_capital_unknown_token:${token}`);
-      deadlineIds.push(`${deliberationId}.${deadlineId}`);
-      return dayMonth(deadline.date);
+      parts.push(marker(dayMonth(deadline.date), "deadline", `${deliberationId}.${deadlineId}`, null)); continue;
     }
     const figure = context.figures.get(token);
     if (!figure) throw new Error(`board_capital_unknown_token:${token}`);
-    if ("pending" in figure) {pendingFigureIds.push(token); return boardPendingMark;}
+    if ("pending" in figure) {parts.push(marker(boardPendingMark, "pending", token, null)); continue;}
     const suffix = unitSuffix[figure.unit];
-    if (suffix && template.slice(offset + match.length, offset + match.length + suffix.length) !== suffix) throw new Error(`board_capital_unit_missing:${token}`);
-    figureIds.push(token);
-    return figure.display;
-  });
-  return {display, figureIds, pendingFigureIds, deadlineIds};
+    if (suffix && template.slice(last, last + suffix.length) !== suffix) throw new Error(`board_capital_unit_missing:${token}`);
+    parts.push(marker(figure.display, figure.unit === "text" ? "text_figure" : "figure", token, figure.unit));
+  }
+  parts.push(template.slice(last));
+  return resolved(joinBoardRich(parts));
 }
 
+/** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
+ * of a year (dez/26), or a signed number with any run of digits joined by "." or "," (-9,5; 130,3; 1.303). A
+ * percent sign or an "x" right after a number is its unit, read from the next character. */
+const monthNames = months.join("|");
+const numberToken = new RegExp(`\\d{1,2}/(?:${monthNames})(?![\\p{L}])|(?<![\\p{L}])(?:${monthNames})/\\d{2}(?!\\d)|[-\\u2212]?\\d+(?:[.,]\\d+)*`, "gu");
+export function boardNumberTokens(text: string) {
+  return [...text.matchAll(numberToken)].map((m) => ({text: m[0], start: m.index!, end: m.index! + m[0].length}));
+}
+
+/** Render, then verify: every number of the final text belongs to exactly one marker and is its whole display,
+ * with the unit sign and the currency mark its unit requires; a number outside any marker is allowed only as a
+ * year or a month of a year that is not used as money, a rate or a multiple. Anything else refuses the material. */
+export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) {
+  const fail = (why: string, token: string) => {throw new Error(`board_capital_rendered_number_invalid:${field}:${why}:${token}`);};
+  for (const x of r.spans) {
+    const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
+    if (f && ("pending" in f || r.display.slice(x.start, x.end) !== f.display)) fail("marker_text", x.id);
+  }
+  let verified = 0;
+  for (const t of boardNumberTokens(r.display)) {
+    const holders = r.spans.filter((x) => x.start <= t.start && t.end <= x.end);
+    const touching = r.spans.filter((x) => x.start < t.end && t.start < x.end);
+    if (holders.length > 1 || touching.length > holders.length) fail("crosses_markers", t.text);
+    const before = r.display.slice(0, t.start), after = r.display.slice(t.end);
+    const money = /R\$\s?$/.test(before), rate = /^[%x]/.test(after);
+    const holder = holders[0];
+    if (!holder) {
+      const literal = /^(?:19|20)\d{2}$/.test(t.text) || new RegExp(`^(?:${monthNames})/\\d{2}$`).test(t.text);
+      if (!literal) fail("without_marker", t.text);
+      if (money || rate || /^\s*(?:milh|mi\b|bilh|mil\b|pontos|anos|meses)/u.test(after)) fail("year_as_amount", t.text);
+      verified++; continue;
+    }
+    if (holder.kind === "text_figure") {verified++; continue;}
+    if (t.start !== holder.start || t.end !== holder.end) fail("partial_marker", t.text);
+    if (holder.kind === "figure") {
+      const unit = holder.unit!, suffix = unitSuffix[unit];
+      if (suffix ? !after.startsWith(suffix) : rate) fail("unit_sign", holder.id);
+      if (moneyUnits.includes(unit) !== money) fail("currency_mark", holder.id);
+    }
+    verified++;
+  }
+  return verified;
+}
 /** Urgency order: the earliest deadline first; undated deliberations last; ties keep the adopted order. */
 export function orderBoardDeliberations(deliberations: BoardDeliberation[]) {
   const earliest = (d: BoardDeliberation) => d.deadlines.reduce<string | null>((m, x) => m === null || x.date < m ? x.date : m, null);
@@ -184,45 +250,52 @@ type Removed = {recommendations: Set<string>; pages: Set<string>; figures: Set<s
 const noRemoval = (): Removed => ({recommendations: new Set(), pages: new Set(), figures: new Set()});
 
 /** One deliberation in one sentence: what is asked and, after it, every action with its deadline. */
-function deliberationText(ask: string, deadlines: {action: string; display: string}[]) {
-  const dated = deadlines.map((t) => `${t.action} até ${t.display}`);
-  return dated.length ? `${ask}, e ${dated.length > 1 ? `${dated.slice(0, -1).join(", ")} e ${dated.at(-1)}` : dated[0]}` : ask;
+function deliberationText(ask: BoardRich, deadlines: {action: BoardRich; display: BoardRich}[]): BoardRich {
+  const dated = deadlines.map((t) => joinBoardRich([t.action, " até ", t.display]));
+  if (!dated.length) return ask;
+  const glue: (string | BoardRich)[] = [];
+  dated.forEach((x, i) => {glue.push(i === 0 ? "" : i === dated.length - 1 ? " e " : ", ", x);});
+  return joinBoardRich([ask, ", e ", ...glue]);
 }
 
 const LIMITS = {title: 120, line: 240, lines: 7, summary: 1400};
 
 /** One version of the material: deliberations in urgency order, pages in narrative order, the summary,
- * the appendix and the questions, with every text rendered from reviewed results or checked for literal numbers. */
+ * the appendix and the questions. Every displayed field is rendered first and then verified number by number
+ * on its final text; what a field shows (its markers) is what counts as shown, nothing else. */
 function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, removed: Removed, version: number) {
   const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate};
+  let verifiedNumbers = 0;
+  const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   const render = (t: string) => renderBoardTemplate(t, context);
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
   const drops = (t: string) => [...t.matchAll(/\{([^}:]*)\}/g)].some((m) => removed.figures.has(m[1]!));
   const neutralTopics = new Set(d.pages.filter((p) => removed.recommendations.has(p.id) && p.topicId !== null).map((p) => p.topicId!));
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
-    const recommendation = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation) : null;
-    const subject = render(x.subject), title = render(x.title);
-    const deadlines = x.deadlines.map((t) => ({id: t.id, date: t.date, display: dayMonth(t.date), action: render(t.action).display}));
-    const text = deliberationText(recommendation?.display ?? subject.display, deadlines);
-    const parts = [title, subject, ...recommendation ? [recommendation] : []];
-    return {id: x.id, number: i + 1, title: title.display, text, recommendationShown: recommendation !== null, authority: x.authority,
-      authorityBasis: x.authorityBasis === null ? null : checkBoardText(x.authorityBasis), deadlines,
-      figureIds: [...new Set(parts.flatMap((r) => r.figureIds))], pendingFigureIds: [...new Set(parts.flatMap((r) => r.pendingFigureIds))]};
+    const ask = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation) : render(x.subject);
+    const title = shown(`deliberation.${x.id}.title`, render(x.title));
+    const deadlines = x.deadlines.map((t) => {
+      const action = shown(`deliberation.${x.id}.deadline.${t.id}`, render(t.action));
+      return {id: t.id, date: t.date, rich: {display: dayMonth(t.date), spans: [{start: 0, end: dayMonth(t.date).length, kind: "deadline" as const, id: `${x.id}.${t.id}`, unit: null}]}, action};
+    });
+    const text = shown(`deliberation.${x.id}.text`, deliberationText(ask, deadlines.map((t) => ({action: t.action, display: t.rich}))));
+    const line = joinBoardRich([ordinal(i + 1), ". ", title, ": ", text]);
+    return {id: x.id, number: i + 1, title, text, line, recommendationShown: x.recommendation !== null && ask.display !== render(x.subject).display, authority: x.authority,
+      authorityBasis: x.authorityBasis === null ? null : checkBoardText(x.authorityBasis), deadlines};
   });
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
   const gaps: {item: string; reason: string}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
-    const title = render(p.title);
-    const lines = p.lines.filter((l) => !drops(l)).map(render);
-    if (p.role === "decisions") for (const x of deliberations) lines.push({display: `${x.number}. ${x.title}: ${x.text}`, figureIds: x.figureIds, pendingFigureIds: x.pendingFigureIds,
-      deadlineIds: x.deadlines.map((t) => `${x.id}.${t.id}`)});
+    const title = shown(`page.${p.id}.title`, render(p.title));
+    const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l)));
+    if (p.role === "decisions") for (const x of deliberations) lines.push(shown(`page.${p.id}.decision.${x.id}`, x.line));
     const withoutRecommendation = removed.recommendations.has(p.id);
-    const recommendation = p.recommendation !== null && !withoutRecommendation ? render(p.recommendation) : null;
-    const options = withoutRecommendation ? p.options.filter((o) => !drops(o)).map(render) : [];
+    const recommendation = p.recommendation !== null && !withoutRecommendation ? shown(`page.${p.id}.recommendation`, render(p.recommendation)) : null;
+    const options = withoutRecommendation ? p.options.filter((o) => !drops(o)).map((o, j) => shown(`page.${p.id}.option.${j}`, render(o))) : [];
     if (withoutRecommendation && !options.length) gaps.push({item: `page.${p.id}`, reason: "recommendation_removed_without_options"});
     const parts = [title, ...lines, ...recommendation ? [recommendation] : [], ...options];
-    const figureIds = [...new Set(parts.flatMap((x) => x.figureIds))], pendingFigureIds = [...new Set(parts.flatMap((x) => x.pendingFigureIds))];
-    const deadlineIds = [...new Set(parts.flatMap((x) => x.deadlineIds))];
+    const figureIds = [...new Set(parts.flatMap((x) => ids(x, ["figure", "text_figure"])))], pendingFigureIds = [...new Set(parts.flatMap((x) => ids(x, ["pending"])))];
+    const deadlineIds = [...new Set(parts.flatMap((x) => ids(x, ["deadline"])))];
     // Layout budget of one page of the template: the renderer inspects it again page by page.
     if (title.display.length > LIMITS.title || lines.length + (recommendation ? 1 : 0) + options.length > LIMITS.lines
       || [...lines, ...recommendation ? [recommendation] : [], ...options].some((x) => x.display.length > LIMITS.line)) gaps.push({item: `page.${p.id}`, reason: "layout_exceeds_page"});
@@ -233,21 +306,30 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   const pages = [...ordered.main.map((p) => page(p, "main")), ...ordered.appendix.map((p) => page(p, "appendix"))].map((p, i) => ({...p, number: i + 1}));
   // The page of decisions opens the material and lists every deliberation.
   if (pages[0]?.role !== "decisions") throw new Error("board_capital_material_without_decisions");
-  const opening = render(d.summary.opening), closing = render(d.summary.closing);
-  const asks = deliberations.map((x) => `(${x.number}) ${x.text}`);
-  const summary = `${opening.display} Pedimos ao conselho: ${asks.length > 1 ? `${asks.slice(0, -1).join("; ")}; e ${asks.at(-1)}` : asks[0]}. ${closing.display}`;
-  if (summary.length > LIMITS.summary) gaps.push({item: "summary", reason: "layout_exceeds_page"});
-  for (const f of [...opening.pendingFigureIds, ...closing.pendingFigureIds]) gaps.push({item: `summary.figure.${f}`, reason: "figure_pending_reviewed_result"});
-  const questions = d.questions.map((q) => {const t = render(q.question), a = render(q.answer);
-    return {id: q.id, question: t.display, answer: a.display, figureIds: [...new Set([...t.figureIds, ...a.figureIds])], pendingFigureIds: [...new Set([...t.pendingFigureIds, ...a.pendingFigureIds])]};});
+  const asks: (string | BoardRich)[] = [];
+  deliberations.forEach((x, i) => asks.push(i === 0 ? "" : i === deliberations.length - 1 ? "; e " : "; ", "(", ordinal(x.number), ") ", x.text));
+  const summary = shown("summary", joinBoardRich([render(d.summary.opening), " Pedimos ao conselho: ", ...asks, ". ", render(d.summary.closing)]));
+  if (summary.display.length > LIMITS.summary) gaps.push({item: "summary", reason: "layout_exceeds_page"});
+  for (const f of ids(summary, ["pending"])) gaps.push({item: `summary.figure.${f}`, reason: "figure_pending_reviewed_result"});
+  const questions = d.questions.map((q) => {
+    const t = shown(`question.${q.id}.question`, render(q.question)), a = shown(`question.${q.id}.answer`, render(q.answer));
+    return {id: q.id, question: t.display, answer: a.display, figureIds: [...new Set([...ids(t, ["figure", "text_figure"]), ...ids(a, ["figure", "text_figure"])])],
+      pendingFigureIds: [...new Set([...ids(t, ["pending"]), ...ids(a, ["pending"])])]};
+  });
   for (const q of questions) for (const f of q.pendingFigureIds) gaps.push({item: `question.${q.id}.figure.${f}`, reason: "figure_pending_reviewed_result"});
-  for (const x of deliberations) for (const f of x.pendingFigureIds) gaps.push({item: `deliberation.${x.id}.figure.${f}`, reason: "figure_pending_reviewed_result"});
-  const appendix = d.appendix.map((a) => ({id: a.id, label: render(a.label), sourceIds: a.sourceIds}));
+  const deliberationOut = deliberations.map((x) => {
+    const both = [x.title, x.text];
+    return {id: x.id, number: x.number, title: x.title.display, text: x.text.display, recommendationShown: x.recommendationShown, authority: x.authority, authorityBasis: x.authorityBasis,
+      deadlines: x.deadlines.map((t) => ({id: t.id, date: t.date, display: t.rich.display, action: t.action.display})),
+      figureIds: [...new Set(both.flatMap((r) => ids(r, ["figure", "text_figure"])))], pendingFigureIds: [...new Set(both.flatMap((r) => ids(r, ["pending"])))]};
+  });
+  for (const x of deliberationOut) for (const f of x.pendingFigureIds) gaps.push({item: `deliberation.${x.id}.figure.${f}`, reason: "figure_pending_reviewed_result"});
+  const appendix = d.appendix.map((a) => {const label = shown(`appendix.${a.id}`, render(a.label)); return {id: a.id, label: label.display, sourceIds: a.sourceIds, figureIds: ids(label, ["figure", "text_figure"])};});
   const mainCount = pages.filter((p) => p.placement === "main").length;
   const capacity = d.agendaMinutes === null ? null : Math.floor(d.agendaMinutes / d.minutesPerPage);
   if (capacity !== null && mainCount > capacity) gaps.push({item: "pages", reason: "pages_exceed_agenda"});
-  const body = {version, deliberations, pages, summary, summaryFigureIds: [...new Set([...opening.figureIds, ...closing.figureIds])],
-    appendix: appendix.map((a) => ({id: a.id, label: a.label.display, sourceIds: a.sourceIds, figureIds: a.label.figureIds})), questions,
+  const body = {version, deliberations: deliberationOut, pages, summary: summary.display, summaryFigureIds: ids(summary, ["figure", "text_figure"]),
+    appendix, questions, verifiedNumbers,
     agenda: {minutes: d.agendaMinutes, minutesPerPage: d.minutesPerPage, mainPages: mainCount, capacity, fits: capacity === null ? null : mainCount <= capacity}};
   return {material: {...body, fingerprint: fingerprintOf(body)}, gaps};
 }
@@ -260,6 +342,8 @@ export function boardMaterialFacts(d: BoardDiscussion) {
   const deadlines = d.deliberations.flatMap((x) => x.deadlines.map((t) => `${x.id}.${t.id}`));
   return {figures, deadlines};
 }
+const verifyField = (field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) => {verifyBoardRendered(field, r, figures); return r;};
+
 /** Every fact of the rule that a version of the material does not show, wherever it would be shown. */
 export function boardMissingFacts(d: BoardDiscussion, material: Version["material"]) {
   const facts = boardMaterialFacts(d);
@@ -374,8 +458,11 @@ export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, Boa
   const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate};
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
     const r = renderBoardTemplate(x.recommendation ?? x.subject, context);
-    const deadlines = x.deadlines.map((t) => ({id: t.id, date: t.date, display: dayMonth(t.date), action: renderBoardTemplate(t.action, context).display}));
-    return {id: x.id, number: i + 1, title: renderBoardTemplate(x.title, context).display, text: deliberationText(r.display, deadlines), authority: x.authority, deadlines: deadlines.map(({display: _d, ...t}) => t)};
+    const deadlines = x.deadlines.map((t) => ({id: t.id, date: t.date, rich: {display: dayMonth(t.date), spans: [{start: 0, end: dayMonth(t.date).length, kind: "deadline" as const, id: `${x.id}.${t.id}`, unit: null}]},
+      action: verifyField(`outline.${x.id}.deadline.${t.id}`, renderBoardTemplate(t.action, context), figures)}));
+    const text = verifyField(`outline.${x.id}.text`, deliberationText(r, deadlines.map((t) => ({action: t.action, display: t.rich}))), figures);
+    return {id: x.id, number: i + 1, title: verifyField(`outline.${x.id}.title`, renderBoardTemplate(x.title, context), figures).display, text: text.display, authority: x.authority,
+      deadlines: deadlines.map((t) => ({id: t.id, date: t.date, action: t.action.display}))};
   });
   const roles = [...new Set(orderBoardPages(d.pages, d.topics).main.map((p) => p.role))];
   const questions = [...d.template === null ? [{code: "template" as const, topicId: null}] : [], ...d.agendaMinutes === null ? [{code: "agenda_minutes" as const, topicId: null}] : [],

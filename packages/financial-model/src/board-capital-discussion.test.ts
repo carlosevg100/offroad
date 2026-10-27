@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {boardLiteralNumbers, checkBoardFigure, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
+import {boardLiteralNumbers, boardNumberTokens, checkBoardFigure, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
   type BoardDeliberation, type BoardFigureDisplay, type BoardPage} from "./board-capital-discussion";
 
 const deliberation = (id: string, dates: string[]): BoardDeliberation => ({id, title: id, subject: `decidir ${id}`, recommendation: null, topicId: null, authority: "board", authorityBasis: null,
@@ -34,7 +34,7 @@ describe("board discussion core", () => {
     expect(boardLiteralNumbers("Aviso até 2/out")).toEqual(["2"]);
     const context = {figures: new Map<string, BoardFigureDisplay>([["x", {display: "1,5", unit: "years"}], ["r", {display: "1,2", unit: "percent"}], ["p", {pending: true}]]), deliberations: [deliberation("a", ["2026-10-02"]), deliberation("b", [])], nextMeetingDate: null};
     expect(renderBoardTemplate("{count:deliberations} decisões, {count:dated} com prazo; {x} e {p}; até {deadline:a.d0}", context))
-      .toEqual({display: "duas decisões, uma com prazo; 1,5 e [pendente]; até 2/out", figureIds: ["x"], pendingFigureIds: ["p"], deadlineIds: ["a.d0"]});
+      .toMatchObject({display: "duas decisões, uma com prazo; 1,5 e [pendente]; até 2/out", figureIds: ["x"], pendingFigureIds: ["p"], deadlineIds: ["a.d0"]});
     expect(() => renderBoardTemplate("R$ 77 milhões", context)).toThrow("board_capital_number_without_origin");
     expect(() => renderBoardTemplate("{y}", context)).toThrow("board_capital_unknown_token:y");
     expect(() => renderBoardTemplate("{count:due-before-next-meeting}", context)).toThrow("board_capital_number_without_origin:next_meeting_date");
@@ -53,5 +53,25 @@ describe("board discussion core", () => {
     expect(orderBoardPages(pages, [{id: "line", label: "linha", seen: null}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
     const seen = orderBoardPages(pages, [{id: "line", label: "linha", seen: true}]);
     expect([seen.main.map((p) => p.id), seen.appendix.map((p) => p.id)]).toEqual([["dec", "debt", "rec"], ["line"]]);
+  });
+  it("tokenizes every number of a final text once: sign, separators, dates and months of a year", () => {
+    expect(boardNumberTokens("R$ -9,5 mi em 21/dez; 130,3 e 1.303; dez/26; 2027; 16%; 2,2x; \u22121").map((t) => t.text))
+      .toEqual(["-9,5", "21/dez", "130,3", "1.303", "dez/26", "2027", "16", "2,2", "\u22121"]);
+  });
+  it("verifies the final text against its markers: concatenation, sign, unit, currency and years used as amounts", () => {
+    const figures = new Map<string, BoardFigureDisplay>([["d", {display: "130", unit: "brl_millions"}], ["b", {display: "3", unit: "brl_millions"}], ["r", {display: "1,2", unit: "percent"}], ["l", {display: "2,2", unit: "multiple"}]]);
+    const context = {figures, deliberations: [], nextMeetingDate: null};
+    const check = (t: string) => verifyBoardRendered("f", renderBoardTemplate(t, context), figures);
+    expect(check("A dívida é de R$ {d} milhões em 2027, com {l}x e CDI mais {r}% ao ano")).toBe(4);
+    expect(() => check("R$ {d},{b} milhões")).toThrow("crosses_markers");
+    expect(() => check("R$ {d}{b} milhões")).toThrow("crosses_markers");
+    expect(() => check("R$ -{d} milhões")).toThrow("crosses_markers");
+    expect(() => check("R$ {d}.{b} milhões")).toThrow("crosses_markers");
+    expect(() => check("{d} milhões")).toThrow("currency_mark");
+    expect(() => check("R$ {l}x")).toThrow("currency_mark");
+    expect(() => check("R$ {d}x de dívida")).toThrow("unit_sign");
+    expect(() => check("R$ 2027 milhões")).toThrow("year_as_amount");
+    expect(() => check("2027 milhões")).toThrow("year_as_amount");
+    expect(() => verifyBoardRendered("f", {display: "R$ 131 milhões", spans: [{start: 3, end: 6, kind: "figure", id: "d", unit: "brl_millions"}]}, figures)).toThrow("marker_text");
   });
 });

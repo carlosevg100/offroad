@@ -16,6 +16,8 @@ const page = z.strictObject({id: key, number: z.number().int().min(1).max(40), p
 export const boardMaterialSchema = z.strictObject({version: z.number().int().min(1).max(2), deliberations: z.array(deliberation).min(1).max(12), pages: z.array(page).min(1).max(40),
   summary: text, summaryFigureIds: ids, appendix: z.array(z.strictObject({id: key, label: text, sourceIds: z.array(key).min(1).max(16), figureIds: ids})).max(16),
   questions: z.array(z.strictObject({id: key, question: text, answer: text, figureIds: ids, pendingFigureIds: ids})).max(24),
+  /** Numbers of the final text verified against their markers (render, then verify). */
+  verifiedNumbers: z.number().int().min(0),
   agenda: z.strictObject({minutes: z.number().int().nullable(), minutesPerPage: z.number().int(), mainPages: z.number().int(), capacity: z.number().int().nullable(), fits: z.boolean().nullable()}),
   fingerprint: hash});
 export type BoardMaterial = z.infer<typeof boardMaterialSchema>;
