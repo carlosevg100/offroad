@@ -171,11 +171,13 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
-export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true} = {}) {
+export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true; jointProgram?: true} = {}) {
   const k = auroraReceivablesFunding(), anchor = k.options[0]!;
+  // Regressions only: the second program is linked to rede A and rede B together (a joint program, not rede A's own).
+  const anchored = variant.jointProgram ? ["rede-a", "rede-b"] : ["rede-a"];
   const basis = auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const, ...variant.contractA ? {contract: variant.contractA} : {}} : i),
-      options: [...k.options, {...anchor, id: "risco-sacado-a", label: "Risco sacado da rede A",
-        eligibility: {...anchor.eligibility!, anchorItemIds: ["rede-a"], ...variant.sublimitA ? {sublimitPerDebtor: variant.sublimitA} : {}},
+      options: [...k.options, {...anchor, id: "risco-sacado-a", label: variant.jointProgram ? "Risco sacado das redes A e B" : "Risco sacado da rede A",
+        eligibility: {...anchor.eligibility!, anchorItemIds: anchored, ...variant.sublimitA ? {sublimitPerDebtor: variant.sublimitA} : {}},
         rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]});
   // Regressions only: another debtor (Rede Z) behind the old item and option identifiers.
   if (variant.debtorRenamed) for (const e of basis.entries) {
@@ -291,7 +293,7 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "spread-b": ["recebiveis", "readings.options[id=risco-sacado-b].spreadOverDi", "1", "1.2"],
   "spread-a": ["recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi", "1", "1.5"],
   "rede-a": ["recebiveis", "result.funding.portfolio.items[itemId=rede-a].amount", "1", "19.8"],
-  "program-a-volume": ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "19.8"],
+  "rede-a-retained": ["recebiveis", "result.funding.options[id=risco-sacado-a].byItem[itemId=rede-a].retained", "1", "19.8"],
   "need-peak": ["recebiveis", "result.funding.need.peak", "0", "25"],
   "carteira": ["recebiveis", "readings.gross", "0", "62"],
   "gap-bps": ["custo-relativo", "decomposition.grossBps", "0", "125"],
@@ -358,7 +360,7 @@ export function auroraBoardCase(turn: BoardTurn) {
         authority: "board" as const, authorityBasis: null, deadlines: [{id: "sondagem", date: "2026-10-31", action: "delib.action.finish_sounding"}, {id: "rota", date: "2026-11-15", action: "delib.action.decide_route"}]},
       {id: "politica", topicId: null, title: "delib.policy", subject: "delib.policy.definition|limite=policy-limit", recommendation: null,
         authority: "board" as const, authorityBasis: null, deadlines: []},
-      {id: "safra", topicId: "safra", title: "delib.crop|ano=year-2026|ciclo=crop-question", subject: "delib.crop.subject|ano=year-2026|ciclo=crop-question", recommendation: "delib.crop.programs|ciclo=crop-question",
+      {id: "safra", topicId: "safra", title: "delib.crop|ano=year-2026", subject: "delib.crop.subject|ano=year-2026", recommendation: "delib.crop.programs",
         authority: "board" as const, authorityBasis: null, deadlines: [{id: "adesao", date: "2026-10-16", action: "delib.action.join_programs"}]},
     ],
     pages: [
@@ -375,7 +377,7 @@ export function auroraBoardCase(turn: BoardTurn) {
           "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason|motivo=informed:motivo-estrategico"],
         recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
         options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
-      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak|ciclo=crop-question", recommendation: null, options: [],
+      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|credor=cl-creditor|livre=cl-unused|termos=cl-terms"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
         lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
@@ -412,7 +414,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},
       {id: "estrategica", question: "q.strategic|projeto=project-label", answer: "a.strategic|retorno=irr|custo=wacc"},
       {id: "trigo", question: "q.wheat|insumo=wheat-label", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit|insumo=wheat-label"},
-      {id: "rede-a", question: "q.anchor|rede=rede-a-label", answer: "a.anchor|rede=rede-a-label|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
+      {id: "rede-a", question: "q.anchor|rede=rede-a-label", answer: "a.anchor|rede=rede-a-label|saldo=rede-a|carteira=carteira|volume=rede-a-retained|taxa=spread-a"},
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
     /** Facts informed in the conversation: the chair's strategic reason for the packaging line. */

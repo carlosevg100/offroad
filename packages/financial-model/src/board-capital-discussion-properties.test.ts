@@ -144,30 +144,34 @@ const meaning: Record<string, Record<string, string>> = {
     alavancagem: CV + "result.headroom.measurements[id=dez27-adverso].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
   "q.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label"},
   "a.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label", saldo: RF + "result.funding.portfolio.items[itemId=*].amount", carteira: RF + "readings.gross",
-    volume: RF + "readings.options[id=*].volume", taxa: RF + "readings.options[id=*].spreadOverDi"},
+    volume: RF + "result.funding.options[id=*].byItem[itemId=*].retained", taxa: RF + "readings.options[id=*].spreadOverDi"},
+  "a.anchor_shared": {rede: RF + "result.funding.portfolio.items[itemId=*].label", saldo: RF + "result.funding.portfolio.items[itemId=*].amount", carteira: RF + "readings.gross",
+    volume: RF + "result.funding.options[id=*].byItem[itemId=*].retained", taxa: RF + "readings.options[id=*].spreadOverDi"},
   "q.plan_vs_base": {plano: PC + "readings.gap.plan.ebitda", ano: "year", base: PC + "readings.gap.reference.ebitda"},
   "a.plan_vs_base": {base: PC + "readings.gap.reference.ebitda"},
 };
 // Named objects: the oracle's own reading of the registered field that names each one.
-const PROJECT = "analyze-investment-project|cases[id=base].label", INPUT = OP + "result.projection.projection.scenarios[id=informado-trigo-4m].label", SEASON = RF + "question";
+const PROJECT = "analyze-investment-project|cases[id=base].label", INPUT = OP + "result.projection.projection.scenarios[id=informado-trigo-4m].label";
 for (const [slot, want, ids] of [
   ["projeto", PROJECT, ["delib.packaging_line", "delib.packaging_line.subject", "topic.project_return", "recommendation.alternative", "a.roll_bank", "a.demand", "q.strategic", "next_steps.notice",
     ...["no_line_debenture", "defer_line", "debenture_with_line", "keep_and_roll", "short_bank_loan", "extend_with_bank", "extend_bradesco"].map((x) => `alternatives.moves.${x}`)]],
   ["insumo", INPUT, ["what_changes.wheat", "a.wheat", "q.wheat"]],
-  ["ciclo", SEASON, ["delib.crop", "delib.crop.subject", "delib.crop.programs", "topic.crop_programs"]],
 ] as const) for (const id of ids) meaning[id] = {...meaning[id], [slot]: want};
-/** The oracle's own closed vocabularies (its copy, written apart from the method's): every form a text may use. */
+/** The oracle's own closed vocabularies (its copy, written apart from the method's): each term with the whole registered
+ * labels that name it. A field names a term only when the whole field equals one of them, ignoring case, spacing and accents. */
 const vocabularies: Record<string, Record<string, string[]>> = {
-  input: {trigo: ["trigo"], "açúcar": ["açúcar"], farinha: ["farinha"], embalagem: ["embalagem"]},
-  project: {"linha de embalagem": ["linha de embalagem"], caldeira: ["caldeira"]},
-  season: {safra: ["safra"]},
+  input: {trigo: ["trigo", "informado, com trigo +15% e repasse em quatro meses"], "açúcar": ["açúcar"], farinha: ["farinha"], embalagem: ["embalagem"]},
+  project: {
+    "linha de embalagem": ["linha de embalagem", "linha de embalagem, cronograma original", "linha de embalagem no cronograma informado", "linha de embalagem adiada doze meses"],
+    caldeira: ["caldeira", "caldeira, cronograma original", "caldeira no cronograma informado", "caldeira adiada doze meses"],
+  },
 };
 const word = (w: string) => new RegExp(`(?<![\\p{L}])${w}(?![\\p{L}])`, "iu");
-/** The one term a registered text names in a vocabulary (the longest wins over one it contains), or null. */
+const plain = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(Boolean).join(" ");
+/** The term a registered field names by whole-field equality, or null. */
 const termOf = (vocabulary: string, text: string) => {
-  const hits = Object.keys(vocabularies[vocabulary]!).filter((x) => word(x).test(text));
-  const kept = hits.filter((h) => !hits.some((o) => o !== h && o.includes(h)));
-  return kept.length === 1 ? kept[0]! : null;
+  const hits = Object.entries(vocabularies[vocabulary]!).filter(([, labels]) => labels.some((l) => plain(l) === plain(text))).map(([term]) => term);
+  return hits.length === 1 ? hits[0]! : null;
 };
 /** What the oracle reads in the numbers each fixed text asserts, on the source values of the identity check. */
 const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
@@ -178,7 +182,7 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
   "what_changes.demand": (v) => v.piso!.lt(v.alvo!), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
   "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!),
-  "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
+  "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "a.anchor_shared": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
 };
 
 /** An independent reader of the final text. It formats every reading again from its source value, kind, scale,
@@ -196,11 +200,15 @@ function receivablesFacts(packet: Record<string, unknown>, name: string) {
   const items = contributions.flatMap((x) => {const m = /\.item\.([a-z0-9-]+)\.debtorKey$/.exec(x.fieldPath); return m && x.value.value === debtorKeys[name] ? [m[1]!] : [];});
   if (items.length !== 1) return null;
   const item = items[0]!;
-  const f = (packet.result as {funding: {portfolio: {items: {itemId: string; amount: string}[]}; options: {id: string; kind: string}[]}}).funding;
-  const programs = contributions.flatMap((x) => {const m = /\.option\.([a-z0-9-]+)\.anchorItemIds$/.exec(x.fieldPath);
-    return m && Array.isArray(x.value.value) && (x.value.value as string[]).includes(item) ? [m[1]!] : [];});
-  const r = packet.readings as {options: {id: string; volume: string | null}[]};
-  return {balance: f.portfolio.items.find((x) => x.itemId === item)!.amount, volume: programs.length === 1 ? r.options.find((x) => x.id === programs[0])?.volume ?? null : null,
+  const f = (packet.result as {funding: {portfolio: {items: {itemId: string; amount: string}[]}; options: {id: string; byItem?: {itemId: string; retained: string}[]}[]}}).funding;
+  // The programs the source links to the item, and among them those linked to that item alone (the debtor's own).
+  const links = contributions.flatMap((x) => {const m = /\.option\.([a-z0-9-]+)\.anchorItemIds$/.exec(x.fieldPath);
+    return m && Array.isArray(x.value.value) && (x.value.value as string[]).includes(item) ? [{id: m[1]!, alone: (x.value.value as string[]).length === 1}] : [];});
+  // The debtor's volume in a program is the program's figure for that item, never the program's total.
+  const retained = (id: string) => f.options.find((o) => o.id === id)?.byItem?.find((b) => b.itemId === item)?.retained ?? null;
+  const own = links.filter((x) => x.alone);
+  return {balance: f.portfolio.items.find((x) => x.itemId === item)!.amount, own: own.length === 1 ? retained(own[0]!.id) : null,
+    shared: links.map((x) => retained(x.id)).filter((x): x is string => x !== null),
     contract: contributions.find((x) => x.fieldPath.endsWith(`.item.${item}.contract`))?.value.value};
 }
 const receivablesMethod = "monetize-receivables-for-working-capital";
@@ -271,8 +279,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   for (const [key, g] of groups) if (g.complete && claims[g.templateId] && !claims[g.templateId]!(g.values)) bad.push(`claim:${key}`);
   // Names: the oracle's own dictionary. A label outside it is never shown and leaves a gap of name; one inside it is
   // shown as registered. One package per method. A row's creditor is named only beside readings of that same row.
-  const objectPaths: [string, RegExp][] = [["project", /^analyze-investment-project\|cases\[id=[^\]]+\]\.label$/], ["input", /^build-operating-projection\|result\.projection\.projection\.scenarios\[id=[^\]]+\]\.label$/],
-    ["season", /^monetize-receivables-for-working-capital\|question$/]];
+  const objectPaths: [string, RegExp][] = [["project", /^analyze-investment-project\|cases\[id=[^\]]+\]\.label$/], ["input", /^build-operating-projection\|result\.projection\.projection\.scenarios\[id=[^\]]+\]\.label$/]];
   const vocabularyOf = (x: {methodId: string; path: string}) => objectPaths.find(([, r]) => r.test(`${x.methodId}|${x.path}`))?.[0];
   for (const x of d.identity.filter((i) => i.unit === "label")) {
     if (vocabularyOf(x)) continue;
@@ -290,8 +297,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const vocabulary = vocabularyOf(x);
     if (!vocabulary) continue;
     if (texts.some((t) => t.includes(x.value))) bad.push(`object_text_shown:${x.figureId}`);
-    const named = termOf(vocabulary, x.value), keys = [...x.path.matchAll(/=([^\]&]+)/g)].map((m) => termOf(vocabulary, m[1]!.replace(/-/g, " "))).filter((k) => k !== null);
-    const ok = named !== null && keys.every((k) => k === named);
+    const named = termOf(vocabulary, x.value), ok = named !== null;
     if (ok) {const set = objectTerms.get(vocabulary) ?? new Set<string>(); set.add(named!); objectTerms.set(vocabulary, set);}
     else if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "object_not_in_vocabulary" && g.item.endsWith(`.object.${x.figureId}`))) bad.push(`object_gap:${x.figureId}`);
   }
@@ -302,10 +308,13 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   }
   const planIdentity = d.identity.find((x) => x.methodId === "evaluate-financing-paths");
   const planPacket = (planIdentity ? sources.find((x) => x.packet.fingerprint === planIdentity.packetFingerprint)?.packet : undefined) as {result: {contributions: {fieldPath: string; value: {value: unknown}}[]}} | undefined;
-  const variantTerms = (planPacket?.result.contributions ?? []).filter((x) => /\.variant\.[a-z0-9-]+\.label$/.test(x.fieldPath)).map((x) => termOf("project", String(x.value.value)));
+  const planTerms = planPacket?.result.contributions ?? [];
+  const variantTerms = planTerms.filter((x) => /\.variant\.[a-z0-9-]+\.label$/.test(x.fieldPath)
+    && planTerms.some((k) => k.fieldPath === x.fieldPath.replace(/\.label$/, ".kind") && k.value.value === "project")).map((x) => termOf("project", String(x.value.value)));
+  const investedTerm = (() => {const x = d.identity.find((i) => vocabularyOf(i) === "project"); return x ? termOf("project", x.value) : null;})();
   for (const t of texts.filter((x) => /^Caminho [A-G]:|^Plano alternativo:|^No caminho sem/.test(x))) {
     const shown = Object.keys(vocabularies.project!).find((term) => word(term).test(t));
-    if (shown && (variantTerms.length === 0 || variantTerms.some((x) => x !== shown))) bad.push(`object_across_sources:${t.slice(0, 60)}`);
+    if (shown && (variantTerms.length === 0 || variantTerms.some((x) => x !== shown) || investedTerm !== shown)) bad.push(`object_across_sources:${t.slice(0, 60)}`);
   }
   for (const method of new Set(d.identity.map((x) => x.methodId)))
     if (new Set(d.identity.filter((x) => x.methodId === method).map((x) => `${x.sourceId}|${x.packetFingerprint}`)).size !== 1) bad.push(`packages_mixed:${method}`);
@@ -442,7 +451,9 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
         const facts = receivablesFacts(source.packet, owes[2]!);
         if (!facts || !number(owes[1]!).eq(new D(facts.balance).toDecimalPlaces(1))) bad.push(`exposure:${t.slice(0, 60)}`);
         const program = /programa próprio dele antecipa R\$ (-?[\d.,]+) milh/.exec(t);
-        if (program && (!facts || facts.volume === null || !number(program[1]!).eq(new D(facts.volume).toDecimalPlaces(1)))) bad.push(`capacity:${t.slice(0, 60)}`);
+        if (program && (!facts || facts.own === null || !number(program[1]!).eq(new D(facts.own).toDecimalPlaces(1)))) bad.push(`capacity:${t.slice(0, 60)}`);
+        const shared = /programa de antecipação aceita R\$ (-?[\d.,]+) milh/.exec(t);
+        if (shared && (!facts || !facts.shared.some((x) => number(shared[1]!).eq(new D(x).toDecimalPlaces(1))))) bad.push(`capacity_shared:${t.slice(0, 60)}`);
         if (/veda a cessão/.test(t) && facts?.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
       }
     }
@@ -573,6 +584,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.answer).toBe(boardSublimitExpected);
     expect(oracle(p, [{packet: capped}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
     expect(() => withBoardSource("recebiveis", capped, () => full(2, (c) => {boardSublimitCase(c);
+      c.extraReadings["program-a-volume"] = ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "10.0"];
       c.questions[8]!.answer = "a.anchor|rede=rede-a-label|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}))).toThrow("board_capital_slot_concept_mismatch:a.anchor:saldo");
     const open = auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("recebiveis", open, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:a.anchor");
@@ -769,6 +781,49 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const otherPlan = structuredClone(plan.packet) as {result: {contributions: {fieldPath: string; value: {value: unknown}}[]}};
     for (const x of otherPlan.result.contributions) if (/\.variant\.[a-z0-9-]+\.label$/.test(x.fieldPath)) x.value.value = String(x.value.value).replace(/linha de embalagem/i, "caldeira");
     expect(oracle(base, [{packet: otherPlan as unknown as Record<string, unknown>}, ...auroraBoardSources().filter((x) => x !== plan && x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("object_across_sources:"))).toBe(true);
+  });
+  it("regression r19: whole-field identity of objects and projects, and a client's volume in a joint program (full path, oracle not vacuous)", () => {
+    const shown = (p: Packet) => {const v = p.result.discussion!.versions.at(-1)!; return [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]),
+      ...v.deliberations.flatMap((x) => [x.title, x.text]), ...v.questions.flatMap((x) => [x.question, x.answer])].join(" | ");};
+    // A known term inside a longer label (a comparison, a negation, an unchanged input) never names the shocked input.
+    for (const label of ["Milho 15% mais caro, com trigo inalterado", "Alta do milho, não do trigo", "Óleo mais caro; trigo sem mudança"]) {
+      const packet = auroraProjectionPacket({shockLabel: label}) as unknown as Record<string, unknown>;
+      const p = withBoardSource("projecao", packet, () => full(2, () => undefined)), line = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!.lines[1]!;
+      expect(line, label).toMatch(/^No cenário do insumo 15% mais caro/);
+      expect(shown(p), label).not.toMatch(/trigo|milho|óleo/i);
+      expect(p.result.discussion!.gaps.some((g) => g.reason === "object_not_in_vocabulary" && g.item.endsWith(".object.wheat-label")), label).toBe(true);
+      expect(oracle(p, [{packet}, ...auroraBoardSources()]), label).toEqual({bad: [], missing: []});
+      // Not vacuous: the executor's old reading (the term found inside the label) is caught by the oracle's whole-field rule.
+      const forged = structuredClone(p);
+      forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!.lines[1] = line.replace("do insumo", "do trigo");
+      expect(oracle(forged, [{packet}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("object_unregistered:trigo")), label).toBe(true);
+    }
+    // Same category, different qualifiers: the Sul investment and the Norte plan are different projects.
+    const sul = auroraInvestmentPacket({baseLabel: "Linha de embalagem da unidade Sul, cronograma original"}) as unknown as Record<string, unknown>;
+    const norte = auroraPlanPacket({projectNamed: "linha de embalagem da unidade Norte"}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("linha-embalagem", sul, () => withBoardSource("plano-2027", norte, () => full(2, () => undefined)))).toThrow(/board_capital_template_condition_failed:alternatives\.moves\./);
+    // Not vacuous: the calibration's texts read against the Sul label and the Norte plan are refused by the oracle.
+    const base = full(2, () => undefined), forgedSul = structuredClone(base);
+    for (const x of forgedSul.result.discussion!.identity) if (x.figureId === "project-label") x.value = "Linha de embalagem da unidade Sul, cronograma original";
+    const planSource = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
+    const norteAsPlan = {...(norte as object), fingerprint: (planSource.packet as {fingerprint: string}).fingerprint} as unknown as Record<string, unknown>;
+    const bad = oracle(forgedSul, [{packet: norteAsPlan}, ...auroraBoardSources().filter((x) => x.methodId !== "evaluate-financing-paths")]).bad;
+    expect(bad.some((x) => x.startsWith("object_unregistered:linha de embalagem"))).toBe(true);
+    expect(bad.some((x) => x.startsWith("object_across_sources:"))).toBe(true);
+    // A joint program of rede A and rede B: never rede A's own, and the volume shown is rede A's figure in it, not the total.
+    const joint = auroraReceivablesPacket({jointProgram: true}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("recebiveis", joint, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:a.anchor");
+    const pj = withBoardSource("recebiveis", joint, () => full(2, (c) => {c.questions[8]!.answer = "a.anchor_shared|rede=rede-a-label|saldo=rede-a|carteira=carteira|volume=rede-a-retained|taxa=spread-a";}));
+    const answer = pj.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.answer;
+    expect(answer).toBe("A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas um programa de antecipação aceita R$ 19,8 milhões desses recebíveis sem regresso, a CDI mais 1,5% ao ano.");
+    expect(oracle(pj, [{packet: joint}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    // Not vacuous: the program called rede A's own, and the program's total shown as rede A's, are both read.
+    const own = structuredClone(pj), q = own.result.discussion!.versions.at(-1)!.questions.find((x) => x.id === "rede-a")!;
+    q.answer = answer.replace("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis", "o programa próprio dele antecipa R$ 19,8 milhões");
+    expect(oracle(own, [{packet: joint}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("capacity:"))).toBe(true);
+    const total = structuredClone(pj);
+    total.result.discussion!.versions.at(-1)!.questions.find((x) => x.id === "rede-a")!.answer = answer.replace("aceita R$ 19,8 milhões", "aceita R$ 23,5 milhões");
+    expect(oracle(total, [{packet: joint}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("capacity_shared:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

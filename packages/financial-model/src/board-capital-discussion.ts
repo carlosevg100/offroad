@@ -562,7 +562,10 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       let texts: string[];
       if (path.startsWith("~")) {
         const pattern = new RegExp(`\\.${path.slice(1).split("*").map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+")}$`);
-        texts = (packet.result?.contributions ?? []).flatMap((e) => typeof e.fieldPath === "string" && pattern.test(e.fieldPath) && typeof e.value?.value === "string" ? [e.value.value] : []);
+        const all = packet.result?.contributions ?? [];
+        // Only the entries whose sibling field holds the given value (the plan's variants that carry the project).
+        const kept = (path: string) => !("sameObject" in c && c.where) || all.some((e) => e.fieldPath === path.replace(/\.[a-zA-Z]+$/, `.${c.where![0]}`) && e.value?.value === c.where![1]);
+        texts = all.flatMap((e) => typeof e.fieldPath === "string" && pattern.test(e.fieldPath) && typeof e.value?.value === "string" && kept(e.fieldPath) ? [e.value.value] : []);
       } else {
         const v = readBoardSourcePath(packet, path);
         texts = typeof v === "string" ? [v] : [];
@@ -581,7 +584,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const hits = (packet.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
       const list = hits.length === 1 ? hits[0]!.value?.value : undefined, want = operand(c.value);
       if (!Array.isArray(list)) return false;
-      return want === undefined || (c.none ? !list.includes(want) : list.includes(want));
+      return want === undefined || (c.none ? !list.includes(want) : c.only ? list.length === 1 && list[0] === want : list.includes(want));
     }
     if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {
@@ -617,10 +620,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (spec.type === "object") {
       const raw = figure && !("pending" in figure) ? figure.origin?.value : undefined;
       const term = typeof raw === "string" ? boardObjectTerm(spec.vocabulary!, raw) : null;
-      // A key of the path (a scenario or case id) that names another term of the same vocabulary contradicts the label.
-      const keyTerms = (spec.from ?? []).flatMap(([, path]) => [...path.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "").matchAll(/=([^\]&]+)/g)]
-        .map((m) => boardObjectTerm(spec.vocabulary!, m[1]!.replace(/-/g, " "))).filter((x): x is string => x !== null));
-      if (!term || keyTerms.some((k) => k !== term)) {unmatched.push(bound); return spec.generic!;}
+      if (!term) {unmatched.push(bound); return spec.generic!;}
       objects.set(bound, boardVocabularies[spec.vocabulary!][term]![spec.form!]);
       return `{object:${bound}}`;
     }

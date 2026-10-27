@@ -27,11 +27,12 @@ export const boardInformedReasons = {
 /** The closed dictionary of debtors a material may name, by the debtor key the receivables result registers for an item
  * (never by the item's identifier): the canonical name. A debtor whose key is not here is named by generic words, with a gap. */
 export const boardDebtorNames: Record<string, string> = {"rede-a": "rede A", "rede-b": "rede B"};
-/** The closed vocabularies of objects a material may name: inputs, projects and the season. A registered field of the
- * source (a label, a question, a key) names an object only when it contains exactly one term of the vocabulary, as whole
- * words; each term carries its reviewed forms. Without a match the slot shows its generic words and leaves a gap. */
+/** The closed vocabularies of objects a material may name: inputs and projects. A registered field of the source names
+ * an object only when the whole field, normalized only by case, spacing and accents, equals the term or one of the
+ * registered labels declared for it below; a term inside a longer text (a mention, a comparison, a negation, a
+ * qualifier) never matches. Without a match the slot shows its generic words and leaves a gap. */
 export type BoardObjectForm = "nome" | "Nome" | "o" | "O" | "de" | "em";
-export const boardVocabularies: Record<"input" | "project" | "season", Record<string, Record<BoardObjectForm, string>>> = {
+export const boardVocabularies: Record<"input" | "project", Record<string, Record<BoardObjectForm, string>>> = {
   input: {
     trigo: {nome: "trigo", Nome: "Trigo", o: "o trigo", O: "O trigo", de: "do trigo", em: "no trigo"},
     "açúcar": {nome: "açúcar", Nome: "Açúcar", o: "o açúcar", O: "O açúcar", de: "do açúcar", em: "no açúcar"},
@@ -42,21 +43,29 @@ export const boardVocabularies: Record<"input" | "project" | "season", Record<st
     "linha de embalagem": {nome: "linha de embalagem", Nome: "Linha de embalagem", o: "a linha de embalagem", O: "A linha de embalagem", de: "da linha de embalagem", em: "na linha de embalagem"},
     caldeira: {nome: "caldeira", Nome: "Caldeira", o: "a caldeira", O: "A caldeira", de: "da caldeira", em: "na caldeira"},
   },
-  season: {safra: {nome: "safra", Nome: "Safra", o: "a safra", O: "A safra", de: "da safra", em: "na safra"}},
+};
+/** Registered labels declared as canonical forms of a term (exact whole-field equality after normalization). A case
+ * or variant label that adds only the case's schedule names the same project; any other qualifier (a unit, a site) does
+ * not, so two sources with different qualifiers never name the same project. */
+export const boardVocabularyLabels: Record<keyof typeof boardVocabularies, Record<string, readonly string[]>> = {
+  input: {trigo: ["Informado, com trigo +15% e repasse em quatro meses"], "açúcar": [], farinha: [], embalagem: []},
+  project: {
+    "linha de embalagem": ["Linha de embalagem, cronograma original", "Linha de embalagem no cronograma informado", "Linha de embalagem adiada doze meses"],
+    caldeira: ["Caldeira, cronograma original", "Caldeira no cronograma informado", "Caldeira adiada doze meses"],
+  },
 };
 /** The generic words a slot shows when no term matches, per vocabulary and form. */
 export const boardObjectGenerics: Record<keyof typeof boardVocabularies, Record<BoardObjectForm, string>> = {
   input: {nome: "insumo", Nome: "Insumo", o: "o insumo", O: "O insumo", de: "do insumo", em: "no insumo"},
   project: {nome: "projeto analisado", Nome: "Projeto analisado", o: "o projeto analisado", O: "O projeto analisado", de: "do projeto analisado", em: "no projeto analisado"},
-  season: {nome: "ciclo de capital de giro", Nome: "Ciclo de capital de giro", o: "o ciclo de capital de giro", O: "O ciclo de capital de giro", de: "do ciclo de capital de giro", em: "no ciclo de capital de giro"},
 };
-/** The one term of a vocabulary a registered text names, or null (none or more than one). */
+/** Case, spacing and accents only. */
+export const boardNormalizeLabel = (x: string) => x.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+/** The term whose name or declared label equals the whole registered text, or null. */
 export function boardObjectTerm(vocabulary: keyof typeof boardVocabularies, text: string): string | null {
-  const lower = text.toLowerCase();
-  const hits = Object.keys(boardVocabularies[vocabulary]).filter((term) => new RegExp(`(?<![\\p{L}])${term}(?![\\p{L}])`, "u").test(lower));
-  // A longer term contains a shorter one (linha de embalagem, embalagem): the longest wins inside its own vocabulary.
-  const kept = hits.filter((h) => !hits.some((o) => o !== h && o.includes(h)));
-  return kept.length === 1 ? kept[0]! : null;
+  const want = boardNormalizeLabel(text);
+  const hits = Object.keys(boardVocabularies[vocabulary]).filter((term) => [term, ...boardVocabularyLabels[vocabulary][term] ?? []].some((x) => boardNormalizeLabel(x) === want));
+  return hits.length === 1 ? hits[0]! : null;
 }
 /** Who may be named as the author of an informed fact. */
 export const boardInformedAuthors = ["chair", "cfo", "ceo"] as const;
@@ -74,7 +83,7 @@ export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [str
    * the field's registered nature must be the same. */
   nature?: "balance" | "flow" | "value";
   /** For an object: the vocabulary whose term the bound registered text must name, and the form the sentence uses. */
-  vocabulary?: "input" | "project" | "season";
+  vocabulary?: "input" | "project";
   form?: BoardObjectForm;
   /** For an informed fact: the person the template attributes it to; the fact must be adopted as informed by that person. */
   author?: (typeof boardInformedAuthors)[number];
@@ -107,12 +116,12 @@ type BoardConditionBody =
    * "lt" every value at most and one smaller, "eq" all equal. A series that does not resolve fails the condition. */
   | {dominates: readonly [BoardSeries, BoardSeries]; op: "gt" | "lt" | "eq"}
   /** An adopted list among the contributions of the result (by the end of its field path) contains, or with none lacks, the value. */
-  | {contributedHas: readonly [string, string]; value: BoardOperand; none?: true}
+  | {contributedHas: readonly [string, string]; value: BoardOperand; none?: true; only?: true}
   /** The same object in another source: a registered text of that source (contribution by the end of its field path,
    * variables substituted) names the same vocabulary term as the reading bound to the slot. */
-  | {sameObject: readonly [string, string]; vocabulary: "input" | "project" | "season"; slot: string}
+  | {sameObject: readonly [string, string]; vocabulary: "input" | "project"; slot: string; where?: readonly [string, string]}
   /** A registered text of the source (contributions whose field path ends as given, * for one segment) names the term. */
-  | {registeredTerm: readonly [string, string]; vocabulary: "input" | "project" | "season"; term: string}
+  | {registeredTerm: readonly [string, string]; vocabulary: "input" | "project"; term: string}
   /** A list of the source has at most this many elements. */
   | {atMost: readonly [string, string]; count: number}
   /** Two definitions (objects of the source, flattened, source anchors ignored) differ exactly in the named fields: each
@@ -279,9 +288,19 @@ const obj = (vocabulary: keyof typeof boardVocabularies, form: BoardObjectForm, 
   ({type: "object", vocabulary, form, from: [[method, path]], generic: boardObjectGenerics[vocabulary][form]});
 const project = (form: BoardObjectForm) => obj("project", form, IP, "cases[id=base].label");
 const input = (form: BoardObjectForm) => obj("input", form, OP, "result.projection.projection.scenarios[id=informado-trigo-4m].label");
-const season = (form: BoardObjectForm) => obj("season", form, RF, "question");
-const sameProject = claim("as variantes de projeto do plano de capital nomeiam o mesmo projeto da análise de investimento",
-  {sameObject: [FP, "~variant.*.label"], vocabulary: "project", slot: "projeto"});
+const sameProject = claim("cada variante com projeto do plano de capital tem rótulo canônico igual ao do caso base da análise de investimento",
+  {sameObject: [FP, "~variant.*.label"], vocabulary: "project", slot: "projeto", where: ["kind", "project"]});
+
+const anchorSlots: Record<string, BoardSlotSpec> = {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"},
+  saldo: rf("money", "result.funding.portfolio.items[itemId=$d].amount", "saldo_da_carteira_por_devedor", "balance"), carteira: rf("money", "readings.gross", "carteira_bruta", "balance"),
+  volume: rf("money", "result.funding.options[id=$o].byItem[itemId=$d].retained", "volume_do_programa_por_devedor", "balance"),
+  taxa: rf("rate", "readings.options[id=$o].spreadOverDi", "spread_sobre_cdi_do_programa")};
+const anchorCommon: BoardCondition[] = [...claim("o saldo do cliente cabe na carteira", cmp("saldo", "le", "carteira")),
+  ...claim("o contrato registrado do cliente veda a cessão sem consentimento", cmp({contributed: [RF, "item.$d.contract"]}, "eq", {value: "prohibited_without_consent"})),
+  ...claim("o programa é sem regresso e oferecido a esse cliente", cmp(at(RF, "result.funding.options[id=$o].kind"), "eq", {value: "anchor_program"}),
+    cmp(at(RF, "result.funding.options[id=$o].recourse"), "eq", {value: "without_recourse"}),
+    cmp(at(RF, "result.funding.options[id=$o].byItem[itemId=$d].offered"), "eq", {value: "true"})),
+  ...claim("o volume do cliente no programa cabe no saldo dele", cmp("volume", "le", "saldo"))];
 
 export const boardTemplates: Record<string, BoardTemplate> = {
   // Deliberations: title, subject, recommendation and dated actions, each bound to its deliberation.
@@ -289,11 +308,11 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho {projeto}", {projeto: project("de")}, {of: "delib.packaging_line"}),
   "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra até as cotações firmes", {}, {of: "delib.packaging_line",
     when: claim("o caso com capex e início de operação adiados tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))}),
-  "delib.crop": t("delib.title", "{ciclo} {de:ano}", {ciclo: season("Nome"), ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.subject": t("delib.subject", "decidir o financiamento {ciclo} {de:ano}", {ciclo: season("de"), ano: yr("$y")},
+  "delib.crop": t("delib.title", "Capital de giro sazonal {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
+  "delib.crop.subject": t("delib.subject", "decidir o financiamento do capital de giro sazonal {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.programs": t("delib.recommendation", "financiar {ciclo} pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
-    {ciclo: season("o")}, {of: "delib.crop", when: [...programsFirst, ...bankReserve]}),
+  "delib.crop.programs": t("delib.recommendation", "financiar o capital de giro sazonal pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
+    {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve]}),
   "delib.maturities": t("delib.title", "Vencimentos {de:ano}", {ano: yr("$y")}, {when: [maturityYear]}),
   "delib.maturities.subject": t("delib.subject", "decidir a rota para os vencimentos {de:ano}", {ano: yr("$y")}, {of: "delib.maturities", when: [maturityYear]}),
   "delib.maturities.sounding": t("delib.recommendation", "autorizar a sondagem de uma debênture de até {valor}, com prazo de {prazo}, com o plano alternativo apresentado no material",
@@ -357,8 +376,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
   "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
-  "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico de {pico} {ciclo}, sem dívida bancária nova",
-    {ciclo: season("de"), valor: rf("money", "readings.plan[optionId=$o].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
+  "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico sazonal de {pico}, sem dívida bancária nova",
+    {valor: rf("money", "readings.plan[optionId=$o].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
       pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")},
     {when: [...programsFirst, ...claim("o valor é o acumulado do plano até o segundo programa", cmp("$o", "eq", {var: "osecond"}))]}),
   "topic.crop_program_cost": t("page.line", "Custo indicativo dos programas de antecipação: CDI mais {taxa_b} no primeiro e CDI mais {taxa_a} no segundo.",
@@ -506,17 +525,12 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   // A debtor is named by the debtor key of its item; its balance, contract and program follow the same item, and the
   // program is the anchor program the source links to that item.
   "q.anchor": t("question", "Dependemos demais de {rede}?", {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"}}),
+  // The volume a debtor can anticipate is the program's figure for that debtor (byItem), never the program's total. The
+  // program is called the debtor's own only when the source links it to that debtor alone; otherwise it has no owner.
   "a.anchor": t("answer", "A carteira tem {saldo} de {rede}, de um total de {carteira}; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa {volume} sem regresso, a CDI mais {taxa}.",
-    {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"},
-      saldo: rf("money", "result.funding.portfolio.items[itemId=$d].amount", "saldo_da_carteira_por_devedor", "balance"), carteira: rf("money", "readings.gross", "carteira_bruta", "balance"),
-      volume: rf("money", "readings.options[id=$o].volume", "volume_antecipavel_do_programa", "balance"),
-      taxa: rf("rate", "readings.options[id=$o].spreadOverDi", "spread_sobre_cdi_do_programa")},
-    {answers: "q.anchor", when: [...claim("o saldo do cliente cabe na carteira", cmp("saldo", "le", "carteira")),
-      ...claim("o contrato registrado do cliente veda a cessão sem consentimento", cmp({contributed: [RF, "item.$d.contract"]}, "eq", {value: "prohibited_without_consent"})),
-      ...claim("o programa é o do próprio cliente (ligado a ele na fonte), sem regresso, oferecido a ele", {contributedHas: [RF, "option.$o.anchorItemIds"], value: {var: "d"}},
-        cmp(at(RF, "result.funding.options[id=$o].kind"), "eq", {value: "anchor_program"}),
-        cmp(at(RF, "result.funding.options[id=$o].recourse"), "eq", {value: "without_recourse"}),
-        cmp(at(RF, "result.funding.options[id=$o].byItem[itemId=$d].offered"), "eq", {value: "true"}))]}),
+    anchorSlots, {answers: "q.anchor", when: [...anchorCommon, ...claim("o programa é ligado na fonte só a esse cliente", {contributedHas: [RF, "option.$o.anchorItemIds"], value: {var: "d"}, only: true})]}),
+  "a.anchor_shared": t("answer", "A carteira tem {saldo} de {rede}, de um total de {carteira}; o contrato com esse cliente veda a cessão sem consentimento, mas um programa de antecipação aceita {volume} desses recebíveis sem regresso, a CDI mais {taxa}.",
+    anchorSlots, {answers: "q.anchor", when: [...anchorCommon, ...claim("o programa é ligado na fonte a esse cliente", {contributedHas: [RF, "option.$o.anchorItemIds"], value: {var: "d"}})]}),
   "q.plan_vs_base": t("question", "O plano da área financeira mostra EBITDA de {plano} {em:ano}; por que usamos {base}?",
     {plano: s("money", PC, "readings.gap.plan.ebitda", "flow"), ano: yr("$y"), base: s("money", PC, "readings.gap.reference.ebitda", "flow")},
     {when: [...claim("o ano é o alvo do plano", cmp("ano", "eq", at(PC, "readings.gap.targetPeriodId"))), ...claim("o plano supera a base", cmp("plano", "gt", "base"))]}),
@@ -554,14 +568,14 @@ export function boardTemplateClaims() {
     : "largest" in c ? `maior ${c.largest[2]} em ${c.largest[0]} ${c.largest[1]} tem ${c.largest[3]} = ${describe(c.equals)}`
     : "bind" in c ? `$${c.bind} := ${describe(c.to)}` : "atLeast" in c ? `${c.atLeast[0]} ${c.atLeast[1]} tem ao menos ${c.count}`
     : "dominates" in c ? `série ${series(c.dominates[0])} ${c.op === "gt" ? "domina por cima" : c.op === "lt" ? "domina por baixo" : "igual a"} ${series(c.dominates[1])}`
-    : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : "contém"} ${describe(c.value)}`
+    : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `${c.changedOnly[0][0]} ${c.changedOnly[0].slice(1).join(", ")} difere de ${c.changedOnly[1].slice(1).join(", ")} exatamente em ${c.fields.join(", ")}`
     : "scenarioDefines" in c ? `o cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva`
     : "atKey" in c ? `${series(c.atKey[0])} ${c.op} ${series(c.atKey[1])} em ${describe(c.key)}`
     : "startsLater" in c ? `${series(c.startsLater[0])} começa estritamente depois de ${series(c.startsLater[1])}`
     : "extendsDebt" in c ? `um instrumento aditado substitui ${c.extendsDebt[1]} em ${c.extendsDebt[0]}, com vencimento final posterior e menos principal pago em cada período`
-    : "sameObject" in c ? `${c.sameObject[0]} ${c.sameObject[1]} nomeia o mesmo termo de ${c.vocabulary} que a posição ${c.slot}`
+    : "sameObject" in c ? `${c.sameObject[0]} ${c.sameObject[1]}${c.where ? ` (onde ${c.where[0]} = "${c.where[1]}")` : ""}: todo rótulo é igual, campo inteiro, a um rótulo canônico do mesmo termo de ${c.vocabulary} da posição ${c.slot}`
     : "registeredTerm" in c ? `algum texto registrado ${c.registeredTerm[0]} ${c.registeredTerm[1]} nomeia "${c.term}" (${c.vocabulary})`
     : "pathMoves" in c ? `movimentos do caminho ${c.pathMoves[1]} de ${c.pathMoves[0]} contra o status quo: novos [${c.added.join(", ")}], retirados [${c.removed.join(", ")}], pré-pagos [${c.prepaid.join(", ")}], encargos [${c.charges.join(", ")}], variante ${c.variant === "same" ? "igual" : "diferente"}`
     : `${c.includes[0]} ${c.includes[1]}${c.includes[2] ? `[*].${c.includes[2]}` : ""} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`;
