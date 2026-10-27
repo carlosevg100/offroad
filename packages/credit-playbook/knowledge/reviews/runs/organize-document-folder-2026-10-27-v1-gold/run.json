@@ -1,0 +1,205 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "organize-document-folder-2026-10-27-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "organize-document-folder",
+    "version": "2026.10.27-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareDocumentFolderInventoryPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/document-folder-inventory-runs.test-support.ts",
+    "exportName": "buildDocumentFolderInventoryRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-27T11:00:13.675Z",
+    "finishedAt": "2026-10-27T11:00:13.675Z",
+    "commit": "dd99e9e8"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "inventory-item-by-item-matches-the-answer-key",
+      "expectation": "[[\"DF_2025_final (1).pdf\",\"entidade\"]]",
+      "observed": "[[\"DF_2025_final (1).pdf\",\"entidade\"]]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "counts-30-1-2-3-2-21",
+      "expectation": "[30,1,2,3,2,21]",
+      "observed": "[30,1,2,3,2,21]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "copy-found-by-hash",
+      "expectation": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
+      "observed": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "versions-resolved-none-deleted",
+      "expectation": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]]]",
+      "observed": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]]]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "amendment-is-the-text-in-force",
+      "expectation": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
+      "observed": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "seven-decision-findings-in-order-with-source",
+      "expectation": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
+      "observed": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "debt-is-130-not-140",
+      "expectation": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
+      "observed": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "unreadable-page-and-photo-not-invented",
+      "expectation": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
+      "observed": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "gaps-by-purpose-in-the-key-order",
+      "expectation": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
+      "observed": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "one-question-only-the-user-knows",
+      "expectation": "[\"A minuta das demonstrações do exercício 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
+      "observed": "[\"A minuta das demonstrações do exercício 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "no-numeric-analysis-nothing-validated",
+      "expectation": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
+      "observed": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    },
+    {
+      "id": "renaming-every-file-changes-nothing",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "f29e8979b92a7a5d34d2911454258e45bbbfc6b5b200001747ab94008b1b23da",
+      "outputFingerprint": "3180f34da64ec8374c3ce66645d815cbfe4c1f59c8e442e312c40009f4936c00",
+      "passed": true
+    },
+    {
+      "id": "misleading-names-do-not-move-the-version",
+      "expectation": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
+      "observed": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
+      "inputFingerprint": "ad6b0900e8b0d054ef03c7f92a75319cc3466743dff71412622fe9a1d8a17e54",
+      "outputFingerprint": "2c95d33c33cb338f63e90b93a5a4f49066ead20bb31748d1a226d3348f6c5663",
+      "passed": true
+    },
+    {
+      "id": "later-draft-does-not-beat-the-audited",
+      "expectation": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
+      "observed": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
+      "inputFingerprint": "dec1e8289f35db7c2c5e3ec481938e2f5518dcaa6d8dc1b4dade9a6603f95979",
+      "outputFingerprint": "60f8f77208fa7b0fd86e59653ddae8f6e6b2232584053cecf144dc81c1aeb4f0",
+      "passed": true
+    },
+    {
+      "id": "turn-2-updates-only-the-affected-rows",
+      "expectation": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
+      "observed": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
+      "inputFingerprint": "855cc9a9d95a281d3e948527015828da39de532b2fc3261f401cabd48a877604",
+      "outputFingerprint": "9ef69cc5a2794047b1716f8a55d11f1c68d654247524a4542114cadbfc2c3013",
+      "passed": true
+    },
+    {
+      "id": "turn-2-page-7-read-and-semester-closes-month-by-month",
+      "expectation": "{\"page7\":[\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
+      "observed": "{\"page7\":[\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
+      "inputFingerprint": "855cc9a9d95a281d3e948527015828da39de532b2fc3261f401cabd48a877604",
+      "outputFingerprint": "9ef69cc5a2794047b1716f8a55d11f1c68d654247524a4542114cadbfc2c3013",
+      "passed": true
+    },
+    {
+      "id": "turn-2-informed-fact-with-author-and-date",
+      "expectation": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel da fábrica\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
+      "observed": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel da fábrica\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
+      "inputFingerprint": "855cc9a9d95a281d3e948527015828da39de532b2fc3261f401cabd48a877604",
+      "outputFingerprint": "9ef69cc5a2794047b1716f8a55d11f1c68d654247524a4542114cadbfc2c3013",
+      "passed": true
+    },
+    {
+      "id": "variation-organize-only",
+      "expectation": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
+      "observed": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
+      "inputFingerprint": "503263ba081d7ecf4b63def8324f91f2144f5ea53eedaf767fea936c104c300c",
+      "outputFingerprint": "4bb74738605c999a8d94f224e01af7a912e344e07c7a97ff198b84527a7419eb",
+      "passed": true
+    },
+    {
+      "id": "variation-for-the-debt-discussion",
+      "expectation": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
+      "observed": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
+      "inputFingerprint": "dde39d1c850d501e2e463c6c5ed060d6e07824625c1635d15ce343eec8f99eed",
+      "outputFingerprint": "67bd09f40d2970ddaba0ab627ae602ec51d593b619d4178f8332a6f7c8fb3cd2",
+      "passed": true
+    },
+    {
+      "id": "variation-empty-vault-no-decisions",
+      "expectation": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
+      "observed": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
+      "inputFingerprint": "539b736fed46690135d6d48fe847d80b79c57c9c5d0da5973016a6ea88aa630e",
+      "outputFingerprint": "b75b896b4b25ef902b6ecb17c1175f0b126fe8b9faad36c5e9c82f17a8b05e83",
+      "passed": true
+    },
+    {
+      "id": "variation-several-companies",
+      "expectation": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"pastificio-serra\",\"nao-identificada\"],\"question\":\"Pastifício Serra Ltda. não está no cadastro da companhia. Entra no perímetro deste trabalho?\"}",
+      "observed": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"pastificio-serra\",\"nao-identificada\"],\"question\":\"Pastifício Serra Ltda. não está no cadastro da companhia. Entra no perímetro deste trabalho?\"}",
+      "inputFingerprint": "33d4d5336f18a61c85b9e3b4efb26eaa67f5fba52f7fc6ce7d34d98db8cd0390",
+      "outputFingerprint": "cebd438a712a63c6c395e1e0b7fa206f991a9638f9fbaa487ce3f236e58e3170",
+      "passed": true
+    },
+    {
+      "id": "notice-deadline-followed-never-scheduled",
+      "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
+      "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
+      "inputFingerprint": "c248e0121457d786ea815ddbc4dc01c056d081161e49fd1a0ae3acca83050c58",
+      "outputFingerprint": "a7d444a1fff1fbbd9d14c9f7791d8342f62a612485c5354888bb0833c7f560be",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "9fdf933447a79858ad68c675be9c7b931ec065b1b90748c3cd955565c03a249c",
+  "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
+}

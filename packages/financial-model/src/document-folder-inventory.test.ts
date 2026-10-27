@@ -1,0 +1,74 @@
+import {describe, expect, it} from "vitest";
+import {inventoryFingerprint, organizeDocumentFolder, type DocumentReading} from "./document-folder-inventory";
+import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
+import {c09AnswerKey} from "./document-folder-inventory-answer-key.test-support";
+
+const edit = (change: (r: DocumentReading[]) => void) => {const r = auroraFolderReadings(); change(r); return r;};
+const file = (r: DocumentReading[], id: string) => r.find((x) => x.fileId === id)!;
+const turnOne = () => organizeDocumentFolder(auroraKernelInput());
+const turnTwo = (prior = turnOne(), files = [...auroraFolderReadings(), ...auroraTurnTwoReadings()]) =>
+  organizeDocumentFolder(auroraKernelInput({asOf: "2026-09-02", files, informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}}));
+
+describe("document folder inventory kernel", () => {
+  it("reproduces the answer key's situation and group for every file, in arrival order", () => {
+    const o = turnOne();
+    expect(o.rows.map((r) => [r.situationLabel, r.groupLabel, r.findingIds.length > 0])).toEqual(c09AnswerKey.map((k) => [k[5], k[6], k[7]]));
+    expect(o.counts).toEqual({files: 30, duplicates: 1, incompleteReadings: 2, superseded: 3, inVault: 2, withFinding: 21, pageSubstitutes: 0});
+  });
+  it("states the decision findings with the figures read, and calculates nothing else", () => {
+    const d = turnOne().decisionFindings!.map((x) => x.statement);
+    expect(d[0]).toBe("O covenant da debênture da 1ª emissão é o do aditamento de jun/2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.");
+    expect(d[1]).toContain("no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x");
+    expect(d[2]).toContain("a rede A responde por 32% da carteira");
+    expect(d[3]).toBe("O contrato de embalagem renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.");
+    expect(d[4]).toBe("A dívida em jun/26 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da linha conta garantida do Itaú, que está sem uso.");
+    expect(d[5]).toContain("A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões");
+    expect(d[6]).toBe("A controlada Aurora Logística entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.");
+  });
+  it("never reads the file name: swapping every name leaves the inventory unchanged but for the names", () => {
+    const names = auroraFolderReadings().map((r) => r.fileName).reverse();
+    const strip = (o: ReturnType<typeof turnOne>) => o.rows.map(({fileName: _f, description, ...r}) => ({...r, description: r.situation.duplicateOf ? "-" : description}));
+    const renamed = organizeDocumentFolder(auroraKernelInput({files: edit((r) => r.forEach((x, n) => {x.fileName = names[n]!;}))}));
+    expect(strip(renamed)).toEqual(strip(turnOne()));
+    expect(renamed.findings).toEqual(turnOne().findings);
+  });
+  it("keeps two readings of one period that nothing distinguishes, and chooses neither", () => {
+    const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f09").version.ordinal = null; file(r, "f10").version.ordinal = null;})}));
+    expect(o.families.find((f) => f.id.startsWith("trial_balance"))).toMatchObject({resolution: "unresolved", prevails: [], sideBySide: ["f09", "f10"]});
+    expect(o.rows.filter((r) => ["f09", "f10"].includes(r.fileId)).map((r) => r.situation.supersededBy)).toEqual([null, null]);
+    // With May unresolved the semester is not summed on either reading.
+    expect(o.identityChecks.find((c) => c.kind === "period_against_months")!.status).toBe("not_run");
+  });
+  it("names a total that does not recompose and an amendment whose original is nowhere", () => {
+    const o = organizeDocumentFolder(auroraKernelInput({vault: [], files: edit((r) => {file(r, "f16").debtTable!.reportedTotal = "135"; r.splice(r.indexOf(file(r, "f18")), 1);})}));
+    expect(o.findings.find((f) => f.id === "f16-debt-total")!.code).toBe("total_not_recomposed");
+    expect(o.findings.find((f) => f.id === "f19-no-original")!.code).toBe("amendment_without_original");
+    expect(o.effectiveTexts).toEqual([]);
+  });
+  it("reads a cited revenue equal to the net revenue as consistent", () => {
+    const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f28").figures[0]!.value = "420";})}));
+    expect(o.findings.some((f) => f.anchor === "f28")).toBe(false);
+  });
+  it("updates in turn 2 only the rows touched; the rest are the prior bytes", () => {
+    const prior = turnOne(), t = turnTwo(prior);
+    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-unreadable-p7"], findingsAdded: ["f20-s01-reforco"],
+      questionsAnswered: ["circulacao-f02"]});
+    for (const r of prior.rows.filter((x) => x.fileId !== "f20")) expect(t.rows.find((x) => x.fileId === r.fileId)).toEqual(r);
+    expect(t.findings.find((f) => f.id === "f11-series-gap")).toMatchObject({status: "resolved", resolvedBy: ["s02"]});
+    expect(t.informed).toEqual([{...auroraTurnTwoInformed[0], origin: "informed"}]);
+  });
+  it("refuses an update that would drop a row, change an untouched row, lose a finding or update another inventory", () => {
+    const prior = turnOne();
+    const dropped = structuredClone(prior); dropped.rows.push({...dropped.rows[0]!, fileId: "fx", order: 99}); dropped.counts.files = 31;
+    expect(() => turnTwo(dropped)).toThrow("document_inventory_prior_row_dropped");
+    const changed = structuredClone(prior); changed.rows[5]!.situationLabel = "lida; superada";
+    expect(() => turnTwo(changed)).toThrow("document_inventory_unaffected_row_changed");
+    expect(() => turnTwo(prior, [...edit((r) => {file(r, "f22").clauses = [];}), ...auroraTurnTwoReadings()])).toThrow("document_inventory_finding_dropped");
+    expect(() => organizeDocumentFolder(auroraKernelInput({prior: {inventory: prior, fingerprint: "0".repeat(64)}}))).toThrow("document_inventory_prior_mismatch");
+  });
+  it("accepts a page substitute only for an unreadable page of the same instrument", () => {
+    const [s01] = auroraTurnTwoReadings();
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, substitutesPages: {instrumentRef: "inexistente", pages: [7]}}]}))).toThrow("document_inventory_substitute_without_target");
+    expect(() => organizeDocumentFolder(auroraKernelInput({files: [...auroraFolderReadings(), {...s01!, clauses: [{...s01!.clauses[0]!, at: {page: 3, section: null}}]}]}))).toThrow("document_inventory_substitute_outside_its_pages");
+  });
+});

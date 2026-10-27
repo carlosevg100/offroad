@@ -1,0 +1,29 @@
+import {resolve} from "node:path";
+import {loadDeterministicMethodRuns, runCountsForPromotion} from "@offroad/credit-playbook";
+import {describe, expect, it} from "vitest";
+import {buildDocumentFolderInventoryRuns, documentFolderInventoryRunIds} from "./document-folder-inventory-runs.test-support";
+
+const records = loadDeterministicMethodRuns(resolve(import.meta.dirname, "../../credit-playbook/knowledge/reviews/runs"));
+describe("recorded document folder inventory evaluations", () => {
+  it("reexecutes every gold, adversarial and consistency case and reproduces its recorded fingerprint", () => {
+    for (const evidence of buildDocumentFolderInventoryRuns()) {
+      const record = records.get(evidence.runId)!;
+      expect(record).toBeDefined();
+      expect(record.cases).toEqual(evidence.cases);
+      expect(record.evidenceFingerprint).toBe(evidence.evidenceFingerprint);
+      expect(record.result).toBe("pass"); expect(record.modelCalls).toBe(0); expect(record.humanApproval).toBe(false);
+      expect(runCountsForPromotion(record)).toBe(true);
+    }
+  }, 900_000);
+  it("covers the answer key, the decision findings, both turns, the four variations and every immediate failure of the ficha", () => {
+    expect(records.get(documentFolderInventoryRunIds.gold)!.cases.map((c) => c.id)).toEqual([
+      "inventory-item-by-item-matches-the-answer-key", "counts-30-1-2-3-2-21", "copy-found-by-hash", "versions-resolved-none-deleted", "amendment-is-the-text-in-force",
+      "seven-decision-findings-in-order-with-source", "debt-is-130-not-140", "unreadable-page-and-photo-not-invented", "gaps-by-purpose-in-the-key-order",
+      "one-question-only-the-user-knows", "no-numeric-analysis-nothing-validated", "renaming-every-file-changes-nothing", "misleading-names-do-not-move-the-version",
+      "later-draft-does-not-beat-the-audited", "turn-2-updates-only-the-affected-rows", "turn-2-page-7-read-and-semester-closes-month-by-month",
+      "turn-2-informed-fact-with-author-and-date", "variation-organize-only", "variation-for-the-debt-discussion", "variation-empty-vault-no-decisions",
+      "variation-several-companies", "notice-deadline-followed-never-scheduled"]);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(15);
+    expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
+  });
+});

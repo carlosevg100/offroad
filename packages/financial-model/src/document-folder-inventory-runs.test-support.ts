@@ -1,0 +1,174 @@
+import {createHash} from "node:crypto";
+import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
+import {documentFolderInventoryPacketOutputSchema, prepareDocumentFolderInventoryPacket, type DocumentFolderInventoryPacket, type DocumentFolderInventoryPacketInput} from "./document-folder-inventory-packet";
+import type {DocumentReading} from "./document-folder-inventory";
+import {auroraDecisions, auroraEntities, auroraFolderBasis, auroraFolderReadings, auroraFolderUpdateBasis, auroraTurnTwoInformed, auroraTurnTwoReadings, auroraVault} from "./document-folder-inventory.test-support";
+import {c09AnswerKey, c09AnswerKeyCounts} from "./document-folder-inventory-answer-key.test-support";
+
+// Evaluation-only module; not exported to application consumers. All cases are synthetic
+// calibrations of ficha C09 (inventario_gabarito.py), never production parameters.
+const fingerprint = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+type Case = DeterministicMethodRunCase;
+type Evidence = Omit<DeterministicMethodRun, "schemaVersion" | "humanApproval" | "run">;
+type Packet = DocumentFolderInventoryPacket;
+export const documentFolderInventoryMethodVersion = "2026.10.27-v1";
+export const documentFolderInventoryRunIds = {
+  gold: "organize-document-folder-2026-10-27-v1-gold",
+  adversarial: "organize-document-folder-2026-10-27-v1-adversarial",
+  consistency: "organize-document-folder-2026-10-27-v1-consistency",
+} as const;
+export const folderQuestion = "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.";
+export const folderTurnTwoQuestion = "Segue a página 7 legível e o balancete de março. A minuta não foi para nenhum banco.";
+type Options = {files?: DocumentReading[]; turnTwo?: boolean | {files?: DocumentReading[]; informed?: typeof auroraTurnTwoInformed}; mode?: "organize" | "organize_only" | "organize_for_debt";
+  decisions?: typeof auroraDecisions; vault?: ReturnType<typeof auroraVault>; entities?: typeof auroraEntities; question?: string};
+export function folderPacketInput(o: Options = {}): DocumentFolderInventoryPacketInput {
+  const base = auroraFolderBasis({files: o.files, decisions: o.decisions, vault: o.vault, entities: o.entities}).seal();
+  const t = o.turnTwo === true ? {} : o.turnTwo || null;
+  const update = t ? auroraFolderUpdateBasis(base.envelope.fingerprint, t).seal() : null;
+  return {schemaVersion: "document-folder-inventory-packet-input.v1", question: o.question ?? (t ? folderTurnTwoQuestion : folderQuestion), mode: o.mode ?? "organize",
+    analysis: {base, update}} as DocumentFolderInventoryPacketInput;
+}
+const readings = (edit: (r: DocumentReading[]) => void) => {const r = auroraFolderReadings(); edit(r); return r;};
+const file = (r: DocumentReading[], id: string) => r.find((x) => x.fileId === id)!;
+function observe(id: string, input: DocumentFolderInventoryPacketInput, expected: unknown, select: (p: Packet) => unknown): Case {
+  const result = prepareDocumentFolderInventoryPacket(input), observed = JSON.stringify(select(result)), expectation = JSON.stringify(expected);
+  return {id, expectation, observed, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(result), passed: expectation === observed};
+}
+const inv = (p: Packet) => p.result.inventory!;
+/** The rows as the answer key reads them; the file name is shown, never read. */
+export const answerKeyMismatches = (p: Packet) => c09AnswerKey.flatMap((k, n) => {
+  const r = inv(p).rows[n]!, ours = [r.fileName, r.description, r.entity, r.period, r.version, r.situationLabel, r.groupLabel, r.findingIds.length > 0];
+  return ["arquivo", "tipo", "entidade", "periodo", "versao", "situacao", "grupo", "achado"].flatMap((field, i) => ours[i] === k[i] ? [] : [[k[0], field]]);
+});
+/** Everything but the names: the inventory with each file name and each copy's display line removed. */
+const withoutNames = (p: Packet) => {const i = structuredClone(inv(p)); for (const r of i.rows) {r.fileName = "-"; if (r.situation.duplicateOf) r.description = "-";} return i;};
+
+function goldCases(): Case[] {
+  const base = () => folderPacketInput(), packet = prepareDocumentFolderInventoryPacket(base());
+  const turnTwo = () => folderPacketInput({turnTwo: true}), second = prepareDocumentFolderInventoryPacket(turnTwo());
+  const reuse = (id: string, expected: unknown, select: (p: Packet) => unknown, two = false): Case => {
+    const p = two ? second : packet, observed = JSON.stringify(select(p)), expectation = JSON.stringify(expected);
+    return {id, expectation, observed, inputFingerprint: fingerprint(two ? turnTwo() : base()), outputFingerprint: fingerprint(p), passed: expectation === observed};
+  };
+  return [
+    // Expectations come from the ficha's answer key and its conversation, declared before execution.
+    // The copy keeps the entity its content reads; the key writes "Aurora" for it. That single field is the declared divergence.
+    reuse("inventory-item-by-item-matches-the-answer-key", [["DF_2025_final (1).pdf", "entidade"]], answerKeyMismatches),
+    reuse("counts-30-1-2-3-2-21", Object.values(c09AnswerKeyCounts), (p) => {const c = inv(p).counts; return [c.files, c.duplicates, c.incompleteReadings, c.superseded, c.inVault, c.withFinding];}),
+    reuse("copy-found-by-hash", {copy: "f30", of: "f01", vault: [["f18", "cofre-escritura-2021"], ["f20", "cofre-ccb-bradesco"]]},
+      (p) => ({copy: inv(p).rows.find((r) => r.situation.duplicateOf)!.fileId, of: inv(p).rows.find((r) => r.situation.duplicateOf)!.situation.duplicateOf,
+        vault: inv(p).rows.filter((r) => r.situation.inVault).map((r) => [r.fileId, r.situation.inVault])})),
+    reuse("versions-resolved-none-deleted", [["audited_over_draft", ["f01"], ["f02"], []], ["later_version", ["f10"], ["f09"], []], ["side_by_side", [], [], ["f13", "f14"]],
+      ["later_position", ["f16"], ["f17"], []], ["effective_text", ["f18", "f19"], [], []]], (p) => p.readings!.versions.map((v) => [v.resolution, v.prevails, v.superseded, v.sideBySide])),
+    reuse("amendment-is-the-text-in-force", {texts: [["deb-aurora-1", [["financial_covenant", "f19"], ["negative_pledge", "f19"]]]], original: "Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento."},
+      (p) => ({texts: inv(p).effectiveTexts.map((t) => [t.instrumentRef, t.clauses.map((c) => [c.type, c.fileId])]), original: inv(p).findings.find((f) => f.id === "f18-amended")!.statement})),
+    reuse("seven-decision-findings-in-order-with-source", [["f19-amendment", ["plano-financiamento-2027"], ["f19", "f18"]], ["f24-politica", ["plano-financiamento-2027"], ["f24"]],
+      ["f22-cessao", ["plano-financiamento-2027"], ["f22"]], ["f23-renovacao", ["linha-embalagem"], ["f23"]], ["f16-debt-total", ["plano-financiamento-2027"], ["f16"]],
+      ["f02-draft", ["plano-financiamento-2027"], ["f02", "f01"]], ["f04-subsidiary", ["plano-financiamento-2027"], ["f04"]]],
+      (p) => inv(p).decisionFindings!.map((d) => [d.findingId, d.decisionIds, d.sources.map((s) => s.fileId)])),
+    reuse("debt-is-130-not-140", {reported: "140000000", recomposed: "130000000", reason: "unused_limit_counted"},
+      (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "reported_total")!; return {reported: c.reported, recomposed: c.recomposed, reason: c.reason};}),
+    reuse("unreadable-page-and-photo-not-invented", {ccb: ["partial", [7]], photo: "unreadable", sourcedOnPage7: 0, photoFindings: ["file_unreadable"]},
+      (p) => ({ccb: [inv(p).rows[19]!.situation.read, inv(p).rows[19]!.situation.unreadablePages], photo: inv(p).rows[28]!.situation.read,
+        sourcedOnPage7: inv(p).findings.filter((f) => f.code !== "page_unreadable" && f.sources.some((s) => s.fileId === "f20" && s.page === 7)).length,
+        photoFindings: inv(p).findings.filter((f) => f.anchor === "f29").map((f) => f.code)})),
+    reuse("gaps-by-purpose-in-the-key-order", [["monthly_series", "f11", ["inventario", "plano-financiamento-2027"]], ["reading_substitute", "f20", ["inventario", "plano-financiamento-2027"]],
+      ["real_collateral", "f27", ["plano-financiamento-2027"]], ["group_perimeter", "f04", ["plano-financiamento-2027"]], ["liquidity_projection", "f15", ["plano-financiamento-2027"]]],
+      (p) => inv(p).gaps.map((g) => [g.need, inv(p).findings.find((f) => f.id === g.findingId)?.anchor ?? null, g.purposes])),
+    reuse("one-question-only-the-user-knows", ["A minuta das demonstrações do exercício 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença."], (p) => p.readings!.questions),
+    reuse("no-numeric-analysis-nothing-validated", {numeric: "none", validated: false, rowsValidated: 0, exclusions: ["ratio_calculation", "projection", "recommendation", "document_validation", "third_party_distribution"]},
+      (p) => ({numeric: p.readings!.numericAnalysis, validated: p.readings!.documentsValidated, rowsValidated: inv(p).rows.filter((r) => (r.validated as boolean) !== false).length, exclusions: p.exclusions})),
+    observe("renaming-every-file-changes-nothing", folderPacketInput({files: readings((r) => r.forEach((x, n) => {x.fileName = `arquivo-${String(n).padStart(2, "0")}.bin`;}))}), true,
+      (p) => JSON.stringify(withoutNames(p)) === JSON.stringify(withoutNames(packet))),
+    observe("misleading-names-do-not-move-the-version", folderPacketInput({files: readings((r) => {const a = file(r, "f01"), b = file(r, "f02"); [a.fileName, b.fileName] = [b.fileName, a.fileName];})}),
+      {prevails: ["f01"], superseded: ["f02"]}, (p) => {const v = p.readings!.versions[0]!; return {prevails: v.prevails, superseded: v.superseded};}),
+    observe("later-draft-does-not-beat-the-audited", folderPacketInput({files: readings((r) => {const d = file(r, "f02"); d.version.lastUpdated = "2026-08-30"; r.splice(r.indexOf(d), 1); r.unshift(d);})}),
+      {prevails: ["f01"], reason: "audited_over_draft"}, (p) => ({prevails: p.readings!.versions[0]!.prevails, reason: p.readings!.versions[0]!.resolution})),
+    reuse("turn-2-updates-only-the-affected-rows", {updated: ["f20"], added: ["s02"], preserved: 29, ccb: "lida; já estava no cofre",
+      preservedBytes: true}, (p) => ({updated: p.readings!.update!.rowsUpdated, added: p.readings!.update!.rowsAdded, preserved: p.readings!.update!.rowsPreserved,
+      ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situationLabel,
+      preservedBytes: inv(p).rows.filter((r) => !["f20", "s02"].includes(r.fileId)).every((r, n) => JSON.stringify(r) === JSON.stringify(p.result.priorInventory!.rows.filter((x) => x.fileId !== "f20")[n]))}), true),
+    reuse("turn-2-page-7-read-and-semester-closes-month-by-month", {page7: ["A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."],
+      months: [{id: "f12-months", status: "matches", reported: "27000000", recomposed: "27000000"}]}, (p) => ({page7: p.readings!.update!.newFindings, months: p.readings!.update!.identityChecks}), true),
+    reuse("turn-2-informed-fact-with-author-and-date", {informed: [{statement: "A minuta não foi para nenhum banco.", author: "Controller da Aurora", date: "2026-09-02"}], questions: [],
+      stillOpen: ["Matrícula atualizada do imóvel da fábrica", "Projeção ou fluxo de caixa de 13 semanas atualizado"]},
+      (p) => ({informed: p.readings!.update!.informed, questions: p.readings!.questions, stillOpen: p.readings!.update!.stillOpen}), true),
+    observe("variation-organize-only", folderPacketInput({mode: "organize_only", question: "Só organiza, não analisa ainda."}),
+      {decisionFindings: null, generalFindings: null, clauseObservations: ["f22-cessao", "f23-renovacao", "f24-politica"], gaps: ["monthly_series", "reading_substitute"]},
+      (p) => ({decisionFindings: p.readings!.decisionFindings, generalFindings: p.readings!.generalFindings,
+        clauseObservations: inv(p).findings.filter((f) => f.code === "clause" && f.effect).map((f) => f.id), gaps: inv(p).gaps.map((g) => g.need)})),
+    observe("variation-for-the-debt-discussion", folderPacketInput({mode: "organize_for_debt", question: "Organiza o material para discutirmos a dívida."}),
+      {firstGroup: "Dívida", highlighted: ["instrument:deb-aurora-1"], first: ["f19-amendment", ["discussao-divida", "plano-financiamento-2027"]]},
+      (p) => ({firstGroup: inv(p).groups[0]!.label, highlighted: p.readings!.versions.filter((v) => v.highlighted).map((v) => v.familyId),
+        first: [inv(p).decisionFindings![0]!.findingId, inv(p).decisionFindings![0]!.decisionIds]})),
+    observe("variation-empty-vault-no-decisions", folderPacketInput({vault: [], decisions: []}),
+      {inVault: 0, decisionFindings: null, general: ["version_conflict", "binding_limit", "collateral_restriction", "deadline", "policy_limit", "figure_correction", "perimeter"],
+        uses: ["bank-material", "debt-analysis", "projection"]},
+      (p) => ({inVault: inv(p).counts.inVault, decisionFindings: inv(p).decisionFindings, general: inv(p).generalFindings!.map((g) => g.effect),
+        uses: [...new Set(inv(p).gaps.flatMap((g) => g.purposes).filter((x) => x !== "inventario"))].sort()})),
+    observe("variation-several-companies", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f03")), fileId: "f31", fileName: "balanco serra.pdf", sha256: "a".repeat(64),
+      description: "Demonstrações financeiras auditadas", entity: {primaryId: "pastificio-serra", label: "Pastifício Serra Ltda."}}))}),
+      {partitioned: true, partitions: ["aurora", "pastificio-serra", "nao-identificada"], question: "Pastifício Serra Ltda. não está no cadastro da companhia. Entra no perímetro deste trabalho?"},
+      (p) => ({partitioned: inv(p).partitionByEntity, partitions: [...new Set(inv(p).groups.map((g) => g.partition))], question: p.readings!.questions[0]})),
+    reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
+      (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
+  ];
+}
+
+function adversarialCases(): Case[] {
+  const attempts: [string, () => unknown, string][] = [
+    ["tampered-envelope", () => {const i = folderPacketInput(); i.analysis.base.envelope = {...i.analysis.base.envelope, canonical: i.analysis.base.envelope.canonical.replace("2,75x", "3,75x")}; return i;}, "adoption_basis_integrity_mismatch"],
+    ["free-result-in-request", () => ({...folderPacketInput(), inventory: {rows: []}}), "Unrecognized key"],
+    ["fabricated-grant-in-result", () => ({forge: (p: Packet) => ({...p, grantsExecution: true})}), "grantsExecution"],
+    ["document-declared-validated", () => ({forge: (p: Packet) => {const x = structuredClone(p); (x.result.inventory!.rows[0] as {validated: boolean}).validated = true; return x;}}), "validated"],
+    ["leverage-in-the-answer", () => ({forge: (p: Packet) => ({...p, readings: {...p.readings!, leverage: "2.5"}})}), "Unrecognized key"],
+    ["three-open-questions", () => ({forge: (p: Packet) => {const x = structuredClone(p); x.result.inventory!.questions = [1, 2, 3].map((n) => ({id: `q${n}`, text: "Pergunta", findingId: null, status: "open" as const, answeredBy: null})); return x;}}), "At most two open questions"],
+    ["content-on-the-unreadable-page", () => folderPacketInput({files: readings((r) => file(r, "f20").clauses.push({type: "prepayment", id: "inventada", at: {page: 7, section: null}, statement: "Pré-pagamento livre."}))}), "document_inventory_content_on_unreadable_page"],
+    ["content-on-the-unreadable-photo", () => folderPacketInput({files: readings((r) => file(r, "f29").figures.push({id: "valor", metric: "revenue", value: "1", scale: "1", at: {page: 1, section: null}}))}), "document_inventory_content_on_unreadable_file"],
+    ["drawn-above-limit", () => folderPacketInput({files: readings((r) => {file(r, "f16").debtTable!.lines[3]!.drawn = "12";})}), "document_inventory_drawn_above_limit"],
+    ["substitute-for-a-legible-page", () => folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, substitutesPages: {instrumentRef: "ccb-bradesco-2024", pages: [8]}, clauses: []} : x)}}), "document_inventory_substitute_for_legible_page"],
+    ["update-of-another-folder", () => {const i = folderPacketInput(); const u = auroraFolderUpdateBasis("0".repeat(64)).seal(); return {...i, analysis: {...i.analysis, update: u}};}, "document_inventory_prior_version_mismatch"],
+    ["informed-fact-without-a-question", () => folderPacketInput({turnTwo: {informed: [{...auroraTurnTwoInformed[0]!, questionId: "pergunta-inexistente"}]}}), "document_inventory_informed_without_question"],
+    ["reading-under-another-file-slot", () => {const i = folderPacketInput(); (i.analysis.base.files as {id: string}[])[0]!.id = "f99"; return i;}, "analysis_basis_context_mismatch"],
+    ["reading-without-page-or-section", () => folderPacketInput({files: readings((r) => {file(r, "f24").clauses[0]!.at = {page: null, section: null};})}), "A reading names the page or the section"],
+    ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
+      return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
+  ];
+  return attempts.map(([id, build, message]) => {
+    let observed: string, passed: boolean, input: unknown;
+    try {
+      input = build();
+      const forge = (input as {forge?: (p: Packet) => unknown}).forge;
+      if (forge) documentFolderInventoryPacketOutputSchema.parse(forge(prepareDocumentFolderInventoryPacket(folderPacketInput())));
+      else prepareDocumentFolderInventoryPacket(input);
+      observed = "accepted"; passed = false;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      passed = detail.includes(message); observed = passed ? "rejected by expected boundary" : `unexpected error: ${detail.slice(0, 250)}`;
+    }
+    return {id, expectation: "rejected by expected boundary", observed, inputFingerprint: fingerprint(typeof input === "object" && input && "forge" in input ? {forge: id} : input ?? null), outputFingerprint: fingerprint({observed}), passed};
+  });
+}
+
+function consistencyCases(): Case[] {
+  return [folderPacketInput(), folderPacketInput({turnTwo: true})].flatMap((input, fixtureIndex) => {
+    const before = fingerprint(input), first = prepareDocumentFolderInventoryPacket(input);
+    return Array.from({length: 3}, (_, repeat) => {
+      const result = prepareDocumentFolderInventoryPacket(JSON.parse(JSON.stringify(input)));
+      const passed = fingerprint(result) === fingerprint(first) && fingerprint(input) === before;
+      return {id: `fixture-${fixtureIndex + 1}-repeat-${repeat + 1}`, expectation: "same inputs and versions reproduce all output bytes without mutation",
+        observed: passed ? "same inputs and versions reproduce all output bytes without mutation" : "output or input changed", inputFingerprint: before, outputFingerprint: fingerprint(result), passed};
+    });
+  });
+}
+
+export function buildDocumentFolderInventoryRuns(): Evidence[] {
+  return ([{kind: "gold", cases: goldCases()}, {kind: "adversarial", cases: adversarialCases()}, {kind: "consistency", cases: consistencyCases()}] as const).map(({kind, cases}) => {
+    const evidence = {runId: documentFolderInventoryRunIds[kind], kind, method: {id: "organize-document-folder", version: documentFolderInventoryMethodVersion},
+      executor: {module: "@offroad/financial-model", exportName: "prepareDocumentFolderInventoryPacket"},
+      harness: {module: "@offroad/financial-model/src/document-folder-inventory-runs.test-support.ts", exportName: "buildDocumentFolderInventoryRuns"},
+      modelCalls: 0 as const, cases, result: cases.every((c) => c.passed) ? "pass" as const : "fail" as const};
+    return {...evidence, evidenceFingerprint: deterministicRunEvidenceFingerprint(evidence),
+      notes: "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."};
+  });
+}
