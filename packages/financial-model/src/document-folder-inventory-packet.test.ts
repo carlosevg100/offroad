@@ -11,7 +11,7 @@ describe("document folder inventory packet", {timeout: 120000}, () => {
     expect(r.opening).toEqual({files: 30, groups: ["Demonstrações", "Gerencial", "Dívida", "Contratos", "Governança", "Carteira", "Ativos", "Outros"], duplicates: 1, superseded: 3, inVault: 2});
     expect(r.decisionFindings!.map((d) => d.rank)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(r.notRead.map((n) => [n.fileId, n.pages])).toEqual([["f20", [7]], ["f29", null]]);
-    expect(r.gaps.map((g) => g.item)).toEqual(["Balancete de março de 2026", "Página 7 legível da CCB do Bradesco", "Matrícula atualizada do imóvel da fábrica",
+    expect(r.gaps.map((g) => g.item)).toEqual(["Balancete de março de 2026", "Página 7 legível da cédula de crédito bancário", "Matrícula atualizada do imóvel avaliado no laudo",
       "Demonstrações auditadas da Aurora Logística, se existirem", "Projeção ou fluxo de caixa de 13 semanas atualizado"]);
     expect(r.questions).toHaveLength(1);
     expect([r.numericAnalysis, r.documentsValidated, p.grantsExecution, p.grantsPublication]).toEqual(["none", false, false, false]);

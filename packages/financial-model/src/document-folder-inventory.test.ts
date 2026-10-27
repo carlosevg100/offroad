@@ -17,11 +17,11 @@ describe("document folder inventory kernel", () => {
   });
   it("states the decision findings with the figures read, and calculates nothing else", () => {
     const d = turnOne().decisionFindings!.map((x) => x.statement);
-    expect(d[0]).toBe("O covenant da debênture da 1ª emissão é o do aditamento de jun/2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.");
+    expect(d[0]).toBe("O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.");
     expect(d[1]).toContain("no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x");
-    expect(d[2]).toContain("a rede A responde por 32% da carteira");
-    expect(d[3]).toBe("O contrato de embalagem renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.");
-    expect(d[4]).toBe("A dívida em jun/26 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da linha conta garantida do Itaú, que está sem uso.");
+    expect(d[2]).toContain("a contraparte responde por 32% da carteira");
+    expect(d[3]).toBe("O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.");
+    expect(d[4]).toBe("A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.");
     expect(d[5]).toContain("A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões");
     expect(d[6]).toBe("A controlada Aurora Logística entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.");
   });
@@ -102,13 +102,13 @@ describe("review r1 of the folder inventory kernel", () => {
   });
   it("quotes what the document says apart from what the method states", () => {
     const f = turnOne().findings.find((x) => x.id === "f22-cessao")!;
-    expect([f.quoted, f.statement]).toEqual(["Veda a cessão dos recebíveis sem anuência do cliente.", "Limita qualquer financiamento com cessão dessa carteira."]);
+    expect([f.quoted, f.statement]).toEqual([{fileId: "f22", page: 9, section: null, text: "Veda a cessão dos recebíveis sem anuência do cliente."}, "Limita qualquer financiamento com cessão dessa carteira."]);
   });
   it("a copy carries its original's reading; the same bytes read two ways is a declared conflict", () => {
     expect(turnOne().rows[29]).toMatchObject({entity: "Aurora", kind: "annual_financial_statements", version: "duplicado exato"});
     const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f30").kind = "debt_schedule";})}));
-    expect(o.readingConflicts).toEqual([{fileId: "f30", of: "f01"}]);
-    expect(o.rows[29]!.kind).toBe("annual_financial_statements");
-    expect(o.findings.find((f) => f.anchor === "f30" && f.code === "reading_conflict")).toBeDefined();
+    expect(o.readingConflicts).toEqual([{sha256: o.rows[0]!.sha256, fileIds: ["f01", "f30"]}]);
+    expect([o.rows[0]!.situation.read, o.rows[29]!.situation.read, o.rows[29]!.kind]).toEqual(["conflicted", "conflicted", "unidentified"]);
+    expect(o.findings.filter((f) => f.code === "reading_conflict").map((f) => f.anchor)).toEqual(["f01", "f30"]);
   });
 });

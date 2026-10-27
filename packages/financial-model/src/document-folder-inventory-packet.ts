@@ -31,12 +31,12 @@ export const documentFolderInventoryPacketOutputSchema = z.strictObject({
     generalFindings: z.array(z.strictObject({rank: z.number().int(), statement: text})).max(100).nullable(),
     versions: z.array(z.strictObject({familyId: key, resolution: key, prevails: z.array(key), superseded: z.array(key), sideBySide: z.array(key), highlighted: z.boolean()})).max(100),
     /** What the documents say, quoted with file and page or sheet; kept apart from everything the method states. */
-    documentary: z.array(z.strictObject({findingId: z.string().min(1).max(80), fileId: key, page: z.number().int().nullable(), section: text.nullable(), quoted: text})).max(500),
+    documentary: z.array(z.strictObject({findingId: z.string().min(1).max(80), fileId: key, page: z.number().int().nullable(), section: text.nullable(), text})).max(500),
     notRead: z.array(z.strictObject({fileId: key, pages: z.array(z.number().int()).nullable(), statement: text})).max(250),
     gaps: z.array(z.strictObject({item: text, why: text, purposes: z.array(key).min(1), conditional: z.boolean()})).max(100),
     questions: z.array(text).max(2),
     /** A later turn: only the rows what arrived touches, the identity checks it allows, and the facts recorded with author and date. */
-    update: z.strictObject({rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(), newFindings: z.array(z.strictObject({statement: text, quoted: text.nullable()})),
+    update: z.strictObject({rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(), newFindings: z.array(z.strictObject({statement: text, quoted: z.strictObject({fileId: key, page: z.number().int().nullable(), section: text.nullable(), text}).nullable()})),
       identityChecks: z.array(z.strictObject({id: key, status: z.enum(["matches", "differs", "not_run"]), reported: decimal.nullable(), recomposed: decimal.nullable()})),
       informed: z.array(z.strictObject({statement: text, author: text, date: z.iso.date()})), stillOpen: z.array(text)}).nullable(),
     numericAnalysis: z.literal("none"), documentsValidated: z.literal(false),
@@ -64,8 +64,8 @@ export function prepareDocumentFolderInventoryPacket(raw: unknown): DocumentFold
     decisionFindings: inv.decisionFindings?.map((d) => ({rank: d.rank, statement: d.statement, decisionIds: d.decisionIds, sources: d.sources})) ?? null,
     generalFindings: inv.generalFindings?.map((d) => ({rank: d.rank, statement: d.statement})) ?? null,
     versions: inv.families.map((f) => ({familyId: f.id, resolution: f.resolution, prevails: f.prevails, superseded: f.superseded, sideBySide: f.sideBySide, highlighted: f.highlighted})),
-    documentary: inv.findings.filter((f) => f.quoted !== null && f.status === "open")
-      .map((f) => ({findingId: f.id, fileId: f.sources[0]!.fileId, page: f.sources[0]!.page, section: f.sources[0]!.section, quoted: f.quoted!})),
+    documentary: [...inv.findings.filter((f) => f.quoted !== null && f.status === "open").map((f) => ({findingId: f.id, ...f.quoted!})),
+      ...inv.gaps.filter((g) => g.quoted !== null && g.status === "open" && !inv.findings.some((f) => f.id === g.findingId && f.quoted !== null)).map((g) => ({findingId: g.id, ...g.quoted!}))],
     notRead: inv.findings.filter((f) => (f.code === "page_unreadable" || f.code === "file_unreadable") && f.status === "open")
       .map((f) => ({fileId: f.anchor, pages: f.code === "page_unreadable" ? f.sources.flatMap((s) => s.page === null ? [] : [s.page]) : null, statement: f.statement})),
     gaps: inv.gaps.filter((g) => g.status === "open").map((g) => ({item: g.item, why: g.why, purposes: g.purposes, conditional: g.conditional})),
@@ -80,7 +80,7 @@ export function prepareDocumentFolderInventoryPacket(raw: unknown): DocumentFold
     numericAnalysis: "none" as const, documentsValidated: false as const,
   } : null;
   // A copy read two ways is a declared conflict the person resolves; the packet is partial until then.
-  const gaps = [...result.gaps, ...(inv?.readingConflicts ?? []).map((c) => ({operand: `document_folder_inventory.${result.analysisId}.file.${c.fileId}.reading`, reason: "reading_conflicts_with_same_hash"}))];
+  const gaps = [...result.gaps, ...(inv?.readingConflicts ?? []).flatMap((c) => c.fileIds.map((id) => ({operand: `document_folder_inventory.${result.analysisId}.file.${id}.reading`, reason: "reading_conflicts_with_same_hash"})))];
   const status = !inv ? (result.status === "base_only" ? "partial" as const : "framed" as const) : gaps.length ? "partial" as const : "prepared_for_human_review" as const;
   const payload = {schemaVersion: "document-folder-inventory-packet.v1" as const, executorVersion: documentFolderInventoryPacketVersion,
     question: input.question, mode: input.mode, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId,

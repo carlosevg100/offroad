@@ -76,8 +76,8 @@ export function auroraFolderReadings(): DocumentReading[] {
     doc({fileId: "f16", fileName: "tabela de divida jun26.xlsx", format: "xlsx", kind: "debt_schedule", description: "Tabela de dívida", entity: e("Aurora, consolidado"),
       period: p("jun/26", "2026-06-30", "2026-06-30"), version: v("gerencial", "management"),
       debtTable: {scale: mi, reportedTotal: "140", at: at(null, "Dívida"), lines: [
-        {id: "debenture", label: "debênture da 1ª emissão", drawn: "60", limit: null, counted: "60"}, {id: "ccb", label: "CCB do Bradesco", drawn: "40", limit: null, counted: "40"},
-        {id: "finame", label: "Finame", drawn: "30", limit: null, counted: "30"}, {id: "conta-garantida", label: "conta garantida do Itaú", drawn: "0", limit: "10", counted: "10"}]}}),
+        {id: "debenture", lineKind: "debenture", label: "debênture da 1ª emissão", drawn: "60", limit: null, counted: "60"}, {id: "ccb", lineKind: "bank_credit", label: "CCB do Bradesco", drawn: "40", limit: null, counted: "40"},
+        {id: "finame", lineKind: "development_bank", label: "Finame", drawn: "30", limit: null, counted: "30"}, {id: "conta-garantida", lineKind: "overdraft", label: "conta garantida do Itaú", drawn: "0", limit: "10", counted: "10"}]}}),
     doc({fileId: "f17", fileName: "Copia de Copia de tabela final (2).xlsx", format: "xlsx", kind: "debt_schedule", description: "Tabela de dívida", entity: e("Aurora, consolidado"),
       period: p("dez/25", "2025-12-31", "2025-12-31"), version: v("versão anterior", "management")}),
     doc({fileId: "f18", fileName: "Escritura debenture 2021.pdf", format: "pdf", kind: "debenture_indenture", description: "Escritura da 1ª emissão de debêntures", entity: e("Aurora Alimentos S.A."),

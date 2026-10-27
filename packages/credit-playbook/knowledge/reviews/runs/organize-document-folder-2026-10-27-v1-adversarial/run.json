@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T11:16:47.077Z",
-    "finishedAt": "2026-10-27T11:16:47.077Z",
-    "commit": "3c9a5949"
+    "startedAt": "2026-10-27T11:38:39.621Z",
+    "finishedAt": "2026-10-27T11:38:39.621Z",
+    "commit": "6c5cde1a"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,7 +26,7 @@
       "id": "tampered-envelope",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "8e7db8d3b421254d4f4bb363a77bdc099c7a4274a91f0baf12fb7b9cedf23b87",
+      "inputFingerprint": "f7875ab0fa914102b8408aaa1d0895b6085147d6a321cbabea73fa0943d2f414",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -34,7 +34,7 @@
       "id": "free-result-in-request",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "bf598329f90d28040b0e3a6868aad0bb1d510c8f45deaac1da413789bc09733e",
+      "inputFingerprint": "b6950b516fa792edf60c259a9c04e84bd1b4d28009161b0f15e502c7c9549748",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -74,7 +74,7 @@
       "id": "content-on-the-unreadable-page",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4b72210864a565bd6df457951f5f8f74a35cd5057837a2a79a007c8401ff0a4b",
+      "inputFingerprint": "b21bd5013550f305898fcfe6de950644490ffe6173fdd06ea1e6445f9be5a2ee",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -82,7 +82,7 @@
       "id": "content-on-the-unreadable-photo",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ca6679479b69fc53bc96aa1c9cff5fd363f60561d1f66f56f2f1404b2a409f28",
+      "inputFingerprint": "637cb8538cf9d5630db40e8ffe3adea11e7df098638c6603c34660adab5497c0",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -90,7 +90,7 @@
       "id": "drawn-above-limit",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c0a2ffe2153de203adf1614a8a5459eeab0f518e675a4d50353280e25fa909e1",
+      "inputFingerprint": "f1eb40157ef6838c8c34c7d2324c2a46f1b4ebafe5a23222b3a226cfbbfc5e08",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -98,7 +98,7 @@
       "id": "substitute-for-a-legible-page",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b6b617fa71b42338a8b257d521dc7d4953ba8ea84c2dc3c48e256bebc26e4998",
+      "inputFingerprint": "aeeac3404937a90e7624522507f78ef035d05c04bf21e9aadee1cfd973914c83",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -106,7 +106,7 @@
       "id": "update-of-another-folder",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e5e5cd237913f761615804884d23f1252215681051afa1c4964c3d1912bb4d89",
+      "inputFingerprint": "ccaf89ca68465fe94cf4a58dfe168c86fda249eab904127c9daccf85285d67af",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -114,7 +114,7 @@
       "id": "informed-fact-without-a-question",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1e78722a289c5a60ca3be31ee4e62c61713c0ab196e9790be6f43bd548f62ad0",
+      "inputFingerprint": "e8bd8449ba5c95c1d316739281c8c7f0c7f3aeac8657c9b00673f882b463a2ba",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -122,7 +122,7 @@
       "id": "reading-under-another-file-slot",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b3daa86c2e1f5fc021a345d2344c61c03368dfde1fe4f434087131728e797ebb",
+      "inputFingerprint": "aa1cd7631d34539351c2a37fb49e626cfaebcd6f4451d9a2a46480875e0e7ebd",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -130,7 +130,7 @@
       "id": "amendment-selection-left-out",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c53f6e5153dbda768bd6349c8f9df51af88e680520273c6720f017ad55cf9618",
+      "inputFingerprint": "d0dea3bb1542ef666c011ec1da0d4d1c95550ee7df4ee96c8ebaf8f573f9e011",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -138,7 +138,7 @@
       "id": "unreadable-page-read-through-a-section",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "01a59184d6516c6171ea95e392e8a2fd69bc8930964b3aee962c96ced9fab57c",
+      "inputFingerprint": "10f7a3be11b6bf24bff3b325e2fcb651ddbf10758ccbb88c7cccfd5523493128",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -146,7 +146,39 @@
       "id": "leverage-and-validation-in-free-text",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "07c9d4b52596780198cd7cf761ff7348cefd82168cdc050883d3e1dd9d3f12a0",
+      "inputFingerprint": "d7b1b4a5ce28fab0a1d4e6c12b8de33662f87f32d480824a1d49a11972df7d5d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "forbidden-text-in-a-sheet-name",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2c36db3b3fbe500978394c26a77303b5db0336e7c6fa72b0a1f9f5f632303d7e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "paraphrased-ratio-and-advice-in-a-quote",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ef4872279bea0c2f5cf4e2e1556fdb7aa25dd4421aad393b46443dfae57c6d96",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "expected-content-without-legible-source",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8427414d832688adaf9284c7ed723f42c37633c34e82d0c1a72630d7ce366e73",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "substitute-figure-outside-its-pages",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "eb192ca7d6e21f49f840c481fcb734f93de365971596eccfb4ed391593065c12",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -154,7 +186,7 @@
       "id": "ratio-in-a-clause-that-is-not-its-limit",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e16e006193a7bd9297c1c6425889cc1427b553ace07bf0f02c4ad7e0771b2584",
+      "inputFingerprint": "6368cc65273a766d259e196be7a15df30943fc5c47ac34bd74c9ed63c4c30d5b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -162,7 +194,7 @@
       "id": "reading-without-page-or-section",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "70c427f7f6f9da23d93e65f220f461b471b22ae5c540c9c5104b6682844a3d4c",
+      "inputFingerprint": "ad435f8db1f826b37f2567a9c25b362dfd3ec7b55790b16bc08b0445c1c162ce",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -170,12 +202,12 @@
       "id": "record-read-in-another-scenario",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0430bf5a4108f2b8eb0c0583d05c08df0d1d078ae1668d45b65a56cf504ec4c9",
+      "inputFingerprint": "935345a135a8e767cab475749981494a64c08fc2775a6b7b3cf167fc2cc2d752",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "d8e9ef738ae89c29ec3219a330a9a05c304fc51e02f934954d8474f715766a34",
+  "evidenceFingerprint": "758b806cc8fdf110c17afdbd25bc6fa33d7633099adedc2adc4cd4175553617f",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

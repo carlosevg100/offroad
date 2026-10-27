@@ -23,8 +23,9 @@ describe("recorded document folder inventory evaluations", () => {
       "later-draft-does-not-beat-the-audited", "turn-2-updates-only-the-affected-rows", "turn-2-page-7-read-and-semester-closes-month-by-month",
       "turn-2-informed-fact-with-author-and-date", "variation-organize-only", "variation-for-the-debt-discussion", "variation-empty-vault-no-decisions",
       "variation-several-companies", "unresolved-month-blocks-the-semester-sum", "draft-amendment-changes-no-term",
-      "replaced-notice-is-history-not-a-deadline", "same-hash-read-two-ways-is-declared", "notice-deadline-followed-never-scheduled"]);
-    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(19);
+      "replaced-notice-is-history-not-a-deadline", "same-hash-read-two-ways-is-declared", "approved-amendment-is-not-in-force", "tied-amendments-have-no-winner",
+      "later-cut-is-the-covenant-in-force", "notice-deadline-followed-never-scheduled"]);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(23);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

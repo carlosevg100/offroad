@@ -15,9 +15,9 @@ result_contract: document-folder-inventory-packet.v1
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: document-folder-inventory-packet.v1
-unit_test_files: [packages/financial-model/src/document-folder-inventory.test.ts, packages/financial-model/src/document-folder-inventory-packet.test.ts, packages/financial-model/src/document-folder-inventory-premises.test.ts, packages/financial-model/src/document-folder-inventory-runs.test.ts]
-gold_case_ids: [inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, notice-deadline-followed-never-scheduled]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, document-declared-validated, leverage-in-the-answer, three-open-questions, content-on-the-unreadable-page, content-on-the-unreadable-photo, drawn-above-limit, substitute-for-a-legible-page, update-of-another-folder, informed-fact-without-a-question, reading-under-another-file-slot, amendment-selection-left-out, unreadable-page-read-through-a-section, leverage-and-validation-in-free-text, ratio-in-a-clause-that-is-not-its-limit, reading-without-page-or-section, record-read-in-another-scenario]
+unit_test_files: [packages/financial-model/src/document-folder-inventory.test.ts, packages/financial-model/src/document-folder-inventory-packet.test.ts, packages/financial-model/src/document-folder-inventory-premises.test.ts, packages/financial-model/src/document-folder-inventory-runs.test.ts, packages/financial-model/src/document-folder-inventory.properties.test.ts]
+gold_case_ids: [inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, notice-deadline-followed-never-scheduled]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, document-declared-validated, leverage-in-the-answer, three-open-questions, content-on-the-unreadable-page, content-on-the-unreadable-photo, drawn-above-limit, substitute-for-a-legible-page, update-of-another-folder, informed-fact-without-a-question, reading-under-another-file-slot, amendment-selection-left-out, unreadable-page-read-through-a-section, leverage-and-validation-in-free-text, forbidden-text-in-a-sheet-name, paraphrased-ratio-and-advice-in-a-quote, expected-content-without-legible-source, substitute-figure-outside-its-pages, ratio-in-a-clause-that-is-not-its-limit, reading-without-page-or-section, record-read-in-another-scenario]
 e2e_scenario_ids: [domain:inventory-item-by-item-matches-the-answer-key]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -101,7 +101,10 @@ Pacote de inventário da pasta: cada arquivo como uma linha, com o que é, entid
 - Seleções que deixam de fora um registro adotado na base (um aditamento, uma página) ou fora da ordem de chegada adotada: recusadas.
 - Arquivo com página ilegível em que alguma leitura não diz a página, texto livre com índice medido, recomendação ou validação, e índice numa cláusula diferente do limite que ela fixa: recusados.
 - Mês com versões sem vencedor: a conferência do período não roda; nenhuma das versões é somada.
-- Aditamento sem assinatura não muda o texto vigente; cláusula substituída por aditamento vigente fica como histórico, sem efeito e sem prazo ativo.
+- Só assinatura ou registro dão vigência; aprovado ou final, sozinhos, não. Original sem assinatura nem registro não tem texto vigente, e seus aditamentos ficam como histórico.
+- Aditamentos aplicados pela própria data e numeração, nunca pela chegada; dois da mesma data e numeração com termos diferentes deixam a cláusula sem texto vigente, com o conflito declarado. Cada alteração é lida contra a cláusula que substitui; a substituída fica como histórico, sem efeito e sem prazo ativo.
+- Hash lido de duas formas: todos os arquivos com esse hash ficam suspensos para qualquer uso (achados, conferências, versões, lacunas) até a leitura ser refeita.
+- Conteúdo esperado de página ilegível só com fonte legível ancorada; leitura de substituto só nas páginas declaradas.
 - Resposta informada que não responde a uma pergunta feita: recusada.
 - O pacote não calcula índice, não projeta, não recomenda, não valida documento, não envia nada a terceiros e não publica nem altera a base.
 
@@ -127,9 +130,9 @@ Pacote de inventário da pasta: cada arquivo como uma linha, com o que é, entid
 - packages/financial-model/src/document-folder-inventory.test.ts: núcleo contra a chave da ficha, nomes trocados, empates sem critério, total que não fecha, aditamento sem original, atualização seletiva e suas recusas.
 - packages/financial-model/src/document-folder-inventory-packet.test.ts e packages/financial-model/src/document-folder-inventory-premises.test.ts: leitor adotado sobre duas bases, pacote e ida e volta das premissas.
 ## Gold
-- inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, notice-deadline-followed-never-scheduled
+- inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, notice-deadline-followed-never-scheduled
 ## Adversarial
-- Base adulterada, resultado livre no pedido, concessão fabricada, documento declarado validado, alavancagem na resposta, três perguntas abertas, conteúdo em página ilegível, conteúdo em foto ilegível, saldo acima do limite, substituto de página legível, atualização de outra pasta, resposta sem pergunta, leitura sob outro arquivo, seleção do aditamento omitida, página ilegível lida por aba, alavancagem e validação em texto livre, índice em cláusula fora do seu limite, leitura sem página nem aba e registro lido em outro cenário são recusados.
+- Base adulterada, resultado livre no pedido, concessão fabricada, documento declarado validado, alavancagem na resposta, três perguntas abertas, conteúdo em página ilegível, conteúdo em foto ilegível, saldo acima do limite, substituto de página legível, atualização de outra pasta, resposta sem pergunta, leitura sob outro arquivo, seleção do aditamento omitida, página ilegível lida por aba, alavancagem e validação em texto livre, índice em cláusula fora do seu limite, texto proibido em nome de aba, índice e conselho parafraseados em citação, conteúdo esperado sem fonte legível, figura de substituto fora das suas páginas, leitura sem página nem aba e registro lido em outro cenário são recusados.
 ## Aceitação
 - Reproduzir a chave do inventário da ficha C09 item a item.
 - Executar a conversa da ficha C09 turno a turno pela interface real, com a extração real dos 30 arquivos; guardar plano, leituras, inventário, resposta, custo e latência.
@@ -184,7 +187,7 @@ O nome do arquivo é mostrado e nunca lido. Trocar todos os nomes não muda o in
 A versão superada fica como histórico ao lado da que vale; orçamento aprovado e revisão em trabalho ficam lado a lado sem escolha.
 
 ## R3. Texto vigente e voz
-Só aditamento assinado ou registrado muda o texto vigente; achados e prazos vêm do texto vigente. O que o documento diz vai citado, com arquivo e página, separado do que o método afirma.
+Só documento assinado ou registrado tem texto vigente; achados e prazos vêm do texto vigente, e cada alteração é comparada com a cláusula que substitui. A voz do método sai só de modelos fechados sobre dados tipados (datas, valores, índices, tipos, cadastro); o que o documento diz sai só como citação, com o arquivo e a página ou aba de onde veio. O filtro de palavras na entrada é defesa adicional, não a garantia.
 
 ## R4. Atualização seletiva
 O que chega depois muda só as linhas que toca; o resto é preservado byte a byte, e o fato informado é registrado com autoria e data.
@@ -305,7 +308,7 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
       "kind": "rule",
       "title": "Organizar a pasta pelo conteúdo e dizer o que muda as decisões em curso",
       "authority": "house",
-      "statement": "Ler cada arquivo pelo conteúdo e nunca pelo nome, identificar cópias pelo hash e o que já está no cofre, resolver versões sem apagar nenhuma, ler o aditamento assinado com o original como texto vigente único, registrar o que não foi lido por página sem inventar conteúdo, ordenar os achados pelas decisões em curso com o documento de origem e o texto citado à parte, pedir as lacunas pela finalidade e no máximo duas perguntas, e no turno seguinte mudar só as linhas tocadas, sem calcular índice, sem projetar, sem recomendar, sem validar documento, sem enviar nada a terceiros e sem adotar ou publicar por cálculo.",
+      "statement": "Ler cada arquivo pelo conteúdo e nunca pelo nome, identificar cópias pelo hash e suspender o hash lido de duas formas, resolver versões só por critério de conteúdo e sem apagar nenhuma, ler os aditamentos assinados ou registrados com o original como texto vigente único, comparando cada alteração com a que substitui, registrar o que não foi lido por página sem inventar conteúdo, ordenar os achados pelas decisões em curso com o documento de origem e o texto citado à parte, pedir as lacunas pela finalidade e no máximo duas perguntas, e no turno seguinte mudar só as linhas tocadas, sem calcular índice, sem projetar, sem recomendar, sem validar documento, sem enviar nada a terceiros e sem adotar ou publicar por cálculo.",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareDocumentFolderInventoryPacket",
@@ -1590,20 +1593,28 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                     "status": {
                                       "required": true,
                                       "value": {
-                                        "type": "enum",
-                                        "values": [
-                                          "audited",
-                                          "draft",
-                                          "signed",
-                                          "registered",
-                                          "approved",
-                                          "working_revision",
-                                          "closed",
-                                          "management",
-                                          "final",
-                                          "outdated",
-                                          "marketing",
-                                          "image"
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "enum",
+                                            "values": [
+                                              "audited",
+                                              "draft",
+                                              "signed",
+                                              "registered",
+                                              "approved",
+                                              "working_revision",
+                                              "closed",
+                                              "management",
+                                              "final",
+                                              "outdated",
+                                              "marketing",
+                                              "image"
+                                            ]
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
                                         ]
                                       }
                                     },
@@ -1619,7 +1630,8 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                               "values": [
                                                 "complete",
                                                 "partial",
-                                                "unreadable"
+                                                "unreadable",
+                                                "conflicted"
                                               ]
                                             }
                                           },
@@ -1905,12 +1917,6 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "string"
                                       }
                                     },
-                                    "label": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
                                     "fileIds": {
                                       "required": true,
                                       "value": {
@@ -1944,11 +1950,31 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                               "value": {
                                                 "type": "string"
                                               }
-                                            },
-                                            "statement": {
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "conflicts": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "type": {
                                               "required": true,
                                               "value": {
                                                 "type": "string"
+                                              }
+                                            },
+                                            "fileIds": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               }
                                             }
                                           }
@@ -1990,9 +2016,13 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           "total_not_recomposed",
                                           "amended_original",
                                           "amendment_in_force",
+                                          "amendment_superseded",
                                           "amendment_not_in_force",
+                                          "amendment_conflict",
                                           "amendment_without_original",
+                                          "instrument_not_in_force",
                                           "clause_superseded",
+                                          "clause_not_in_force",
                                           "reading_conflict",
                                           "page_unreadable",
                                           "file_unreadable",
@@ -2127,7 +2157,49 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "union",
                                         "variants": [
                                           {
-                                            "type": "string"
+                                            "type": "object",
+                                            "fields": {
+                                              "fileId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "page": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "integer"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "section": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "text": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
                                           },
                                           {
                                             "type": "null"
@@ -2449,6 +2521,62 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "string"
                                       }
                                     },
+                                    "quoted": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "object",
+                                            "fields": {
+                                              "fileId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "page": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "integer"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "section": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "text": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "purposes": {
                                       "required": true,
                                       "value": {
@@ -2518,6 +2646,15 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                       "required": true,
                                       "value": {
                                         "type": "string"
+                                      }
+                                    },
+                                    "fileIds": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
                                       }
                                     },
                                     "findingId": {
@@ -2756,16 +2893,19 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                 "items": {
                                   "type": "object",
                                   "fields": {
-                                    "fileId": {
+                                    "sha256": {
                                       "required": true,
                                       "value": {
                                         "type": "string"
                                       }
                                     },
-                                    "of": {
+                                    "fileIds": {
                                       "required": true,
                                       "value": {
-                                        "type": "string"
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
                                       }
                                     }
                                   }
@@ -3033,20 +3173,28 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                     "status": {
                                       "required": true,
                                       "value": {
-                                        "type": "enum",
-                                        "values": [
-                                          "audited",
-                                          "draft",
-                                          "signed",
-                                          "registered",
-                                          "approved",
-                                          "working_revision",
-                                          "closed",
-                                          "management",
-                                          "final",
-                                          "outdated",
-                                          "marketing",
-                                          "image"
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "enum",
+                                            "values": [
+                                              "audited",
+                                              "draft",
+                                              "signed",
+                                              "registered",
+                                              "approved",
+                                              "working_revision",
+                                              "closed",
+                                              "management",
+                                              "final",
+                                              "outdated",
+                                              "marketing",
+                                              "image"
+                                            ]
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
                                         ]
                                       }
                                     },
@@ -3062,7 +3210,8 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                               "values": [
                                                 "complete",
                                                 "partial",
-                                                "unreadable"
+                                                "unreadable",
+                                                "conflicted"
                                               ]
                                             }
                                           },
@@ -3348,12 +3497,6 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "string"
                                       }
                                     },
-                                    "label": {
-                                      "required": true,
-                                      "value": {
-                                        "type": "string"
-                                      }
-                                    },
                                     "fileIds": {
                                       "required": true,
                                       "value": {
@@ -3387,11 +3530,31 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                               "value": {
                                                 "type": "string"
                                               }
-                                            },
-                                            "statement": {
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "conflicts": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "type": {
                                               "required": true,
                                               "value": {
                                                 "type": "string"
+                                              }
+                                            },
+                                            "fileIds": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "string"
+                                                }
                                               }
                                             }
                                           }
@@ -3433,9 +3596,13 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           "total_not_recomposed",
                                           "amended_original",
                                           "amendment_in_force",
+                                          "amendment_superseded",
                                           "amendment_not_in_force",
+                                          "amendment_conflict",
                                           "amendment_without_original",
+                                          "instrument_not_in_force",
                                           "clause_superseded",
+                                          "clause_not_in_force",
                                           "reading_conflict",
                                           "page_unreadable",
                                           "file_unreadable",
@@ -3570,7 +3737,49 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "union",
                                         "variants": [
                                           {
-                                            "type": "string"
+                                            "type": "object",
+                                            "fields": {
+                                              "fileId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "page": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "integer"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "section": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "text": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
                                           },
                                           {
                                             "type": "null"
@@ -3892,6 +4101,62 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                         "type": "string"
                                       }
                                     },
+                                    "quoted": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "union",
+                                        "variants": [
+                                          {
+                                            "type": "object",
+                                            "fields": {
+                                              "fileId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "page": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "integer"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "section": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              },
+                                              "text": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
                                     "purposes": {
                                       "required": true,
                                       "value": {
@@ -3961,6 +4226,15 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                       "required": true,
                                       "value": {
                                         "type": "string"
+                                      }
+                                    },
+                                    "fileIds": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
                                       }
                                     },
                                     "findingId": {
@@ -4199,16 +4473,19 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                 "items": {
                                   "type": "object",
                                   "fields": {
-                                    "fileId": {
+                                    "sha256": {
                                       "required": true,
                                       "value": {
                                         "type": "string"
                                       }
                                     },
-                                    "of": {
+                                    "fileIds": {
                                       "required": true,
                                       "value": {
-                                        "type": "string"
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string"
+                                        }
                                       }
                                     }
                                   }
@@ -5303,7 +5580,7 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                   ]
                                 }
                               },
-                              "quoted": {
+                              "text": {
                                 "required": true,
                                 "value": {
                                   "type": "string"
@@ -5451,7 +5728,49 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                             "type": "union",
                                             "variants": [
                                               {
-                                                "type": "string"
+                                                "type": "object",
+                                                "fields": {
+                                                  "fileId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "page": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "integer"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "section": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "union",
+                                                      "variants": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "null"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "text": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
                                               },
                                               {
                                                 "type": "null"
