@@ -79,13 +79,14 @@ import originMainRouting from "./routing-regression.origin-main.json";
 import foldedProbes from "./routing-regression.folded-probes.origin-main.json";
 
 describe("canonical ficha objective routing", () => {
+  // The replays compile thousands of plans; on shared CI runners they exceed the default 5 s, so each has 60 s.
   // Every routing test phrase of lotes 1 and 2 (all strings of the work-plan tests at origin/main), with and
   // without attachments, keeps the kind origin/main gave it: lote 3 never takes an existing route.
   it("keeps every lote 1 and lote 2 routing phrase on its origin/main kind", () => {
     const changed = (originMainRouting as {message: string; hasAttachments: boolean; kind: string}[])
       .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
     expect(changed).toEqual([]);
-  });
+  }, 60_000);
   // Each signal of the existing folded patterns (risk matrix, material, operation review, board, meeting, market,
   // company analysis, capital strategy) and explanation requests, joined to each lote 3 object, keeps the kind
   // origin/main gave it whenever origin/main gave it a route: lote 3 never takes a request another route owns.
@@ -94,7 +95,7 @@ describe("canonical ficha objective routing", () => {
       .filter((row) => row.kind !== "ambiguous" && row.kind !== "documents_to_case")
       .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
     expect(changed).toEqual([]);
-  });
+  }, 60_000);
 
   it.each([
     ["O que é caixa semanal?", "factual_question"],
