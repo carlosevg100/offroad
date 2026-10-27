@@ -316,6 +316,13 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r26: the same figures stated with two decimals keep the order and the sign as shown.
+    observe("adverse-leverage-stated-with-two-decimals-keeps-the-order", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];})),
+      {title: "A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027"}, (p) => ({title: pageOf(p, "alavancagem").title})),
+    observe("sensitivity-npv-stated-with-two-decimals-keeps-the-sign", withBoardSource("linha-embalagem", auroraInvestmentPacket({economyCaseFactor: "0.965"}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "2", "-0.01"];})),
+      {negative: true}, (p) => ({negative: pageOf(p, "linha").lines.some((l) => l.includes("com economia menor, R$ -0,01 milhão"))})),
     // Review r25: the variant by its components, the species by its registered label, and an order only as shown.
     observe("deferred-variant-with-double-capex-described-by-its-components", (() => {
       const plan = auroraPlanPacket({deferredCapexFactor: 2}) as unknown as Record<string, unknown>;
@@ -532,6 +539,13 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r26: an order or a sign that the shown figures do not keep.
+    ...([2, 3] as const).flatMap((turn) => [
+      [`adverse-leverage-2-459-shown-as-the-policy-2-5-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
+        () => build(turn, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.5"];})), "board_capital_display_order_lost:risk.leverage:0:lev-adv27"],
+      [`negative-npv-shown-as-zero-turn-${turn}`, () => withBoardSource("linha-embalagem", auroraInvestmentPacket({economyCaseFactor: "0.965"}) as unknown as Record<string, unknown>,
+        () => build(turn, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", "0.0"];})), "board_capital_display_order_lost:topic.project_sensitivities:0:npv-economy"],
+    ] as [string, () => unknown, string][]),
     // Review r25: a plan variant whose capex also changes is not a deferral.
     ...([2, 10] as const).flatMap((factor) => ([2, 3] as const).map((turn) => [`deferred-variant-with-capex-times-${factor}-named-a-deferral-turn-${turn}`, () => {
       const plan = auroraPlanPacket({deferredCapexFactor: factor}) as unknown as Record<string, unknown>;

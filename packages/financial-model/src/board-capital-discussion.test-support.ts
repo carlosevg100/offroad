@@ -64,8 +64,10 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) {
+export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
+  // Regressions only: the adverse measurement of December 2027 with another debt.
+  if (variant.adverseDebt) c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"))!.value = {type: "number", value: variant.adverseDebt};
   const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
   measurements.push({id: "dez26-gerencial", label: "dez26-gerencial", role: "test", limitIds: ["politica"], scenario: sc, date: c.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
     debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
@@ -75,12 +77,13 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
 export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
   economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string;
-  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string} = {}) {
+  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string; economyCaseFactor?: string} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
     : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy)
     : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears)
     : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd)
-    : variant.exactDeferral !== undefined ? c32WithExactDeferral(variant.exactDeferral) : c32PacketInput(), from = id(1001);
+    : variant.exactDeferral !== undefined ? c32WithExactDeferral(variant.exactDeferral)
+    : variant.economyCaseFactor !== undefined ? c32WithEconomyFactor(variant.economyCaseFactor) : c32PacketInput(), from = id(1001);
   // Regressions only: every case discounted at another cost of capital.
   if (variant.discountRate) for (const e of calibration.basis.entries) if (e.fieldPath.endsWith(".valuation.discountRate")) e.value = {...e.value, value: variant.discountRate} as typeof e.value;
   // The same analysis registered for another project: only the base case's label changes.
@@ -150,6 +153,19 @@ function c32WithDeferralLastPeriod(end: string) {
     if (e.fieldPath.endsWith(".valuation.adoptedTimes")) e.value = {type: "list", value: [...(e.value.value as string[]).slice(0, -1), new Decimal(10).plus(new Decimal(months).div(12)).toFixed()]};
   }
   deferred.endDate = end;
+  return f;
+}
+/** The C32 cases with economy-4's three operating series scaled by another factor (regressions only; 4/6 is the calibration). */
+function c32WithEconomyFactor(factor: string) {
+  const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
+  const P = Decimal.clone({precision: 60}), growth = (y: number) => new P("1.04").pow(Math.max(0, y - 2027)), k = new P(factor);
+  const series = (years: number[], g: (y: number) => Decimal) => ({type: "list" as const, value: years.map((y) => {const v = g(y); return v.eq(0) ? "0" : new P(v).times(1000000).toDecimalPlaces(8).toFixed();})});
+  const economy = b.overlay(base, "economy-4-factor", (c, i, years) => {
+    i.project.money.annualAvoidedOperatingCost = c("project.annualAvoidedOperatingCost", "currency", series(years, (y) => growth(y).times(30).times(k)));
+    i.project.money.annualVariableOperatingCost = c("project.annualVariableOperatingCost", "currency", series(years, (y) => growth(y).times("19.5").times(k)));
+    i.project.money.annualFixedOperatingCost = c("project.annualFixedOperatingCost", "currency", series(years, (y) => growth(y).times("4.5").times(k)));
+  });
+  f.input.cases[1] = {...f.input.cases[1]!, analysis: economy};
   return f;
 }
 /** The C32 cases with economy-4 discounted at another rate (regressions only): with the smaller economy, or with the

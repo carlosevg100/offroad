@@ -405,6 +405,19 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     const v = scalar(read(o.at[0], o.at[1]), o.at[1]);
     return o.year ? v.slice(0, 4) : v;
   };
+  const ordering = (op: string) => ["lt", "le", "gt", "ge"].includes(op);
+  // The value of an operand as the text shows it: a bound figure's display, read back in the field's own scale; any
+  // operand the text does not show (a constant, a source field) is its exact value.
+  const shownOperand = (o: BoardOperand, exact: string): string => {
+    if (typeof o !== "object" || !("slot" in o)) return exact;
+    const f = context.figures.get(bindings[o.slot]!);
+    if (!f || "pending" in f || !f.origin || ["calendar", "date", "label", "flag"].includes(f.unit) || o.year) return exact;
+    const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(f.display.replace(/\u2212/g, "-"));
+    if (!m) return exact;
+    const n = new Exact(m[0].replace(/\./g, "").replace(",", "."));
+    const scale = boardFieldOf(f.origin.methodId, f.origin.path)?.scale;
+    return (scale === "reais" ? n.times(1000000) : scale === "ratio" ? n.div(100) : n).toFixed();
+  };
   const list = (method: string, path: string) => {const xs = read(method, path); if (!Array.isArray(xs) || !xs.length) throw unverified(path); return xs as Record<string, unknown>[];};
   /** A per-period series of a source, by key; null when it does not resolve. */
   const boardSeriesOf = (x: BoardSeries): Map<string, string> | null => {
@@ -451,9 +464,36 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     return out;
   };
+  let shownLost: {slots: string[]; betweenTwoShown: boolean} | null = null;
   const holds = (c: BoardCondition): boolean => {
-    if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return compareBoard(a, c.compare[1], b);}
-    if ("every" in c) {const than = operand(c.than); return list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
+    if ("compare" in c) {
+      const a = operand(c.compare[0]), b = operand(c.compare[2]);
+      if (!compareBoard(a, c.compare[1], b)) return false;
+      if (ordering(c.compare[1])) {
+        const sa = shownOperand(c.compare[0], a), sb = shownOperand(c.compare[2], b);
+        if (!compareBoard(sa, c.compare[1], sb)) {
+          const slots = [c.compare[0], c.compare[2]].flatMap((o) => typeof o === "object" && "slot" in o ? [o.slot] : []);
+          shownLost = {slots, betweenTwoShown: slots.length === 2 && ["gt", "lt"].includes(c.compare[1])};
+        }
+      }
+      return true;
+    }
+    if ("every" in c) {
+      const than = operand(c.than), items = list(c.every[0], c.every[1]);
+      if (!items.every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than))) return false;
+      if (ordering(c.op)) {
+        // The members of the list shown in the same sentence are compared as shown with the reference as shown.
+        const sThan = shownOperand(c.than, than), listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
+        for (const [slot, id] of Object.entries(bindings)) {
+          const f = context.figures.get(id);
+          if (!f || "pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
+          if (!new RegExp(`^${listPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\[[^\\]]+\\]\\.${c.every[2]}$`).test(f.origin.path)) continue;
+          if (!compareBoard(shownOperand({slot}, f.origin.value), c.op, sThan))
+            shownLost = {slots: [slot, ...typeof c.than === "object" && "slot" in c.than ? [c.than.slot] : []], betweenTwoShown: false};
+        }
+      }
+      return true;
+    }
     if ("bind" in c) {const v = operand(c.to); if (Object.hasOwn(vars, c.bind) && vars[c.bind] !== v) return false; vars[c.bind] = v; return true;}
     if ("includes" in c) {
       const [m, path, field] = c.includes, want = operand(c.value);
@@ -646,34 +686,30 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     const top = xs.reduce((best, x) => x.value.gt(best.value) ? x : best, xs[0]!);
     return xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals);
   };
+  // Every order or sign the text asserts is evaluated twice, in one place: on the exact values and on the values as
+  // shown (the figure's display, back in the field's scale). Both must hold. When only the shown one fails, the
+  // sentence is refused naming the figures whose shown precision does not distinguish them (the reading may state
+  // them with more decimals, up to the formats the registry allows, two), or, for an order between two shown figures,
+  // the template's declared "praticamente igual" wording is used.
+  let shownText = template.text;
   template.when.forEach((c, i) => {
     let value: boolean | "undefined";
+    shownLost = null;
     // A condition that names a pending slot is undefined before anything is read.
     try {value = boardConditionSlots(c).some((x) => values[x] === null) ? "undefined" : holds(c);}
     catch (e) {if (e instanceof BoardIndefinite) value = "undefined"; else throw e;}
     if (value === "undefined") throw new Error(`board_capital_template_condition_undefined:${templateId}:${i}`);
     if (!value) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);
+    if (shownLost) {
+      const lost = shownLost as {slots: string[]; betweenTwoShown: boolean};
+      if (lost.betweenTwoShown && template.nearlyEqual) {shownText = template.nearlyEqual; return;}
+      throw new Error(`board_capital_display_order_lost:${templateId}:${i}:${lost.slots.map((x) => bindings[x]).join(",")}`);
+    }
   });
   const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [], unknownSpecies: string[] = [];
   // An instrument's species is named only by its registered label, equal to a species or a declared label of one;
   // otherwise the generic words of a capital-markets instrument and a gap of species. The instrument is the
   // recommended long one, the existing capital-markets one, or the new capital-markets one of a path.
-  // An order the text asserts between two shown figures must hold on the figures as shown; when the rounding makes them
-  // equal, the template's declared "praticamente igual" wording is used, and without one the sentence is refused.
-  let shownText = template.text;
-  template.when.forEach((c, i) => {
-    if (!("compare" in c) || !["gt", "lt"].includes(c.compare[1])) return;
-    const [x, , y] = c.compare;
-    if (typeof x !== "object" || typeof y !== "object" || !("slot" in x) || !("slot" in y)) return;
-    const fx = context.figures.get(bindings[x.slot]!), fy = context.figures.get(bindings[y.slot]!);
-    if (!fx || !fy || "pending" in fx || "pending" in fy || fx.unit !== fy.unit || ["calendar", "date", "label", "flag"].includes(fx.unit)) return;
-    const shown = (d: string) => {const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(d); return m ? new Exact(m[0].replace(/\./g, "").replace(",", ".")) : null;};
-    const a = shown(fx.display), b = shown(fy.display);
-    if (!a || !b) return;
-    if (c.compare[1] === "gt" ? a.gt(b) : a.lt(b)) return;
-    if (!template.nearlyEqual) throw new Error(`board_capital_display_order_lost:${templateId}:${i}`);
-    shownText = template.nearlyEqual;
-  });
   const speciesText = shownText.replace(/\{species:([a-z_]+):([^}]+)\}/g, (_m: string, form: string, selector: string) => {
     const plan = sourceOf("evaluate-financing-paths").packet as {readings?: {recommendation?: {longInstrument?: {id?: unknown}}}; result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
     const contributions = plan.result?.contributions ?? [];

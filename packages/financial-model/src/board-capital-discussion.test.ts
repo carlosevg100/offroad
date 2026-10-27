@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
   type BoardDeliberation, type BoardFigureDisplay, type BoardPage, type BoardSourceReading} from "./board-capital-discussion";
 import type {BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
+import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef, type BoardCondition} from "./board-capital-discussion-templates";
 
 const deliberation = (id: string, dates: string[]): BoardDeliberation => ({id, title: id, subject: `decidir ${id}`, recommendation: null, topicId: null, authority: "board", authorityBasis: null,
   deadlines: dates.map((date, i) => ({id: `d${i}`, date, action: "agir"}))});
@@ -201,5 +201,39 @@ describe("board discussion core", () => {
     }
     expect(undefinedCount).toBeGreaterThan(150);
     expect(constantOnly).toBeLessThan(20);
+  });
+  it("property: every kind of order or sign condition holds on the exact values and on the values as shown, or the sentence does not come out", () => {
+    const DT = "build-company-debt-table";
+    const packet = {result: {table: {reconciliation: {principal: "2.5"}, profile: {scheduleByYear: [{year: 2026, principal: "2.459"}, {year: 2027, principal: "1"}]}}}};
+    const sources = [{id: "t", methodId: DT, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}] as unknown as BoardSourceReading[];
+    const money = (path: string, nature: "balance" | "flow" = "balance") => ({type: "money" as const, from: [[DT, path]] as [string, string][], nature});
+    const fig = (path: string, value: string, display: string): BoardFigureDisplay => ({display, unit: "money", origin: {sourceId: "t", methodId: DT, path, value}});
+    const kinds: [string, BoardCondition][] = [
+      ["slot below slot", {compare: [{slot: "x"}, "lt", {slot: "y"}], claim: "x abaixo de y"}],
+      ["slot above slot", {compare: [{slot: "y"}, "gt", {slot: "x"}], claim: "y acima de x"}],
+      ["slot below a source field", {compare: [{slot: "x"}, "lt", {at: [DT, "result.table.reconciliation.principal"]}], claim: "x abaixo do campo"}],
+      ["slot below a constant", {compare: [{slot: "x"}, "lt", {value: "2.5"}], claim: "x abaixo da constante"}],
+      ["negative sign", {compare: [{slot: "z"}, "lt", {value: "0"}], claim: "z negativo"}],
+      ["positive sign", {compare: [{slot: "w"}, "gt", {value: "0"}], claim: "w positivo"}],
+      ["every member below a slot", {every: [DT, "result.table.profile.scheduleByYear", "principal"], op: "lt", than: {slot: "y"}, claim: "todos abaixo de y"}],
+    ];
+    let checked = 0;
+    for (const [name, condition] of kinds) for (const shownPlaces of [1, 2] as const) {
+      // Exact: x 2,459 below y 2,5; z -0,011 negative; w 0,011 positive. Shown with one decimal they tie or lose their sign.
+      const figures = new Map<string, BoardFigureDisplay>([
+        ["x", fig("result.table.profile.scheduleByYear[year=2026].principal", "2.459", shownPlaces === 1 ? "R$ 2,5 milhões" : "R$ 2,46 milhões")],
+        ["y", fig("result.table.reconciliation.principal", "2.5", "R$ 2,5 milhões")],
+        ["z", fig("result.table.reconciliation.principal", "-0.011", shownPlaces === 1 ? "R$ 0,0 milhão" : "R$ -0,01 milhão")],
+        ["w", fig("result.table.reconciliation.principal", "0.011", shownPlaces === 1 ? "R$ 0,0 milhão" : "R$ 0,01 milhão")]]);
+      boardTemplates["zz.order"] = {text: "Valores {x}, {y}, {z} e {w}.", use: ["page.line"], when: [condition],
+        slots: {x: money("result.table.profile.scheduleByYear[year=$a].principal", "flow"), y: money("result.table.reconciliation.principal"), z: money("result.table.reconciliation.principal"), w: money("result.table.reconciliation.principal")}};
+      try {
+        const render = () => renderBoardRef("zz.order|x=x|y=y|z=z|w=w", {figures, deliberations: [], nextMeetingDate: null, sources});
+        if (shownPlaces === 1) expect(render, name).toThrow("board_capital_display_order_lost:zz.order:0");
+        else expect(render().display, name).toContain("Valores");
+        checked++;
+      } finally {delete boardTemplates["zz.order"];}
+    }
+    expect(checked).toBe(kinds.length * 2);
   });
 });

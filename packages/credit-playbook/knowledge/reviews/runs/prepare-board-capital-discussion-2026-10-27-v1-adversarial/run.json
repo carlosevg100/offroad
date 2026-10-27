@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T22:40:46.051Z",
-    "finishedAt": "2026-10-27T22:43:06.150Z"
+    "startedAt": "2026-10-27T23:14:06.501Z",
+    "finishedAt": "2026-10-27T23:16:36.376Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,38 @@
       "passed": true
     },
     {
+      "id": "adverse-leverage-2-459-shown-as-the-policy-2-5-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5eb77d8287d9cf73c503e038850f63ffc3bbc24da5f96cc30963e23e314ca307",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "negative-npv-shown-as-zero-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "683aaa698defa7bc3b7f706b26e7a1a214542810e8b3ffa62dcf0007fb1910e9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "adverse-leverage-2-459-shown-as-the-policy-2-5-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d837cdf9e80655847d2c168abe0ae13a88a662c924887b9d523b906b4fb9b311",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "negative-npv-shown-as-zero-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7d8b186ac3a27a9733fd1b53137048c95f0186b667e7b9d8586edb0bfff098aa",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "deferred-variant-with-capex-times-2-named-a-deferral-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1159,6 +1191,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "562806b304398bc17cceb46a1183e71e9477e99800511f4dc50517dd7962347f",
+  "evidenceFingerprint": "801e334c7f09a93b217b5053107cd35f45028ba80f071494a4f386ba80286edf",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

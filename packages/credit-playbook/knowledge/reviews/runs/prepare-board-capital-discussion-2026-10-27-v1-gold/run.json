@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T22:40:46.051Z",
-    "finishedAt": "2026-10-27T22:43:06.149Z"
+    "startedAt": "2026-10-27T23:14:06.501Z",
+    "finishedAt": "2026-10-27T23:16:36.375Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,22 @@
       "passed": true
     },
     {
+      "id": "adverse-leverage-stated-with-two-decimals-keeps-the-order",
+      "expectation": "{\"title\":\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027\"}",
+      "observed": "{\"title\":\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027\"}",
+      "inputFingerprint": "a4739e7b745e97e6fec0e745311a58cc6d9b0365c26dd68306258b491de1e84e",
+      "outputFingerprint": "66d08bb7dbf81609d762c3614a3aa26d134d5b8451a24dee2ffe74348679c0c5",
+      "passed": true
+    },
+    {
+      "id": "sensitivity-npv-stated-with-two-decimals-keeps-the-sign",
+      "expectation": "{\"negative\":true}",
+      "observed": "{\"negative\":true}",
+      "inputFingerprint": "6d37e9a823b69cee64b9e3cea2e153b94f39227ba9a606c7b523d227b4ff6c63",
+      "outputFingerprint": "8b8bf2d8e99db62992400137b7b6278cbc86a5ec9f65f29e684c232c3aa990e3",
+      "passed": true
+    },
+    {
       "id": "deferred-variant-with-double-capex-described-by-its-components",
       "expectation": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
       "observed": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
@@ -567,6 +583,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "80632e4e7310e83488fa611c8ca8d1eedb2efd738c163597b301a973855b3c48",
+  "evidenceFingerprint": "80b7b2d752864b49ba7e7ae83a39b63e4ca86cff9b394b77528aeaea105ac91a",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

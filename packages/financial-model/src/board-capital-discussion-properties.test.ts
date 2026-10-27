@@ -5,7 +5,7 @@ import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardConceptAttempts, boardDeferralReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, parseBoardTextRef} from "./board-capital-discussion-templates";
 import {boardConditionSlots} from "./board-capital-discussion";
 
@@ -562,6 +562,12 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   // Orders as shown: a text that says one shown figure is above or below another says so of the numbers as shown.
   for (const t of texts) {
     const num = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
+    const policy = /abaixo da política de (-?[\d.,]+)x nos cenários avaliados, com (-?[\d.,]+)x no adverso/.exec(t);
+    if (policy && !num(policy[2]!).lt(num(policy[1]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
+    const negative = /^O VPL fica negativo em cada sensibilidade: (.*)$/.exec(t);
+    if (negative && [...negative[1]!.matchAll(/R\$ (-?[\d.,]+) milh/g)].some((m) => !num(m[1]!).lt(0))) bad.push(`sign_as_shown:${t.slice(0, 60)}`);
+    const covenantBelow = /alavancagem fica em (-?[\d.,]+)x, abaixo do covenant de (-?[\d.,]+)x/.exec(t);
+    if (covenantBelow && !num(covenantBelow[1]!).lt(num(covenantBelow[2]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
     const above = /rende (-?[\d.,]+)% ao ano, acima do custo de capital de (-?[\d.,]+)%/.exec(t) ?? /retorno de (-?[\d.,]+)% ao ano fica acima do custo de capital de (-?[\d.,]+)%/.exec(t);
     if (above && !num(above[1]!).gt(num(above[2]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
   }
@@ -1140,6 +1146,33 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       const forged = structuredClone(p), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!;
       page.title = "A linha de embalagem rende 16% ao ano, acima do custo de capital de 16% ao ano";
       expect(oracle(forged, [{packet: investment}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("order_as_shown:"))).toBe(true);
+    }
+  });
+  it("regression r26: every order or sign holds on the values as shown, every and constants included (full path, oracle not vacuous)", () => {
+    // Adverse leverage of 2,459 against the policy of 2,5x: with one decimal both show 2,5x.
+    const covenant = auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>;
+    const lev = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", places, stated];};
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, lev("1", "2.5")))).toThrow("board_capital_display_order_lost:risk.leverage:0:lev-adv27");
+      const p = withBoardSource("covenant", covenant, () => full(turn, lev("2", "2.46")));
+      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027");
+      expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      const forged = structuredClone(p), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!;
+      page.title = page.title.replace("2,46x", "2,5x");
+      expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("order_as_shown:"))).toBe(true);
+    }
+    // A sensitivity NPV of -11.532 reais: in millions with one decimal it shows R$ 0,0 milhão, not negative.
+    const investment = auroraInvestmentPacket({economyCaseFactor: "0.965"}) as unknown as Record<string, unknown>;
+    const npv = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", places, stated];};
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("linha-embalagem", investment, () => full(turn, npv("1", "0.0")))).toThrow("board_capital_display_order_lost:topic.project_sensitivities:0:npv-economy");
+      const p = withBoardSource("linha-embalagem", investment, () => full(turn, npv("2", "-0.01")));
+      const line = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines.find((l) => l.startsWith("O VPL fica negativo"))!;
+      expect(line).toContain("com economia menor, R$ -0,01 milhão");
+      expect(oracle(p, [{packet: investment}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      const forged = structuredClone(p), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!;
+      page.lines = page.lines.map((l) => l.replace("R$ -0,01 milhão", "R$ 0,0 milhão"));
+      expect(oracle(forged, [{packet: investment}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("sign_as_shown:"))).toBe(true);
     }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
