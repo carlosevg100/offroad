@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T15:44:34.956Z",
-    "finishedAt": "2026-10-27T15:44:34.956Z",
-    "commit": "61c2cbff"
+    "startedAt": "2026-10-27T15:56:28.371Z",
+    "finishedAt": "2026-10-27T15:56:28.371Z",
+    "commit": "d288fe6f"
   },
   "modelCalls": 0,
   "cases": [
@@ -26,588 +26,612 @@
       "id": "inventory-item-by-item-matches-the-answer-key",
       "expectation": "[]",
       "observed": "[]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "counts-30-1-2-3-2-21",
       "expectation": "[30,1,2,3,2,21]",
       "observed": "[30,1,2,3,2,21]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "copy-found-by-hash",
       "expectation": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
       "observed": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "versions-resolved-none-deleted",
       "expectation": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
       "observed": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "amendment-is-the-text-in-force",
       "expectation": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
       "observed": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "seven-decision-findings-in-order-with-source",
       "expectation": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
       "observed": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "debt-is-130-not-140",
       "expectation": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
       "observed": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "unreadable-page-and-photo-not-invented",
       "expectation": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
       "observed": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "gaps-by-purpose-in-the-key-order",
       "expectation": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
       "observed": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "one-question-only-the-user-knows",
       "expectation": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
       "observed": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "no-numeric-analysis-nothing-validated",
       "expectation": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
       "observed": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     },
     {
       "id": "renaming-every-file-changes-nothing",
       "expectation": "true",
       "observed": "true",
-      "inputFingerprint": "729cf91cdd577ffe6669b1c6e5b1aa40bdb98542dda266b572e65fcf1747d1ac",
-      "outputFingerprint": "4e35ce8b4c5448b22a31aff66715a35dbc59761c8e24a98282ef093179b2991f",
+      "inputFingerprint": "151891b15631561087a34804adc5379cf7e614d45f7b128df099a8017c704e56",
+      "outputFingerprint": "06decbf0e6d25d0f0a4674b1d3af55993e1edf42be1ad09d32206adc03e4a9cf",
       "passed": true
     },
     {
       "id": "misleading-names-do-not-move-the-version",
       "expectation": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
       "observed": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
-      "inputFingerprint": "cef4cc59303e3ef3e854e4877778056322ba4cb29b4b11f96cd1fd73277ba9f2",
-      "outputFingerprint": "dd2a14bb31fa2503874fff2751c9abbb00fd5c4e9cce4bde8e6505732e992b25",
+      "inputFingerprint": "8197d0428dcdb431c90f3982e7cc40338ed8c40ea9f0ab20cf07b62568bb882c",
+      "outputFingerprint": "fb33459e50ac2805eb510ba4051935b2b72bfc2706d062080c0fdb6a35d5af9e",
       "passed": true
     },
     {
       "id": "later-draft-does-not-beat-the-audited",
       "expectation": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
       "observed": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
-      "inputFingerprint": "b7cb7c3221712a0bb93bf05b59600653a41b35af81c1c93394111f8b5a367342",
-      "outputFingerprint": "bae2f32e17fab42ff0c78e99f4aa920a4ee1b486e774b7cde150bd0910677e79",
+      "inputFingerprint": "c57f13a83570b9c897e56707e513e5f1e531da27566879d3f4fbc25c961c3a58",
+      "outputFingerprint": "43814a6616e80aef9345de63f0832ab5423df042b23b031b51067b62c6ceb52d",
       "passed": true
     },
     {
       "id": "turn-2-updates-only-the-affected-rows",
       "expectation": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
       "observed": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
-      "inputFingerprint": "32186991f8f0daffa92518dc1de9b62c37ae0f381d1285d5d2743fee10715103",
-      "outputFingerprint": "537de8af7595bc19bc3517367d8323708aff362e49d737b527f7e48d6fcf3078",
+      "inputFingerprint": "af2dcf1644bcdadbe17555180ec9295075fcb6c952cda00b53dac728a30aab83",
+      "outputFingerprint": "02ad1d322c54f54c9a60a9092c96ca1d6fca95398360b768dc5a58f76adefc01",
       "passed": true
     },
     {
       "id": "turn-2-page-7-read-and-semester-closes-month-by-month",
       "expectation": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
       "observed": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
-      "inputFingerprint": "32186991f8f0daffa92518dc1de9b62c37ae0f381d1285d5d2743fee10715103",
-      "outputFingerprint": "537de8af7595bc19bc3517367d8323708aff362e49d737b527f7e48d6fcf3078",
+      "inputFingerprint": "af2dcf1644bcdadbe17555180ec9295075fcb6c952cda00b53dac728a30aab83",
+      "outputFingerprint": "02ad1d322c54f54c9a60a9092c96ca1d6fca95398360b768dc5a58f76adefc01",
       "passed": true
     },
     {
       "id": "turn-2-informed-fact-with-author-and-date",
       "expectation": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
       "observed": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
-      "inputFingerprint": "32186991f8f0daffa92518dc1de9b62c37ae0f381d1285d5d2743fee10715103",
-      "outputFingerprint": "537de8af7595bc19bc3517367d8323708aff362e49d737b527f7e48d6fcf3078",
+      "inputFingerprint": "af2dcf1644bcdadbe17555180ec9295075fcb6c952cda00b53dac728a30aab83",
+      "outputFingerprint": "02ad1d322c54f54c9a60a9092c96ca1d6fca95398360b768dc5a58f76adefc01",
       "passed": true
     },
     {
       "id": "variation-organize-only",
       "expectation": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
       "observed": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
-      "inputFingerprint": "2cc7124d938a2fde9563a1db03def67b90fd829ccd851f3ebb820ad6d1e9cbb5",
-      "outputFingerprint": "f38cde43f92b59c5d317146f173aee0349f87e24882de4d697def72408c2aba9",
+      "inputFingerprint": "8b4757a26f1efcd5d7b8d4fecba49595b569c53e44a7b152f0fb0d7983e6d43a",
+      "outputFingerprint": "fffa45434c2117f9e134277249e25d8c57b8d4f820186b7ab71c3d5eb4f49fe1",
       "passed": true
     },
     {
       "id": "variation-for-the-debt-discussion",
       "expectation": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
       "observed": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
-      "inputFingerprint": "0b5c0c1306e8f191c28426d7307587aaef685323e29ba3f769e0ec683965f2ed",
-      "outputFingerprint": "c4fbe1dcb5a05fdc6c82a3df6c8ab042f3443d4011044210754f0f870fa843de",
+      "inputFingerprint": "c6ff9b96e6b8abb03cb5c32e27677633152fc32efc485df6c0695c035596f323",
+      "outputFingerprint": "b3ea863a09a16236ffac956e5581473e589dd1f75ca2dba3afb8d45dae46400d",
       "passed": true
     },
     {
       "id": "variation-empty-vault-no-decisions",
       "expectation": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
       "observed": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
-      "inputFingerprint": "c3730bf48047686465cd53b58d527786807619f1c611fb3dc53765406865beba",
-      "outputFingerprint": "0bc951947232d1d2efca68b95881893e77394c59f8830b3201e665952cb744f3",
+      "inputFingerprint": "7504adcdc57a2f5a128641e85dfb69408f6996eae5185a1252a530c8240c538b",
+      "outputFingerprint": "5f62af894bcc5ed34c5dd5728c6eb4cbf2e4bec2cc26b1330f3e84b8b78694a6",
       "passed": true
     },
     {
       "id": "variation-several-companies",
       "expectation": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"aurora-log\",\"pastificio-serra\",\"nao-identificada\"],\"groups\":[[\"f01\",\"aurora\",\"aurora\"],[\"f04\",\"aurora-log\",\"aurora\"],[\"f31\",\"pastificio-serra\",null]],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
       "observed": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"aurora-log\",\"pastificio-serra\",\"nao-identificada\"],\"groups\":[[\"f01\",\"aurora\",\"aurora\"],[\"f04\",\"aurora-log\",\"aurora\"],[\"f31\",\"pastificio-serra\",null]],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
-      "inputFingerprint": "1748535fa972cb75e520de402d15563522daaddd2bc2b12c60bc8d6cbe6e9ecd",
-      "outputFingerprint": "e4b872aced2f3f8c8059fbf9260cbfb7425382e177a2f41ec564111a11b31087",
+      "inputFingerprint": "71d340f9aace3fe58d5b2f612328c3c439bc8b9ec6bf161555f79e211f14bfd9",
+      "outputFingerprint": "39fb142db66af53f26f8a92e2bd99f34a7f895c56c267ba97204f37c8c89f446",
       "passed": true
     },
     {
       "id": "unresolved-month-blocks-the-semester-sum",
       "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
-      "inputFingerprint": "4bf3c32a02033c7e8e169e5e0c1dde67209284fa9dd5ccb30ed5209ab3010929",
-      "outputFingerprint": "f39c06466b53f104cebf67048c486cb9e2670c883be8af8ecd6329723cae7703",
+      "inputFingerprint": "3ba6c0242f0696c9bb92c3ef7e95288bfd1507ce0d6cbff3d2fdca919cd4371e",
+      "outputFingerprint": "7d6b67ec03c7cc3afb3e1808b2a45dcf98b42e2ce54185932768358de3dc47e3",
       "passed": true
     },
     {
       "id": "draft-amendment-changes-no-term",
       "expectation": "{\"effectiveTexts\":[],\"finding\":\"amendment_not_in_force\",\"decisionFindings\":6,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"effectiveTexts\":[],\"finding\":\"amendment_not_in_force\",\"decisionFindings\":6,\"policy\":\"Política de no máximo 2,5x.\"}",
-      "inputFingerprint": "411071473cf3addb197e8c9b6144b07e0d7c2c48050fff9f5687f90bd238c177",
-      "outputFingerprint": "42a63e01b140ef8d29f571fd8343e6ba5fb2fe82d9556f9144cd0d57dbe93c0b",
+      "inputFingerprint": "4bf28895871d994575a839a5fc5ed155405e1b995900076281a5c58663663e2f",
+      "outputFingerprint": "6cf5b5905be54d2ad0ea8c0ec23afe114c65e762e1850ef39774c066ec7e410d",
       "passed": true
     },
     {
       "id": "replaced-notice-is-history-not-a-deadline",
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
-      "inputFingerprint": "9126ec3baea1774e77eb86a8a1b1654c652f02855fec72d57cd46130c3c8f33f",
-      "outputFingerprint": "3c91ecdb69dcb65c3041263039a88c598fa00560021fd5d628099d6d4b1aa198",
+      "inputFingerprint": "2e4459fa27b0429f6056af4991e9f929e16da19c50de4aa9bd26446f6a88f1e3",
+      "outputFingerprint": "0e13bb64a2f5110cf271e3e7325ff4b7d23b776962f192e8a1abace65da393a0",
       "passed": true
     },
     {
       "id": "same-hash-read-two-ways-is-declared",
       "expectation": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "observed": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
-      "inputFingerprint": "b2f97cbc26706c83ac6ee755c4a5de3dc4605724d230222f04122f2194c4ad1d",
-      "outputFingerprint": "99880cfbe8092637ce0bf375280348634432957dc5109bcdf407ca588ac2aff0",
+      "inputFingerprint": "480371e7d15504b694cafbc773ede455757002fbf51436d01ff7b320640f2d6e",
+      "outputFingerprint": "de61df0071f1668f78365def0bafe9e971156b2d00a1ae7a72bb6b66648ef493",
       "passed": true
     },
     {
       "id": "approved-amendment-is-not-in-force",
       "expectation": "{\"effectiveTexts\":[],\"code\":\"amendment_not_in_force\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"effectiveTexts\":[],\"code\":\"amendment_not_in_force\",\"policy\":\"Política de no máximo 2,5x.\"}",
-      "inputFingerprint": "69c6968eacfaefd7b5b4c8fff91bab9bef4513d8f9c16f370c546504df291403",
-      "outputFingerprint": "d1ebb7c6d62d99a56f9f7abb316eb5fe41e32fac7d33b6d7eb8894dbaf6ba00b",
+      "inputFingerprint": "3d00555d6c6a983c90eaa5e9bd535602e7f8cd07c0ff57a44efe24f584c0d110",
+      "outputFingerprint": "6ff4b4888426f48df51d68434e69dc0ec472a145f103b0aa0c6a122c1b6f44c9",
       "passed": true
     },
     {
       "id": "tied-amendments-have-no-winner",
       "expectation": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
-      "inputFingerprint": "1e7b9d93ce75a97420f6dd75cecd3c14bbb522a3a33c89a9bcb84a3a1797bc64",
-      "outputFingerprint": "26cc999963a85c85826e35aad7d0febe9cffd5a5d283649d1a20957b83bb16cd",
+      "inputFingerprint": "2c5d2a9cd5875cd554050b3f2ffdbe2cd12fe6d181d969f1027ad3a4fa19e5aa",
+      "outputFingerprint": "f99e028b625a9056dee7900c13df2a7e9e4e345e68c883198a0a67d77b5026d1",
       "passed": true
     },
     {
       "id": "later-cut-is-the-covenant-in-force",
       "expectation": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
       "observed": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
-      "inputFingerprint": "339214df7e426ef60282d317964fe8b4619e18af7a332b99a54d0762040dd0f5",
-      "outputFingerprint": "c9e98b39f6be695518ff976abaee5e0c0420ee411c6371248570a38ee843bc79",
+      "inputFingerprint": "89a219f42e458af8853fcc57c63a68b704c1b3305640242ab3fedaa5509970be",
+      "outputFingerprint": "16014b34579ba894512ea94920e0539a309f6ac179e2c21d98a8d91606ba3bac",
       "passed": true
     },
     {
       "id": "substitutes-of-one-hash-read-two-ways-are-suspended",
       "expectation": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
-      "inputFingerprint": "44ccd8650b0c9d202b4f88aaa39e4bb79dba112ba8adfc1347f98e838c85c976",
-      "outputFingerprint": "0f674792fbf2581f1f52d274dd33ef2c14e371c17d4fe6f47b62d521d68aefdc",
+      "inputFingerprint": "59acb888e8749ba6f25c8d5413a093382ad06d76e2437ae7bdc07b7b2fbc412f",
+      "outputFingerprint": "19fe32271cbb1a7dd6a287f9f134fa683348b3015e9e34263eb5a85cff7c6f8a",
       "passed": true
     },
     {
       "id": "text-only-tie-is-a-conflict",
       "expectation": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
       "observed": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
-      "inputFingerprint": "13a5f85c6f0a8bb022e3595d2f2e091c7725cf435a0c932223d46227a2f68f7d",
-      "outputFingerprint": "a0069156e28470bcc44f2e3c39fee7744162c7216b5193c82708b93865a738de",
+      "inputFingerprint": "f533e672b024fd61fd9a37e5e3a9adbd057ab006161c27385bfe33174dbcb9da",
+      "outputFingerprint": "390031a01dfd3ccc5508dbb9a28a80d13cca3d1e023b18a5b30e31fb85bcd0d9",
       "passed": true
     },
     {
       "id": "conflict-resolved-later-is-history",
       "expectation": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
       "observed": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
-      "inputFingerprint": "38554801938a7bda0cc65581723c5289a5b5284f9b5bba4b73e2af8047aeaad5",
-      "outputFingerprint": "f6c78232ce1e22f63df8e61202ac3abf1c377552281efb86928d7df0c22f6c56",
+      "inputFingerprint": "86d4c21ec292630fb44e0cae70621bb9e2f30aa299923433a616c18b07cf6579",
+      "outputFingerprint": "95d1310115b4bbaf4a62ebf64ade8dfee99b7efee5161e6a7b79b1bd72e225f6",
       "passed": true
     },
     {
       "id": "competing-originals-without-winner",
       "expectation": "{\"effectiveTexts\":[],\"conflict\":true,\"f19\":\"amendment_not_in_force\",\"ids\":true}",
       "observed": "{\"effectiveTexts\":[],\"conflict\":true,\"f19\":\"amendment_not_in_force\",\"ids\":true}",
-      "inputFingerprint": "912624680252960ff03cd4bb846929d506519d9e208769306b377bf67b99c167",
-      "outputFingerprint": "228fd6009e697d5131a596041a8243866258e78b2a2e52ed9c1b83c5d3fb5bda",
+      "inputFingerprint": "a89482a2a5eacb7bd78672ea6d2a83ae053b62be8f8c97448a7c168b51d4bf86",
+      "outputFingerprint": "dffbe0d0f2f5f5f3a9407db3069e4774c66e25732324602a509746e3b4c0ec46",
       "passed": true
     },
     {
       "id": "position-tie-broken-by-version",
       "expectation": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
       "observed": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
-      "inputFingerprint": "235420bff9f2fa8d082b958547cd0d73e5eb800e354dfadd5ad2cd27fe8cb6ce",
-      "outputFingerprint": "0501d44990cbef8245c09c322ed7292b8c5e9f677aaf83a5b6ec8abc2b795dd8",
+      "inputFingerprint": "ab6f7c66181e173f783d7ab7e6e9fcf45ebff0d8d2b0f7db40c71c5d3dbb726f",
+      "outputFingerprint": "9f338988a6b32274a94785c189ca2ddc7b1011fd84473847386b77871caf790f",
       "passed": true
     },
     {
       "id": "covenant-without-its-limit-text-has-no-effect",
       "expectation": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
       "observed": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
-      "inputFingerprint": "1c2d8ad224ba60819c65d54cbe35697b95658988b8708d05a8d66717d0c46f33",
-      "outputFingerprint": "e292ff6d763fec8980e52ea1a8871a83973e9c04d8d3fd71c698f448c75f472c",
+      "inputFingerprint": "a44112838a5d8a34722e39961ffeac615906767938c1737c50e53269ceee15b4",
+      "outputFingerprint": "084e7d26ecb8fcebf64a34161281b0bec23a87cc4e7334f4541bd3e111e1b1f7",
       "passed": true
     },
     {
       "id": "two-covenants-in-one-amendment-are-a-conflict",
       "expectation": "{\"covenantInForce\":false,\"conflict\":true}",
       "observed": "{\"covenantInForce\":false,\"conflict\":true}",
-      "inputFingerprint": "a852851537e42bbfa242297d838f35af1776f66da5e2f2b52e5c0c7f3cc9f0cb",
-      "outputFingerprint": "223d3b1c946fb5327f07c52a11404867de9b40bf6f4c966e6ca6f096fdd5b84b",
+      "inputFingerprint": "90e826753b3a90af6089abb4717127efd17045045b07437f1fe5fc5ecb778b63",
+      "outputFingerprint": "97d33f5e6436222c5d4473b2a759e0696e70a5b8402296e9a54e668c20205e5f",
       "passed": true
     },
     {
       "id": "recovered-covenant-joins-the-text-in-force",
       "expectation": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
       "observed": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
-      "inputFingerprint": "fd89f99e70905eae961a8e2a83c1750e2e86d0fd764cb939d6254980a10f6802",
-      "outputFingerprint": "55a4506177741dfa1bcd90e741124822c7e755d32b367d68550635ff3784432b",
+      "inputFingerprint": "38d66c2b12ecb302f43816485eb374363d399cc831cd9b5d01ef6e63c7384609",
+      "outputFingerprint": "db519dce0661a8b99a669c4d55036b929deb4804bddeaf3dc820e7b61188fffd",
       "passed": true
     },
     {
       "id": "recovered-notice-does-not-revive-a-replaced-deadline",
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
-      "inputFingerprint": "87b315bf902a702e8e5123f7c720aa52502714efb0d0e9b52e65d47468c377c2",
-      "outputFingerprint": "8162dbd65a44720a46f3668f422f90a4d187e9c07da85725bde45664bf8a7705",
+      "inputFingerprint": "e6f9cd653d3983bc775132d613e1916b2fb89ea5c622749715e23c79a56028cb",
+      "outputFingerprint": "50da03bf229d9c149b219498c42e7fd924c5a1e0ecf5ba4bf8d54e83cf1ea09f",
       "passed": true
     },
     {
       "id": "unread-predecessor-is-not-absent",
       "expectation": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
       "observed": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
-      "inputFingerprint": "c423e7f08b047583a15a01af7afa140e9ce0bd5ce1cfc742b02c82208d5a4236",
-      "outputFingerprint": "fb6ae7b5018ecd7159a0d86e16f54c47a63caa8beea94c673bd16331adc33b51",
+      "inputFingerprint": "e4fe07223d1ea4f56ed327440b9930b9e38cb56fb1315129b0df6b758a62bff3",
+      "outputFingerprint": "828b6d65491306f1d07dc9a5192701e8833bacff13daf35f24b3985f04a5f4a4",
       "passed": true
     },
     {
       "id": "future-amendment-is-not-current",
       "expectation": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
-      "inputFingerprint": "5f223125dd2f8c7bbc60dd720d8d4f850e7a1283bb870f45f048f3015cfa8f6b",
-      "outputFingerprint": "8fe42cf1e08680554dc56e3effa22364e4ed702927d1b25068a182a4d93d2f14",
+      "inputFingerprint": "12a80e3d06d1aa766cd85f067b6e0ef9e0bfd94539c83d16b47896d303407624",
+      "outputFingerprint": "2cae7b3796a4d982adedfc9d8486ba0828c7c1847b9f1fabc6c40ff1897994d8",
       "passed": true
     },
     {
       "id": "unread-substitutive-clause-keeps-no-limit-in-force",
       "expectation": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
-      "inputFingerprint": "870ae4a41bd266a3ff2e65607434ecc845f5b5be464c892aaf7ee8a526a66cd0",
-      "outputFingerprint": "5fe4fa113fc2009c123791b3a5c4ab9805b7733ad269cec172feaee28a13b464",
+      "inputFingerprint": "74cf13cd89df039deaea65795b8bf91c725bdad36c84f9bd70504250ae589213",
+      "outputFingerprint": "ca3f987ce035d695041f14ab3977f83bf5648a3ddda77b4879b94b0c556605ae",
       "passed": true
     },
     {
       "id": "page-copies-differing-in-the-debt-table-leave-the-page-unread",
       "expectation": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
-      "inputFingerprint": "feff3335c3cca9dc27c6745b51cb23d7ffcf1d784ee194d66bc2cc1c569a7f58",
-      "outputFingerprint": "29d5655729e1c35fef98e58bbf0ddc9389cb86fb24b80cfbb11d422fe8200a95",
+      "inputFingerprint": "f9ea233d754937d1a1ec14afe4c47891fa611f1aa56fe086682f6f7c24862943",
+      "outputFingerprint": "10880e06c3ef92574bcc5f3c4babb0406c33e9234c86b2b320f538861b0ac7ca",
       "passed": true
     },
     {
       "id": "amendment-without-a-read-original-has-no-deadline",
       "expectation": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
       "observed": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
-      "inputFingerprint": "2327aaa0111ee8a357082e4ba573e4cd8cb96b63276ded2831119f86ec7f9edd",
-      "outputFingerprint": "e05f65a6a046e062ce8d922ef76665b994e45dc03c514870c30c2092b97401e4",
+      "inputFingerprint": "71cf050ac77d9fda31be8d5b64943a918ac0806238cc11e5d6ff7045868c28fd",
+      "outputFingerprint": "440fd1a836e870b86294b6b309f9e0fe1dc1acc2fb0b0782b4e524fee2bd14d2",
       "passed": true
     },
     {
       "id": "future-board-minutes-have-no-effect",
       "expectation": "{\"policy\":false,\"future\":true}",
       "observed": "{\"policy\":false,\"future\":true}",
-      "inputFingerprint": "dfc29d0738bb2102898e670697d0c4c232a35f33c647fd90b861e7bb789100d9",
-      "outputFingerprint": "d669672eef937be1d1b8a098f1c5be2127a07058969bc1cfd97c81fbb75ed956",
+      "inputFingerprint": "2f132812f29bda01f4dbbfb289ebc858021803bf04b366b6461a4b5b04db384e",
+      "outputFingerprint": "04c8ce107b9dd60d5b90ecc32f97c61df719cd8c05bedd33b3bce10a4d00fa2c",
       "passed": true
     },
     {
       "id": "concurrent-values-of-one-metric-are-a-conflict",
       "expectation": "{\"check\":\"not_run\",\"conflict\":true}",
       "observed": "{\"check\":\"not_run\",\"conflict\":true}",
-      "inputFingerprint": "cd3814b33ec8f4bf10cdf4b73daa700145a31737bfbc1d697532b10a9d28a8eb",
-      "outputFingerprint": "98cb133e310bf149d1c3c8d12d525d5b3fcc181f4554cf9eb49622332945d68c",
+      "inputFingerprint": "f6fb982615d5265722841011cf806ad9bf0e338cbea7386a3b69d2f40ef8ead1",
+      "outputFingerprint": "84fb6e1d72e4820f6e619a8b0ee3675d187659bc76ff360c791f9897bd21d16e",
       "passed": true
     },
     {
       "id": "side-by-side-is-for-budgets-only",
       "expectation": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
       "observed": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
-      "inputFingerprint": "625522aaf7e13fc70bb58d8c8485b1dd65b9bda357a3d32dca5f86e3fba14bc7",
-      "outputFingerprint": "37d8e6a40e97336c83cdb7482309d6d2793aa29d8d579ed9c9aafb7e94e53076",
+      "inputFingerprint": "8ffb38ccf6e1a73173dcc71cf0c60ebdbf46c6762625b700fc5f7039ff3c5ce5",
+      "outputFingerprint": "1712292381cdd5c4680d1691604fac76ec976ea1266fd6e893edcbd65982d419",
       "passed": true
     },
     {
       "id": "future-position-blocks-the-debt-check",
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
-      "inputFingerprint": "d55b53d53549c0bc045a08c0bd0f17cece95f4a82bf7cab6819cc912462a6e30",
-      "outputFingerprint": "c7cd759a336b73eae6b72165306f64a5165b02f8eaee2172a03c513ced6222da",
+      "inputFingerprint": "d065193b9647a676bca38952e994dbfb43d042e90a3007f3770bb60f62c44f1e",
+      "outputFingerprint": "9af58f12f2ff1ae6fe165d3ac5902b0f1f3ff62e4b62c05c8556c7a505ee1966",
       "passed": true
     },
     {
       "id": "unreadable-original-blocks-the-text-in-force",
       "expectation": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
       "observed": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
-      "inputFingerprint": "9f5a22ae9c2b62de4061558ba283dd4af212119f963f56c4c0801e60abb9a23e",
-      "outputFingerprint": "58bc47549ccd429756657ffc079d818dd5a6cf7c445889a3f2bc74949e1d6c39",
+      "inputFingerprint": "2d96f06c4d3596176484c4b96d8b028eec66dae389767acb4321745b48d590b3",
+      "outputFingerprint": "9d82962fa2494bcce2fe027d2718c7317eb6f69b8e770493c0b30b3c5483f828",
       "passed": true
     },
     {
       "id": "update-after-the-reading-date-is-future",
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\"}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\"}",
-      "inputFingerprint": "4419131919a89198dd7673faab9054a5eff4409c323ae10c37735ea5e39f8d8a",
-      "outputFingerprint": "68f579d27d8ad029a22c9f3708f3b4b9f67d94f3d3d6fb9c8dae5bf2dcb311ef",
+      "inputFingerprint": "401b4fdb63b8c8772c319066bdefa52ee557ca79d4935bcff768eabf8d998ffa",
+      "outputFingerprint": "259eaffc252ac93696f1bf089df39df0673d75afb3b15a53101bf4cbbd1504b8",
       "passed": true
     },
     {
       "id": "copy-with-its-own-conflict-does-not-complete-the-page",
       "expectation": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
       "observed": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
-      "inputFingerprint": "bab7b4a046021190ead315a067577ccb769d2d3e8017480e9238fab65884b595",
-      "outputFingerprint": "45def5d4254c262a75cc6649b02816d0b6eda003d2ff59b03cae43f0f11d41e8",
+      "inputFingerprint": "fd476f53a42c4d467f4f34c5355e53e073b195c8031b9d2a92135b9325e57c30",
+      "outputFingerprint": "3bbaf5558949ef549f00c4a744c59c620014a6f1b0a6a5aa31c9ae79b1d27e0e",
       "passed": true
     },
     {
       "id": "comparison-without-both-operands-is-withheld",
       "expectation": "{\"finding\":false,\"blocked\":\"missing_source\"}",
       "observed": "{\"finding\":false,\"blocked\":\"missing_source\"}",
-      "inputFingerprint": "6c89dd192f55bec91db4b9c143bf21e9603d9006acd43ab528cfc5a027168402",
-      "outputFingerprint": "36c9efed4263fdef79fa4da4dd5ff000036b25cbd6ea1322a47f42526adb6137",
+      "inputFingerprint": "f983cff3cb06ba635a69bc98ea2a46eaa0c1334a5b55691e1ef7dc9721825cad",
+      "outputFingerprint": "404cfda5995ebedcb01960d9b78316bb36c772e22d236ffd72c0b349ce6f3caf",
       "passed": true
     },
     {
       "id": "update-not-read-shows-the-prior-as-history",
       "expectation": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
       "observed": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
-      "inputFingerprint": "1a3f9b8024a7c366e9d16513a85c0c2cbb83a2b587c73cb24d6e897f4f58e8c3",
-      "outputFingerprint": "79cb966bc98ec5441d42bdf8337771c0b620a7de7cebf4c6f5d5f79b64e44136",
+      "inputFingerprint": "2943b4d022d9e5c12b1f8206ef5b3dff129c0fbc3648dc6ed450c28c4e14acb9",
+      "outputFingerprint": "58a3544fdc57abcfd0d20a500a335dc03a381aad1a97a09426710910c73b8e94",
       "passed": true
     },
     {
       "id": "partial-period-is-not-summed",
       "expectation": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
-      "inputFingerprint": "4def7faaa7a25c6bd3be9c3576ee0e0f1de66dd3a1330364a5582349d7a11ff1",
-      "outputFingerprint": "c8b61fa60c779c513ed6bf5a4cb6a61e27330c312f649dbbb989b971f4c7d5d8",
+      "inputFingerprint": "93ec4e0dd07256e19baa3adf837e41e983c5ca958a9008b86b4d61d923f0cf4f",
+      "outputFingerprint": "1ce41857c19e8ff5ff225f23ea41c6acb77d7b439b6df031491703455b27b632",
       "passed": true
     },
     {
       "id": "draft-copy-does-not-fill-the-page",
       "expectation": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
       "observed": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
-      "inputFingerprint": "972eb7f239880bf8e7ac919701d697f68b6c643f11b5946decbc49bb26cd9aa0",
-      "outputFingerprint": "5eedeef697287e759ed54a52857b755874a954a18b34e256c23df0dcc9739ff3",
+      "inputFingerprint": "cb7b0316b41343bf6246079aac3c20ca1667ed80a6244de1ccc29d5368070656",
+      "outputFingerprint": "3e04d490d3f19f2253074b72bbb89ce9266fc9ab520fa072131c722375b0542e",
       "passed": true
     },
     {
       "id": "future-parent-statements-of-another-period-block-the-perimeter",
       "expectation": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "observed": "{\"perimeter\":false,\"blocked\":\"future\"}",
-      "inputFingerprint": "8135d1450af5ea917f09fa3baba87c2860a32e2489d80dd896b93237b32a593e",
-      "outputFingerprint": "a36afbc72368d6f8547ce8790086c3f18c4ac33ed9d1016ef885fefede2cf225",
+      "inputFingerprint": "77104cdeeb94ae56912888a0e055ce0de4fc8a81c52423e18e02ed525bbe861d",
+      "outputFingerprint": "6919e7df42eaf0b3eb6d49e8417177c0af803ac5d42df2335512e60be524c63b",
       "passed": true
     },
     {
       "id": "recovered-page-read-against-another-page-leaves-the-row-partial",
       "expectation": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
-      "inputFingerprint": "a61bdd4d5886ac28f404b8c075fbf11a917038635c41a72a0cd84b5993ef62c2",
-      "outputFingerprint": "1229b6862f4ee02bd24525b5ab240dd7b14ba7eeb9e3ef00ef4645cd19215ccd",
+      "inputFingerprint": "c1c675eb1d38b2ba3c867f59f07f0519eb921815235adfd78a8847e8718485b9",
+      "outputFingerprint": "d04c1a34683b4314e650d309aa952c88327333ec27d3f21f67e8690777cb0037",
       "passed": true
     },
     {
       "id": "recovered-table-and-note-join-the-document",
       "expectation": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
       "observed": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
-      "inputFingerprint": "d788f9c7aa1368883141614b5b5b9fac1017f67631d231341c94c567fc971fcc",
-      "outputFingerprint": "bdb0f14bcf05d20100786e9dc13f4a1ff5f20f7c65dd86f24bd49d755c4a653b",
+      "inputFingerprint": "f9f1f17ec931a66e3ed14713d55ce7cffe0312b241c39db197c36e22e633f0cd",
+      "outputFingerprint": "1bea79000130382b87eea2f2814468e2ce6ebcb6291d71a5785fc7470cebc2e8",
       "passed": true
     },
     {
       "id": "new-version-in-the-update-supersedes-the-prior-winner",
       "expectation": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
       "observed": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
-      "inputFingerprint": "427d1c388a841e4f02fb56d39d3db6742ca742dc523c0f0a7dad88d5b4768e67",
-      "outputFingerprint": "124a865b574f34dbff160cbe15fc08c2692e59391849e8b5dc42a11f2a3a36df",
+      "inputFingerprint": "a74ca95642906d1ffaef1c48295af979425958e0fcfa3a66eb7824cd8e0a04bc",
+      "outputFingerprint": "c6f70acd681eb55944b5a1fe33ed2eda9d4c3547cfea7f2daef01ff22b9fee23",
       "passed": true
     },
     {
       "id": "equivalent-copies-in-another-order-agree",
       "expectation": "{\"ccb\":\"complete\",\"conflict\":false}",
       "observed": "{\"ccb\":\"complete\",\"conflict\":false}",
-      "inputFingerprint": "b3b95fa0e771f182b1dcea9e4a539c706a4d33343cbe7a0330abec8d283775ea",
-      "outputFingerprint": "f1f0cf30a1aa07daaa6f95dad70c0355f0c4386862f2b1f3188f0442f3b34e02",
+      "inputFingerprint": "266c7fb6288172e9f952d6e755dd605082a76f744514c7a63aa3303fa69a0141",
+      "outputFingerprint": "8efb7ddb3bba1f186f5d947121d38adac5f84d96b1584967d746e81a364a7c6f",
       "passed": true
     },
     {
       "id": "new-debt-position-passes-the-old-total-to-history",
       "expectation": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
       "observed": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
-      "inputFingerprint": "9e19e0faaa950abb18bf3f9fb09d8294cabc76d6b1891922ba0c0076d4cfa2da",
-      "outputFingerprint": "95af4901aa0aeb2eff959a521763088c811567953ca4c0253b45ed274ead4d70",
+      "inputFingerprint": "2723b8b982b83e8492cdc53b407f5900494c955671288c251d37793f408baaf1",
+      "outputFingerprint": "2b45b7fa7bf005582c4fc53c3d3dcc673cf755d124ae802e00b77198ed678fe6",
       "passed": true
     },
     {
       "id": "same-local-id-on-document-and-copy-keeps-both",
       "expectation": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
       "observed": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
-      "inputFingerprint": "90ec57fac225d72c25a2a2bdab77abbda484997830548fbe52b308249840c01d",
-      "outputFingerprint": "d5a242facbfa7e63d9cb3224e2993cd31f4ce6ec8830df4fc5b7b76d9491f145",
+      "inputFingerprint": "dd97f933334f73d5489c19326cf0e47b8ddeb56e6e766eb1ad986392253295f8",
+      "outputFingerprint": "d4863d00956b8ef3bdb090bb0c7d6a4988bbb8102b7a1559620b01157638b5fb",
       "passed": true
     },
     {
       "id": "local-ids-alone-are-not-a-reading-conflict",
       "expectation": "{\"conflicts\":0,\"f02\":\"lida; superada pela auditada\"}",
       "observed": "{\"conflicts\":0,\"f02\":\"lida; superada pela auditada\"}",
-      "inputFingerprint": "da1a9fc447bd6d68ee59bc5189450a522354ac8ff6523c189a5081f94124dc84",
-      "outputFingerprint": "fcf8cce8023add08cadd4b66611d9890ba0280d55136862d76ce5b3d8d197530",
+      "inputFingerprint": "622d4cabd9a8ab3bb25dc4979855ed6ca062fc3a60f15c0c61416fcd5d2b90ef",
+      "outputFingerprint": "ae5fc0979f83c5f794630a98e39ad842804833dcdbd076ba47987b1f79972db8",
       "passed": true
     },
     {
       "id": "duplicate-of-the-ccb-reads-the-recovered-page",
       "expectation": "{\"copy\":\"complete\",\"policy\":true}",
       "observed": "{\"copy\":\"complete\",\"policy\":true}",
-      "inputFingerprint": "38d0c154ada9090e1f376e27e54176dfd1dd307047c0fb4128652ad8e1e8e1c9",
-      "outputFingerprint": "53305a572033afad6ee3151af7027b4077163c8f9cff015882f2866ca7206d1b",
+      "inputFingerprint": "8bd5dce8f85a1e637d5e3424f7ddfb0b5820b6e142d3eba9d650f2b51f1b8012",
+      "outputFingerprint": "22c70216f901f5f82462dbaf2ee8048d44f2ce678e0c7bd5f8c6c2e58f96be9c",
       "passed": true
     },
     {
       "id": "reading-date-makes-the-amendment-current",
       "expectation": "{\"text\":\"known\",\"resolved\":true}",
       "observed": "{\"text\":\"known\",\"resolved\":true}",
-      "inputFingerprint": "61316874cb61d8da8d609c41fd6c2ed050dcc7151d3f8d786272c99a407ff932",
-      "outputFingerprint": "f4feea2c9dd794b0080df5e5c3e5d1e0c82a95a15d4dbd26dfc45042e7d80b48",
+      "inputFingerprint": "eeea2c3239e3ac0ee3a95414bee7efcb0ed7ba6a830d32f8e50e2c182da9dcf7",
+      "outputFingerprint": "95d0bb6d2100b6a6cb4778e4242a868146e9521dfa3396aab0e0277f31be65d2",
       "passed": true
     },
     {
       "id": "eliminated-amendment-does-not-split-identical-later-ones",
       "expectation": "{\"knowledge\":\"known\",\"covenant\":\"3.5\"}",
       "observed": "{\"knowledge\":\"known\",\"covenant\":\"3.5\"}",
-      "inputFingerprint": "8c07fde069c984989602a1c7d5fe13922560a9f66354b4def806e460c5c3768e",
-      "outputFingerprint": "fbee4610665f5d86705158c667ce289a761f319a357335fd7746064207903095",
+      "inputFingerprint": "48a7cc72dbd5af6e10bb6a95bbe4f364da2460754307c2d5934fca314a3e1a79",
+      "outputFingerprint": "ec2b6bc678471f3e0a8c0b50f96ade4358a567538c360c019dcb1900fdccc4a7",
       "passed": true
     },
     {
       "id": "small-exception-and-close-totals-are-shown-exactly",
       "expectation": "{\"exception\":true,\"total\":true}",
       "observed": "{\"exception\":true,\"total\":true}",
-      "inputFingerprint": "5149a5d1e26e3c117cc2c4388487149be5b632f5403775a14fc201f1e7cd8a80",
-      "outputFingerprint": "91f2493a757f846415e5b0dcee46888cf81d2d8cc8e59e2c86fe78f7e856a3c7",
+      "inputFingerprint": "438c823001f9ed388b06ba84075aed235f4e5d0ca583fe76018f8d30c0e7ec0a",
+      "outputFingerprint": "d1a6b7cd584e06c8bca946f4a388026aa38e48c80bef5d7dbbfda726ce21a4ba",
       "passed": true
     },
     {
       "id": "same-reference-of-another-entity-is-another-instrument",
       "expectation": "{\"f18\":null,\"text\":[[\"deb-aurora-1\",\"aurora\",[\"f18\",\"f19\"],\"known\"]]}",
       "observed": "{\"f18\":null,\"text\":[[\"deb-aurora-1\",\"aurora\",[\"f18\",\"f19\"],\"known\"]]}",
-      "inputFingerprint": "dd13fb7289fa6e3d852d56dafec3c16c59f5a3d86940d29d8cd311aceffbe994",
-      "outputFingerprint": "7bd305a47ac17fe0e79b455a88d8dde94a3ba606048b0cf458496d0d86c60782",
+      "inputFingerprint": "2d3c836ae91d1cc2e721a2d6c75c6d94d6c8661f74ce2ff12044e3ee7bda6b41",
+      "outputFingerprint": "7cf55117b19747182a8cc73510947fe4726be5a3321fc0b580230fd49b687886",
       "passed": true
     },
     {
       "id": "clause-amount-on-its-declared-scale",
       "expectation": "true",
       "observed": "true",
-      "inputFingerprint": "8a5a3944a88592eca9cceaba7270d63aada3f8ebdb6cc838eeee035fcea3bdc6",
-      "outputFingerprint": "333590089f58d98f161bd13cf5df69e97eb4150adaf0d3e3aa7850214d24fd1c",
+      "inputFingerprint": "b54629fc066164cb82f222fd14afac821cb71b07d9dc1a88f45e565ef1cc170e",
+      "outputFingerprint": "103a80f5b472bc3e39efc727e34e1430aa2be5291c7df2827ada9f72de5a1efa",
       "passed": true
     },
     {
       "id": "competing-originals-with-different-readings-have-no-winner",
       "expectation": "{\"resolution\":\"unresolved\",\"superseded\":null}",
       "observed": "{\"resolution\":\"unresolved\",\"superseded\":null}",
-      "inputFingerprint": "181d18fc67176199ee187fb92e39ac1a8877aa4d9ddfb29019f6447308359463",
-      "outputFingerprint": "e7083cd25e439083ec84b6bd4808e71e26d082d90190496e7a628ffd242c6fbe",
+      "inputFingerprint": "be021fd3a8bb4a8d4a3370b9cb3d431b5f14d624c3ec675d5644593c405b9690",
+      "outputFingerprint": "e5e8832732b702a4f88abdbab74698f4795082ca31e730d8c37d18c4831b3830",
       "passed": true
     },
     {
       "id": "policy-compared-only-within-its-entity",
       "expectation": "true",
       "observed": "true",
-      "inputFingerprint": "b2e444322b705c505d04695631d1032f6c109389cb1d2a330bd9a376ef14ffca",
-      "outputFingerprint": "a25e5b82937465cf9d678e6fcfdc8bec067bd8e045fba5a7e0a28b9bd172ef15",
+      "inputFingerprint": "c6105709aed2c2fc701ef7a9263d69174624647ac057f5a807ddcc8e78b429a6",
+      "outputFingerprint": "bf4e17969db73510a14b199d34f0291886b824e38973be3606ad2f26f2f13c42",
       "passed": true
     },
     {
       "id": "registry-dated-after-the-reading-does-not-close-the-gap",
       "expectation": "{\"gap\":true,\"finding\":true}",
       "observed": "{\"gap\":true,\"finding\":true}",
-      "inputFingerprint": "439bb8df4efe7fea84da7af439a34616851f5611756191f14dfaf54b82dd47bf",
-      "outputFingerprint": "b5577f01c53fa0fa53927ebe26299eae9416761cca855d8cc945e89f6449cd6c",
+      "inputFingerprint": "7a92abce1ad89e6ba45f7f74410449c263334947d58d45c717cd288636ac070f",
+      "outputFingerprint": "c4039765317830336ecea99ac52b25d3c0e86cb13f53702e7c88d55a1066b84c",
       "passed": true
     },
     {
       "id": "subsidiary-forecast-does-not-resolve-the-company-gap",
       "expectation": "{\"open\":true,\"resolved\":false}",
       "observed": "{\"open\":true,\"resolved\":false}",
-      "inputFingerprint": "65793e20316eebcc0fb41f538a1d83ad7d13379f5a223127a06deaf8c1d8db6e",
-      "outputFingerprint": "6792303032b1689f2a9e3c7ba8ad373d36b52c1ad4b4bda4dcd657b030dec7ee",
+      "inputFingerprint": "49932d2ea113192a9f91f4a64cd6ed38fe81138e9986bb183eb999a0b62b483f",
+      "outputFingerprint": "5c779da7018a8622742e6210f280e9c0003d225999af56a17c8b2cbe3b8aeab7",
       "passed": true
     },
     {
       "id": "unused-limit-explains-only-part-of-the-difference",
       "expectation": "{\"partial\":true,\"rest\":true,\"reason\":\"unused_limit_partly\"}",
       "observed": "{\"partial\":true,\"rest\":true,\"reason\":\"unused_limit_partly\"}",
-      "inputFingerprint": "1fd38818af2d047a4f20c8788645005bf5234ede2eb55f94271b5a8861ba6c8b",
-      "outputFingerprint": "b0f0ed0fb40b5a9c0b0db1d66dee4ffe82a55e8c5f9e97685d99cf4005256de5",
+      "inputFingerprint": "57830b9bb11c657e962e3a17040e1a0fadde9c72e4ab784077e9c53dfc7c6c32",
+      "outputFingerprint": "c3d182d2a44414f2e352c703fd0361e334318aac3caec51994f1086864627a86",
+      "passed": true
+    },
+    {
+      "id": "individual-audited-does-not-supersede-consolidated-draft",
+      "expectation": "null",
+      "observed": "null",
+      "inputFingerprint": "83f5e0ce669c3f8fb329a2965cc928a5a705bb6a6f382835751a5de732656622",
+      "outputFingerprint": "1e15f717c601d44a914ce375b16727389dd99f6ff8e30a55554deed2063a5a4a",
+      "passed": true
+    },
+    {
+      "id": "individual-forecast-does-not-close-consolidated-liquidity",
+      "expectation": "true",
+      "observed": "true",
+      "inputFingerprint": "e7b97175ffbb2930fd44e929f316b58bf7ded178349ab9a942f09bfad5f476f7",
+      "outputFingerprint": "3ca47d85f62f54647e53b3805a0835ced61e8afc7be85a78b38ab7246c385c19",
+      "passed": true
+    },
+    {
+      "id": "individual-month-blocks-the-consolidated-semester",
+      "expectation": "{\"status\":\"not_run\",\"reason\":\"missing_source:perimeter_mismatch:2026-03\"}",
+      "observed": "{\"status\":\"not_run\",\"reason\":\"missing_source:perimeter_mismatch:2026-03\"}",
+      "inputFingerprint": "b22c009d7aac23f6047586b29b828d22198b8ee8077e9a4842de6dbea76b2ff4",
+      "outputFingerprint": "7269054e182dd1be8228f79370f50e78945ea329b4e9e478341dfbccbe688f6b",
       "passed": true
     },
     {
       "id": "notice-deadline-followed-never-scheduled",
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
-      "inputFingerprint": "483c16acea4a6821fca2700234b88aa36c2c8257a4acbce6b070354982cda95e",
-      "outputFingerprint": "55bdbf450fbe76c179c6b56ad036871c1f5044d9e379c83034767a48662ca5eb",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "80c75962ad9ae3ee4e2fda8ed70379bb96d2dc738e9423494cd487697ec3175a",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "68767465f4894f9d12071a4926b83dcb532a7a98f2c422d52398df16e51a25e5",
+  "evidenceFingerprint": "129b4493ba9f6ab4de17577d6a1da9a68725ec8303fcd438b8ea083c5fe0fb5f",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

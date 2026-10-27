@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentReadingSchema, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryInputSchema, documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentReadingSchema, registryName, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -1148,4 +1148,45 @@ describe("property: the company is the named subject; permuting the registry cha
   for (const bad of ["aurora-log", "fora-do-cadastro"]) it(`a subject ${bad === "aurora-log" ? "with a parent in the registry" : "outside the registry"} is refused`, () => {
     expect(() => run(auroraFolderReadings(), {subjectEntityId: bad})).toThrow("document_inventory_subject_entity_invalid");
   });
+});
+
+// Review r17: the perimeter each report reads, and registry names that are only names.
+describe("property: versions, checks and sufficiency hold within one perimeter", () => {
+  const perimeters = ["individual", "consolidated", "individual_and_consolidated"] as const;
+  for (const audited of perimeters) for (const draft of perimeters) it(`audited ${audited} against a draft ${draft}`, () => {
+    const o = run(readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = audited; file(r, "f02").perimeter = draft;}));
+    // Individual stands apart; consolidated and both stand together.
+    const sameClass = (audited === "individual") === (draft === "individual");
+    expect(o.rows.find((x) => x.fileId === "f02")!.situation.supersededBy?.fileId ?? null).toBe(sameClass ? "f01" : null);
+  });
+  for (const p of perimeters) it(`a forecast of the company read ${p}`, () => {
+    const forecast = {...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "f31", fileName: "fluxo set26.xlsx", sha256: hex(`forecast-perimeter-${p}`), perimeter: p,
+      period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"}, version: {label: "atualizado", status: "management" as const, ordinal: null, lastUpdated: "2026-08-31"},
+      referenceDate: {kind: "update" as const, date: "2026-08-31", origin: "stated" as const}};
+    // Aurora has a subsidiary in the registry: only a consolidated reading closes its liquidity.
+    expect(run([...auroraFolderReadings(), forecast]).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")).toBe(p === "individual");
+  });
+  for (const p of perimeters) it(`March read ${p} against the consolidated semester`, () => {
+    const two = auroraTurnTwoReadings().map((x) => x.fileId === "s02" ? {...x, perimeter: p} : x);
+    const c = run([...auroraFolderReadings(), ...two], {asOf: "2026-09-02"}).identityChecks.find((x) => x.kind === "period_against_months")!;
+    expect([c.status, c.reason]).toEqual(p === "individual" ? ["not_run", "missing_source:perimeter_mismatch:2026-03"] : ["matches", null]);
+  });
+  it("a financial report without its perimeter, or a contract with one, is refused", () => {
+    expect(() => run(readings((r) => {file(r, "f12").perimeter = "not_applicable";}))).toThrow("document_inventory_unsupported_reading:perimeter");
+    expect(() => run(readings((r) => {file(r, "f22").perimeter = "consolidated";}))).toThrow("document_inventory_unsupported_reading:perimeter");
+  });
+});
+describe("property: every registry name inserted in the method's voice is a name", () => {
+  // The registry fields typed as names, found in the input schema.
+  const shape = documentFolderInventoryInputSchema.shape as unknown as Record<string, {_zod: {def: {element: {shape: Record<string, unknown>}}}}>;
+  const named = ["entities", "decisions", "vault"].flatMap((list) => Object.entries(shape[list]!._zod.def.element.shape).filter(([, v]) => v === registryName).map(([k]) => `${list}.${k}`));
+  it("the schema types every registry name the method interpolates", () => {expect(named.sort()).toEqual(["decisions.label", "entities.groupLabel", "entities.label", "vault.label"]);});
+  const bad = ["Aurora Logística, alavancagem de 9,99x", "Aurora 2", "Aurora x", "Aurora %", "EBITDA S.A.", "Caixa Aurora", "Dívida Ltda.", "Aurora (C32)", "Aurora R$", "Aurora ٣"];
+  const good = ["Aurora Alimentos S.A.", "Aurora Logística Ltda.", "Pão de Açúcar & Cia", "D'Ávila e Filhos", "Plano de financiamento"];
+  for (const field of named) {
+    const set = (v: string) => {const i = auroraKernelInput(); const [list, k] = field.split(".") as [string, string];
+      ((i as unknown as Record<string, Record<string, string>[]>)[list]![0]!)[k] = v; return i;};
+    for (const v of bad) it(`${field} refuses "${v}"`, () => {expect(() => organizeDocumentFolder(set(v))).toThrow("document_inventory_registry_name_not_a_name");});
+    for (const v of good) it(`${field} accepts "${v}"`, () => {expect(() => organizeDocumentFolder(set(v))).not.toThrow();});
+  }
 });

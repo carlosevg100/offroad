@@ -3,21 +3,20 @@ import {z} from "zod";
 import {adoptionBasisEntrySchema, readContextualBasis} from "@offroad/reconciliation";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
-import {documentFolderInventoryLimits as L, documentFolderInventoryOutputSchema, documentFolderInventoryVersion, documentReadingSchema, inventoryFingerprint, inventoryModes, organizeDocumentFolder,
+import {documentFolderInventoryLimits as L, registryName, documentFolderInventoryOutputSchema, documentFolderInventoryVersion, documentReadingSchema, inventoryFingerprint, inventoryModes, organizeDocumentFolder,
   type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 
 // The same limits as the kernel's, from the one source: what is read here is what the inventory can hold.
 const key = z.string().regex(new RegExp(`^[a-z0-9][a-z0-9-]{0,${L.key - 1}}$`)), text = z.string().trim().min(1).max(L.text), hash = z.string().regex(/^[a-f0-9]{64}$/);
-const label = z.string().trim().min(1).max(L.label);
 /** Every slot the reader may read: one gap, one binding and one contribution at most each. */
 const slots = L.entities + L.decisions + L.vault + L.baseFiles + L.updateFiles + L.informed + 1;
 /** One adopted record is one canonical JSON text: a file reading, an entity, a decision in course, a vault entry or an informed fact. */
 const record = <T extends z.ZodType>(schema: T) => z.string().min(2).max(L.record).transform((s, ctx) => {
   try {return JSON.parse(s) as unknown;} catch {ctx.addIssue({code: "custom", message: "document_inventory_record_not_json"}); return z.NEVER;}
 }).pipe(schema);
-export const inventoryEntityRecordSchema = z.strictObject({label, groupId: key, groupLabel: label, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
-export const inventoryDecisionRecordSchema = z.strictObject({label, kind: z.enum(["financing_plan", "investment_project", "debt_discussion"])});
-export const inventoryVaultRecordSchema = z.strictObject({sha256: hash, label, instrumentRef: key.nullable()});
+export const inventoryEntityRecordSchema = z.strictObject({label: registryName, groupId: key, groupLabel: registryName, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
+export const inventoryDecisionRecordSchema = z.strictObject({label: registryName, kind: z.enum(["financing_plan", "investment_project", "debt_discussion"])});
+export const inventoryVaultRecordSchema = z.strictObject({sha256: hash, label: registryName, instrumentRef: key.nullable()});
 export const inventoryInformedRecordSchema = z.strictObject({questionId: z.string().min(1).max(L.id), statement: text, author: text, date: z.iso.date()});
 const slot = z.strictObject({id: key, value: selection});
 

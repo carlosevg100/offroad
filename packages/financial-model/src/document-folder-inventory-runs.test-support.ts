@@ -326,6 +326,15 @@ function goldCases(): Case[] {
       {partial: true, rest: true, reason: "unused_limit_partly"}, (p) => ({partial: inv(p).findings.find((f) => f.id === "f16-debt-total")!.statement.includes("não explica toda a diferença"),
         rest: inv(p).findings.find((f) => f.id === "f16-debt-total-unexplained")?.statement.includes("A debênture entra por R$ 70 milhões contra saldo utilizado de R$ 60 milhões") ?? false,
         reason: inv(p).identityChecks.find((c) => c.kind === "reported_total")!.reason})),
+    // Review r17 cases: the perimeter each report reads.
+    observe("individual-audited-does-not-supersede-consolidated-draft", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = "individual";})}),
+      null, (p) => inv(p).rows.find((r) => r.fileId === "f02")!.situation.supersededBy),
+    observe("individual-forecast-does-not-close-consolidated-liquidity", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f15")), fileId: "f31", fileName: "fluxo controladora set26.xlsx",
+      sha256: createHash("sha256").update("f31-individual-forecast").digest("hex"), perimeter: "individual", period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"},
+      version: {label: "atualizado", status: "management", ordinal: null, lastUpdated: "2026-08-31"}, referenceDate: {kind: "update", date: "2026-08-31", origin: "stated"}}))}),
+      true, (p) => inv(p).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")),
+    observe("individual-month-blocks-the-consolidated-semester", folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s02" ? {...x, perimeter: "individual" as const} : x)}}),
+      {status: "not_run", reason: "missing_source:perimeter_mismatch:2026-03"}, (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "period_against_months")!; return {status: c.status, reason: c.reason};}),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -389,6 +398,8 @@ function adversarialCases(): Case[] {
       "document_inventory_unsupported_unit"],
     ["subject-entity-with-a-parent", () => folderPacketInput({subjectEntityId: "aurora-log"}), "document_inventory_subject_entity_invalid"],
     ["subject-entity-outside-the-registry", () => folderPacketInput({subjectEntityId: "serra-sa"}), "document_inventory_subject_entity_invalid"],
+    ["ratio-in-a-registry-name", () => folderPacketInput({entities: auroraEntities.map((e) => e.id === "aurora-log" ? {...e, label: "Aurora Logística, alavancagem de 9,99x"} : e)}), "document_inventory_registry_name_not_a_name"],
+    ["financial-report-without-perimeter", () => folderPacketInput({files: readings((r) => {file(r, "f12").perimeter = "not_applicable";})}), "document_inventory_unsupported_reading:perimeter"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

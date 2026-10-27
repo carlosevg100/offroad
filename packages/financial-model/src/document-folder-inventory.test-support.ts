@@ -14,9 +14,15 @@ import type {DocumentFolderInventoryFacts, DocumentFolderUpdateFacts} from "./do
 const sha = (content: string) => createHash("sha256").update(`aurora-c09:${content}`).digest("hex");
 const at = (page: number | null, section: string | null = null) => ({page, section});
 const mi = "1000000";
-type Partial = Omit<DocumentReading, "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "sha256" | "referenceDate"> &
+type Partial = Omit<DocumentReading, "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "sha256" | "referenceDate" | "perimeter"> &
   {content?: string} & Partial2;
-type Partial2 = {[K in "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "referenceDate"]?: DocumentReading[K]};
+type Partial2 = {[K in "legibility" | "substitutesPages" | "units" | "figures" | "clauses" | "observations" | "debtTable" | "instrument" | "asset" | "referenceDate" | "perimeter"]?: DocumentReading[K]};
+/** The perimeter each file reports, as the ficha says: the 2024 and 2025 audited statements are individual and
+ * consolidated in one document; the 2025 draft, the trial balances, the management report, the budgets, the forecast,
+ * the debt tables and the aging are consolidated ("Aurora, consolidado"); the subsidiary's balance is individual.
+ * Contracts, minutes, the appraisal, the presentation and the photo report no perimeter. */
+const financialKinds = new Set(["annual_financial_statements", "trial_balance", "management_report", "budget", "cash_flow_forecast", "debt_schedule", "receivables_aging"]);
+export const auroraPerimeters: Record<string, DocumentReading["perimeter"]> = {f01: "individual_and_consolidated", f30: "individual_and_consolidated", f03: "individual_and_consolidated", f04: "individual"};
 /** The date each file speaks from, and where it comes from. "stated" and "stated_month" are what the ficha says (the
  * month's last day when only the month is given); "derived_from_period" and "derived_from_term_start" are taken from the
  * reading's own period and are listed as derivations in FICHA-LOTE4-ORGANIZE-DOCUMENT-FOLDER.md. */
@@ -41,7 +47,8 @@ export const auroraReferenceDates: Record<string, DocumentReading["referenceDate
 function doc(d: Partial): DocumentReading {
   const {content, ...rest} = d;
   return {sha256: sha(content ?? d.fileId), legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: null, units: [], figures: [], clauses: [],
-    observations: [], debtTable: null, instrument: null, asset: null, referenceDate: auroraReferenceDates[d.fileId] ?? null, ...rest};
+    observations: [], debtTable: null, instrument: null, asset: null, referenceDate: auroraReferenceDates[d.fileId] ?? null,
+    perimeter: auroraPerimeters[d.fileId] ?? (financialKinds.has(d.kind) ? "consolidated" : "not_applicable"), ...rest};
 }
 const aurora = "aurora";
 const v = (label: string, status: DocumentReading["version"]["status"], ordinal: number | null = null, lastUpdated: string | null = null) => ({label, status, ordinal, lastUpdated});
@@ -145,14 +152,14 @@ export const auroraEntities = [
   {id: "aurora-log", label: "Aurora Logística", groupId: "aurora", groupLabel: "Aurora", parentId: "aurora", ownership: "1"},
 ];
 export const auroraDecisions = [
-  {id: "plano-financiamento-2027", label: "Plano de financiamento de 2027", kind: "financing_plan" as const},
+  {id: "plano-financiamento-2027", label: "Plano de financiamento", kind: "financing_plan" as const},
   {id: "linha-embalagem", label: "Revisão da linha de embalagem", kind: "investment_project" as const},
 ];
 /** The vault already holds the indenture of 2021 and the Bradesco CCB, sent by the CFO in the 2027 financing conversation (C32). */
 export const auroraVault = () => {
   const r = auroraFolderReadings(), of = (id: string) => r.find((x) => x.fileId === id)!.sha256;
-  return [{documentId: "cofre-escritura-2021", sha256: of("f18"), label: "Escritura da 1ª emissão (C32)", instrumentRef: "deb-aurora-1"},
-    {documentId: "cofre-ccb-bradesco", sha256: of("f20"), label: "CCB do Bradesco (C32)", instrumentRef: "ccb-bradesco-2024"}];
+  return [{documentId: "cofre-escritura-2021", sha256: of("f18"), label: "Escritura da primeira emissão", instrumentRef: "deb-aurora-1"},
+    {documentId: "cofre-ccb-bradesco", sha256: of("f20"), label: "CCB do Bradesco", instrumentRef: "ccb-bradesco-2024"}];
 };
 
 /** Turn 2: the legible page 7 of the CCB, the March trial balance and the answer about the draft. */

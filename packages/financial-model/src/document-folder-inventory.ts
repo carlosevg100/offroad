@@ -33,6 +33,11 @@ const L = documentFolderInventoryLimits;
 const key = z.string().regex(new RegExp(`^[a-z0-9][a-z0-9-]{0,${L.key - 1}}$`));
 const text = z.string().trim().min(1).max(L.text);
 const label = z.string().trim().min(1).max(L.label);
+/** A registry name (entity, group, decision, vault entry) is inserted in the method's own voice, so it is a name and
+ * nothing else: letters, spaces, abbreviation dots, hyphens, apostrophes and "&"; no digit of any script, no other
+ * symbol, and no economic word (leverage, debt, ratio, EBITDA, cash, amounts, "x", percent). */
+const economicLexicon = /(^|[^\p{L}])(alavancagem|d[ií]vidas?|[ií]ndices?|ebitda|caixa|milh[aã]o|milh[oõ]es|mil|bilh[aã]o|bilh[oõ]es|receitas?|lucros?|margem|margens|covenants?|juros|taxas?|x|m[uú]ltiplos?|liquidez|endividamento|faturamento|valor|valores|pre[cç]o|percentual|reais|real|brl|r\$)(?=$|[^\p{L}])/iu;
+export const registryName = label.refine((v) => /^\p{L}[\p{L}\p{M} .&'’-]*$/u.test(v) && !economicLexicon.test(v), "document_inventory_registry_name_not_a_name");
 const statement = z.string().trim().min(1).max(L.statement);
 const derivedId = z.string().min(1).max(L.id);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -81,6 +86,10 @@ const policy: Record<Kind, {group: Group; family: "period" | "position" | "instr
   invoice: {group: "other", family: "single", label: "Nota fiscal", noun: "a nota fiscal"},
   unidentified: {group: "other", family: "single", label: "Documento", noun: "o documento"},
 };
+/** Financial reports, which always read a perimeter: individual, consolidated or both. */
+const perimeterKinds = new Set<Kind>(["annual_financial_statements", "trial_balance", "management_report", "budget", "cash_flow_forecast", "debt_schedule", "receivables_aging"]);
+/** Whether a document's perimeter covers the one a purpose asks for. */
+const covers = (p: string, want: "individual" | "consolidated") => p === want || p === "individual_and_consolidated";
 /** Terms bind only with evidence of signature or registration; approved or final alone do not. */
 const binds = (s: Status) => s === "signed" || s === "registered";
 /** Guarantee of a version: audited, signed or registered above the rest; a draft or a revision in work below. */
@@ -141,6 +150,9 @@ export const documentReadingSchema = z.strictObject({
   kind: z.enum(documentKinds), description: text,
   entity: z.strictObject({primaryId: key.nullable(), label: text}),
   period: z.strictObject({label: text, start: date.nullable(), end: date.nullable()}),
+  /** The perimeter the document reports: the entity alone, the consolidated group, both in one document, or not a
+   * financial report (a contract, minutes, an appraisal). Required for every reading; see perimeterKinds. */
+  perimeter: z.enum(["individual", "consolidated", "individual_and_consolidated", "not_applicable"]),
   version: z.strictObject({label: text, status: z.enum(documentStatuses), ordinal: z.number().int().min(1).max(99).nullable(), lastUpdated: date.nullable()}),
   /** The date the document speaks from: its closing, its position or its last update, with where that date comes from.
    * "stated": the document says it; "stated_month": the document gives the month, and the day is the month's last day;
@@ -206,6 +218,8 @@ export const documentReadingSchema = z.strictObject({
     if (r.entity.primaryId === null) fail("document_inventory_unsupported_reading:entity");
     if (r.period.start === null || r.period.end === null) fail("document_inventory_unsupported_reading:period");
     if (r.referenceDate === null) fail("document_inventory_unsupported_reading:reference_date");
+    // A financial report says its perimeter; any other document has none.
+    if (perimeterKinds.has(r.kind) === (r.perimeter === "not_applicable")) fail("document_inventory_unsupported_reading:perimeter");
   }
   if (r.period.start !== null && r.period.end !== null && r.period.end < r.period.start) fail("document_inventory_unsupported_reading:period");
   if (r.referenceDate?.origin === "stated_month" && r.referenceDate.date !== new Date(Date.UTC(Number(r.referenceDate.date.slice(0, 4)), Number(r.referenceDate.date.slice(5, 7)), 0)).toISOString().slice(0, 10))
@@ -327,9 +341,9 @@ export const documentFolderInventoryInputSchema = z.strictObject({
    * speaks of "the company" (its liquidity, for one) uses this id, never the order of the registry. */
   subjectEntityId: key,
   /** The company's registry: entities, their group and the controlling entity. */
-  entities: z.array(z.strictObject({id: key, label, groupId: key, groupLabel: label, parentId: key.nullable(), ownership: ratio.nullable()})).min(1).max(L.entities),
-  decisions: z.array(z.strictObject({id: key, label, kind: z.enum(decisionKinds)})).max(L.decisions),
-  vault: z.array(z.strictObject({documentId: key, sha256: hash, label, instrumentRef: key.nullable()})).max(L.vault),
+  entities: z.array(z.strictObject({id: key, label: registryName, groupId: key, groupLabel: registryName, parentId: key.nullable(), ownership: ratio.nullable()})).min(1).max(L.entities),
+  decisions: z.array(z.strictObject({id: key, label: registryName, kind: z.enum(decisionKinds)})).max(L.decisions),
+  vault: z.array(z.strictObject({documentId: key, sha256: hash, label: registryName, instrumentRef: key.nullable()})).max(L.vault),
   /** In arrival order. */
   files: z.array(documentReadingSchema).min(1).max(L.files),
   informed: z.array(z.strictObject({id: key, questionId: derivedId, statement: text, author: text, date})).max(L.informed),
@@ -622,7 +636,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   /** A copy fills a page only of the very document it repeats: same instrument, entity, period and version. A lower
    * or another version never gives its text to the target; an incompatible copy is refused, not read as unread. */
   const sameDocument = (s: DocumentReading, t: DocumentReading) => s.instrument?.ref === t.instrument?.ref && s.instrument?.amends === t.instrument?.amends
-    && s.entity.primaryId === t.entity.primaryId && s.period.start === t.period.start && s.period.end === t.period.end
+    && s.entity.primaryId === t.entity.primaryId && s.perimeter === t.perimeter && s.period.start === t.period.start && s.period.end === t.period.end
     && s.version.ordinal === t.version.ordinal && s.version.lastUpdated === t.version.lastUpdated;
   for (const s of substitutes) {
     const targets = live.filter((f) => f.instrument?.ref === s.substitutesPages!.instrumentRef && f.entity.primaryId === s.entity.primaryId
@@ -779,8 +793,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       statement: `Há ${members.length} ${what} de ${periodText(m)} sem nada no conteúdo que as distinga; nenhuma foi escolhida.`});
   };
 
+  // Versions are versions of one perimeter: an individual report never supersedes a consolidated one, nor the reverse.
+  // A report of both perimeters stands with the consolidated ones.
+  const perimeterKey = (f: DocumentReading) => f.perimeter === "individual" ? ":individual" : "";
   for (const [id, members] of bucket(live.filter((f) => policy[f.kind].family === "period"), (f) => f.period.start && f.period.end && f.entity.primaryId
-    ? `${f.kind}:${f.entity.primaryId}:${f.period.start}:${f.period.end}` : null)) {
+    ? `${f.kind}:${f.entity.primaryId}:${f.period.start}:${f.period.end}${perimeterKey(f)}` : null)) {
     if (members.length < 2) continue;
     const statuses = new Set(members.map((m) => m.version.status));
     if (members.every((m) => m.kind === "budget") && statuses.has("approved") && statuses.has("working_revision") && members.every((m) => ["approved", "working_revision"].includes(m.version.status))) {
@@ -826,7 +843,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     families.push({id, basis: "period", resolution: superseded.get(losers[0]!.fileId)!.reason, prevails: [winner.fileId], superseded: ids(losers), sideBySide: [], highlighted: false});
   }
 
-  for (const [id, members] of bucket(live.filter((f) => policy[f.kind].family === "position"), (f) => f.entity.primaryId ? `${f.kind}:${f.entity.primaryId}` : null)) {
+  for (const [id, members] of bucket(live.filter((f) => policy[f.kind].family === "position"), (f) => f.entity.primaryId ? `${f.kind}:${f.entity.primaryId}${perimeterKey(f)}` : null)) {
     if (members.length < 2) continue;
     const r = resolveFamily(members, ["guarantee", "date", "ordinal"], (f) => f.period.end), winner = r.winner;
     if (!winner) {unresolvedFamily(id, "position", members, "posições"); continue;}
@@ -1112,15 +1129,15 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   /** The company the folder is about, as the input names it. */
   const company = input.subjectEntityId;
   const gapClosure: Record<Need, string> = {
-    monthly_series: "a trial balance of the same entity for the month, known",
+    monthly_series: "a trial balance of the same entity and perimeter for the month, known",
     reading_substitute: "the page completed by a compatible copy under the page guard",
     real_collateral: "a property registry of the same asset and entity, known",
     group_perimeter: "audited statements of the subsidiary for the period, known",
-    liquidity_projection: "a forecast of the company under analysis (subjectEntityId, consolidated perimeter) reaching the reading date, known",
+    liquidity_projection: "a forecast of the company under analysis (subjectEntityId), consolidated when the registry gives it a subsidiary, reaching the reading date, known",
   };
   void gapClosure;
   // Monthly series: a month missing between the first and the last present.
-  for (const [, members] of bucket(live.filter((f) => policy[f.kind].monthly && prevailing(f) && isMonth(f)), (f) => `${f.kind}:${f.entity.primaryId}`)) {
+  for (const [, members] of bucket(live.filter((f) => policy[f.kind].monthly && prevailing(f) && isMonth(f)), (f) => `${f.kind}:${f.entity.primaryId}${perimeterKey(f)}`)) {
     // A month is present only if a document of it closes it; the series runs from the first to the last month read.
     const present = new Set(members.filter(closes).map((m) => m.period.start!.slice(0, 7))), sorted = [...new Set(members.map((m) => m.period.start!.slice(0, 7)))].sort();
     const missing = monthsBetween(`${sorted[0]}-01`, `${sorted[sorted.length - 1]}-01`).filter((m) => !present.has(m));
@@ -1194,7 +1211,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       continue;
     }
     const window = monthsBetween(report.period.start!, report.period.end!);
-    const inWindow = (f: DocumentReading) => policy[f.kind].monthly && prevailing(f) && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7));
+    // The months are read in the report's perimeter: a consolidated report sums consolidated months only.
+    const want = report.perimeter === "individual" ? "individual" as const : "consolidated" as const;
+    const inWindow = (f: DocumentReading) => policy[f.kind].monthly && prevailing(f) && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)) && covers(f.perimeter, want);
+    const otherPerimeter = [...new Set(live.filter((f) => policy[f.kind].monthly && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)) && !covers(f.perimeter, want))
+      .map((f) => f.period.start!.slice(0, 7)))].sort();
     // A month with versions and no winner blocks the sum: neither version is counted, and never both.
     const undecided = [...new Set(live.filter((f) => inWindow(f) && unresolved.has(f.fileId)).map((f) => f.period.start!.slice(0, 7)))].sort();
     const series = live.filter((f) => inWindow(f) && !unresolved.has(f.fileId)).sort((a, b) => byKey(a.period.start!, b.period.start!));
@@ -1207,7 +1228,8 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const r = figure(report, "ebitda"), values = series.map((f) => figure(f, "ebitda"));
       const g = guard(deps, [missing.length || withoutFigure.length || !r ? "missing_source" : "known"]);
       if (g.state !== "known") {
-        const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
+        const onlyOther = missing.filter((m) => otherPerimeter.includes(m));
+        const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : onlyOther.length ? `perimeter_mismatch:${onlyOther.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
         identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
           reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
         return;
@@ -1313,7 +1335,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // Subsidiary inside the consolidated statements of its parent; the entity names come from the registry.
   for (const f of live.filter((x) => x.kind === "annual_financial_statements" && settled(x) && x.entity.primaryId && registry.get(x.entity.primaryId)?.parentId)) {
     const sub = registry.get(f.entity.primaryId!)!, parent = registry.get(sub.parentId!)!;
-    if (!live.some((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === parent.id)) continue;
+    if (!live.some((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === parent.id && covers(x.perimeter, "consolidated"))) continue;
     // Judged: every statement of the parent, in any period (its existence enables the finding), and those of the subsidiary for the period.
     const members = documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || (x.entity.primaryId === sub.id && x.period.start === f.period.start)));
     const id = `${f.fileId}-subsidiary`;
@@ -1365,7 +1387,10 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // Projection: a forecast that does not reach the reading date, or none at all.
   // The need is the company's liquidity: only a forecast of the company itself (the registry's controlling entity; its
   // consolidated perimeter is read under its id) closes it. A subsidiary's or another group's forecast never does.
-  const forecasts = live.filter((f) => policy[f.kind].forecast && settled(f) && f.entity.primaryId === company
+  // The company's liquidity is consolidated when the registry gives it a subsidiary: an individual forecast does not
+  // close it. Without a subsidiary in the registry, its individual forecast is its whole perimeter.
+  const hasSubsidiary = input.entities.some((e) => e.parentId === company);
+  const forecasts = live.filter((f) => policy[f.kind].forecast && settled(f) && f.entity.primaryId === company && (hasSubsidiary ? covers(f.perimeter, "consolidated") : f.perimeter !== "not_applicable")
     && f.period.end !== null && f.period.end >= input.asOf && closes(f));
   const stale = findings.find((x) => x.code === "stale_forecast" && byId.get(x.anchor)?.entity.primaryId === company);
   if (!forecasts.length) gapsOut.push({need: "liquidity_projection", item: "Projeção ou fluxo de caixa de 13 semanas atualizado", why: `liquidez a partir de ${monthName(input.asOf)}${stale ? "; o fluxo da pasta não chega a essa data" : ""}`,
