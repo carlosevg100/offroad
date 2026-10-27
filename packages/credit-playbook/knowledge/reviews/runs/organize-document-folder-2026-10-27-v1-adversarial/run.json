@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T11:38:39.621Z",
-    "finishedAt": "2026-10-27T11:38:39.621Z",
-    "commit": "6c5cde1a"
+    "startedAt": "2026-10-27T11:55:35.587Z",
+    "finishedAt": "2026-10-27T11:55:35.587Z",
+    "commit": "007a90bd"
   },
   "modelCalls": 0,
   "cases": [
@@ -183,6 +183,22 @@
       "passed": true
     },
     {
+      "id": "page-beyond-the-file",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5e05e32ef404be97ad7a4e243583d28cb3812a91a04a8b6b259987d2870eacf3",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "expected-source-beyond-the-file",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4dfde15c35642d97e090ced8a3ddece7d91dc17283ab8a76fecda500bcd1f817",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "ratio-in-a-clause-that-is-not-its-limit",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -208,6 +224,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "758b806cc8fdf110c17afdbd25bc6fa33d7633099adedc2adc4cd4175553617f",
+  "evidenceFingerprint": "ae71fb376947fa88f4a01fe08bf599444ce9e6b05a7316f38f966f2739bee417",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

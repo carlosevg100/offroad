@@ -24,8 +24,10 @@ describe("recorded document folder inventory evaluations", () => {
       "turn-2-informed-fact-with-author-and-date", "variation-organize-only", "variation-for-the-debt-discussion", "variation-empty-vault-no-decisions",
       "variation-several-companies", "unresolved-month-blocks-the-semester-sum", "draft-amendment-changes-no-term",
       "replaced-notice-is-history-not-a-deadline", "same-hash-read-two-ways-is-declared", "approved-amendment-is-not-in-force", "tied-amendments-have-no-winner",
-      "later-cut-is-the-covenant-in-force", "notice-deadline-followed-never-scheduled"]);
-    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(23);
+      "later-cut-is-the-covenant-in-force", "substitutes-of-one-hash-read-two-ways-are-suspended", "text-only-tie-is-a-conflict", "dateless-amendment-does-not-prevail",
+      "conflict-resolved-later-is-history", "competing-originals-without-winner", "position-tie-broken-by-version", "covenant-without-its-limit-text-has-no-effect",
+      "notice-deadline-followed-never-scheduled"]);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(25);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

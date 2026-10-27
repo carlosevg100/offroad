@@ -65,6 +65,7 @@ export function prepareDocumentFolderInventoryPacket(raw: unknown): DocumentFold
     generalFindings: inv.generalFindings?.map((d) => ({rank: d.rank, statement: d.statement})) ?? null,
     versions: inv.families.map((f) => ({familyId: f.id, resolution: f.resolution, prevails: f.prevails, superseded: f.superseded, sideBySide: f.sideBySide, highlighted: f.highlighted})),
     documentary: [...inv.findings.filter((f) => f.quoted !== null && f.status === "open").map((f) => ({findingId: f.id, ...f.quoted!})),
+      ...inv.findings.filter((f) => f.changes !== null && f.status === "open").flatMap((f) => f.changes!.flatMap((c) => [...c.before ? [{findingId: f.id, ...c.before}] : [], {findingId: f.id, ...c.after}])),
       ...inv.gaps.filter((g) => g.quoted !== null && g.status === "open" && !inv.findings.some((f) => f.id === g.findingId && f.quoted !== null)).map((g) => ({findingId: g.id, ...g.quoted!}))],
     notRead: inv.findings.filter((f) => (f.code === "page_unreadable" || f.code === "file_unreadable") && f.status === "open")
       .map((f) => ({fileId: f.anchor, pages: f.code === "page_unreadable" ? f.sources.flatMap((s) => s.page === null ? [] : [s.page]) : null, statement: f.statement})),

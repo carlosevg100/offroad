@@ -107,7 +107,7 @@ describe("review r1 of the folder inventory kernel", () => {
   it("a copy carries its original's reading; the same bytes read two ways is a declared conflict", () => {
     expect(turnOne().rows[29]).toMatchObject({entity: "Aurora", kind: "annual_financial_statements", version: "duplicado exato"});
     const o = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {file(r, "f30").kind = "debt_schedule";})}));
-    expect(o.readingConflicts).toEqual([{sha256: o.rows[0]!.sha256, fileIds: ["f01", "f30"]}]);
+    expect(o.readingConflicts).toEqual([{sha256: o.rows[0]!.sha256, page: null, fileIds: ["f01", "f30"]}]);
     expect([o.rows[0]!.situation.read, o.rows[29]!.situation.read, o.rows[29]!.kind]).toEqual(["conflicted", "conflicted", "unidentified"]);
     expect(o.findings.filter((f) => f.code === "reading_conflict").map((f) => f.anchor)).toEqual(["f01", "f30"]);
   });
