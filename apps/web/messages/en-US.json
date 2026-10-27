@@ -2711,7 +2711,9 @@
         "voice_blocked": "A text the system wrote for this request did not pass the voice filter. The request was not sent.",
         "gates_invalid": "The request checks are not in the format the server requires. The execution was not requested.",
         "gates_blocked": "The server refused the request because a check was blocked.",
-        "gates_mismatch": "The request checks do not match what the server computed for this basis. Try again."
+        "gates_mismatch": "The request checks do not match what the server computed for this basis. Try again.",
+        "priors_missing": "To update the quarter, the prior completed results of this work are missing: the weekly cash and the covenant headroom.",
+        "prior_invalid": "A prior result the quarter update uses is not from this work, not from the expected method or not completed. The execution was not requested."
       },
       "unverified": {
         "title": "Unverified sources:",
@@ -3218,6 +3220,410 @@
           "intraday_liquidity": "Intraday liquidity",
           "receivables_assignment_eligibility": "Eligibility of receivables for assignment"
         }
+      },
+      "operatingProjection": {
+        "title": "Projection by driver",
+        "status": "Status",
+        "question": "Question",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this analysis does not do",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "not reported",
+        "purpose": "Purpose",
+        "units": "Amounts in millions of {currency}; margins and conversion in percent. Every number comes from the adopted drivers.",
+        "calibration": "Last year ({period}): reported revenue {reportedRevenue}, rebuilt from the drivers {modeledRevenue}; reported EBITDA {reportedEbitda}, rebuilt {modeledEbitda}.",
+        "reproduces": "The projection reproduces the last year.",
+        "notReproduced": "The projection does not reproduce the last year, and nothing is projected until the drivers explain the difference.",
+        "documented": "Every figure of the last year comes from a document.",
+        "notDocumented": "Part of the last year's figures does not come from a document: reproducing proves the arithmetic, not the source.",
+        "noCalibration": "Premises are missing to rebuild the last year; what is missing is in the gaps.",
+        "base": "Base by year",
+        "comparisons": "Against the company's versions",
+        "comparisonsNote": "The company's versions stay as they are; each difference comes with its cause when it was explained.",
+        "noCause": "cause not stated",
+        "sensitivities": "What each premise is worth in money",
+        "scenarios": "Scenarios against their own base",
+        "largestCashReduction": "What reduces cash available the most: scenario {scenario} in {period}, {cash} of cash, with {workingCapital} more working capital.",
+        "scenario": "Scenario {id} ({role}), compared with {basedOn}",
+        "baseName": "the base",
+        "changes": "Changes: {list}.",
+        "ledger": "Data and assumptions",
+        "ledgerLine": "{data} figures are data from documents; {assumptions} are assumptions.",
+        "assumptionDrivers": "Assumptions in: {list}.",
+        "questionsTitle": "What only the company knows and changes the projection",
+        "openQuestions": "Difference without an explained cause in the versions: {list}.",
+        "columns": {
+          "period": "Period",
+          "revenue": "Revenue",
+          "ebitda": "EBITDA",
+          "margin": "Margin",
+          "workingCapital": "Change in working capital",
+          "cashForDebt": "Cash available for debt",
+          "conversion": "EBITDA conversion",
+          "version": "Version",
+          "versionStatus": "Status",
+          "metric": "Metric",
+          "company": "Company's",
+          "projected": "By drivers",
+          "difference": "Difference",
+          "cause": "Cause",
+          "price": "1% of price on EBITDA",
+          "inputCost": "1% of input cost on EBITDA",
+          "receivableDay": "One receivable day on working capital",
+          "ebitdaEffect": "Effect on EBITDA",
+          "cashEffect": "Effect on cash"
+        },
+        "versionStatuses": {
+          "approved": "approved",
+          "under_review": "under review"
+        },
+        "metrics": {
+          "revenue": "revenue",
+          "ebitda": "EBITDA"
+        },
+        "roles": {
+          "alternative": "alternative",
+          "informed": "stated by the company"
+        },
+        "natures": {
+          "data": "data",
+          "assumption": "assumption"
+        },
+        "drivers": {
+          "volume": "volume",
+          "netUnitPrice": "net unit price",
+          "inputCostPerUnit": "input cost per unit",
+          "otherVariableCostPerUnit": "other variable costs per unit",
+          "fixedCosts": "fixed costs",
+          "receivableDays": "receivable days",
+          "inventoryDays": "inventory days",
+          "payableDays": "payable days",
+          "maintenanceCapex": "maintenance capex",
+          "leasePayments": "lease payments",
+          "depreciation": "depreciation",
+          "interestExpense": "interest expense",
+          "taxRate": "tax rate",
+          "reportedRevenue": "reported revenue",
+          "reportedEbitda": "reported EBITDA",
+          "volumeGrowthRate": "volume growth",
+          "volumeFactor": "volume relative to the base",
+          "inputCostShock": "input cost rise with its pass-through rule"
+        },
+        "questions": {
+          "volume": "How much the company plans to grow in volume and whether capacity allows it.",
+          "pass_through": "How long the input cost takes to reach the selling price.",
+          "receivable_days": "Whether customers are asking for longer terms."
+        },
+        "exclusions": {
+          "financing_recommendation": "It does not recommend the financing; that comes with the accepted projection.",
+          "debt_service": "It does not calculate debt service.",
+          "credit_approval": "It is not a credit approval.",
+          "method_release": "It does not release the method."
+        }
+      },
+      "projectionChallenge": {
+        "title": "Plan assumptions against the reference",
+        "status": "Status",
+        "question": "Question",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this analysis does not do",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "not reported",
+        "units": "Amounts in millions of {currency}; margins and shares in percent; unit margin and quantities in the plan's units.",
+        "gap": "In {period}, the plan reaches EBITDA of {plan}, against {reference} in the reference by drivers: a difference of {ebitda} in EBITDA and {cash} in cash.",
+        "margin": "The plan's margin goes from {first} to {target}, against {reference} in the reference;",
+        "marginCause": "stated cause: {cause}.",
+        "noMarginCause": "no explicit cause.",
+        "noGap": "Premises are missing to read the plan against the reference; what is missing is in the gaps.",
+        "assumptions": "Assumptions in order of effect",
+        "isolated": "Isolated effect of each assumption on the reference; the sum differs from the total by the interaction between assumptions.",
+        "interaction": "Interaction between assumptions, which the isolated effects do not show: {ebitda} in EBITDA and {cash} in cash.",
+        "unitMargin": "Unit margin in the plan: from {first} to {target}, a change of {change}; in the reference, {reference} at the target.",
+        "rulers": "Yardsticks",
+        "capacityAbove": "Installed capacity of {maximum}; the plan exceeds it in {period}, {excess} above at the target, with no capacity investment in the plan.",
+        "capacityWithInvestment": "Installed capacity of {maximum}; the plan exceeds it in {period}, with the capacity investment in the plan.",
+        "capacityWithin": "Installed capacity of {maximum}; the plan stays within it.",
+        "source": "Source: {source}.",
+        "noCapacity": "Installed capacity not stated; it is among the open questions.",
+        "receivables": "Plan receivable days of {days}; each day is worth {perDay} of cash.",
+        "requestedDays": "At the {days} days customers ask for, cash changes by {cash}.",
+        "premiumMix": "For price to come from mix, the premium line ({premium} above average) needs to reach {share} of volume at the target, about {perPeriod} more per period.",
+        "recommendation": "How to present the plan",
+        "conditions": "Conditions for the plan to hold: {list}.",
+        "recommendations": {
+          "present_plan_as_upside_case": "Keep as the base the assumptions the company can document and the reference for the rest; the current plan becomes the upside case, with the conditions for it to happen.",
+          "present_plan_with_its_evidence": "Present the plan with the evidence of each assumption attached.",
+          "plan_within_reference": "The plan stays within the reference by drivers."
+        },
+        "capacityConditions": {
+          "limit_quantity_to_capacity_or_add_the_investment_and_its_financing": "Limit volume to capacity or add the capacity investment and its financing to the plan."
+        },
+        "openQuestions": "What remains to be known",
+        "questions": {
+          "installed_capacity": "What is the installed capacity?",
+          "current_premium_share": "What is the premium line's current share of volume?",
+          "premium_incremental_unit_cost": "How much more does the premium line cost per unit?",
+          "premium_sell_in_since_launch": "How has the premium line's sell-in been since launch?"
+        },
+        "evidenceStatuses": {
+          "documented": "documented",
+          "not_presented": "not presented"
+        },
+        "columns": {
+          "assumption": "Assumption",
+          "ebitda": "Effect on EBITDA",
+          "cash": "Effect on cash",
+          "share": "Cumulative share of the gap",
+          "ruler": "Yardstick",
+          "evidence": "Evidence that would sustain it",
+          "evidenceStatus": "Evidence"
+        },
+        "exclusions": {
+          "scenario_execution": "It runs no new scenario.",
+          "model_rebuild": "It does not rebuild the model.",
+          "material_production": "It produces no material.",
+          "credit_approval": "It is not a credit approval.",
+          "method_release": "It does not release the method."
+        }
+      },
+      "receivablesFunding": {
+        "title": "Receivables as working capital",
+        "status": "Status",
+        "question": "Question",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this analysis does not do",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "not reported",
+        "units": "Amounts in millions of {currency}; costs with two decimals; rates in percent a year.",
+        "referenceDate": "Portfolio as of {date}.",
+        "headline": "Of the {gross} portfolio, {assignable} can be sold today ({share}).",
+        "noReading": "Premises are missing to read the portfolio; what is missing is in the gaps.",
+        "need": "{profile} need: average of {average}, peak of {peak}, from {start}, for {days} days.",
+        "profiles": {
+          "seasonal": "Seasonal",
+          "structural": "Structural"
+        },
+        "portfolio": "The portfolio by group",
+        "holderUntil": "{holder}, until {event}",
+        "options": "Options, from the cheapest to the most expensive",
+        "optionsNote": "Cost of the same amount for the same time in use under each option, with rates converted to the same period before comparing.",
+        "notApplicable": "not applicable",
+        "toConfirm": "to confirm",
+        "kinds": {
+          "anchor_program": "debtor's program",
+          "fidc": "FIDC",
+          "bank_discount": "bank discount",
+          "bank_line": "bank line"
+        },
+        "balanceSheets": {
+          "derecognized": "off balance sheet",
+          "tends_to_remain_as_liability": "tends to remain as a liability",
+          "liability": "debt"
+        },
+        "liens": {
+          "not_a_guarantee_confirm_with_counsel": "not a security interest (confirm with counsel)",
+          "uses_basket": "uses the lien basket",
+          "uses_basket_if_collateralized": "uses the basket if assigned as collateral",
+          "none": "uses no collateral"
+        },
+        "plan": "Plan from the cheapest option",
+        "coversPeak": "The plan covers the peak need.",
+        "doesNotCoverPeak": "The plan does not cover the peak need.",
+        "reserve": "The {line} stays in negotiation as the reserve until the first purchase.",
+        "startBy": "To have the cash in time, start by {date} ({slack} days of slack).",
+        "conditions": {
+          "duplicata_registration": "Book and register the duplicatas before the first purchase ({amount}).",
+          "other": "Other conditions precedent ({amount})."
+        },
+        "releases": "What is freed later",
+        "release": "After {event}: {amount} of {item}, of which {after} assignable.",
+        "releaseUnverified": "The release still has to be confirmed.",
+        "dedicatedVehicle": "Assignable volume per month: {monthly}.",
+        "vehicleReadings": {
+          "not_for_seasonal_need": "A dedicated vehicle is not justified for a seasonal need.",
+          "worth_studying": "Volume that justifies studying a dedicated vehicle.",
+          "below_threshold": "Below the volume that justifies a dedicated vehicle.",
+          "borderline": "At the edge of the volume that justifies a dedicated vehicle."
+        },
+        "questions": "What can change the plan",
+        "questionCodes": {
+          "anchor_program_of_restricted_debtor": "Does {item} run a supplier finance program? The answer decides {amount} of the portfolio.",
+          "anchor_program_terms": "What are the terms of {item}'s program (rate, onboarding time, limit per supplier)? It involves {amount}.",
+          "duplicata_registration_capability": "Does your system already issue book-entry duplicatas? It conditions {amount}."
+        },
+        "process": "Several buyers in parallel, with the same package. No buyer was named or contacted, and no approval was promised.",
+        "gapReasons": {
+          "largest_debtor_not_informed": "largest debtor of the group not reported",
+          "debtor_set_not_declared_disjoint": "debtor groups not declared as non-overlapping",
+          "lead_time_not_informed": "lead time not reported"
+        },
+        "reasons": {
+          "zero_balance": "zero balance",
+          "defaulted": "defaulted",
+          "past_due": "past due",
+          "remaining_term": "remaining term outside the rule",
+          "seasoning": "too recently issued",
+          "not_assignable": "contract prohibits assignment",
+          "evidence_unverified": "underlying evidence not verified",
+          "anchor_unverified": "debtor's program not verified",
+          "registration_missing": "duplicata not registered",
+          "registration_conflict": "registration in conflict",
+          "encumbered": "already assigned or encumbered",
+          "disputed": "disputed",
+          "related_party": "related party",
+          "sector_outside_policy": "sector outside the policy",
+          "credit_tier_outside_policy": "debtor credit outside the policy",
+          "debtor_sublimit": "above the per-debtor sublimit",
+          "not_offered_to_any_sale_option": "no sale option buys it"
+        },
+        "columns": {
+          "group": "Group",
+          "amount": "Amount",
+          "assignable": "Assignable",
+          "excluded": "Left out",
+          "reasons": "Why",
+          "holder": "With whom",
+          "option": "Option",
+          "kind": "Type",
+          "volume": "Volume",
+          "cost": "Cost",
+          "differenceToBankLine": "Against the line",
+          "annualEffective": "Effective annual rate",
+          "spreadOverDi": "Spread over DI",
+          "iof": "IOF",
+          "balanceSheet": "Balance sheet",
+          "lien": "Security",
+          "capacity": "Fits",
+          "allocated": "Allocated",
+          "cumulative": "Cumulative"
+        },
+        "exclusions": {
+          "buyer_contact": "It contacts no buyer.",
+          "fund_selection": "It does not choose funds.",
+          "credit_approval": "It is not a credit approval.",
+          "legal_opinion": "It is not a legal opinion.",
+          "accounting_opinion": "It is not an accounting opinion."
+        }
+      },
+      "quarterUpdate": {
+        "title": "Quarter close",
+        "status": "Status",
+        "question": "Question",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this analysis does not do",
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "not reported",
+        "units": "Amounts in millions of {currency}; terms in days; cost changes in percent; leverage in multiples.",
+        "quarter": "Quarter from {start} to {end}.",
+        "noReading": "Premises are missing to read the close; what is missing is in the gaps.",
+        "lines": "Actual against projected",
+        "bridge": "{line} bridge: deviation of {deviation}",
+        "structuralUntil": "persists until {date}",
+        "calendar": "one-off",
+        "residual": "Residual without a cause: {amount}.",
+        "persisting": "What persists ahead",
+        "oneOff": "One-off, no effect ahead: {list}.",
+        "balanceShifts": "Already in the closed cash and counted once: {list}.",
+        "natures": {
+          "flow": "recurring flow",
+          "balance": "balance shift"
+        },
+        "weekly": "Weekly cash",
+        "tightest": "Tightest week: before {prior} in the week of {priorWeek}; now {updated} in the week of {updatedWeek}.",
+        "shortfall": "Shortfall to the minimum: from {prior} to {updated}.",
+        "closingAtHorizon": "Balance at the end of the horizon: from {prior} to {updated}.",
+        "topUpExceeds": "The need exceeds the {limit} limit of the {facility}; even using the whole limit, the tightest week closes at {closing}.",
+        "topUpCovers": "Drawing the {limit} limit of the {facility} when the packet draws it, the tightest week closes at {closing} in the week of {week}, at or above the minimum.",
+        "action": "Proposed action",
+        "withinApproved": "Within what was already approved.",
+        "outsideApproved": "Outside what was approved.",
+        "actionCovers": "With the action, the tightest week closes at {closing} in the week of {week}.",
+        "actionDoesNotCover": "The action does not cover the shortfall.",
+        "covenant": "Covenant under each definition",
+        "anyBreach": "At least one measurement breaches a limit.",
+        "noBreach": "No measurement breaches a limit.",
+        "notUpdated": "Measurements not updated: {list}.",
+        "projectedEbitda": "Year EBITDA at the test: from {prior} to {updated}.",
+        "decisions": "What changes in the decisions",
+        "noDecisionChanged": "No decision changes with the close.",
+        "decisionCodes": {
+          "short_term_financing": "Short-term financing: the need grew.",
+          "covenant_headroom": "Covenant headroom shrank.",
+          "third_party_material": "A material sent before the close does not carry the closed figures."
+        },
+        "dependents": "What depends on the close",
+        "dependentKinds": {
+          "analysis": "analysis",
+          "plan": "plan",
+          "material": "material"
+        },
+        "dependentStatuses": {
+          "updated": "updated",
+          "affected_not_recomputed": "affected, to be redone by its own method",
+          "stale": "stale",
+          "unchanged": "unchanged"
+        },
+        "openQuestions": "What changes the diagnosis",
+        "kept": "The prior versions are kept beside the update, and nothing was sent to third parties.",
+        "kinds": {
+          "contractual": "contract",
+          "board_policy": "board policy"
+        },
+        "gapReasons": {
+          "unexplained_residual": "deviation without a cause",
+          "structural_cause_not_in_weekly_cash": "structural cause outside the weekly cash",
+          "structural_cause_weekly_effect_inconsistent": "weekly effect inconsistent with the cause",
+          "structural_cause_effect_immaterial": "cause effect below materiality",
+          "structural_cause_series_not_matching_factor": "series not matching the cause factor",
+          "structural_cause_question_missing": "structural cause without the question that confirms it",
+          "affected_not_recomputed": "affected analysis not redone",
+          "asked_dependent_not_recomputed": "requested analysis not redone here"
+        },
+        "columns": {
+          "line": "Line",
+          "projected": "Projected",
+          "actual": "Actual",
+          "deviation": "Deviation",
+          "cause": "Cause",
+          "nature": "Nature",
+          "until": "Until",
+          "ebitdaAhead": "EBITDA ahead",
+          "cashAhead": "Cash ahead",
+          "facility": "Approved facility",
+          "amount": "Amount",
+          "limit": "Limit",
+          "withinLimit": "Within the limit?",
+          "source": "Approval",
+          "minimumAfter": "Tightest week after",
+          "definition": "Definition",
+          "ratioPrior": "Before",
+          "ratioUpdated": "Now",
+          "ebitdaPrior": "EBITDA before",
+          "ebitdaUpdated": "EBITDA now",
+          "kind": "Nature",
+          "headroomPrior": "Headroom before",
+          "headroomUpdated": "Headroom now",
+          "breached": "Breached?",
+          "dependent": "Analysis, plan or material",
+          "dependentStatus": "Status",
+          "owner": "Who redoes it"
+        },
+        "exclusions": {
+          "accounting_close": "It does not close the books.",
+          "cause_attribution": "It does not attribute causes on its own; it uses the ones stated.",
+          "financing_cost_comparison": "It does not compare financing costs.",
+          "third_party_distribution": "It sends nothing to third parties.",
+          "credit_approval": "It is not a credit approval."
+        },
+        "topUpLate": "The need fits within the {limit} limit of the {facility}, but the recorded draw does not cover the tightest week: even with the whole limit, it closes at {closing} in the week of {week}, below the minimum."
       }
     },
     "overview": "Overview",
@@ -7777,6 +8183,26 @@
         "title": "Premises to project cash week by week",
         "lead": "I project weekly cash with these streams, obligations, cases and actions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
         "cases": "Week by week to the date: the tightest week, the weeks below the minimum, what falls due in them, what the period closing hides and the cost of each covering action, for the time it is used."
+      },
+      "operatingProjection": {
+        "title": "Premises to build the projection",
+        "lead": "I build the projection with these drivers, scenarios and company versions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "By year: the last year rebuilt from the drivers, revenue, EBITDA and cash available for debt, the comparison with the budget without overwriting it, what each premise is worth in money and what is data and what is assumption."
+      },
+      "projectionChallenge": {
+        "title": "Premises to read the plan against the reference",
+        "lead": "I read the plan against the reference by drivers with these assumptions and yardsticks, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "At the target year: the EBITDA and cash gap, each assumption's effect in order, the yardstick and the evidence that would sustain it, capacity and how to take the plan to the bank. No new scenario is run."
+      },
+      "receivablesFunding": {
+        "title": "Premises to fund working capital with receivables",
+        "lead": "I read the portfolio against each option with these groups, options and conditions, each with its origin. Confirm to calculate, or correct them in the conversation and I redo it.",
+        "cases": "How much of the portfolio can be sold and why the rest cannot, each option's volume and cost for the same time in use against the bank line, the balance sheet and security effects, the plan and when to start."
+      },
+      "quarterUpdate": {
+        "title": "Premises to update the quarter",
+        "lead": "I update the weekly cash and the covenant with this close, each premise with its origin, over the prior versions, which are kept. Confirm to calculate, or correct it in the conversation and I redo it.",
+        "cases": "Actual against projected, the EBITDA and cash bridges by cause, what is one-off and what persists and until when, the tightest week and the covenant before and after, the action within what is approved, which decision changes and what did not change."
       }
     },
     "groups": {
@@ -7789,13 +8215,24 @@
       "stream": "Cash streams",
       "action": "Actions",
       "case": "Cases",
-      "premise": "Premises"
+      "premise": "Premises",
+      "driver": "Drivers",
+      "scenario": "Scenarios",
+      "version": "Company versions",
+      "assumption": "Plan assumptions",
+      "item": "Portfolio groups",
+      "option": "Funding options",
+      "line": "Close lines",
+      "cause": "Causes of the deviations",
+      "facility": "Approved facilities",
+      "dependent": "Dependent analyses and materials"
     },
     "origins": {
       "document": "Document",
       "informed": "Stated",
       "house": "House premise",
-      "estimate": "Estimate"
+      "estimate": "Estimate",
+      "market": "Market range"
     },
     "referenceDate": "Reference date: {date}",
     "unreadable": "I could not read the premises of this proposal. Ask in the conversation and I will propose them again.",
@@ -7807,7 +8244,12 @@
     "superseded": "Replaced by a more recent proposal in this conversation.",
     "errors": {
       "companyUnregistered": "To calculate, the company must be registered in this work's dossier.",
-      "unavailable": "I could not confirm now. Try again."
+      "unavailable": "I could not confirm now. Try again.",
+      "priorsMissing": "To update the quarter I need the prior completed result of this work: {which}.",
+      "priors": {
+        "weeklyCash": "weekly cash",
+        "covenant": "covenant headroom"
+      }
     },
     "houseLabels": {
       "leaseView": "Including leases",
@@ -7821,7 +8263,38 @@
       "minimumCash": "Minimum operating cash",
       "informedPlan": "Stated plan",
       "variantCase": "Plan with {label}",
-      "actionCase": "Plan with the action: {label}"
+      "actionCase": "Plan with the action: {label}",
+      "purpose": "Purpose of the projection",
+      "actualYear": "Last actual year",
+      "reportedRevenue": "Reported revenue",
+      "reportedEbitda": "Reported EBITDA",
+      "driverVolume": "Volume",
+      "driverNetUnitPrice": "Net unit price",
+      "driverInputCostPerUnit": "Input cost per unit",
+      "driverOtherVariableCostPerUnit": "Other variable costs per unit",
+      "driverFixedCosts": "Fixed costs",
+      "driverReceivableDays": "Receivable days",
+      "driverInventoryDays": "Inventory days",
+      "driverPayableDays": "Payable days",
+      "driverMaintenanceCapex": "Maintenance capex",
+      "driverLeasePayments": "Lease payments",
+      "driverDepreciation": "Depreciation",
+      "driverInterestExpense": "Interest expense",
+      "driverTaxRate": "Tax rate",
+      "referenceCase": "Reference by drivers",
+      "planCase": "Company plan",
+      "capacity": "Installed capacity",
+      "requestedReceivableDays": "Terms customers ask for",
+      "premiumOverAverage": "Premium line markup over the average price",
+      "marginCause": "Cause of the margin expansion",
+      "needAverage": "Average need",
+      "needPeak": "Peak need",
+      "annualDi": "Annual DI",
+      "lienBasketRemaining": "Free room in the lien basket",
+      "dedicatedVehicleThreshold": "Volume that justifies a dedicated vehicle",
+      "priorWeeklyCash": "Prior weekly cash",
+      "priorCovenant": "Prior covenant test",
+      "materialityFloor": "Materiality floor"
     }
   }
 }

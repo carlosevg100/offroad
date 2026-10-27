@@ -109,6 +109,13 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   debt_table_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
   covenant_headroom_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
   weekly_cash_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
+  // The lote 3 premise extractions: a projection's drivers by year and scenarios, a plan against its reference
+  // and a receivables portfolio with each option's terms, each up to 10k output tokens.
+  operating_projection_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
+  projection_challenge_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
+  receivables_funding_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
+  // The quarter close carries its lines, causes, stream updates and dependents: up to 16k output, like weekly cash.
+  quarter_update_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.

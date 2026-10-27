@@ -408,6 +408,8 @@ export type QueueClient = {
   }>;
   /** Reviewed document fields of the turn's session that can carry the facts of an investment. */
   loadPremiseEvidence?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The latest prior completed weekly cash and covenant results of the turn's work, for the quarter close. */
+  loadQuarterUpdatePriors?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The turn's reply and its premise proposal, in one transaction; only a person's confirmation adopts them. */
   recordAgentResponseWithPremises?(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, premises: unknown): Promise<void>;
   recordAgentResponse(
@@ -1254,6 +1256,10 @@ export function createQueueClient(
 
     async loadPremiseEvidence(job) {
       return call("worker_load_premise_evidence_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadQuarterUpdatePriors(job) {
+      return call("worker_quarter_update_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
 
     async recordAgentResponseWithPremises(job, assistantMessageId, response, premises) {

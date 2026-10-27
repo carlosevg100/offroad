@@ -26,7 +26,9 @@ function withCandidate(test: (copy: string, component: Record<string, unknown>, 
     write(); test(copy, component, write);
   } finally {rmSync(copy, {recursive: true, force: true});}
 }
-describe("capital executor registration", () => {
+// Each case copies the library and compiles every manifest; with twelve released methods that exceeds the default
+// 5 s on shared CI runners.
+describe("capital executor registration", {timeout: 60_000}, () => {
   it("binds the actual registered contracts and complete first-party closure without granting execution", () => withCandidate(copy => {
     const p = buildMethodManifest(copy).provenance.find(p => p.procedure.id === "prepare-capital-structure-decision")!;
     expect(p.grantsExecution).toBe(false);

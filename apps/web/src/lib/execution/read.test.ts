@@ -15,6 +15,12 @@ import {prepareCovenantHeadroomPacket, prepareDebtTablePacket, prepareWeeklyCash
 import {auroraCovenantBasis} from "../../../../../packages/financial-model/src/covenant-headroom.test-support";
 import {auroraDebtTableBasis} from "../../../../../packages/financial-model/src/debt-table.test-support";
 import {auroraWeeklyCashBasis} from "../../../../../packages/financial-model/src/weekly-cash.test-support";
+import {operatingProjectionPacketBlocks, readOperatingProjectionPacketBlocks, type OperatingProjectionPacketLike} from "@offroad/domain-contracts";
+import {prepareOperatingProjectionPacket, prepareProjectionChallengePacket, prepareQuarterUpdatePacket, prepareReceivablesFundingPacket} from "@offroad/financial-model";
+import {auroraProjectionBasis} from "../../../../../packages/financial-model/src/operating-projection.test-support";
+import {auroraProjectionBasis as auroraChallengeBasis} from "../../../../../packages/financial-model/src/projection-challenge.test-support";
+import {auroraReceivablesFundingBasis} from "../../../../../packages/financial-model/src/receivables-funding.test-support";
+import {auroraQuarterUpdateBasis} from "../../../../../packages/financial-model/src/quarter-update.test-support";
 import {c32PacketInput} from "../../../../../packages/financial-model/src/investment-decision-packet.test-support";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
 import type {ExecutionRevisionState} from "./revision";
@@ -316,6 +322,48 @@ describe("the lote 2 debt results", () => {
       const view = projectWorkExecution({...base, result: committedResult(JSON.stringify({schemaVersion}))});
       const result = view.result && !view.result.withheld ? view.result : null;
       expect([result?.debtTable, result?.covenantHeadroom, result?.weeklyCash]).toEqual([null, null, null]);
+    }
+  });
+});
+
+describe("the lote 3 results", () => {
+  const projection = () => prepareOperatingProjectionPacket({schemaVersion: "operating-projection-packet-input.v1", question: "Não temos projeção pronta. Ajuda a construir uma.",
+    analysis: auroraProjectionBasis({informed: true}).seal()});
+  const challenge = () => prepareProjectionChallengePacket({schemaVersion: "projection-challenge-packet-input.v1", question: "Que premissas você questionaria nessa projeção?",
+    analysis: auroraChallengeBasis().seal()});
+  const funding = () => prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1", question: "Dá para financiar a safra com os recebíveis?",
+    analysis: auroraReceivablesFundingBasis().seal()});
+  const quarter = () => prepareQuarterUpdatePacket({schemaVersion: "quarter-update-packet-input.v1", question: "Fechou o trimestre. Atualiza tudo.", analysis: auroraQuarterUpdateBasis().seal()});
+  const fields = ["operatingProjection", "projectionChallenge", "receivablesFunding", "quarterUpdate"] as const;
+  const read = (packet: unknown) => {
+    const view = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))});
+    return view.result && !view.result.withheld ? view.result : null;
+  };
+  it("reads each from committed bytes of an execution without a revision, through its blocks, and nothing else from them", () => {
+    const cases = [[projection(), "operatingProjection"], [challenge(), "projectionChallenge"], [funding(), "receivablesFunding"], [quarter(), "quarterUpdate"]] as const;
+    for (const [packet, field] of cases) {
+      const result = read(packet)!;
+      expect(result[field], field).not.toBeNull();
+      for (const other of fields.filter((f) => f !== field)) expect(result[other], `${field} as ${other}`).toBeNull();
+      expect([result.packet, result.mdTest, result.investment, result.weeklyCash, result.covenantHeadroom]).toEqual([null, null, null, null, null]);
+    }
+    expect(read(projection())!.operatingProjection!.framing.calibration?.reproduces).toBe(true);
+    expect(read(challenge())!.projectionChallenge!.framing.largestAssumptionId).toBe("preco");
+    expect(read(funding())!.receivablesFunding!.framing.assignable).toBe("25");
+    expect(read(quarter())!.quarterUpdate!.framing.tightestWeek?.updated.weekStart).toBe("2026-12-21");
+  });
+  it("takes the result from the registered revision when there is one", () => {
+    const packet = projection();
+    const view = readOperatingProjectionPacketBlocks(operatingProjectionPacketBlocks(packet as unknown as OperatingProjectionPacketLike))!;
+    const projected = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))}, {state: "ready", revision: {revisionId: "30000000-0000-4000-8000-000000000001",
+      revisionNo: 1, recordedAt: "2026-10-26T12:00:00+00:00", freshness: "current", kind: "operating_projection", operatingProjection: view,
+      pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: null}}});
+    expect(projected.result).toMatchObject({withheld: false, source: "revision", packet: null, operatingProjection: view, revision: {revisionNo: 1}});
+  });
+  it("does not read unknown bytes as a lote 3 result", () => {
+    for (const schemaVersion of ["operating-projection-packet.v1", "projection-challenge-packet.v1", "receivables-funding-packet.v1", "quarter-update-packet.v1"]) {
+      const result = read({schemaVersion});
+      expect(fields.map((f) => result?.[f])).toEqual([null, null, null, null]);
     }
   });
 });

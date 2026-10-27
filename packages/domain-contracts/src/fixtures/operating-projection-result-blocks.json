@@ -1,0 +1,783 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.",
+      "currency": "BRL",
+      "purpose": "Discutir o financiamento com bancos: caixa disponível para a dívida e o que pode dar errado",
+      "calibration": {
+        "periodId": "2025-12-31",
+        "reportedRevenue": "420",
+        "modeledRevenue": "420",
+        "reportedEbitda": "52",
+        "modeledEbitda": "52.005",
+        "reproduces": true,
+        "reportedRevenueOrigin": "document",
+        "reportedEbitdaOrigin": "document",
+        "documented": true
+      },
+      "questions": [],
+      "openQuestions": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "base",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "periodId": "2026-12-31",
+          "revenue": "440.75",
+          "ebitda": "54.51",
+          "margin": "0.12367555303460011344",
+          "changeInWorkingCapital": "2.88194445",
+          "cashAvailableForDebt": "33.14465555",
+          "conversion": "0.60804724912860025683"
+        },
+        {
+          "periodId": "2027-12-31",
+          "revenue": "463.65",
+          "ebitda": "56.63",
+          "margin": "0.12213954491534562709",
+          "changeInWorkingCapital": "3.18055555",
+          "cashAvailableForDebt": "33.39524445",
+          "conversion": "0.58970941991877096945"
+        },
+        {
+          "periodId": "2028-12-31",
+          "revenue": "486",
+          "ebitda": "58.79625",
+          "margin": "0.12097993827160493827",
+          "changeInWorkingCapital": "3.10416667",
+          "cashAvailableForDebt": "34.90135833",
+          "conversion": "0.59359837285541169717"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "ebitda:2026-12-31",
+        "kind": "calculation",
+        "value": "54.51",
+        "unit": "BRL",
+        "period": "2026-12-31",
+        "supportIds": [
+          "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+        ]
+      },
+      {
+        "claimId": "ebitda:2027-12-31",
+        "kind": "calculation",
+        "value": "56.63",
+        "unit": "BRL",
+        "period": "2027-12-31",
+        "supportIds": [
+          "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+        ]
+      },
+      {
+        "claimId": "ebitda:2028-12-31",
+        "kind": "calculation",
+        "value": "58.79625",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "comparisons",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "versionId": "orcamento",
+          "status": "approved",
+          "periodId": "2026-12-31",
+          "metric": "ebitda",
+          "companyValue": "58",
+          "projectedValue": "54.51",
+          "difference": "3.49",
+          "unitPriceEquivalent": "0.03246511627906976744",
+          "cause": "A revisão de julho supõe repasse integral do trigo a partir de setembro; o realizado até agosto mostra repasse mais lento"
+        },
+        {
+          "versionId": "revisao-julho",
+          "status": "under_review",
+          "periodId": "2026-12-31",
+          "metric": "ebitda",
+          "companyValue": "55.5",
+          "projectedValue": "54.51",
+          "difference": "0.99",
+          "unitPriceEquivalent": "0.00920930232558139535",
+          "cause": "A revisão de julho supõe repasse integral do trigo a partir de setembro; o realizado até agosto mostra repasse mais lento"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "sensitivities",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "periodId": "2026-12-31",
+          "ebitdaPerOnePercentPrice": "4.4075",
+          "ebitdaLossPerOnePercentInputCost": "1.08575",
+          "workingCapitalPerReceivableDay": "1.22430555555555555556"
+        },
+        {
+          "periodId": "2027-12-31",
+          "ebitdaPerOnePercentPrice": "4.6365",
+          "ebitdaLossPerOnePercentInputCost": "1.144",
+          "workingCapitalPerReceivableDay": "1.28791666666666666667"
+        },
+        {
+          "periodId": "2028-12-31",
+          "ebitdaPerOnePercentPrice": "4.86",
+          "ebitdaLossPerOnePercentInputCost": "1.20375",
+          "workingCapitalPerReceivableDay": "1.35"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "scenarios",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "trigo-repasse-6m",
+          "role": "alternative",
+          "basedOn": "base",
+          "changes": [
+            {
+              "item": "inputCostShock",
+              "origin": "house",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "54.51",
+              "margin": "0.12367555303460011344",
+              "cashAvailableForDebt": "33.14465555",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "0",
+                "changeInWorkingCapital": "0"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "48.05",
+              "margin": "0.10175126527327785189",
+              "cashAvailableForDebt": "26.54077778",
+              "effects": {
+                "ebitda": "-8.58",
+                "cashAvailableForDebt": "-6.85446667",
+                "changeInWorkingCapital": "1.19166667"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "58.79625",
+              "margin": "0.11664620764051631142",
+              "cashAvailableForDebt": "33.5852125",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "-1.31614583",
+                "changeInWorkingCapital": "1.31614583"
+              }
+            }
+          ],
+          "label": "Trigo +15% em 2027, repasse em seis meses"
+        },
+        {
+          "id": "trigo-sem-repasse",
+          "role": "alternative",
+          "basedOn": "base",
+          "changes": [
+            {
+              "item": "inputCostShock",
+              "origin": "house",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "54.51",
+              "margin": "0.12367555303460011344",
+              "cashAvailableForDebt": "33.14465555",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "0",
+                "changeInWorkingCapital": "0"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "39.47",
+              "margin": "0.0851288687587619972",
+              "cashAvailableForDebt": "22.06964445",
+              "effects": {
+                "ebitda": "-17.16",
+                "cashAvailableForDebt": "-11.3256",
+                "changeInWorkingCapital": "0"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "58.79625",
+              "margin": "0.11664620764051631142",
+              "cashAvailableForDebt": "32.39354583",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "-2.5078125",
+                "changeInWorkingCapital": "2.5078125"
+              }
+            }
+          ],
+          "label": "Trigo +15% em 2027, sem repasse no ano"
+        },
+        {
+          "id": "prazo-60",
+          "role": "alternative",
+          "basedOn": "base",
+          "changes": [
+            {
+              "item": "receivableDays",
+              "origin": "house",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "54.51",
+              "margin": "0.12367555303460011344",
+              "cashAvailableForDebt": "20.9016",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "-12.24305555",
+                "changeInWorkingCapital": "12.24305555"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "56.63",
+              "margin": "0.12213954491534562709",
+              "cashAvailableForDebt": "32.75913333",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "-0.63611112",
+                "changeInWorkingCapital": "0.63611112"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "58.79625",
+              "margin": "0.12097993827160493827",
+              "cashAvailableForDebt": "34.280525",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "-0.62083333",
+                "changeInWorkingCapital": "0.62083333"
+              }
+            }
+          ],
+          "label": "Prazo das redes de 50 para 60 dias"
+        },
+        {
+          "id": "volume-menor",
+          "role": "alternative",
+          "basedOn": "base",
+          "changes": [
+            {
+              "item": "volumeFactor",
+              "origin": "house",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "51.7838",
+              "margin": "0.11988794610300160904",
+              "cashAvailableForDebt": "32.56966911",
+              "effects": {
+                "ebitda": "-2.7262",
+                "cashAvailableForDebt": "-0.57498644",
+                "changeInWorkingCapital": "-1.22430556"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "53.7854",
+              "margin": "0.11837174857002004943",
+              "cashAvailableForDebt": "31.58141955",
+              "effects": {
+                "ebitda": "-2.8446",
+                "cashAvailableForDebt": "-1.8138249",
+                "changeInWorkingCapital": "-0.0636111"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "55.832325",
+              "margin": "0.1172258440413202318",
+              "cashAvailableForDebt": "33.00725117",
+              "effects": {
+                "ebitda": "-2.963925",
+                "cashAvailableForDebt": "-1.89410716",
+                "changeInWorkingCapital": "-0.06208334"
+              }
+            }
+          ],
+          "label": "Volume 2% menor ao ano"
+        },
+        {
+          "id": "informado",
+          "role": "informed",
+          "basedOn": "base",
+          "changes": [
+            {
+              "item": "volumeGrowthRate",
+              "origin": "informed",
+              "nature": "assumption"
+            },
+            {
+              "item": "receivableDays",
+              "origin": "informed",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "55.3342",
+              "margin": "0.12479099714714206781",
+              "cashAvailableForDebt": "21.00140533",
+              "effects": {
+                "ebitda": "0.8242",
+                "cashAvailableForDebt": "-12.14325022",
+                "changeInWorkingCapital": "12.68722222"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "58.4330885",
+              "margin": "0.12445074886324493436",
+              "cashAvailableForDebt": "33.41370216",
+              "effects": {
+                "ebitda": "1.8030885",
+                "cashAvailableForDebt": "0.01845771",
+                "changeInWorkingCapital": "1.1715807"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "61.7421741",
+              "margin": "0.12456533434291373832",
+              "cashAvailableForDebt": "35.59430996",
+              "effects": {
+                "ebitda": "2.9459241",
+                "cashAvailableForDebt": "0.69295163",
+                "changeInWorkingCapital": "1.25135828"
+              }
+            }
+          ],
+          "label": "Informado pelo CFO: volume 3% ao ano, prazo de 60 dias"
+        },
+        {
+          "id": "informado-trigo-4m",
+          "role": "informed",
+          "basedOn": "informado",
+          "changes": [
+            {
+              "item": "inputCostShock",
+              "origin": "informed",
+              "nature": "assumption"
+            }
+          ],
+          "rows": [
+            {
+              "periodId": "2026-12-31",
+              "ebitda": "55.3342",
+              "margin": "0.12479099714714206781",
+              "cashAvailableForDebt": "21.00140533",
+              "effects": {
+                "ebitda": "0",
+                "cashAvailableForDebt": "0",
+                "changeInWorkingCapital": "0"
+              }
+            },
+            {
+              "periodId": "2027-12-31",
+              "ebitda": "52.6405745",
+              "margin": "0.10941419459564190747",
+              "cashAvailableForDebt": "27.65980492",
+              "effects": {
+                "ebitda": "-5.792514",
+                "cashAvailableForDebt": "-5.75389724",
+                "changeInWorkingCapital": "1.930838"
+              }
+            },
+            {
+              "periodId": "2028-12-31",
+              "ebitda": "61.7421740975",
+              "margin": "0.12010316802580030407",
+              "cashAvailableForDebt": "34.4559509975",
+              "effects": {
+                "ebitda": "-0.0000000025",
+                "cashAvailableForDebt": "-1.1383589625",
+                "changeInWorkingCapital": "1.13835896"
+              }
+            }
+          ],
+          "label": "Informado, com trigo +15% e repasse em quatro meses"
+        }
+      ],
+      "largestCashReduction": {
+        "scenarioId": "prazo-60",
+        "periodId": "2026-12-31",
+        "cashEffect": "-12.24305555",
+        "workingCapitalChangeEffect": "12.24305555"
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "ledger",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "driver": "volume",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "netUnitPrice",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "inputCostPerUnit",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "otherVariableCostPerUnit",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "fixedCosts",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "receivableDays",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "inventoryDays",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "payableDays",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "reportedRevenue",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "reportedEbitda",
+          "periodId": "2025-12-31",
+          "origin": "document",
+          "nature": "data"
+        },
+        {
+          "driver": "volume",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "volume",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "volume",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "netUnitPrice",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "netUnitPrice",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "netUnitPrice",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inputCostPerUnit",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inputCostPerUnit",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inputCostPerUnit",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "otherVariableCostPerUnit",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "otherVariableCostPerUnit",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "otherVariableCostPerUnit",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "fixedCosts",
+          "periodId": "2026-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "fixedCosts",
+          "periodId": "2027-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "fixedCosts",
+          "periodId": "2028-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "receivableDays",
+          "periodId": "2026-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "receivableDays",
+          "periodId": "2027-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "receivableDays",
+          "periodId": "2028-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inventoryDays",
+          "periodId": "2026-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inventoryDays",
+          "periodId": "2027-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "inventoryDays",
+          "periodId": "2028-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "payableDays",
+          "periodId": "2026-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "payableDays",
+          "periodId": "2027-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "payableDays",
+          "periodId": "2028-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "maintenanceCapex",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "maintenanceCapex",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "maintenanceCapex",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "leasePayments",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "leasePayments",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "leasePayments",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "depreciation",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "depreciation",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "depreciation",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "interestExpense",
+          "periodId": "2026-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "interestExpense",
+          "periodId": "2027-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "interestExpense",
+          "periodId": "2028-12-31",
+          "origin": "estimate",
+          "nature": "assumption"
+        },
+        {
+          "driver": "taxRate",
+          "periodId": "2026-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "taxRate",
+          "periodId": "2027-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        },
+        {
+          "driver": "taxRate",
+          "periodId": "2028-12-31",
+          "origin": "house",
+          "nature": "assumption"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "financing_recommendation",
+        "debt_service",
+        "credit_approval",
+        "method_release"
+      ]
+    },
+    "claims": []
+  }
+]

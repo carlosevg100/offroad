@@ -1,0 +1,290 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "Que premissas você questionaria nessa projeção?",
+      "currency": "BRL",
+      "gap": {
+        "targetPeriodId": "2028",
+        "plan": {
+          "ebitda": "85.98954",
+          "margin": "0.16184347079781597665",
+          "cash": "53.9751589"
+        },
+        "reference": {
+          "ebitda": "58.79625",
+          "margin": "0.12097993827160493827",
+          "cash": "34.90135833333333333333"
+        },
+        "ebitda": "27.19329",
+        "cash": "19.07380056666666666667",
+        "planMarginFirst": "0.12382142857142857143",
+        "marginExpansion": "0.03802204222638740522",
+        "marginCauseStated": null
+      },
+      "largestAssumptionId": "preco",
+      "recommendation": {
+        "kind": "present_plan_as_upside_case",
+        "baseCase": "reference_with_documented_assumptions",
+        "conditions": [
+          "preco",
+          "volume",
+          "fixos",
+          "prazo-capex"
+        ],
+        "capacityCondition": "limit_quantity_to_capacity_or_add_the_investment_and_its_financing"
+      },
+      "openQuestions": []
+    },
+    "claims": [
+      {
+        "claimId": "ebitda-gap:2028",
+        "kind": "calculation",
+        "value": "27.19329",
+        "unit": "BRL",
+        "period": "2028",
+        "supportIds": [
+          "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "assumptions",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "assumptionId": "preco",
+          "label": "Preço líquido +3,5% ao ano",
+          "effect": {
+            "ebitda": "12.9375",
+            "cash": "7.81131944444444444444"
+          },
+          "effectFromPlan": {
+            "ebitda": "13.777",
+            "cash": "8.37432"
+          },
+          "cumulativeShareOfEbitdaGap": "0.47576074833166564252",
+          "drivers": [
+            {
+              "driver": "netUnitPrice",
+              "plan": "4.435",
+              "reference": "4.32",
+              "planGrowth": "0.03500999624720359279",
+              "referenceGrowth": "0.02598556800601819361"
+            }
+          ],
+          "ruler": "Custo variável por kg sobe cerca de 3% ao ano na base",
+          "evidenceThatWouldSustain": [
+            "Histórico de repasse de preço acima do custo",
+            "Contratos com cláusula de reajuste",
+            "Mudança de mix documentada, com participação e preço por linha"
+          ],
+          "evidenceStatus": "not_presented"
+        },
+        {
+          "assumptionId": "volume",
+          "label": "Volume +4,5% ao ano",
+          "effect": {
+            "ebitda": "9.61629",
+            "cash": "4.71820973333333333333"
+          },
+          "effectFromPlan": {
+            "ebitda": "10.45579",
+            "cash": "5.3713214"
+          },
+          "cumulativeShareOfEbitdaGap": "0.82938805859827920785",
+          "drivers": [
+            {
+              "driver": "quantity",
+              "plan": "119.8",
+              "reference": "112.5",
+              "planGrowth": "0.04493475198400890575",
+              "referenceGrowth": "0.02326410809381314846"
+            }
+          ],
+          "ruler": "Volume cresceu 2,3% em 2025; capacidade instalada de 118 mil t por ano",
+          "evidenceThatWouldSustain": [
+            "Pedidos ou contratos com volume mínimo",
+            "Projeto de ampliação de capacidade, com o capex e o financiamento dele"
+          ],
+          "evidenceStatus": "not_presented"
+        },
+        {
+          "assumptionId": "fixos",
+          "label": "Custos fixos +3% ao ano",
+          "effect": {
+            "ebitda": "3.8",
+            "cash": "2.508"
+          },
+          "effectFromPlan": {
+            "ebitda": "3.8",
+            "cash": "2.508"
+          },
+          "cumulativeShareOfEbitdaGap": "0.96912841366381191831",
+          "drivers": [
+            {
+              "driver": "fixedCosts",
+              "plan": "85.6",
+              "reference": "89.4",
+              "planGrowth": "0.03015838271900953283",
+              "referenceGrowth": "0.04518199316722261049"
+            }
+          ],
+          "ruler": "Inflação e dissídio perto de 4,5% a 5% ao ano",
+          "evidenceThatWouldSustain": [
+            "Projeto de produtividade que gera o ganho, com prazo e responsável"
+          ],
+          "evidenceStatus": "not_presented"
+        },
+        {
+          "assumptionId": "prazo-capex",
+          "label": "Prazo de recebimento de 45 dias e capex de manutenção de R$ 5 mi",
+          "effect": {
+            "ebitda": "0",
+            "cash": "3.31041666666666666667"
+          },
+          "effectFromPlan": {
+            "ebitda": "0",
+            "cash": "3.55310416666666666667"
+          },
+          "cumulativeShareOfEbitdaGap": "0.96912841366381191831",
+          "drivers": [
+            {
+              "driver": "receivableDays",
+              "plan": "45",
+              "reference": "50",
+              "planGrowth": null,
+              "referenceGrowth": null
+            },
+            {
+              "driver": "maintenanceCapex",
+              "plan": "5",
+              "reference": "8",
+              "planGrowth": null,
+              "referenceGrowth": null
+            }
+          ],
+          "ruler": "Prazo de 50 dias hoje, as duas maiores redes pedem 60; capex de manutenção de R$ 8 mi por ano nos últimos três anos",
+          "evidenceThatWouldSustain": [
+            "Acordo comercial com as redes que fixe o prazo",
+            "Plano de manutenção que sustente o capex menor"
+          ],
+          "evidenceStatus": "not_presented"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "effect:preco",
+        "kind": "calculation",
+        "value": "12.9375",
+        "unit": "BRL",
+        "period": "2028",
+        "supportIds": [
+          "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+        ]
+      },
+      {
+        "claimId": "effect:volume",
+        "kind": "calculation",
+        "value": "9.61629",
+        "unit": "BRL",
+        "period": "2028",
+        "supportIds": [
+          "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+        ]
+      },
+      {
+        "claimId": "effect:fixos",
+        "kind": "calculation",
+        "value": "3.8",
+        "unit": "BRL",
+        "period": "2028",
+        "supportIds": [
+          "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+        ]
+      },
+      {
+        "claimId": "effect:prazo-capex",
+        "kind": "calculation",
+        "value": "0",
+        "unit": "BRL",
+        "period": "2028",
+        "supportIds": [
+          "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "margin",
+    "kind": "section",
+    "content": {
+      "interaction": {
+        "fromReference": {
+          "ebitda": "0.8395",
+          "cash": "0.72585472222222222222"
+        },
+        "fromPlan": {
+          "ebitda": "-0.8395",
+          "cash": "-0.732945"
+        }
+      },
+      "unitMargin": {
+        "planFirst": "1.241",
+        "planTarget": "1.4323",
+        "referenceTarget": "1.3173",
+        "planChange": "0.15414987912973408541"
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "rulers",
+    "kind": "section",
+    "content": {
+      "capacity": {
+        "maximumQuantity": "118",
+        "firstPeriodAbove": "2028",
+        "excessAtTarget": "1.8",
+        "investmentInPlan": false,
+        "aboveWithoutInvestment": true,
+        "source": "Cadastro da fábrica: capacidade instalada de 118 mil t por ano"
+      },
+      "receivables": {
+        "planDays": "45",
+        "cashPerDay": "1.47586944444444444444",
+        "requestedDays": "60",
+        "cashAtRequestedDays": "22.13804166666666666667"
+      },
+      "premiumMix": null
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "scenario_execution",
+        "model_rebuild",
+        "material_production",
+        "credit_approval",
+        "method_release"
+      ]
+    },
+    "claims": []
+  }
+]

@@ -1,0 +1,565 @@
+{
+  "schemaVersion": "projection-challenge-packet.v1",
+  "executorVersion": "2026.10.26-v1",
+  "financialCoreVersion": "2026.10.07-v29",
+  "question": "Que premissas você questionaria nessa projeção?",
+  "basisFingerprint": "b6bf59a4795af9e1657883206e94b7e4a77e15005c3485bf11b15c02b39d9202",
+  "scope": {
+    "workId": "ac400000-0000-4000-9000-000000000007",
+    "purpose": "synthetic adopted financial analysis",
+    "versionId": "ac400000-0000-4000-9000-000000000500"
+  },
+  "entityId": "ac400000-0000-4000-9000-000000000001",
+  "currency": "BRL",
+  "result": {
+    "financialCoreVersion": "2026.10.07-v29",
+    "scope": {
+      "workId": "ac400000-0000-4000-9000-000000000007",
+      "purpose": "synthetic adopted financial analysis",
+      "versionId": "ac400000-0000-4000-9000-000000000500"
+    },
+    "entityId": "ac400000-0000-4000-9000-000000000001",
+    "currency": "BRL",
+    "basisFingerprint": "b6bf59a4795af9e1657883206e94b7e4a77e15005c3485bf11b15c02b39d9202",
+    "status": "partial_composition",
+    "gaps": [],
+    "classification": "working_hypothesis",
+    "grantsExecution": false,
+    "grantsPublication": false,
+    "fingerprint": "8bb2bda8e22e7baea3f06b6857f17eaaafb39cba27ac7921d625a5c64c1c95e4",
+    "schemaVersion": "adopted-projection-challenge.v1",
+    "analysisId": "ac400000-0000-4000-9000-000000000070",
+    "perimeter": "standalone",
+    "unitConvention": "Volume em mil toneladas; preço líquido e custo variável em R$ por kg; demais valores em R$ milhões",
+    "challenge": {
+      "schemaVersion": "projection-challenge.v1",
+      "version": "2026.10.26-v1",
+      "currency": "BRL",
+      "dayBasis": "360",
+      "targetPeriodId": "2028",
+      "convention": "isolated effect from the reference (reference with only that assumption from the plan, minus the reference), and from the plan (plan minus the plan with only that assumption returned to the reference); both independent of order",
+      "reference": [
+        {
+          "periodId": "2025",
+          "quantity": "105",
+          "netUnitPrice": "4",
+          "revenue": "420",
+          "variableCost": "289.695",
+          "fixedCosts": "78.3",
+          "ebitda": "52.005",
+          "margin": "0.12382142857142857143",
+          "unitMargin": "1.241",
+          "workingCapital": "58.33333333333333333333",
+          "workingCapitalChange": null,
+          "tax": "6.6317",
+          "cashAvailable": null
+        },
+        {
+          "periodId": "2026",
+          "quantity": "107.5",
+          "netUnitPrice": "4.1",
+          "revenue": "440.75",
+          "variableCost": "304.44",
+          "fixedCosts": "81.8",
+          "ebitda": "54.51",
+          "margin": "0.12367555303460011344",
+          "unitMargin": "1.268",
+          "workingCapital": "61.21527777777777777778",
+          "workingCapitalChange": "2.88194444444444444444",
+          "tax": "7.4834",
+          "cashAvailable": "33.14465555555555555556"
+        },
+        {
+          "periodId": "2027",
+          "quantity": "110",
+          "netUnitPrice": "4.215",
+          "revenue": "463.65",
+          "variableCost": "321.42",
+          "fixedCosts": "85.6",
+          "ebitda": "56.63",
+          "margin": "0.12213954491534562709",
+          "unitMargin": "1.293",
+          "workingCapital": "64.39583333333333333333",
+          "workingCapitalChange": "3.18055555555555555556",
+          "tax": "9.0542",
+          "cashAvailable": "33.39524444444444444444"
+        },
+        {
+          "periodId": "2028",
+          "quantity": "112.5",
+          "netUnitPrice": "4.32",
+          "revenue": "486",
+          "variableCost": "337.80375",
+          "fixedCosts": "89.4",
+          "ebitda": "58.79625",
+          "margin": "0.12097993827160493827",
+          "unitMargin": "1.3173",
+          "workingCapital": "67.5",
+          "workingCapitalChange": "3.10416666666666666667",
+          "tax": "9.790725",
+          "cashAvailable": "34.90135833333333333333"
+        }
+      ],
+      "plan": [
+        {
+          "periodId": "2025",
+          "quantity": "105",
+          "netUnitPrice": "4",
+          "revenue": "420",
+          "variableCost": "289.695",
+          "fixedCosts": "78.3",
+          "ebitda": "52.005",
+          "margin": "0.12382142857142857143",
+          "unitMargin": "1.241",
+          "workingCapital": "52.5",
+          "workingCapitalChange": null,
+          "tax": "6.6317",
+          "cashAvailable": null
+        },
+        {
+          "periodId": "2026",
+          "quantity": "109.7",
+          "netUnitPrice": "4.14",
+          "revenue": "454.158",
+          "variableCost": "310.6704",
+          "fixedCosts": "80.6",
+          "ebitda": "62.8876",
+          "margin": "0.13847075246940492075",
+          "unitMargin": "1.308",
+          "workingCapital": "56.76975",
+          "workingCapitalChange": "4.26975",
+          "tax": "10.331784",
+          "cashAvailable": "40.286066"
+        },
+        {
+          "periodId": "2027",
+          "quantity": "114.7",
+          "netUnitPrice": "4.285",
+          "revenue": "491.4895",
+          "variableCost": "335.1534",
+          "fixedCosts": "83.1",
+          "ebitda": "73.2361",
+          "margin": "0.14900847322272398495",
+          "unitMargin": "1.363",
+          "workingCapital": "61.4361875",
+          "workingCapitalChange": "4.6664375",
+          "tax": "14.700274",
+          "cashAvailable": "45.8693885"
+        },
+        {
+          "periodId": "2028",
+          "quantity": "119.8",
+          "netUnitPrice": "4.435",
+          "revenue": "531.313",
+          "variableCost": "359.72346",
+          "fixedCosts": "85.6",
+          "ebitda": "85.98954",
+          "margin": "0.16184347079781597665",
+          "unitMargin": "1.4323",
+          "workingCapital": "66.414125",
+          "workingCapitalChange": "4.9779375",
+          "tax": "19.0364436",
+          "cashAvailable": "53.9751589"
+        }
+      ],
+      "gap": {
+        "revenue": "45.313",
+        "ebitda": "27.19329",
+        "cash": "19.07380056666666666667",
+        "margin": "0.04086353252621103837"
+      },
+      "effects": [
+        {
+          "assumptionId": "volume",
+          "label": "Volume +4,5% ao ano",
+          "drivers": [
+            {
+              "driver": "quantity",
+              "plan": "119.8",
+              "reference": "112.5",
+              "planGrowth": "0.04493475198400890575",
+              "referenceGrowth": "0.02326410809381314846"
+            }
+          ],
+          "fromReference": {
+            "ebitda": "9.61629",
+            "cash": "4.71820973333333333333"
+          },
+          "fromPlan": {
+            "ebitda": "10.45579",
+            "cash": "5.3713214"
+          }
+        },
+        {
+          "assumptionId": "preco",
+          "label": "Preço líquido +3,5% ao ano",
+          "drivers": [
+            {
+              "driver": "netUnitPrice",
+              "plan": "4.435",
+              "reference": "4.32",
+              "planGrowth": "0.03500999624720359279",
+              "referenceGrowth": "0.02598556800601819361"
+            }
+          ],
+          "fromReference": {
+            "ebitda": "12.9375",
+            "cash": "7.81131944444444444444"
+          },
+          "fromPlan": {
+            "ebitda": "13.777",
+            "cash": "8.37432"
+          }
+        },
+        {
+          "assumptionId": "fixos",
+          "label": "Custos fixos +3% ao ano",
+          "drivers": [
+            {
+              "driver": "fixedCosts",
+              "plan": "85.6",
+              "reference": "89.4",
+              "planGrowth": "0.03015838271900953283",
+              "referenceGrowth": "0.04518199316722261049"
+            }
+          ],
+          "fromReference": {
+            "ebitda": "3.8",
+            "cash": "2.508"
+          },
+          "fromPlan": {
+            "ebitda": "3.8",
+            "cash": "2.508"
+          }
+        },
+        {
+          "assumptionId": "prazo-capex",
+          "label": "Prazo de recebimento de 45 dias e capex de manutenção de R$ 5 mi",
+          "drivers": [
+            {
+              "driver": "receivableDays",
+              "plan": "45",
+              "reference": "50",
+              "planGrowth": null,
+              "referenceGrowth": null
+            },
+            {
+              "driver": "maintenanceCapex",
+              "plan": "5",
+              "reference": "8",
+              "planGrowth": null,
+              "referenceGrowth": null
+            }
+          ],
+          "fromReference": {
+            "ebitda": "0",
+            "cash": "3.31041666666666666667"
+          },
+          "fromPlan": {
+            "ebitda": "0",
+            "cash": "3.55310416666666666667"
+          }
+        }
+      ],
+      "order": [
+        {
+          "assumptionId": "preco",
+          "cumulativeShareOfEbitdaGap": "0.47576074833166564252"
+        },
+        {
+          "assumptionId": "volume",
+          "cumulativeShareOfEbitdaGap": "0.82938805859827920785"
+        },
+        {
+          "assumptionId": "fixos",
+          "cumulativeShareOfEbitdaGap": "0.96912841366381191831"
+        },
+        {
+          "assumptionId": "prazo-capex",
+          "cumulativeShareOfEbitdaGap": "0.96912841366381191831"
+        }
+      ],
+      "interaction": {
+        "fromReference": {
+          "ebitda": "0.8395",
+          "cash": "0.72585472222222222222"
+        },
+        "fromPlan": {
+          "ebitda": "-0.8395",
+          "cash": "-0.732945"
+        }
+      },
+      "unitMargin": {
+        "planFirst": "1.241",
+        "planTarget": "1.4323",
+        "referenceTarget": "1.3173",
+        "planChange": "0.15414987912973408541"
+      },
+      "capacity": {
+        "maximumQuantity": "118",
+        "investmentInPlan": false,
+        "periodsAbove": [
+          {
+            "periodId": "2028",
+            "quantity": "119.8",
+            "excess": "1.8"
+          }
+        ],
+        "firstPeriodAbove": "2028",
+        "aboveWithoutInvestment": true
+      },
+      "receivables": {
+        "cashPerDayAtPlanRevenue": "1.47586944444444444444",
+        "cashPerDayAtReferenceRevenue": "1.35",
+        "planDays": "45",
+        "requestedDays": "60",
+        "cashAtRequestedDays": "22.13804166666666666667"
+      },
+      "premiumMix": null
+    },
+    "assumptions": [
+      {
+        "assumptionId": "volume",
+        "ruler": "Volume cresceu 2,3% em 2025; capacidade instalada de 118 mil t por ano",
+        "evidenceThatWouldSustain": [
+          "Pedidos ou contratos com volume mínimo",
+          "Projeto de ampliação de capacidade, com o capex e o financiamento dele"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "preco",
+        "ruler": "Custo variável por kg sobe cerca de 3% ao ano na base",
+        "evidenceThatWouldSustain": [
+          "Histórico de repasse de preço acima do custo",
+          "Contratos com cláusula de reajuste",
+          "Mudança de mix documentada, com participação e preço por linha"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "fixos",
+        "ruler": "Inflação e dissídio perto de 4,5% a 5% ao ano",
+        "evidenceThatWouldSustain": [
+          "Projeto de produtividade que gera o ganho, com prazo e responsável"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "prazo-capex",
+        "ruler": "Prazo de 50 dias hoje, as duas maiores redes pedem 60; capex de manutenção de R$ 8 mi por ano nos últimos três anos",
+        "evidenceThatWouldSustain": [
+          "Acordo comercial com as redes que fixe o prazo",
+          "Plano de manutenção que sustente o capex menor"
+        ],
+        "evidenceStatus": "not_presented"
+      }
+    ],
+    "capacitySource": "Cadastro da fábrica: capacidade instalada de 118 mil t por ano",
+    "marginCause": null,
+    "exclusions": [
+      "scenario_execution",
+      "model_rebuild",
+      "material_production",
+      "credit_approval",
+      "method_release"
+    ]
+  },
+  "readings": {
+    "gap": {
+      "targetPeriodId": "2028",
+      "plan": {
+        "ebitda": "85.98954",
+        "margin": "0.16184347079781597665",
+        "cash": "53.9751589"
+      },
+      "reference": {
+        "ebitda": "58.79625",
+        "margin": "0.12097993827160493827",
+        "cash": "34.90135833333333333333"
+      },
+      "ebitda": "27.19329",
+      "cash": "19.07380056666666666667",
+      "planMarginFirst": "0.12382142857142857143",
+      "marginExpansion": "0.03802204222638740522",
+      "marginCauseStated": null
+    },
+    "assumptions": [
+      {
+        "assumptionId": "preco",
+        "label": "Preço líquido +3,5% ao ano",
+        "effect": {
+          "ebitda": "12.9375",
+          "cash": "7.81131944444444444444"
+        },
+        "effectFromPlan": {
+          "ebitda": "13.777",
+          "cash": "8.37432"
+        },
+        "cumulativeShareOfEbitdaGap": "0.47576074833166564252",
+        "drivers": [
+          {
+            "driver": "netUnitPrice",
+            "plan": "4.435",
+            "reference": "4.32",
+            "planGrowth": "0.03500999624720359279",
+            "referenceGrowth": "0.02598556800601819361"
+          }
+        ],
+        "ruler": "Custo variável por kg sobe cerca de 3% ao ano na base",
+        "evidenceThatWouldSustain": [
+          "Histórico de repasse de preço acima do custo",
+          "Contratos com cláusula de reajuste",
+          "Mudança de mix documentada, com participação e preço por linha"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "volume",
+        "label": "Volume +4,5% ao ano",
+        "effect": {
+          "ebitda": "9.61629",
+          "cash": "4.71820973333333333333"
+        },
+        "effectFromPlan": {
+          "ebitda": "10.45579",
+          "cash": "5.3713214"
+        },
+        "cumulativeShareOfEbitdaGap": "0.82938805859827920785",
+        "drivers": [
+          {
+            "driver": "quantity",
+            "plan": "119.8",
+            "reference": "112.5",
+            "planGrowth": "0.04493475198400890575",
+            "referenceGrowth": "0.02326410809381314846"
+          }
+        ],
+        "ruler": "Volume cresceu 2,3% em 2025; capacidade instalada de 118 mil t por ano",
+        "evidenceThatWouldSustain": [
+          "Pedidos ou contratos com volume mínimo",
+          "Projeto de ampliação de capacidade, com o capex e o financiamento dele"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "fixos",
+        "label": "Custos fixos +3% ao ano",
+        "effect": {
+          "ebitda": "3.8",
+          "cash": "2.508"
+        },
+        "effectFromPlan": {
+          "ebitda": "3.8",
+          "cash": "2.508"
+        },
+        "cumulativeShareOfEbitdaGap": "0.96912841366381191831",
+        "drivers": [
+          {
+            "driver": "fixedCosts",
+            "plan": "85.6",
+            "reference": "89.4",
+            "planGrowth": "0.03015838271900953283",
+            "referenceGrowth": "0.04518199316722261049"
+          }
+        ],
+        "ruler": "Inflação e dissídio perto de 4,5% a 5% ao ano",
+        "evidenceThatWouldSustain": [
+          "Projeto de produtividade que gera o ganho, com prazo e responsável"
+        ],
+        "evidenceStatus": "not_presented"
+      },
+      {
+        "assumptionId": "prazo-capex",
+        "label": "Prazo de recebimento de 45 dias e capex de manutenção de R$ 5 mi",
+        "effect": {
+          "ebitda": "0",
+          "cash": "3.31041666666666666667"
+        },
+        "effectFromPlan": {
+          "ebitda": "0",
+          "cash": "3.55310416666666666667"
+        },
+        "cumulativeShareOfEbitdaGap": "0.96912841366381191831",
+        "drivers": [
+          {
+            "driver": "receivableDays",
+            "plan": "45",
+            "reference": "50",
+            "planGrowth": null,
+            "referenceGrowth": null
+          },
+          {
+            "driver": "maintenanceCapex",
+            "plan": "5",
+            "reference": "8",
+            "planGrowth": null,
+            "referenceGrowth": null
+          }
+        ],
+        "ruler": "Prazo de 50 dias hoje, as duas maiores redes pedem 60; capex de manutenção de R$ 8 mi por ano nos últimos três anos",
+        "evidenceThatWouldSustain": [
+          "Acordo comercial com as redes que fixe o prazo",
+          "Plano de manutenção que sustente o capex menor"
+        ],
+        "evidenceStatus": "not_presented"
+      }
+    ],
+    "largestAssumptionId": "preco",
+    "interaction": {
+      "fromReference": {
+        "ebitda": "0.8395",
+        "cash": "0.72585472222222222222"
+      },
+      "fromPlan": {
+        "ebitda": "-0.8395",
+        "cash": "-0.732945"
+      }
+    },
+    "unitMargin": {
+      "planFirst": "1.241",
+      "planTarget": "1.4323",
+      "referenceTarget": "1.3173",
+      "planChange": "0.15414987912973408541"
+    },
+    "capacity": {
+      "maximumQuantity": "118",
+      "firstPeriodAbove": "2028",
+      "excessAtTarget": "1.8",
+      "investmentInPlan": false,
+      "aboveWithoutInvestment": true,
+      "source": "Cadastro da fábrica: capacidade instalada de 118 mil t por ano"
+    },
+    "receivables": {
+      "planDays": "45",
+      "cashPerDay": "1.47586944444444444444",
+      "requestedDays": "60",
+      "cashAtRequestedDays": "22.13804166666666666667"
+    },
+    "premiumMix": null,
+    "recommendation": {
+      "kind": "present_plan_as_upside_case",
+      "baseCase": "reference_with_documented_assumptions",
+      "conditions": [
+        "preco",
+        "volume",
+        "fixos",
+        "prazo-capex"
+      ],
+      "capacityCondition": "limit_quantity_to_capacity_or_add_the_investment_and_its_financing"
+    },
+    "openQuestions": []
+  },
+  "gaps": [],
+  "status": "prepared_for_human_review",
+  "exclusions": [
+    "scenario_execution",
+    "model_rebuild",
+    "material_production",
+    "credit_approval",
+    "method_release"
+  ],
+  "grantsExecution": false,
+  "grantsPublication": false,
+  "fingerprint": "44b9e879d78c6a39027f77e579e3ed4e21df07c64e18622103c02f50e731c2bd"
+}

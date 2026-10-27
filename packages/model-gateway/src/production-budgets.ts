@@ -70,6 +70,9 @@ export const productionModelCeilingsUsd = {
    * The debt table and weekly cash extractions carry whole schedules and event series (Sonnet 5 low,
    * 16k output, the same input): about 0.23 per request and 0.49 through the Terra fallback, x1.10 =
    * 0.54 on top of 1.8443: 2.38. Covenant headroom (10k output) is about 0.40 with the margin: 2.24.
+   * The lote 3 extractions (operating projection, projection challenge, receivables funding) share the
+   * 10k bound of covenant headroom, so the 16k extractions still set the ceiling and it stays 2.4. The quarter
+   * close extraction shares the 16k bound of weekly cash, and the ceiling stays 2.4.
    */
   agentOperationBrief: 2.4,
   /**

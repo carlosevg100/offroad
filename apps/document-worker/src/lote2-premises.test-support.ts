@@ -1,4 +1,5 @@
-import type {ProposedHypothesis} from "@offroad/financial-model";
+import {composeBoundCovenantHeadroom, composeBoundWeeklyCash, proposeCovenantHeadroomHypotheses, proposeWeeklyCashHypotheses, type ProposedHypothesis} from "@offroad/financial-model";
+import {inMemoryBasis} from "./lote3-reader-check";
 
 /** Loads a financial-model test fixture by path, outside this package's compiled sources. */
 export async function financialModelFixture<T>(file: string): Promise<T> {
@@ -17,8 +18,9 @@ export function comparableHypotheses(hypotheses: readonly Comparable[], rename: 
     .sort((a, b) => a.fieldPath.localeCompare(b.fieldPath) || a.scenario.localeCompare(b.scenario));
 }
 
-export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise"];
-export const summaryOrigins = ["document", "informed", "house", "estimate"];
+export const summaryGroups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action", "case", "premise",
+  "driver", "scenario", "version", "assumption", "item", "option", "line", "cause", "facility", "dependent"];
+export const summaryOrigins = ["document", "informed", "house", "estimate", "market"];
 
 type TurnInput = {message: string; hasAttachments: boolean; recentUserMessages: string[]; projectId: string | null;
   loadEvidence: () => Promise<unknown>; extract: (text: string) => Promise<unknown>; log: (event: string, detail: Record<string, unknown>) => void};
@@ -32,3 +34,22 @@ export async function turnWithIntent(propose: (input: TurnInput) => Promise<{pro
   return {extracted, status: result?.forAdvisor.status ?? null, events};
 }
 export const nonAnswering = ["defers", "other_request", "unrelated"] as const;
+
+/** The Aurora prior weekly cash and covenant results as the worker reads them: each adopted on its own basis,
+ * its stored input composed as the earlier request composed it, and the packets the card reads. */
+export async function auroraQuarterUpdatePriors(weeklyPacket: Record<string, unknown>) {
+  const {auroraWeeklyCashFacts} = await financialModelFixture<{auroraWeeklyCashFacts: () => never}>("weekly-cash.test-support.ts");
+  const {auroraPriorCovenantFacts} = await financialModelFixture<{auroraPriorCovenantFacts: () => never}>("quarter-update.test-support.ts");
+  const weekly = inMemoryBasis(proposeWeeklyCashHypotheses(auroraWeeklyCashFacts()), 900101), covenant = inMemoryBasis(proposeCovenantHeadroomHypotheses(auroraPriorCovenantFacts()), 900102);
+  const hex = (c: string) => c.repeat(64);
+  return {
+    weeklyCash: {executionId: "a0000000-0000-4000-8000-000000000071", resultFingerprint: hex("1"), envelopeFingerprint: weekly.envelope.fingerprint, packet: weeklyPacket,
+      streamIds: ["recebimentos", "insumos", "linha-17", "folha"], inputSnapshot: JSON.stringify(composeBoundWeeklyCash({...weekly, question: "Como fica o caixa até dezembro e o que vence?"}))},
+    covenant: {executionId: "a0000000-0000-4000-8000-000000000072", resultFingerprint: hex("2"), envelopeFingerprint: covenant.envelope.fingerprint, packet: {
+      readings: {headline: {measurementId: "dez26-base"}},
+      result: {headroom: {measurements: [{id: "dez26-adverso", label: "Adverso", role: "test", date: "2026-12-31"}, {id: "dez26-base", label: "Escritura", role: "test", date: "2026-12-31"},
+        {id: "junho-gerencial", label: "Junho gerencial", role: "contrast", date: "2026-06-30"}, {id: "dez26-gerencial", label: "Gerencial", role: "test", date: "2026-12-31"},
+        {id: "dez27-base", label: "Dezembro de 2027", role: "test", date: "2027-12-31"}]}}},
+      inputSnapshot: JSON.stringify(composeBoundCovenantHeadroom({...covenant, question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base"}))},
+  };
+}

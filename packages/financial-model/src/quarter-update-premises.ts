@@ -7,7 +7,8 @@ const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/);
 /** Money carries at most eight decimals, as the adopted numeric representation reads it. */
 const money = z.string().regex(/^-?\d{1,24}(?:\.\d{1,8})?$/);
 const unsignedMoney = z.string().regex(/^\d{1,24}(?:\.\d{1,8})?$/);
-const measure = z.string().regex(/^-?\d{1,6}(?:\.\d{1,8})?$/);
+/** Days and ratios stay within six integer digits. */
+const measure = /^-?\d{1,6}(?:\.\d{1,8})?$/;
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const origins = ["document", "informed", "house", "estimate"] as const;
 const originLabel: Record<(typeof origins)[number], string> = {document: "documento", informed: "informado", house: "premissa da casa", estimate: "estimativa"};
@@ -15,7 +16,10 @@ const originLabel: Record<(typeof origins)[number], string> = {document: "docume
 const fact = <T extends z.ZodType>(value: T) => z.strictObject({value, origin: z.enum(origins), source: text});
 type Origin = {origin: (typeof origins)[number]; source: string};
 
-const line = z.strictObject({id: key, label: text, unit: z.enum(["currency", "days", "ratio"]), projected: measure, actual: measure});
+/** A currency line is money in the basis's own units, the units of the prior results it updates (reais when
+ * the priors are in reais); a line in days or a ratio is a measure. */
+const line = z.strictObject({id: key, label: text, unit: z.enum(["currency", "days", "ratio"]), projected: money, actual: money})
+  .refine((l) => l.unit === "currency" || (measure.test(l.projected) && measure.test(l.actual)), {message: "A line in days or a ratio carries at most six integer digits"});
 /** A cause of one bridged deviation: one-off (calendar) or persisting until a date (structural). */
 const cause = z.strictObject({id: key, label: text, amount: money, classification: z.enum(["calendar", "structural"]), until: z.iso.date().nullable(),
   equalsDeviationOf: key.nullable(), driverLineId: key.nullable(), basis: z.enum(["document", "interpretation"]), question: text.nullable(),

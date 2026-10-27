@@ -17,15 +17,22 @@ export function asksOrExplains(message: string): boolean {
 }
 
 /** The objectives of the premise methods: an answer that compiles to another one is that method's. */
-const premiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash"]);
+const premiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
+  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
 
-export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash";
-/** The premise step a message asks for on its own: the capacity cue first, then the router's lote 2
- * objectives. A conceptual question routes elsewhere and asks for none. */
+export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "operating_projection" | "projection_challenge" | "receivables_funding"
+  | "quarter_update";
+const cueKinds = new Set<string>(["debt_table", "covenant_headroom", "weekly_cash", "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+/** Asking only how to start a projection is answered with orientation; the first version is offered, not produced. */
+const orientationOnly = /\bcomo (?:comec\w*|inicio|iniciar)\b/;
+/** The premise step a message asks for on its own: the capacity cue first, then the router's lote 2 and
+ * lote 3 objectives. A conceptual question routes elsewhere and asks for none. The quarter close's step
+ * proposes only when the work has its prior completed weekly cash and covenant results. */
 export function premiseCueKind(message: string, hasAttachments: boolean): PremiseCueKind | null {
   const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
   if (capacityCue.test(foldCue(message))) return kind === "factual_question" ? null : "debt_capacity";
-  return kind === "debt_table" || kind === "covenant_headroom" || kind === "weekly_cash" ? kind : null;
+  if (kind === "operating_projection" && orientationOnly.test(foldCue(message))) return null;
+  return cueKinds.has(kind) ? kind as PremiseCueKind : null;
 }
 
 /** How a turn enters a premise step of one kind: by its own cue, or as a continuation candidate when

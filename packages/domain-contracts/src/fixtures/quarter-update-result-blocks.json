@@ -1,0 +1,550 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "Fechou o trimestre. Atualiza tudo.",
+      "currency": "BRL",
+      "quarterStart": "2026-07-01",
+      "quarterEnd": "2026-09-30",
+      "tightestWeek": {
+        "prior": {
+          "weekStart": "2026-12-21",
+          "closing": "7.48118286"
+        },
+        "updated": {
+          "weekStart": "2026-12-21",
+          "closing": "4.39270974"
+        }
+      },
+      "shortfallToMinimum": {
+        "prior": "7.51881714",
+        "updated": "10.60729026"
+      },
+      "closingAtHorizon": {
+        "prior": "16.14784955",
+        "updated": "13.05937643"
+      },
+      "topUp": {
+        "facilityId": "conta-garantida",
+        "limit": "10",
+        "needExceedsLimit": true,
+        "fullLimitMinimum": {
+          "weekStart": "2026-12-21",
+          "closing": "14.39270974"
+        },
+        "fullLimitCovers": false
+      },
+      "projectedEbitda": {
+        "prior": "54.5",
+        "updated": "53.5"
+      },
+      "decisionsChanged": [
+        "short_term_financing",
+        "covenant_headroom",
+        "third_party_material"
+      ],
+      "materiality": {
+        "absolute": "0.001",
+        "relative": "0.01"
+      },
+      "priorVersionsKept": true,
+      "sentToThirdParties": false
+    },
+    "claims": [
+      {
+        "claimId": "tightest-week",
+        "kind": "calculation",
+        "value": "4.39270974",
+        "unit": "BRL",
+        "period": "2026-12-21",
+        "supportIds": [
+          "0962490ff97bdff36699b75cfb0ed095a5bdf2fe67df743da5c388bf9d944b32"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "lines",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "receita",
+          "label": "Receita",
+          "unit": "currency",
+          "projected": "110",
+          "actual": "111.2",
+          "deviation": "1.2"
+        },
+        {
+          "id": "ebitda",
+          "label": "EBITDA",
+          "unit": "currency",
+          "projected": "13.5",
+          "actual": "13.1",
+          "deviation": "-0.4"
+        },
+        {
+          "id": "caixa",
+          "label": "Caixa em 30/set",
+          "unit": "currency",
+          "projected": "38.9",
+          "actual": "37.2",
+          "deviation": "-1.7"
+        },
+        {
+          "id": "prazo",
+          "label": "Prazo médio de recebimento (dias)",
+          "unit": "days",
+          "projected": "50",
+          "actual": "54",
+          "deviation": "4"
+        },
+        {
+          "id": "trigo",
+          "label": "Variação do custo do trigo",
+          "unit": "ratio",
+          "projected": "0",
+          "actual": "0.03",
+          "deviation": "0.03"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "bridges",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "lineId": "ebitda",
+          "deviation": "-0.4",
+          "residual": "0",
+          "causes": [
+            {
+              "id": "volume",
+              "label": "Volume 1% acima",
+              "amount": "0.5",
+              "classification": "calendar",
+              "until": null
+            },
+            {
+              "id": "trigo",
+              "label": "Trigo 3% mais caro desde agosto, sem repasse ainda",
+              "amount": "-0.6",
+              "classification": "structural",
+              "until": "2026-12-31"
+            },
+            {
+              "id": "frete-energia",
+              "label": "Frete e energia",
+              "amount": "-0.3",
+              "classification": "calendar",
+              "until": null
+            }
+          ]
+        },
+        {
+          "lineId": "caixa",
+          "deviation": "-1.7",
+          "residual": "0",
+          "causes": [
+            {
+              "id": "ebitda-abaixo",
+              "label": "EBITDA abaixo",
+              "amount": "-0.4",
+              "classification": "calendar",
+              "until": null
+            },
+            {
+              "id": "prazo-redes",
+              "label": "Redes pagando em 54 dias (prazo médio de 50)",
+              "amount": "-2.1",
+              "classification": "structural",
+              "until": "2026-12-31"
+            },
+            {
+              "id": "estoque-trigo",
+              "label": "Estoque de trigo antecipado em setembro",
+              "amount": "-1.6",
+              "classification": "calendar",
+              "until": null
+            },
+            {
+              "id": "impostos-outros",
+              "label": "Impostos e outros",
+              "amount": "2.4",
+              "classification": "calendar",
+              "until": null
+            }
+          ]
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "persisting",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "causeId": "trigo",
+          "until": "2026-12-31",
+          "nature": "flow",
+          "weeklyEffect": "-0.696",
+          "materialityFloor": "0.006",
+          "ebitdaAhead": "-0.6",
+          "cashAhead": "-0.6"
+        },
+        {
+          "causeId": "prazo-redes",
+          "until": "2026-12-31",
+          "nature": "balance",
+          "weeklyEffect": "-0.69247312",
+          "materialityFloor": "0.021",
+          "ebitdaAhead": "0",
+          "cashAhead": "0"
+        }
+      ],
+      "oneOff": [
+        "volume",
+        "frete-energia",
+        "ebitda-abaixo",
+        "estoque-trigo",
+        "impostos-outros"
+      ],
+      "balanceShiftsCarriedOnce": [
+        {
+          "causeId": "prazo-redes",
+          "amount": "-2.1"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "action",
+    "kind": "section",
+    "content": {
+      "steps": [
+        {
+          "facilityId": "programas-redes",
+          "mode": "fixed",
+          "amount": "23",
+          "limit": "23",
+          "withinLimit": true,
+          "caseId": "passo-1",
+          "source": "Deliberação do conselho de 30/set",
+          "minimum": {
+            "weekStart": "2026-12-21",
+            "closing": "10.39270974"
+          },
+          "covers": false
+        },
+        {
+          "facilityId": "conta-garantida",
+          "mode": "residual",
+          "amount": "4.60729026",
+          "limit": "10",
+          "withinLimit": true,
+          "caseId": "passo-2",
+          "source": "Contrato da conta garantida",
+          "minimum": {
+            "weekStart": "2026-12-21",
+            "closing": "15"
+          },
+          "covers": true
+        }
+      ],
+      "withinApproved": true,
+      "covers": true,
+      "minimumAfter": {
+        "weekStart": "2026-12-21",
+        "closing": "15"
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "covenant",
+    "kind": "section",
+    "content": {
+      "covenant": {
+        "measurements": [
+          {
+            "measurementId": "dez26-base",
+            "definitionRead": "Definição da escritura (CVM 156 menos arrendamentos)",
+            "ratio": {
+              "prior": "2.19824203514563106796",
+              "updated": "2.28731613485148514851"
+            },
+            "trailingEbitda": {
+              "prior": "54.5",
+              "updated": "53.5"
+            }
+          },
+          {
+            "measurementId": "dez26-gerencial",
+            "definitionRead": "Definição gerencial adotada pelo conselho",
+            "ratio": {
+              "prior": "2.03981017675675675676",
+              "updated": "2.11943972128440366972"
+            },
+            "trailingEbitda": {
+              "prior": "55.5",
+              "updated": "54.5"
+            }
+          }
+        ],
+        "headroom": [
+          {
+            "measurementId": "dez26-base",
+            "definitionRead": "Definição da escritura (CVM 156 menos arrendamentos)",
+            "limitId": "aditamento",
+            "kind": "contractual",
+            "limitDefinition": "EBITDA da CVM 156 dos últimos doze meses menos pagamentos de arrendamento; dívida bruta menos caixa",
+            "ebitdaHeadroom": {
+              "prior": "13.76351173",
+              "updated": "11.99684506333333333333"
+            },
+            "breached": false
+          },
+          {
+            "measurementId": "dez26-base",
+            "definitionRead": "Definição da escritura (CVM 156 menos arrendamentos)",
+            "limitId": "politica",
+            "kind": "board_policy",
+            "limitDefinition": "EBITDA gerencial: CVM 156 com os ajustes da administração, sem descontar arrendamentos (ata de 30/set)",
+            "ebitdaHeadroom": {
+              "prior": "6.216214076",
+              "updated": "4.296214076"
+            },
+            "breached": false
+          },
+          {
+            "measurementId": "dez26-gerencial",
+            "definitionRead": "Definição gerencial adotada pelo conselho",
+            "limitId": "politica",
+            "kind": "board_policy",
+            "limitDefinition": "EBITDA gerencial: CVM 156 com os ajustes da administração, sem descontar arrendamentos (ata de 30/set)",
+            "ebitdaHeadroom": {
+              "prior": "10.216214076",
+              "updated": "8.296214076"
+            },
+            "breached": false
+          }
+        ],
+        "anyBreach": false,
+        "notUpdated": [
+          "dez26-adverso",
+          "dez26-safra-30",
+          "dez26-sem-safra",
+          "dez27-base",
+          "dez27-adverso",
+          "junho-gerencial",
+          "dez26-escritura-original"
+        ]
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "dependents",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "caixa-semanal",
+          "label": "Caixa semanal até dezembro",
+          "kind": "analysis",
+          "status": "updated",
+          "movedBy": [
+            "caixa",
+            "prazo",
+            "trigo"
+          ],
+          "recomputedBy": "weekly_cash",
+          "binding": "matched",
+          "result": {
+            "kind": "weekly_cash",
+            "id": "weekly_cash",
+            "start": "2026-09-14",
+            "end": "2027-01-03",
+            "scenario": "linha-17",
+            "definition": null,
+            "produces": [
+              "cash_balance_by_week"
+            ]
+          },
+          "owner": null,
+          "sentToThirdParties": false
+        },
+        {
+          "id": "covenant-dez26",
+          "label": "Covenant de dezembro de 2026, definição da escritura",
+          "kind": "analysis",
+          "status": "updated",
+          "movedBy": [
+            "ebitda",
+            "caixa"
+          ],
+          "recomputedBy": "covenant:dez26-base",
+          "binding": "matched",
+          "result": {
+            "kind": "covenant",
+            "id": "dez26-base",
+            "start": "2026-01-01",
+            "end": "2026-12-31",
+            "scenario": "base",
+            "definition": "Definição da escritura (CVM 156 menos arrendamentos)",
+            "produces": [
+              "covenant_ratio",
+              "covenant_headroom"
+            ]
+          },
+          "owner": null,
+          "sentToThirdParties": false
+        },
+        {
+          "id": "covenant-dez26-gerencial",
+          "label": "Covenant de dezembro de 2026, definição gerencial",
+          "kind": "analysis",
+          "status": "updated",
+          "movedBy": [
+            "ebitda",
+            "caixa"
+          ],
+          "recomputedBy": "covenant:dez26-gerencial",
+          "binding": "matched",
+          "result": {
+            "kind": "covenant",
+            "id": "dez26-gerencial",
+            "start": "2026-01-01",
+            "end": "2026-12-31",
+            "scenario": "gerencial_dez",
+            "definition": "Definição gerencial adotada pelo conselho",
+            "produces": [
+              "covenant_ratio",
+              "covenant_headroom"
+            ]
+          },
+          "owner": null,
+          "sentToThirdParties": false
+        },
+        {
+          "id": "projecao-2026",
+          "label": "Projeção de 2026 (EBITDA do ano)",
+          "kind": "plan",
+          "status": "updated",
+          "movedBy": [
+            "ebitda"
+          ],
+          "recomputedBy": "projection:2026",
+          "binding": "matched",
+          "result": {
+            "kind": "projection",
+            "id": "2026",
+            "start": "2026-01-01",
+            "end": "2026-12-31",
+            "scenario": "base",
+            "definition": null,
+            "produces": [
+              "annual_ebitda"
+            ]
+          },
+          "owner": null,
+          "sentToThirdParties": false
+        },
+        {
+          "id": "tabela-divida",
+          "label": "Tabela de dívida (só os pagamentos de juros e do Finame de 15/set)",
+          "kind": "analysis",
+          "status": "unchanged",
+          "movedBy": [],
+          "recomputedBy": null,
+          "binding": "none",
+          "result": null,
+          "owner": "build-company-debt-table",
+          "sentToThirdParties": false
+        },
+        {
+          "id": "plano-2027",
+          "label": "Plano para 2027, com o repasse do trigo concluído no primeiro trimestre",
+          "kind": "plan",
+          "status": "unchanged",
+          "movedBy": [],
+          "recomputedBy": null,
+          "binding": "none",
+          "result": null,
+          "owner": "build-operating-projection",
+          "sentToThirdParties": false
+        },
+        {
+          "id": "linha-embalagem",
+          "label": "Análise da linha de embalagem",
+          "kind": "analysis",
+          "status": "unchanged",
+          "movedBy": [],
+          "recomputedBy": null,
+          "binding": "none",
+          "result": null,
+          "owner": "analyze-investment-project",
+          "sentToThirdParties": false
+        },
+        {
+          "id": "material-sondagem",
+          "label": "Material da sondagem da debênture (EBITDA de junho)",
+          "kind": "material",
+          "status": "stale",
+          "movedBy": [],
+          "recomputedBy": null,
+          "binding": "none",
+          "result": null,
+          "owner": "autoria do material da sondagem",
+          "sentToThirdParties": false
+        }
+      ],
+      "ownedElsewhere": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "open-questions",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "causeId": "prazo-redes",
+          "question": "Os 54 dias das redes são prazo negociado ou atraso?"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "accounting_close",
+        "cause_attribution",
+        "financing_cost_comparison",
+        "third_party_distribution",
+        "credit_approval"
+      ]
+    },
+    "claims": []
+  }
+]

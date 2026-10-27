@@ -38,7 +38,10 @@ do $$declare f capital_provenance_fixture; m record; pinned jsonb; payload jsonb
   ('update-after-quarter-close','f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729','quarter-update-packet-input.v1')) x(id,hash,schema) loop
   pinned:=jsonb_set(f.c,'{method}',jsonb_build_object('methodId',m.id,'methodVersion','2026.10.26-v1','manifestHash',m.hash));
   payload:=jsonb_set(f.p,'{schemaVersion}',to_jsonb(m.schema));
-  perform pg_temp.check_capital_provenance(pinned,payload,true,m.id||' pinned identity with exact basis accepted');
+  -- The quarter close is accepted only over the prior results the v3 producer recorded for the execution
+  -- (20261027010426_lote3_quarter_update_priors; acceptance is proved in lote3_quarter_update_priors.sql).
+  perform pg_temp.check_capital_provenance(pinned,payload,m.id<>'update-after-quarter-close',
+   m.id||case when m.id='update-after-quarter-close' then ' without recorded priors refused' else ' pinned identity with exact basis accepted' end);
   perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,methodVersion}','"2026.10.23-v1"'),payload,false,m.id||' other version denied');
   perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,manifestHash}',to_jsonb(repeat('0',64))),payload,false,m.id||' other manifest denied');
   perform pg_temp.check_capital_provenance(pinned,f.p,false,m.id||' other payload schema denied');

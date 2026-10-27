@@ -37,7 +37,18 @@ const named = (kind: string) => new RegExp(`^${kind}\\.(${k})\\.[A-Za-z]+$`);
  * adopted twice for the same slot, is declared missing with its reason. No number is supplied here. */
 export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInput {
   const input = boundQuarterUpdateInputSchema.parse(raw);
-  const basis = readContextualBasis(input.update.envelope, input.update.scope);
+  const {update, measurementIds} = composeQuarterUpdateClose(input.update);
+  // The prior versions are composed by their own composers, exactly as they were adopted.
+  const weeklyCash = composeBoundWeeklyCash({...input.prior.weeklyCash, question: input.question}).analysis;
+  const covenant = composeBoundCovenantHeadroom({...input.prior.covenant, question: input.question, headlineMeasurementId: measurementIds[0]!}).analysis;
+  return quarterUpdatePacketInputSchema.parse({schemaVersion: "quarter-update-packet-input.v1", question: input.question, analysis: {prior: {weeklyCash, covenant}, update}, askedDependentIds: input.askedDependentIds});
+}
+
+/** The close alone, composed from its own basis: every operand selected by field path, scenario, unit and type,
+ * structure adopted once or refused by name. Shared by the composition from prior bases and from stored prior inputs. */
+export function composeQuarterUpdateClose(raw: z.input<typeof bound>) {
+  const closeInput = bound.parse(raw);
+  const basis = readContextualBasis(closeInput.envelope, closeInput.scope);
   const entries = [...basis.entries].sort((a, b) => a.decisionId < b.decisionId ? -1 : 1);
   const roles = entries.flatMap((e) => {const m = analysisPath.exec(e.fieldPath); return m ? [{analysisId: m[1]!, entry: e}] : [];});
   if (!roles.length) throw new Error("quarter_update_analysis_missing");
@@ -120,7 +131,7 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
       quantities: select(p + "quantities", "identity", "list"), definition: optional(p + "definition", "text", "text"), scenario: optional(p + "scenario", "identity", "text")};
   });
   const measurementIds = z.array(keyOf).min(1).parse(meta("covenant.measurementIds", "list", "quarter_update_covenant_measurement", true));
-  const update = {envelope: input.update.envelope, scope: input.update.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,
+  const update = {envelope: closeInput.envelope, scope: closeInput.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,
     openingDate: d.periodStart!, endDate: d.periodEnd!, numericInterpretations: [], analysisId, scenario: sc,
     priorWeeklyFingerprint: select("prior.weeklyCash.fingerprint", "identity", "text"), priorCovenantFingerprint: select("prior.covenant.fingerprint", "identity", "text"),
     lines, carry: {cashLineId: one("carry.cashLineId", "quarter_update_carry"), ebitdaLineId: one("carry.ebitdaLineId", "quarter_update_carry")},
@@ -128,8 +139,5 @@ export function composeBoundQuarterUpdate(raw: unknown): QuarterUpdatePacketInpu
   // A missing operand carries the lowest resolved definition so the reference is stable; the executor ignores it.
   const borrowed = [...definitions].sort((a, b) => a.definitionVersionId < b.definitionVersionId ? -1 : 1)[0];
   if (borrowed) for (const m of missing) {m.definitionVersionId = borrowed.definitionVersionId; m.definitionKind = borrowed.definitionKind;}
-  // The prior versions are composed by their own composers, exactly as they were adopted.
-  const weeklyCash = composeBoundWeeklyCash({...input.prior.weeklyCash, question: input.question}).analysis;
-  const covenant = composeBoundCovenantHeadroom({...input.prior.covenant, question: input.question, headlineMeasurementId: measurementIds[0]!}).analysis;
-  return quarterUpdatePacketInputSchema.parse({schemaVersion: "quarter-update-packet-input.v1", question: input.question, analysis: {prior: {weeklyCash, covenant}, update}, askedDependentIds: input.askedDependentIds});
+  return {update, measurementIds};
 }

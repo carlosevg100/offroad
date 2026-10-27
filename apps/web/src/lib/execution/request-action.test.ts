@@ -224,4 +224,11 @@ describe("capital execution request action", () => {
     expect(executionRequestFailure({code: "42501", message: "execution_gates_mismatch"})).toBe("gates_mismatch");
     expect(executionRequestFailure(null)).toBe("unavailable");
   });
+  it("names each refusal of the quarter close's prior results", () => {
+    for (const [message, error] of [["quarter_update_prior_rights_denied", "provenance_denied"], ["quarter_update_prior_source_unpinned", "provenance_denied"],
+      ["quarter_update_prior_fingerprint_mismatch", "stale"], ["quarter_update_prior_input_mismatch", "stale"], ["quarter_update_prior_not_found", "prior_invalid"],
+      ["quarter_update_prior_method_mismatch", "prior_invalid"], ["quarter_update_prior_not_completed", "prior_invalid"],
+      ["quarter_update_priors_invalid", "invalid"], ["quarter_update_priors_method_denied", "invalid"]] as const)
+      expect(executionRequestFailure({code: "42501", message}), message).toBe(error);
+  });
 });

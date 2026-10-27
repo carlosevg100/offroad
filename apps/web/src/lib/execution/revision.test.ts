@@ -4,6 +4,13 @@ import {covenantHeadroomPacketBlocks, debtTablePacketBlocks, readCovenantHeadroo
 import covenantPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/covenant-headroom-result-packet.json";
 import debtTablePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/debt-table-result-packet.json";
 import weeklyCashPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/weekly-cash-result-packet.json";
+import {operatingProjectionPacketBlocks, projectionChallengePacketBlocks, quarterUpdatePacketBlocks, readOperatingProjectionPacketBlocks, readProjectionChallengePacketBlocks,
+  readQuarterUpdatePacketBlocks, readReceivablesFundingPacketBlocks, receivablesFundingPacketBlocks, type OperatingProjectionPacketLike, type ProjectionChallengePacketLike,
+  type QuarterUpdatePacketLike, type ReceivablesFundingPacketLike} from "@offroad/domain-contracts";
+import operatingProjectionPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/operating-projection-result-packet.json";
+import projectionChallengePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/projection-challenge-result-packet.json";
+import receivablesFundingPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/receivables-funding-result-packet.json";
+import quarterUpdatePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/quarter-update-result-packet.json";
 import investmentPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/investment-result-packet.json";
 // The packet the SQL producer and the contract mapping are proved against.
 import packetFixture from "../../../../../packages/domain-contracts/src/fixtures/execution-result-packet.json";
@@ -77,6 +84,29 @@ describe("the registered revision of an execution result", () => {
       expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(k.packet.fingerprint);
       expect(state.state === "ready" && (state.revision as unknown as Record<string, unknown>)[k.field]).toEqual(k.read(kindBlocks as never));
       // Blocks of another kind under this trace are not read.
+      expect(executionRevisionFromRead(parsed(recorded({traces: kindTraces})), executionId)).toEqual({state: "unavailable"});
+    }
+  });
+
+  it("reads each lote 3 result by its packet trace, with its own reader and pins", () => {
+    type Blocks = NonNullable<Parameters<typeof artifactReadFixture>[0]["blocks"]>;
+    const kinds = [
+      {prefix: "operating-projection-packet:", kind: "operating_projection", field: "operatingProjection", packet: operatingProjectionPacketFixture as unknown as OperatingProjectionPacketLike,
+        map: (p: unknown) => operatingProjectionPacketBlocks(p as OperatingProjectionPacketLike), read: readOperatingProjectionPacketBlocks},
+      {prefix: "projection-challenge-packet:", kind: "projection_challenge", field: "projectionChallenge", packet: projectionChallengePacketFixture as unknown as ProjectionChallengePacketLike,
+        map: (p: unknown) => projectionChallengePacketBlocks(p as ProjectionChallengePacketLike), read: readProjectionChallengePacketBlocks},
+      {prefix: "receivables-funding-packet:", kind: "receivables_funding", field: "receivablesFunding", packet: receivablesFundingPacketFixture as unknown as ReceivablesFundingPacketLike,
+        map: (p: unknown) => receivablesFundingPacketBlocks(p as ReceivablesFundingPacketLike), read: readReceivablesFundingPacketBlocks},
+      {prefix: "quarter-update-packet:", kind: "quarter_update", field: "quarterUpdate", packet: quarterUpdatePacketFixture as unknown as QuarterUpdatePacketLike,
+        map: (p: unknown) => quarterUpdatePacketBlocks(p as QuarterUpdatePacketLike), read: readQuarterUpdatePacketBlocks},
+    ] as const;
+    for (const k of kinds) {
+      const kindBlocks = k.map(k.packet) as unknown as Blocks;
+      const kindTraces = [`${k.prefix}${k.packet.fingerprint}`, `execution-gates:${"f".repeat(64)}`];
+      const state = executionRevisionFromRead(parsed(recorded({traces: kindTraces, blocks: kindBlocks})), executionId);
+      expect(state.state === "ready" && state.revision.kind).toBe(k.kind);
+      expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(k.packet.fingerprint);
+      expect(state.state === "ready" && (state.revision as unknown as Record<string, unknown>)[k.field]).toEqual(k.read(kindBlocks as never));
       expect(executionRevisionFromRead(parsed(recorded({traces: kindTraces})), executionId)).toEqual({state: "unavailable"});
     }
   });

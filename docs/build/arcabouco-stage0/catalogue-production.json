@@ -103551,6 +103551,78 @@
       "security_definer": false
     },
     {
+      "id": "function:private.execution_result_operating_projection_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_operating_projection_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_projection_challenge_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_projection_challenge_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_receivables_funding_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_receivables_funding_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_quarter_update_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_quarter_update_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.record_execution_result_reply_v1(p_org uuid, p_execution uuid, p_job uuid)",
       "kind": "function",
       "name": "record_execution_result_reply_v1",
@@ -108449,6 +108521,336 @@
       "enabled": "O",
       "function": "private.guard_market_schedule_occurrence_v1()",
       "definition": "CREATE TRIGGER market_schedule_occurrences_integrity BEFORE INSERT ON private.market_schedule_occurrences FOR EACH ROW EXECUTE FUNCTION private.guard_market_schedule_occurrence_v1()"
+    },
+    {
+      "id": "function:private.quarter_update_prior_method_v1(p_role text)",
+      "kind": "function",
+      "name": "quarter_update_prior_method_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_role text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.quarter_update_prior_identity_v1(p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text)",
+      "kind": "function",
+      "name": "quarter_update_prior_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.quarter_update_prior_content_v1(p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb)",
+      "kind": "function",
+      "name": "quarter_update_prior_content_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.quarter_update_prior_resolve_v1(p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid)",
+      "kind": "function",
+      "name": "quarter_update_prior_resolve_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.quarter_update_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
+      "kind": "function",
+      "name": "quarter_update_priors_recorded_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract jsonb, p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.request_work_execution_producer_v3(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "name": "request_work_execution_producer_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.request_work_execution_v3(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "name": "request_work_execution_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.quarter_update_latest_prior_v1(p_org uuid, p_work uuid, p_role text, p_subject uuid)",
+      "kind": "function",
+      "name": "quarter_update_latest_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_role text, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.quarter_update_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "quarter_update_prior_results_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.quarter_update_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "quarter_update_prior_results_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.worker_quarter_update_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_quarter_update_priors_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_quarter_update_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_quarter_update_priors_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "r:private.execution_prior_results",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_prior_results",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "policy:private.execution_prior_results.execution_prior_results_deny",
+      "kind": "policy",
+      "name": "execution_prior_results_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_prior_results",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "trigger:private.execution_prior_results.execution_prior_results_immutable",
+      "kind": "trigger",
+      "name": "execution_prior_results_immutable",
+      "table": "execution_prior_results",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_prior_results_immutable BEFORE DELETE OR UPDATE ON private.execution_prior_results FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_prior_results.execution_prior_results_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_prior_results_truncate_guard",
+      "table": "execution_prior_results",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER execution_prior_results_truncate_guard BEFORE TRUNCATE ON private.execution_prior_results FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"
