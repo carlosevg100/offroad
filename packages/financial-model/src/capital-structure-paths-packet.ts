@@ -41,7 +41,9 @@ const readingsSchema = z.strictObject({
     /** issueTarget is the amount the plan proposes to issue; issueFloorInsideGates is the smallest amount that keeps the path inside every gate. */
     longInstrument: z.strictObject({id: key, issueTarget: decimal, issueFloorInsideGates: decimal.nullable(), drawPeriodId: date.nullable(), termYears: decimal.nullable(), firstAmortizationYear: z.number().int().nullable(),
       lastAmortizationYear: z.number().int().nullable(), equivalentSpread: decimal.nullable(), maximumSpread: decimal, equivalentSpreadAtCondition: decimal.nullable(),
-      insideGatesAtCondition: z.boolean().nullable()}).nullable(),
+      insideGatesAtCondition: z.boolean().nullable(),
+      /** The spread is the long instrument's cost in this path: its own charges and those the path attributes to it. */
+      chargesOutsideSpread: z.array(z.strictObject({id: key, instrumentId: key, periodEnd: date, amount: decimal})).max(8)}).nullable(),
     soundingBy: date, routeDecisionBy: date, mustPrecede: z.strictObject({instrumentId: key, date}).nullable(), daysToMaturity: z.number().int().nullable()}).nullable(),
   /** The dated fallback and the conditions it still carries. */
   alternative: z.strictObject({pathId: key, label: text, longInstrumentId: key, issueTarget: decimal, conditions: z.array(capitalPathGateIdSchema).max(8), decisionBy: date}).nullable(),
@@ -78,6 +80,9 @@ export const capitalPathsPacketOutputSchema = z.strictObject({
   if (!e || !r) return;
   const first = e.ranking.find((x) => x.role !== "companion" && x.eligible)?.pathId ?? null;
   if ((r.recommendation?.pathId ?? null) !== first || (e.recommendation?.pathId ?? null) !== first) ctx.addIssue({code: "custom", message: "capital_paths_recommendation_not_from_gates"});
+  // The recommended spread is the cost priced in the recommended path, never the generic instrument cost.
+  const pathCost = e.recommendation?.longCost, published = r.recommendation?.longInstrument?.equivalentSpread ?? null;
+  if (published !== (pathCost?.status === "calculated" ? pathCost.equivalentSpread : null)) ctx.addIssue({code: "custom", message: "capital_paths_spread_not_from_path_cost"});
   const named = e.paths.find((x) => x.id === r.recommendation?.pathId);
   if (named && (!named.eligible || named.gates.some((g) => g.status !== "pass"))) ctx.addIssue({code: "custom", message: "capital_paths_recommended_path_misses_a_gate"});
 });
@@ -98,7 +103,8 @@ export function prepareCapitalPathsPacket(raw: unknown): CapitalPathsPacket {
     const worst = (rows: {periodId: string; ratio: string}[]) => rows.reduce((m, r) => (new Exact(r.ratio).gt(m.ratio) ? r : m));
     const rec = e.recommendation, recPath = rec ? pathOf(rec.pathId) : null;
     const long = rec?.longInstrument ?? null;
-    const cost = long ? e.instrumentCosts.find((c) => c.instrumentId === long.instrumentId) ?? null : null;
+    // Never the generic instrument cost: the recommendation reads the cost priced in its own path.
+    const cost = rec?.longCost ?? null;
     const conditionCost = rec?.condition?.cost.status === "calculated" ? rec.condition.cost.equivalentSpread : null;
     const alt = rec?.alternative ?? null;
     const candidates = e.paths.filter((p) => p.role !== "companion");
@@ -137,7 +143,8 @@ export function prepareCapitalPathsPacket(raw: unknown): CapitalPathsPacket {
         prepaidInstrumentIds: recPath.prepayments.map((x) => x.instrumentId),
         longInstrument: long ? {id: long.instrumentId, issueTarget: long.amount, issueFloorInsideGates: rec.demand?.issueFloorInsideGates ?? null, drawPeriodId: long.drawPeriodId, termYears: cost?.status === "calculated" ? cost.termYears : null,
           firstAmortizationYear: long.firstAmortizationYear, lastAmortizationYear: long.lastAmortizationYear, equivalentSpread: cost?.status === "calculated" ? cost.equivalentSpread : null,
-          maximumSpread: rec.condition?.maximumSpread ?? "0", equivalentSpreadAtCondition: conditionCost, insideGatesAtCondition: rec.condition?.insideGates ?? null} : null,
+          maximumSpread: rec.condition?.maximumSpread ?? "0", equivalentSpreadAtCondition: conditionCost, insideGatesAtCondition: rec.condition?.insideGates ?? null,
+          chargesOutsideSpread: rec.pathChargesOutsideSpread} : null,
         soundingBy: rec.soundingBy, routeDecisionBy: rec.routeDecisionBy, mustPrecede: rec.mustPrecede,
         daysToMaturity: rec.daysToMaturity} : null,
       alternative: alt ? {pathId: alt.pathId, label: pathOf(alt.pathId).label, longInstrumentId: alt.longInstrumentId, issueTarget: alt.longInstrument.amount, conditions: alt.conditions,

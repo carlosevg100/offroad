@@ -12,7 +12,7 @@ const amountAt = z.strictObject({periodId: date, amount: decimal});
 const covenantRow = z.strictObject({periodId: date, netDebt: decimal, trailingEbitda: decimal, ratio: decimal, headroom: decimal, complies: z.boolean()});
 const covenant = z.strictObject({base: z.array(covenantRow).min(1).max(12), stress: z.array(covenantRow).min(1).max(12)});
 const costCalculated = z.strictObject({status: z.literal("calculated"), nominalSpread: decimal, couponBase: z.enum(["opening_principal", "average_principal"]),
-  couponTreatment: z.enum(["cash_paid", "accrued_until_paid"]), equivalentSpread: decimal, upfrontCharges: decimal, weightedAverageLifeYears: decimal, termYears: decimal, finalPaymentDate: date,
+  couponTreatment: z.enum(["cash_paid", "accrued_until_paid"]), equivalentSpread: decimal, pricedCharges: decimal, weightedAverageLifeYears: decimal, termYears: decimal, finalPaymentDate: date,
   /** The flows the cost is solved on: the same indexed-debt kernel as the cash calculation. */
   flows: z.array(z.strictObject({periodEnd: date, interestPaid: decimal, principal: decimal, charges: decimal, debtService: decimal})).min(1).max(120)});
 const costNotApplicable = z.strictObject({status: z.literal("not_applicable"), reason: text});
@@ -59,6 +59,8 @@ export const capitalPathsOutputSchema = z.strictObject({
   recommendation: z.strictObject({pathId: key, longInstrumentId: key.nullable(), longInstrument: longTerms.nullable(),
     condition: z.strictObject({instrumentId: key, maximumSpread: decimal, gates: z.array(gate).length(8), insideGates: z.boolean(), horizonFinancingCost: decimal, minimumCash: amountAt, cost}).nullable(),
     /** The issue the plan targets and the smallest one that keeps the path inside every gate. */
+    longCost: cost.nullable(),
+    pathChargesOutsideSpread: z.array(z.strictObject({id: key, instrumentId: key, periodEnd: date, amount: decimal})).max(8),
     demand: z.strictObject({instrumentId: key, issueTarget: decimal, issueFloorInsideGates: decimal, quantum: decimal}).nullable(),
     soundingBy: date, routeDecisionBy: date, mustPrecede: z.strictObject({instrumentId: key, date}).nullable(), decidedBeforeMaturity: z.boolean(), daysToMaturity: z.number().int().nullable(),
     alternative: z.strictObject({pathId: key, longInstrumentId: key, longInstrument: longTerms, conditions: z.array(capitalPathGateIdSchema).max(8), decisionBy: date}).nullable()}).nullable(),

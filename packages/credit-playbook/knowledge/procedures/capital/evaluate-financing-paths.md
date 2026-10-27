@@ -16,8 +16,8 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: capital-structure-paths-packet.v1
 unit_test_files: [packages/financial-core/src/capital-structure-paths.test.ts, packages/financial-model/src/capital-structure-paths-packet.test.ts, packages/financial-model/src/capital-structure-paths-runs.test.ts, packages/financial-model/src/capital-structure-paths-premises.test.ts]
-gold_case_ids: [first-shortfall-in-december-2026-without-action, cash-at-the-end-of-2027-without-action, 2027-service-against-cash-available-before-the-project, seven-paths-and-two-companions-on-the-same-base, recommended-path-comes-from-the-gates, leverage-on-the-indenture-definition-in-december, oracle-paths-on-the-same-base, three-year-ccb-adds-to-2027-and-leaves-bradesco-open, taxes-recomputed-per-path, aggregate-basket-with-bradesco-inside, five-year-amortization-fails-in-2029-seven-passes, effective-cost-of-the-issue-over-its-life, bradesco-only-extension-leaves-a-gap, dated-alternative-before-the-bradesco-maturity, issue-target-apart-from-the-floor-inside-the-gates, wheat-sensitivity-at-the-c24-level, seasonal-line-leaves-the-test-only-with-a-verified-settlement, cost-flows-are-the-cash-flows, what-would-change-the-recommendation, facts-readings-recommendations-apart-without-verdict, charge-after-the-last-amortization-enters-the-equivalent-cost, profile-with-a-trailing-zero-closes-on-the-last-effective-payment, fingerprints-are-taken-on-the-canonical-objects, minimum-cash-of-policy-changes-the-order, absent-minimum-cash-is-a-gap-not-zero]
-adversarial_case_ids: [tampered-envelope, free-result-in-request, recommendation-supplied-as-text, taxes-supplied-per-path-instead-of-recalculated, fabricated-grant-in-result, fabricated-verdict-in-readings, recommendation-not-from-the-gates, path-that-misses-the-policy-recommended, fabricated-contact-with-investors, basket-read-as-empty-under-the-bradesco-assignment, semiannual-interest-paid-instead-of-accrued, amortization-after-the-horizon-ignored, long-debt-labeled-seasonal-to-skip-the-amortization-test, one-release-claimed-by-two-seasonal-lines, long-balance-labeled-seasonal-with-a-small-new-draw, existing-debt-dropped-from-a-path, prepayment-without-contract-terms, financed-asset-placed-in-the-basket, covenant-test-off-the-calendar, parallel-lists-of-different-length, selection-pointing-at-another-operand]
+gold_case_ids: [first-shortfall-in-december-2026-without-action, cash-at-the-end-of-2027-without-action, 2027-service-against-cash-available-before-the-project, seven-paths-and-two-companions-on-the-same-base, recommended-path-comes-from-the-gates, leverage-on-the-indenture-definition-in-december, oracle-paths-on-the-same-base, three-year-ccb-adds-to-2027-and-leaves-bradesco-open, taxes-recomputed-per-path, aggregate-basket-with-bradesco-inside, five-year-amortization-fails-in-2029-seven-passes, effective-cost-of-the-issue-over-its-life, bradesco-only-extension-leaves-a-gap, dated-alternative-before-the-bradesco-maturity, issue-target-apart-from-the-floor-inside-the-gates, wheat-sensitivity-at-the-c24-level, seasonal-line-leaves-the-test-only-with-a-verified-settlement, cost-flows-are-the-cash-flows, what-would-change-the-recommendation, facts-readings-recommendations-apart-without-verdict, charge-after-the-last-amortization-enters-the-equivalent-cost, profile-with-a-trailing-zero-closes-on-the-last-effective-payment, recommended-spread-is-priced-in-its-own-path, path-charge-on-another-instrument-stays-outside-the-spread, fingerprints-are-taken-on-the-canonical-objects, minimum-cash-of-policy-changes-the-order, absent-minimum-cash-is-a-gap-not-zero]
+adversarial_case_ids: [tampered-envelope, free-result-in-request, recommendation-supplied-as-text, taxes-supplied-per-path-instead-of-recalculated, fabricated-grant-in-result, fabricated-verdict-in-readings, recommendation-not-from-the-gates, path-that-misses-the-policy-recommended, generic-cost-published-as-the-path-spread, fabricated-contact-with-investors, basket-read-as-empty-under-the-bradesco-assignment, semiannual-interest-paid-instead-of-accrued, amortization-after-the-horizon-ignored, long-debt-labeled-seasonal-to-skip-the-amortization-test, one-release-claimed-by-two-seasonal-lines, long-balance-labeled-seasonal-with-a-small-new-draw, existing-debt-dropped-from-a-path, prepayment-without-contract-terms, financed-asset-placed-in-the-basket, covenant-test-off-the-calendar, parallel-lists-of-different-length, selection-pointing-at-another-operand]
 e2e_scenario_ids: [domain:recommended-path-comes-from-the-gates]
 cost_eval_ids: [deterministic:no-model-calls]
 task_specs: []
@@ -77,7 +77,7 @@ Pacote do plano de financiamento, na ordem da árvore: o que acontece sem ação
 - Alavancagem: núcleo publicado de índice projetado; janela de doze meses completada pelo histórico; dívida principal menos caixa disponível; EBITDA sem IFRS 16 quando a escritura assim define; a política usa a definição da escritura até o conselho escrever a sua.
 - Exceção da escritura: em cada período em que a escritura vigora, soma das garantias que ocupam a exceção (base agregada) ou a maior delas (por operação), mais o que já está ocupado por terceiros; acima do limite, exige anuência ou resgate.
 - Depois do horizonte: o saldo de cada instrumento é amortizado pelo perfil adotado, com as parcelas anteriores arredondadas para baixo em oito casas e o último pagamento efetivo (última parcela não nula) absorvendo o resto, de modo que o principal fecha exatamente nele, parcela zero paga zero e nenhuma parcela é negativa ou excede o saldo; uma linha só sai do teste como sazonal com data de liquidação até doze meses depois do desembolso e no primeiro ano depois do horizonte, justificativa adotada e fonte de caixa conferida na base (desembolso não maior que o giro sazonal consumido no período e liberação de ao menos o mesmo valor nos meses equivalentes do ano anterior); no caminho, o saldo residual inteiro de todas as linhas dispensadas cabe no giro consumido em cada período de desembolso, e cada liberação do ano anterior é alocada a uma linha só; o maior saldo passa pelo núcleo publicado de capacidade de endividamento, os demais entram como serviço fixo em saldo médio; o teste compara a amortização programada com o caixa disponível depois dos juros, ano a ano.
-- Custo efetivo: spread equivalente sobre a curva datada pelo núcleo publicado de custo equivalente, resolvido sobre os mesmos fluxos do cálculo de caixa (núcleo de dívida indexada com a base de juros e o tratamento de cupom do instrumento), com todo encargo datado do instrumento pago no fim do seu período, inclusive depois da última amortização; o custo é recusado se algum encargo ficar fora da vida precificada. Os fluxos acompanham o resultado, e o valor presente deles no spread publicado é zero. Na calibração, comissão e IOF caem no fim do trimestre do desembolso: giro de 2026 perto de CDI + 6,96, CCB de cinco anos de R$ 70 milhões perto de CDI + 3,96 e debênture de R$ 80 milhões perto de CDI + 3,46 (3,56 no gatilho); as aproximações da ficha (6,8, 3,7 e 3,4) usavam encargos no início e vida média simplificada.
+- Custo efetivo: spread equivalente sobre a curva datada pelo núcleo publicado de custo equivalente, resolvido sobre os mesmos fluxos do cálculo de caixa (núcleo de dívida indexada com a base de juros e o tratamento de cupom do instrumento), com todo encargo datado do instrumento pago no fim do seu período, inclusive depois da última amortização; o custo é recusado se algum encargo ficar fora da vida precificada. Os fluxos acompanham o resultado, e o valor presente deles no spread publicado é zero. A recomendação lê só o custo do instrumento no próprio caminho: os encargos do instrumento mais todo encargo que o caminho atribui a ele; encargo do caminho atribuído a outro instrumento entra no custo até o horizonte e é declarado fora do spread; instrumento pré-pago no caminho não tem custo pela vida publicado. O custo genérico por instrumento (só os seus encargos) fica no resultado como referência e nunca é a leitura da recomendação. Na calibração, comissão e IOF caem no fim do trimestre do desembolso: giro de 2026 perto de CDI + 6,96, CCB de cinco anos de R$ 70 milhões perto de CDI + 3,96 e debênture de R$ 80 milhões perto de CDI + 3,46 (3,56 no gatilho); as aproximações da ficha (6,8, 3,7 e 3,4) usavam encargos no início e vida média simplificada.
 - Portões: caixa mínimo de política no caso base; caixa não negativo no estresse; escritura e política no base e no estresse; exceção sem anuência; amortização depois do horizonte testada e coberta. Ordem: menos portões perdidos, depois custo financeiro até o horizonte (juros pagos e encargos), depois dívida líquida no fim, depois o identificador.
 - Alvo e piso da emissão: o alvo é o valor adotado no plano; o piso é o menor valor que mantém o caminho dentro dos portões, por bisseção no quantum adotado, escalando desembolsos, amortizações, garantia e encargos do instrumento longo. As leituras trazem os dois separados.
 - Sensibilidades: cada uma devolve o EBITDA por ano que deixa no caminho recomendado; a sensibilidade de custo de insumo adota o nível de EBITDA do cenário de origem (por exemplo, 52,64 em 2027 no cenário informado da projeção por drivers), não o choque relativo à outra base.
@@ -132,9 +132,9 @@ Pacote do plano de financiamento, na ordem da árvore: o que acontece sem ação
 - packages/financial-model/src/capital-structure-paths-packet.test.ts: leituras, avaliação sem veredito, recomendação só dos portões, contrato publicado.
 - packages/financial-model/src/capital-structure-paths-premises.test.ts: fatos com origem, premissas, base, composição e pacote igual à calibração.
 ## Gold
-- Ficha C32 com o oráculo modelo_aurora_c32.py e a base anual da C04: dezembro de 2026, fim de 2027, serviço de 2027, sete caminhos, recomendação pelos portões, alavancagem, caminhos do oráculo, CCB de três anos, imposto por caminho, exceção, cinco contra sete anos, custo efetivo, Bradesco sozinho, plano alternativo datado, alvo da emissão separado do piso dentro dos portões, sensibilidade de trigo no nível da C24, linha sazonal com liquidação verificada, fluxos do custo iguais aos do caixa, encargo depois da última amortização no custo, perfil com ano final zero, impressões canônicas, o que mudaria, avaliação, caixa mínimo de R$ 25 milhões e caixa mínimo ausente.
+- Ficha C32 com o oráculo modelo_aurora_c32.py e a base anual da C04: dezembro de 2026, fim de 2027, serviço de 2027, sete caminhos, recomendação pelos portões, alavancagem, caminhos do oráculo, CCB de três anos, imposto por caminho, exceção, cinco contra sete anos, custo efetivo, Bradesco sozinho, plano alternativo datado, alvo da emissão separado do piso dentro dos portões, sensibilidade de trigo no nível da C24, linha sazonal com liquidação verificada, fluxos do custo iguais aos do caixa, encargo depois da última amortização no custo, perfil com ano final zero, impressões canônicas, spread da recomendação no próprio caminho, encargo de caminho fora do spread, o que mudaria, avaliação, caixa mínimo de R$ 25 milhões e caixa mínimo ausente.
 ## Adversarial
-- Base adulterada, resultado livre, recomendação por texto, imposto por caminho fornecido, concessão, veredito, recomendação fora dos portões, caminho que viola a política recomendado, contato com investidores, exceção lida como vazia sob a cessão do Bradesco, juros semestrais pagos, amortização depois do horizonte ignorada, dívida longa rotulada como sazonal, mesma liberação de giro usada por duas linhas, saldo longo rotulado como sazonal com desembolso novo pequeno, dívida existente fora de um caminho, pré-pagamento sem termos, bem financiado na exceção, apuração fora do calendário, curva incompleta depois do horizonte, seleção apontando para outro operando.
+- Base adulterada, resultado livre, recomendação por texto, imposto por caminho fornecido, concessão, veredito, recomendação fora dos portões, caminho que viola a política recomendado, contato com investidores, exceção lida como vazia sob a cessão do Bradesco, juros semestrais pagos, amortização depois do horizonte ignorada, dívida longa rotulada como sazonal, mesma liberação de giro usada por duas linhas, custo genérico publicado como spread do caminho, saldo longo rotulado como sazonal com desembolso novo pequeno, dívida existente fora de um caminho, pré-pagamento sem termos, bem financiado na exceção, apuração fora do calendário, curva incompleta depois do horizonte, seleção apontando para outro operando.
 ## Aceitação
 - Executar a conversa da ficha C32 turno a turno pela interface real com fontes e direitos do ambiente de teste.
 
@@ -8347,7 +8347,7 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                               "type": "string"
                                                             }
                                                           },
-                                                          "upfrontCharges": {
+                                                          "pricedCharges": {
                                                             "required": true,
                                                             "value": {
                                                               "type": "string"
@@ -8443,6 +8443,188 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                               "type": "null"
                                             }
                                           ]
+                                        }
+                                      },
+                                      "longCost": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "union",
+                                          "variants": [
+                                            {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "status": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "calculated"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "nominalSpread": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "couponBase": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "opening_principal",
+                                                          "average_principal"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "couponTreatment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "cash_paid",
+                                                          "accrued_until_paid"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "equivalentSpread": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "pricedCharges": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "weightedAverageLifeYears": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "termYears": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "finalPaymentDate": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "flows": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "array",
+                                                        "items": {
+                                                          "type": "object",
+                                                          "fields": {
+                                                            "periodEnd": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "date"
+                                                              }
+                                                            },
+                                                            "interestPaid": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "principal": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "charges": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            },
+                                                            "debtService": {
+                                                              "required": true,
+                                                              "value": {
+                                                                "type": "string"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "status": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "not_applicable"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "reason": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "pathChargesOutsideSpread": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "fields": {
+                                              "id": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "instrumentId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "periodEnd": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "date"
+                                                }
+                                              },
+                                              "amount": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
                                         }
                                       },
                                       "demand": {
@@ -8758,7 +8940,7 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                         "type": "string"
                                                       }
                                                     },
-                                                    "upfrontCharges": {
+                                                    "pricedCharges": {
                                                       "required": true,
                                                       "value": {
                                                         "type": "string"
@@ -8902,7 +9084,7 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                             "type": "string"
                                           }
                                         },
-                                        "upfrontCharges": {
+                                        "pricedCharges": {
                                           "required": true,
                                           "value": {
                                             "type": "string"
@@ -9052,7 +9234,7 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                         "type": "string"
                                                       }
                                                     },
-                                                    "upfrontCharges": {
+                                                    "pricedCharges": {
                                                       "required": true,
                                                       "value": {
                                                         "type": "string"
@@ -10025,6 +10207,41 @@ Uma debênture que amortiza logo depois do horizonte pode concentrar em um ano m
                                                   "type": "null"
                                                 }
                                               ]
+                                            }
+                                          },
+                                          "chargesOutsideSpread": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "id": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "instrumentId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "periodEnd": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "date"
+                                                    }
+                                                  },
+                                                  "amount": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
+                                              }
                                             }
                                           }
                                         }

@@ -122,6 +122,21 @@ function goldCases(): Case[] {
       (p) => {const t = path(p, "sem-linha-debenture").amortizationTests.find((x) => x.profileId === "zero-final")!;
         return {scheduled2031: r(t.years.find((y) => y.year === 2031)!.scheduledAmortization), scheduled2032: r(t.years.find((y) => y.year === 2032)!.scheduledAmortization),
           nonNegative: t.years.every((y) => new D(y.scheduledAmortization).gte(0))};}),
+    (() => {
+      const charge = {id: "taxa-agente", periodEnd: "2028-06-30", category: "recurring_fee" as const, amount: "0.25"};
+      const a = prepareCapitalPathsPacket(packetInput((k) => {k.sensitivities = []; instrument(k, "debenture-80").charges.push(charge);}));
+      return observe("recommended-spread-is-priced-in-its-own-path", packetInput((k) => {k.sensitivities = []; k.paths.find((x) => x.id === "sem-linha-debenture")!.charges.push({...charge, instrumentId: "debenture-80"});}),
+        {sameSpread: true, sameCondition: true, sameHorizonCost: true, chargeInFlows: true},
+        (p) => {const l = p.readings!.recommendation!.longInstrument!, m = a.readings!.recommendation!.longInstrument!, c = p.result.evaluation!.recommendation!.longCost!;
+          return {sameSpread: l.equivalentSpread === m.equivalentSpread, sameCondition: l.equivalentSpreadAtCondition === m.equivalentSpreadAtCondition,
+            sameHorizonCost: p.readings!.recommendation!.horizonFinancingCost === a.readings!.recommendation!.horizonFinancingCost,
+            chargeInFlows: c.status === "calculated" && c.flows.some((f) => f.periodEnd === "2028-06-30" && new D(f.charges).gte("0.25"))};});
+    })(),
+    observe("path-charge-on-another-instrument-stays-outside-the-spread", packetInput((k) => {k.sensitivities = [];
+      k.paths.find((x) => x.id === "sem-linha-debenture")!.charges.push({id: "anuencia", instrumentId: "debenture-2021", periodEnd: "2027-03-31", category: "other", amount: "0.3"});}),
+      {outside: [{id: "anuencia", instrumentId: "debenture-2021", periodEnd: "2027-03-31", amount: "0.3"}], spreadUnchanged: true, horizonCostUp: 0.3},
+      (p) => ({outside: p.readings!.recommendation!.longInstrument!.chargesOutsideSpread, spreadUnchanged: p.readings!.recommendation!.longInstrument!.equivalentSpread === packet.readings!.recommendation!.longInstrument!.equivalentSpread,
+        horizonCostUp: r(new D(p.readings!.recommendation!.horizonFinancingCost).minus(packet.readings!.recommendation!.horizonFinancingCost).toFixed())})),
     reuse("fingerprints-are-taken-on-the-canonical-objects", {packet: true, result: true},
       (p) => {const h = (o: object) => {const {fingerprint: _f, ...rest} = o as Record<string, unknown>; return createHash("sha256").update(JSON.stringify(rest)).digest("hex");};
         const again = capitalPathsPacketOutputSchema.parse(JSON.parse(JSON.stringify(p)));
@@ -149,6 +164,9 @@ function adversarialCases(): Case[] {
       return {...p, result: {...p.result, evaluation: {...e, ranking, recommendation: {...e.recommendation!, pathId: "debenture-com-linha"}}},
         readings: {...p.readings!, recommendation: {...p.readings!.recommendation!, pathId: "debenture-com-linha"}}};
     }), "capital_paths_recommended_path_misses_a_gate"],
+    // The generic instrument cost (its own charges only) published as the recommended spread.
+    ["generic-cost-published-as-the-path-spread", forge((p) => ({...p, readings: {...p.readings!, recommendation: {...p.readings!.recommendation!,
+      longInstrument: {...p.readings!.recommendation!.longInstrument!, equivalentSpread: "0.03"}}}})), "capital_paths_spread_not_from_path_cost"],
     ["fabricated-contact-with-investors", forge((p) => ({...p, readings: {...p.readings!, process: {...p.readings!.process, contactsInvestors: true}}})), "contactsInvestors"],
     // The aggregate exception read as empty while the Bradesco assignment sits in it.
     ["basket-read-as-empty-under-the-bradesco-assignment", () => packetInput((k) => {k.basket!.occupied = "0";}), "capital_paths_basket_usage_understated"],

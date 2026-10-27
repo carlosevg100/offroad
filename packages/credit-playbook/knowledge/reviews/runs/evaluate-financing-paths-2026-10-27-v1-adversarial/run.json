@@ -16,8 +16,8 @@
     "exportName": "buildCapitalPathsRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T12:36:09.864Z",
-    "finishedAt": "2026-10-27T12:37:14.757Z"
+    "startedAt": "2026-10-27T12:59:28.717Z",
+    "finishedAt": "2026-10-27T13:00:51.245Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -82,6 +82,14 @@
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "ef6aca396da98cd42209cf1340f9e79ab375c73c7aaf9924b05525ec34a87823",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "generic-cost-published-as-the-path-spread",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "cfbe2b3bdc83986d6bd8c3a30deb99b94f23fc6604d0eba21c78620f64df3a72",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -191,6 +199,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "4af89b5bb613ccc742cb3b1d625b126babc5cec8e4be5f6ec64a988177081504",
+  "evidenceFingerprint": "f6fa107f68958994fd2ec80c16c4fb52548789a68f4b6f9f1b6f8099043a57f4",
   "notes": "Synthetic deterministic execution calibrated on ficha C32 (oracle modelo_aurora_c32.py) with the C04 annual base after 2028. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

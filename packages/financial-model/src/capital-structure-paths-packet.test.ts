@@ -79,3 +79,37 @@ describe("capital structure paths packet, seeded invariants", {timeout: 900_000}
   });
 });
 
+
+describe("the recommended spread is the cost in its own path", {timeout: 900_000}, () => {
+  it("gives the same cost whether a dated charge sits in the instrument or in the path, and its flows have zero present value at the published spread", () => {
+    const next = seeded(47), periods = ["2027-03-31", "2027-12-31", "2028-06-30", "2028-12-31"];
+    for (let n = 0; n < 3; n++) {
+      const charge = {id: "gerado", periodEnd: periods[Math.floor(next() * periods.length)]!, category: "recurring_fee" as const, amount: (0.05 + next() * 1.5).toFixed(4)};
+      const inInstrument = auroraCapitalPathsKernel(), inPath = auroraCapitalPathsKernel();
+      for (const k of [inInstrument, inPath]) k.sensitivities = [];
+      inInstrument.instruments.find((x) => x.id === "debenture-80")!.charges.push(charge);
+      inPath.paths.find((x) => x.id === "sem-linha-debenture")!.charges.push({...charge, instrumentId: "debenture-80"});
+      const a = packet(inInstrument), b = packet(inPath);
+      const la = a.readings!.recommendation!.longInstrument!, lb = b.readings!.recommendation!.longInstrument!;
+      expect([lb.equivalentSpread, lb.equivalentSpreadAtCondition, b.readings!.recommendation!.horizonFinancingCost]).toEqual([la.equivalentSpread, la.equivalentSpreadAtCondition, a.readings!.recommendation!.horizonFinancingCost]);
+      const cost = b.result.evaluation!.recommendation!.longCost!;
+      expect(cost.status).toBe("calculated");
+      if (cost.status !== "calculated") continue;
+      expect(cost.flows.some((f) => f.periodEnd === charge.periodEnd && new Decimal(f.charges).gte(charge.amount))).toBe(true);
+      // Independent present value of the published flows at the published spread, on the adopted curve.
+      const k = inPath, index = (end: string) => {const i = k.periodEnds.indexOf(end); return i >= 0 ? k.index.annualByPeriod[i]! : k.index.afterHorizon.find((x) => x.year === Number(end.slice(0, 4)))!.annualRate;};
+      let factor = new Decimal(1), pv = new Decimal("80");
+      for (const f of cost.flows) {factor = factor.times(new Decimal(index(f.periodEnd)).plus(1).times(new Decimal(cost.equivalentSpread).plus(1)).pow("0.25")); pv = pv.minus(new Decimal(f.debtService).plus(f.charges).div(factor));}
+      expect(pv.abs().lt("0.000000001")).toBe(true);
+    }
+  });
+  it("keeps a path charge on another instrument in the horizon cost and declares it outside the spread", () => {
+    const k = auroraCapitalPathsKernel(); k.sensitivities = [];
+    k.paths.find((x) => x.id === "sem-linha-debenture")!.charges.push({id: "anuencia", instrumentId: "debenture-2021", periodEnd: "2027-03-31", category: "other", amount: "0.3"});
+    const base = auroraCapitalPathsKernel(); base.sensitivities = [];
+    const p = packet(k), q = packet(base), l = p.readings!.recommendation!.longInstrument!;
+    expect([l.chargesOutsideSpread, l.equivalentSpread === q.readings!.recommendation!.longInstrument!.equivalentSpread,
+      new Decimal(p.readings!.recommendation!.horizonFinancingCost).minus(q.readings!.recommendation!.horizonFinancingCost).toFixed()])
+      .toEqual([[{id: "anuencia", instrumentId: "debenture-2021", periodEnd: "2027-03-31", amount: "0.3"}], true, "0.3"]);
+  });
+});

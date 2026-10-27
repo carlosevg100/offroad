@@ -620,15 +620,18 @@ function selection(ctx: Context, runs: Map<string, Run>) {
  * that the cash calculation uses: draw at the start of its period, the instrument's own coupon base and
  * coupon treatment, principal in the horizon as adopted and after it split by the adopted shares (or paid on
  * the verified settlement of a seasonal line), every charge on its period end as cash. */
-function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | null, sharesOverride: {year: number; share: string}[] | null) {
+function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | null, sharesOverride: {year: number; share: string}[] | null, path: Path | null = null) {
   const {input, periods} = ctx;
+  if (path?.prepayments.some((x) => x.instrumentId === i.id)) return {status: "not_applicable" as const, reason: "Instrument prepaid in the path; its life in the path is not priced here"};
+  // The instrument's own charges and, on a path, every charge the path attributes to it: the same set the cash pays.
+  const priced = [...i.charges, ...(path?.charges.filter((c) => c.instrumentId === i.id) ?? [])];
   if (i.role !== "new" || i.rate.kind !== "index_plus_spread") return {status: "not_applicable" as const, reason: "Instrument is not new DI-plus-spread debt"};
   const drawAt = i.draws.map((x, k) => ({x, k})).filter((d) => new D(d.x).gt(0));
   if (drawAt.length !== 1) return {status: "not_applicable" as const, reason: "Equivalent cost needs a single draw"};
   const k0 = drawAt[0]!.k, spreads = i.rate.spreads.slice(k0);
   if (spreadOverride === null && spreads.some((s) => !new D(s).eq(spreads[0]!))) return {status: "not_applicable" as const, reason: "Spread changes over the life"};
   const spread = spreadOverride ?? spreads[0]!;
-  if (i.charges.some((c) => periods.findIndex((p) => p.id === c.periodEnd) < k0)) return {status: "not_applicable" as const, reason: "Charge before the draw"};
+  if (priced.some((c) => periods.findIndex((p) => p.id === c.periodEnd) < k0)) return {status: "not_applicable" as const, reason: "Charge before the draw"};
   const gross = new D(i.draws[k0]!), residual = gross.minus(sum(i.principal.slice(k0)));
   const a = i.afterHorizon, horizonYear = Number(input.periodEnds.at(-1)!.slice(0, 4));
   const after = new Map<string, Decimal>();
@@ -664,15 +667,15 @@ function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | nu
   const schedule = buildIndexedDebtSchedule({instrumentId: i.id, openingPrincipal: "0", indexer: "CDI", indexationTreatment: "not_applicable",
     couponTreatment: i.couponTreatment, couponBase: i.couponBase, periods: kernelPeriods});
   const flows = schedule.rows.map((row) => {
-    const charges = sum(i.charges.filter((c) => c.periodEnd === row.period).map((c) => c.amount));
+    const charges = sum(priced.filter((c) => c.periodEnd === row.period).map((c) => c.amount));
     return {periodEnd: row.period, interestPaid: row.couponPaid, principal: row.scheduledPrincipal, charges: fmt(charges),
       debtService: fmt(new D(row.couponPaid).plus(row.scheduledPrincipal))};
   });
   // Every dated charge of the instrument enters the solved flows, also one paid after the last amortization.
-  if (!sum(flows.map((f) => f.charges)).eq(sum(i.charges.map((c) => c.amount)))) return {status: "not_applicable" as const, reason: "A dated charge falls outside the priced life"};
+  if (!sum(flows.map((f) => f.charges)).eq(sum(priced.map((c) => c.amount)))) return {status: "not_applicable" as const, reason: "A dated charge falls outside the priced life"};
   const final = [...flows].reverse().find((f) => new D(f.debtService).gt(0))!;
   const finalIndex = flows.map((f) => new D(f.debtService).gt(0) || new D(f.charges).gt(0)).lastIndexOf(true);
-  const categories = new Set(i.charges.map((c) => c.category));
+  const categories = new Set(priced.map((c) => c.category));
   const cost = solveEquivalentFinancingSpread({baseDate: grid[0]!.startDate, currency: input.currency, moneyUnit: "adopted",
     intervals: grid.slice(0, finalIndex + 1).map((g) => ({id: g.id, startDate: g.startDate, endDate: g.endDate, yearFraction: fmt(g.yearFraction), annualIndex: g.index,
       yearFractionConvention: "adopted_year_fraction" as const, sourceAnchor: "adopted period grid"})),
@@ -685,7 +688,7 @@ function instrumentCost(ctx: Context, i: Instrument, spreadOverride: string | nu
   let t = new D(0), weighted = new D(0);
   grid.slice(0, finalIndex + 1).forEach((g, n) => {t = t.plus(g.yearFraction); weighted = weighted.plus(new D(flows[n]!.principal).times(t));});
   return {status: "calculated" as const, nominalSpread: spread, couponBase: i.couponBase, couponTreatment: i.couponTreatment, equivalentSpread: cost.annualSpread!,
-    upfrontCharges: fmt(sum(i.charges.map((c) => c.amount))), weightedAverageLifeYears: fmt(weighted.div(gross)), termYears: fmt(t), finalPaymentDate: final.periodEnd,
+    pricedCharges: fmt(sum(priced.map((c) => c.amount))), weightedAverageLifeYears: fmt(weighted.div(gross)), termYears: fmt(t), finalPaymentDate: final.periodEnd,
     flows: flows.slice(0, finalIndex + 1)};
 }
 
@@ -766,7 +769,11 @@ export function evaluateCapitalStructurePaths(raw: unknown) {
     recommendation = {pathId: path.id, longInstrumentId: long?.id ?? null, longInstrument: long ? longTerms(ctx, long) : null,
       condition: conditionRuns && long ? {instrumentId: long.id, maximumSpread: input.plan.maximumSpread, gates: conditionRuns.gates,
         insideGates: failures(conditionRuns) === 0, horizonFinancingCost: conditionRuns.summary.horizonFinancingCost, minimumCash: conditionRuns.summary.minimumCash,
-        cost: instrumentCost(ctx, long, input.plan.maximumSpread, null)} : null,
+        cost: instrumentCost(ctx, long, input.plan.maximumSpread, null, path)} : null,
+      /** The long instrument priced in this path: its own charges and those the path attributes to it. */
+      longCost: long ? instrumentCost(ctx, long, null, null, path) : null,
+      /** Path charges attributed to other instruments: in the horizon cost, outside this spread. */
+      pathChargesOutsideSpread: long ? path.charges.filter((c) => c.instrumentId !== long.id).map((c) => ({id: c.id, instrumentId: c.instrumentId, periodEnd: c.periodEnd, amount: c.amount})) : [],
       demand, soundingBy: input.plan.soundingBy, routeDecisionBy: input.plan.routeDecisionBy,
       mustPrecede: routeDeadline, decidedBeforeMaturity: routeDeadline ? input.plan.routeDecisionBy < routeDeadline.date : true,
       daysToMaturity: routeDeadline ? Math.round((Date.parse(`${routeDeadline.date}T00:00:00Z`) - Date.parse(`${input.plan.routeDecisionBy}T00:00:00Z`)) / 86400000) : null,
