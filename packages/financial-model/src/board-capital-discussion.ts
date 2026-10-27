@@ -256,8 +256,9 @@ const slotAccepts: Record<Exclude<BoardSlotType, "deadline">, BoardFigureUnit[]>
 /** Compares two values: as decimals when both are numbers, as text otherwise (dates, flags, ids). */
 function compareBoard(a: string, how: BoardComparison, b: string) {
   const numeric = /^-?\d+(?:\.\d+)?$/;
+  if (how === "prefix") return a.startsWith(b);
   const c = numeric.test(a) && numeric.test(b) ? new Exact(a).cmp(b) : a < b ? -1 : a > b ? 1 : 0;
-  return how === "lt" ? c < 0 : how === "le" ? c <= 0 : how === "gt" ? c > 0 : how === "ge" ? c >= 0 : c === 0;
+  return how === "lt" ? c < 0 : how === "le" ? c <= 0 : how === "gt" ? c > 0 : how === "ge" ? c >= 0 : how === "ne" ? c !== 0 : c === 0;
 }
 /** Renders one text of the closed library. Each slot is checked against its concept before anything is written:
  * the reading's method and path match the admissible origin (shared variables equal across slots), a year matches
@@ -303,6 +304,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     } else {
       const got = (spec.from ?? []).filter(([m]) => m === figure.origin!.methodId).map(([, path]) => boardMatchPath(path, figure.origin!.path)).find((x) => x !== null);
       if (!got) throw concept(slot, "origin");
+      // Where a method holds several fields of one kind, the registry's concept must be the one the slot names.
+      if (spec.concept !== undefined && boardFieldOf(figure.origin.methodId, figure.origin.path)?.concept !== spec.concept) throw concept(slot, "registered_concept");
       share(slot, got);
     }
     values[slot] = {value: figure.origin.value, methodId: figure.origin.methodId, sourceId: figure.origin.sourceId};
@@ -331,6 +334,13 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("value" in o) return o.value.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
     if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var];}
     if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); return v === null ? undefined : o.year ? v.value.slice(0, 4) : v.value;}
+    if ("contributed" in o) {
+      // An adopted term the result records: exactly one contribution whose field path ends with the given suffix.
+      const [method, suffix] = o.contributed, packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      const hits = (packet.result?.contributions ?? []).filter((x) => typeof x.fieldPath === "string" && x.fieldPath.endsWith(`.${suffix}`));
+      if (hits.length !== 1) throw unverified(`contribution_${suffix}`);
+      return scalar(hits[0]!.value?.value, suffix);
+    }
     const v = scalar(read(o.at[0], o.at[1]), o.at[1]);
     return o.year ? v.slice(0, 4) : v;
   };
@@ -344,7 +354,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const xs = read(m, path);
       if (!Array.isArray(xs)) throw unverified(path);
       const items = xs.map((x) => scalar(field === null ? x : (x as Record<string, unknown>)[field], path));
-      return want === undefined || (items.includes(want) && (!c.only || items.length === 1));
+      return want === undefined || (c.none ? !items.includes(want) : items.includes(want) && (!c.only || items.length === 1));
     }
     if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {

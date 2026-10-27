@@ -1,9 +1,9 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardReadings, auroraBoardSources, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -93,7 +93,7 @@ const meaning: Record<string, Record<string, string>> = {
   "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
   "option.staged": {vpl: "pending:analyze-investment-project"},
   "option.wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
-  "topic.crop_programs": {valor: RF + "readings.plan[optionId=risco-sacado-a].cumulative"},
+  "topic.crop_programs": {valor: RF + "readings.plan[optionId=risco-sacado-a].cumulative", pico: RF + "result.funding.need.peak"},
   "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=risco-sacado-b].spreadOverDi", taxa_a: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
   "topic.crop_overdraft": {semana: WC + "readings.tightestWeek.weekStart"},
   "alternatives.count": {caminhos: FP + "readings.horizon.candidatePaths", ano: "year"},
@@ -137,7 +137,8 @@ const meaning: Record<string, Record<string, string>> = {
     defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
     ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda", ebitda_adverso: CV + "result.headroom.measurements[id=dez27-adverso].reportedEbitda",
     alavancagem: CV + "result.headroom.measurements[id=dez27-adverso].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
-  "a.anchor": {rede: RF + "readings.options[id=risco-sacado-a].volume", carteira: RF + "readings.gross", taxa: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
+  "a.anchor": {saldo: RF + "result.funding.portfolio.items[itemId=rede-a].amount", carteira: RF + "readings.gross", volume: RF + "readings.options[id=risco-sacado-a].volume",
+    taxa: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
   "q.plan_vs_base": {plano: PC + "readings.gap.plan.ebitda", ano: "year", base: PC + "readings.gap.reference.ebitda"},
   "a.plan_vs_base": {base: PC + "readings.gap.reference.ebitda"},
 };
@@ -150,7 +151,7 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
   "what_changes.demand": (v) => v.piso!.lt(v.alvo!), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
   "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!),
-  "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.rede!.lte(v.carteira!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
+  "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
 };
 
 /** An independent reader of the final text. It formats every reading again from its source value, kind, scale,
@@ -159,7 +160,15 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
  * Every material fact must appear by its own formatted text. */
 const names = new Set(["Itaú", "Bradesco", "Santander", "Banco do Brasil", "Caixa", "BTG Pactual", "Banco Safra", "BNDES", "XP", "Sicredi", "Sicoob", "Banrisul", "Citi", "JPMorgan",
   "Debenturistas", "rede A", "rede B"]);
-function oracle(p: Packet) {
+/** The oracle's own reading of the receivables result: balance owed by the chain, program volume and the registered contract. */
+function receivablesFacts(packet: Record<string, unknown>) {
+  const f = (packet.result as {funding: {portfolio: {items: {itemId: string; amount: string}[]}}}).funding;
+  const r = packet.readings as {options: {id: string; volume: string | null}[]};
+  const contract = (packet.result as {contributions: {fieldPath: string; value: {value: unknown}}[]}).contributions.find((x) => x.fieldPath.endsWith(".item.rede-a.contract"))?.value.value;
+  return {balance: f.portfolio.items.find((x) => x.itemId === "rede-a")!.amount, volume: r.options.find((x) => x.id === "risco-sacado-a")!.volume, contract};
+}
+const receivablesMethod = "monetize-receivables-for-working-capital";
+function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = auroraBoardSources()) {
   const v = current(p), d = p.result.discussion!;
   const D = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
   const short = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
@@ -235,6 +244,24 @@ function oracle(p: Packet) {
   }
   for (const [key, rows] of rowsOf) if (rows.size > 1) bad.push(`creditor_row:${key}`);
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
+  // Exposure, capacity and contract, read in the text and against the receivables result the identity names: the
+  // balance the chain owes is the exposure, the program's volume is a capacity, and a ban on assignment needs the
+  // registered contract to say so.
+  const rfIdentity = d.identity.find((x) => x.methodId === receivablesMethod);
+  if (rfIdentity) {
+    const source = sources.find((x) => x.packet.fingerprint === rfIdentity.packetFingerprint);
+    if (!source) bad.push("receivables_source_unknown");
+    else {
+      const facts = receivablesFacts(source.packet), number = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
+      for (const t of texts) {
+        const owes = /rede A deve R\$ (-?[\d.,]+) milh/.exec(t);
+        if (owes && !number(owes[1]!).eq(new D(facts.balance).toDecimalPlaces(1))) bad.push(`exposure:${t.slice(0, 60)}`);
+        const program = /programa próprio da rede antecipa R\$ (-?[\d.,]+) milh/.exec(t);
+        if (program && (facts.volume === null || !number(program[1]!).eq(new D(facts.volume).toDecimalPlaces(1)))) bad.push(`capacity:${t.slice(0, 60)}`);
+        if (/veda a cessão/.test(t) && facts.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
+      }
+    }
+  }
   return {bad, missing};
 }
 
@@ -330,6 +357,23 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const itau = withBoardSource("tabela-divida", debtTableWithCreditor("Itaú", "Bradesco"), () => full(2, () => undefined));
     expect(boardRegisteredCreditorReading(itau)).toEqual(boardRegisteredCreditorExpected);
     expect(oracle(itau)).toEqual({bad: [], missing: []});
+  });
+  it("regression r9: exposure is the chain's balance and a ban on assignment needs the registered contract, through the full path", () => {
+    const capped = auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>;
+    const p = withBoardSource("recebiveis", capped, () => full(2, boardSublimitCase));
+    expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.answer).toBe(boardSublimitExpected);
+    expect(oracle(p, [{packet: capped}])).toEqual({bad: [], missing: []});
+    expect(() => withBoardSource("recebiveis", capped, () => full(2, (c) => {boardSublimitCase(c);
+      c.questions[8]!.answer = "a.anchor|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}))).toThrow("board_capital_slot_concept_mismatch:a.anchor:saldo");
+    const open = auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("recebiveis", open, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:a.anchor");
+    // The oracle is not vacuous for these two: a text that shows the program's volume as the exposure, and a ban on
+    // assignment read against a contract registered as assignable, are both divergences.
+    const forged = structuredClone(p), answer = forged.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!;
+    answer.answer = answer.answer.replace("deve R$ 19,8 milhões", "deve R$ 10,0 milhões");
+    expect(oracle(forged, [{packet: capped}]).bad.some((x) => x.startsWith("exposure:"))).toBe(true);
+    const calibrated = packet(2, () => undefined), openWithSameFingerprint = {...open, fingerprint: calibrated.result.discussion!.identity.find((x) => x.methodId === receivablesMethod)!.packetFingerprint};
+    expect(oracle(calibrated, [{packet: openWithSameFingerprint}]).bad.some((x) => x.startsWith("contract:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

@@ -52,12 +52,7 @@ function buildSources() {
     question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: operatingProjectionBasis({informed: true}).seal()});
   const challenge = prepareProjectionChallengePacket({schemaVersion: "projection-challenge-packet-input.v1",
     question: "Que premissas você questionaria nessa projeção? Vai para os bancos semana que vem.", analysis: projectionChallengeBasis().seal()});
-  const k = auroraReceivablesFunding(), anchor = k.options[0]!;
-  const receivables = prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1",
-    question: "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
-    analysis: auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const} : i),
-      options: [...k.options, {...anchor, id: "risco-sacado-a", label: "Risco sacado da rede A", eligibility: {...anchor.eligibility!, anchorItemIds: ["rede-a"]},
-        rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]}).seal()});
+  const receivables = auroraReceivablesPacket();
   const relative = c03PacketInput();
   for (const e of relative.entries) if (e.dimensions.entityId === c03Id(1)) e.dimensions.entityId = company;
   // Entries first, then the inputs: the sealed snapshot is a string, so the rebind never touches it.
@@ -74,6 +69,17 @@ function buildSources() {
     {id: "custo-relativo", methodId: "analyze-relative-debt-cost", packet: relativeCost},
     {id: "plano-2027", methodId: "evaluate-financing-paths", packet: plan},
   ] as const;
+}
+/** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
+ * debtor below the chain's balance, or the chain's contract registered as assignable. */
+export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"} = {}) {
+  const k = auroraReceivablesFunding(), anchor = k.options[0]!;
+  return prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1",
+    question: "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
+    analysis: auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const, ...variant.contractA ? {contract: variant.contractA} : {}} : i),
+      options: [...k.options, {...anchor, id: "risco-sacado-a", label: "Risco sacado da rede A",
+        eligibility: {...anchor.eligibility!, anchorItemIds: ["rede-a"], ...variant.sublimitA ? {sublimitPerDebtor: variant.sublimitA} : {}},
+        rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]}).seal()});
 }
 let cached: ReturnType<typeof buildSources> | null = null;
 let replaced: Record<string, Record<string, unknown>> = {};
@@ -172,7 +178,9 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "programs": ["recebiveis", "readings.plan[optionId=risco-sacado-a].cumulative", "1", "23.5"],
   "spread-b": ["recebiveis", "readings.options[id=risco-sacado-b].spreadOverDi", "1", "1.2"],
   "spread-a": ["recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi", "1", "1.5"],
-  "rede-a": ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "19.8"],
+  "rede-a": ["recebiveis", "result.funding.portfolio.items[itemId=rede-a].amount", "1", "19.8"],
+  "program-a-volume": ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "19.8"],
+  "need-peak": ["recebiveis", "result.funding.need.peak", "0", "25"],
   "carteira": ["recebiveis", "readings.gross", "0", "62"],
   "gap-bps": ["custo-relativo", "decomposition.grossBps", "0", "125"],
   "date-bps": ["custo-relativo", "result.bridge.steps[family=pricing_date].bps", "0", "60"],
@@ -242,10 +250,10 @@ export function auroraBoardCase(turn: BoardTurn) {
         lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=bradesco-creditor", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
       {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
-          "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason"],
+          "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow"],
         recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
         options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
-      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs", recommendation: null, options: [],
+      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|semana=tight-week"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
         lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}${["debenture-com-linha", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
@@ -280,7 +288,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},
       {id: "estrategica", question: "q.strategic", answer: "a.strategic|retorno=irr|custo=wacc"},
       {id: "trigo", question: "q.wheat", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit"},
-      {id: "rede-a", question: "q.anchor", answer: "a.anchor|rede=rede-a|carteira=carteira|taxa=spread-a"},
+      {id: "rede-a", question: "q.anchor", answer: "a.anchor|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
     /** Readings a test adds to the basis beside the calibration's own. */

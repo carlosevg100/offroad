@@ -67,7 +67,9 @@ export function verifyBoardSource(named: {id: string; methodId: string; packetFi
  * reading and how many decimals, never the unit, the scale, the periodicity or the date format. */
 export type BoardFieldKind = "money" | "rate" | "multiple" | "years" | "months" | "bps" | "count" | "calendar" | "date" | "label" | "flag";
 export type BoardDateFormat = "day_month" | "day_long" | "month_year" | "month_long" | "year";
-export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly BoardDateFormat[]};
+export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly BoardDateFormat[];
+  /** The economic concept of the field where a method holds several of the same kind that must never stand for one another. */
+  concept?: string};
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
 const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
 const plain = (kind: BoardFieldKind): BoardFieldSpec => ({kind, scale: "native", period: "none", formats: []});
@@ -99,9 +101,17 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "readings.projected.scenarios[*].rows[*].ebitda": money("millions"),
     "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": money("millions")},
   "challenge-financial-projection": {"readings.gap.plan.ebitda": money("millions"), "readings.gap.reference.ebitda": money("millions")},
+  // Receivables (C35): balance owed by each debtor, eligible capacity, program volume and sublimit are distinct concepts.
   "monetize-receivables-for-working-capital": {
-    "readings.plan[*].cumulative": money("millions"), "readings.options[*].spreadOverDi": rate("annual"),
-    "readings.options[*].volume": money("millions"), "readings.gross": money("millions")},
+    "readings.gross": {...money("millions"), concept: "carteira_bruta"},
+    "result.funding.portfolio.items[*].amount": {...money("millions"), concept: "saldo_da_carteira_por_devedor"},
+    "result.funding.portfolio.items[*].assignable": {...money("millions"), concept: "capacidade_elegivel_por_devedor"},
+    "readings.options[*].volume": {...money("millions"), concept: "volume_antecipavel_do_programa"},
+    "result.funding.options[*].byItem[*].retained": {...money("millions"), concept: "volume_do_programa_por_devedor"},
+    "result.funding.options[*].byItem[*].sublimitExcess": {...money("millions"), concept: "excesso_sobre_sublimite_por_devedor"},
+    "readings.plan[*].cumulative": {...money("millions"), concept: "volume_antecipavel_acumulado_no_plano"},
+    "result.funding.need.peak": {...money("millions"), concept: "pico_da_necessidade_de_caixa"},
+    "readings.options[*].spreadOverDi": {...rate("annual"), concept: "spread_sobre_cdi_do_programa"}},
   "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "levers[*].netOfKnownCosts": money("reais", "annual")},
   "evaluate-financing-paths": {
     "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": money("millions"),
