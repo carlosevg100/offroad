@@ -277,6 +277,8 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "carteira": ["recebiveis", "readings.gross", "0", "62"],
   "gap-bps": ["custo-relativo", "decomposition.grossBps", "0", "125"],
   "date-bps": ["custo-relativo", "result.bridge.steps[family=pricing_date].bps", "0", "60"],
+  "known-bps": ["custo-relativo", "result.bridge.knownAdjustmentsBps", "0", "70"],
+  "unexplained-bps": ["custo-relativo", "result.bridge.unexplainedAfterKnownAdjustmentsBps", "0", "55"],
   "rating-low": ["custo-relativo", "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", "2", "-0.17"],
   "rating-high": ["custo-relativo", "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts", "2", "0.03"],
   "cash-end-2027": ["plano-2027", "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=2027-12-31].closingAvailable", "0", "-79"],
@@ -379,7 +381,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "prazo", question: "q.term|prazo=debenture-term", answer: "a.term|ano=amort-first|amortizacao=five-year-amort|disponivel=five-year-available"},
       {id: "demanda", question: "q.demand", answer: "a.demand|valor=alt-amount|prazo=deadline:vencimentos.rota|credor=bradesco-creditor|vencimento=bradesco-maturity"},
       {id: "custo", question: "q.cost", answer: "a.cost|baixo=deb-cost-low|alto=deb-cost-high|custo=cost-2028|ano=year-2028|divida=net-debt-2028|ano_fim=year-2028"},
-      {id: "serra-verde", question: "q.peer", answer: "a.peer|total=gap-bps|data=date-bps"},
+      {id: "serra-verde", question: "q.peer", answer: "a.peer|total=gap-bps|ajustes=known-bps|data=date-bps|resto=unexplained-bps"},
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},
       {id: "estrategica", question: "q.strategic", answer: "a.strategic|retorno=irr|custo=wacc"},
       {id: "trigo", question: "q.wheat", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit"},
@@ -387,7 +389,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
     /** Facts informed in the conversation: the chair's strategic reason for the packaging line. */
-    informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", text: "reduzir a dependência de um único fornecedor de embalagem"}],
+    informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}],
     /** Readings a test adds to the basis beside the calibration's own. */
     extraReadings: {} as Record<string, Reading>,
     omissions: turn === 3 ? [{id: "linha-sem-recomendacao", target: "recommendation", targetId: "linha", requestedBy: "requester.chair"}] : [] as {id: string; target: string; targetId: string; requestedBy: string}[],
@@ -428,7 +430,7 @@ export function auroraBoardBasis(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     appendix: c.appendix.map((a) => ({id: a.id, reading: list(`appendix.${a.id}`, [a.label, ...a.sourceIds])})),
     questions: c.questions.map((q) => ({id: q.id, question: text(`question.${q.id}.question`, q.question), answer: text(`question.${q.id}.answer`, q.answer)})),
     omissions: c.omissions.map((o) => ({id: o.id, reading: list(`omission.${o.id}`, [o.target, o.targetId, o.requestedBy])})),
-    informed: c.informed.map((x) => ({id: x.id, reading: list(`informed.${x.id}`, [x.origin, x.author, x.text])})),
+    informed: c.informed.map((x) => ({id: x.id, reading: list(`informed.${x.id}`, [x.origin, x.author, x.code])})),
   } as unknown as AdoptedBoardCapitalDiscussionInput;
   const seal = (): BoardCapitalDiscussionAnalyses => ({sources: auroraBoardSources().map((s) => ({id: s.id, packet: JSON.stringify(s.packet)})), discussion: {...input, envelope: f.seal()}});
   return {...f, input, case: c, seal};
@@ -457,6 +459,6 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     appendix: c.appendix.map((a) => fact(a, "house", "apêndice consultável")),
     questions: c.questions.map((q) => fact(q, "house", "perguntas prováveis do conselho")),
     omissions: c.omissions.map((o) => fact(o, "informed", "pedido do CFO na conversa")),
-    informed: c.informed.map((x) => fact({id: x.id, author: x.author, text: x.text}, x.origin as "informed", "presidente do conselho na conversa sobre a linha de embalagem")),
+    informed: c.informed.map((x) => fact({id: x.id, author: x.author, code: x.code}, x.origin as "informed", "presidente do conselho na conversa sobre a linha de embalagem")),
   } as unknown as BoardCapitalDiscussionFacts;
 }

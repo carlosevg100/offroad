@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardInformedReasons, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -47,7 +47,9 @@ export type BoardDiscussion = {
   /** Facts informed in the conversation and adopted with their author; shown only through a template that attributes them. */
   informed: BoardInformedFact[];
 };
-export type BoardInformedFact = {id: string; origin: string; author: string; text: string};
+/** A fact informed in the conversation, adopted as a code of the method's closed dictionary of reasons, with its author;
+ * no text of the fact is ever adopted or shown. */
+export type BoardInformedFact = {id: string; origin: string; author: string; code: string};
 
 const months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const feminine = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
@@ -236,7 +238,9 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
     if (token.startsWith("informed:")) {
       const fact = context.informed?.find((x) => x.id === token.slice(9));
       if (!fact) throw new Error(`board_capital_unknown_token:${token}`);
-      parts.push(marker(checkBoardFreeText(fact.text), "informed", fact.id, null)); continue;
+      const phrase = boardInformedReasons[fact.code as keyof typeof boardInformedReasons];
+      if (!phrase) throw new Error(`board_capital_unknown_token:${token}`);
+      parts.push(marker(checkBoardFreeText(phrase), "informed", fact.id, null)); continue;
     }
     if (token.startsWith("deadline:")) {
       const [deliberationId, deadlineId] = token.slice(9).split(".");
@@ -273,7 +277,7 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
  * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
-export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]} {
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]} {
   const {templateId, bindings, template} = parseBoardTextRef(ref);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
@@ -555,13 +559,18 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
   };
   template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
-  const unnamed: string[] = [];
+  const unnamed: string[] = [], unconfirmed: string[] = [];
   const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
     const spec = template.slots[slot], bound = bindings[slot];
     if (!spec || bound === undefined) throw new Error(`board_capital_slot_invalid:${templateId}:${slot}`);
     if (spec.type === "deadline" || spec.type === "informed") {
       if (prep) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}`);
+      // A reason outside the dictionary is never written: the template's generic words stand in its place, with a gap.
+      if (spec.type === "informed") {
+        const fact = context.informed?.find((x) => x.id === bound.slice(9));
+        if (fact && !Object.hasOwn(boardInformedReasons, fact.code)) {unconfirmed.push(fact.id); return spec.generic!;}
+      }
       return `{${bound}}`;
     }
     if ((spec.type === "date") !== (prep !== undefined)) throw new Error(`board_capital_template_invalid:${templateId}:${slot}`);
@@ -570,7 +579,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, context), bindings: out, unnamed};
+  return {...renderBoardTemplate(text, context), bindings: out, unnamed, unconfirmed};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -668,10 +677,14 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   // Every displayed field records which slot of which template binds which reading or deadline.
-  const nameGaps: {item: string; reason: "label_not_in_dictionary"}[] = [];
+  const nameGaps: {item: string; reason: "label_not_in_dictionary" | "informed_reason_not_in_dictionary"}[] = [];
   const render = (t: string, field?: string) => {
     const r = renderBoardRef(t, context);
-    if (field) {bindings.push(...r.bindings.map((b) => ({field, ...b}))); nameGaps.push(...r.unnamed.map((id) => ({item: `${field}.label.${id}`, reason: "label_not_in_dictionary" as const})));}
+    if (field) {
+      bindings.push(...r.bindings.map((b) => ({field, ...b})));
+      nameGaps.push(...r.unnamed.map((id) => ({item: `${field}.label.${id}`, reason: "label_not_in_dictionary" as const})),
+        ...r.unconfirmed.map((id) => ({item: `${field}.informed.${id}`, reason: "informed_reason_not_in_dictionary" as const})));
+    }
     return r;
   };
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
@@ -690,7 +703,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
       authorityBasis: x.authorityBasis === null ? null : render(x.authorityBasis).display, deadlines};
   });
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
-  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary"}[] = [];
+  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary" | "informed_reason_not_in_dictionary"}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
     const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
     const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));
@@ -840,12 +853,11 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   for (const x of d.indicative) use(x.reason, "note", `indicative.${x.figureId}`);
   for (const f of d.figures) if (f.kind === "pending") use(f.reason, "note", `figure.${f.id}`);
   for (const o of d.omissions) use(o.requestedBy, "requester", `omission.${o.id}`);
-  // Informed facts: adopted as informed, by a named author, words only (whitelist and closed lexicon), short.
+  // Informed facts: adopted as informed, by a named author, as a code; the text shown is the dictionary's, never the fact's.
   unique(d.informed.map((x) => x.id), "board_capital_duplicate_informed_fact");
   for (const x of d.informed) {
     if (x.origin !== "informed" || !["chair", "cfo", "ceo"].includes(x.author)) throw new Error(`board_capital_informed_fact_invalid:${x.id}`);
-    if (x.text.length > 200) throw new Error(`board_capital_informed_fact_invalid:${x.id}`);
-    checkBoardFreeText(x.text);
+    if (!/^[a-z][a-z_]{0,59}$/.test(x.code)) throw new Error(`board_capital_informed_fact_invalid:${x.id}`);
   }
   // Texts shown without any reading: topics, notes, requesters and authority bases have no slot.
   for (const t of [...d.topics.map((x) => x.label), ...d.indicative.map((x) => x.reason), ...d.omissions.map((x) => x.requestedBy),

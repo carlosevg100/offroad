@@ -97,6 +97,8 @@ export const boardRestateKeptDebt = (c: CaseData, packet: Record<string, unknown
   c.extraReadings["service-2027"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service", 0);
   c.extraReadings["available-2027"] = boardRestated(packet, "plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService", 0);
 };
+/** The four informed entries of review r16, now inexpressible: an informed fact is a code of a closed dictionary. */
+export const boardInformedProse = ["retorno de menos dezasseis por minuto", "retorno de dezassete por minuto", "a dívida é a terça parte da receita", "a dívida corresponde a um bilião"];
 /** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
 export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
   "Bradesco Deve Dezassete Cêntimos", "Bradesco Deve Dezassete Biliões"];
@@ -178,7 +180,7 @@ function goldCases(): Case[] {
     reuse("appendix-cites-the-reviewed-results", p2, t2, [["Tabela de dívida", ["tabela-divida"]], ["Projeção por drivers e premissas", ["projecao"]], ["Plano da área financeira contra a base", ["plano-fpa"]], ["Fontes e datas das análises", 9]],
       (p) => current(p).appendix.map((a) => [a.label, a.sourceIds.length > 1 ? a.sourceIds.length : a.sourceIds])),
     reuse("likely-questions-with-answer-and-number", p2, t2, {count: 10, everyAnswerHasNumber: true,
-      sample: "Da diferença de 125 pontos, 60 pontos vêm da data de contratação; o restante se divide entre prazo, garantia, distribuição do instrumento e escala."},
+      sample: "Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação."},
       (p) => ({count: current(p).questions.length, everyAnswerHasNumber: current(p).questions.every((q) => q.figureIds.length + q.pendingFigureIds.length > 0),
         sample: current(p).questions.find((q) => q.id === "serra-verde")!.answer})),
     reuse("pending-items-declared", p2, t2, {indicative: ["programs", "spread-a"], sources: ["covenant", "recebiveis"], template: "supplied_not_applied", safraSaysIndicative: true},
@@ -245,7 +247,7 @@ function goldCases(): Case[] {
       withBoardSource("recebiveis", auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>, () => boardPacketInput(2, boardSublimitCase)),
       boardSublimitExpected, (p) => current(p).questions.find((q) => q.id === "rede-a")!.answer),
     reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor de embalagem.",
-      informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", text: "reduzir a dependência de um único fornecedor de embalagem"}], figures: []},
+      informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}], figures: []},
       (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
         figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
     observe("line-kept-with-receipts-missing-never-says-without-the-line",
@@ -259,7 +261,14 @@ function goldCases(): Case[] {
     }), {outcomes: ["refused", "refused"], versions: 1, movesShown: true, amortizationShown: true},
       (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), versions: p.result.discussion!.versions.length,
         movesShown: current(p).pages.some((x) => x.id === "movimentos"), amortizationShown: boardShownTexts(p).some((t) => t.includes("Amortização de 2029 a 2033"))})),
-    reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
+    observe("informed-reason-outside-the-dictionary-shows-generic-words-and-a-gap", boardPacketInput(2, (c) => {c.informed[0]!.code = "a_divida_corresponde_a_um_bilhao";}),
+      {line: "Motivo estratégico apresentado pelo presidente do conselho: a confirmar.", gap: "page.linha.line.3.informed.motivo-estrategico", status: "partial", shown: false},
+      (p) => ({line: pageOf(p, "linha").lines[3], gap: p.result.discussion!.gaps.find((g) => g.reason === "informed_reason_not_in_dictionary")?.item ?? null, status: p.status,
+        shown: boardShownTexts(p).some((t) => /bilhão|bilião|corresponde a um|a_divida/i.test(t))})),
+    reuse("peer-cost-keeps-the-unexplained-remainder", p2, t2,
+      "Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.",
+      (p) => current(p).questions.find((q) => q.id === "serra-verde")!.answer),
+        reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
 }
@@ -405,7 +414,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["subject-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.subject = "delib.crop.subject|ano=year-2026";}), "board_capital_deliberation_text_mismatch:deliberation.linha.subject"],
     ["page-line-used-as-a-deliberation-subject", () => build(2, (c) => {c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";}),
       "board_capital_template_use_invalid:deliberation.linha.subject"],
-    ["answer-to-another-question", () => build(2, (c) => {c.questions[0]!.answer = "a.peer|total=gap-bps|data=date-bps";}), "board_capital_answer_mismatch:bradesco"],
+    ["answer-to-another-question", () => build(2, (c) => {c.questions[0]!.answer = "a.peer|total=gap-bps|ajustes=known-bps|data=date-bps|resto=unexplained-bps";}), "board_capital_answer_mismatch:bradesco"],
     // Review r8: one package per method, and a creditor named only by the creditor field of the right row.
     ["second-package-of-the-same-method", () => withExtraBoardSource({id: "covenant-2", methodId: covenant, packet: covenantWithAdverseDebt("400")}, () => build(2, (c) => {
       c.extraReadings["lev-adv27-b"] = ["covenant-2", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "8.04"];
@@ -498,7 +507,9 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
     ["informed-fact-attributed-to-another-person", () => build(2, (c) => {c.informed[0]!.author = "cfo";}), "board_capital_informed_fact_mismatch:topic.project_strategic_reason:motivo"],
-    ["informed-fact-with-a-number", () => build(2, (c) => {c.informed[0]!.text = "reduzir a dependência em dezasseis por cento";}), "board_capital_number_without_origin"],
+    // Review r16: an informed fact is a code of the method's dictionary; prose, numbers in words, fractions and
+    // periodicity cannot be written as a code (each of the log's entries, alone).
+    ...boardInformedProse.map((text, k) => [`informed-fact-as-prose-${k + 1}`, () => build(2, (c) => {c.informed[0]!.code = text;}), "must match pattern"] as [string, () => unknown, string]),
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],
     ["creditor-and-maturity-of-different-rows", () => build(2, (c) => {
       finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor"; c.questions[0]!.answer = "a.roll_bank|credor=finame-creditor|falta=bradesco-gap|vencimento=bradesco-maturity";

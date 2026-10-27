@@ -37,14 +37,14 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
   omissions: z.array(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: key, requestedBy: text, outcome: z.enum(["applied", "refused"]), reason: text, keptFigureIds: ids})).max(12),
   /** The first version as composed and, after an omission request, the second: the earlier version is kept. */
   versions: z.array(boardMaterialSchema).max(2),
-  gaps: z.array(z.strictObject({item: text, reason: z.enum(["figure_pending_reviewed_result", "layout_exceeds_page", "pages_exceed_agenda", "recommendation_removed_without_options", "label_not_in_dictionary"])})).max(256),
+  gaps: z.array(z.strictObject({item: text, reason: z.enum(["figure_pending_reviewed_result", "layout_exceeds_page", "pages_exceed_agenda", "recommendation_removed_without_options", "label_not_in_dictionary", "informed_reason_not_in_dictionary"])})).max(256),
   pending: z.strictObject({indicative: z.array(z.strictObject({figureId: key, reason: text})).max(24),
     sources: z.array(z.strictObject({sourceId: key, methodId: key, status: key, reasons: z.array(text).max(64)})).max(16),
     authority: ids, template: z.enum(["not_supplied", "supplied_not_applied"])}),
   /** The material facts by rule: every economic reading, every figure marked material and every deadline; each version shows all of them. */
   materialFacts: z.strictObject({figures: ids, deadlines: ids}),
   /** Facts informed in the conversation, adopted with origin and author; shown only attributed to that author. */
-  informed: z.array(z.strictObject({id: key, origin: z.literal("informed"), author: z.enum(["chair", "cfo", "ceo"]), text: z.string().min(1).max(200)})).max(12),
+  informed: z.array(z.strictObject({id: key, origin: z.literal("informed"), author: z.enum(["chair", "cfo", "ceo"]), code: z.string().regex(/^[a-z][a-z_]{0,59}$/)})).max(12),
   priorVersionsKept: z.literal(true), sentToThirdParties: z.literal(false), presented: z.literal(false),
 });
 

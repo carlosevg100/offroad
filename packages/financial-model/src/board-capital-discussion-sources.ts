@@ -114,7 +114,8 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "readings.plan[*].cumulative": {...money("millions"), concept: "volume_antecipavel_acumulado_no_plano", nature: "balance"},
     "result.funding.need.peak": {...money("millions"), concept: "pico_da_necessidade_de_caixa", nature: "balance"},
     "readings.options[*].spreadOverDi": {...rate("annual"), concept: "spread_sobre_cdi_do_programa"}},
-  "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "levers[*].netOfKnownCosts": {...money("reais", "annual"), nature: "flow"}},
+  "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "result.bridge.knownAdjustmentsBps": plain("bps"),
+    "result.bridge.unexplainedAfterKnownAdjustmentsBps": plain("bps"), "levers[*].netOfKnownCosts": {...money("reais", "annual"), nature: "flow"}},
   "evaluate-financing-paths": {
     "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": {...money("millions"), nature: "balance"},
     "result.evaluation.paths[*].debtServiceByYear[*].service": {...money("millions"), nature: "flow"}, "result.evaluation.paths[*].debtServiceByYear[*].availableForService": {...money("millions"), nature: "flow"},

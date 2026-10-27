@@ -15,6 +15,15 @@
  * formatter with that preposition. `{count:deliberations}` and `{count:dated}` are counted by the method. */
 export const boardSlotTypes = ["money", "rate", "multiple", "years", "months", "bps", "count", "date", "label", "flag", "deadline", "informed"] as const;
 export type BoardSlotType = (typeof boardSlotTypes)[number];
+/** The closed dictionary of reasons a person may inform: each code with its reviewed phrase. A code outside it shows the
+ * template's generic words and leaves a gap; the material never carries text of the fact itself. */
+export const boardInformedReasons = {
+  reduce_single_supplier_dependence: "reduzir a dependência de um único fornecedor de embalagem",
+  diversify_suppliers: "diversificar fornecedores",
+  own_capacity: "ganhar capacidade própria de produção",
+  reduce_operational_risk: "reduzir risco operacional",
+  serve_customer_contract: "atender contrato de cliente",
+} as const;
 /** Who may be named as the author of an informed fact. */
 export const boardInformedAuthors = ["chair", "cfo", "ceo"] as const;
 export const boardTextUses = ["delib.title", "delib.subject", "delib.recommendation", "delib.action", "page.title", "page.line", "page.recommendation", "page.option",
@@ -291,7 +300,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "option.wait_quotes": t("page.option", "Esperar as cotações, com capex e início de operação adiados: VPL de {vpl} e retorno de {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
-  "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair"}}),
+  "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
   "topic.crop_programs": t("page.title", "Os programas das redes A e B antecipam {valor} contra o pico de {pico} da safra, sem dívida bancária nova",
     {valor: rf("money", "readings.plan[optionId=risco-sacado-a].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
       pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")}, {when: programsAB}),
@@ -403,10 +412,14 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ano: yr("$y"), divida: s("money", FP, "readings.recommendation.netDebtAtHorizon", "balance"), ano_fim: yr("$y")},
     {answers: "q.cost", when: [...claim("a faixa vai do menor ao maior custo", cmp("baixo", "le", "alto")), horizonYear]}),
   "q.peer": t("question", "Por que pagamos mais que a concorrente?"),
-  "a.peer": t("answer", "Da diferença de {total}, {data} vêm da data de contratação; o restante se divide entre prazo, garantia, distribuição do instrumento e escala.",
-    {total: s("bps", RC, "decomposition.grossBps"), data: s("bps", RC, "result.bridge.steps[family=pricing_date].bps")},
-    {answers: "q.peer", when: [...claim("a parcela da data cabe na diferença", cmp("data", "le", "total")),
-      ...claim("a ponte tem as famílias de prazo, garantia, distribuição e escala", ...["tenor", "guarantee", "instrument_distribution", "scale"].map((x) => has(RC, "result.bridge.steps", "family", x)))]}),
+  // A decomposition without causal attribution is reported as such: the known adjustments, the one of the pricing date,
+  // and what the source leaves unexplained; no sentence turns the remainder into an explanation.
+  "a.peer": t("answer", "Da diferença de {total}, os ajustes conhecidos somam {ajustes}, dos quais {data} de ajuste pela data de contratação; {resto} ficam sem explicação na comparação.",
+    {total: s("bps", RC, "decomposition.grossBps"), ajustes: s("bps", RC, "result.bridge.knownAdjustmentsBps"), data: s("bps", RC, "result.bridge.steps[family=pricing_date].bps"),
+      resto: s("bps", RC, "result.bridge.unexplainedAfterKnownAdjustmentsBps")},
+    {answers: "q.peer", when: [...claim("a parcela da data cabe nos ajustes e os ajustes cabem na diferença", cmp("data", "le", "ajustes"), cmp("ajustes", "le", "total")),
+      ...claim("a ponte não atribui causa ao restante", cmp(at(RC, "result.bridge.causalAttribution"), "eq", {value: "false"})),
+      ...claim("o restante sem explicação é o que a fonte registra", cmp("resto", "gt", "0"))]}),
   "q.rating": t("question", "Vale contratar rating?"),
   "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores da debênture. Sugerimos avaliação preliminar não publicada.",
     {baixo: s("money", RC, "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts", "flow")},
@@ -571,7 +584,7 @@ export function checkBoardTemplateLibrary() {
       if (spec.year) for (const m of spec.year.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
       if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : spec.type === "informed" ? !spec.author : !spec.from && !spec.year) problems.push(`${id}:slot`);
       if (spec.year && spec.type !== "date") problems.push(`${id}:year`);
-      if ((spec.type === "label") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
+      if ((spec.type === "label" || spec.type === "informed") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
       if (spec.type === "money" && !spec.nature) problems.push(`${id}:nature`);
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
@@ -593,7 +606,7 @@ export function checkBoardTemplateLibrary() {
     // A text that names a cause carries the condition of that cause, on its driver.
     for (const c of boardScenarioDefinitions) if (c.phrase.test(x.text) && !x.when.some((w) => w.claim === `cenário: ${c.scenario}`)) problems.push(`${id}:scenario:${c.scenario}`);
     // No template asserts a cause: verbs that attribute an effect to a driver are refused in the fixed text.
-    if (/(?:leva|levam|reduzem|reduz o|cai para|deixa|deixam|pesam|explica|explicam|por causa|devido)/i.test(x.text)) problems.push(`${id}:causal_verb`);
+    if (/(?<![\p{L}])(?:leva|levam|reduzem|reduz o|cai para|deixa|deixam|pesam|explica|explicam|por causa|devido)(?![\p{L}])/iu.test(x.text)) problems.push(`${id}:causal_verb`);
     // No fixed text names a creditor or a bank: names enter only through label slots.
     for (const name of boardNameDictionary) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(x.text) && !boardNamesAllowedInText.includes(name)) problems.push(`${id}:names:${name}`);
     if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);

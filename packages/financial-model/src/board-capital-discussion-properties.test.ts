@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
@@ -134,7 +134,8 @@ const meaning: Record<string, Record<string, string>> = {
   "a.demand": {valor: FP + "readings.alternative.issueTarget", prazo: route, credor: DT + "result.table.rows[id=*].creditor", vencimento: DT + "result.table.rows[id=*].finalPayment"},
   "a.cost": {baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition", custo: FP + "readings.recommendation.horizonFinancingCost", ano: "year",
     divida: FP + "readings.recommendation.netDebtAtHorizon", ano_fim: "year"},
-  "a.peer": {total: RC + "decomposition.grossBps", data: RC + "result.bridge.steps[family=pricing_date].bps"},
+  "a.peer": {total: RC + "decomposition.grossBps", ajustes: RC + "result.bridge.knownAdjustmentsBps", data: RC + "result.bridge.steps[family=pricing_date].bps",
+    resto: RC + "result.bridge.unexplainedAfterKnownAdjustmentsBps"},
   "a.rating": {baixo: RC + "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", alto: RC + "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts"},
   "a.strategic": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
   "a.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
@@ -271,7 +272,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     }
     // Scenario definitions, by the oracle's own reading of the sources: a named scenario changes exactly what the sentence
     // names, active in the year it shows; a deferral has a later schedule. No sentence attributes a cause.
-    if (/\b(?:leva|levam|reduzem|cai para|deixa|pesam|explica|por causa|devido)\b/i.test(t)) bad.push(`causal:${t.slice(0, 60)}`);
+    if (/(?<![\p{L}])(?:leva|levam|reduzem|cai para|deixa|pesam|explica|por causa|devido)(?![\p{L}])/iu.test(t)) bad.push(`causal:${t.slice(0, 60)}`);
     const projection = (projectionPacket?.result as {projection?: {projection?: {base?: {periodId: string}[]; scenarios?: {id: string; basedOn: string; overriddenDrivers: string[];
       volumeGrowthRate: unknown; volumeFactor: unknown; inputCostShock: {fromPeriodId: string; rate: string} | null}[]}}; contributions?: {fieldPath: string; value: {value: unknown}}[]} | undefined);
     const scenarios = projection?.projection?.projection?.scenarios ?? [], periods = (projection?.projection?.projection?.base ?? []).map((x) => x.periodId);
@@ -376,6 +377,22 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
         if (/veda a cessão/.test(t) && facts.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
       }
     }
+  }
+  // Informed reasons: the oracle's own dictionary of reviewed phrases; the shown words are the phrase of the adopted code,
+  // or the generic words with a gap; the fact itself never carries text.
+  const reasons: Record<string, string> = {reduce_single_supplier_dependence: "reduzir a dependência de um único fornecedor de embalagem", diversify_suppliers: "diversificar fornecedores",
+    own_capacity: "ganhar capacidade própria de produção", reduce_operational_risk: "reduzir risco operacional", serve_customer_contract: "atender contrato de cliente"};
+  for (const t of texts) {
+    const said = /^Motivo estratégico apresentado pelo presidente do conselho: (.*)\.$/.exec(t)?.[1];
+    if (said === undefined) continue;
+    const fact = d.informed[0], want = fact ? reasons[fact.code] : undefined;
+    if (want ? said !== want : !(said === "a confirmar" && d.gaps.some((g) => g.reason === "informed_reason_not_in_dictionary"))) bad.push(`informed:${said.slice(0, 40)}`);
+  }
+  // A decomposition without causal attribution keeps its remainder: the text shows the source's unexplained points and attributes nothing.
+  const relative = sourceOf("analyze-relative-debt-cost") as {result?: {bridge?: {causalAttribution?: boolean; unexplainedAfterKnownAdjustmentsBps?: string}}} | undefined;
+  const bridge = relative?.result?.bridge;
+  for (const t of texts) if (/^Da diferença de/.test(t) && bridge && bridge.causalAttribution === false) {
+    if (/vêm d|se divide|explicad[oa]s? por|deve-se|por causa/i.test(t) || !t.includes(`${bridge.unexplainedAfterKnownAdjustmentsBps} pontos ficam sem explicação`)) bad.push(`decomposition:${t.slice(0, 60)}`);
   }
   return {bad, missing};
 }
@@ -603,6 +620,21 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const lost = structuredClone(calibrated), v2 = lost.result.discussion!.versions.at(-1)!;
     v2.pages = v2.pages.filter((x) => x.id !== "movimentos");
     expect(oracle(lost).bad.some((x) => x.startsWith("fact_left:"))).toBe(true);
+  });
+  it("regression r16: an informed fact is a dictionary code and a decomposition keeps its remainder (full path, oracle not vacuous)", () => {
+    for (const text of boardInformedProse) expect(() => full(2, (c) => {c.informed[0]!.code = text;}), text).toThrow(/must match pattern|Invalid/);
+    const unknown = full(2, (c) => {c.informed[0]!.code = "a_divida_corresponde_a_um_bilhao";});
+    expect(unknown.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: a confirmar.");
+    expect(oracle(unknown)).toEqual({bad: [], missing: []});
+    const calibrated = packet(2, () => undefined);
+    expect(calibrated.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "serra-verde")!.answer).toContain("55 pontos ficam sem explicação");
+    // Not vacuous: an attribution of the remainder and a free informed text, forged into the calibrated material, are both read.
+    const forged = structuredClone(calibrated), v = forged.result.discussion!.versions.at(-1)!;
+    v.questions.find((q) => q.id === "serra-verde")!.answer = "Da diferença de 125 pontos, 60 pontos vêm da data de contratação; o restante se divide entre prazo, garantia, distribuição do instrumento e escala.";
+    v.pages.find((x) => x.id === "linha")!.lines[3] = "Motivo estratégico apresentado pelo presidente do conselho: a dívida corresponde a um bilião.";
+    const read = oracle(forged).bad;
+    expect(read.some((x) => x.startsWith("decomposition:"))).toBe(true);
+    expect(read.some((x) => x.startsWith("informed:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

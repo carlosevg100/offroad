@@ -38,7 +38,7 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
   questions: z.array(z.strictObject({id: key, question: selection, answer: selection})).max(24),
   /** [target, target id, requested by] */
   omissions: z.array(z.strictObject({id: key, reading: selection})).max(12),
-  /** [origin, author, text]: a fact informed in the conversation, adopted with who stated it. */
+  /** [origin, author, code]: a fact informed in the conversation, adopted as a code of the method's dictionary with who stated it. */
   informed: z.array(z.strictObject({id: key, reading: selection})).max(12).default([]),
 }).refine((i) => i.endDate >= i.openingDate, "Invalid period");
 export type AdoptedBoardCapitalDiscussionInput = z.infer<typeof adoptedBoardCapitalDiscussionInputSchema>;
@@ -114,8 +114,8 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     answer: need(read(q.answer, `question.${q.id}.answer`, "text", "text", textRef))}));
   const omissions = input.omissions.map((o) => {const r = list(o.reading, `omission.${o.id}`, z.tuple([z.enum(boardOmissionTargets), z.string().regex(/^[a-z0-9][a-z0-9.-]{0,80}$/), textRef]));
     return {id: o.id, target: r?.[0] as (typeof boardOmissionTargets)[number], targetId: r?.[1] as string, requestedBy: r?.[2] as string};});
-  const informed = input.informed.map((x) => {const r = list(x.reading, `informed.${x.id}`, z.tuple([z.string().max(40), z.string().max(40), z.string().min(1).max(200)]));
-    return {id: x.id, origin: r?.[0] as string, author: r?.[1] as string, text: r?.[2] as string};});
+  const informed = input.informed.map((x) => {const r = list(x.reading, `informed.${x.id}`, z.tuple([z.string().max(40), z.string().max(40), z.string().regex(/^[a-z][a-z_]{0,59}$/)]));
+    return {id: x.id, origin: r?.[0] as string, author: r?.[1] as string, code: r?.[2] as string};});
   // The results it reads are those the basis names, by fingerprint, and no other.
   const byId = new Map(packets.map((p) => [p.id, p.packet]));
   if (byId.size !== packets.length || packets.some((p) => !input.sources.some((s) => s.id === p.id))) throw new Error("board_capital_source_not_named");
