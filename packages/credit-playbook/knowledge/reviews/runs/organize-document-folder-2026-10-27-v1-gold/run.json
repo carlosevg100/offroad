@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T14:10:25.574Z",
-    "finishedAt": "2026-10-27T14:10:25.574Z",
-    "commit": "c80412d7"
+    "startedAt": "2026-10-27T14:25:27.888Z",
+    "finishedAt": "2026-10-27T14:25:27.888Z",
+    "commit": "ce7b80ce"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "[]",
       "observed": "[]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "[30,1,2,3,2,21]",
       "observed": "[30,1,2,3,2,21]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
       "observed": "{\"copy\":\"f30\",\"of\":\"f01\",\"vault\":[[\"f18\",\"cofre-escritura-2021\"],[\"f20\",\"cofre-ccb-bradesco\"]]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
       "observed": "[[\"audited_over_draft\",[\"f01\"],[\"f02\"],[]],[\"side_by_side\",[],[],[\"f13\",\"f14\"]],[\"later_position\",[\"f16\"],[\"f17\"],[]],[\"effective_text\",[\"f18\",\"f19\"],[],[]],[\"later_version\",[\"f10\"],[\"f09\"],[]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
       "observed": "{\"texts\":[[\"deb-aurora-1\",[[\"financial_covenant\",\"f19\"],[\"negative_pledge\",\"f19\"]]]],\"original\":\"Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.\"}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -67,7 +67,7 @@
       "expectation": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
       "observed": "[[\"f19-amendment\",[\"plano-financiamento-2027\"],[\"f19\",\"f18\"]],[\"f24-politica\",[\"plano-financiamento-2027\"],[\"f24\"]],[\"f22-cessao\",[\"plano-financiamento-2027\"],[\"f22\"]],[\"f23-renovacao\",[\"linha-embalagem\"],[\"f23\"]],[\"f16-debt-total\",[\"plano-financiamento-2027\"],[\"f16\"]],[\"f02-draft\",[\"plano-financiamento-2027\"],[\"f02\",\"f01\"]],[\"f04-subsidiary\",[\"plano-financiamento-2027\"],[\"f04\"]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -75,7 +75,7 @@
       "expectation": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
       "observed": "{\"reported\":\"140000000\",\"recomposed\":\"130000000\",\"reason\":\"unused_limit_counted\"}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -83,7 +83,7 @@
       "expectation": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
       "observed": "{\"ccb\":[\"partial\",[7]],\"photo\":\"unreadable\",\"sourcedOnPage7\":0,\"photoFindings\":[\"file_unreadable\"]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -91,7 +91,7 @@
       "expectation": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
       "observed": "[[\"monthly_series\",\"f11\",[\"inventario\",\"plano-financiamento-2027\"]],[\"reading_substitute\",\"f20\",[\"inventario\",\"plano-financiamento-2027\"]],[\"real_collateral\",\"f27\",[\"plano-financiamento-2027\"]],[\"group_perimeter\",\"f04\",[\"plano-financiamento-2027\"]],[\"liquidity_projection\",\"f15\",[\"plano-financiamento-2027\"]]]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -99,7 +99,7 @@
       "expectation": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
       "observed": "[\"A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.\"]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -107,7 +107,7 @@
       "expectation": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
       "observed": "{\"numeric\":\"none\",\"validated\":false,\"rowsValidated\":0,\"exclusions\":[\"ratio_calculation\",\"projection\",\"recommendation\",\"document_validation\",\"third_party_distribution\"]}",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "expectation": "true",
       "observed": "true",
       "inputFingerprint": "115068e6d3ee3fb191f4f2c2e1def4350cfb5a2a3ee8499077eafdab654d8ead",
-      "outputFingerprint": "2d7d4dc50785df1e70a6cf6e9789c94e89f941f1c392d895aea3309bb95e3be1",
+      "outputFingerprint": "f87821dddd35bd6716dfe60345c29463f643c51c8d35f58245d91f571d3f672f",
       "passed": true
     },
     {
@@ -123,7 +123,7 @@
       "expectation": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
       "observed": "{\"prevails\":[\"f01\"],\"superseded\":[\"f02\"]}",
       "inputFingerprint": "07927eed05dd6ec049e0b5597b993b8372bee4b36e0d988ed925b295c998cdf2",
-      "outputFingerprint": "02364fdfcbbbb04f8c6e79db0627e9fb1bd03b583046e0e80d637f8f5c641b8b",
+      "outputFingerprint": "d0cec46732c8856065b94601ebc914e214763acb5657d6d08c6ed863910a4afe",
       "passed": true
     },
     {
@@ -131,7 +131,7 @@
       "expectation": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
       "observed": "{\"prevails\":[\"f01\"],\"reason\":\"audited_over_draft\"}",
       "inputFingerprint": "e6536f994f21114a58a005b8a153fa1f17ce4e827688bb38848496da71267263",
-      "outputFingerprint": "677c674f31c522b65cccb0e0e9f36dcd454db68adb95e13e2a8beb334f13942e",
+      "outputFingerprint": "11a645d6cac545ec14e8288716166e9e9ef99cd6369481aefdb048543c124845",
       "passed": true
     },
     {
@@ -139,7 +139,7 @@
       "expectation": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
       "observed": "{\"updated\":[\"f20\"],\"added\":[\"s02\"],\"preserved\":29,\"ccb\":\"lida; já estava no cofre\",\"preservedBytes\":true}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
+      "outputFingerprint": "cc17c420ca9c087cb4bc943e9e32bad03830ba328cf1a29dd269853a241c3b10",
       "passed": true
     },
     {
@@ -147,7 +147,7 @@
       "expectation": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
       "observed": "{\"page7\":[{\"statement\":\"Cláusula lida na cópia legível da página 7.\",\"quoted\":{\"fileId\":\"s01\",\"page\":7,\"section\":null,\"text\":\"A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9.\"}}],\"months\":[{\"id\":\"f12-months\",\"status\":\"matches\",\"reported\":\"27000000\",\"recomposed\":\"27000000\"}]}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
+      "outputFingerprint": "cc17c420ca9c087cb4bc943e9e32bad03830ba328cf1a29dd269853a241c3b10",
       "passed": true
     },
     {
@@ -155,7 +155,7 @@
       "expectation": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
       "observed": "{\"informed\":[{\"statement\":\"A minuta não foi para nenhum banco.\",\"author\":\"Controller da Aurora\",\"date\":\"2026-09-02\"}],\"questions\":[],\"stillOpen\":[\"Matrícula atualizada do imóvel avaliado no laudo\",\"Projeção ou fluxo de caixa de 13 semanas atualizado\"]}",
       "inputFingerprint": "0ad059b1666ef1a4f213be7ec4f44108747269a6d81bd2440b647220fd6f5297",
-      "outputFingerprint": "cf5ec7a491ce03c52276e19ed628c451ae1c43cd90f1dab0f5786efe27f2d97a",
+      "outputFingerprint": "cc17c420ca9c087cb4bc943e9e32bad03830ba328cf1a29dd269853a241c3b10",
       "passed": true
     },
     {
@@ -163,7 +163,7 @@
       "expectation": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
       "observed": "{\"decisionFindings\":null,\"generalFindings\":null,\"clauseObservations\":[\"f22-cessao\",\"f23-renovacao\",\"f24-politica\"],\"gaps\":[\"monthly_series\",\"reading_substitute\"]}",
       "inputFingerprint": "116c82be1fbe248b7a4246f990d13b55f8fe92591cb8e46e8b2de8d1d7308e99",
-      "outputFingerprint": "bd8e31bc2c00cf300d00d66272313c77f4e5a3245df81a4c7a5230afa4317ea1",
+      "outputFingerprint": "7bd058d8b2d30cf842597300a25385fb032e5b0286e4b737f028cdfa3238c71d",
       "passed": true
     },
     {
@@ -171,7 +171,7 @@
       "expectation": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
       "observed": "{\"firstGroup\":\"Dívida\",\"highlighted\":[\"instrument:deb-aurora-1\"],\"first\":[\"f19-amendment\",[\"discussao-divida\",\"plano-financiamento-2027\"]]}",
       "inputFingerprint": "6b9fae884565033ba9d7049c0f666361686fe4143b9ef180c2977897a7ae1844",
-      "outputFingerprint": "d5c98da1b4e4a794f6c973dcc5b6923cbb763267dad217ce03c66e75caca1cad",
+      "outputFingerprint": "13a21bb6495f5c23aa088036dc8965ddfda25f39774fa8bbb8c52bfbd7529c2f",
       "passed": true
     },
     {
@@ -179,7 +179,7 @@
       "expectation": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
       "observed": "{\"inVault\":0,\"decisionFindings\":null,\"general\":[\"version_conflict\",\"binding_limit\",\"collateral_restriction\",\"deadline\",\"policy_limit\",\"figure_correction\",\"perimeter\"],\"uses\":[\"bank-material\",\"debt-analysis\",\"projection\"]}",
       "inputFingerprint": "cf939601f8a1193cef95dfe0dd927aa96c6d29ec81f1234864e9b82ff7e19597",
-      "outputFingerprint": "f3c41d2370abb2ad507cdd1f0d0cde1fa40af91434d2667275f078cd80e3e3c4",
+      "outputFingerprint": "a630282520570a95445ca8abcbf182ae8646a17d66be8464c1cc8ac799fc40e9",
       "passed": true
     },
     {
@@ -187,7 +187,7 @@
       "expectation": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"pastificio-serra\",\"nao-identificada\"],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
       "observed": "{\"partitioned\":true,\"partitions\":[\"aurora\",\"pastificio-serra\",\"nao-identificada\"],\"question\":[\"Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?\",[\"f31\"]]}",
       "inputFingerprint": "60b4719916a06cab72ccf3b76633e24a78dc1b4eb49f5a885788b271b23093c9",
-      "outputFingerprint": "eda89cff38830d45f59d4c6ac2af4b7385c3866f921e10411bb687d305c9917f",
+      "outputFingerprint": "b1b0a9b03196fa959d6392806e28c934ee574741442e436534e2e69179f05773",
       "passed": true
     },
     {
@@ -195,7 +195,7 @@
       "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:unresolved_versions:2026-05\",\"recomposed\":null}",
       "inputFingerprint": "d5860f35cd2f10f7bc006d460034c2bae26e5b9a7773a0849b17d5296f31d6ea",
-      "outputFingerprint": "2cf60614ee79b12cf675de4b885fd8aa493cd96b2dcf7b6bf66fa7b1da40d6d7",
+      "outputFingerprint": "ffc722d654ee1b23d8c9c672709fe405fc69043e270d0c0364a901061d7150cd",
       "passed": true
     },
     {
@@ -203,7 +203,7 @@
       "expectation": "{\"effectiveTexts\":[],\"finding\":\"amendment_not_in_force\",\"decisionFindings\":6,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"effectiveTexts\":[],\"finding\":\"amendment_not_in_force\",\"decisionFindings\":6,\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "ec20ebeb78ba40196dd4c9121693dd6d9c649f140a785f04482d6e17e56479e8",
-      "outputFingerprint": "cb26af97e40f6e2dcad1bb4c7ae776c0516e6a38cda863572fa852df1985772a",
+      "outputFingerprint": "cc7ac060676510c6ef4b6baac99c5fa5327bc2bbf0da74418ef7f785d92e40a4",
       "passed": true
     },
     {
@@ -211,7 +211,7 @@
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\",\"active\":[\"f31-renovacao\"]}",
       "inputFingerprint": "59dd3c03a0e60ad297b0c840b0665b86d1351ec5ce2c7bbbb6585d1f7399409f",
-      "outputFingerprint": "0af0f040a6c70b15fb6112a352bf468ff45e8721865274d58bd71b89796e9b62",
+      "outputFingerprint": "51f1afeac86ee9db9cda2a6f5749e892003374916096387b4c2b012608fd44d0",
       "passed": true
     },
     {
@@ -219,7 +219,7 @@
       "expectation": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "observed": "{\"conflicts\":[[\"f01\",\"f30\"]],\"status\":\"partial\",\"rows\":[\"conflicted\",\"conflicted\"],\"draftFinding\":false,\"decisionFindings\":5}",
       "inputFingerprint": "a121d64536b4623ff274b1b14454343bff9bd322012e34e1117ce4031797491a",
-      "outputFingerprint": "6c756132a0c74857c4e243bbf96eca522fbd531113421e6b45767e5f46bf5129",
+      "outputFingerprint": "ced5e990e9b4206cc6d38bcdf33d0c878bd2fefe7dcdeafb69c51aba92856b80",
       "passed": true
     },
     {
@@ -227,7 +227,7 @@
       "expectation": "{\"effectiveTexts\":[],\"code\":\"amendment_not_in_force\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"effectiveTexts\":[],\"code\":\"amendment_not_in_force\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "e0184ba1ffa08667777f9bbc47a8620795c19467662fd5d2bb0c9486db7b6864",
-      "outputFingerprint": "09f7abafc2fe8ee30916105cff15a395e9b38545258f32779f1a74b244d02d6f",
+      "outputFingerprint": "bff767526019aa2d84af7e644cd2add974f2559e7c0973541acc4747b6bcaa2b",
       "passed": true
     },
     {
@@ -235,7 +235,7 @@
       "expectation": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"conflicts\":[{\"type\":\"financial_covenant\",\"fileIds\":[\"f19\",\"f31\"]}],\"covenantInForce\":false,\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "1cef0a8006e749c6a734178a61167768de59ba8596a9fea0ff1c3d71c574fe01",
-      "outputFingerprint": "e319de8c92f5340b9efb6f4967b89a1af8ac1872b67470b73f366865df96ebc4",
+      "outputFingerprint": "df00b86955c7662c883f72b25300b9e5009f942553889d075846fd94f14c449c",
       "passed": true
     },
     {
@@ -243,7 +243,7 @@
       "expectation": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
       "observed": "{\"headline\":[\"f31-amendment\"],\"cut\":true,\"f19\":[\"amendment_in_force\",true,false]}",
       "inputFingerprint": "16f794ae8b11d4e107c4f6def2af0be146258827b00ac220ff398681605d0248",
-      "outputFingerprint": "e199f6fb280633c8364fb83ad881e2c10e43481158da420ffb57a0dac34790e5",
+      "outputFingerprint": "9a93b83c14f89c0cfabbdce8240340e82866caefe0df1706b5aaf57fa26fba99",
       "passed": true
     },
     {
@@ -251,7 +251,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflicts\":[[null,[\"s01\",\"s03\"]]]}",
       "inputFingerprint": "bd72925399f4c9849e911f76602f9fa1d8d78b966c753eb43a0949436f7430d9",
-      "outputFingerprint": "07384a59adbdad757779eb62ca7f83ea8c1e3385652ed99675e257916a512995",
+      "outputFingerprint": "1e1a7003411508dc80d6eb59436f569bc6581905efb2566839a92e889cf93286",
       "passed": true
     },
     {
@@ -259,7 +259,7 @@
       "expectation": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
       "observed": "[{\"type\":\"prepayment\",\"fileIds\":[\"f31\",\"f32\"]}]",
       "inputFingerprint": "aa3d8f8d411cf2484fc26195d5f6524fd0e426e220dcafca607caca736f8d815",
-      "outputFingerprint": "6f2ab7c2fccaac25d61223255d38331f17001171ffb7f10dc860c2fd36d5d0c6",
+      "outputFingerprint": "9147b9b278eb43ddc7438e5279062c62b29f65fa48abef0726f65967b5ee77b2",
       "passed": true
     },
     {
@@ -267,7 +267,7 @@
       "expectation": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
       "observed": "{\"inForce\":\"f32\",\"currentConflicts\":[],\"history\":[false,false],\"open\":[]}",
       "inputFingerprint": "c13fc1594cf4bce73de7c531d8bf9ac6d08d608ffa18746efa26ed9eced39892",
-      "outputFingerprint": "5f57574778b3a962b69ae1c05b875be0046e2112f4d1d589405a3245d4547267",
+      "outputFingerprint": "b0f74f23bc6bc58b80ed47b24fa6058fbcec1393b6aada369fbe2950dfc8b59e",
       "passed": true
     },
     {
@@ -275,7 +275,7 @@
       "expectation": "{\"effectiveTexts\":[],\"conflict\":true,\"f19\":\"amendment_not_in_force\",\"ids\":true}",
       "observed": "{\"effectiveTexts\":[],\"conflict\":true,\"f19\":\"amendment_not_in_force\",\"ids\":true}",
       "inputFingerprint": "943a2253d430967b5913764621fc7116490dcea6429e7a4d1096ee7bf9179562",
-      "outputFingerprint": "dc96cd4b1ae066c7bd8190b4c3bd4df59b68053f610c9c36514c679e7fcd1bc1",
+      "outputFingerprint": "fb29d6d054ca5e3025d86832a5f646a5a0c7c59b5ec93c90d4160abe66e21f44",
       "passed": true
     },
     {
@@ -283,7 +283,7 @@
       "expectation": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
       "observed": "{\"prevails\":[\"f31\"],\"superseded\":[\"f16\",\"f17\"],\"f16\":\"lida; superada pela v2\",\"f17\":\"lida; superada\"}",
       "inputFingerprint": "fe2a8949c8f62bdf31e9cb50f4bcb50f1f1dd8905e51e18678935b6c700f0089",
-      "outputFingerprint": "a58e68e8ca3662b9d58a6cb6bffb65c5d9b51cda111ae42c1101f0967f66341f",
+      "outputFingerprint": "dfc185bcbdcba8677a28464702b507e6a2e1e20680d6696f2e1f47b4910ab8f2",
       "passed": true
     },
     {
@@ -291,7 +291,7 @@
       "expectation": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
       "observed": "{\"observation\":true,\"covenantFrom\":null,\"headline\":false}",
       "inputFingerprint": "64c9f5084270d4433c2cfb9e9f3c248b12dc65356b929c63a4a22d562db0597a",
-      "outputFingerprint": "0e57aef6633b206f3344c87fbf3125bb7a1fe8e05a9c5d2d288ac8bceb6763f3",
+      "outputFingerprint": "e77d5daacbffe78a80b4bc0a9be8e6aeda57d7bd78dad649389f5f47a195f1e3",
       "passed": true
     },
     {
@@ -299,7 +299,7 @@
       "expectation": "{\"covenantInForce\":false,\"conflict\":true}",
       "observed": "{\"covenantInForce\":false,\"conflict\":true}",
       "inputFingerprint": "4cb80510b5f38b83870f643d90d6b13a9c1c5d3e059149d134a75156912de884",
-      "outputFingerprint": "33158c8ff1a03529b2b6b65a04fbdf283d48e3392556c3429d2cbfc904a0b35f",
+      "outputFingerprint": "a7017db171bb667391036ebea31feeb7455a3f8617e2fa01a795983e66b49363",
       "passed": true
     },
     {
@@ -307,7 +307,7 @@
       "expectation": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
       "observed": "\"Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.\"",
       "inputFingerprint": "fd27bb884aee2c6ba01404b5252c5aa8d3481eeb1ea2cca7293d47e77230c3f8",
-      "outputFingerprint": "d2a6a866562932bb4aaf1e8f4f7fb83584be3d7b9ca82e384c376e03176f21d4",
+      "outputFingerprint": "df086233ccbf53e1791276807c611ec22398a6dd28d6f33fd083f248dad4c203",
       "passed": true
     },
     {
@@ -315,7 +315,7 @@
       "expectation": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "observed": "{\"deadlines\":[[\"f31\",\"2026-11-02\"]],\"history\":\"clause_superseded\"}",
       "inputFingerprint": "67041511bd3e98af194f065c7c22c5563b7a96cc400e189a0f59def527549ae9",
-      "outputFingerprint": "a3c31d48eebef2bbca8bd5989e15bae518240d0ca4bdacdc23432499286294ab",
+      "outputFingerprint": "b559478655b533940fdb7786bc51395fdef5b3cbd2db43b092817d0955840a91",
       "passed": true
     },
     {
@@ -323,7 +323,7 @@
       "expectation": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
       "observed": "{\"covenantHeadline\":false,\"change\":false,\"blocked\":\"unread\"}",
       "inputFingerprint": "0575b06b43466a3f16f611f2c42f509e35b716f3b4021b86a62a8ae6814701ae",
-      "outputFingerprint": "749ed0f62ea359757ca464fa6aac9b122928d6de2482c67f049ce8a9b590e410",
+      "outputFingerprint": "2c98d4a9b6077de59bfa4a21fdbbaf10ae344691c67698f242e5ca116884981e",
       "passed": true
     },
     {
@@ -331,7 +331,7 @@
       "expectation": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"future\":[{\"fileId\":\"f19\",\"from\":\"2027-01-01\"}],\"covenantFrom\":null,\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "4262c1cbe75749e54b3ec5c3f43faeefd7d46c2fb7544102231eeefc5e2aa5e7",
-      "outputFingerprint": "bb2353e4e9cb8861fdef1e2b5f15b5c38aaffff3f5a12c5d5deb5ee26f3c93bf",
+      "outputFingerprint": "470d3d5a21a76206249ec121a0034fde98aa083679ada6d9a4a82cd6cd33dc71",
       "passed": true
     },
     {
@@ -339,7 +339,7 @@
       "expectation": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "observed": "{\"covenantInForce\":false,\"knowledge\":\"unread\",\"policy\":\"Política de no máximo 2,5x.\"}",
       "inputFingerprint": "3bfe6ffa52bc968c7a38c0a78a9253dd68dd85e73ae0ce851d0bbd857bc514d2",
-      "outputFingerprint": "7b802ea7c1a26698f060feb98c75e6645e49178ba0fabe89a39412c097d6cea2",
+      "outputFingerprint": "a56b5ed440417f468a2f5012db013e13f820f1cb089be917763006e583e37864",
       "passed": true
     },
     {
@@ -347,7 +347,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":[[7,[\"s01\",\"s04\"]]]}",
       "inputFingerprint": "876749242305e9dc1a9a95b7e379e6f2821c2fcc42e2a007880d3dc7f3b0882b",
-      "outputFingerprint": "fd76fd03fbd386dba9c8b12fc7222fe705af65d7ab8d113379b251bbd64261f6",
+      "outputFingerprint": "b4893280b3ed6f159032fb4d9570dc02d9898c4821b27245cf54565bc0a0cd7c",
       "passed": true
     },
     {
@@ -355,7 +355,7 @@
       "expectation": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
       "observed": "{\"deadlines\":[],\"finding\":\"amendment_without_original\"}",
       "inputFingerprint": "231b11754537a42b958f3e8ddfa1d9103353a4459c5cfbab202670a8f5abbb2c",
-      "outputFingerprint": "f7f28ff0f2fd61d8bfaa03ca84725a9101d107d1e919a649480e0e0392b004e9",
+      "outputFingerprint": "5991da35487de04f8b2ae3a10b374c433b07cc8e5c09abe949552131863b8b92",
       "passed": true
     },
     {
@@ -363,7 +363,7 @@
       "expectation": "{\"policy\":false,\"future\":true}",
       "observed": "{\"policy\":false,\"future\":true}",
       "inputFingerprint": "771b4707421c7f23132efc40d1ffb8635ea55567cd51de09c3e1008e1c49fe02",
-      "outputFingerprint": "7f53bc2bc6b245c797f9ae1a85fd7a0e0a8194025d9e0663b96b59a21421db37",
+      "outputFingerprint": "e72c2b0e63a002af13c27df082b6ac48976d71ed8a94ea92e59eb26282ae2c80",
       "passed": true
     },
     {
@@ -371,7 +371,7 @@
       "expectation": "{\"check\":\"not_run\",\"conflict\":true}",
       "observed": "{\"check\":\"not_run\",\"conflict\":true}",
       "inputFingerprint": "aeef9e88c4a24a1d36724367d048c224f6e8a65f704ec337297a63403e0f935c",
-      "outputFingerprint": "a1c7f17f0a39eb7d37f04defaaa8f51a665fb4899a821f7a1e913960e9df9929",
+      "outputFingerprint": "91a3db3f198343c20983beb819a7faf1aa5dc802c38b17ec194345abf1a1430c",
       "passed": true
     },
     {
@@ -379,7 +379,7 @@
       "expectation": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
       "observed": "{\"resolution\":\"higher_assurance\",\"prevails\":[\"f09\"],\"check\":\"differs\"}",
       "inputFingerprint": "9bbb7cee8dcb6978ff3b580b8bf2a2674772ca12a90ba0242828fa1356a982a5",
-      "outputFingerprint": "d47da8732ee3700d7b4506574c43fcec2a2cca40db25e49eaecf684eda61b9ab",
+      "outputFingerprint": "df0f12698d0929af663b6ac22968d1f1038b4fa197c0b6b6e47ba1307e54f2d6",
       "passed": true
     },
     {
@@ -387,7 +387,7 @@
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\",\"correction\":false}",
       "inputFingerprint": "35b02e4ace69d6725546a05c1e2e7bd5c11f205ceda0397efdb166f17314e3e5",
-      "outputFingerprint": "e80685e259646563189d982211dfa161ddd0631ad209b69f851117569ec023d0",
+      "outputFingerprint": "14a8216674b66c21f1ed168f30ac1f7b7a5d85049e22dc1ecdc18fa4b50663a2",
       "passed": true
     },
     {
@@ -395,7 +395,7 @@
       "expectation": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
       "observed": "{\"clauses\":[],\"knowledge\":\"unread\",\"binding\":false}",
       "inputFingerprint": "52b32bfad7d2eb3556d4ff0c6e023c495ff77ef8c7b07c8ee1dcf10747d40eb4",
-      "outputFingerprint": "f5b05caeb90f5fa6bbd89c5cb99eebbae6aa94edf12d676e42f10d9e3d6887cd",
+      "outputFingerprint": "b77ebc7783ac2300869323c19310f583f0d9cc9d263e32d6266b73ebf2995d2a",
       "passed": true
     },
     {
@@ -403,7 +403,7 @@
       "expectation": "{\"check\":\"not_run\",\"reason\":\"future\"}",
       "observed": "{\"check\":\"not_run\",\"reason\":\"future\"}",
       "inputFingerprint": "ce9acdc3f6733e6cf826f6dd8f7168d2ccab2c078d17074f7674c4183841ffe4",
-      "outputFingerprint": "e4606dca802e36a6ee2f4a76e2b7da03766ebac41e86753bdf64b3008ce70f66",
+      "outputFingerprint": "0967e72013c6d304de3a54f8228e87b3585daedd9c655ea04b877776083e2004",
       "passed": true
     },
     {
@@ -411,7 +411,7 @@
       "expectation": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
       "observed": "{\"ccb\":\"partial\",\"blocked\":\"conflict\"}",
       "inputFingerprint": "9621114d23876ab781da8e6f4519c34d9cc9aad7c00b9eb363e7adc7d5ed58b3",
-      "outputFingerprint": "772e1a4265a38bf0cb6bd850e7fb6f70ffcf8c977154b95564d9ec826489462e",
+      "outputFingerprint": "f126efe19e6d6c34776a56a7105de356feafb2d02eda613d3fb0ac19881677b8",
       "passed": true
     },
     {
@@ -419,7 +419,7 @@
       "expectation": "{\"finding\":false,\"blocked\":\"missing_source\"}",
       "observed": "{\"finding\":false,\"blocked\":\"missing_source\"}",
       "inputFingerprint": "e74bfcf16578da19533dc3edc64e6a4ba71135a9478e206780b971fca592bc27",
-      "outputFingerprint": "4fe0e2b785e1a177be714070b085f1fd02323f1bccc2584e50b9bac6092d4560",
+      "outputFingerprint": "33647222c5974296e5ff1ff13c8fa8271070ae9da20818840a15c26d158ddba6",
       "passed": true
     },
     {
@@ -427,7 +427,7 @@
       "expectation": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
       "observed": "{\"status\":\"partial\",\"historical\":\"update_not_read\",\"decisionFindings\":null}",
       "inputFingerprint": "d0dd7d9b690a5b72cf3cbf365d6e7de1e99eaab51d95e1776af0f3ad414b385a",
-      "outputFingerprint": "157009e31e195e714ca18df33df5f76f9eef4d7e07c23831e054f02a12131325",
+      "outputFingerprint": "c12255fc8a89f25ee3bcacb83aee11c282f5cb13496c53bd77b95ce6ec7a7a85",
       "passed": true
     },
     {
@@ -435,7 +435,7 @@
       "expectation": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
       "observed": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
       "inputFingerprint": "a8d9cd51dd58defa752d9003ef4db58416ae5d8e0801db2f563f3cad5183e4f9",
-      "outputFingerprint": "fdc04a9531655b01409db7a0fa129cec84965ad4b1b272595b34fbbbec240365",
+      "outputFingerprint": "5886d907f30d4b4713ffa7e3d608c3c18b75410b0f0c635cafb0a480ef44e59b",
       "passed": true
     },
     {
@@ -443,7 +443,7 @@
       "expectation": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
       "observed": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
       "inputFingerprint": "52e884a646c3ef7f2920e521a74c72b62b00a5444c51829c7d835223ef2db289",
-      "outputFingerprint": "f61a82ff22618b825032de3ed573d258b6da80b056a0b7ed0da1cf2d091bb1d0",
+      "outputFingerprint": "b69cd21f5ee47870a0b22af248272d666b0f02c49bc3050873bfd7a372562101",
       "passed": true
     },
     {
@@ -451,7 +451,7 @@
       "expectation": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "observed": "{\"perimeter\":false,\"blocked\":\"future\"}",
       "inputFingerprint": "98e772f49c0bb334f1eff40e25e7d037a5940594bd332b9ff9d9af24d0eb7df3",
-      "outputFingerprint": "f82fb1f2ddfdbcebe3c652f68b1ff30514f67d753e2a89d996811264ab4fab65",
+      "outputFingerprint": "0aef9daada45de22ae2f81eba468c4de0242432fd5fee38d7ce4b32abfca1b7a",
       "passed": true
     },
     {
@@ -459,7 +459,7 @@
       "expectation": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "observed": "{\"ccb\":\"partial\",\"conflict\":\"conflict\",\"inForce\":false}",
       "inputFingerprint": "0a4a74575e169c24cf12d9d94396bf10dfde961f8798229d606ffb4ba9fac339",
-      "outputFingerprint": "527f8c78a2265c388774f5cc7ef059c37fdea501a2df64b05658d3ce9b08f489",
+      "outputFingerprint": "79477cde9eaf5ec62ab45e2a7397607b200288a069b755b3157a4e30610726b8",
       "passed": true
     },
     {
@@ -467,7 +467,7 @@
       "expectation": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
       "observed": "{\"check\":\"matches\",\"documentary\":{\"fileId\":\"s01\",\"page\":7}}",
       "inputFingerprint": "2c30108442b09a0bbbc8a6dd1ad13decb7c08ad6b965e59c45360dac26fa0cc0",
-      "outputFingerprint": "6efad74a5a5a8a97f3e1f5631543ea8e4974443a63468b3ad302383d18f2c27d",
+      "outputFingerprint": "1f2bbf20f1adeee9dd2937b2caa5f633fc97d70c5fa702df498e8a024dfec352",
       "passed": true
     },
     {
@@ -475,7 +475,31 @@
       "expectation": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
       "observed": "{\"f10\":\"lida; superada pela v3\",\"updated\":[\"f09\",\"f10\",\"f20\"],\"added\":[\"s02\",\"s03\"]}",
       "inputFingerprint": "6e85fbd1c3b006098aa01b5a973494ef9b42798d197f436a3fdfa5d9efcc5f3c",
-      "outputFingerprint": "a45618c8c3238b95b48d0d0c4cef6b738d6001b24fffe7a80733fb970cfb7477",
+      "outputFingerprint": "e619b6bedc39f604f31a6079b73095e7a04628c98d8a78b53bd5223e4acad412",
+      "passed": true
+    },
+    {
+      "id": "equivalent-copies-in-another-order-agree",
+      "expectation": "{\"ccb\":\"complete\",\"conflict\":false}",
+      "observed": "{\"ccb\":\"complete\",\"conflict\":false}",
+      "inputFingerprint": "43ce3ec82446619bdf41fa11794070fdb654bb33b07924d9847b1540b8934d0e",
+      "outputFingerprint": "68cacab4ac13928087aad611d3ca107c9f5e57beb5557f771f36eb4cb3873408",
+      "passed": true
+    },
+    {
+      "id": "new-debt-position-passes-the-old-total-to-history",
+      "expectation": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
+      "observed": "{\"total\":[\"resolved\",[\"s03\"]],\"june\":\"lida; superada\"}",
+      "inputFingerprint": "92f28271ff2ba0a46db8c41e6da9247a5b33b2885f5c35d0009fd8669ab1a2e6",
+      "outputFingerprint": "164c65e73ff89d6fd0685bb386b25c12ebf84cbde7f2c73ae2b089eaf86d8280",
+      "passed": true
+    },
+    {
+      "id": "same-local-id-on-document-and-copy-keeps-both",
+      "expectation": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
+      "observed": "[[\"f20-nota\",\"f20\",6],[\"f20-s01:nota\",\"s01\",7]]",
+      "inputFingerprint": "5353be791471bba4dc4a9cb77994197499257034ae5b58f49e3cc866451fc729",
+      "outputFingerprint": "e3616eef5f1c407675431c53859ead42bb89cf2ba62d55f84f3d12e6e1cddf63",
       "passed": true
     },
     {
@@ -483,11 +507,11 @@
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "inputFingerprint": "e327806cb1c2952827b633b28dad87b5271a45e5b11883db95fef709e9e3eb37",
-      "outputFingerprint": "dc3e278126223ee2053d5722134a44976bc866ccb99c5790f208f213a3af456b",
+      "outputFingerprint": "260263c8287a2d8dc16011234baff0b5bcea0bebee1b0e0fe6de259093d5c662",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "46ecdd11208f28a3413a6542d45f2c3befeccfcb47d895db4cc2fce84b17c17d",
+  "evidenceFingerprint": "21ed535b35dbc3a137acc1603465f8ef586a0048ef12e91814b4626add539e7e",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

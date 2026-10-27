@@ -406,6 +406,14 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     }});
     views.set(target, proxy); return proxy;
   };
+  // Canonical form of every reading: typed items in a stable order (by their id, a sheet by its name, a page by its
+  // number), so the order the extraction listed them in never changes any output.
+  const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+  for (const f of input.files) {
+    f.clauses.sort((a, b) => byText(a.id, b.id)); f.figures.sort((a, b) => byText(a.id, b.id)); f.observations.sort((a, b) => byText(a.id, b.id));
+    f.units.sort((a, b) => byText(a.section, b.section)); f.legibility.unreadablePages.sort((a, b) => a.page - b.page);
+    f.debtTable?.lines.sort((a, b) => byText(a.id, b.id)); f.substitutesPages?.pages.sort((a, b) => a - b);
+  }
   const files = input.files.map((f) => view(f, f.fileId));
   const effect = <T>(key: string, fn: () => T): T => {
     const outer = recorder;
@@ -571,8 +579,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // without documentary force, a target or copy not known); then the set: the recovered pages gathered with the
   // target's own pages, and a clause read differently across them is a conflict of the set. The pass repeats until
   // stable; the effects below only read the final state, so the row and every guard see the same pages.
-  const onPage = (s: DocumentReading, page: number) => JSON.stringify(canonical({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page).map((x) => ({...x, id: null})),
-    debtTable: s.debtTable && s.debtTable.at.page === page ? s.debtTable : null}));
+  /** What a copy reads on a page, in canonical form: the typed items without their local ids, sorted, so two copies that
+   * list the same content in another order read the page the same way; a substantive difference still differs. */
+  const onPage = (s: DocumentReading, page: number) => JSON.stringify({items: [...s.clauses, ...s.figures, ...s.observations].filter((x) => x.at.page === page)
+    .map((x) => JSON.stringify(canonical({...x, id: null}))).sort(),
+    debtTable: s.debtTable && s.debtTable.at.page === page ? JSON.stringify(canonical({...s.debtTable, lines: s.debtTable.lines.map((l) => JSON.stringify(canonical({...l, id: null}))).sort()})) : null});
   type PageOutcome = {kind: "filled"; from: DocumentReading} | {kind: "copies_conflict"; fileIds: string[]} | {kind: "set_conflict"; fileIds: string[]; from: DocumentReading}
     | {kind: "weak"; weak: DocumentReading[]} | {kind: "withheld"};
   const pageOutcome = new Map<string, PageOutcome>();
@@ -647,7 +658,10 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       entriesCache.clear();
     }
     const t = rawOf(target) as DocumentReading, c = rawOf(o.from) as DocumentReading, from = o.from.fileId;
-    const take = <T extends {at: {page: number | null}}>(list: T[]) => list.filter((x) => x.at.page === page).map((x) => {originAt.set(x.at, from); return view(x as object, from) as T;});
+    // Gathered items keep the identity of their source: the id is qualified by the copy (fileId:itemId), so valid local ids
+    // of distinct files never collide; the anchor object is the copy's, so the citation stays on the copy.
+    const take = <T extends {id: string; at: {page: number | null}}>(list: T[]) => list.filter((x) => x.at.page === page)
+      .map((x) => {originAt.set(x.at, from); return view({...x, id: `${from}:${x.id}`} as object, from) as T;});
     t.figures.push(...take(c.figures)); t.observations.push(...take(c.observations));
     if (c.debtTable && c.debtTable.at.page === page) {originAt.set(c.debtTable.at, from); t.debtTable = view(c.debtTable, from);}
   }
@@ -1143,18 +1157,18 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const state = notInForce.get(`${from}:${c.id}`);
       // A limit typed without its own words is an observation: quoted, with no effect.
       if (!anchoredLimit(c)) {
-        add({id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}-unanchored`, code: "observation", anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement),
+        add({id: `${f.fileId}-${from === f.fileId ? "" : `${from}:`}${c.id}-unanchored`, code: "observation", anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement),
           statement: `Cláusula de ${clauseLabel[c.type]} sem o texto do limite; fica como observação, sem efeito.`});
         continue;
       }
       if (c.type === "financial_covenant" || c.type === "negative_pledge") continue;
       if (state && byId.has(state)) {
-        add({id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}-superseded`, code: "clause_superseded", anchor: f.fileId, sources: [src(from, c.at), src(state)],
+        add({id: `${f.fileId}-${from === f.fileId ? "" : `${from}:`}${c.id}-superseded`, code: "clause_superseded", anchor: f.fileId, sources: [src(from, c.at), src(state)],
           statement: `Cláusula substituída pelo aditamento de ${periodText(byId.get(state)!)}; fica como histórico.`, quoted: cite(from, c.at, c.statement)});
         continue;
       }
       if (state || !docBinds || !docKnown) continue;
-      const base = {id: `${f.fileId}-${from === f.fileId ? "" : `${from}-`}${c.id}`, code: "clause" as const, anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement)};
+      const base = {id: `${f.fileId}-${from === f.fileId ? "" : `${from}:`}${c.id}`, code: "clause" as const, anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement)};
       if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction", knowledge: "known",
         decisionStatement: `Os recebíveis ${of(policy[f.kind].noun)} não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão${c.receivablesShare ? `; a contraparte responde por ${percent(c.receivablesShare)} da carteira` : ""}. Isso reduz a carteira disponível para qualquer financiamento com cessão.`});
       else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline", knowledge: "known",
@@ -1266,13 +1280,37 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   const newFiles = input.prior ? files.filter((f) => !input.prior!.inventory.rows.some((r) => r.fileId === f.fileId) && f.substitutesPages === null).map((f) => f.fileId) : [];
   if (input.prior) {
     if (inventoryFingerprint(input.prior.inventory) !== input.prior.fingerprint) throw new Error("document_inventory_prior_mismatch");
+    // Every finding the prior inventory stated and this one no longer states passes to history, linked to what arrived
+    // and replaces or resolves it: a later version or position of the same series, a document of the same instrument
+    // chain, a page copy, a copy of the same bytes. Each code of the schema names how it can be resolved; a finding
+    // with nothing related arrived is never dropped.
+    const arrivedNow = files.filter((f) => !input.prior!.inventory.rows.some((r) => r.fileId === f.fileId || r.situation.pagesFrom.some((x) => x.fileId === f.fileId)));
+    const rootOf = (f: DocumentReading) => f.substitutesPages ? documents.find((d) => d.instrument?.ref === f.substitutesPages!.instrumentRef)?.instrument?.amends ?? f.substitutesPages.instrumentRef
+      : f.instrument ? f.instrument.amends ?? f.instrument.ref : null;
+    const relates = (a: DocumentReading, d: DocumentReading) => a.sha256 === d.sha256 || (rootOf(a) !== null && rootOf(a) === rootOf(d))
+      || (a.substitutesPages === null && a.kind === d.kind && a.entity.primaryId === d.entity.primaryId);
+    const related = (p: Finding) => {
+      const cited = [...new Set([p.anchor, ...p.sources.map((x) => x.fileId)])].flatMap((id) => byId.has(id) ? [byId.get(id)!] : []);
+      return arrivedNow.filter((a) => cited.some((d) => relates(a, d))).map((a) => a.fileId);
+    };
+    type How = "related" | "recovered_page" | "monthly_series" | "any_arrival";
+    const resolution: Record<(typeof findingCodes)[number], How> = {
+      duplicate: "related", draft_superseded: "related", version_superseded: "related", position_superseded: "related", versions_side_by_side: "related",
+      versions_unresolved: "related", series_gap: "monthly_series", mixed_units: "related", stale_forecast: "related", total_includes_unused_limit: "related",
+      total_not_recomposed: "related", amended_original: "related", amendment_in_force: "related", amendment_superseded: "related", amendment_not_in_force: "related",
+      amendment_conflict: "related", amendment_future: "related", amendment_without_original: "related", clause_unread: "related", effect_blocked: "any_arrival",
+      substitute_not_binding: "related", clause_future: "related", figure_conflict: "related", instrument_not_in_force: "related", instrument_superseded: "related",
+      instrument_conflict: "related", instrument_future: "related", clause_superseded: "related", clause_conflict: "related", clause_not_in_force: "related",
+      reading_conflict: "related", substitute_conflict: "related", page_unreadable: "recovered_page", file_unreadable: "related", clause: "related",
+      observation: "related", subsidiary_in_consolidated: "related", appraisal_without_registry: "related", figure_basis_differs: "related"};
     for (const p of input.prior.inventory.findings) {
       if (findings.some((x) => x.id === p.id)) continue;
-      const by = p.code === "page_unreadable" ? (pagesFrom.get(p.anchor) ?? []).filter((x) => p.sources.some((s) => s.page === x.page)).map((x) => x.fileId)
-        : p.code === "series_gap" ? newFiles.filter((id) => policy[byId.get(id)!.kind].monthly)
-        : p.code === "effect_blocked" ? [...newFiles, ...substitutes.map((x) => x.fileId).filter((id) => !input.prior!.inventory.rows.some((r) => r.fileId === id))] : [];
+      const how = resolution[p.code];
+      const by = [...related(p), ...how === "recovered_page" ? (pagesFrom.get(p.anchor) ?? []).filter((x) => p.sources.some((s) => s.page === x.page)).map((x) => x.fileId)
+        : how === "monthly_series" ? arrivedNow.filter((f) => policy[f.kind].monthly).map((f) => f.fileId)
+        : how === "any_arrival" ? arrivedNow.map((f) => f.fileId) : []];
       if (!by.length) throw new Error("document_inventory_finding_dropped");
-      findings.push({...p, status: "resolved", resolvedBy: [...new Set([...p.resolvedBy, ...by])]});
+      findings.push({...p, status: "resolved", resolvedBy: [...new Set([...p.resolvedBy, ...by])].sort(byKey)});
     }
   }
   // Every finding no guard computed takes the worst state of the documents it cites.
@@ -1353,7 +1391,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     const touched = families.filter((fam) => membersOf(fam).some((id) => arrived.has(id)));
     const members = new Set([...touched.flatMap(membersOf), ...input.prior.inventory.families.filter((fam) => touched.some((t) => t.id === fam.id)).flatMap(membersOf)]);
     const priorStatus = new Map(input.prior.inventory.findings.map((x) => [x.id, x.status]));
-    const dependents = findings.filter((x) => priorStatus.get(x.id) !== x.status && x.sources.some((y) => members.has(y.fileId) || arrived.has(y.fileId))).map((x) => x.anchor);
+    const fromArrival = new Set([...arrived, ...files.filter((f) => f.substitutesPages !== null).map((f) => f.fileId)]);
+    const dependents = findings.filter((x) => priorStatus.get(x.id) !== x.status
+      && (x.sources.some((y) => members.has(y.fileId) || arrived.has(y.fileId)) || x.resolvedBy.some((y) => fromArrival.has(y)))).map((x) => x.anchor);
     const affected = new Set([...substituted, ...members, ...dependents]);
     const prior = new Map(input.prior.inventory.rows.map((r) => [r.fileId, r]));
     for (const id of prior.keys()) if (!rows.some((r) => r.fileId === id)) throw new Error("document_inventory_prior_row_dropped");

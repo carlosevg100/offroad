@@ -191,7 +191,7 @@ function goldCases(): Case[] {
         instrument: {ref: "contrato-embalagem", label: "contrato", amends: null}, substitutesPages: {instrumentRef: "contrato-embalagem", pages: [11]},
         clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 11, section: null}, statement: "Renovação automática salvo aviso até 2/out/26.", termEnd: "2026-12-31", noticeDeadline: "2026-10-02"}]});})}),
       {deadlines: [["f31", "2026-11-02"]], history: "clause_superseded"}, (p) => ({deadlines: inv(p).followUps.flatMap((f) => f.kind === "notice_deadline" ? [[f.fileId, f.date]] : []),
-        history: inv(p).findings.find((f) => f.id === "f23-p1-renovacao-superseded")!.code})),
+        history: inv(p).findings.find((f) => f.id === "f23-p1:renovacao-superseded")!.code})),
     observe("unread-predecessor-is-not-absent", folderPacketInput({files: readings((r) => {const e = file(r, "f18"); e.clauses = e.clauses.filter((c) => c.type !== "financial_covenant");
       e.legibility = {pageCount: 30, unreadablePages: [{page: 18, reason: "illegible_scan", expectedContent: "o covenant financeiro", expectedFrom: {page: 2, section: null}}], wholeFile: null};})}),
       {covenantHeadline: false, change: false, blocked: "unread"}, (p) => ({covenantHeadline: inv(p).decisionFindings!.some((d) => /O covenant .* é o do aditamento/.test(d.statement)),
@@ -255,10 +255,24 @@ function goldCases(): Case[] {
       observations: [{id: "nota", at: {page: 7, section: null}, topic: "other" as const, statement: "Garantia por cessão fiduciária de recebíveis."}],
       debtTable: {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000" as const, at: {page: 7, section: null}}} : x)}}),
       {check: "matches", documentary: {fileId: "s01", page: 7}}, (p) => ({check: inv(p).identityChecks.find((c) => c.id === "f20-reported-total")?.status ?? null,
-        documentary: (({fileId, page}) => ({fileId, page}))(p.readings!.documentary.find((d) => d.findingId === "f20-nota")!)})),
+        documentary: (({fileId, page}) => ({fileId, page}))(p.readings!.documentary.find((d) => d.findingId === "f20-s01:nota")!)})),
     observe("new-version-in-the-update-supersedes-the-prior-winner", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f10")), fileId: "s03",
       fileName: "balancete mai26 v3.xlsx", sha256: createHash("sha256").update("s03").digest("hex"), version: {label: "versão 3", status: "closed" as const, ordinal: 3, lastUpdated: null}}]}}),
       {f10: "lida; superada pela v3", updated: ["f09", "f10", "f20"], added: ["s02", "s03"]}, (p) => ({f10: inv(p).rows.find((r) => r.fileId === "f10")!.situationLabel, updated: inv(p).update!.rowsUpdated, added: inv(p).update!.rowsAdded})),
+    // Review r11 cases: canonical pages, findings to history on update, source identity of gathered items.
+    observe("equivalent-copies-in-another-order-agree", folderPacketInput({turnTwo: {files: (() => {const [s01, s02] = auroraTurnTwoReadings();
+      const items = [...s01!.clauses, {type: "prepayment" as const, id: "pre-pagamento", at: {page: 7, section: null}, statement: "Pré-pagamento conforme a cláusula 9."}];
+      return [{...s01!, clauses: items}, {...structuredClone(s01!), fileId: "s05", fileName: "ccb-p7-outra-copia.pdf", sha256: createHash("sha256").update("s05").digest("hex"),
+        clauses: [...items].reverse().map((c) => ({...c, id: `${c.id}-b`}))}, s02!];})()}}),
+      {ccb: "complete", conflict: false}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read, conflict: inv(p).findings.some((f) => f.code === "substitute_conflict")})),
+    observe("new-debt-position-passes-the-old-total-to-history", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), (() => {const f16 = file(auroraFolderReadings(), "f16");
+      return {...structuredClone(f16), fileId: "s03", fileName: "tabela de divida jul26.xlsx", sha256: createHash("sha256").update("s03-jul").digest("hex"), period: {label: "jul/26", start: "2026-07-01", end: "2026-07-31"},
+        referenceDate: {kind: "position" as const, date: "2026-07-31", origin: "derived_from_period" as const}, debtTable: {...f16.debtTable!, lines: f16.debtTable!.lines.map((l) => ({...l, counted: l.drawn})), reportedTotal: "130"}};})()]}}),
+      {total: ["resolved", ["s03"]], june: "lida; superada"}, (p) => {const f = inv(p).findings.find((x) => x.id === "f16-debt-total")!;
+        return {total: [f.status, f.resolvedBy], june: inv(p).rows.find((r) => r.fileId === "f16")!.situationLabel};}),
+    observe("same-local-id-on-document-and-copy-keeps-both", folderPacketInput({files: readings((r) => {file(r, "f20").observations.push({id: "nota", at: {page: 6, section: null}, topic: "other", statement: "Nota do documento."});}),
+      turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, observations: [{id: "nota", at: {page: 7, section: null}, topic: "other" as const, statement: "Nota da cópia."}]} : x)}}),
+      [["f20-nota", "f20", 6], ["f20-s01:nota", "s01", 7]], (p) => p.readings!.documentary.filter((d) => d.findingId.endsWith("nota")).map((d) => [d.findingId, d.fileId, d.page]).sort()),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];

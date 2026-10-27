@@ -53,7 +53,7 @@ describe("document folder inventory kernel", () => {
   });
   it("updates in turn 2 only the rows touched; the rest are the prior bytes", () => {
     const prior = turnOne(), t = turnTwo(prior);
-    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-blocked-text-in-force", "f20-unreadable-p7", "f24-blocked-comparison-politica"], findingsAdded: ["f20-s01-reforco"],
+    expect(t.update).toMatchObject({rowsUpdated: ["f20"], rowsAdded: ["s02"], rowsPreserved: 29, findingsResolved: ["f11-series-gap", "f20-blocked-text-in-force", "f20-unreadable-p7", "f24-blocked-comparison-politica"], findingsAdded: ["f20-s01:reforco"],
       questionsAnswered: ["circulacao-f02"]});
     for (const r of prior.rows.filter((x) => x.fileId !== "f20")) expect(t.rows.find((x) => x.fileId === r.fileId)).toEqual(r);
     expect(t.findings.find((f) => f.id === "f11-series-gap")).toMatchObject({status: "resolved", resolvedBy: ["s02"]});

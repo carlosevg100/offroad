@@ -608,7 +608,8 @@ describe("property: reading a content directly or recovering it from a compatibl
       };
       // In turn two the direct reading arrives as the legible document itself: compare it without a prior.
       const a = organizeDocumentFolderTraced(auroraKernelInput({files: direct, ...turn === "two" ? {asOf: "2026-09-02"} : {}})), b = go([...base, copy]);
-      const norm = (x: unknown) => JSON.parse(JSON.stringify(x ?? null).replaceAll("s01", "f20")) as unknown;
+      // The copy's items keep their source (s01:itemId) and are cited on the copy; otherwise the reading is the same.
+      const norm = (x: unknown) => JSON.parse(JSON.stringify(x ?? null).replaceAll("s01:", "").replaceAll("s01", "f20")) as unknown;
       const conflict = own === "other" && (content.clauses.length > 0 || content.figures.length > 0);
       const effects = (o: typeof a) => o.traces.filter((t) => !t.effect.startsWith("page:")).map((t) => [t.effect, t.state, t.emitted]);
       // Always: the same state of every effect, the same text in force, the same checks and the same decision findings.
@@ -625,7 +626,7 @@ describe("property: reading a content directly or recovering it from a compatibl
       const findings = (o: typeof a) => o.inventory.findings.map((f) => ({...f, status: null, resolvedBy: null}));
       expect(norm(findings(b))).toEqual(norm(findings(a)));
       expect(norm(b.inventory.gaps)).toEqual(norm(a.inventory.gaps));
-      if (content.observations.length) expect(b.inventory.findings.find((f) => f.id === "f20-nota")!.quoted).toMatchObject({fileId: "s01", page: 7});
+      if (content.observations.length) expect(b.inventory.findings.find((f) => f.id === "f20-s01:nota")!.quoted).toMatchObject({fileId: "s01", page: 7});
       if (content.debtTable) expect(b.inventory.identityChecks.some((c) => c.id === "f20-reported-total" && c.status !== "not_run")).toBe(true);
     });
   }
@@ -656,4 +657,67 @@ describe("property: an update records the new precedence of the version families
       expect(o.update!.rowsUpdated.every((id) => family.includes(id) || id === "f20" || o.findings.some((f) => f.anchor === id && f.sources.some((s) => family.includes(s.fileId))))).toBe(true);
     });
   }
+});
+
+// Review r11: canonical readings, findings passed to history on update, source identity of gathered items.
+describe("property: permuting the items of any reading changes no output", () => {
+  for (let n = 1; n <= 24; n++) it(`permutation ${n}`, () => {
+    const r = random(85000 + n);
+    const permute = (list: DocumentReading[]) => list.map((f) => ({...structuredClone(f), clauses: shuffle(r, f.clauses), figures: shuffle(r, f.figures), observations: shuffle(r, f.observations),
+      units: shuffle(r, f.units), legibility: {...f.legibility, unreadablePages: shuffle(r, f.legibility.unreadablePages)},
+      debtTable: f.debtTable ? {...f.debtTable, lines: shuffle(r, f.debtTable.lines)} : null}));
+    // Two equivalent copies of page 7 that list the same items in another order and under other local ids.
+    const items = [covenantClause("2", "covenant-ccb", 7), {type: "negative_pledge" as const, id: "garantia", at: {page: 7, section: null}, statement: "Exceção de R$ 10 milhões.", exceptionAmount: "10", scale: "1000000" as const}];
+    const copies = (list: DocumentReading[]) => [list[0]!, {...structuredClone(list[0]!), fileId: "s05", fileName: "s05.pdf", sha256: hex(`perm-${n}`), clauses: [...items].reverse().map((c) => ({...c, id: `${c.id}-b`}))}];
+    const two = () => {const t = auroraTurnTwoReadings(); t[0] = {...t[0]!, clauses: items}; return [...copies(t), t[1]!];};
+    const go = (base: DocumentReading[], extra: DocumentReading[]) => {
+      const prior = run(base);
+      return run([...base, ...extra], {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    };
+    const reference = go(auroraFolderReadings(), two()), permuted = go(permute(auroraFolderReadings()), permute(two()));
+    expect(permuted).toEqual(reference);
+    // The copies agree: the page is complete and the text in force carries the covenant.
+    expect(reference.rows.find((x) => x.fileId === "f20")!.situation.read).toBe("complete");
+    expect(reference.findings.some((f) => f.code === "substitute_conflict")).toBe(false);
+  });
+});
+describe("property: every finding code passes to history on update, linked to what replaces it", () => {
+  const codes = (documentFolderInventoryOutputSchema.shape.findings.element.shape.code as unknown as {options: string[]}).options;
+  const july = () => {const f16 = file(auroraFolderReadings(), "f16");
+    return {...structuredClone(f16), fileId: "s03", fileName: "tabela de divida jul26.xlsx", sha256: hex("july"), period: {label: "jul/26", start: "2026-07-01", end: "2026-07-31"},
+      referenceDate: {kind: "position" as const, date: "2026-07-31", origin: "derived_from_period" as const},
+      debtTable: {...f16.debtTable!, lines: f16.debtTable!.lines.map((l) => ({...l, counted: l.drawn})), reportedTotal: "130"}};};
+  for (const code of codes) it(`code ${code}`, () => {
+    const base = auroraFolderReadings(), prior = run(base);
+    // A current finding of this code, stated on the June debt table, in the prior inventory.
+    const forged = structuredClone(prior);
+    forged.findings.push({id: `f16-forged-${code.replace(/_/g, "-")}`, code: code as DocumentFolderInventory["findings"][number]["code"], anchor: "f16", sources: [{fileId: "f16", page: null, section: "Dívida"}],
+      statement: "Achado do inventário anterior.", topic: null, effect: null, decisionStatement: null, knowledge: "known", quoted: null, changes: null, status: "open", resolvedBy: []});
+    const update = (extra: DocumentReading[]) => run([...base, ...extra], {asOf: "2026-09-02", prior: {inventory: forged, fingerprint: inventoryFingerprint(forged)}});
+    const o = update([july()]);
+    const f = o.findings.find((x) => x.id === `f16-forged-${code.replace(/_/g, "-")}`)!;
+    expect([f.status, f.resolvedBy]).toEqual(["resolved", ["s03"]]);
+    expect(o.update!.findingsResolved).toContain(f.id);
+    // Nothing related arrived: the finding is never dropped (an arrival resolves only a blocked effect, which any document may unblock).
+    const unrelated = {...structuredClone(file(base, "f29")), fileId: "s04", fileName: "s04.jpg", sha256: hex("unrelated")};
+    if (code === "effect_blocked") expect(update([unrelated]).findings.find((x) => x.id === f.id)!.resolvedBy).toEqual(["s04"]);
+    else expect(() => update([unrelated])).toThrow("document_inventory_finding_dropped");
+  });
+  it("a new debt position replaces June's: its total finding passes to history and the family is recorded again", () => {
+    const base = auroraFolderReadings(), prior = run(base);
+    const o = run([...base, july()], {asOf: "2026-09-02", prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    expect(o.findings.find((x) => x.id === "f16-debt-total")).toMatchObject({status: "resolved", resolvedBy: ["s03"]});
+    expect(o.rows.find((x) => x.fileId === "f16")!.situation.supersededBy).toEqual({fileId: "s03", reason: "later_position"});
+  });
+});
+describe("property: gathered items keep the identity of their source", () => {
+  for (const id of ["nota", "caixa", "s01", "x"]) it(`same local id ${id} on the document and on its copy`, () => {
+    const base = readings((list) => {const f = file(list, "f20"); f.observations.push({id, at: {page: 6, section: null}, topic: "other", statement: "Nota do documento."});
+      f.figures.push({id: `${id}-v`, metric: "appraised_value", value: "3", scale: "1000000", at: {page: 6, section: null}});});
+    const copy = {...auroraTurnTwoReadings()[0]!, observations: [{id, at: {page: 7, section: null}, topic: "other" as const, statement: "Nota da cópia."}],
+      figures: [{id: `${id}-v`, metric: "cash" as const, value: "2", scale: "1000000" as const, at: {page: 7, section: null}}]};
+    const o = run([...base, copy]);
+    expect(o.findings.find((f) => f.id === `f20-${id}`)!.quoted).toMatchObject({fileId: "f20", page: 6, text: "Nota do documento."});
+    expect(o.findings.find((f) => f.id === `f20-s01:${id}`)!.quoted).toMatchObject({fileId: "s01", page: 7, text: "Nota da cópia."});
+  });
 });
