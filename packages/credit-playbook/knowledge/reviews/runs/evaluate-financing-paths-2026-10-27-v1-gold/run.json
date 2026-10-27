@@ -1,0 +1,180 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "evaluate-financing-paths-2026-10-27-v1-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "evaluate-financing-paths",
+    "version": "2026.10.27-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareCapitalPathsPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/capital-structure-paths-runs.test-support.ts",
+    "exportName": "buildCapitalPathsRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-27T11:49:45.259Z",
+    "finishedAt": "2026-10-27T11:50:35.460Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "first-shortfall-in-december-2026-without-action",
+      "expectation": "{\"firstBelow\":\"2026-12-31\",\"dec26\":-10.83,\"withinFichaTolerance\":true}",
+      "observed": "{\"firstBelow\":\"2026-12-31\",\"dec26\":-10.83,\"withinFichaTolerance\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "cash-at-the-end-of-2027-without-action",
+      "expectation": "{\"dec27\":-78.63,\"oracle\":true}",
+      "observed": "{\"dec27\":-78.63,\"oracle\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "2027-service-against-cash-available-before-the-project",
+      "expectation": "{\"service\":89.68,\"principal\":76.67,\"interest\":13.01,\"available\":35.68,\"nearFicha36\":true}",
+      "observed": "{\"service\":89.68,\"principal\":76.67,\"interest\":13.01,\"available\":35.68,\"nearFicha36\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "seven-paths-and-two-companions-on-the-same-base",
+      "expectation": "{\"candidates\":7,\"companions\":2,\"gates\":8}",
+      "observed": "{\"candidates\":7,\"companions\":2,\"gates\":8}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "recommended-path-comes-from-the-gates",
+      "expectation": "{\"pathId\":\"sem-linha-debenture\",\"minimumCash\":15.46,\"cost\":49.44,\"netDebt\":79.31,\"failedGates\":0}",
+      "observed": "{\"pathId\":\"sem-linha-debenture\",\"minimumCash\":15.46,\"cost\":49.44,\"netDebt\":79.31,\"failedGates\":0}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "leverage-on-the-indenture-definition-in-december",
+      "expectation": "{\"base\":[2.2,1.85,1.42],\"stress\":2.37,\"policy\":2.5,\"indenture\":3}",
+      "observed": "{\"base\":[2.2,1.85,1.42],\"stress\":2.37,\"policy\":2.5,\"indenture\":3}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "oracle-paths-on-the-same-base",
+      "expectation": "[[\"ccb-tres-anos\",-64.71,34.59,87.04],[\"debenture-com-linha\",15.04,56.89,102.15],[\"adiar-linha\",-60.18,31.31,88.84]]",
+      "observed": "[[\"ccb-tres-anos\",-64.71,34.59,87.04],[\"debenture-com-linha\",15.04,56.89,102.15],[\"adiar-linha\",-60.18,31.31,88.84]]",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "three-year-ccb-adds-to-2027-and-leaves-bradesco-open",
+      "expectation": "{\"service2027\":102.97,\"addedOverStatusQuo\":13.29,\"firstNegative\":\"2027-09-30\"}",
+      "observed": "{\"service2027\":102.97,\"addedOverStatusQuo\":13.29,\"firstNegative\":\"2027-09-30\"}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "taxes-recomputed-per-path",
+      "expectation": "{\"distinct\":9}",
+      "observed": "{\"distinct\":9}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "aggregate-basket-with-bradesco-inside",
+      "expectation": "{\"occupied\":12,\"recommendedPeak\":15,\"recommendedConsent\":false,\"bankRoutePeak\":36,\"bankRouteConsent\":true}",
+      "observed": "{\"occupied\":12,\"recommendedPeak\":15,\"recommendedConsent\":false,\"bankRoutePeak\":36,\"bankRouteConsent\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "five-year-amortization-fails-in-2029-seven-passes",
+      "expectation": "{\"fiveScheduled\":33.33,\"fiveAvailable\":23.72,\"nearC04\":true,\"fivePasses\":false,\"sevenPasses\":true,\"window\":[2029,2033]}",
+      "observed": "{\"fiveScheduled\":33.33,\"fiveAvailable\":23.72,\"nearC04\":true,\"fivePasses\":false,\"sevenPasses\":true,\"window\":[2029,2033]}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "effective-cost-of-the-issue-over-its-life",
+      "expectation": "{\"amount\":\"80\",\"term\":\"7\",\"atAdoptedSpread\":3.49,\"atCondition\":3.59,\"withinFichaBand\":true}",
+      "observed": "{\"amount\":\"80\",\"term\":\"7\",\"atAdoptedSpread\":3.49,\"atCondition\":3.59,\"withinFichaBand\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "bradesco-only-extension-leaves-a-gap",
+      "expectation": "{\"shortfall\":18.23,\"nearFicha18\":true,\"lowest\":\"2028-06-30\",\"firstBelow\":\"2027-06-30\"}",
+      "observed": "{\"shortfall\":18.23,\"nearFicha18\":true,\"lowest\":\"2028-06-30\",\"firstBelow\":\"2027-06-30\"}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "dated-alternative-before-the-bradesco-maturity",
+      "expectation": "{\"pathId\":\"banco-sem-linha\",\"amount\":\"70\",\"conditions\":[\"basket_without_consent\",\"amortization_after_horizon\"],\"decisionBy\":\"2026-11-15\",\"mustPrecede\":\"2027-09-15\",\"days\":304}",
+      "observed": "{\"pathId\":\"banco-sem-linha\",\"amount\":\"70\",\"conditions\":[\"basket_without_consent\",\"amortization_after_horizon\"],\"decisionBy\":\"2026-11-15\",\"mustPrecede\":\"2027-09-15\",\"days\":304}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "demand-below-which-the-recommendation-changes",
+      "expectation": "{\"adopted\":\"80\",\"minimum\":\"74.44\",\"conditionInsideGates\":true}",
+      "observed": "{\"adopted\":\"80\",\"minimum\":\"74.44\",\"conditionInsideGates\":true}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "what-would-change-the-recommendation",
+      "expectation": "[[\"trigo\",false,[\"policy_stress\"]],[\"prazo-redes-60\",false,[\"minimum_cash_base\",\"policy_stress\"]],[\"caixa-minimo-25\",false,[\"minimum_cash_base\"]]]",
+      "observed": "[[\"trigo\",false,[\"policy_stress\"]],[\"prazo-redes-60\",false,[\"minimum_cash_base\",\"policy_stress\"]],[\"caixa-minimo-25\",false,[\"minimum_cash_base\"]]]",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "facts-readings-recommendations-apart-without-verdict",
+      "expectation": "{\"recommendations\":[\"follow_recommended_path_under_condition\",\"review_project_before_committing\",\"ask_for_the_longer_amortization\",\"negotiate_covenant_headroom_in_new_terms\",\"keep_dated_alternative\"],\"verdict\":false,\"process\":{\"contactsInvestors\":false,\"contactsLenders\":false,\"issuesOrSigns\":false}}",
+      "observed": "{\"recommendations\":[\"follow_recommended_path_under_condition\",\"review_project_before_committing\",\"ask_for_the_longer_amortization\",\"negotiate_covenant_headroom_in_new_terms\",\"keep_dated_alternative\"],\"verdict\":false,\"process\":{\"contactsInvestors\":false,\"contactsLenders\":false,\"issuesOrSigns\":false}}",
+      "inputFingerprint": "89a23a311f41090ed129719d0f14a99a0e1ba750fb6b75e2b6f050a594ae9ef0",
+      "outputFingerprint": "56fad1412227ba6211ddf1d83dd132e551819a1c454323b30847177cee7a5b75",
+      "passed": true
+    },
+    {
+      "id": "minimum-cash-of-policy-changes-the-order",
+      "expectation": "{\"recommendation\":null,\"status\":\"partial\",\"gap\":true}",
+      "observed": "{\"recommendation\":null,\"status\":\"partial\",\"gap\":true}",
+      "inputFingerprint": "a102736e6da426bd72e6edb6fb590c8139799e6bfadcadd7650c6a43ea869d5b",
+      "outputFingerprint": "a0bc1554d58e351330d99da6b69c97cdc63b6eeb5ac3a2fdda53114441fe195f",
+      "passed": true
+    },
+    {
+      "id": "absent-minimum-cash-is-a-gap-not-zero",
+      "expectation": "{\"status\":\"framed\",\"gap\":true}",
+      "observed": "{\"status\":\"framed\",\"gap\":true}",
+      "inputFingerprint": "bbf7bcb49cc516b5dd5aa053dcf67f35696245c86be32f5357d5c7b346e4beea",
+      "outputFingerprint": "0566c8b9d51ecd3bfd5b2de9af10cd99f6773569031fd773ca65d56a00427684",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "7bbf075edc644809af640cfb4a863f29511eaf60a45f2071c624aa45de787139",
+  "notes": "Synthetic deterministic execution calibrated on ficha C32 (oracle modelo_aurora_c32.py) with the C04 annual base after 2028. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

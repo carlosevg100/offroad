@@ -51,3 +51,4 @@ export * from "./receivables-funding";
 export * from "./projection-challenge";
 export * from "./operating-projection";
 export * from "./evaluate-received-proposal";
+export * from "./capital-structure-paths";
