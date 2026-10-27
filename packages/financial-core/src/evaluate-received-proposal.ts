@@ -214,7 +214,8 @@ function validate(input: ReceivedProposalInput) {
   if (!scenarios.length || scenarios.length > 4 || new Set(scenarios).size !== scenarios.length) throw new Error("received_proposal_covenant_scenarios");
   if (input.covenant.measurements.some(m => !scenarios.includes(m.scenario))) throw new Error("received_proposal_covenant_scenario_undeclared");
   if (new Set(input.covenant.measurements.map(m => `${m.date}|${m.scenario}`)).size !== input.covenant.measurements.length) throw new Error("received_proposal_covenant_duplicate_test");
-  if (!input.covenant.measurements.length || input.covenant.measurements.length > 12) throw new Error("received_proposal_covenant_measurements");
+  // No test at all is allowed: it becomes gaps, never an error and never compliance.
+  if (input.covenant.measurements.length > 12) throw new Error("received_proposal_covenant_measurements");
   for (const m of input.covenant.measurements) if (!c.periodEnds.includes(m.date)) throw new Error("received_proposal_covenant_date_off_calendar");
   if (input.seasonalPeak !== null) num(input.seasonalPeak);
 }
@@ -289,7 +290,8 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
     {id: "indenture", label: "Escritura vigente", kind: "contractual", status: "in_force", maximumRatio: input.covenant.indenture.maximumRatio,
       source: input.covenant.indenture.source, testDates: [...input.covenant.indenture.testDates]},
     ...(p.covenant ? [{id: "proposal", label: `Proposta ${p.lender}`, kind: "contractual" as const, status: "in_force" as const, maximumRatio: p.covenant.maximumRatio,
-      source: "Term sheet", testDates: [...p.covenant.testDates]}] : []),
+      // One temporal rule for the lender: a date before the draw is never one of its tests, anywhere below.
+      source: "Term sheet", testDates: p.covenant.testDates.filter(d => d >= p.drawDate)}] : []),
     ...(input.covenant.policy ? [{id: "board-policy", label: "Política do conselho", kind: "board_policy" as const, status: "in_force" as const,
       maximumRatio: input.covenant.policy.maximumRatio, source: input.covenant.policy.source, testDates: [...input.covenant.policy.testDates]}] : []),
   ];
@@ -297,7 +299,7 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
   // required scenario. A missing test is never read as compliance, and a limit with no test at all is carried to
   // the headroom kernel as untested (never as a test), so the gaps form instead of an error.
   const horizonEnd = c.periodEnds.at(-1)!;
-  const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && (l.id !== "proposal" || d >= p.drawDate) && d > c.openingDate)))].sort();
+  const requiredDates = [...new Set(limits.flatMap(l => l.testDates.filter(d => d <= horizonEnd && d > c.openingDate)))].sort();
   const required = requiredDates.flatMap(date => input.covenant.requiredScenarios.map(scenario => ({date, scenario})));
   const missingTests = required.filter(r => !input.covenant.measurements.some(m => m.date === r.date && m.scenario === r.scenario));
   const untestedLimits = limits.filter(l => !input.covenant.measurements.some(m => l.testDates.includes(m.date))).map(l => l.id);
@@ -310,10 +312,10 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       debt: out(num(m.debt).plus(q.proposalPrincipal)), cash: out(num(m.cash, true).plus(q.cumulativeProposalCash))},
     {...base, id: `without-${k}`, label: `Sem a proposta, ${m.scenario}, ${m.date}`, role: "contrast" as const, debt: m.debt, cash: m.cash}];
   });
-  const headroom = measureCovenantHeadroom({currency: input.currency, readingDate: input.readingDate, limits, measurements,
+  const headroom = measurements.length === 0 ? null : measureCovenantHeadroom({currency: input.currency, readingDate: input.readingDate, limits, measurements,
     effects: input.covenant.measurements.map((_, k) => ({id: `proposal-${k}`, label: "Efeito da proposta", measurementId: `with-${k}`, withoutEffectMeasurementId: `without-${k}`}))});
   const covenantRows = input.covenant.measurements.map((m, k) => {
-    const w = headroom.measurements.find(x => x.id === `with-${k}`)!, wo = headroom.measurements.find(x => x.id === `without-${k}`)!;
+    const w = headroom!.measurements.find(x => x.id === `with-${k}`)!, wo = headroom!.measurements.find(x => x.id === `without-${k}`)!;
     return {date: m.date, scenario: m.scenario, ratioWithout: wo.ratio, ratioWith: w.ratio,
       limits: limits.map(l => ({limitId: l.id, kind: l.kind, maximumRatio: out(num(l.maximumRatio)), testedOnDate: l.testDates.includes(m.date) && !untestedLimits.includes(l.id),
         headroomWith: w.ratio === null ? null : out(num(l.maximumRatio).minus(w.ratio)), breachedWith: w.ratio === null ? true : new Exact(w.ratio).gt(l.maximumRatio)}))};
@@ -387,9 +389,10 @@ export function evaluateReceivedProposal(input: ReceivedProposalInput) {
       consentRequired: receivedCollateral.consentRequired, excess: receivedCollateral.excessOverBasket,
       maxCoverageWithoutConsent: usesBasket ? out(basketRemaining.div(amount)) : null,
       consentWindow: {from: consentFrom, by: consentBy, needDate: input.needDate, slackDays: daysBetween(consentBy, input.needDate)}},
-    covenant: {rows: covenantRows, worst: headroom.worst, required, missingTests, untestedLimits,
+    covenant: {rows: covenantRows, worst: headroom?.worst ?? null, required, missingTests, untestedLimits,
+      lenderDatesBeforeDraw: p.covenant ? p.covenant.testDates.filter(d => d < p.drawDate) : [],
       // A breach found is a breach; without one, no conclusion while a required test is missing.
-      anyBreachWith: headroom.anyBreach ? true : missingTests.length ? null : false,
+      anyBreachWith: headroom?.anyBreach ? true : missingTests.length ? null : false,
       testsPerYear: {indenture: testsPerYear(input.covenant.indenture.testDates), lender: p.covenant ? testsPerYear(p.covenant.testDates) : 0}},
     price: {market, history: history ? {peer: input.history!.label, peerDate: input.history!.date, observedBps: history.grossBps,
       expectedBps: history.knownAdjustmentsBps, residualBps: history.residualBps, steps: history.steps.map(s => ({id: s.id, family: s.family, bps: s.bps}))} : null},

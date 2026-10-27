@@ -16,9 +16,9 @@
     "exportName": "buildReceivedProposalRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T11:50:50.540Z",
-    "finishedAt": "2026-10-27T11:53:05.254Z",
-    "commit": "007a90bd7eb0531c6983ff8d6230e1e44c183c7a"
+    "startedAt": "2026-10-27T12:13:01.518Z",
+    "finishedAt": "2026-10-27T12:15:18.080Z",
+    "commit": "e8bb8ca4b8e3fe5f307ae7d2434b20235e3a48a9"
   },
   "modelCalls": 0,
   "cases": [
@@ -91,6 +91,14 @@
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "acc77416c7b58d26e4c2eb946eb1fc698e40f7f3a33d7c84d3e0c5478a7f6c90",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "tax-rate-just-above-one",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c9d86233bf919dbaa236089797461d108b0aa54222efb290c572e05e3f1b9b6b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -200,6 +208,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7db0dbabfa91847fca9ba9daa2251fe860ffae844140abcd9eb3dbb458f87b06",
-  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 and r2 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+  "evidenceFingerprint": "f268e0ff34f7fd85ef20c860ffbd6e7761f54a8e4fa8db4df766b1ed1d3787bf",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1, r2 and r3 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

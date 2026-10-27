@@ -82,6 +82,13 @@ describe("ficha 1 premises proposed from facts with origin, adopted, composed an
       else expect(proposeReceivedProposalHypotheses(facts).find((h) => h.fieldPath.endsWith(".tax.rate"))!.value).toEqual({type: "number", value: rate});
     }
   });
+  it("refuses a rate just above one in the facts and composes an absence of every covenant test into gaps", () => {
+    const high = auroraReceivedProposalFacts(); high.tax.value.rate = "1.00000000000000000001";
+    expect(() => proposeReceivedProposalHypotheses(high)).toThrow("Tax rate outside [0, 1]");
+    const none = auroraReceivedProposalFacts(); none.measurements.value = [];
+    const q = packetOf(envelopeOf(adopt(none).entries));
+    expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.covenant.untestedLimits, q.readings!.covenant.missingTests.length]).toEqual(["partial", null, ["indenture", "proposal", "board-policy"], 10]);
+  });
   it("refuses inconsistent facts before proposing premises", () => {
     const holder = auroraReceivedProposalFacts(); holder.portfolio[1]!.value.holder = null;
     expect(() => proposeReceivedProposalHypotheses(holder)).toThrow("names the holder of its assignment");

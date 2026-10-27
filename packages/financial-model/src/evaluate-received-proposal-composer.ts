@@ -94,8 +94,10 @@ export function composeBoundReceivedProposal(raw: unknown): ReceivedProposalPack
     calendar: {periodEnds: l("calendar.periodEnds", "date"), existingService: l("calendar.existingService", "currency"), availableForService: l("calendar.availableForService", "currency"),
       closingCash: l("calendar.closingCash", "currency"), taxable: l("calendar.taxable", "boolean"), minimumCash: optional("calendar.minimumCash", "currency", "number")},
     covenant: {indentureLimit: n("covenant.indentureLimit", "ratio"), indentureTestDates: l("covenant.indentureTestDates", "date"), indentureSource: t("covenant.indentureSource", "text"), requiredScenarios: l("covenant.requiredScenarios", "identity"),
-      ...policy, dates: l("covenant.dates", "date"), scenarios: l("covenant.scenarios", "identity"), debt: l("covenant.debt", "currency"), cash: l("covenant.cash", "currency"),
-      reportedEbitda: l("covenant.reportedEbitda", "currency"), definitionAdjustment: l("covenant.definitionAdjustment", "currency")},
+      ...policy, ...(anyOf(["dates", "scenarios", "debt", "cash", "reportedEbitda", "definitionAdjustment"].map((x) => `covenant.${x}`))
+        ? {dates: l("covenant.dates", "date"), scenarios: l("covenant.scenarios", "identity"), debt: l("covenant.debt", "currency"), cash: l("covenant.cash", "currency"),
+          reportedEbitda: l("covenant.reportedEbitda", "currency"), definitionAdjustment: l("covenant.definitionAdjustment", "currency")}
+        : {dates: null, scenarios: null, debt: null, cash: null, reportedEbitda: null, definitionAdjustment: null})},
     portfolio: keys("bucket", "order.buckets").map((id) => {const q = `bucket.${id}.`; return {id, label: t(q + "label", "text"), amount: n(q + "amount", "currency"),
       contract: t(q + "contract", "convention"), encumbrance: t(q + "encumbrance", "convention"), holder: optional(q + "holder", "text", "text"), pastDue: b(q + "pastDue"),
       countsAgainstBasket: b(q + "countsAgainstBasket")};}),

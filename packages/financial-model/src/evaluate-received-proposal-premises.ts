@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {z} from "zod";
 import {capacityUuid} from "./debt-capacity-premises";
 import type {ProposedHypothesis} from "./investment-premises";
@@ -39,7 +40,7 @@ export const receivedProposalFactsSchema = z.strictObject({
   provenance: z.partialRecord(z.enum(clauses), origin).optional(),
   creditTax: fact(z.strictObject({fixedRate: unsignedRatio, dailyRate: unsignedRatio, maxDays: count(3660)})),
   indexCurve: fact(z.array(z.strictObject({year: z.number().int().min(2000).max(2200), annualRate: ratio})).min(1).max(40)),
-  tax: fact(z.strictObject({regime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), rate: unsignedRatio.refine((v) => Number(v) <= 1, "Tax rate outside [0, 1]")})),
+  tax: fact(z.strictObject({regime: z.enum(["lucro_real", "lucro_presumido", "unknown"]), rate: unsignedRatio.refine((v) => new Decimal(v).lte(1), "Tax rate outside [0, 1]")})),
   /** Whether periods after the company calendar are taxable: a hypothesis someone adopts, or null and the net cost of a longer life is not stated. */
   taxableAfterCalendar: fact(z.boolean()).nullable(),
   uses: z.array(fact(z.strictObject({id: key, label: text, amount: money, kind: z.enum(["seasonal_working_capital", "long_lived_capex", "refinancing", "other"]),
@@ -53,7 +54,7 @@ export const receivedProposalFactsSchema = z.strictObject({
   covenantScenarios: fact(z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(4)),
   policy: fact(z.strictObject({maximumRatio: unsignedRatio, testDates: z.array(date).min(1).max(24), source: text})).nullable(),
   measurements: fact(z.array(z.strictObject({date, scenario: z.string().regex(/^[a-z0-9-]{1,40}$/), debt: money, cash: signedMoney, reportedEbitda: signedMoney,
-    definitionAdjustment: signedMoney})).min(1).max(12)),
+    definitionAdjustment: signedMoney})).max(12)),
   portfolio: z.array(fact(z.strictObject({id: key, label: text, amount: money, contract: z.enum(["assignable", "prohibited_without_consent"]), encumbrance: z.enum(["free", "assigned"]),
     holder: text.nullable(), pastDue: z.boolean(), countsAgainstBasket: z.boolean()}))).min(1).max(12),
   basket: fact(z.strictObject({limit: money, basis: z.enum(["aggregate", "per_operation"]), occupied: money, consentLeadDaysMin: count(365), consentLeadDaysMax: count(365)})),
@@ -173,9 +174,10 @@ export function proposeReceivedProposalHypotheses(raw: unknown): ProposedHypothe
     txt("covenant.policySource", "text", f.policy.value.source, why(f.policy));
   }
   const ms = f.measurements.value, mw = why(f.measurements);
-  list("covenant.dates", "date", ms.map((m) => m.date), mw);
-  list("covenant.scenarios", "identity", ms.map((m) => m.scenario), mw);
-  for (const k of ["debt", "cash", "reportedEbitda", "definitionAdjustment"] as const) list(`covenant.${k}`, "currency", ms.map((m) => m[k]), mw);
+  // No test adopted at all leaves the lists out: the method names a gap for every required test.
+  if (ms.length) list("covenant.dates", "date", ms.map((m) => m.date), mw);
+  if (ms.length) list("covenant.scenarios", "identity", ms.map((m) => m.scenario), mw);
+  if (ms.length) for (const k of ["debt", "cash", "reportedEbitda", "definitionAdjustment"] as const) list(`covenant.${k}`, "currency", ms.map((m) => m[k]), mw);
   for (const b of f.portfolio) {
     const v = b.value, q = `bucket.${v.id}.`, w = why(b);
     txt(q + "label", "text", v.label, w); num(q + "amount", "currency", v.amount, w); txt(q + "contract", "convention", v.contract, w);

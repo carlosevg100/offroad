@@ -60,7 +60,6 @@ describe("received proposal packet", {timeout: 180_000}, () => {
       [["2026-12-31", "2027-06-30", "2027-12-31", "2028-06-30", "2028-12-31"], ["indenture", "proposal", "board-policy"]]] as const) {
       const k = auroraReceivedProposal(); k.variants = [];
       k.covenant.measurements = k.covenant.measurements.filter((m) => !(drop as readonly string[]).includes(m.date));
-      if (!k.covenant.measurements.length) k.covenant.measurements = [{date: "2027-03-31", scenario: "base", debt: "110", cash: "14.79220387", reportedEbitda: "55", definitionAdjustment: "-3"}];
       const q = packet(k);
       expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.covenant.untestedLimits]).toEqual(["partial", null, untested]);
       expect(untested.every((l) => q.gaps.some((g) => g.operand.endsWith(`.covenant.limit.${l}`)))).toBe(true);
@@ -73,9 +72,12 @@ describe("received proposal packet", {timeout: 180_000}, () => {
       .toEqual(["partial", "life_beyond_fiscal_calendar", null, ["life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar", "life_beyond_fiscal_calendar"]]);
     expect(q.gaps.filter((g) => g.operand.endsWith(".tax.taxableAfterCalendar") || g.operand.endsWith(".net")).length).toBe(4);
   });
-  it("refuses a tax rate above one in the adopted reader", () => {
-    const k = auroraReceivedProposal(); k.tax.rate = "1.5";
-    expect(() => packet(k)).toThrow("received_proposal_tax_rate_out_of_domain");
+  it("refuses a tax rate above one in the adopted reader, by decimal comparison", () => {
+    for (const rate of ["1.5", "1.00000000000000000001"]) {const k = auroraReceivedProposal(); k.tax.rate = rate; expect(() => packet(k)).toThrow("received_proposal_tax_rate_out_of_domain");}
+    // The reader refuses it on its own, even when another operand is missing and the kernel never runs.
+    const f = auroraReceivedProposalBasis({...auroraReceivedProposal(), tax: {regime: "lucro_real", rate: "1.00000000000000000001", taxableAfterCalendar: true}});
+    const i = f.seal(); i.basket = {...i.basket, occupied: {...i.basket.occupied, decisionId: null, missingReason: "Ausente"}};
+    expect(() => calculateAdoptedReceivedProposal(i)).toThrow("received_proposal_tax_rate_out_of_domain");
   });
   it("is partial without a comparable market and deterministic, validated and published", () => {
     const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};

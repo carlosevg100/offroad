@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {z} from "zod";
 import {evaluateReceivedProposal, financialCoreVersion, type ReceivedProposalInput} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
@@ -26,7 +27,8 @@ export const adoptedReceivedProposalInputSchema = adoptedAnalysisContextSchema.s
   seasonalPeak: optional,
   calendar: z.strictObject({periodEnds: selection, existingService: selection, availableForService: selection, closingCash: selection, taxable: selection, minimumCash: optional}),
   covenant: z.strictObject({indentureLimit: selection, indentureTestDates: selection, indentureSource: selection, requiredScenarios: selection, policyLimit: optional, policyTestDates: optional, policySource: optional,
-    dates: selection, scenarios: selection, debt: selection, cash: selection, reportedEbitda: selection, definitionAdjustment: selection}),
+    /** The covenant tests without the proposal, as parallel lists; all absent when no test was adopted at all. */
+    dates: optional, scenarios: optional, debt: optional, cash: optional, reportedEbitda: optional, definitionAdjustment: optional}),
   portfolio: z.array(z.strictObject({id: key, label: selection, amount: selection, contract: selection, encumbrance: selection, holder: optional, pastDue: selection,
     countsAgainstBasket: selection})).min(1).max(12),
   basket: z.strictObject({limit: selection, basis: selection, occupied: selection, consentLeadDaysMin: selection, consentLeadDaysMax: selection}),
@@ -39,6 +41,7 @@ export const adoptedReceivedProposalInputSchema = adoptedAnalysisContextSchema.s
 }).refine(i => i.endDate > i.openingDate, "Invalid horizon")
   .refine(i => [i.uses, i.portfolio, i.variants, i.alternatives].every(list => new Set(list.map(x => x.id)).size === list.length), "Duplicate id")
   .refine(i => (i.proposal.covenantLimit === null) === (i.proposal.covenantTestDates === null) && (i.proposal.covenantLimit === null) === (i.proposal.covenantDefinition === null), "Lender covenant needs limit, dates and definition")
+  .refine(i => new Set([i.covenant.dates, i.covenant.scenarios, i.covenant.debt, i.covenant.cash, i.covenant.reportedEbitda, i.covenant.definitionAdjustment].map(x => x === null)).size === 1, "Covenant tests need every list or none")
   .refine(i => (i.covenant.policyLimit === null) === (i.covenant.policyTestDates === null) && (i.covenant.policyLimit === null) === (i.covenant.policySource === null), "Board policy needs limit, dates and source");
 export type AdoptedReceivedProposalInput = z.infer<typeof adoptedReceivedProposalInputSchema>;
 
@@ -80,9 +83,12 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
   const years = read(input.curve.years, "curve.years", "identity", "list", z.array(z.string().regex(/^\d{4}$/)).min(1).max(40));
   const rates = read(input.curve.rates, "curve.rates", "ratio", "list", z.array(ratio).min(1).max(40));
   const list = <T>(s: z.infer<typeof selection>, path: string, unit: string, schema: z.ZodType<T>) => read(s, path, unit, "list", schema);
-  const measurement = {dates: list(v.dates, "covenant.dates", "date", dates), scenarios: list(v.scenarios, "covenant.scenarios", "identity", z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(12)),
-    debt: list(v.debt, "covenant.debt", "currency", money), cash: list(v.cash, "covenant.cash", "currency", money), reportedEbitda: list(v.reportedEbitda, "covenant.reportedEbitda", "currency", money),
-    definitionAdjustment: list(v.definitionAdjustment, "covenant.definitionAdjustment", "currency", money)};
+  const tests = v.dates !== null;
+  const opt = <T>(s: z.infer<typeof selection> | null, path: string, unit: string, schema: z.ZodType<T>): T | null => s === null ? null : list(s, path, unit, schema);
+  const measurement = {dates: tests ? opt(v.dates, "covenant.dates", "date", dates) : [], scenarios: tests ? opt(v.scenarios, "covenant.scenarios", "identity", z.array(z.string().regex(/^[a-z0-9-]{1,40}$/)).min(1).max(12)) : [],
+    debt: tests ? opt(v.debt, "covenant.debt", "currency", money) : [], cash: tests ? opt(v.cash, "covenant.cash", "currency", money) : [],
+    reportedEbitda: tests ? opt(v.reportedEbitda, "covenant.reportedEbitda", "currency", money) : [],
+    definitionAdjustment: tests ? opt(v.definitionAdjustment, "covenant.definitionAdjustment", "currency", money) : []};
   const m = input.market, h = input.history;
   const history = h === null ? null : {label: read(h.label, "history.label", "text", "text", words), spread: read(h.spread, "history.spread", "ratio", "number", ratio),
     date: read(h.date, "history.date", "date", "date", z.iso.date()), ids: list(h.adjustmentIds, "history.adjustmentIds", "identity", z.array(key).max(8)),
@@ -93,7 +99,7 @@ export function calculateAdoptedReceivedProposal(raw: unknown) {
     creditTax: {fixedRate: read(input.creditTax.fixedRate, "creditTax.fixedRate", "ratio", "number", unsigned), dailyRate: read(input.creditTax.dailyRate, "creditTax.dailyRate", "ratio", "number", unsigned),
       maxDays: count(input.creditTax.maxDays, "creditTax.maxDays", "days")},
     indexCurve: years && rates ? years.map((y, i) => ({year: Number(y), annualRate: rates[i] ?? ""})) : [],
-    tax: {regime: convention(input.tax.regime, "tax.regime", ["lucro_real", "lucro_presumido", "unknown"]), rate: read(input.tax.rate, "tax.rate", "ratio", "number", unsigned.refine((v) => Number(v) >= 0 && Number(v) <= 1, "received_proposal_tax_rate_out_of_domain")),
+    tax: {regime: convention(input.tax.regime, "tax.regime", ["lucro_real", "lucro_presumido", "unknown"]), rate: read(input.tax.rate, "tax.rate", "ratio", "number", unsigned.refine((v) => new Decimal(v).gte(0) && new Decimal(v).lte(1), "received_proposal_tax_rate_out_of_domain")),
       taxableAfterCalendar: input.tax.taxableAfterCalendar === null ? null : flag(input.tax.taxableAfterCalendar, "tax.taxableAfterCalendar")},
     uses: input.uses.map(u => {const q = `use.${u.id}.`; return {id: u.id, label: read(u.label, q + "label", "text", "text", words), amount: read(u.amount, q + "amount", "currency", "number", unsigned),
       kind: convention(u.kind, q + "kind", ["seasonal_working_capital", "long_lived_capex", "refinancing", "other"]),

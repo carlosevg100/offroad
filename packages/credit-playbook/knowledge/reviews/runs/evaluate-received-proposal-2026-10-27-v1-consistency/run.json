@@ -16,9 +16,9 @@
     "exportName": "buildReceivedProposalRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T11:50:50.540Z",
-    "finishedAt": "2026-10-27T11:53:05.254Z",
-    "commit": "007a90bd7eb0531c6983ff8d6230e1e44c183c7a"
+    "startedAt": "2026-10-27T12:13:01.518Z",
+    "finishedAt": "2026-10-27T12:15:18.080Z",
+    "commit": "e8bb8ca4b8e3fe5f307ae7d2434b20235e3a48a9"
   },
   "modelCalls": 0,
   "cases": [
@@ -27,7 +27,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "f0ef017e954c36454ddc30bcc0838712ee68cea478732b5ad7e38ea1f63fc5ea",
+      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
       "passed": true
     },
     {
@@ -35,7 +35,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "f0ef017e954c36454ddc30bcc0838712ee68cea478732b5ad7e38ea1f63fc5ea",
+      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "c179ff7290b466c9a141a69efdf75b4a6b243d3d8b8c9a58f39078163d5ed7c6",
-      "outputFingerprint": "f0ef017e954c36454ddc30bcc0838712ee68cea478732b5ad7e38ea1f63fc5ea",
+      "outputFingerprint": "20b8a4b82f119ba6dba49d99b788450f2e501120c00edbb12954f8dadfb81e95",
       "passed": true
     },
     {
@@ -51,7 +51,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "29fff782be1d2b7f888085e89f607e3f40a673ba6a8a30d380525e373ab3f72b",
-      "outputFingerprint": "ea8ec851b41dcc13a46809348bc93da9988b34e5d4abfb6268d0aaa4c0a74002",
+      "outputFingerprint": "25699b3c8af9afb81cbe59773f8cbeea7e9605ddc512c7433fa7754abce9cde6",
       "passed": true
     },
     {
@@ -59,7 +59,7 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "29fff782be1d2b7f888085e89f607e3f40a673ba6a8a30d380525e373ab3f72b",
-      "outputFingerprint": "ea8ec851b41dcc13a46809348bc93da9988b34e5d4abfb6268d0aaa4c0a74002",
+      "outputFingerprint": "25699b3c8af9afb81cbe59773f8cbeea7e9605ddc512c7433fa7754abce9cde6",
       "passed": true
     },
     {
@@ -67,11 +67,11 @@
       "expectation": "same inputs and versions reproduce all output bytes without mutation",
       "observed": "same inputs and versions reproduce all output bytes without mutation",
       "inputFingerprint": "29fff782be1d2b7f888085e89f607e3f40a673ba6a8a30d380525e373ab3f72b",
-      "outputFingerprint": "ea8ec851b41dcc13a46809348bc93da9988b34e5d4abfb6268d0aaa4c0a74002",
+      "outputFingerprint": "25699b3c8af9afb81cbe59773f8cbeea7e9605ddc512c7433fa7754abce9cde6",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "4352905ee7c7af5cd99b068ff74dfee73c531c396adec5ef96f5a45e3387e14a",
-  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 and r2 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+  "evidenceFingerprint": "ce4f9321ffdb3d2e40baebbbebf9fe562bec611bb17df58d67729a309c37a162",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1, r2 and r3 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

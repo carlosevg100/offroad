@@ -84,6 +84,33 @@ describe("received proposal properties", {timeout: 600_000}, () => {
     }
     expect(inside).toBeGreaterThan(1);
   });
+  it("never takes a lender test from a date before the draw (generated draws and test dates)", () => {
+    for (let k = 0; k < 5; k++) {
+      const i = auroraReceivedProposal(); i.variants = []; i.covenant.policy = null;
+      i.proposal.drawDate = addDays("2026-08-15", int(0, 300));
+      const ends = i.calendar.periodEnds;
+      i.proposal.covenant = {...i.proposal.covenant!, testDates: ends.filter(() => rand() < 0.6)};
+      // A heavily levered reading on every period end, the pre-draw ones included, would breach any test it fed.
+      i.covenant.measurements = ends.filter(e => e <= "2027-06-30").map(date => ({date, scenario: "base", debt: "130", cash: "35", reportedEbitda: "30", definitionAdjustment: "-3"}));
+      i.covenant.requiredScenarios = ["base"];
+      const r = evaluateReceivedProposal(i);
+      expect(r.covenant.lenderDatesBeforeDraw).toEqual(i.proposal.covenant.testDates.filter(d => d < i.proposal.drawDate));
+      for (const row of r.covenant.rows) if (row.date < i.proposal.drawDate) expect(row.limits.find(l => l.limitId === "proposal")!.testedOnDate).toBe(false);
+      expect(r.covenant.required.every(q => q.date >= i.proposal.drawDate || i.covenant.indenture.testDates.includes(q.date))).toBe(true);
+    }
+  });
+  it("reproduces the review: a lender test dated before the draw creates no breach", () => {
+    const i = auroraReceivedProposal(); i.variants = []; i.covenant.policy = null;
+    i.proposal.covenant = {...i.proposal.covenant!, testDates: ["2026-09-30", ...i.proposal.covenant!.testDates]};
+    i.covenant.measurements = [...i.covenant.measurements, {date: "2026-09-30", scenario: "base", debt: "130", cash: "35", reportedEbitda: "30", definitionAdjustment: "-3"}];
+    const r = evaluateReceivedProposal(i);
+    expect([r.covenant.anyBreachWith, r.covenant.lenderDatesBeforeDraw, r.covenant.missingTests]).toEqual([false, ["2026-09-30"], []]);
+  });
+  it("turns the total absence of covenant tests into gaps without an error", () => {
+    const i = auroraReceivedProposal(); i.variants = []; i.covenant.measurements = [];
+    const r = evaluateReceivedProposal(i);
+    expect([r.covenant.rows, r.covenant.anyBreachWith, r.covenant.untestedLimits, r.covenant.missingTests.length, r.covenant.worst]).toEqual([[], null, ["indenture", "proposal", "board-policy"], 10, null]);
+  });
   it("forms gaps instead of an error when tests of a limit are removed, and never concludes compliance with one missing", () => {
     const limits = ["indenture", "proposal", "board-policy"] as const;
     const datesOf = (i: ReceivedProposalInput, l: (typeof limits)[number]) => l === "indenture" ? i.covenant.indenture.testDates : l === "proposal" ? i.proposal.covenant!.testDates : i.covenant.policy!.testDates;
@@ -92,8 +119,6 @@ describe("received proposal properties", {timeout: 600_000}, () => {
       const i = auroraReceivedProposal(); i.variants = [];
       const gone = new Set(stripped.flatMap(l => datesOf(i, l)));
       i.covenant.measurements = i.covenant.measurements.filter(m => !gone.has(m.date) && rand() < 0.85);
-      // With every required test gone, one reading off the test dates stays, as a contrast.
-      if (!i.covenant.measurements.length) i.covenant.measurements = [{date: "2027-03-31", scenario: "base", debt: "110", cash: "14.79220387", reportedEbitda: "55", definitionAdjustment: "-3"}];
       const r = evaluateReceivedProposal(i), end = i.calendar.periodEnds.at(-1)!;
       const required = [...new Set(limits.flatMap(l => datesOf(i, l).filter(d => d <= end && (l !== "proposal" || d >= i.proposal.drawDate))))].sort()
         .flatMap(date => i.covenant.requiredScenarios.map(scenario => ({date, scenario})));

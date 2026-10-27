@@ -47,10 +47,12 @@ export const receivedProposalOutputSchema = z.strictObject({
     consentWindow: z.strictObject({from: date, by: date, needDate: date, slackDays: z.number().int()})}),
   covenant: z.strictObject({
     rows: z.array(z.strictObject({date, scenario: key, ratioWithout: decimal.nullable(), ratioWith: decimal.nullable(),
-      limits: z.array(z.strictObject({limitId, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, testedOnDate: z.boolean(), headroomWith: decimal.nullable(), breachedWith: z.boolean()})).min(1).max(3)})).min(1).max(12),
+      limits: z.array(z.strictObject({limitId, kind: z.enum(["contractual", "board_policy"]), maximumRatio: decimal, testedOnDate: z.boolean(), headroomWith: decimal.nullable(), breachedWith: z.boolean()})).min(1).max(3)})).max(12),
     worst: z.strictObject({measurementId: key, limitId, ebitdaHeadroom: decimal}).nullable(),
     required: z.array(z.strictObject({date, scenario: key})).max(64), missingTests: z.array(z.strictObject({date, scenario: key})).max(64),
     untestedLimits: z.array(limitId).max(3),
+    /** Lender test dates before the draw: kept as contrast only, never a test of the lender. */
+    lenderDatesBeforeDraw: z.array(date).max(24),
     /** True when a breach is found; null while a required test is missing; false only with every test present. */
     anyBreachWith: z.boolean().nullable(),
     testsPerYear: z.strictObject({indenture: z.number().int().min(0), lender: z.number().int().min(0)})}),
