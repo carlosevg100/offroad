@@ -65,8 +65,9 @@ export function composeBoundDocumentFolderInventory(raw: unknown): DocumentFolde
   const input = boundDocumentFolderInventoryInputSchema.parse(raw);
   const b = composeOne(input.base, "document_folder_inventory", [{kind: "entity", leaf: "record", order: "order.entities"}, {kind: "decision", leaf: "record", order: "order.decisions"},
     {kind: "vault", leaf: "record", order: "order.vault"}, {kind: "file", leaf: "reading", order: "order.files"}]);
+  const subjectEntityId = b.select("subject.entity", "text");
   b.fix();
-  const base = {...b.context, entities: b.slots.entity!, decisions: b.slots.decision!, vault: b.slots.vault!, files: b.slots.file!};
+  const base = {...b.context, subjectEntityId, entities: b.slots.entity!, decisions: b.slots.decision!, vault: b.slots.vault!, files: b.slots.file!};
   let update = null;
   if (input.update) {
     const u = composeOne(input.update, "document_folder_inventory_update", [{kind: "file", leaf: "reading", order: "order.files"}, {kind: "informed", leaf: "record", order: "order.informed"}]);

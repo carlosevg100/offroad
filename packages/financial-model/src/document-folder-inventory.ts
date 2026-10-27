@@ -262,7 +262,7 @@ const rowSchema = z.strictObject({fileId: key, fileName: z.string().min(1).max(L
   /** Presence is not confirmation: no document is ever declared validated. */
   validated: z.literal(false)});
 const findingCodes = ["duplicate", "draft_superseded", "version_superseded", "position_superseded", "versions_side_by_side", "versions_unresolved", "series_gap", "mixed_units",
-  "stale_forecast", "total_includes_unused_limit", "total_not_recomposed", "amended_original", "amendment_in_force", "amendment_superseded", "amendment_not_in_force",
+  "stale_forecast", "total_includes_unused_limit", "total_difference_unexplained", "total_not_recomposed", "amended_original", "amendment_in_force", "amendment_superseded", "amendment_not_in_force",
   "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "effect_blocked", "substitute_not_binding", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
   "clause_not_in_force", "reading_conflict", "substitute_conflict", "page_unreadable",
   "file_unreadable", "clause", "observation", "subsidiary_in_consolidated", "appraisal_without_registry", "figure_basis_differs"] as const;
@@ -323,6 +323,9 @@ export type DocumentFolderInventory = z.infer<typeof documentFolderInventoryOutp
 
 export const documentFolderInventoryInputSchema = z.strictObject({
   asOf: date, mode: z.enum(inventoryModes), currency: z.string().regex(/^[A-Z]{3}$/).refine((c) => c === "BRL", "document_inventory_unsupported_currency"),
+  /** The company under analysis, by its registry id: it must be in the registry with no parent there. Every rule that
+   * speaks of "the company" (its liquidity, for one) uses this id, never the order of the registry. */
+  subjectEntityId: key,
   /** The company's registry: entities, their group and the controlling entity. */
   entities: z.array(z.strictObject({id: key, label, groupId: key, groupLabel: label, parentId: key.nullable(), ownership: ratio.nullable()})).min(1).max(L.entities),
   decisions: z.array(z.strictObject({id: key, label, kind: z.enum(decisionKinds)})).max(L.decisions),
@@ -352,6 +355,8 @@ export const documentFolderInventoryInputSchema = z.strictObject({
       if (x.at.section !== null && declared.has(x.at.section) && declared.get(x.at.section) !== x.scale) fail("document_inventory_unsupported_unit");
   }
   if (new Set(i.entities.map((e) => e.id)).size !== i.entities.length) fail("document_inventory_duplicate_entity");
+  const subject = i.entities.find((e) => e.id === i.subjectEntityId);
+  if (!subject || (subject.parentId !== null && i.entities.some((e) => e.id === subject.parentId))) fail("document_inventory_subject_entity_invalid");
   if (new Set(i.decisions.map((d) => d.id)).size !== i.decisions.length) fail("document_inventory_duplicate_decision");
   if (i.entities.some((e) => e.parentId !== null && !i.entities.some((p) => p.id === e.parentId))) fail("document_inventory_unknown_parent");
   // An amendment links only to an original: an amendment of an amendment is a form this method does not treat.
@@ -1104,12 +1109,14 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
    * after the reading date, its source identified) and it is of the right entity and scope and covers the period the
    * purpose asks for. One rule per need of the schema; presence alone never closes a gap. */
   const closes = (f: DocumentReading) => stateOf(f) === "known";
+  /** The company the folder is about, as the input names it. */
+  const company = input.subjectEntityId;
   const gapClosure: Record<Need, string> = {
     monthly_series: "a trial balance of the same entity for the month, known",
     reading_substitute: "the page completed by a compatible copy under the page guard",
     real_collateral: "a property registry of the same asset and entity, known",
     group_perimeter: "audited statements of the subsidiary for the period, known",
-    liquidity_projection: "a forecast of a registered entity reaching the reading date, known",
+    liquidity_projection: "a forecast of the company under analysis (subjectEntityId, consolidated perimeter) reaching the reading date, known",
   };
   void gapClosure;
   // Monthly series: a month missing between the first and the last present.
@@ -1141,8 +1148,13 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     effect(`check:${f.fileId}-reported-total`, () => {
       const t = f.debtTable!, drawn = t.lines.reduce((s, l) => s.plus(inReais(l.drawn, t.scale)), new Exact(0));
       const reported = inReais(t.reportedTotal, t.scale), counted = t.lines.reduce((s, l) => s.plus(inReais(l.counted, t.scale)), new Exact(0));
-      // A limit explains the difference only when the lines as counted add up to the reported total.
-      const atLimit = counted.eq(reported) ? t.lines.filter((l) => l.limit !== null && !new Exact(l.counted).eq(l.drawn) && new Exact(l.counted).eq(l.limit)) : [];
+      // Line by line: every line counted differently from its drawn balance either enters by its limit or is unexplained.
+      // The unused limit explains the whole difference only if the lines as counted add up to the reported total and
+      // every differing line enters by its limit; otherwise what is left is declared apart, with no further arithmetic.
+      const differing = t.lines.filter((l) => !new Exact(l.counted).eq(l.drawn));
+      const atLimit = differing.filter((l) => l.limit !== null && new Exact(l.counted).eq(l.limit));
+      const unexplained = differing.filter((l) => !atLimit.includes(l)), countedCloses = counted.eq(reported);
+      const fully = atLimit.length > 0 && unexplained.length === 0 && countedCloses;
       const matches = drawn.eq(reported), drawnShown = brl(drawn.div(t.scale).toFixed(), t.scale);
       const words = {total: brl(t.reportedTotal, t.scale), period: periodText(f), lines: atLimit.map((l) => ({kind: l.lineKind, limit: brl(l.limit!, t.scale), unused: new Exact(l.drawn).eq(0)})), at: src(f.fileId, t.at)};
       const g = guard(members);
@@ -1156,14 +1168,18 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       }
       recorder!.emitted = true;
       identityChecks.push({id: `${f.fileId}-reported-total`, kind: "reported_total", fileIds: [f.fileId], status: matches ? "matches" : "differs",
-        reported: reported.toFixed(), recomposed: drawn.toFixed(), currency: input.currency, reason: matches ? null : atLimit.length ? "unused_limit_counted" : "not_recomposed"});
+        reported: reported.toFixed(), recomposed: drawn.toFixed(), currency: input.currency, reason: matches ? null : fully ? "unused_limit_counted" : atLimit.length ? "unused_limit_partly" : "not_recomposed"});
       if (matches) return;
       if (words.lines.length) {
         const unused = words.lines.every((l) => l.unused);
         add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [words.at], knowledge: "known",
-          statement: `Soma ${words.total} porque ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${words.period}: ${drawnShown}.`,
+          statement: fully ? `Soma ${words.total} porque ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${words.period}: ${drawnShown}.`
+            : `Soma ${words.total}; ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}, ${unused ? "com saldo utilizado zero" : "acima do saldo usado"}, mas isso não explica toda a diferença. Dívida em ${words.period}: ${drawnShown}.`,
           topic: "debt_position", effect: "figure_correction",
-          decisionStatement: `A dívida em ${words.period} é de ${drawnShown}, não ${words.total}. A tabela soma o limite ${words.lines.map((l) => of(lineLabel[l.kind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}.`});
+          decisionStatement: `A dívida em ${words.period} é de ${drawnShown}, não ${words.total}. A tabela soma o limite ${words.lines.map((l) => of(lineLabel[l.kind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}${fully ? "" : ", e há diferença sem causa identificada"}.`});
+        if (!fully) add({id: `${f.fileId}-debt-total-unexplained`, code: "total_difference_unexplained", anchor: f.fileId, sources: [words.at], knowledge: "known",
+          statement: [...unexplained.map((l) => `${capital(lineLabel[l.lineKind])} entra por ${brl(l.counted, t.scale)} contra saldo utilizado de ${brl(l.drawn, t.scale)}, sem limite que explique`),
+            ...countedCloses ? [] : [`as linhas, como contadas, não fecham com o total informado de ${words.total}`]].join("; ") + ". A diferença restante não tem causa identificada na tabela."});
       } else {
         add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [words.at], knowledge: "known",
           statement: `O total informado de ${words.total} não fecha com as linhas, que somam ${drawnShown} de saldo utilizado.`, topic: "debt_position", effect: "figure_correction",
@@ -1347,9 +1363,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   }
   for (const [dup, first] of duplicateOf) if (!suspended.has(dup)) add({id: `${dup}-duplicate`, code: "duplicate", anchor: dup, sources: [src(dup), src(first)], statement: "Mesmo conteúdo, mesmo hash."});
   // Projection: a forecast that does not reach the reading date, or none at all.
-  const forecasts = live.filter((f) => policy[f.kind].forecast && settled(f) && f.entity.primaryId !== null && registry.has(f.entity.primaryId)
+  // The need is the company's liquidity: only a forecast of the company itself (the registry's controlling entity; its
+  // consolidated perimeter is read under its id) closes it. A subsidiary's or another group's forecast never does.
+  const forecasts = live.filter((f) => policy[f.kind].forecast && settled(f) && f.entity.primaryId === company
     && f.period.end !== null && f.period.end >= input.asOf && closes(f));
-  const stale = findings.find((x) => x.code === "stale_forecast");
+  const stale = findings.find((x) => x.code === "stale_forecast" && byId.get(x.anchor)?.entity.primaryId === company);
   if (!forecasts.length) gapsOut.push({need: "liquidity_projection", item: "Projeção ou fluxo de caixa de 13 semanas atualizado", why: `liquidez a partir de ${monthName(input.asOf)}${stale ? "; o fluxo da pasta não chega a essa data" : ""}`,
     quoted: null, findingId: stale?.id ?? null, anchor: stale?.anchor ?? null, conditional: false});
 
@@ -1412,7 +1430,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     const resolution: Record<(typeof findingCodes)[number], How[]> = {
       duplicate: ["related", "reading_date"], draft_superseded: ["related", "reading_date"], version_superseded: ["related", "reading_date"], position_superseded: ["related", "reading_date"], versions_side_by_side: ["related", "reading_date"],
       versions_unresolved: ["related", "reading_date"], series_gap: ["monthly_series", "related", "reading_date"], mixed_units: ["related", "reading_date"], stale_forecast: ["related", "reading_date"], total_includes_unused_limit: ["related", "reading_date"],
-      total_not_recomposed: ["related", "reading_date"], amended_original: ["related", "reading_date"], amendment_in_force: ["related", "reading_date"], amendment_superseded: ["related", "reading_date"], amendment_not_in_force: ["related", "reading_date"],
+      total_not_recomposed: ["related", "reading_date"], total_difference_unexplained: ["related", "reading_date"], amended_original: ["related", "reading_date"], amendment_in_force: ["related", "reading_date"], amendment_superseded: ["related", "reading_date"], amendment_not_in_force: ["related", "reading_date"],
       amendment_conflict: ["related", "reading_date"], amendment_future: ["related", "reading_date"], amendment_without_original: ["related", "reading_date"], clause_unread: ["related", "reading_date"], effect_blocked: ["any_arrival", "related", "reading_date"],
       substitute_not_binding: ["related", "reading_date"], clause_future: ["related", "reading_date"], figure_conflict: ["related", "reading_date"], instrument_not_in_force: ["related", "reading_date"], instrument_superseded: ["related", "reading_date"],
       instrument_conflict: ["related", "reading_date"], instrument_future: ["related", "reading_date"], clause_superseded: ["related", "reading_date"], clause_conflict: ["related", "reading_date"], clause_not_in_force: ["related", "reading_date"],

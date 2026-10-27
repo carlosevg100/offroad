@@ -43,7 +43,11 @@ describe("document folder inventory kernel", () => {
   });
   it("names a total that does not recompose and an amendment whose original is nowhere", () => {
     const o = organizeDocumentFolder(auroraKernelInput({vault: [], files: edit((r) => {file(r, "f16").debtTable!.reportedTotal = "135"; r.splice(r.indexOf(file(r, "f18")), 1);})}));
-    expect(o.findings.find((f) => f.id === "f16-debt-total")!.code).toBe("total_not_recomposed");
+    // The overdraft enters by its limit, but the lines as counted do not add up to 135: the rest is declared apart.
+    expect(o.findings.find((f) => f.id === "f16-debt-total")!.code).toBe("total_includes_unused_limit");
+    expect(o.findings.find((f) => f.id === "f16-debt-total-unexplained")!.statement).toContain("não fecham com o total informado de R$ 135 milhões");
+    const none = organizeDocumentFolder(auroraKernelInput({files: edit((r) => {const t = file(r, "f16").debtTable!; t.lines = t.lines.map((l) => ({...l, counted: l.drawn})); t.reportedTotal = "135";})}));
+    expect(none.findings.find((f) => f.id === "f16-debt-total")!.code).toBe("total_not_recomposed");
     expect(o.findings.find((f) => f.id === "f19-no-original")!.code).toBe("amendment_without_original");
     expect(o.effectiveTexts).toEqual([]);
   });

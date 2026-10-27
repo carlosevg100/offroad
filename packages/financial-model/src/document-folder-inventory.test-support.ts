@@ -168,7 +168,7 @@ export function auroraTurnTwoReadings(): DocumentReading[] {
 export const auroraTurnTwoInformed = [{id: "minuta-nao-circulou", questionId: "circulacao-f02", statement: "A minuta não foi para nenhum banco.", author: "Controller da Aurora", date: "2026-09-02"}];
 
 export function auroraKernelInput(overrides: Partial3 = {}): DocumentFolderInventoryInput {
-  return {asOf: "2026-09-01", mode: "organize", currency: "BRL", entities: auroraEntities, decisions: auroraDecisions, vault: auroraVault(),
+  return {asOf: "2026-09-01", mode: "organize", currency: "BRL", subjectEntityId: "aurora", entities: auroraEntities, decisions: auroraDecisions, vault: auroraVault(),
     files: auroraFolderReadings(), informed: [], prior: null, ...overrides};
 }
 type Partial3 = {[K in keyof DocumentFolderInventoryInput]?: DocumentFolderInventoryInput[K]};
@@ -195,9 +195,9 @@ export const folderAnalysisId = analysisTestId(70), folderUpdateId = analysisTes
 export const auroraFolderWindow = {openingDate: "2025-01-01", readingDate: "2026-09-01", updateDate: "2026-09-02"};
 
 /** The folder as adopted records, one per file reading, entity, decision and vault entry. */
-export function auroraFolderBasis(options: {files?: DocumentReading[] | undefined; decisions?: typeof auroraDecisions | undefined; vault?: ReturnType<typeof auroraVault> | undefined; entities?: typeof auroraEntities | undefined} = {}) {
+export function auroraFolderBasis(options: {subjectEntityId?: string | undefined; files?: DocumentReading[] | undefined; decisions?: typeof auroraDecisions | undefined; vault?: ReturnType<typeof auroraVault> | undefined; entities?: typeof auroraEntities | undefined} = {}) {
   const f = folderBasis(`document_folder_inventory.${folderAnalysisId}.`, auroraFolderWindow.openingDate, auroraFolderWindow.readingDate, 1000, 500);
-  const input = {...f.context, analysisId: folderAnalysisId, scenario: "base",
+  const input = {...f.context, analysisId: folderAnalysisId, scenario: "base", subjectEntityId: f.contribute("subject.entity", {type: "text", value: options.subjectEntityId ?? "aurora"}),
     entities: (options.entities ?? auroraEntities).map(({id, ...v}) => ({id, value: f.json(`entity.${id}.record`, v)})),
     decisions: (options.decisions ?? auroraDecisions).map(({id, ...v}) => ({id, value: f.json(`decision.${id}.record`, v)})),
     vault: (options.vault ?? auroraVault()).map(({documentId, ...v}) => ({id: documentId, value: f.json(`vault.${documentId}.record`, v)})),
@@ -222,7 +222,7 @@ export function auroraFolderAnalyses(turnTwo = false): DocumentFolderInventoryAn
 /** The same folder as facts with their origin, for the premises path. */
 export function auroraFolderFacts(): DocumentFolderInventoryFacts {
   const ctx = {entityId: analysisTestId(1), perimeter: "consolidated", currency: "BRL", definitionVersionId: analysisTestId(3), openingDate: auroraFolderWindow.openingDate, readingDate: auroraFolderWindow.readingDate};
-  return {inventoryId: analysisTestId(7000), ...ctx,
+  return {inventoryId: analysisTestId(7000), ...ctx, subjectEntityId: {value: "aurora", origin: "document" as const, source: "cadastro societário da companhia"},
     entities: auroraEntities.map((value) => ({value, origin: "document" as const, source: "cadastro societário da companhia"})),
     decisions: auroraDecisions.map((value) => ({value, origin: "house" as const, source: "contexto do projeto: decisões em curso"})),
     vault: auroraVault().map((value) => ({value, origin: "house" as const, source: "documentos já no sistema, enviados na conversa do financiamento de 2027"})),

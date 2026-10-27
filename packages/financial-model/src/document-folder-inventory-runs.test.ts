@@ -37,8 +37,9 @@ describe("recorded document folder inventory evaluations", () => {
       "local-ids-alone-are-not-a-reading-conflict", "duplicate-of-the-ccb-reads-the-recovered-page", "reading-date-makes-the-amendment-current",
       "eliminated-amendment-does-not-split-identical-later-ones", "small-exception-and-close-totals-are-shown-exactly",
       "same-reference-of-another-entity-is-another-instrument", "clause-amount-on-its-declared-scale",
-      "competing-originals-with-different-readings-have-no-winner", "policy-compared-only-within-its-entity", "registry-dated-after-the-reading-does-not-close-the-gap", "notice-deadline-followed-never-scheduled"]);
-    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(41);
+      "competing-originals-with-different-readings-have-no-winner", "policy-compared-only-within-its-entity", "registry-dated-after-the-reading-does-not-close-the-gap",
+      "subsidiary-forecast-does-not-resolve-the-company-gap", "unused-limit-explains-only-part-of-the-difference", "notice-deadline-followed-never-scheduled"]);
+    expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(43);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
 });

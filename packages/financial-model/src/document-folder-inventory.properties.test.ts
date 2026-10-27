@@ -440,15 +440,25 @@ describe("property: dependencies proven by tracking; every state injected into e
       for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
       const files = all(), same = (state === "missing_source" && file(files, id).instrument ? chainKin(files, file(files, id)) : state === "future" || state === "missing_source" ? kin(files, file(files, id))
         : files.filter((f) => f.sha256 === file(files, id).sha256)).map((f) => f.fileId);
+      // Moving an instrument chain to an entity outside the registry changes the instrument's identity (an instrument is
+      // entity and reference). Invariants independent of the implementation's dependency lists:
+      if (state === "missing_source" && file(files, id).instrument !== null) {
+        const moved = new Set(same);
+        // (1) no effect mixes the moved documents with documents of the original entity;
+        for (const t of o.traces) if (t.guarded.some((x) => moved.has(x))) expect(t.guarded.filter((x) => !moved.has(x)), `${t.effect} mixes entities`).toEqual([]);
+        // (2) every effect of the original entity is what a run without the moved documents computes;
+        const removed = traced((list) => {variant(list); for (const x of chainKin(list, file(list, id))) list.splice(list.indexOf(x), 1);});
+        const outcome = (traces: typeof o.traces) => traces.filter((t) => !t.guarded.some((x) => moved.has(x))).map((t) => [t.effect, t.state, t.emitted]).sort();
+        expect(outcome(o.traces)).toEqual(outcome(removed.traces));
+        // (3) the moved documents stand in their own partition, outside the registry, with the perimeter question asked.
+        expect(o.inventory.partitionByEntity).toBe(true);
+        for (const x of o.inventory.rows.filter((r) => moved.has(r.fileId) && r.situation.read !== "conflicted")) expect(x.partition, x.fileId).toBe("fora-do-cadastro");
+        expect(o.inventory.questions.find((q) => q.id === "perimetro")!.fileIds.some((x) => moved.has(x))).toBe(true);
+        return;
+      }
       for (const b of emitted) {
         const after = o.traces.find((t) => t.effect === b.effect);
-        // What the effect judges after the injection: moving an instrument to another entity takes it out of the
-        // effects of the first entity (an instrument is entity and reference), which then stand as controls.
-        const moved = state === "missing_source" && file(files, id).instrument !== null && after !== undefined;
-        const judgedNow = moved ? after!.guarded : b.guarded, ignoredNow = moved ? after!.ignoreUnread : b.ignoreUnread;
-        const touched = same.some((x) => judgedNow.includes(x) && !(expected === "unread" && ignoredNow.includes(x)));
-        // An effect whose dependencies the move changed (another entity's instrument left it) is neither touched nor a control.
-        if (!touched && moved && JSON.stringify(after!.guarded) !== JSON.stringify(b.guarded)) continue;
+        const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
         if (!touched) {expect(after?.emitted, `control ${b.effect}`).toBe(true); continue;}
         expect(after?.emitted ?? false, `${b.effect} withheld`).toBe(false);
         const rank = (x: string) => ["known", "future", "unread", "missing_source", "conflict"].indexOf(x);
@@ -1078,4 +1088,64 @@ describe("property: closing a gap is an effect under the guard, for every need o
       expect(sc.gap(o)).toBe(true);
     });
   }
+});
+
+// Review r16: closing tied to the need's entity and perimeter; the unused limit explains only what the lines prove.
+describe("property: only the company's own forecast closes its liquidity gap", () => {
+  const entities = [...auroraKernelInput().entities, {id: "serra-sa", label: "Serra S.A.", groupId: "serra", groupLabel: "Serra", parentId: null, ownership: null}];
+  const forecast = (entity: string) => ({...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "f31", fileName: "fluxo set26.xlsx", sha256: hex(`forecast-${entity}`),
+    entity: {primaryId: entity, label: "Fluxo"}, period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"}, version: {label: "atualizado", status: "management" as const, ordinal: null, lastUpdated: "2026-08-31"},
+    referenceDate: {kind: "update" as const, date: "2026-08-31", origin: "stated" as const}});
+  const open = (o: DocumentFolderInventory) => o.gaps.some((g) => g.need === "liquidity_projection" && g.status === "open");
+  for (const entity of ["aurora-log", "serra-sa", "aurora"]) {
+    it(`base: a forecast of ${entity} ${entity === "aurora" ? "closes it (control)" : "never closes it"}`, () => {
+      expect(open(run([...auroraFolderReadings(), forecast(entity)], {entities}))).toBe(entity !== "aurora");
+    });
+    it(`update: a forecast of ${entity} arriving ${entity === "aurora" ? "resolves it (control)" : "never resolves it"}`, () => {
+      const base = auroraFolderReadings(), prior = run(base, {entities});
+      const o = run([...base, forecast(entity)], {entities, asOf: "2026-09-02", prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+      expect(open(o)).toBe(entity !== "aurora");
+      expect(o.gaps.some((g) => g.need === "liquidity_projection" && g.status === "resolved")).toBe(entity === "aurora");
+    });
+  }
+});
+describe("property: the unused limit explains the difference only when every line proves it", () => {
+  for (let n = 1; n <= 24; n++) it(`table ${n}`, () => {
+    const r = random(88000 + n), extra = pick(r, ["0", "0", "5", "10"] as const), drift = pick(r, ["0", "0", "3"] as const);
+    // Drawn balances stay 60 + 40 + 30 + 0 = 130; the debenture may be counted above its balance; the total may drift.
+    const o = run(readings((list) => {const t = file(list, "f16").debtTable!;
+      const deb = t.lines.find((l) => l.lineKind === "debenture")!; deb.counted = new Decimal(deb.drawn).plus(extra).toFixed();
+      t.reportedTotal = t.lines.reduce((s, l) => s.plus(l.counted), new Decimal(0)).plus(drift).toFixed();}));
+    const full = extra === "0" && drift === "0";
+    const total = o.findings.find((f) => f.id === "f16-debt-total")!;
+    expect(total.code).toBe("total_includes_unused_limit");
+    expect(total.statement.includes("não explica toda a diferença")).toBe(!full);
+    const rest = o.findings.find((f) => f.id === "f16-debt-total-unexplained");
+    expect(rest !== undefined).toBe(!full);
+    if (extra !== "0") expect(rest!.statement).toContain("A debênture entra por");
+    if (drift !== "0") expect(rest!.statement).toContain("não fecham com o total informado");
+    expect(o.identityChecks.find((c) => c.kind === "reported_total")!.reason).toBe(full ? "unused_limit_counted" : "unused_limit_partly");
+    expect(total.decisionStatement).toContain("R$ 130 milhões");
+  });
+});
+
+// The company under analysis is named by the input, never taken from the order of the registry.
+describe("property: the company is the named subject; permuting the registry changes nothing", () => {
+  const entities = [...auroraKernelInput().entities, {id: "serra-sa", label: "Serra S.A.", groupId: "serra", groupLabel: "Serra", parentId: null, ownership: null}];
+  const files = () => [...auroraFolderReadings(), {...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "f31", fileName: "fluxo serra.xlsx", sha256: hex("serra-forecast"),
+    entity: {primaryId: "serra-sa", label: "Serra"}, period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"}, version: {label: "atualizado", status: "management" as const, ordinal: null, lastUpdated: "2026-08-31"},
+    referenceDate: {kind: "update" as const, date: "2026-08-31", origin: "stated" as const}}];
+  for (let n = 1; n <= 12; n++) it(`registry order ${n}`, () => {
+    const r = random(89000 + n), order = shuffle(r, entities);
+    const reference = run(files(), {entities}), permuted = run(files(), {entities: order});
+    expect(permuted).toEqual(reference);
+    // Serra's forecast never closes Aurora's liquidity gap, whichever comes first in the registry.
+    expect(permuted.gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")).toBe(true);
+  });
+  it("naming Serra as the subject makes its forecast the one that counts", () => {
+    expect(run(files(), {entities, subjectEntityId: "serra-sa"}).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")).toBe(false);
+  });
+  for (const bad of ["aurora-log", "fora-do-cadastro"]) it(`a subject ${bad === "aurora-log" ? "with a parent in the registry" : "outside the registry"} is refused`, () => {
+    expect(() => run(auroraFolderReadings(), {subjectEntityId: bad})).toThrow("document_inventory_subject_entity_invalid");
+  });
 });

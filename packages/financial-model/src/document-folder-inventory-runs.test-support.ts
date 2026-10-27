@@ -20,9 +20,9 @@ export const documentFolderInventoryRunIds = {
 export const folderQuestion = "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.";
 export const folderTurnTwoQuestion = "Segue a página 7 legível e o balancete de março. A minuta não foi para nenhum banco.";
 type Options = {files?: DocumentReading[]; turnTwo?: boolean | {files?: DocumentReading[]; informed?: typeof auroraTurnTwoInformed}; mode?: "organize" | "organize_only" | "organize_for_debt";
-  decisions?: typeof auroraDecisions; vault?: ReturnType<typeof auroraVault>; entities?: typeof auroraEntities; question?: string};
+  decisions?: typeof auroraDecisions; vault?: ReturnType<typeof auroraVault>; entities?: typeof auroraEntities; question?: string; subjectEntityId?: string};
 export function folderPacketInput(o: Options = {}): DocumentFolderInventoryPacketInput {
-  const base = auroraFolderBasis({files: o.files, decisions: o.decisions, vault: o.vault, entities: o.entities}).seal();
+  const base = auroraFolderBasis({files: o.files, decisions: o.decisions, vault: o.vault, entities: o.entities, subjectEntityId: o.subjectEntityId}).seal();
   const t = o.turnTwo === true ? {} : o.turnTwo || null;
   const update = t ? auroraFolderUpdateBasis(base.envelope.fingerprint, t).seal() : null;
   return {schemaVersion: "document-folder-inventory-packet-input.v1", question: o.question ?? (t ? folderTurnTwoQuestion : folderQuestion), mode: o.mode ?? "organize",
@@ -317,6 +317,15 @@ function goldCases(): Case[] {
       sha256: createHash("sha256").update("f31-registry").digest("hex"), kind: "property_registry", description: "Matrícula do imóvel", period: {label: "out/2026", start: "2026-10-01", end: "2026-10-31"},
       version: {label: "certidão", status: "registered", ordinal: null, lastUpdated: null}, referenceDate: {kind: "update", date: "2026-10-31", origin: "stated_month"}, figures: []}))}),
       {gap: true, finding: true}, (p) => ({gap: inv(p).gaps.some((g) => g.need === "real_collateral" && g.status === "open"), finding: inv(p).findings.some((f) => f.code === "appraisal_without_registry")})),
+    // Review r16 cases: a gap closes only for its own entity and perimeter; the limit explains only what the lines prove.
+    observe("subsidiary-forecast-does-not-resolve-the-company-gap", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "s06",
+      fileName: "fluxo log set26.xlsx", sha256: createHash("sha256").update("s06-log").digest("hex"), entity: {primaryId: "aurora-log", label: "Aurora Logística"}, period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"},
+      version: {label: "atualizado", status: "management" as const, ordinal: null, lastUpdated: "2026-08-31"}, referenceDate: {kind: "update" as const, date: "2026-08-31", origin: "stated" as const}}]}}),
+      {open: true, resolved: false}, (p) => ({open: inv(p).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open"), resolved: inv(p).gaps.some((g) => g.need === "liquidity_projection" && g.status === "resolved")})),
+    observe("unused-limit-explains-only-part-of-the-difference", folderPacketInput({files: readings((r) => {const t = file(r, "f16").debtTable!; t.lines.find((l) => l.lineKind === "debenture")!.counted = "70"; t.reportedTotal = "150";})}),
+      {partial: true, rest: true, reason: "unused_limit_partly"}, (p) => ({partial: inv(p).findings.find((f) => f.id === "f16-debt-total")!.statement.includes("não explica toda a diferença"),
+        rest: inv(p).findings.find((f) => f.id === "f16-debt-total-unexplained")?.statement.includes("A debênture entra por R$ 70 milhões contra saldo utilizado de R$ 60 milhões") ?? false,
+        reason: inv(p).identityChecks.find((c) => c.kind === "reported_total")!.reason})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -378,6 +387,8 @@ function adversarialCases(): Case[] {
         legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: {instrumentRef: "deb-aurora-1-ad1", pages: [3]},
         clauses: [{type: "negative_pledge" as const, id: "garantia-negativa", at: {page: 3, section: "Valores"}, statement: "Exceção de R$ 15 milhões em valor agregado de garantias.", exceptionAmount: "15", scale: "1000000" as const}]}]}}),
       "document_inventory_unsupported_unit"],
+    ["subject-entity-with-a-parent", () => folderPacketInput({subjectEntityId: "aurora-log"}), "document_inventory_subject_entity_invalid"],
+    ["subject-entity-outside-the-registry", () => folderPacketInput({subjectEntityId: "serra-sa"}), "document_inventory_subject_entity_invalid"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];

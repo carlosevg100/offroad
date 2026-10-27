@@ -25,6 +25,8 @@ const slot = z.strictObject({id: key, value: selection});
  * one reading per file in arrival order. The analysis period runs to the reading date. */
 export const adoptedDocumentFolderInventoryInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: text,
+  /** The company under analysis, adopted as a record of its own. */
+  subjectEntityId: selection,
   entities: z.array(slot).min(1).max(L.entities), decisions: z.array(slot).max(L.decisions), vault: z.array(slot).max(L.vault), files: z.array(slot).min(1).max(L.baseFiles),
 }).refine((i) => i.endDate > i.openingDate, "Invalid reading window");
 /** What arrived later, on its own basis: the readings, the facts the person informed, and the basis it updates by fingerprint. */
@@ -99,6 +101,12 @@ export function calculateAdoptedDocumentFolderInventory(raw: unknown, mode: (typ
   const entities = base.entities.map((e) => {const v = r.read(e.value, `entity.${e.id}.record`, record(inventoryEntityRecordSchema)); return v && {id: e.id, ...v};});
   const decisions = base.decisions.map((d) => {const v = r.read(d.value, `decision.${d.id}.record`, record(inventoryDecisionRecordSchema)); return v && {id: d.id, ...v};});
   const vault = base.vault.map((x) => {const v = r.read(x.value, `vault.${x.id}.record`, record(inventoryVaultRecordSchema)); return v && {documentId: x.id, ...v};});
+  // The company under analysis is named, never inferred: it must be in the registry with no parent there.
+  const subjectEntityId = r.read(base.subjectEntityId, "subject.entity", key);
+  if (subjectEntityId !== null && entities.every((e) => e !== null)) {
+    const subject = entities.find((e) => e!.id === subjectEntityId);
+    if (!subject || (subject.parentId !== null && entities.some((e) => e!.id === subject.parentId))) throw new Error("document_inventory_subject_entity_invalid");
+  }
   const reading = (f: z.infer<typeof slot>, read: typeof r.read) => {
     const v = read(f.value, `file.${f.id}.reading`, record(documentReadingSchema));
     if (v && v.fileId !== f.id) throw new Error("document_inventory_reading_of_another_file");
@@ -107,7 +115,7 @@ export function calculateAdoptedDocumentFolderInventory(raw: unknown, mode: (typ
   const files = base.files.map((f) => reading(f, r.read));
   const baseComplete = r.complete();
   const kernel = (asOf: string, extra: DocumentReading[], informed: {id: string; questionId: string; statement: string; author: string; date: string}[], prior: DocumentFolderInventory | null) =>
-    organizeDocumentFolder({asOf, mode, currency: base.currency, entities: entities as NonNullable<(typeof entities)[number]>[], decisions: decisions as NonNullable<(typeof decisions)[number]>[],
+    organizeDocumentFolder({asOf, mode, currency: base.currency, subjectEntityId: subjectEntityId!, entities: entities as NonNullable<(typeof entities)[number]>[], decisions: decisions as NonNullable<(typeof decisions)[number]>[],
       vault: vault as NonNullable<(typeof vault)[number]>[], files: [...files as DocumentReading[], ...extra], informed,
       prior: prior && {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
   const baseInventory = baseComplete ? kernel(base.endDate, [], [], null) : null;

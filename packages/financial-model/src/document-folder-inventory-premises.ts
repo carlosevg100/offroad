@@ -19,6 +19,8 @@ const context = {entityId: z.uuid(), perimeter: text, currency: z.string().regex
  * until a person confirms the set. */
 export const documentFolderInventoryFactsSchema = z.strictObject({
   inventoryId: z.uuid(), ...context,
+  /** The company under analysis, by its registry id. */
+  subjectEntityId: fact(key),
   entities: z.array(fact(inventoryEntityRecordSchema.safeExtend({id: key}))).min(1).max(50),
   decisions: z.array(fact(inventoryDecisionRecordSchema.safeExtend({id: key}))).max(12),
   vault: z.array(fact(inventoryVaultRecordSchema.safeExtend({documentId: key}))).max(200),
@@ -65,7 +67,8 @@ function proposer(f: z.infer<z.ZodObject<typeof context>>, prefix: string) {
  * and vault entry, and the arrival order. Deterministic; nothing is read from a file name here. */
 export function proposeDocumentFolderInventoryHypotheses(raw: unknown): ProposedHypothesis[] {
   const f = documentFolderInventoryFactsSchema.parse(raw);
-  const {out, json, order} = proposer(f, `document_folder_inventory.${documentFolderInventoryAnalysisId(f.inventoryId)}.`);
+  const {out, json, order, add, why} = proposer(f, `document_folder_inventory.${documentFolderInventoryAnalysisId(f.inventoryId)}.`);
+  add("subject.entity", "identity", {type: "text", value: f.subjectEntityId.value}, why(f.subjectEntityId));
   for (const e of f.entities) {const {id, ...v} = e.value; json(`entity.${id}.record`, v, e);}
   for (const d of f.decisions) {const {id, ...v} = d.value; json(`decision.${id}.record`, v, d);}
   for (const x of f.vault) {const {documentId, ...v} = x.value; json(`vault.${documentId}.record`, v, x);}
