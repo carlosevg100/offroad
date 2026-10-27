@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardInformedReasons, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardDebtorNames, boardInformedReasons, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -74,8 +74,9 @@ export function readBoardSourcePath(root: unknown, path: string): unknown {
       if (/^\d+$/.test(body)) {node = node[Number(body)]; continue;}
       const at = body.indexOf("=");
       if (at < 1) throw new Error("board_capital_path_invalid");
-      const field = body.slice(0, at), value = body.slice(at + 1);
-      const hits = node.filter((x) => isRecord(x) && (typeof x[field] === "string" || typeof x[field] === "number") && String(x[field]) === value);
+      // One selector may hold several conditions joined by &: every one must hold on the element.
+      const conditions = body.split("&").map((part) => {const k = part.indexOf("="); if (k < 1) throw new Error("board_capital_path_invalid"); return [part.slice(0, k), part.slice(k + 1)] as const;});
+      const hits = node.filter((x) => isRecord(x) && conditions.every(([field, value]) => (typeof x[field] === "string" || typeof x[field] === "number") && String(x[field]) === value));
       if (hits.length !== 1) return undefined;
       node = hits[0];
     }
@@ -182,12 +183,14 @@ export function boardLiteralNumbers(template: string): string[] {
 
 /** A text as rendered, with the span of every marker it carries: a reading (with its unit words), a source
  * label, a pending figure, a deadline, a count of deliberations or an ordinal the method writes. */
-export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal" | "informed"; id: string; unit: BoardFigureUnit | null};
+export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal" | "informed" | "debtor"; id: string; unit: BoardFigureUnit | null};
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 /** A reading as shown, with its origin (source, method, path and source value) so a slot can check its concept. */
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string};
-type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[]};
+type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
+  /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
+  debtors?: Map<string, string>};
 /** Which slot of which template a displayed field binds to which reading, deadline or informed fact. */
 export type BoardBinding = {templateId: string; slot: string; figureId: string | null; deadlineId: string | null; informedId: string | null};
 
@@ -235,6 +238,11 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
       if (context.nextMeetingDate === null) throw new Error("board_capital_number_without_origin:next_meeting_date");
       parts.push(count(context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length)); continue;
     }
+    if (token.startsWith("debtor:")) {
+      const name = context.debtors?.get(token.slice(7));
+      if (!name) throw new Error(`board_capital_unknown_token:${token}`);
+      parts.push(marker(name, "debtor", token.slice(7), null)); continue;
+    }
     if (token.startsWith("informed:")) {
       const fact = context.informed?.find((x) => x.id === token.slice(9));
       if (!fact) throw new Error(`board_capital_unknown_token:${token}`);
@@ -263,7 +271,7 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
 }
 
 /** The kinds of reading each slot type of the template library accepts. */
-const slotAccepts: Record<Exclude<BoardSlotType, "deadline" | "informed">, BoardFigureUnit[]> = {money: ["money"], rate: ["rate"], multiple: ["multiple"], years: ["years"], months: ["months"],
+const slotAccepts: Record<Exclude<BoardSlotType, "deadline" | "informed">, BoardFigureUnit[]> = {debtor: ["label"], money: ["money"], rate: ["rate"], multiple: ["multiple"], years: ["years"], months: ["months"],
   bps: ["bps"], count: ["count"], date: ["date", "calendar"], label: ["label"], flag: ["flag"]};
 /** Compares two values: as decimals when both are numbers, as text otherwise (dates, flags, ids). */
 function compareBoard(a: string, how: BoardComparison, b: string) {
@@ -423,7 +431,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const [m, path, field] = c.includes, want = operand(c.value);
       const xs = read(m, path);
       if (!Array.isArray(xs)) throw unverified(path);
-      const items = xs.map((x) => scalar(field === null ? x : (x as Record<string, unknown>)[field], path));
+      const items = xs.map((x) => scalar(field === null ? x : readBoardSourcePath(x, field), path));
       return want === undefined || (c.none ? !items.includes(want) : items.includes(want) && (!c.only || items.length === 1));
     }
     if ("dominates" in c) {
@@ -559,7 +567,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
   };
   template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
-  const unnamed: string[] = [], unconfirmed: string[] = [];
+  const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>();
   const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
     const spec = template.slots[slot], bound = bindings[slot];
@@ -574,12 +582,25 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       return `{${bound}}`;
     }
     if ((spec.type === "date") !== (prep !== undefined)) throw new Error(`board_capital_template_invalid:${templateId}:${slot}`);
-    // A source name outside the dictionary is never written: the template's generic words stand in its place.
+    // A debtor is named by the debtor key its item registers in the receivables result, through the closed dictionary;
+    // the item's identifier and its free label never name it.
     const figure = context.figures.get(bound);
+    if (spec.type === "debtor") {
+      const item = figure && !("pending" in figure) && figure.origin ? boardMatchPath(spec.from![0]![1], figure.origin.path) : null;
+      const itemId = item ? Object.values(item)[0] : undefined;
+      const packet = (context.sources ?? []).find((x) => figure && !("pending" in figure) && x.id === figure.origin?.sourceId)?.packet as
+        {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}} | undefined;
+      const keys = (packet?.result?.contributions ?? []).filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.item.${itemId}.debtorKey`));
+      const key = keys.length === 1 ? keys[0]!.value?.value : undefined;
+      const name = typeof key === "string" && Object.hasOwn(boardDebtorNames, key) ? boardDebtorNames[key] : undefined;
+      if (!name) {unnamed.push(bound); return spec.generic!;}
+      debtors.set(bound, name);
+      return `{debtor:${bound}}`;
+    }
     if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, context), bindings: out, unnamed, unconfirmed};
+  return {...renderBoardTemplate(text, {...context, debtors}), bindings: out, unnamed, unconfirmed};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -601,6 +622,7 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     if (f && ("pending" in f || f.unit !== x.unit || (text !== f.display && !Object.values(datePrepositions).some((p) => text === `${p} ${f.display}`)))) fail("marker_text", x.id);
     // A source label is shown only as an entry of the closed name dictionary, never as a string of the source.
     if (x.kind === "text_figure" && (!dictionary.has(text) || (f && !("pending" in f) && f.unnamed))) fail("label_not_in_dictionary", x.id);
+    if (x.kind === "debtor" && !Object.values(boardDebtorNames).includes(text)) fail("debtor_not_in_dictionary", x.id);
     // An informed fact is words only: the whitelist and the closed lexicon apply inside it as well.
     if (x.kind === "informed") {const issue = boardFreeTextIssue(text); if (issue) fail(`informed_${issue}`, x.id);}
   }

@@ -4,7 +4,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -54,7 +54,7 @@ export const boardSublimitCase = (c: CaseData) => {
   c.extraReadings["program-a-volume"] = ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "10.0"];
   c.extraReadings.programs = ["recebiveis", "readings.plan[optionId=risco-sacado-a].cumulative", "1", "13.7"];
 };
-export const boardSublimitExpected = "A rede A deve R$ 19,8 milhões dos R$ 62 milhões da carteira; o contrato com ela veda a cessão sem consentimento, mas o programa próprio da rede antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.";
+export const boardSublimitExpected = "A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.";
 /** The NPV of a case of an investment packet in millions with one decimal, as a reading states it (test side only). */
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
@@ -107,7 +107,7 @@ export const boardOffDictionaryReading = (p: Packet, name: string) => ({status: 
   gap: p.result.discussion!.gaps.find((g) => g.reason === "label_not_in_dictionary")?.item ?? null, line: current(p).pages.find((x) => x.id === "divida")!.lines[1],
   shown: boardShownTexts(p).some((t) => t.includes(name) || t.includes(name.normalize("NFKC")))});
 export const boardRegisteredCreditorExpected = {basket: "Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Itaú.",
-  question: "Por que não rolar a dívida com Itaú no vencimento?", named: 10, bradesco: false, status: "prepared_for_human_review"};
+  question: "Por que não rolar a dívida com Itaú no vencimento?", named: 10, bradesco: false, status: "partial"};
 export const boardRegisteredCreditorReading = (p: Packet) => ({basket: current(p).pages.find((x) => x.id === "escritura")!.lines[0], question: current(p).questions[0]!.question,
   named: boardShownTexts(p).filter((t) => t.includes("dívida com Itaú")).length, bradesco: boardShownTexts(p).some((t) => t.includes("Bradesco")), status: p.status});
 const pageOf = (p: Packet, id: string) => current(p).pages.find((x) => x.id === id)!;
@@ -148,9 +148,9 @@ function goldCases(): Case[] {
     reuse("outline-in-the-same-urgency-order", p1, t1, ["linha", "safra", "vencimentos", "politica"], (p) => p.readings!.deliberations.map((d) => d.id)),
     reuse("deliberations-with-authority-and-the-supposed-authority-declared", p2, t2, {authority: ["board", "board", "board", "board"], pending: ["linha", "vencimentos", "politica", "safra"]},
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
-    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027", "A escritura da debênture tem só R$ 3 milhões livres na exceção para garantias de nova dívida"],
+    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027", "O contrato da dívida com Debenturistas tem só R$ 3 milhões livres na exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas das redes A e B antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões da safra, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões da safra, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
     reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
@@ -172,8 +172,8 @@ function goldCases(): Case[] {
       "amort-first": "2029", "amort-last": "2033", "bradesco-gap": "18", "five-year-amort": "33", "five-year-available": "24", "alt-amount": "70", "cost-2028": "49", "net-debt-2028": "79"},
       (p) => pick(p, ["cash-end-2027", "service-2027", "available-2027", "n-paths", "debenture-amount", "debenture-term", "deb-cost-low", "deb-cost-high", "amort-first", "amort-last",
         "bradesco-gap", "five-year-amort", "five-year-available", "alt-amount", "cost-2028", "net-debt-2028"])),
-    reuse("turn-2-without-pending-numbers", p2, t2, {status: "prepared_for_human_review", gaps: []}, (p) => ({status: p.status, gaps: p.gaps})),
-    reuse("staged-option-pending-never-invented", p3, t3, {status: "partial", pending: ["page.linha.figure.stages-npv"], reasons: ["figure_pending_reviewed_result"]},
+    reuse("turn-2-pending-only-the-credit-line-terms", p2, t2, {status: "partial", gaps: ["page.safra.figure.cl-terms"]}, (p) => ({status: p.status, gaps: p.result.discussion!.gaps.map((g) => g.item)})),
+    reuse("staged-option-pending-never-invented", p3, t3, {status: "partial", pending: ["page.linha.figure.stages-npv", "page.safra.figure.cl-terms"], reasons: ["figure_pending_reviewed_result"]},
       (p) => ({status: p.status, pending: p.result.discussion!.gaps.map((g) => g.item), reasons: [...new Set(p.gaps.map((g) => g.reason))]})),
     reuse("summary-for-prior-reading-names-every-decision-and-date", p2, t2, {decisions: [true, true, true, true], dates: [true, true, true, true]},
       (p) => {const s = current(p).summary; return {decisions: ["(1)", "(2)", "(3)", "(4)"].map((x) => s.includes(x)), dates: ["2/out", "16/out", "31/out", "15/nov"].map((x) => s.includes(x))};}),
@@ -251,7 +251,7 @@ function goldCases(): Case[] {
       (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
         figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
     observe("line-kept-with-receipts-missing-never-says-without-the-line",
-      withBoardSource("caixa-semanal", boardWeeklyVariant(), () => boardPacketInput(2, boardWeeklyVariantCase)), {alternative: true, withoutTheLine: false, status: "prepared_for_human_review"},
+      withBoardSource("caixa-semanal", boardWeeklyVariant(), () => boardPacketInput(2, boardWeeklyVariantCase)), {alternative: true, withoutTheLine: false, status: "partial"},
       (p) => ({alternative: pageOf(p, "caixa").lines[0]!.startsWith("No caso alternativo de menor caixa"), withoutTheLine: boardShownTexts(p).some((t) => /sem a linha da safra/i.test(t)), status: p.status})),
     observe("working-capital-of-another-year-is-shown-as-a-variation", boardPacketInput(2, boardWorkingCapital2027),
       "No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2027 fica R$ 1 milhão acima da do cenário de referência.",
@@ -268,7 +268,14 @@ function goldCases(): Case[] {
     reuse("peer-cost-keeps-the-unexplained-remainder", p2, t2,
       "Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.",
       (p) => current(p).questions.find((q) => q.id === "serra-verde")!.answer),
-        reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
+        observe("credit-line-restricted-to-machinery-is-never-a-working-capital-line", withBoardSource("tabela-divida", debtTableWithCreditLineLabel("Linha para aquisição de máquinas"), () => boardPacketInput(2)),
+      {line: "Linha de crédito registrada com Itaú, com limite livre de R$ 10 milhões; modalidade e finalidade: [pendente].", claimsOverdraft: false},
+      (p) => ({line: pageOf(p, "safra").lines[1], claimsOverdraft: boardShownTexts(p).some((t) => /conta garantida|máquinas/i.test(t))})),
+    observe("debtor-rede-z-behind-the-old-identifiers-is-never-called-rede-a", withBoardSource("recebiveis", auroraReceivablesPacket({debtorRenamed: true}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {question: "Dependemos demais de um único cliente?", calledReda: false, gap: true},
+      (p) => ({question: current(p).questions.find((q) => q.id === "rede-a")!.question, calledReda: boardShownTexts(p).some((t) => /rede A|Rede Z/.test(t)),
+        gap: p.result.discussion!.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.includes("rede-a-label"))})),
+    reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
 }
@@ -431,16 +438,16 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["question-and-answer-name-different-creditors", () => build(2, (c) => {finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor";}), "board_capital_answer_mismatch:bradesco:credor"],
     // Review r9: exposure is the balance the chain owes, never the program's volume or the eligible capacity; a
     // contractual assertion holds only when the registered contract says so.
-    ["exposure-read-from-the-program-volume", () => build(2, (c) => {c.questions[8]!.answer = "a.anchor|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}),
+    ["exposure-read-from-the-program-volume", () => build(2, (c) => {c.questions[8]!.answer = "a.anchor|rede=rede-a-label|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}),
       "board_capital_slot_concept_mismatch:a.anchor:saldo"],
     ["exposure-read-from-the-eligible-capacity", () => build(2, (c) => {
       c.extraReadings["rede-a-capacity"] = ["recebiveis", "result.funding.portfolio.items[itemId=rede-a].assignable", "1", "19.8"];
-      c.questions[8]!.answer = "a.anchor|saldo=rede-a-capacity|carteira=carteira|volume=program-a-volume|taxa=spread-a";
+      c.questions[8]!.answer = "a.anchor|rede=rede-a-label|saldo=rede-a-capacity|carteira=carteira|volume=program-a-volume|taxa=spread-a";
     }), "board_capital_slot_concept_mismatch:a.anchor:saldo"],
     ["program-volume-under-a-sublimit-shown-as-exposure", () => withBoardSource("recebiveis", auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>, () => build(2, (c) => {
       c.extraReadings["program-a-volume"] = ["recebiveis", "readings.options[id=risco-sacado-a].volume", "1", "10.0"];
       c.extraReadings.programs = ["recebiveis", "readings.plan[optionId=risco-sacado-a].cumulative", "1", "13.7"];
-      c.questions[8]!.answer = "a.anchor|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";
+      c.questions[8]!.answer = "a.anchor|rede=rede-a-label|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";
     })), "board_capital_slot_concept_mismatch:a.anchor:saldo"],
     ["assignment-ban-asserted-on-an-assignable-contract", () => withBoardSource("recebiveis", auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>,
       () => build(2, () => undefined)), "board_capital_template_condition_failed:a.anchor"],

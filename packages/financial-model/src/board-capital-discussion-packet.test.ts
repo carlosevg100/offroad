@@ -13,7 +13,7 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.result.discussion!.versions).toEqual([]);
     expect(p.readings!.deliberations.map((d) => d.text)).toEqual([
       "não emitir o pedido de compra até as cotações firmes, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out",
-      "financiar a safra pelos programas de antecipação das redes A e B, com a conta garantida para o aperto do fim da safra e a linha bancária só como reserva, e aderir aos programas até 16/out",
+      "financiar a safra pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
       "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
       "definir qual EBITDA mede o limite de 2,5x"]);
     expect(p.result.discussion!.outline.narrative).toEqual(["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"]);
@@ -21,14 +21,14 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
   });
   it("turn 2: thirteen pages read from the reviewed results, the line before the recommendation, nothing pending", () => {
     const p = prepareBoardCapitalDiscussionPacket(boardPacketInput(2));
-    expect(p.status).toBe("prepared_for_human_review");
+    expect(p.status).toBe("partial");
     expect(p.readings!.material!.mainPages).toBe(13);
     expect(p.readings!.material!.fitsAgenda).toBe(true);
     const line = current(p).pages.find((x) => x.id === "linha")!;
     expect(line.lines[0]).toBe("Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.");
     expect(current(p).pages.find((x) => x.id === "politica")!.lines).toEqual(["Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026."]);
     expect(p.result.discussion!.identity.every((x) => x.matches)).toBe(true);
-    expect(p.gaps).toEqual([]);
+    expect(p.result.discussion!.gaps.map((g) => g.item)).toEqual(["page.safra.figure.cl-terms"]);
     expect(p.result.sources.map((s) => [s.id, s.methodId, s.methodVersion])).toEqual([["tabela-divida", "build-company-debt-table", "2026.10.23-v1"],
       ["covenant", "measure-covenant-headroom", "2026.10.23-v1"], ["caixa-semanal", "project-weekly-cash", "2026.10.23-v1"], ["linha-embalagem", "analyze-investment-project", "2026.10.09-v2"],
       ["projecao", "build-operating-projection", "2026.10.26-v1"], ["plano-fpa", "challenge-financial-projection", "2026.10.26-v1"],

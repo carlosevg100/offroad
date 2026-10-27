@@ -13,7 +13,7 @@
  * Slot syntax in a text: `{slot}` for a value, a label, a yes-no reading or a deadline; `{em:slot}`, `{ate:slot}`,
  * `{desde:slot}`, `{para:slot}`, `{fim:slot}`, `{de:slot}` or `{a:slot}` for a date or a year, written by the
  * formatter with that preposition. `{count:deliberations}` and `{count:dated}` are counted by the method. */
-export const boardSlotTypes = ["money", "rate", "multiple", "years", "months", "bps", "count", "date", "label", "flag", "deadline", "informed"] as const;
+export const boardSlotTypes = ["money", "rate", "multiple", "years", "months", "bps", "count", "date", "label", "flag", "deadline", "informed", "debtor"] as const;
 export type BoardSlotType = (typeof boardSlotTypes)[number];
 /** The closed dictionary of reasons a person may inform: each code with its reviewed phrase. A code outside it shows the
  * template's generic words and leaves a gap; the material never carries text of the fact itself. */
@@ -24,6 +24,9 @@ export const boardInformedReasons = {
   reduce_operational_risk: "reduzir risco operacional",
   serve_customer_contract: "atender contrato de cliente",
 } as const;
+/** The closed dictionary of debtors a material may name, by the debtor key the receivables result registers for an item
+ * (never by the item's identifier): the canonical name. A debtor whose key is not here is named by generic words, with a gap. */
+export const boardDebtorNames: Record<string, string> = {"rede-a": "rede A", "rede-b": "rede B"};
 /** Who may be named as the author of an informed fact. */
 export const boardInformedAuthors = ["chair", "cfo", "ceo"] as const;
 export const boardTextUses = ["delib.title", "delib.subject", "delib.recommendation", "delib.action", "page.title", "page.line", "page.recommendation", "page.option",
@@ -126,6 +129,8 @@ const horizonYear: BoardCondition = {...cmp("ano", "eq", at(FP, "readings.horizo
 const tightBelowMinimum: BoardCondition = {...cmp(at(WC, "readings.tightestWeek.belowMinimum"), "eq", {value: "true"}), claim: "o caixa fica abaixo do mínimo na semana mais apertada"};
 const allBelowPolicy: BoardCondition = {every: [CV, "result.headroom.measurements", "ratio"], op: "lt", than: {slot: "politica"}, claim: "todas as medições ficam abaixo da política"};
 const adverseYear: BoardCondition = {...cmp("ano", "eq", at(CV, "result.headroom.measurements[id=dez27-adverso].date", true)), claim: "o ano é o da medição adversa"};
+/** The adverse measurement is adverse by its registered scenario, never by its identifier. */
+const adverseScenario: BoardCondition = {...cmp(at(CV, "result.headroom.measurements[id=dez27-adverso].scenario"), "eq", {value: "adverse"}), claim: "a medição é do cenário adverso registrado"};
 const policyIsBoard = claim("a política é do conselho e está em vigor", cmp(at(CV, "result.headroom.limits[id=politica].kind"), "eq", {value: "board_policy"}),
   cmp(at(CV, "result.headroom.limits[id=politica].status"), "eq", {value: "in_force"}));
 const policyUndefined = claim("a política adotada não registra definição de EBITDA (questão aberta do resultado do covenant)",
@@ -198,11 +203,11 @@ const bankFallback = claim("o plano alternativo do resultado é exatamente: sem 
   cmp({contributed: [FP, "variant.$av.kind"]}, "eq", {value: "none"}));
 const longIsDebenture = claim("o instrumento longo recomendado é de mercado de capitais (debênture), pelos termos do plano",
   {bind: "li", to: at(FP, "readings.recommendation.longInstrument.id")}, {contributedHas: [FP, "instrument.$li.terms"], value: {value: "capital_markets"}});
-const overdraft = claim("há conta garantida com limite livre", has(DT, "result.table.creditLines", "id", "conta-garantida"),
-  cmp(at(DT, "result.table.creditLines[id=conta-garantida].unused"), "gt", {value: "0"}));
-const programsAB = claim("o plano começa pelos programas das redes B e A, sem dívida bancária nova",
-  cmp(at(RF, "result.funding.plan.steps[0].optionId"), "eq", {value: "risco-sacado-b"}), cmp(at(RF, "result.funding.plan.steps[1].optionId"), "eq", {value: "risco-sacado-a"}),
-  cmp(at(RF, "readings.options[id=risco-sacado-a].measuredDebtAdded"), "eq", {value: "0"}), cmp(at(RF, "readings.options[id=risco-sacado-b].measuredDebtAdded"), "eq", {value: "0"}));
+/** The two first steps of the receivables plan are anchor programs of the customers, adding no measured debt (by kind, never by option id). */
+const programsFirst = claim("o plano começa por dois programas de antecipação dos próprios clientes, sem dívida bancária nova",
+  {bind: "ofirst", to: at(RF, "result.funding.plan.steps[0].optionId")}, {bind: "osecond", to: at(RF, "result.funding.plan.steps[1].optionId")},
+  ...["$ofirst", "$osecond"].flatMap((o) => [cmp(at(RF, `result.funding.options[id=${o}].kind`), "eq", {value: "anchor_program"}),
+    cmp(at(RF, `readings.options[id=${o}].measuredDebtAdded`), "eq", {value: "0"})]));
 const bankReserve = claim("a linha bancária fica só como reserva", cmp(at(RF, "result.funding.plan.reserve"), "eq", at(RF, "result.funding.bankLine")),
   lacks(RF, "result.funding.plan.steps", "optionId", at(RF, "result.funding.bankLine")));
 const L = "readings.recommendation.longInstrument.";
@@ -238,8 +243,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "delib.crop": t("delib.title", "Safra {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
   "delib.crop.subject": t("delib.subject", "decidir o financiamento da safra {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.programs": t("delib.recommendation", "financiar a safra pelos programas de antecipação das redes A e B, com a conta garantida para o aperto do fim da safra e a linha bancária só como reserva",
-    {}, {of: "delib.crop", when: [...programsAB, ...overdraft, ...bankReserve]}),
+  "delib.crop.programs": t("delib.recommendation", "financiar a safra pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
+    {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve]}),
   "delib.maturities": t("delib.title", "Vencimentos {de:ano}", {ano: yr("$y")}, {when: [maturityYear]}),
   "delib.maturities.subject": t("delib.subject", "decidir a rota para os vencimentos {de:ano}", {ano: yr("$y")}, {of: "delib.maturities", when: [maturityYear]}),
   "delib.maturities.sounding": t("delib.recommendation", "autorizar a sondagem de uma debênture de até {valor}, com prazo de {prazo}, com o plano alternativo apresentado no material",
@@ -272,14 +277,16 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {ano: yr("$y"), servico: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].service", "flow"),
       disponivel: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].availableForService", "flow")},
     {when: claim("o serviço supera o caixa disponível", cmp("servico", "gt", "disponivel"))}),
-  "constraint.indenture_basket": t("page.title", "A escritura da debênture tem só {saldo} livres na exceção para garantias de nova dívida",
-    {saldo: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].remaining", "balance")},
-    {when: claim("o saldo da exceção é menor que a exceção da escritura", cmp("saldo", "ge", "0"), cmp("saldo", "lt", at(DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket")))}),
+  // The basket is the one of the holder's contract, named by the holder row's creditor; the identifier only links its readings.
+  "constraint.indenture_basket": t("page.title", "O contrato da dívida com {titular} tem só {saldo} livres na exceção para garantias de nova dívida",
+    {titular: {type: "label", from: [[DT, "result.table.rows[id=$h].creditor"]], generic: "o credor sem nome confirmado"},
+      saldo: s("money", DT, "result.table.negativePledgeBaskets[holderId=$h].remaining", "balance")},
+    {when: claim("o saldo da exceção é menor que a exceção do contrato", cmp("saldo", "ge", "0"), cmp("saldo", "lt", at(DT, "result.table.negativePledgeBaskets[holderId=$h].basket")))}),
   "constraint.basket_usage": t("page.line", "Exceção de {cesta} para garantias, com {ocupado} ocupados pelas garantias da dívida com {credor}.",
-    {cesta: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket", "balance"), ocupado: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].occupied", "balance"),
+    {cesta: s("money", DT, "result.table.negativePledgeBaskets[holderId=$h].basket", "balance"), ocupado: s("money", DT, "result.table.negativePledgeBaskets[holderId=$h].occupied", "balance"),
       credor: creditorOf("$i")},
     {when: [...claim("o ocupado cabe na exceção", cmp("ocupado", "le", "cesta")),
-      {includes: [DT, "result.table.negativePledgeBaskets[holderId=debenture-1].usedBy", null], value: {var: "i"}, only: true, claim: "só a dívida nomeada ocupa a exceção"}]}),
+      {includes: [DT, "result.table.negativePledgeBaskets[holderId=$h].usedBy", null], value: {var: "i"}, only: true, claim: "só a dívida nomeada ocupa a exceção"}]}),
   "constraint.covenant_policy": t("page.line", "Covenant de {covenant} na escritura; política do conselho de {politica}.", {covenant, politica: policy},
     {when: [...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
       cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"})), ...policyIsBoard]}),
@@ -301,14 +308,21 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
   "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
-  "topic.crop_programs": t("page.title", "Os programas das redes A e B antecipam {valor} contra o pico de {pico} da safra, sem dívida bancária nova",
-    {valor: rf("money", "readings.plan[optionId=risco-sacado-a].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
-      pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")}, {when: programsAB}),
-  "topic.crop_program_cost": t("page.line", "Custo indicativo dos programas: CDI mais {taxa_b} na rede B e CDI mais {taxa_a} na rede A.",
-    {taxa_b: rf("rate", "readings.options[id=risco-sacado-b].spreadOverDi", "spread_sobre_cdi_do_programa"), taxa_a: rf("rate", "readings.options[id=risco-sacado-a].spreadOverDi", "spread_sobre_cdi_do_programa")},
-    {when: claim("as condições dos dois programas são indicativas e sobre o CDI", ...["risco-sacado-a", "risco-sacado-b"].flatMap((x) => [
+  "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico de {pico} da safra, sem dívida bancária nova",
+    {valor: rf("money", "readings.plan[optionId=$o].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
+      pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")},
+    {when: [...programsFirst, ...claim("o valor é o acumulado do plano até o segundo programa", cmp("$o", "eq", {var: "osecond"}))]}),
+  "topic.crop_program_cost": t("page.line", "Custo indicativo dos programas de antecipação: CDI mais {taxa_b} no primeiro e CDI mais {taxa_a} no segundo.",
+    {taxa_b: rf("rate", "readings.options[id=$ob].spreadOverDi", "spread_sobre_cdi_do_programa"), taxa_a: rf("rate", "readings.options[id=$oa].spreadOverDi", "spread_sobre_cdi_do_programa")},
+    {when: claim("as condições dos dois programas são indicativas e sobre o CDI, e são os dois primeiros programas do plano",
+      cmp("$ob", "eq", at(RF, "result.funding.plan.steps[0].optionId")), cmp("$oa", "eq", at(RF, "result.funding.plan.steps[1].optionId")), ...["$oa", "$ob"].flatMap((x) => [
+      cmp(at(RF, `result.funding.options[id=${x}].kind`), "eq", {value: "anchor_program"}),
       cmp(at(RF, `result.funding.options[id=${x}].indicative`), "eq", {value: "true"}), cmp(at(RF, `result.funding.options[id=${x}].rates.basis`), "eq", {value: "di_plus"})]))}),
-  "topic.crop_overdraft": t("page.line", "Conta garantida para o aperto de caixa {em:semana}.", {semana: tightWeek}, {when: [tightBelowMinimum, ...overdraft]}),
+  // The source records no modality nor purpose for a credit line: the line is named generically and its terms stay pending.
+  "topic.crop_overdraft": t("page.line", "Linha de crédito registrada com {credor}, com limite livre de {livre}; modalidade e finalidade: {termos}.",
+    {credor: {type: "label", from: [[DT, "result.table.creditLines[id=$c].creditor"]], generic: "credor sem nome confirmado"},
+      livre: s("money", DT, "result.table.creditLines[id=$c].unused", "balance"), termos: {type: "label", from: [[DT, "result.table.creditLines[id=$c].terms"]], generic: "a confirmar"}},
+    {when: claim("a linha tem limite livre", cmp("livre", "gt", "0"))}),
   "alternatives.count": t("page.title", "Avaliamos {caminhos} caminhos {para:ano}; só o recomendado passa em todos os critérios",
     {caminhos: s("count", FP, "readings.horizon.candidatePaths"), ano: yr("$y")},
     {when: [maturityYear, {onlyFlagged: [FP, "readings.paths", "eligible", "id"], equals: at(FP, "readings.recommendation.pathId"), claim: "só o caminho recomendado passa em todos os critérios"}]}),
@@ -346,12 +360,12 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "recommendation.alternative": t("page.line", "Plano alternativo: sem a linha de embalagem, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver da debênture; decisão até {prazo}.",
     {credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: bankFallback}),
   "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
-    {politica: policy, adverso: measurement("multiple", "dez27-adverso", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear]}),
+    {politica: policy, adverso: measurement("multiple", "dez27-adverso", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear, adverseScenario, ...policyIsBoard]}),
   "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e em {fim} {em:data_fim}.",
     {inicio: measurement("multiple", "dez26-base", "ratio"), data_inicio: measurement("date", "dez26-base", "date"), fim: measurement("multiple", "dez27-base", "ratio"),
       data_fim: measurement("date", "dez27-base", "date")}, {when: claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio"))}),
   "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}.",
-    {ano: yr("$y"), adverso: measurement("multiple", "dez27-adverso", "ratio"), politica: policy}, {when: [adverseYear, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
+    {ano: yr("$y"), adverso: measurement("multiple", "dez27-adverso", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
   "risk.policy_readings": t("page.line", "Pelo EBITDA gerencial, {gerencial}; pela definição da escritura, {escritura} {em:data}.",
     {gerencial: measurement("multiple", "dez26-gerencial", "ratio"), escritura: measurement("multiple", "dez26-base", "ratio"), data: measurement("date", "dez26-base", "date")},
@@ -379,7 +393,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "summary.opening.debt_and_cash": t("summary.opening", "A companhia tem {principal} de dívida vencendo {em:ano} e um aperto de caixa já {em:semana}.",
     {principal: s("money", DT, "result.table.profile.scheduleByYear[year=$y].principal", "flow"), ano: yr("$y"), semana: tightWeek}, {when: [tightBelowMinimum]}),
   "summary.closing.leverage": t("summary.closing", "A alavancagem fica em {alavancagem} {em:data} e abaixo de {politica} nos cenários avaliados.",
-    {alavancagem: measurement("multiple", "dez26-base", "ratio"), data: measurement("date", "dez26-base", "date"), politica: policy}, {when: [allBelowPolicy]}),
+    {alavancagem: measurement("multiple", "dez26-base", "ratio"), data: measurement("date", "dez26-base", "date"), politica: policy}, {when: [allBelowPolicy, ...policyIsBoard]}),
   // Appendix.
   "appendix.debt_table": t("appendix", "Tabela de dívida"),
   "appendix.projection": t("appendix", "Projeção por drivers e premissas"),
@@ -422,7 +436,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("o restante sem explicação é o que a fonte registra", cmp("resto", "gt", "0"))]}),
   "q.rating": t("question", "Vale contratar rating?"),
   "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores da debênture. Sugerimos avaliação preliminar não publicada.",
-    {baixo: s("money", RC, "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts", "flow")},
+    {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
     {answers: "q.rating", when: claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto"))}),
   "q.strategic": t("question", "A linha de embalagem não é estratégica?"),
   "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.",
@@ -437,33 +451,40 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda", "flow"),
       ebitda_adverso: measurement("money", "dez27-adverso", "reportedEbitda", "flow"), alavancagem: measurement("multiple", "dez27-adverso", "ratio"), covenant},
     {answers: "q.wheat", when: [...wheatScenario("informado-trigo-4m"),
-      ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant"))]}),
-  "q.anchor": t("question", "Dependemos demais da rede A?"),
-  // Exposure is the balance the chain owes in the portfolio; the program's volume is a capacity and is named as such.
-  "a.anchor": t("answer", "A rede A deve {saldo} dos {carteira} da carteira; o contrato com ela veda a cessão sem consentimento, mas o programa próprio da rede antecipa {volume} sem regresso, a CDI mais {taxa}.",
-    {saldo: rf("money", "result.funding.portfolio.items[itemId=rede-a].amount", "saldo_da_carteira_por_devedor", "balance"), carteira: rf("money", "readings.gross", "carteira_bruta", "balance"),
-      volume: rf("money", "readings.options[id=risco-sacado-a].volume", "volume_antecipavel_do_programa", "balance"),
-      taxa: rf("rate", "readings.options[id=risco-sacado-a].spreadOverDi", "spread_sobre_cdi_do_programa")},
-    {answers: "q.anchor", when: [...claim("o saldo da rede cabe na carteira", cmp("saldo", "le", "carteira")),
-      ...claim("o contrato registrado da rede veda a cessão sem consentimento", cmp({contributed: [RF, "item.rede-a.contract"]}, "eq", {value: "prohibited_without_consent"})),
-      ...claim("o programa é da própria rede, sem regresso, oferecido a ela", cmp(at(RF, "result.funding.options[id=risco-sacado-a].kind"), "eq", {value: "anchor_program"}),
-        cmp(at(RF, "result.funding.options[id=risco-sacado-a].recourse"), "eq", {value: "without_recourse"}),
-        cmp(at(RF, "result.funding.options[id=risco-sacado-a].byItem[itemId=rede-a].offered"), "eq", {value: "true"}))]}),
+      ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant")), adverseScenario,
+      ...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
+        cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"}))]}),
+  // A debtor is named by the debtor key of its item; its balance, contract and program follow the same item, and the
+  // program is the anchor program the source links to that item.
+  "q.anchor": t("question", "Dependemos demais de {rede}?", {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"}}),
+  "a.anchor": t("answer", "A carteira tem {saldo} de {rede}, de um total de {carteira}; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa {volume} sem regresso, a CDI mais {taxa}.",
+    {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"},
+      saldo: rf("money", "result.funding.portfolio.items[itemId=$d].amount", "saldo_da_carteira_por_devedor", "balance"), carteira: rf("money", "readings.gross", "carteira_bruta", "balance"),
+      volume: rf("money", "readings.options[id=$o].volume", "volume_antecipavel_do_programa", "balance"),
+      taxa: rf("rate", "readings.options[id=$o].spreadOverDi", "spread_sobre_cdi_do_programa")},
+    {answers: "q.anchor", when: [...claim("o saldo do cliente cabe na carteira", cmp("saldo", "le", "carteira")),
+      ...claim("o contrato registrado do cliente veda a cessão sem consentimento", cmp({contributed: [RF, "item.$d.contract"]}, "eq", {value: "prohibited_without_consent"})),
+      ...claim("o programa é o do próprio cliente (ligado a ele na fonte), sem regresso, oferecido a ele", {contributedHas: [RF, "option.$o.anchorItemIds"], value: {var: "d"}},
+        cmp(at(RF, "result.funding.options[id=$o].kind"), "eq", {value: "anchor_program"}),
+        cmp(at(RF, "result.funding.options[id=$o].recourse"), "eq", {value: "without_recourse"}),
+        cmp(at(RF, "result.funding.options[id=$o].byItem[itemId=$d].offered"), "eq", {value: "true"}))]}),
   "q.plan_vs_base": t("question", "O plano da área financeira mostra EBITDA de {plano} {em:ano}; por que usamos {base}?",
     {plano: s("money", PC, "readings.gap.plan.ebitda", "flow"), ano: yr("$y"), base: s("money", PC, "readings.gap.reference.ebitda", "flow")},
     {when: [...claim("o ano é o alvo do plano", cmp("ano", "eq", at(PC, "readings.gap.targetPeriodId"))), ...claim("o plano supera a base", cmp("plano", "gt", "base"))]}),
   "a.plan_vs_base": t("answer", "O plano supõe preço, volume e custos fixos sem evidência apresentada, e o volume passa a capacidade da fábrica sem investimento. A base por drivers fica em {base}.",
     {base: s("money", PC, "readings.gap.reference.ebitda", "flow")},
     {answers: "q.plan_vs_base", when: [
-      ...claim("preço, volume e custos fixos são premissas do plano sem evidência apresentada", ...["preco", "volume", "fixos"].map((x) => has(PC, "readings.assumptions", "assumptionId", x)),
+      ...claim("preço, volume e custos fixos são premissas do plano sem evidência apresentada, pelos drivers registrados", ...["netUnitPrice", "quantity", "fixedCosts"].map((x) => has(PC, "readings.assumptions", "drivers[0].driver", x)),
         {every: [PC, "readings.assumptions", "evidenceStatus"], op: "eq", than: {value: "not_presented"}}),
       ...claim("o volume passa a capacidade sem investimento no plano", cmp(at(PC, "readings.capacity.aboveWithoutInvestment"), "eq", {value: "true"}),
         cmp(at(PC, "readings.capacity.investmentInPlan"), "eq", {value: "false"}))]}),
   // Topics, pending notes, requesters and authority bases.
   "topic.packaging_review": t("topic", "revisão da linha de embalagem"),
   "topic.crop_financing": t("topic", "financiamento da safra"),
-  "note.program_indicative": t("note", "Condições do programa da rede A indicativas até a confirmação do banco do programa",
-    {}, {when: claim("as condições do programa da rede A são indicativas", cmp(at(RF, "result.funding.options[id=risco-sacado-a].indicative"), "eq", {value: "true"}))}),
+  "note.program_indicative": t("note", "Condições dos programas de antecipação indicativas até a confirmação do banco de cada programa",
+    {}, {when: claim("as condições dos dois primeiros programas do plano são indicativas", {bind: "ofirst", to: at(RF, "result.funding.plan.steps[0].optionId")},
+      {bind: "osecond", to: at(RF, "result.funding.plan.steps[1].optionId")}, ...["$ofirst", "$osecond"].map((o) => cmp(at(RF, `result.funding.options[id=${o}].indicative`), "eq", {value: "true"})))}),
+  "note.credit_line_terms_not_registered": t("note", "A tabela de dívida não registra modalidade nem finalidade da linha de crédito"),
   "note.case_not_reviewed": t("note", "A opção não está entre os casos revisados da análise do projeto", {}, {when: claim("a opção em etapas não é caso revisado", lacks(IP, "comparison.metrics", "caseId", "staged"))}),
   "requester.chair": t("requester", "Presidente do conselho"),
   "requester.cfo": t("requester", "Diretor financeiro"),
@@ -506,7 +527,7 @@ export function boardTemplateClaims() {
 export const boardNameDictionary = ["Itaú", "Bradesco", "Santander", "Banco do Brasil", "Caixa", "BTG Pactual", "Banco Safra", "BNDES", "XP", "Sicredi", "Sicoob", "Banrisul",
   "Citi", "JPMorgan", "Debenturistas", "rede A", "rede B"] as const;
 /** Counterparties the fixed texts of this library describe by role (the retail chains of the receivables programs); never a creditor. */
-export const boardNamesAllowedInText: readonly string[] = ["rede A", "rede B"];
+export const boardNamesAllowedInText: readonly string[] = [];
 
 /** A text reference as adopted: `template|slot=reading|slot=deadline:deliberation.deadline`. */
 export const boardTextRefPattern = /^[a-z][a-z0-9_.]{0,79}(?:\|[a-z][a-z0-9_]{0,30}=(?:deadline:|informed:)?[a-z0-9][a-z0-9.-]{0,80})*$/;
@@ -584,7 +605,7 @@ export function checkBoardTemplateLibrary() {
       if (spec.year) for (const m of spec.year.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
       if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : spec.type === "informed" ? !spec.author : !spec.from && !spec.year) problems.push(`${id}:slot`);
       if (spec.year && spec.type !== "date") problems.push(`${id}:year`);
-      if ((spec.type === "label" || spec.type === "informed") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
+      if ((spec.type === "label" || spec.type === "informed" || spec.type === "debtor") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
       if (spec.type === "money" && !spec.nature) problems.push(`${id}:nature`);
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}

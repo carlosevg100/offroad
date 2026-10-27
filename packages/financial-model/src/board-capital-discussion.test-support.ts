@@ -165,14 +165,27 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
-export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"} = {}) {
+export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true} = {}) {
   const k = auroraReceivablesFunding(), anchor = k.options[0]!;
-  return prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1",
-    question: "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
-    analysis: auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const, ...variant.contractA ? {contract: variant.contractA} : {}} : i),
+  const basis = auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const, ...variant.contractA ? {contract: variant.contractA} : {}} : i),
       options: [...k.options, {...anchor, id: "risco-sacado-a", label: "Risco sacado da rede A",
         eligibility: {...anchor.eligibility!, anchorItemIds: ["rede-a"], ...variant.sublimitA ? {sublimitPerDebtor: variant.sublimitA} : {}},
-        rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]}).seal()});
+        rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]});
+  // Regressions only: another debtor (Rede Z) behind the old item and option identifiers.
+  if (variant.debtorRenamed) for (const e of basis.entries) {
+    if (e.fieldPath.endsWith("item.rede-a.debtorKey")) e.value = {type: "text", value: "rede-z"};
+    if (e.fieldPath.endsWith("item.rede-a.label")) e.value = {type: "text", value: "Rede Z"};
+  }
+  return prepareReceivablesFundingPacket({schemaVersion: "receivables-funding-packet-input.v1",
+    question: "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?", analysis: basis.seal()});
+}
+/** The debt table with the credit line relabelled as a restricted machinery line (same identifier; regressions only). */
+export function debtTableWithCreditLineLabel(label: string) {
+  const b = auroraDebtTableBasis();
+  const entry = b.entries.find((e) => e.fieldPath.endsWith("credit_line.conta-garantida.label"));
+  if (!entry) throw new Error("credit line label not found");
+  entry.value = {type: "text", value: label};
+  return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
 }
 let cached: ReturnType<typeof buildSources> | null = null;
 let replaced: Record<string, Record<string, unknown>> = {};
@@ -279,8 +292,12 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "date-bps": ["custo-relativo", "result.bridge.steps[family=pricing_date].bps", "0", "60"],
   "known-bps": ["custo-relativo", "result.bridge.knownAdjustmentsBps", "0", "70"],
   "unexplained-bps": ["custo-relativo", "result.bridge.unexplainedAfterKnownAdjustmentsBps", "0", "55"],
-  "rating-low": ["custo-relativo", "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", "2", "-0.17"],
-  "rating-high": ["custo-relativo", "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts", "2", "0.03"],
+  "rating-low": ["custo-relativo", "levers[role=rating&scenario=low].netOfKnownCosts", "2", "-0.17"],
+  "rating-high": ["custo-relativo", "levers[role=rating&scenario=high].netOfKnownCosts", "2", "0.03"],
+  "cl-creditor": ["tabela-divida", "result.table.creditLines[id=conta-garantida].creditor", "-"],
+  "cl-unused": ["tabela-divida", "result.table.creditLines[id=conta-garantida].unused", "0", "10"],
+  "debenture-creditor": ["tabela-divida", "result.table.rows[id=debenture-1].creditor", "-"],
+  "rede-a-label": ["recebiveis", "result.funding.portfolio.items[itemId=rede-a].label", "-"],
   "cash-end-2027": ["plano-2027", "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=2027-12-31].closingAvailable", "0", "-79"],
   "service-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service", "0", "90"],
   "available-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService", "0", "36"],
@@ -309,6 +326,7 @@ export const auroraBoardReadings: Record<string, Reading> = {
 /** Numbers the material needs and no reviewed result supplies: [required method, reason]. */
 export const auroraBoardPending: Record<string, [string, string]> = {
   "stages-npv": ["analyze-investment-project", "note.case_not_reviewed"],
+  "cl-terms": ["build-company-debt-table", "note.credit_line_terms_not_registered"],
 };
 export const auroraMaterialFigures = ["principal-2027", "cash-end-2027", "debenture-amount", "deb-cost-low", "deb-cost-high", "bradesco-gap", "share-12m", "min-cash", "sem-linha-min", "cov-limit", "policy-limit", "irr", "wacc", "npv", "payback", "peak-need",
   "npv-economy", "npv-capex", "npv-slow", "programs", "lev-dez26", "lev-adv27", "ebitda-wheat", "wc-60"];
@@ -341,7 +359,7 @@ export function auroraBoardCase(turn: BoardTurn) {
           "situation.debt_profile|prazo=wal|credor=largest-creditor|participacao=largest-share"]},
       {id: "caixa", role: "situation", topicId: null, title: "situation.cash_shortfall|semana=tight-week|saldo=cash-end-2027|ano=year-2027", recommendation: null, options: [],
         lines: ["situation.cash_without_line|semana=sem-linha-week|saldo=sem-linha-min|minimo=min-cash", "situation.debt_service|ano=year-2027|servico=service-2027|disponivel=available-2027"]},
-      {id: "escritura", role: "constraint", topicId: null, title: "constraint.indenture_basket|saldo=basket-free", recommendation: null, options: [],
+      {id: "escritura", role: "constraint", topicId: null, title: "constraint.indenture_basket|titular=debenture-creditor|saldo=basket-free", recommendation: null, options: [],
         lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=bradesco-creditor", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
       {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
@@ -349,7 +367,7 @@ export function auroraBoardCase(turn: BoardTurn) {
         recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
         options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
-        lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|semana=tight-week"]},
+        lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|credor=cl-creditor|livre=cl-unused|termos=cl-terms"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
         lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
       {id: "movimentos", role: "alternatives", topicId: null, title: "alternatives.moves.title|caminhos=n-paths", recommendation: null, options: [],
@@ -385,7 +403,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},
       {id: "estrategica", question: "q.strategic", answer: "a.strategic|retorno=irr|custo=wacc"},
       {id: "trigo", question: "q.wheat", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit"},
-      {id: "rede-a", question: "q.anchor", answer: "a.anchor|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
+      {id: "rede-a", question: "q.anchor|rede=rede-a-label", answer: "a.anchor|rede=rede-a-label|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
     /** Facts informed in the conversation: the chair's strategic reason for the packaging line. */

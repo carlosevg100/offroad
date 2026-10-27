@@ -16,7 +16,7 @@ describe("recorded board capital discussion evaluations", () => {
     }
   }, 900_000);
   it("covers the outline, the deliberations, the titles, the identity check, the pending items, the questions and the omission rule", () => {
-    expect(records.get(boardCapitalDiscussionRunIds.gold)!.cases).toHaveLength(56);
+    expect(records.get(boardCapitalDiscussionRunIds.gold)!.cases).toHaveLength(58);
     expect(records.get(boardCapitalDiscussionRunIds.adversarial)!.cases).toHaveLength(107);
     expect(records.get(boardCapitalDiscussionRunIds.consistency)!.cases).toHaveLength(6);
   });

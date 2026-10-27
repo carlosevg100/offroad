@@ -3,7 +3,7 @@ import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardConceptAttempts, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -81,8 +81,8 @@ const meaning: Record<string, Record<string, string>> = {
   "situation.cash_without_line": {semana: WC + "readings.sensitivities[caseId=sem-linha].weekStart", saldo: WC + "readings.sensitivities[caseId=sem-linha].minimum", minimo: WC + "result.weekly.minimumCash"},
   "situation.debt_service": {ano: "year", servico: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].service",
     disponivel: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].availableForService"},
-  "constraint.indenture_basket": {saldo: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].remaining"},
-  "constraint.basket_usage": {cesta: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].basket", ocupado: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].occupied",
+  "constraint.indenture_basket": {titular: DT + "result.table.rows[id=*].creditor", saldo: DT + "result.table.negativePledgeBaskets[holderId=*].remaining"},
+  "constraint.basket_usage": {cesta: DT + "result.table.negativePledgeBaskets[holderId=*].basket", ocupado: DT + "result.table.negativePledgeBaskets[holderId=*].occupied",
     credor: DT + "result.table.rows[id=*].creditor"},
   "constraint.covenant_policy": {covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "topic.project_return": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
@@ -94,9 +94,9 @@ const meaning: Record<string, Record<string, string>> = {
   "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
   "option.staged": {vpl: "pending:analyze-investment-project"},
   "option.wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
-  "topic.crop_programs": {valor: RF + "readings.plan[optionId=risco-sacado-a].cumulative", pico: RF + "result.funding.need.peak"},
-  "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=risco-sacado-b].spreadOverDi", taxa_a: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
-  "topic.crop_overdraft": {semana: WC + "readings.tightestWeek.weekStart"},
+  "topic.crop_programs": {valor: RF + "readings.plan[optionId=*].cumulative", pico: RF + "result.funding.need.peak"},
+  "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=*].spreadOverDi", taxa_a: RF + "readings.options[id=*].spreadOverDi"},
+  "topic.crop_overdraft": {credor: DT + "result.table.creditLines[id=*].creditor", livre: DT + "result.table.creditLines[id=*].unused", termos: "pending:build-company-debt-table"},
   "alternatives.count": {caminhos: FP + "readings.horizon.candidatePaths", ano: "year"},
   "alternatives.row.no_line_debenture": pathRow("sem-linha-debenture"), "alternatives.row.defer_line": pathRow("adiar-linha"),
   "alternatives.row.debenture_with_line": {...pathRow("debenture-com-linha"), credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.row.keep_and_roll": pathRow("manter"), "alternatives.row.short_bank_loan": pathRow("ccb-tres-anos"),
@@ -136,14 +136,15 @@ const meaning: Record<string, Record<string, string>> = {
     divida: FP + "readings.recommendation.netDebtAtHorizon", ano_fim: "year"},
   "a.peer": {total: RC + "decomposition.grossBps", ajustes: RC + "result.bridge.knownAdjustmentsBps", data: RC + "result.bridge.steps[family=pricing_date].bps",
     resto: RC + "result.bridge.unexplainedAfterKnownAdjustmentsBps"},
-  "a.rating": {baixo: RC + "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", alto: RC + "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts"},
+  "a.rating": {baixo: RC + "levers[role=rating&scenario=low].netOfKnownCosts", alto: RC + "levers[role=rating&scenario=high].netOfKnownCosts"},
   "a.strategic": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
   "a.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
     defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
     ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda", ebitda_adverso: CV + "result.headroom.measurements[id=dez27-adverso].reportedEbitda",
     alavancagem: CV + "result.headroom.measurements[id=dez27-adverso].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
-  "a.anchor": {saldo: RF + "result.funding.portfolio.items[itemId=rede-a].amount", carteira: RF + "readings.gross", volume: RF + "readings.options[id=risco-sacado-a].volume",
-    taxa: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
+  "q.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label"},
+  "a.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label", saldo: RF + "result.funding.portfolio.items[itemId=*].amount", carteira: RF + "readings.gross",
+    volume: RF + "readings.options[id=*].volume", taxa: RF + "readings.options[id=*].spreadOverDi"},
   "q.plan_vs_base": {plano: PC + "readings.gap.plan.ebitda", ano: "year", base: PC + "readings.gap.reference.ebitda"},
   "a.plan_vs_base": {base: PC + "readings.gap.reference.ebitda"},
 };
@@ -166,11 +167,20 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
 const names = new Set(["Itaú", "Bradesco", "Santander", "Banco do Brasil", "Caixa", "BTG Pactual", "Banco Safra", "BNDES", "XP", "Sicredi", "Sicoob", "Banrisul", "Citi", "JPMorgan",
   "Debenturistas", "rede A", "rede B"]);
 /** The oracle's own reading of the receivables result: balance owed by the chain, program volume and the registered contract. */
-function receivablesFacts(packet: Record<string, unknown>) {
-  const f = (packet.result as {funding: {portfolio: {items: {itemId: string; amount: string}[]}}}).funding;
+/** The oracle's own reading of a debtor in the receivables result, by the debtor key the source registers (its own
+ * dictionary of names to keys), never by item or option identifiers: balance, the anchor program linked to the item, contract. */
+const debtorKeys: Record<string, string> = {"rede A": "rede-a", "rede B": "rede-b"};
+function receivablesFacts(packet: Record<string, unknown>, name: string) {
+  const contributions = (packet.result as {contributions: {fieldPath: string; value: {value: unknown}}[]}).contributions;
+  const items = contributions.flatMap((x) => {const m = /\.item\.([a-z0-9-]+)\.debtorKey$/.exec(x.fieldPath); return m && x.value.value === debtorKeys[name] ? [m[1]!] : [];});
+  if (items.length !== 1) return null;
+  const item = items[0]!;
+  const f = (packet.result as {funding: {portfolio: {items: {itemId: string; amount: string}[]}; options: {id: string; kind: string}[]}}).funding;
+  const programs = contributions.flatMap((x) => {const m = /\.option\.([a-z0-9-]+)\.anchorItemIds$/.exec(x.fieldPath);
+    return m && Array.isArray(x.value.value) && (x.value.value as string[]).includes(item) ? [m[1]!] : [];});
   const r = packet.readings as {options: {id: string; volume: string | null}[]};
-  const contract = (packet.result as {contributions: {fieldPath: string; value: {value: unknown}}[]}).contributions.find((x) => x.fieldPath.endsWith(".item.rede-a.contract"))?.value.value;
-  return {balance: f.portfolio.items.find((x) => x.itemId === "rede-a")!.amount, volume: r.options.find((x) => x.id === "risco-sacado-a")!.volume, contract};
+  return {balance: f.portfolio.items.find((x) => x.itemId === item)!.amount, volume: programs.length === 1 ? r.options.find((x) => x.id === programs[0])?.volume ?? null : null,
+    contract: contributions.find((x) => x.fieldPath.endsWith(`.item.${item}.contract`))?.value.value};
 }
 const receivablesMethod = "monetize-receivables-for-working-capital";
 function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = auroraBoardSources()) {
@@ -242,6 +252,8 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   // shown as registered. One package per method. A row's creditor is named only beside readings of that same row.
   for (const x of d.identity.filter((i) => i.unit === "label")) {
     if (names.has(x.value)) continue;
+    // A debtor's free label is never shown; the debtor is named by its registered key (checked against the receivables result below).
+    if (/portfolio\.items\[/.test(x.path)) {if (texts.some((t) => t.includes(x.value))) bad.push(`name_shown:${x.figureId}`); continue;}
     if (texts.some((t) => t.includes(x.value) || t.includes(x.value.normalize("NFKC")))) bad.push(`name_shown:${x.figureId}`);
     if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.endsWith(`.label.${x.figureId}`))) bad.push(`name_gap:${x.figureId}`);
   }
@@ -322,7 +334,10 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const term = (suffix: string) => planContributions.find((x) => x.fieldPath.endsWith(suffix))?.value.value as string[] | string | undefined;
     const termsOf = (id: string) => (term(`.instrument.${id}.terms`) as string[] | undefined) ?? [];
     const existing = planContributions.flatMap((x) => {const m = /\.instrument\.([a-z0-9-]+)\.terms$/.exec(x.fieldPath); return m && (x.value.value as string[])[0] === "existing" ? [m[1]!] : [];});
-    const creditorRow = "ccb-bradesco";
+    // The row of the creditor a text names, by the debt table's creditor field (the identifier only links that row to the plan).
+    const named = texts.map((x) => /dívida com ([\p{L} .&'-]+?)(?:[;,.]| alongada)/u.exec(x)?.[1]).find((x) => x && x !== "credor sem nome confirmado");
+    const debtRows = ((sourceOf("build-company-debt-table") as {result?: {table?: {rows?: {id: string; creditor: string}[]}}} | undefined)?.result?.table?.rows ?? []).filter((r) => r.creditor === named);
+    const creditorRow = debtRows.length === 1 ? debtRows[0]!.id : "\u0000";
     const describe = (id: string) => {const [role, lender, , , , , , , after] = termsOf(id);
       return role === "amended" ? "aditamento" : lender === "capital_markets" ? (role === "existing" ? "debenture atual" : "debenture nova") : lender === "development_bank" ? "fomento"
         : lender === "bank" ? (role === "existing" ? (id === creditorRow ? "credor" : "banco") : after === "scheduled" ? "banco programado" : after === "none" || after === "seasonal_release" ? "banco curto" : "banco outro") : "outro";};
@@ -368,15 +383,27 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const source = sources.find((x) => x.packet.fingerprint === rfIdentity.packetFingerprint);
     if (!source) bad.push("receivables_source_unknown");
     else {
-      const facts = receivablesFacts(source.packet), number = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
+      const number = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
       for (const t of texts) {
-        const owes = /rede A deve R\$ (-?[\d.,]+) milh/.exec(t);
-        if (owes && !number(owes[1]!).eq(new D(facts.balance).toDecimalPlaces(1))) bad.push(`exposure:${t.slice(0, 60)}`);
-        const program = /programa próprio da rede antecipa R\$ (-?[\d.,]+) milh/.exec(t);
-        if (program && (facts.volume === null || !number(program[1]!).eq(new D(facts.volume).toDecimalPlaces(1)))) bad.push(`capacity:${t.slice(0, 60)}`);
-        if (/veda a cessão/.test(t) && facts.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
+        // A debtor is named only when the source registers that debtor's key; then its balance, program and contract are its own.
+        for (const name of Object.keys(debtorKeys)) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(t) && !receivablesFacts(source.packet, name)) bad.push(`debtor:${name}`);
+        const owes = /A carteira tem R\$ (-?[\d.,]+) milh\S* de (rede [AB]),/.exec(t);
+        if (!owes) continue;
+        const facts = receivablesFacts(source.packet, owes[2]!);
+        if (!facts || !number(owes[1]!).eq(new D(facts.balance).toDecimalPlaces(1))) bad.push(`exposure:${t.slice(0, 60)}`);
+        const program = /programa próprio dele antecipa R\$ (-?[\d.,]+) milh/.exec(t);
+        if (program && (!facts || facts.volume === null || !number(program[1]!).eq(new D(facts.volume).toDecimalPlaces(1)))) bad.push(`capacity:${t.slice(0, 60)}`);
+        if (/veda a cessão/.test(t) && facts?.contract !== "prohibited_without_consent") bad.push(`contract:${t.slice(0, 60)}`);
       }
     }
+  }
+  // Credit lines: the debt table records no modality nor purpose, so no text may present a line as a working-capital or
+  // overdraft line; the generic line names the creditor the table registers for it.
+  const lines = ((sourceOf("build-company-debt-table") as {result?: {table?: {creditLines?: {creditor: string; unused: string}[]}}} | undefined)?.result?.table?.creditLines ?? []);
+  for (const t of texts) {
+    if (/conta garantida/i.test(t)) bad.push(`credit_line_modality:${t.slice(0, 60)}`);
+    const shown = /^Linha de crédito registrada com ([^,]+), com limite livre de R\$ (-?[\d.,]+) milh/.exec(t);
+    if (shown && !lines.some((l) => l.creditor === shown[1] && new D(l.unused).eq(new D(shown[2]!.replace(",", "."))))) bad.push(`credit_line:${t.slice(0, 60)}`);
   }
   // Informed reasons: the oracle's own dictionary of reviewed phrases; the shown words are the phrase of the adopted code,
   // or the generic words with a gap; the fact itself never carries text.
@@ -482,13 +509,13 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   });
   it("regression r8: names outside the dictionary are never shown and a creditor is named by its row's field, through the full path", () => {
     for (const name of boardOffDictionaryNames) {
-      const p = withBoardSource("tabela-divida", debtTableWithCreditor(name), () => full(2, () => undefined));
+      const table = debtTableWithCreditor(name), p = withBoardSource("tabela-divida", table, () => full(2, () => undefined));
       expect(boardOffDictionaryReading(p, name), name).toEqual(boardOffDictionaryExpected);
-      expect(oracle(p), name).toEqual({bad: [], missing: []});
+      expect(oracle(p, [{packet: table}, ...auroraBoardSources()]), name).toEqual({bad: [], missing: []});
     }
-    const itau = withBoardSource("tabela-divida", debtTableWithCreditor("Itaú", "Bradesco"), () => full(2, () => undefined));
+    const itauTable = debtTableWithCreditor("Itaú", "Bradesco"), itau = withBoardSource("tabela-divida", itauTable, () => full(2, () => undefined));
     expect(boardRegisteredCreditorReading(itau)).toEqual(boardRegisteredCreditorExpected);
-    expect(oracle(itau)).toEqual({bad: [], missing: []});
+    expect(oracle(itau, [{packet: itauTable}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
   });
   it("regression r9: exposure is the chain's balance and a ban on assignment needs the registered contract, through the full path", () => {
     const capped = auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>;
@@ -496,13 +523,13 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.answer).toBe(boardSublimitExpected);
     expect(oracle(p, [{packet: capped}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
     expect(() => withBoardSource("recebiveis", capped, () => full(2, (c) => {boardSublimitCase(c);
-      c.questions[8]!.answer = "a.anchor|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}))).toThrow("board_capital_slot_concept_mismatch:a.anchor:saldo");
+      c.questions[8]!.answer = "a.anchor|rede=rede-a-label|saldo=program-a-volume|carteira=carteira|volume=program-a-volume|taxa=spread-a";}))).toThrow("board_capital_slot_concept_mismatch:a.anchor:saldo");
     const open = auroraReceivablesPacket({contractA: "assignable"}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("recebiveis", open, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:a.anchor");
     // The oracle is not vacuous for these two: a text that shows the program's volume as the exposure, and a ban on
     // assignment read against a contract registered as assignable, are both divergences.
     const forged = structuredClone(p), answer = forged.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!;
-    answer.answer = answer.answer.replace("deve R$ 19,8 milhões", "deve R$ 10,0 milhões");
+    answer.answer = answer.answer.replace("A carteira tem R$ 19,8 milhões", "A carteira tem R$ 10,0 milhões");
     expect(oracle(forged, [{packet: capped}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("exposure:"))).toBe(true);
     const calibrated = packet(2, () => undefined), openWithSameFingerprint = {...open, fingerprint: calibrated.result.discussion!.identity.find((x) => x.methodId === receivablesMethod)!.packetFingerprint};
     expect(oracle(calibrated, [{packet: openWithSameFingerprint}]).bad.some((x) => x.startsWith("contract:"))).toBe(true);
@@ -635,6 +662,27 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const read = oracle(forged).bad;
     expect(read.some((x) => x.startsWith("decomposition:"))).toBe(true);
     expect(read.some((x) => x.startsWith("informed:"))).toBe(true);
+  });
+  it("regression r17: meaning from registered identity, never identifiers: credit line terms and debtors (full path, oracle not vacuous)", () => {
+    const machinery = debtTableWithCreditLineLabel("Linha para aquisição de máquinas");
+    const p = withBoardSource("tabela-divida", machinery, () => full(2, () => undefined));
+    const safra = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "safra")!;
+    expect(safra.lines[1]).toBe("Linha de crédito registrada com Itaú, com limite livre de R$ 10 milhões; modalidade e finalidade: [pendente].");
+    expect(p.result.discussion!.gaps.map((g) => g.item)).toContain("page.safra.figure.cl-terms");
+    expect(oracle(p, [{packet: machinery}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    const renamed = auroraReceivablesPacket({debtorRenamed: true}) as unknown as Record<string, unknown>;
+    const z = withBoardSource("recebiveis", renamed, () => full(2, () => undefined));
+    const question = z.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!;
+    expect(question.question).toBe("Dependemos demais de um único cliente?");
+    expect(JSON.stringify(z.result.discussion!.versions.at(-1))).not.toMatch(/rede A|Rede Z/);
+    expect(oracle(z, [{packet: renamed}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    // Not vacuous: a working-capital claim on the line, and the old name on the renamed debtor, are both read.
+    const forged = structuredClone(p), line = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "safra")!;
+    line.lines[1] = "Conta garantida para o aperto de caixa em 21 de dezembro.";
+    expect(oracle(forged, [{packet: machinery}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("credit_line_modality:"))).toBe(true);
+    const forgedZ = structuredClone(z);
+    forgedZ.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.question = "Dependemos demais de rede A?";
+    expect(oracle(forgedZ, [{packet: renamed}, ...auroraBoardSources()]).bad).toContain("debtor:rede A");
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

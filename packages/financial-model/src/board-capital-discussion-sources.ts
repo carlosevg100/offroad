@@ -82,7 +82,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.table.reconciliation.principal": {...money("millions"), nature: "balance"}, "result.table.profile.scheduleByYear[*].principal": {...money("millions"), nature: "flow"},
     "result.table.profile.scheduleByYear[*].year": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
     "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
-    "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.rows[*].creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
+    "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.creditLines[*].creditor": plain("label"), "result.table.creditLines[*].unused": {...money("millions"), nature: "balance"}, "result.table.rows[*].creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
     "result.table.negativePledgeBaskets[*].basket": {...money("millions"), nature: "balance"}, "result.table.negativePledgeBaskets[*].occupied": {...money("millions"), nature: "balance"},
     "result.table.negativePledgeBaskets[*].remaining": {...money("millions"), nature: "balance"}, "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
     "result.table.profile.twelveMonthHorizon": date("month_year", "month_long")},
@@ -106,6 +106,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
   // Receivables (C35): balance owed by each debtor, eligible capacity, program volume and sublimit are distinct concepts.
   "monetize-receivables-for-working-capital": {
     "readings.gross": {...money("millions"), concept: "carteira_bruta", nature: "balance"},
+    "result.funding.portfolio.items[*].label": plain("label"),
     "result.funding.portfolio.items[*].amount": {...money("millions"), concept: "saldo_da_carteira_por_devedor", nature: "balance"},
     "result.funding.portfolio.items[*].assignable": {...money("millions"), concept: "capacidade_elegivel_por_devedor", nature: "balance"},
     "readings.options[*].volume": {...money("millions"), concept: "volume_antecipavel_do_programa", nature: "balance"},
