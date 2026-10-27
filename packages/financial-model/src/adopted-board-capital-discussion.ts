@@ -3,13 +3,12 @@ import {z} from "zod";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
-import {boardAuthorities, boardFigureUnits, boardOmissionTargets, boardPageRoles, prepareBoardCapitalDiscussion,
-  type BoardDiscussion, type BoardFigure, type BoardFigureUnit, type BoardSourceReading} from "./board-capital-discussion";
+import {boardAuthorities, boardOmissionTargets, boardPageRoles, prepareBoardCapitalDiscussion,
+  type BoardDiscussion, type BoardFigure, type BoardSourceReading} from "./board-capital-discussion";
 import {boardSourceMethodIds, boardSourcePacketSchema, parseBoardSourceText, verifyBoardSource} from "./board-capital-discussion-sources";
 import {boardCapitalDiscussionExclusions} from "./board-capital-discussion-results";
 
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), words = z.string().trim().min(1).max(2000), hash = z.string().regex(/^[a-f0-9]{64}$/);
-const small = z.string().regex(/^-?\d{1,2}$/);
 
 /** One board discussion as adopted: the meeting, the deliberations, the reviewed results it reads (named by
  * method and packet fingerprint), each figure as a reading of one of them, the pages, the summary, the appendix,
@@ -46,7 +45,8 @@ export const boardCapitalDiscussionAnalysesSchema = z.strictObject({
 });
 export type BoardCapitalDiscussionAnalyses = z.infer<typeof boardCapitalDiscussionAnalysesSchema>;
 
-const readingTuple = z.tuple([key, z.string().min(1).max(400), z.enum(boardFigureUnits), small, small]).rest(z.string().max(2000));
+/** [source, path, decimals or date format, stated]: never a unit, a scale or a periodicity. */
+const readingTuple = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "month_year", "year"])]).rest(z.string().max(2000));
 const reference = /^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/;
 
 /** The board discussion read from its adopted basis, with the reviewed results checked by identity: each
@@ -89,10 +89,8 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
       return {id: f.id, kind: "pending", requiredMethodId: r?.[0] as string, reason: r?.[1] as string};
     }
     const r = list(f.reading, `figure.${f.id}.reading`, readingTuple);
-    if (r && r.length > 6) throw new Error(`board_capital_figure_reading_invalid:${f.id}`);
-    if (r?.[5] !== undefined && r[2] !== "text" && !reference.test(r[5])) throw new Error(`board_capital_figure_reading_invalid:${f.id}`);
-    return {id: f.id, kind: "reading", sourceId: r?.[0] as string, path: r?.[1] as string, unit: r?.[2] as BoardFigureUnit,
-      scale: Number(r?.[3]), places: Number(r?.[4]), stated: r?.[5] ?? null} as BoardFigure;
+    if (r && (r.length > 4 || (r[3] !== undefined && !reference.test(r[3])))) throw new Error(`board_capital_figure_reading_invalid:${f.id}`);
+    return {id: f.id, kind: "reading", sourceId: r?.[0] as string, path: r?.[1] as string, presentation: r?.[2] as string, stated: r?.[3] ?? null} as BoardFigure;
   });
   const materialFigureIds = list(input.materialFigureIds, "figures.material", z.array(key).max(160));
   const indicative = input.indicative.map((x) => ({figureId: x.figureId, reason: need(read(x.reason, `figure.${x.figureId}.indicative`, "text", "text", words))}));

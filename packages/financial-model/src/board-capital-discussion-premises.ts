@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {capacityUuid} from "./debt-capacity-premises";
 import type {ProposedHypothesis} from "./investment-premises";
-import {boardAuthorities, boardFigureUnits, boardOmissionTargets, boardPageRoles} from "./board-capital-discussion";
+import {boardAuthorities, boardOmissionTargets, boardPageRoles} from "./board-capital-discussion";
 import {boardSourceMethodIds} from "./board-capital-discussion-sources";
 
 const text = z.string().trim().min(1).max(2000);
@@ -13,10 +13,11 @@ const originLabel: Record<(typeof origins)[number], string> = {document: "docume
 const fact = <T extends z.ZodType>(value: T) => z.strictObject({value, origin: z.enum(origins), source: text});
 type Origin = {origin: (typeof origins)[number]; source: string};
 
-const reading = z.tuple([key, z.string().min(1).max(400), z.enum(boardFigureUnits), z.string().regex(/^-?\d{1,2}$/), z.string().regex(/^\d{1,2}$/)])
+/** [source, path, decimals or date format, stated]: the unit, scale and periodicity come from the field registry of the source's method. */
+const reading = z.tuple([key, z.string().min(1).max(400), z.enum(["0", "1", "2", "-", "day_month", "month_year", "year"])])
   .rest(z.string().regex(/^(?:\d{4}-\d{2}-\d{2}|-?\d{1,24}(?:\.\d{1,8})?)$/));
 const figure = z.discriminatedUnion("kind", [
-  z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length === (r[2] === "text" || r[2] === "boolean" ? 5 : 6), {message: "A number states its value; a text or yes-no reading does not"})}),
+  z.strictObject({id: key, kind: z.literal("reading"), reading: reading.refine((r) => r.length === (r[2] === "-" ? 3 : 4), {message: "A number or a date states its value; a label or a yes-no reading does not"})}),
   z.strictObject({id: key, kind: z.literal("pending"), reading: z.tuple([key, text])})]);
 const deliberation = z.strictObject({id: key, topicId: key.nullable(), title: text, subject: text, recommendation: text.nullable(), authority: z.enum(boardAuthorities), authorityBasis: text.nullable(),
   deadlines: z.array(z.strictObject({id: key, date: z.iso.date(), action: text})).max(4)});

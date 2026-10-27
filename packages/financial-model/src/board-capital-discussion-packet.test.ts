@@ -25,7 +25,7 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.readings!.material!.mainPages).toBe(12);
     expect(p.readings!.material!.fitsAgenda).toBe(true);
     const line = current(p).pages.find((x) => x.id === "linha")!;
-    expect(line.lines[0]).toBe("Retorno de 16% contra custo de capital de 15%; VPL de R$ 0,7 milhão.");
+    expect(line.lines[0]).toBe("Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.");
     expect(current(p).pages.find((x) => x.id === "politica")!.lines).toEqual(["Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dez/26."]);
     expect(p.result.discussion!.identity.every((x) => x.matches)).toBe(true);
     expect(p.gaps).toEqual([]);

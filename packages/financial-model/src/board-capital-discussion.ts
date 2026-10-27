@@ -1,28 +1,30 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
+import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
- * number on the material is read from a reviewed result, rounded for display and checked against the
- * number the author states; the material is assembled from deliberations, pages, questions and the
- * omission rule. Deterministic, without model calls. */
+ * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
+ * field registry of its method declares, written by the method's formatter, checked against the number
+ * the author states and verified again on the final text. Deterministic, without model calls. */
 export const boardCapitalDiscussionVersion = "2026.10.27-v1";
 
 const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
 
-export const boardFigureUnits = ["brl_millions", "brl", "percent", "multiple", "years", "months", "bps", "number", "date_day_month", "date_month_year", "text", "boolean"] as const;
-/** The source fields a text reading may come from: labels and names, never a figure. */
-export const boardLabelKeys = ["label", "creditor", "name", "title"];
-/** Units that carry an economic number: a page or an answer is supported only by one of these. */
-export const boardEconomicUnits: readonly BoardFigureUnit[] = ["brl_millions", "brl", "percent", "multiple", "years", "months", "bps", "number"];
+/** The kinds a reading can be; they come from the field registry, never from a contribution. */
+export const boardFigureUnits = ["money", "rate", "multiple", "years", "months", "bps", "count", "calendar", "date", "label", "flag"] as const satisfies readonly BoardFieldKind[];
 export type BoardFigureUnit = (typeof boardFigureUnits)[number];
+/** Kinds that carry an economic number: a page title or an answer is supported only by one of these. */
+export const boardEconomicUnits: readonly BoardFigureUnit[] = ["money", "rate", "multiple", "years", "months", "bps", "count"];
 export const boardPageRoles = ["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"] as const;
 export type BoardPageRole = (typeof boardPageRoles)[number];
 export const boardAuthorities = ["board", "executive", "shareholders"] as const;
 export const boardOmissionTargets = ["recommendation", "page", "figure", "deadline"] as const;
 export type BoardOmissionTarget = (typeof boardOmissionTargets)[number];
 
+/** A reading names a field of a reviewed result and how many decimals (or which date format) to show; the
+ * kind, unit, scale and periodicity come from the registry of the source's method. */
 export type BoardFigure =
-  | {id: string; kind: "reading"; sourceId: string; path: string; unit: BoardFigureUnit; scale: number; places: number; stated: string | null}
+  | {id: string; kind: "reading"; sourceId: string; path: string; presentation: string; stated: string | null}
   | {id: string; kind: "pending"; requiredMethodId: string; reason: string};
 /** A reviewed result as the material reads it: identity only; the packet itself is checked by the reader. */
 export type BoardSourceReading = {id: string; methodId: string; methodVersion: string; executorVersion: string | null; packetSchemaVersion: string;
@@ -78,46 +80,55 @@ export function readBoardSourcePath(root: unknown, path: string): unknown {
 
 const dayMonth = (iso: string) => `${Number(iso.slice(8, 10))}/${months[Number(iso.slice(5, 7)) - 1]}`;
 const monthYear = (iso: string) => `${months[Number(iso.slice(5, 7)) - 1]}/${iso.slice(2, 4)}`;
+const isNumeric = (raw: unknown) => (typeof raw === "number" && Number.isFinite(raw)) || (typeof raw === "string" && /^-?\d+(?:\.\d+)?$/.test(raw));
 
-/** The display of one reading and its identity check: the source value scaled by a power of ten,
- * rounded half up to the declared places, against the number the author states. */
-export function checkBoardFigure(raw: unknown, unit: BoardFigureUnit, scale: number, places: number, stated: string | null) {
-  if (unit === "boolean") {
-    if (typeof raw !== "boolean") return null;
-    return {value: String(raw), rounded: String(raw), display: raw ? "sim" : "não", matches: stated === null};
+/** The method's formatter: one reading of a registered field, in the unit, scale and periodicity of the
+ * registry, rounded half up to the chosen decimals (0 to 2) or written in the chosen date format, checked
+ * against the number the author states. Valid conversions only: reais to millions (divided by 10^6), a
+ * ratio to percent (times 100). The text it returns is the whole marker: number, sign, currency, scale
+ * word, percent and periodicity. */
+export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentation: string, stated: string | null) {
+  const out = (value: string, rounded: string, display: string, number: string | null, matches: boolean) => ({value, rounded, display, number, matches});
+  if (spec.kind === "flag") return typeof raw === "boolean" && presentation === "-" ? out(String(raw), String(raw), raw ? "sim" : "não", null, stated === null) : null;
+  if (spec.kind === "label") {
+    if (typeof raw !== "string" || !raw.trim() || presentation !== "-" || /^\s*[-−]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw)) return null;
+    return out(raw, raw, raw, null, stated === null);
   }
-  if (unit === "text") {
-    if (typeof raw !== "string" || !raw.trim()) return null;
-    return {value: raw, rounded: raw, display: raw, matches: stated === null || stated === raw};
-  }
-  if (unit === "date_day_month" || unit === "date_month_year") {
+  if (spec.kind === "date" || spec.kind === "calendar") {
+    const format = presentation as "day_month" | "month_year" | "year";
+    if (!spec.formats.includes(format)) return null;
+    if (spec.kind === "calendar") {
+      if (!(typeof raw === "number" && Number.isInteger(raw) && raw >= 1900 && raw <= 2099)) return null;
+      return out(String(raw), String(raw), String(raw), String(raw), stated === String(raw));
+    }
     if (typeof raw !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
-    return {value: raw, rounded: raw, display: unit === "date_day_month" ? dayMonth(raw) : monthYear(raw), matches: stated === raw};
+    const display = format === "day_month" ? dayMonth(raw) : format === "month_year" ? monthYear(raw) : raw.slice(0, 4);
+    return out(raw, raw, display, display, stated === raw);
   }
-  if (!(typeof raw === "number" && Number.isFinite(raw)) && !(typeof raw === "string" && /^-?\d+(?:\.\d+)?$/.test(raw))) return null;
-  const value = new Exact(raw).times(new Exact(10).pow(scale));
-  const rounded = value.toDecimalPlaces(places, Decimal.ROUND_HALF_UP);
-  const text = rounded.toFixed(places);
-  return {value: new Exact(raw).toFixed(), rounded: text, display: text.replace(".", ","), matches: stated !== null && new Exact(stated).eq(rounded)};
+  if (!/^[0-2]$/.test(presentation) || !isNumeric(raw)) return null;
+  const places = Number(presentation);
+  const scaled = spec.scale === "reais" ? new Exact(raw as Decimal.Value).div(1e6) : spec.scale === "ratio" ? new Exact(raw as Decimal.Value).times(100) : new Exact(raw as Decimal.Value);
+  const rounded = scaled.toDecimalPlaces(places, Decimal.ROUND_HALF_UP), text = rounded.toFixed(places), number = text.replace(".", ",");
+  const per = spec.period === "annual" ? (spec.kind === "rate" ? " ao ano" : " por ano") : "";
+  const display = spec.kind === "money" ? `R$ ${number} ${rounded.abs().lt(2) ? "milhão" : "milhões"}${per}`
+    : spec.kind === "rate" ? `${number}%${per}` : spec.kind === "multiple" ? `${number}x`
+    : spec.kind === "years" ? `${number} ${number === "1" ? "ano" : "anos"}` : spec.kind === "months" ? `${number} ${number === "1" ? "mês" : "meses"}`
+    : spec.kind === "bps" ? `${number} pontos` : number;
+  return out(new Exact(raw as Decimal.Value).toFixed(), text, display, number, stated !== null && /^-?\d+(?:\.\d+)?$/.test(stated) && new Exact(stated).eq(rounded));
 }
 
-/** No literal digit is allowed in a template: a number comes from a reading, a deadline, a count of
- * deliberations, or a calendar marker (`{year:2027}`, `{month:2026-12}`) that declares it a date. */
+/** No literal digit is allowed in a template: a number comes from a reading, a deadline or a count of deliberations. */
 export function boardLiteralNumbers(template: string): string[] {
   return template.replace(/\{[^}]*\}/g, " ").match(/\d+/g) ?? [];
 }
 
-/** A text as rendered, with the span of every marker it carries: a reading, a source text, a pending
- * figure, a deadline, a count of deliberations or an ordinal the method writes. The verifier reads the
- * final text against these spans. */
-export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "calendar" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
+/** A text as rendered, with the span of every marker it carries: a reading (with its unit words), a source
+ * label, a pending figure, a deadline, a count of deliberations or an ordinal the method writes. */
+export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit} | {pending: true};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null};
-/** The sign a unit must carry right after its number, so a spread is never read as a rate in points. */
-const unitSuffix: Partial<Record<BoardFigureUnit, string>> = {percent: "%", multiple: "x"};
-const moneyUnits: readonly BoardFigureUnit[] = ["brl_millions", "brl"];
 
 /** Joins rendered pieces and literal glue into one text, shifting every span. */
 export function joinBoardRich(parts: (string | BoardRich)[]): BoardRich {
@@ -133,15 +144,15 @@ const ordinal = (n: number): BoardRich => ({display: String(n), spans: [{start: 
 const ids = (r: BoardRich, kinds: BoardSpan["kind"][]) => [...new Set(r.spans.filter((x) => kinds.includes(x.kind)).map((x) => x.id))];
 const resolved = (r: BoardRich): Resolved => ({...r, figureIds: ids(r, ["figure", "text_figure"]), pendingFigureIds: ids(r, ["pending"]), deadlineIds: ids(r, ["deadline"])});
 
-/** Checks a text that carries no placeholder: any literal number other than a year or a month of a year is refused. */
+/** Checks a text that carries no placeholder: any literal number is refused. */
 export function checkBoardText(text: string): string {
   if (boardLiteralNumbers(text).length || /\{[^}]*\}/.test(text)) throw new Error(`board_capital_number_without_origin:${text.slice(0, 80)}`);
   return text;
 }
 
 /** Renders one template into text and spans. Tokens: `{figure}`, `{count:deliberations}`, `{count:dated}`,
- * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number, an unknown
- * token or a percentage or multiple without its sign refuses the material by name. */
+ * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number or an unknown
+ * token refuses the material by name. The figure's text comes whole from the formatter. */
 export function renderBoardTemplate(template: string, context: Context): Resolved {
   if (boardLiteralNumbers(template).length) throw new Error(`board_capital_number_without_origin:${template.slice(0, 80)}`);
   const parts: (string | BoardRich)[] = [];
@@ -157,9 +168,6 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
       if (context.nextMeetingDate === null) throw new Error("board_capital_number_without_origin:next_meeting_date");
       parts.push(count(context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length)); continue;
     }
-    const year = /^year:((?:19|20)\d{2})$/.exec(token), month = /^month:((?:19|20)\d{2})-(0[1-9]|1[0-2])$/.exec(token);
-    if (year) {parts.push(marker(year[1]!, "calendar", token, null)); continue;}
-    if (month) {parts.push(marker(`${months[Number(month[2]) - 1]}/${month[1]!.slice(2)}`, "calendar", token, null)); continue;}
     if (token.startsWith("deadline:")) {
       const [deliberationId, deadlineId] = token.slice(9).split(".");
       const deadline = context.deliberations.find((d) => d.id === deliberationId)?.deadlines.find((x) => x.id === deadlineId);
@@ -169,81 +177,57 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
     const figure = context.figures.get(token);
     if (!figure) throw new Error(`board_capital_unknown_token:${token}`);
     if ("pending" in figure) {parts.push(marker(boardPendingMark, "pending", token, null)); continue;}
-    const suffix = unitSuffix[figure.unit];
-    if (suffix && template.slice(last, last + suffix.length) !== suffix) throw new Error(`board_capital_unit_missing:${token}`);
-    parts.push(marker(figure.display, figure.unit === "text" ? "text_figure" : "figure", token, figure.unit));
+    parts.push(marker(figure.display, figure.unit === "label" ? "text_figure" : "figure", token, figure.unit));
   }
   parts.push(template.slice(last));
   return resolved(joinBoardRich(parts));
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
- * of a year (dez/26), or a signed number with any run of digits joined by "." or "," (-9,5; 130,3; 1.303). A
- * percent sign or an "x" right after a number is its unit, read from the next character. */
+ * of a year (dez/26), or a signed number with any run of digits joined by "." or "," (-9,5; 130,3; 1.303). */
 const monthNames = months.join("|");
-const numberToken = new RegExp(`\\d{1,2}/(?:${monthNames})(?![\\p{L}])|(?<![\\p{L}])(?:${monthNames})/\\d{2}(?!\\d)|[-\\u2212]?\\d+(?:[.,]\\d+)*`, "gu");
+const numberToken = new RegExp(`\\d{1,2}/(?:${monthNames})(?![\\p{L}])|(?<![\\p{L}])(?:${monthNames})/\\d{2}(?!\\d)|[-+\\u2212]?\\d+(?:[.,]\\d+)*`, "giu");
 export function boardNumberTokens(text: string) {
   return [...text.matchAll(numberToken)].map((m) => ({text: m[0], start: m.index!, end: m.index! + m[0].length}));
 }
+/** Unit, scale, currency and periodicity words, in any capitalization. Outside the formatter's markers and
+ * source labels none may appear; right after a marker none may follow; right before one none may precede. */
+const unitWords = String.raw`R\$|US\$|U\$|€|\$|%|(?<![\p{L}])(?:brl|usd|eur|reais|real|d[oó]lar(?:es)?|euros?|bilh(?:ão|ões|oes)|bi|milh(?:ão|ões|oes)|mi|mil|trilh(?:ão|ões)|por\s+cento|percentual|pontos?(?:-base)?|p\.?\s?p\.?|bps|ao\s+ano|ao\s+m[eê]s|por\s+ano|por\s+m[eê]s|a\.\s?a\.?|a\.\s?m\.?|anuais|anual|mensais|mensal|x)(?![\p{L}])`;
+/** Duration words are prose elsewhere (doze meses) but never right after or before a marker. */
+const durationWords = String.raw`(?<![\p{L}])(?:ano|anos|m[eê]s|meses|dias?|semanas?|trimestres?)(?![\p{L}])`;
+const orphanUnit = new RegExp(unitWords, "giu");
+const unitAfterMarker = new RegExp(`^\\s*(?:${unitWords}|${durationWords})`, "iu");
+const unitBeforeMarker = new RegExp(`(?:(?:${unitWords}|${durationWords}|[-+\\u2212])\\s*|[\\d.,])$`, "iu");
 
-/** The unit words each economic unit must carry right after its number, and the currency mark before it. */
-const unitAfter: Record<BoardFigureUnit, RegExp | null> = {
-  brl_millions: /^\s(?:milhão|milhões|mi)(?![\p{L}])/u, brl: null, percent: /^%/u, multiple: /^x(?![\p{L}])/u,
-  years: /^\s(?:ano|anos)(?![\p{L}])/u, months: /^\s(?:mês|meses)(?![\p{L}])/u, bps: /^\s(?:ponto|pontos)(?![\p{L}])/u,
-  number: null, date_day_month: null, date_month_year: null, text: null, boolean: null};
-/** Anything after a number that would give it a unit, a scale or a currency. */
-const anyUnitAfter = /^(?:\s*%|\s*x(?![\p{L}])|\s*p\.p\.|\s(?:mil|milhão|milhões|mi|bilhão|bilhões|bi|reais|real|dólares|ano|anos|mês|meses|ponto|pontos)(?![\p{L}]))/u;
-const currencyBefore = /(?:R\$|US\$|U\$|\$|€|BRL|USD)\s?$/u;
-/** Unit and scale words that must belong to a marker wherever they appear. */
-const orphanUnits = /R\$|US\$|U\$|€|(?<![\p{L}])(?:reais|real|dólares|bilhão|bilhões|bi|milhão|milhões|mi|p\.p\.|pontos?)(?![\p{L}])|%/gu;
-
-/** Render, then verify: every number of the final text belongs to exactly one marker and is its whole display;
- * the words around it are the unit, scale and currency its reading carries (R$ and milhões for millions of
- * reais, % for a rate, x for a multiple, anos, meses, pontos), and a number without them carries none. Years
- * and months of a year appear only through calendar markers, never as an amount. Every currency mark, scale
- * word and percent sign of the text belongs to a marker of that unit. Source labels are read as they are. */
+/** Render, then verify, on the final text: every number lies inside exactly one marker the method wrote (a
+ * formatted reading, a deadline, an ordinal or a source label), and the marker's text is the formatter's text
+ * for that reading in the registry's unit, scale and periodicity. No unit, scale, currency or periodicity word
+ * may stand outside a marker, follow one or precede one, in any capitalization; no sign or digit may be glued
+ * to one. A calendar reading follows a date preposition. Source labels are read as they are. */
 export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) {
   const fail = (why: string, token: string) => {throw new Error(`board_capital_rendered_number_invalid:${field}:${why}:${token}`);};
   for (const x of r.spans) {
     const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
     if (f && ("pending" in f || r.display.slice(x.start, x.end) !== f.display || f.unit !== x.unit)) fail("marker_text", x.id);
   }
-  const labels = r.spans.filter((x) => x.kind === "text_figure");
-  const inLabel = (i: number) => labels.some((x) => x.start <= i && i < x.end);
+  const covered = (i: number) => r.spans.some((x) => x.start <= i && i < x.end);
   let verified = 0;
   for (const t of boardNumberTokens(r.display)) {
-    if (inLabel(t.start) && inLabel(t.end - 1) && labels.some((x) => x.start <= t.start && t.end <= x.end)) {verified++; continue;}
     const holders = r.spans.filter((x) => x.start <= t.start && t.end <= x.end);
     const touching = r.spans.filter((x) => x.start < t.end && t.start < x.end);
     if (holders.length !== 1 || touching.length !== 1) fail(touching.length ? "crosses_markers" : "without_marker", t.text);
-    const holder = holders[0]!;
-    if (t.start !== holder.start || t.end !== holder.end) fail("partial_marker", t.text);
-    const before = r.display.slice(0, t.start), after = r.display.slice(t.end);
-    if (holder.kind === "figure" && holder.unit !== null && boardEconomicUnits.includes(holder.unit)) {
-      const unit = holder.unit, money = unit === "brl_millions" || unit === "brl";
-      if (money ? !/(?<![\p{L}$])R\$\s$/u.test(before) : currencyBefore.test(before)) fail("currency_mark", holder.id);
-      const expected = unitAfter[unit];
-      if (expected ? !expected.test(after) : anyUnitAfter.test(after)) fail("unit_or_scale", holder.id);
-    } else {
-      // Dates, calendar markers, ordinals: never an amount, a rate or a multiple.
-      if (currencyBefore.test(before) || anyUnitAfter.test(after)) fail("date_as_amount", t.text);
-      if (holder.kind === "calendar" && !/(?<![\p{L}])(?:de|em|até|desde|para|entre|a|e|no|na|do|da)\s$/u.test(before)) fail("calendar_context", t.text);
-    }
     verified++;
   }
-  // Every currency mark, scale word and percent sign belongs to a marker of its unit.
-  for (const m of r.display.matchAll(orphanUnits)) {
-    const at = m.index!, word = m[0];
-    if (inLabel(at)) continue;
-    const next = r.spans.find((x) => x.start === at + word.length + 1), prev = r.spans.find((x) => x.end === at || x.end === at - 1);
-    const money = (x: BoardSpan | undefined) => x !== undefined && (x.kind === "pending" || (x.kind === "figure" && (x.unit === "brl_millions" || x.unit === "brl")));
-    const ok = word === "R$" ? money(next) && r.display[at + 2] === " "
-      : word === "%" ? prev !== undefined && prev.end === at && (prev.kind === "pending" || prev.unit === "percent")
-      : /^(?:milhão|milhões|mi)$/u.test(word) ? prev !== undefined && prev.end === at - 1 && (prev.kind === "pending" || prev.unit === "brl_millions")
-      : /^pontos?$/u.test(word) ? prev !== undefined && prev.end === at - 1 && (prev.kind === "pending" || prev.unit === "bps")
-      : false;
-    if (!ok) fail("unit_without_marker", word);
+  for (const x of r.spans) {
+    if (x.kind === "count" || x.kind === "pending") continue;
+    const before = r.display.slice(0, x.start), after = r.display.slice(x.end);
+    if (x.kind !== "ordinal" && unitBeforeMarker.test(before)) fail("unit_or_sign_before_marker", x.id);
+    if (unitAfterMarker.test(after) || /^[.,]?\d/.test(after)) fail("unit_or_digit_after_marker", x.id);
+    if (x.unit === "calendar" || (x.unit === "date" && /^\d{4}$/.test(r.display.slice(x.start, x.end)))) {
+      if (!/(?<![\p{L}])(?:em|até|desde|entre|para|no|na|do|da|de|a)\s$/iu.test(before) || /(?<![\p{L}])(?:é|são|foi|era|será|soma|somam|vale|custa|custam|total|valor|montante|dívida|custo|taxa)\s+(?:de\s+)?$/iu.test(before)) fail("calendar_context", x.id);
+    }
   }
+  for (const m of r.display.matchAll(orphanUnit)) if (!covered(m.index!)) fail("unit_without_marker", m[0]);
   return verified;
 }
 /** Urgency order: the earliest deadline first; undated deliberations last; ties keep the adopted order. */
@@ -366,16 +350,17 @@ type Version = ReturnType<typeof renderVersion>;
 
 /** The material facts, by rule: every economic reading the discussion adopts, every figure the basis marks
  * material on top of that, and every deadline of a deliberation. */
-export function boardMaterialFacts(d: BoardDiscussion) {
-  const figures = [...new Set([...d.figures.filter((f) => f.kind === "reading" && boardEconomicUnits.includes(f.unit)).map((f) => f.id), ...d.materialFigureIds])];
+export function boardMaterialFacts(d: BoardDiscussion, shown: Map<string, BoardFigureDisplay>) {
+  const economic = (id: string) => {const f = shown.get(id); return f !== undefined && !("pending" in f) && boardEconomicUnits.includes(f.unit);};
+  const figures = [...new Set([...d.figures.filter((f) => f.kind === "reading" && economic(f.id)).map((f) => f.id), ...d.materialFigureIds])];
   const deadlines = d.deliberations.flatMap((x) => x.deadlines.map((t) => `${x.id}.${t.id}`));
   return {figures, deadlines};
 }
 const verifyField = (field: string, r: BoardRich, figures: Map<string, BoardFigureDisplay>) => {verifyBoardRendered(field, r, figures); return r;};
 
 /** Every fact of the rule that a version of the material does not show, wherever it would be shown. */
-export function boardMissingFacts(d: BoardDiscussion, material: Version["material"]) {
-  const facts = boardMaterialFacts(d);
+export function boardMissingFacts(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, material: Version["material"]) {
+  const facts = boardMaterialFacts(d, figures);
   const shown = new Set([...material.pages.flatMap((p) => [...p.figureIds, ...p.pendingFigureIds]), ...material.questions.flatMap((q) => [...q.figureIds, ...q.pendingFigureIds]),
     ...material.deliberations.flatMap((x) => [...x.figureIds, ...x.pendingFigureIds]), ...material.summaryFigureIds, ...material.appendix.flatMap((a) => a.figureIds)]);
   const dated = new Set([...material.deliberations.flatMap((x) => x.deadlines.map((t) => `${x.id}.${t.id}`)), ...material.pages.flatMap((p) => p.deadlineIds)]);
@@ -387,13 +372,13 @@ export function boardMissingFacts(d: BoardDiscussion, material: Version["materia
  * the facts it would have removed are named. A recommendation may be withdrawn; a deadline never is. */
 export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>) {
   const removed = noRemoval();
-  const economic = new Set(boardMaterialFacts(d).figures);
+  const economic = new Set(boardMaterialFacts(d, figures).figures);
   const decisions: BoardOmissionDecision[] = d.omissions.map((o) => {
     const done = (outcome: "applied" | "refused", reason: string, keptFigureIds: string[] = []) => ({...o, outcome, reason, keptFigureIds});
     const attempt = (apply: (r: Removed) => void, applied: string): BoardOmissionDecision => {
       const next = {recommendations: new Set(removed.recommendations), pages: new Set(removed.pages), figures: new Set(removed.figures)};
       apply(next);
-      const lost = boardMissingFacts(d, renderVersion(d, figures, next, 2).material);
+      const lost = boardMissingFacts(d, figures, renderVersion(d, figures, next, 2).material);
       if (lost.figures.length || lost.deadlines.length) return done("refused", sentences.materialKept, lost.figures);
       apply(removed);
       return done("applied", applied);
@@ -426,7 +411,7 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
 /** Structural refusals that do not depend on the reviewed results. Every text the material shows passes the
  * literal-number check; a page title (other than the decisions and the next steps) and every answer carry an
  * economic reading; the next steps carry a deadline. */
-export function validateBoardDiscussion(d: BoardDiscussion) {
+export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, BoardFigureDisplay>) {
   if (!d.deliberations.length) throw new Error("board_capital_material_without_decisions");
   if (d.pages.filter((p) => p.role === "decisions").length !== 1) throw new Error("board_capital_material_without_decisions");
   const unique = (xs: string[], code: string) => {if (new Set(xs).size !== xs.length) throw new Error(code);};
@@ -446,7 +431,8 @@ export function validateBoardDiscussion(d: BoardDiscussion) {
   for (const t of [...d.topics.map((x) => x.label), ...d.indicative.map((x) => x.reason), ...d.omissions.map((x) => x.requestedBy),
     ...d.deliberations.flatMap((x) => x.authorityBasis === null ? [] : [x.authorityBasis]),
     ...d.figures.flatMap((f) => f.kind === "pending" ? [f.reason] : [])]) checkBoardText(t);
-  const economic = new Set(d.figures.filter((f) => f.kind === "pending" || boardEconomicUnits.includes(f.unit)).map((f) => f.id));
+  if (!shown) return;
+  const economic = new Set([...shown].filter(([, f]) => "pending" in f || boardEconomicUnits.includes(f.unit)).map(([id]) => id));
   const tokens = (t: string) => [...t.matchAll(/\{([^}]*)\}/g)].map((m) => m[1]!);
   const hasEconomic = (t: string[]) => t.flatMap(tokens).some((x) => economic.has(x));
   for (const p of d.pages) {
@@ -464,23 +450,24 @@ export function validateBoardDiscussion(d: BoardDiscussion) {
 export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceReading[]) {
   const byId = new Map(sources.map((s) => [s.id, s]));
   const checks: {figureId: string; sourceId: string; methodId: string; methodVersion: string; packetFingerprint: string; path: string; unit: BoardFigureUnit;
-    value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
+    scale: BoardFieldSpec["scale"]; period: BoardFieldSpec["period"]; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
   const figures = new Map<string, BoardFigureDisplay>();
   for (const f of d.figures) {
     if (f.kind === "pending") {figures.set(f.id, {pending: true}); continue;}
     const s = byId.get(f.sourceId);
     if (!s) throw new Error(`board_capital_figure_without_origin:${f.id}`);
-    if (boardEconomicUnits.includes(f.unit) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
+    const spec = boardFieldOf(s.methodId, f.path);
+    // The registry of the source's method says what the field is; a field it does not list is not read.
+    if (!spec) throw new Error(`board_capital_field_not_registered:${f.id}`);
+    if (boardEconomicUnits.includes(spec.kind) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
     const raw = readBoardSourcePath(s.packet, f.path);
-    // A source text is read verbatim only from a label field of the source; a number is never read as text.
-    if (f.unit === "text" && (!boardLabelKeys.includes(f.path.split(/\.(?![^[]*\])/).at(-1)!.replace(/\[.*$/, "")) || typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw)))
-      throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
-    const check = checkBoardFigure(raw, f.unit, f.scale, f.places, f.stated);
+    if (spec.kind === "label" && (typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw))) throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
+    const check = formatBoardReading(raw, spec, f.presentation, f.stated);
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
-    figures.set(f.id, {display: check.display, unit: f.unit});
-    checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: f.unit,
-      value: check.value, rounded: check.rounded, stated: f.stated, display: check.display, matches: true});
+    figures.set(f.id, {display: check.display, unit: spec.kind});
+    checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
+      scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display: check.display, matches: true as const});
   }
   return {figures, checks};
 }
@@ -508,6 +495,7 @@ export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, Boa
 export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: BoardSourceReading[]) {
   validateBoardDiscussion(d);
   const {figures, checks} = resolveBoardFigures(d, sources);
+  validateBoardDiscussion(d, figures);
   const outline = proposeBoardOutline(d, figures);
   const daysBefore = Math.round((Date.parse(`${d.meetingDate}T00:00:00Z`) - Date.parse(`${d.askedOn}T00:00:00Z`)) / 86400000);
   if (daysBefore < 0) throw new Error("board_capital_meeting_before_request");
@@ -515,12 +503,12 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   const produce = d.outlineConfirmed || !timeToAlign;
   const first = produce ? renderVersion(d, figures, noRemoval(), 1) : null;
   // The composed material shows every material fact of the basis, or it is refused by name.
-  if (first) {const lost = boardMissingFacts(d, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}
+  if (first) {const lost = boardMissingFacts(d, figures, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}
   const {decisions, removed} = produce ? decideBoardOmissions(d, figures) : {decisions: [], removed: noRemoval()};
   const changed = removed.recommendations.size + removed.pages.size + removed.figures.size > 0;
   const second = produce && changed ? renderVersion(d, figures, removed, 2) : null;
   // Checked again on the version that will be read: no transformation may leave a material fact out.
-  if (second) {const lost = boardMissingFacts(d, second.material); if (lost.figures.length || lost.deadlines.length) throw new Error("board_capital_material_fact_omitted");}
+  if (second) {const lost = boardMissingFacts(d, figures, second.material); if (lost.figures.length || lost.deadlines.length) throw new Error("board_capital_material_fact_omitted");}
   const current = second ?? first;
   const used = new Set(current ? [...current.material.pages.flatMap((p) => p.figureIds), ...current.material.questions.flatMap((q) => q.figureIds),
     ...current.material.deliberations.flatMap((x) => x.figureIds), ...current.material.summaryFigureIds] : []);
@@ -532,5 +520,5 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   };
   return {version: boardCapitalDiscussionVersion, stage: produce ? "material" as const : "outline" as const, timeToAlign, daysBefore, outline,
     identity: checks, omissions: decisions, versions: [first, second].flatMap((v) => v ? [v.material] : []), gaps: current?.gaps ?? [], pending,
-    materialFacts: boardMaterialFacts(d), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
+    materialFacts: boardMaterialFacts(d, figures), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
 }

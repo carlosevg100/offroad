@@ -1,7 +1,11 @@
 import {createHash} from "node:crypto";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
-import {auroraBoardBasis, auroraBoardReadings, auroraBoardSources, type BoardTurn} from "./board-capital-discussion.test-support";
+import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, type BoardTurn} from "./board-capital-discussion.test-support";
+import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
+import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
+import {analysisTestId} from "./adopted-analysis.test-support";
 
 // Evaluation-only module; not exported to application consumers. All cases are synthetic calibrations of ficha C47
 // over the published calibrations of the released methods, never production parameters.
@@ -20,13 +24,27 @@ export const boardQuestion = "Conselho na quarta. Prepara a discussão de estrut
 export const boardPacketInput = (turn: BoardTurn = 2, edit: (c: CaseData) => void = () => undefined, after: (i: BoardCapitalDiscussionPacketInput) => void = () => undefined, question = boardQuestion) => {
   const i = {schemaVersion: "board-capital-discussion-packet-input.v1", question, analysis: auroraBoardBasis(turn, edit).seal()} as BoardCapitalDiscussionPacketInput; after(i); return i;
 };
+/** The full path: facts with origin, proposed premises, a confirmed basis, the composer over the stored results. */
+export function boardPacketViaPremises(turn: BoardTurn = 2, edit: (c: CaseData) => void = () => undefined, question = boardQuestion) {
+  let n = 9800;
+  const entries = proposeBoardCapitalDiscussionHypotheses(auroraBoardFacts(turn, edit)).map((h) => ({decisionId: analysisTestId(n++),
+    slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"), kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value,
+    observationId: null, referenceValue: null, referenceDimensions: null, definitionKind: "managerial", actorId: analysisTestId(5), reason: h.reason}) as AdoptionBasisEntry);
+  const purpose = "synthetic board discussion";
+  const snapshot: AdoptionBasisSnapshot = {schemaVersion: "contextual-adoption.v1", versionId: analysisTestId(601), setId: analysisTestId(6), workId: analysisTestId(7), purpose,
+    contextKey: purpose, revision: 1, previousVersionId: null, classification: "working_basis", entries};
+  const canonical = JSON.stringify(snapshot);
+  return composeBoundBoardCapitalDiscussion({discussion: {envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")},
+    scope: {workId: analysisTestId(7), purpose, versionId: analysisTestId(601)}}, question, sources: auroraBoardSources().map((x) => ({id: x.id, result: JSON.stringify(x.packet)}))});
+}
 function observe(id: string, input: BoardCapitalDiscussionPacketInput, expected: unknown, select: (p: Packet) => unknown): Case {
   const result = prepareBoardCapitalDiscussionPacket(input), observed = JSON.stringify(select(result)), expectation = JSON.stringify(expected);
   return {id, expectation, observed, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(result), passed: expectation === observed};
 }
 const current = (p: Packet) => p.result.discussion!.versions.at(-1)!;
 const pageOf = (p: Packet, id: string) => current(p).pages.find((x) => x.id === id)!;
-const display = (p: Packet) => Object.fromEntries(p.result.discussion!.identity.map((x) => [x.figureId, x.display]));
+/** The number each reading shows (dates as shown), without the unit words the formatter adds. */
+const display = (p: Packet) => Object.fromEntries(p.result.discussion!.identity.map((x) => [x.figureId, ["date", "label", "flag", "calendar"].includes(x.unit) ? x.display : x.rounded.replace(".", ",")]));
 const pick = (p: Packet, ids: string[]) => {const d = display(p); return Object.fromEntries(ids.map((x) => [x, d[x]]));};
 
 /** The ficha's answer key, item by item; where the published method gives another number the method's is expected
@@ -62,9 +80,9 @@ function goldCases(): Case[] {
     reuse("outline-in-the-same-urgency-order", p1, t1, ["linha", "safra", "vencimentos", "politica"], (p) => p.readings!.deliberations.map((d) => d.id)),
     reuse("deliberations-with-authority-and-the-supposed-authority-declared", p2, t2, {authority: ["board", "board", "board", "board"], pending: ["linha", "vencimentos", "politica", "safra"]},
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
-    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, curta e concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura de 2021 deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
+    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, curta e concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura da debênture deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% contra custo de capital de 15% e disputa o caixa mais apertado", "A safra pode ser financiada por até R$ 23,5 milhões dos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, em 7 anos"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano contra custo de capital de 15% ao ano e disputa o caixa mais apertado", "A safra pode ser financiada por até R$ 23,5 milhões dos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, em 7 anos"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
     reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "Mudaria a recomendação: demanda abaixo de R$ 74,44 milhões, trigo mais caro ou redes pagando mais tarde", "Próximos passos e datas"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
@@ -109,10 +127,10 @@ function goldCases(): Case[] {
     observe("pages-beyond-the-agenda-are-a-gap", boardPacketInput(2, (c) => {c.agendaMinutes = "30";}), {fits: false, gap: true},
       (p) => ({fits: p.readings!.material!.fitsAgenda, gap: p.gaps.some((g) => g.reason === "pages_exceed_agenda")})),
     reuse("turn-3-recommendation-withdrawn-and-facts-kept", p3, t3, {outcome: "applied", recommendation: null,
-      kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% contra custo de capital de 15%; VPL de R$ 0,7 milhão."},
+      kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
-      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16%.", "Seguir em etapas: VPL de R$ [pendente] milhões.", "Esperar as cotações e adiar doze meses: VPL de R$ 1,4 milhão e retorno de 17%."],
+      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações e adiar doze meses: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
       "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
@@ -137,8 +155,8 @@ function goldCases(): Case[] {
     reuse("ficha-divergences-follow-the-published-methods", p2, t2, boardFichaDivergences.filter((x) => x.figureId in display(p2)).map((x) => [x.figureId, display(p2)[x.figureId]]),
       (p) => boardFichaDivergences.filter((x) => x.figureId in display(p)).map((x) => [x.figureId, display(p)[x.figureId]])),
     reuse("paths-page-compares-each-path", p2, t2, [
-      "Sem a linha agora: giro de R$ 17 mi e debênture de R$ 80 mi: caixa mínimo R$ 15 mi; alavancagem 2,20x; custo R$ 49 mi; dívida líquida em 2028 R$ 79 mi; nos critérios: sim; anuência: não.",
-      "Manter e rolar no vencimento: caixa mínimo R$ -79 mi; alavancagem 2,38x; custo R$ 25 mi; dívida líquida em 2028 R$ 81 mi; nos critérios: não; anuência: não."],
+      "Sem a linha agora: giro de R$ 17 mi e debênture de R$ 80 mi: caixa mínimo R$ 15 milhões; alavancagem 2,20x; custo R$ 49 milhões; dívida líquida em 2028: R$ 79 milhões; nos critérios: sim; anuência: não.",
+      "Manter e rolar no vencimento: caixa mínimo R$ -79 milhões; alavancagem 2,38x; custo R$ 25 milhões; dívida líquida em 2028: R$ 81 milhões; nos critérios: não; anuência: não."],
       (p) => [pageOf(p, "caminhos").lines[0], pageOf(p, "caminhos").lines[3]]),
     reuse("paths-page-has-seven-paths-with-every-measure", p2, t2, {lines: 7, measures: true},
       (p) => ({lines: pageOf(p, "caminhos").lines.length, measures: pageOf(p, "caminhos").lines.every((l) => ["caixa mínimo", "alavancagem", "custo", "dívida líquida em 2028", "nos critérios", "anuência"].every((m) => l.includes(m)))})),
@@ -150,12 +168,12 @@ function goldCases(): Case[] {
       {outcome: "refused", kept: ["npv-economy", "npv-capex", "npv-slow"]}, (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds})),
     observe("refuses-withdrawing-a-recommendation-that-alone-carries-material-facts", boardPacketInput(3, (c) => {
       const line = c.pages.find((x) => x.id === "linha")!;
-      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a R$ {npv-economy} milhões e com capex maior a R$ {npv-capex} milhões; partida mais lenta, R$ {npv-slow} milhão; adiar doze meses leva o VPL a R$ {npv-defer} milhão e o retorno a {irr-defer}%.";
+      line.recommendation = "Recomendamos pedir cotações firmes; com economia menor o VPL vai a {npv-economy} e com capex maior a {npv-capex}; partida mais lenta, {npv-slow}; adiar doze meses leva o VPL a {npv-defer} e o retorno a {irr-defer}.";
       line.lines.splice(2, 1);
     }), {outcome: "refused", kept: ["npv-economy", "npv-capex", "npv-slow"], recommendationKept: true},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds, recommendationKept: pageOf(p, "linha").recommendation !== null})),
     ...(["peak-date", "label-economy"] as const).map((first, k) => observe(`refuses-hidden-subject-omissions-order-${k + 1}`, boardPacketInput(2, (c) => {
-      c.deliberations[0]!.subject = "decidir com payback de {payback} anos e fluxo de R$ {peak-need} milhões; VPLs de R$ {npv-economy} milhões, R$ {npv-capex} milhões, R$ {npv-slow} milhão";
+      c.deliberations[0]!.subject = "decidir com payback de {payback} e fluxo de {peak-need}; VPLs de {npv-economy}, {npv-capex}, {npv-slow}";
       c.omissions = [first, first === "peak-date" ? "label-economy" : "peak-date"].map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "Presidente do conselho"}));
     }), {outcomes: ["refused", "refused"], shown: true},
       (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), shown: ["Payback de cerca de 6 anos", "R$ -21,7 milhões", "R$ -6,4 milhões"].every((n) => JSON.stringify(current(p)).includes(n))}))),
@@ -198,26 +216,32 @@ function adversarialCases(): Case[] {
     ["material-with-no-deliberation", () => boardPacketInput(2, (c) => {c.deliberations = [];}), "Too small"],
     ["divergent-number", () => boardPacketInput(2, (c) => {void c;}, (i) => {
       const e = JSON.parse(i.analysis.discussion.envelope.canonical) as {entries: {fieldPath: string; value: {value: string[]}}[]};
-      e.entries.find((x) => x.fieldPath.endsWith(".figure.wal.reading"))!.value.value[5] = "1.4";
+      e.entries.find((x) => x.fieldPath.endsWith(".figure.wal.reading"))!.value.value[3] = "1.4";
       const canonical = JSON.stringify(e); i.analysis.discussion.envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
     }), "board_capital_figure_diverges:wal"],
-    ["concatenated-decimal-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title += " Dívida R$ {divida-total},{basket-free} mi.";}), "crosses_markers"],
-    ["concatenated-digits-in-an-answer", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " Dívida R$ {divida-total}{basket-free} mi.";}), "crosses_markers"],
-    ["sign-written-before-a-reading-in-the-summary", () => boardPacketInput(2, (c) => {c.summary.closing += " Dívida R$ -{divida-total} mi.";}), "crosses_markers"],
-    ["year-used-as-money-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label += " de R$ {year:2027} mi";}), "date_as_amount"],
+    ["concatenated-readings-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title += " Dívida {divida-total},{basket-free}.";}), "unit_or_sign_before_marker"],
+    ["concatenated-digits-in-an-answer", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " Dívida {divida-total}{basket-free}.";}), "unit_or_digit_after_marker"],
+    ["sign-written-before-a-reading-in-the-summary", () => boardPacketInput(2, (c) => {c.summary.closing += " Dívida -{divida-total}.";}), "unit_or_sign_before_marker"],
+    ["year-reading-used-as-money", () => boardPacketInput(2, (c) => {c.appendix[0]!.label += " de R$ {year-2027}";}), "unit_or_sign_before_marker"],
     ["literal-year-written-by-hand", () => boardPacketInput(2, (c) => {c.appendix[0]!.label += " de R$ 2027 mi";}), "board_capital_number_without_origin"],
-    ["money-without-its-currency-mark", () => boardPacketInput(2, (c) => {c.pages[1]!.lines[0] += " Dívida de {divida-total} milhões.";}), "currency_mark"],
-    ["money-in-billions-instead-of-millions", () => boardPacketInput(2, (c) => {c.pages[1]!.title += " Dívida R$ {divida-total} bilhões.";}), "unit_or_scale"],
-    ["years-shown-as-months", () => boardPacketInput(2, (c) => {c.pages[1]!.lines[1] += " Prazo de {wal} meses.";}), "unit_or_scale"],
-    ["year-marker-used-as-reais", () => boardPacketInput(2, (c) => {c.summary.closing += " A dívida é de {year:2027} reais.";}), "date_as_amount"],
-    ["year-marker-used-as-a-spaced-percent", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " A taxa é de {year:2027} % ao ano.";}), "date_as_amount"],
-    ["scale-word-without-a-marker", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " Em milhões de reais, a dívida é de {year:2027}.";}), "unit_without_marker"],
-    ...([["principal-as-text", "tabela-divida", "result.table.reconciliation.principal"], ["spread-as-text", "recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi"],
-      ["npv-as-text", "linha-embalagem", "comparison.metrics[caseId=base].netPresentValue"]] as const).map(([id, source, path]) => [`financial-field-read-as-text-${id}`,
-      () => boardPacketInput(2, (c) => {c.extraReadings[id] = [source, path, "text", "0", "0"]; c.pages[1]!.lines[0] += ` Dívida total de US$ {${id}} milhões.`;}), `board_capital_text_reading_not_a_label:${id}`] as [string, () => unknown, string]),
-    ["literal-number-in-a-title", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "A dívida é de R$ 130 milhões, curta e concentrada em 2027";}), "board_capital_number_without_origin"],
+    ["currency-written-before-a-reading", () => boardPacketInput(2, (c) => {c.pages[1]!.lines[0] += " Dívida de US$ {divida-total}.";}), "unit_or_sign_before_marker"],
+    ["money-in-billions-instead-of-millions", () => boardPacketInput(2, (c) => {c.pages[1]!.title += " Dívida {divida-total} bilhões.";}), "unit_or_digit_after_marker"],
+    ["years-shown-as-months", () => boardPacketInput(2, (c) => {c.pages[1]!.lines[1] += " Prazo de {wal} meses.";}), "unit_or_digit_after_marker"],
+    ["annual-rate-shown-as-monthly", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[0] += " Retorno de {irr} ao mês.";}), "unit_or_digit_after_marker"],
+    ["calendar-reading-used-as-reais", () => boardPacketInput(2, (c) => {c.summary.closing += " A dívida vence em {year-2027} reais.";}), "unit_or_digit_after_marker"],
+    ["calendar-reading-with-an-iso-currency", () => boardPacketInput(2, (c) => {c.summary.closing += " A dívida é de {year-2027} BRL.";}), "unit_or_digit_after_marker"],
+    ["calendar-reading-as-a-percent-in-words", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " A taxa é de {year-2027} por cento ao ano.";}), "unit_or_digit_after_marker"],
+    ["calendar-reading-as-a-value", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " A dívida é de {year-2027}.";}), "calendar_context"],
+    ["capitalized-scale-without-a-marker", () => boardPacketInput(2, (c) => {c.questions[0]!.answer += " Em Bilhões de Reais, a dívida vence em {year-2027}.";}), "unit_without_marker"],
+    ...([["principal-as-label", "tabela-divida", "result.table.reconciliation.principal"], ["spread-as-label", "recebiveis", "readings.options[id=risco-sacado-a].spreadOverDi"],
+      ["npv-as-label", "linha-embalagem", "comparison.metrics[caseId=base].netPresentValue"]] as const).map(([id, source, path]) => [`financial-field-read-as-a-label-${id}`,
+      () => boardPacketInput(2, (c) => {c.extraReadings[id] = [source, path, "-"]; c.pages[1]!.lines[0] += ` Dívida total de {${id}}.`;}), "board_capital_figure_without_statement"] as [string, () => unknown, string]),
+    ["field-outside-the-registry", () => boardPacketInput(2, (c) => {c.extraReadings["irr-gap"] = ["linha-embalagem", "comparison.metrics[caseId=base].irrMinusDiscountRate", "2", "0.8"]; c.pages[4]!.lines[0] += " Folga {irr-gap}.";}), "board_capital_field_not_registered:irr-gap"],
+    ["date-format-on-a-number", () => boardPacketInput(2, (c) => {c.extraReadings["wal-date"] = ["tabela-divida", "result.table.profile.weightedAverageLifeYears", "day_month", "2026-12-31"]; c.pages[1]!.lines[1] += " Em {wal-date}.";}), "board_capital_figure_without_origin:wal-date"],
+    ["scale-chosen-by-the-contribution", () => boardPacketInput(2, (c) => {c.extraReadings["debt-thousand"] = ["tabela-divida", "result.table.reconciliation.principal", "0", "130000"]; c.pages[1]!.lines[1] += " Total {debt-thousand}.";}), "board_capital_figure_diverges:debt-thousand"],
+    ["literal-number-in-a-title", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "A dívida é de R$ 130 milhões, curta e concentrada em {year-2027}";}), "board_capital_number_without_origin"],
     ["literal-deadline-in-a-line", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[0] = "2/out: aviso ao fornecedor de embalagem.";}), "board_capital_number_without_origin"],
-    ["reading-that-does-not-resolve", () => alterReading("wal", (r) => {r[1] = "result.table.profile.averageLife";}), "board_capital_figure_without_origin:wal"],
+    ["reading-that-does-not-resolve", () => alterReading("principal-2027", (r) => {r[1] = "result.table.profile.scheduleByYear[year=2099].principal";}), "board_capital_figure_without_origin:principal-2027"],
     ["reading-of-an-unnamed-result", () => alterReading("wal", (r) => {r[0] = "outra-analise";}), "board_capital_figure_without_origin:wal"],
     ["tampered-reviewed-result", alterSource("tabela-divida", (p) => {(p.result as {table: {reconciliation: {principal: string}}}).table.reconciliation.principal = "120";}, false), "board_capital_source_fingerprint_mismatch:tabela-divida"],
     ["reviewed-result-of-another-version", alterSource("covenant", (p) => {p.executorVersion = "2026.10.01-v1";}, false), "board_capital_source_version_mismatch:covenant"],
@@ -229,13 +253,13 @@ function adversarialCases(): Case[] {
       const canonical = JSON.stringify(e); i.analysis.discussion.envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
     }), "Invalid option"],
     ["extra-result-beside-the-named-ones", () => boardPacketInput(2, undefined, (i) => {i.analysis.sources.push({id: "extra", packet: i.analysis.sources[0]!.packet});}), "board_capital_source_not_named"],
-    ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "A escritura de {year:2021} limita as garantias de qualquer nova dívida";}), "board_capital_title_without_number:escritura"],
+    ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "A escritura limita as garantias de qualquer nova dívida em {year-2027}";}), "board_capital_title_without_number:escritura"],
     ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[11]!.lines = ["Aviso ao fornecedor e adesão aos programas."];}), "board_capital_page_without_number:passos"],
     ["false-number-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";}), "board_capital_number_without_origin"],
     ["false-number-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";}), "board_capital_number_without_origin"],
     ["false-number-in-an-option-not-yet-shown", () => boardPacketInput(2, (c) => {c.pages[4]!.options[1] = "Seguir em etapas: VPL de R$ 0,9 milhão.";}), "board_capital_number_without_origin"],
-    ["paraphrase-that-drops-a-material-fact", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[1] = "O fluxo acumulado do projeto chega a R$ {peak-need} milhões em {peak-date}.";}), "board_capital_material_fact_not_shown:payback"],
-    ["spread-without-its-percent-sign", () => boardPacketInput(2, (c) => {c.pages[5]!.lines[0] = "Programas a CDI mais {spread-b} a {spread-a}% ao ano, em condições indicativas.";}), "board_capital_unit_missing:spread-b"],
+    ["paraphrase-that-drops-a-material-fact", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[1] = "O fluxo acumulado do projeto chega a {peak-need} em {peak-date}.";}), "board_capital_material_fact_not_shown:payback"],
+    ["percent-sign-written-after-a-rate", () => boardPacketInput(2, (c) => {c.pages[5]!.lines[0] = "Programas a CDI mais {spread-b}% a {spread-a}, em condições indicativas.";}), "unit_or_digit_after_marker"],
     ["answer-without-an-economic-number", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "Reduz a dependência de um fornecedor; cotações firmes decidem até {deadline:linha.aviso}.";}), "board_capital_answer_without_number:estrategica"],
     ["tampered-envelope", () => boardPacketInput(2, undefined, (i) => {i.analysis.discussion.envelope = {...i.analysis.discussion.envelope, canonical: i.analysis.discussion.envelope.canonical.replace("2026-10-02", "2026-10-09")};}), "adoption_basis_integrity_mismatch"],
     ["free-material-in-request", () => ({...boardPacketInput(2), material: {pages: []}}), "Unrecognized key"],

@@ -61,3 +61,66 @@ export function verifyBoardSource(named: {id: string; methodId: string; packetFi
   return {id: named.id, methodId: named.methodId, methodVersion: released.methodVersion, executorVersion: released.executorVersion, packetSchemaVersion: released.packet,
     packetFingerprint: fingerprint as string, status: String(payload.status), gaps, packet: parsed.data};
 }
+
+/** What a field of a released result is: its kind, the scale it is stored in and, for rates and flows, its
+ * periodicity. The material shows a reading only through this registry: the contribution chooses which
+ * reading and how many decimals, never the unit, the scale, the periodicity or the date format. */
+export type BoardFieldKind = "money" | "rate" | "multiple" | "years" | "months" | "bps" | "count" | "calendar" | "date" | "label" | "flag";
+export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly ("day_month" | "month_year" | "year")[]};
+const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
+const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
+const plain = (kind: BoardFieldKind): BoardFieldSpec => ({kind, scale: "native", period: "none", formats: []});
+const date = (...formats: ("day_month" | "month_year" | "year")[]): BoardFieldSpec => ({kind: "date", scale: "native", period: "none", formats});
+/** Field paths with every selector written as [*]. */
+export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<string, BoardFieldSpec>>> = {
+  "build-company-debt-table": {
+    "result.table.reconciliation.principal": money("millions"), "result.table.profile.scheduleByYear[*].principal": money("millions"),
+    "result.table.profile.scheduleByYear[*].year": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
+    "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
+    "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
+    "result.table.negativePledgeBaskets[*].basket": money("millions"), "result.table.negativePledgeBaskets[*].occupied": money("millions"),
+    "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "year")},
+  "measure-covenant-headroom": {
+    "result.headroom.limits[*].maximumRatio": plain("multiple"), "result.headroom.measurements[*].ratio": plain("multiple"),
+    "result.headroom.measurements[*].reportedEbitda": money("millions"), "result.headroom.measurements[*].date": date("month_year", "year")},
+  "project-weekly-cash": {
+    "result.weekly.minimumCash": money("millions"), "readings.sensitivities[*].minimum": money("millions"),
+    "readings.sensitivities[*].weekStart": date("day_month"), "readings.tightestWeek.weekStart": date("day_month")},
+  "analyze-investment-project": {
+    "comparison.metrics[*].annualIrr": rate("annual"), "comparison.metrics[*].discountRate": rate("annual"),
+    "comparison.metrics[*].netPresentValue": money("reais"), "comparison.metrics[*].paybackYears": plain("years"),
+    "comparison.metrics[*].peakCumulativeCashNeed.amount": money("reais"), "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "year"),
+    "cases[*].label": plain("label")},
+  "build-operating-projection": {
+    "result.projection.projection.scenarios[*].inputCostShock.rate": rate("none"),
+    "result.projection.projection.scenarios[*].inputCostShock.passThroughLagMonths": plain("months"),
+    "result.projection.projection.scenarios[*].label": plain("label"), "readings.projected.scenarios[*].rows[*].ebitda": money("millions"),
+    "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": money("millions")},
+  "challenge-financial-projection": {"readings.gap.plan.ebitda": money("millions"), "readings.gap.reference.ebitda": money("millions")},
+  "monetize-receivables-for-working-capital": {
+    "readings.plan[*].cumulative": money("millions"), "readings.options[*].spreadOverDi": rate("annual"),
+    "readings.options[*].volume": money("millions"), "readings.gross": money("millions")},
+  "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "levers[*].netOfKnownCosts": money("reais", "annual")},
+  "evaluate-financing-paths": {
+    "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": money("millions"),
+    "result.evaluation.paths[*].debtServiceByYear[*].service": money("millions"), "result.evaluation.paths[*].debtServiceByYear[*].availableForService": money("millions"),
+    "readings.horizon.candidatePaths": plain("count"), "readings.horizon.lastPeriodEnd": date("year", "month_year"),
+    "readings.recommendation.longInstrument.issueTarget": money("millions"), "readings.recommendation.longInstrument.issueFloorInsideGates": money("millions"),
+    "readings.recommendation.longInstrument.termYears": plain("years"), "readings.recommendation.longInstrument.equivalentSpread": rate("annual"),
+    "readings.recommendation.longInstrument.equivalentSpreadAtCondition": rate("annual"),
+    "readings.recommendation.longInstrument.firstAmortizationYear": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
+    "readings.recommendation.longInstrument.lastAmortizationYear": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
+    "result.evaluation.paths[*].shortfallVsPolicyMinimum": money("millions"),
+    "result.evaluation.paths[*].amortizationTests[*].years[*].scheduledAmortization": money("millions"),
+    "result.evaluation.paths[*].amortizationTests[*].years[*].availableAfterInterest": money("millions"),
+    "readings.alternative.issueTarget": money("millions"), "readings.recommendation.horizonFinancingCost": money("millions"),
+    "readings.recommendation.netDebtAtHorizon": money("millions"), "readings.paths[*].label": plain("label"),
+    "readings.paths[*].minimumCash.amount": money("millions"), "readings.paths[*].worstLeverage": plain("multiple"),
+    "readings.paths[*].horizonFinancingCost": money("millions"), "readings.paths[*].netDebtAtHorizon": money("millions"),
+    "readings.paths[*].eligible": plain("flag"), "readings.paths[*].consentRequired": plain("flag")},
+};
+/** The field a reading path names, or null when the method's registry does not list it. */
+export function boardFieldOf(methodId: string, path: string): BoardFieldSpec | null {
+  const pattern = path.replace(/\[[^\]]*\]/g, "[*]");
+  return boardFieldRegistry[methodId as BoardSourceMethodId]?.[pattern] ?? null;
+}
