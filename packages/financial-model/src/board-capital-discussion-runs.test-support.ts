@@ -62,6 +62,13 @@ export const boardDeferralReadings = (packet: Record<string, unknown>) => (c: Ca
   c.extraReadings["npv-defer"] = ["linha-embalagem", "comparison.metrics[caseId=defer-12].netPresentValue", "1", boardStatedMillions(packet, "defer-12")];
   c.extraReadings["irr-defer"] = ["linha-embalagem", "comparison.metrics[caseId=defer-12].annualIrr", "0", new Decimal(irr).times(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)];
 };
+/** The material with the deferral named by its exact definition ("capex e início de operação adiados e horizonte da
+ * análise estendido na mesma medida") instead of the role the analysis registers (test side only). */
+export const boardStrictDeferral = (c: CaseData) => {
+  const page = c.pages.find((x) => x.id === "linha")!;
+  if (page.recommendation) page.recommendation = page.recommendation.replace("topic.project_wait_quotes_registered|", "topic.project_wait_quotes|");
+  page.options = page.options.map((o) => o.replace("option.wait_quotes_registered|", "option.wait_quotes|"));
+};
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
   return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
@@ -204,7 +211,7 @@ function goldCases(): Case[] {
       kept: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"], firstLine: "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão."},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, recommendation: pageOf(p, "linha").recommendation, kept: p.readings!.omissions[0]!.keptFigureIds, firstLine: pageOf(p, "linha").lines[0]})),
     reuse("turn-3-options-with-criteria-and-numbers", p3, t3,
-      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, com capex e início de operação adiados e horizonte da análise estendido na mesma medida: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
+      ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, no caso que a análise registra como adiamento: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
       "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
@@ -291,11 +298,6 @@ function goldCases(): Case[] {
       {title: true, firstPath: true, namesPackaging: false},
       (p) => ({title: pageOf(p, "linha").title.startsWith("A caldeira rende "), firstPath: pageOf(p, "movimentos").lines[0]!.startsWith("Caminho A: sem a caldeira; "),
         namesPackaging: boardShownTexts(p).some((t) => /linha de embalagem/i.test(t))})),
-    observe("added-period-of-twelve-months-keeps-the-same-measure", withBoardSource("linha-embalagem", auroraInvestmentPacket({deferralLastPeriodEnd: "2037-12-31"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
-      {sameMeasure: true}, (p) => ({sameMeasure: (pageOf(p, "linha").recommendation ?? "").includes("horizonte da análise estendido na mesma medida")})),
-    // Review r21: the control, a one-year deferral on a horizon one year longer, keeps "na mesma medida".
-    observe("one-year-deferral-with-a-one-year-extension-keeps-the-same-measure", withBoardSource("linha-embalagem", auroraInvestmentPacket({deferralHorizonYears: 1}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
-      {sameMeasure: true}, (p) => ({sameMeasure: (pageOf(p, "linha").recommendation ?? "").includes("horizonte da análise estendido na mesma medida")})),
     // Review r19: whole-field identity; a joint program is never the client's own, and its volume is the client's.
     observe("input-label-corn-up-wheat-unchanged-never-names-an-input", withBoardSource("projecao", auroraProjectionPacket({shockLabel: "Milho 15% mais caro, com trigo inalterado"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
       {generic: true, namesInput: false, gap: true},
@@ -502,13 +504,27 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     // Review r21: "estendido na mesma medida" only when the periods added equal the deferral exactly.
     ...[2, 3, 5].flatMap((years) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-a-${years}-year-extension-turn-${turn}`, () => {
       const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
-      return withBoardSource("linha-embalagem", packet, () => build(turn, boardDeferralReadings(packet)));
-    }, "board_capital_template_condition_failed:topic.project_wait_quotes"] as [string, () => unknown, string])),
+      return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
+    }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
     // Review r22: one added period of 6, 24 or 48 months against a 12-month deferral, measured by dates.
     ...(["2037-06-30", "2038-12-31", "2040-12-31"] as const).flatMap((end) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-an-added-period-ending-${end}-turn-${turn}`, () => {
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
-      return withBoardSource("linha-embalagem", packet, () => build(turn, boardDeferralReadings(packet)));
-    }, "board_capital_template_condition_failed:topic.project_wait_quotes"] as [string, () => unknown, string])),
+      return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
+    }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r23: the deferral is the base moved uniformly; the calibration's case is not, so the exact sentence is refused
+    // and the material names the case by its registered role. The exact control passes the definition (conditions 0 and 1)
+    // and is refused only by the comparison with going on now (condition 2): a pure deferral lowers a positive NPV.
+    ["calibration-deferral-named-by-its-exact-definition", () => build(2, boardStrictDeferral), "board_capital_template_condition_failed:topic.project_wait_quotes:1"],
+    ...(["control", "lastPeriodEconomy", "adoptedTimes", "startupCapital"] as const).flatMap((kind) => ([2, 3] as const).map((turn) => [`exact-deferral-${kind}-turn-${turn}`, () => {
+      const packet = auroraInvestmentPacket({exactDeferral: kind}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c); c.deliberations.find((d) => d.id === "linha")!.recommendation = null;}));
+    }, `board_capital_template_condition_failed:topic.project_wait_quotes:${kind === "control" ? 2 : 1}`] as [string, () => unknown, string])),
+    // The option at turn 3, with the recommendation by registered role: refused by the definition alone.
+    ...(["lastPeriodEconomy", "startupCapital"] as const).map((kind) => [`exact-deferral-${kind}-option-turn-3`, () => {
+      const packet = auroraInvestmentPacket({exactDeferral: kind}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(3, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);
+        c.deliberations.find((d) => d.id === "linha")!.recommendation = null; c.pages.find((x) => x.id === "linha")!.recommendation = "topic.project_wait_quotes_registered|vpl=npv-defer|retorno=irr-defer";}));
+    }, "board_capital_template_condition_failed:option.wait_quotes:1"] as [string, () => unknown, string]),
     // Review r20: an exact definition compares the case's whole input object; a discount rate changed with the economy,
     // or alone (positive NPV at 15%, negative at 30%), is never presented as a smaller economy.
     ...([["smaller-economy-with-a-30-percent-discount-rate", true], ["base-operations-at-a-30-percent-discount-rate-called-smaller-economy", false]] as const).map(([name, withEconomy]) => [name, () => {

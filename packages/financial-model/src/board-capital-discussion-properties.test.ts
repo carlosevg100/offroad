@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardDeferralReadings, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardDeferralReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
@@ -96,6 +96,8 @@ const meaning: Record<string, Record<string, string>> = {
   "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
   "option.staged": {vpl: "pending:analyze-investment-project"},
   "option.wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
+  "topic.project_wait_quotes_registered": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
+  "option.wait_quotes_registered": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
   "topic.crop_programs": {valor: RF + "readings.plan[optionId=*].cumulative", pico: RF + "result.funding.need.peak"},
   "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=*].spreadOverDi", taxa_a: RF + "readings.options[id=*].spreadOverDi"},
   "topic.crop_overdraft": {credor: DT + "result.table.creditLines[id=*].creditor", livre: DT + "result.table.creditLines[id=*].unused", termos: "pending:build-company-debt-table"},
@@ -396,37 +398,45 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (/economia menor/.test(t) && changed("economy-4") !== "project.annualAvoidedOperatingCost,project.annualFixedOperatingCost,project.annualVariableOperatingCost") bad.push(`scenario_economy:${t.slice(0, 60)}`);
     if (/capex e depreciação maiores/.test(t) && changed("capex-120") !== "project.annualDepreciation,project.growthCapexPaid") bad.push(`scenario_capex:${t.slice(0, 60)}`);
     if (/partida mais lenta/.test(t) && changed("slower-start") !== "project.ramp.operationStartMonth") bad.push(`scenario_start:${t.slice(0, 60)}`);
-    // A deferral named with its extended horizon: outside the three deferred fields, every leaf equal to the base's once
-    // the base's period series are given the new periods (so only appended leaves and the period end may be new).
-    if (/início de operação adiados/i.test(t)) {
-      const a = inputLeaves(cases.find((x) => x.id === "defer-12")?.result), b = inputLeaves(cases.find((x) => x.id === "base")?.result);
-      const deferred = ["project.growthCapexPaid", "project.ramp.operationStartMonth", "project.startup.retainedCapitalMultipliers"];
-      const ok = /horizonte da análise estendido/.test(t) && [...new Set([...a.keys(), ...b.keys()])].every((k) => {
-        if (deferred.includes(k)) return true;
-        const x = a.get(k), y = b.get(k);
-        return !!x && !!y && [...y.keys()].every((l) => l.endsWith(".periodEnd") || x.get(l) === y.get(l))
-          && [...x.keys()].every((l) => y.has(l) || l.endsWith(".periodEnd") || /^\.value\.value\[\d+\]$/.test(l));
-      });
-      if (!ok) bad.push(`scenario_deferral_whole:${t.slice(0, 60)}`);
-      // "Na mesma medida", by dates: the horizon's extension (last period end against the reference's, each equal to the
-      // period end its inputs declare), the capex shift and the first-operation shift, in months, are equal; every period
-      // of the case lasts as long as the reference's.
-      if (/na mesma medida/.test(t)) {
-        const value = (m: ReturnType<typeof inputLeaves>, f: string) => [...(m.get(f) ?? new Map()).entries()].filter(([l]) => /^\.value\.value(\[\d+\])?$/.test(l)).map(([, v]) => v as string);
-        const declared = (m: ReturnType<typeof inputLeaves>) => new Set([...m.values()].flatMap((x) => [...x.entries()].filter(([l]) => l === ".dimensions.periodEnd").map(([, v]) => v)));
-        const month = (x: string | undefined) => x ? Number(x.slice(0, 4)) * 12 + Number(x.slice(5, 7)) : NaN;
-        const ca = value(a, "periodEnds"), cb = value(b, "periodEnds");
-        const gaps = (xs: string[]) => xs.slice(1).map((x, k) => month(x) - month(xs[k]));
-        const step = gaps(cb)[0];
-        const extension = month(ca.at(-1)) - month(cb.at(-1));
-        const nonZero = (xs: string[]) => xs.findIndex((v) => !new D(v).eq(0));
-        const capexShift = month(ca[nonZero(value(a, "project.growthCapexPaid"))]) - month(cb[nonZero(value(b, "project.growthCapexPaid"))]);
-        const startShift = month(value(a, "project.ramp.operationStartMonth")[0]) - month(value(b, "project.ramp.operationStartMonth")[0]);
-        const coherent = [...declared(a)].every((x) => x === ca.at(-1)) && [...declared(b)].every((x) => x === cb.at(-1));
-        if (!(coherent && step !== undefined && step > 0 && [...gaps(ca), ...gaps(cb)].every((g) => g === step) && extension > 0 && extension === capexShift && extension === startShift))
-          bad.push(`deferral_measure:${t.slice(0, 60)}`);
+    // A deferral named by its exact definition: the oracle's own uniform shift, written apart from the method's. Every
+    // series of the horizon's length moves by k periods with its own neutral value before; dates of the project and the
+    // company's final payments move by k periods; everything else is equal. No other leeway.
+    if (/início de operação adiados e horizonte da análise estendido na mesma medida/.test(t)) {
+      const neutral: Record<string, "zero" | "first" | "calendar" | "index"> = {periodEnds: "calendar", "valuation.adoptedTimes": "index", "company.closingDebtStock": "first",
+        "project.cashTaxRate": "first", "project.lossTaxTreatment": "first", "project.fixedCostScaling": "first", "company.cashTaxRate": "first", "company.lossTaxTreatment": "first"};
+      const flows = /^(project\.(annual\w+|growthCapexPaid|startup\.retainedCapitalMultipliers)|company\.(ebitda|nonCashEbitdaBridge|cashLeasePayments|netWorkingCapitalChange|maintenanceCapex|growthCapex|taxableBaseBeforeProject|netFinancingCashAvailable|netCapitalCashAvailable|netRestrictedCashMovement))$/;
+      const moved = ["project.ramp.operationStartMonth", "company.finalPaymentDates"];
+      const raw = (id: string) => new Map(((cases.find((x) => x.id === id)?.result.contributions as {fieldPath: string; value: {value: unknown}; dimensions: Record<string, unknown>}[] | undefined) ?? [])
+        .map((c) => [c.fieldPath.replace(/^[^.]+\.[0-9a-f-]{36}\./, ""), c]));
+      const a = raw("defer-12"), b = raw("base");
+      const ends = (m: typeof a) => (m.get("periodEnds")?.value.value as string[] | undefined) ?? [];
+      const month = (x: string) => Number(x.slice(0, 4)) * 12 + Number(x.slice(5, 7)) - 1;
+      const plus = (x: string, months: number) => {const m = month(x) + months, y = Math.floor(m / 12), mo = m % 12 + 1, last = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+        const lastDay = Number(x.slice(8, 10)) === new Date(Date.UTC(Number(x.slice(0, 4)), Number(x.slice(5, 7)), 0)).getUTCDate();
+        return `${y}-${String(mo).padStart(2, "0")}-${String(lastDay ? last : Math.min(Number(x.slice(8, 10)), last)).padStart(2, "0")}`;};
+      const ea = ends(a), eb = ends(b), n = eb.length, k = ea.length - n, step = n > 1 ? month(eb[1]!) - month(eb[0]!) : 0;
+      const strip = (c: Record<string, unknown>) => {const {fieldPath: _f, decisionId: _d, slotKey: _s, actorId: _a, observationId: _o, value: _v, dimensions, ...rest} = c;
+        const {scenario: _sc, periodEnd: _pe, ...dims} = dimensions as Record<string, unknown>; return JSON.stringify({...Object.fromEntries(Object.entries(rest).filter(([key]) => !/anchor$/i.test(key) && key !== "origin")), dims});};
+      let ok = k >= 1 && step > 0 && a.size === b.size;
+      for (const [key, y] of b) {
+        const x = a.get(key);
+        if (!x || strip(x as unknown as Record<string, unknown>) !== strip(y as unknown as Record<string, unknown>)) {ok = false; break;}
+        if (x.dimensions.periodEnd !== undefined && x.dimensions.periodEnd !== ea.at(-1)) {ok = false; break;}
+        const xv = x.value.value, yv = y.value.value;
+        if (Array.isArray(yv) && yv.length === n) {
+          const rule = neutral[key] ?? (flows.test(key) ? "zero" : null);
+          if (!rule || !Array.isArray(xv) || xv.length !== n + k) {ok = false; break;}
+          const want = (t: number) => rule === "calendar" ? plus(eb[0]!, t * step) : rule === "index" ? String(t) : t >= k ? String(yv[t - k]) : rule === "zero" ? "0" : String(yv[0]);
+          if (xv.some((v, t) => String(v) !== want(t)) || (rule === "calendar" && yv.some((v, t) => String(v) !== plus(eb[0]!, t * step))) || (rule === "index" && yv.some((v, t) => String(v) !== String(t)))) {ok = false; break;}
+        } else if (moved.includes(key)) {
+          const xs = Array.isArray(xv) ? xv : [xv], ys = Array.isArray(yv) ? yv : [yv];
+          if (xs.length !== ys.length || xs.some((v, i) => String(v) !== plus(String(ys[i]), k * step))) {ok = false; break;}
+        } else if (JSON.stringify(xv) !== JSON.stringify(yv)) {ok = false; break;}
       }
+      if (!ok) bad.push(`deferral_uniform:${t.slice(0, 60)}`);
     }
+    // A deferral named only by the role the analysis registers for it.
+    if (/no caso que a análise registra como adiamento/.test(t) && cases.find((x) => x.id === "defer-12")?.role !== "deferral") bad.push(`deferral_role:${t.slice(0, 60)}`);
     // Deferrals: the first disbursement and the first operation strictly later than the reference's.
     const firstNonZero = (xs: string[] | undefined) => xs ? xs.findIndex((v) => !new D(v).eq(0)) : -1;
     if (/início de operação adiados/i.test(t)) {
@@ -894,40 +904,63 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const {fingerprint: _f, ...payload} = schema.parse(packet);
     return {...packet, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
   };
-  it("regression r21: a one-year deferral with a longer horizon is never \"estendido na mesma medida\"; the one-year control keeps it (full path, oracle not vacuous)", () => {
-    const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
-    const control = auroraInvestmentPacket({deferralHorizonYears: 1}) as unknown as Record<string, unknown>;
-    const pc = withBoardSource("linha-embalagem", control, () => full(2, () => undefined));
-    expect(pc.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation).toContain("horizonte da análise estendido na mesma medida");
-    expect(oracle(pc, [{packet: control}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
-    const claimsOf = (id: string) => boardTemplates[id]!.when.map((w) => JSON.stringify({...w, claim: undefined}));
-    expect(claimsOf("option.wait_quotes").filter((x) => x.includes("shifted"))).toEqual(claimsOf("topic.project_wait_quotes").filter((x) => x.includes("shifted")));
-    expect(claimsOf("option.wait_quotes").some((x) => x.includes("shifted"))).toBe(true);
-    for (const years of [2, 3, 5]) {
-      const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
-      // Turn 2 and turn 3 (the option stays after the recommendation is withdrawn; both carry the same exact check).
-      expect(() => withBoardSource("linha-embalagem", packet, () => full(2, boardDeferralReadings(packet))), `${years}`).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes");
-      expect(() => withBoardSource("linha-embalagem", packet, () => full(3, boardDeferralReadings(packet))), `${years}`).toThrow(/board_capital_template_condition_failed:(topic\.project_wait_quotes|option\.wait_quotes)/);
-      // Not vacuous: the calibration's texts read against this result (same fingerprint) are refused by the oracle.
-      const forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
-      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("deferral_measure:")), `${years}`).toBe(true);
+  it("regression r21 and r22: longer horizons, in years or by dates, are never the exact deferral (full path, oracle not vacuous)", () => {
+    const strict = (packet: Record<string, unknown>) => (c: CaseData) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);};
+    for (const variant of [{deferralHorizonYears: 2}, {deferralHorizonYears: 3}, {deferralHorizonYears: 5}, {deferralLastPeriodEnd: "2037-06-30"}, {deferralLastPeriodEnd: "2038-12-31"}, {deferralLastPeriodEnd: "2040-12-31"}]) {
+      const packet = auroraInvestmentPacket(variant) as unknown as Record<string, unknown>;
+      for (const turn of [2, 3] as const) expect(() => withBoardSource("linha-embalagem", packet, () => full(turn, strict(packet))), JSON.stringify(variant)).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:1");
     }
   });
-  it("regression r22: the horizon's extension, the capex shift and the start shift are measured by dates and must be equal (full path, oracle not vacuous)", () => {
+  it("regression r23: the deferral is the base moved uniformly, series by series; the calibration's case is named by its registered role (full path, oracle not vacuous)", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
-    const control = auroraInvestmentPacket({deferralLastPeriodEnd: "2037-12-31"}) as unknown as Record<string, unknown>;
-    const pc = withBoardSource("linha-embalagem", control, () => full(2, () => undefined));
-    expect(pc.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation).toContain("horizonte da análise estendido na mesma medida");
-    expect(oracle(pc, [{packet: control}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
-    // One added period of 6, 24 and 48 months against a deferral of 12.
-    for (const end of ["2037-06-30", "2038-12-31", "2040-12-31"]) {
-      const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
-      expect(() => withBoardSource("linha-embalagem", packet, () => full(2, boardDeferralReadings(packet))), end).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes");
-      expect(() => withBoardSource("linha-embalagem", packet, () => full(3, boardDeferralReadings(packet))), end).toThrow(/board_capital_template_condition_failed:(topic\.project_wait_quotes|option\.wait_quotes)/);
-      const forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
-      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("deferral_measure:")), end).toBe(true);
+    // The calibration: not a uniform shift (costs on calendar, company series, maintenance and depreciation from the start).
+    const p = full(2, () => undefined), rec = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation!;
+    expect(rec).toBe("Recomendamos pedir cotações firmes antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em R$ 1,4 milhão e o retorno em 17% ao ano.");
+    expect(() => full(2, boardStrictDeferral)).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:1");
+    const edit = (packet: Record<string, unknown>, registered: boolean) => (c: CaseData) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);
+      c.deliberations.find((d) => d.id === "linha")!.recommendation = null;
+      if (registered) c.pages.find((x) => x.id === "linha")!.recommendation = "topic.project_wait_quotes_registered|vpl=npv-defer|retorno=irr-defer";};
+    // The exact control passes the definition and is refused only by the comparison with going on now.
+    const control = auroraInvestmentPacket({exactDeferral: "control"}) as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const) expect(() => withBoardSource("linha-embalagem", control, () => full(turn, edit(control, false)))).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:2");
+    // Extra economy in the last period, another valuation time, a smaller startup capital: refused by the definition.
+    for (const kind of ["lastPeriodEconomy", "adoptedTimes", "startupCapital"] as const) {
+      const packet = auroraInvestmentPacket({exactDeferral: kind}) as unknown as Record<string, unknown>;
+      for (const turn of [2, 3] as const) expect(() => withBoardSource("linha-embalagem", packet, () => full(turn, edit(packet, false))), kind).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:1");
+      if (kind !== "adoptedTimes") expect(() => withBoardSource("linha-embalagem", packet, () => full(3, edit(packet, true))), kind).toThrow("board_capital_template_condition_failed:option.wait_quotes:1");
     }
+    // The oracle: the exact sentence read against the calibration is refused; against the exact control it is clean; against
+    // each deviation it is refused. Not vacuous in both directions.
+    const forged = structuredClone(p);
+    forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation = rec.replace("no caso que a análise registra como adiamento", "com capex e início de operação adiados e horizonte da análise estendido na mesma medida");
+    const against = (packet: Record<string, unknown>) => oracle(forged, [{packet: {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint}}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad;
+    expect(oracle(forged).bad.some((x) => x.startsWith("deferral_uniform:"))).toBe(true);
+    expect(against(control).some((x) => x.startsWith("deferral_uniform:"))).toBe(false);
+    for (const kind of ["lastPeriodEconomy", "adoptedTimes", "startupCapital"] as const)
+      expect(against(auroraInvestmentPacket({exactDeferral: kind}) as unknown as Record<string, unknown>).some((x) => x.startsWith("deferral_uniform:")), kind).toBe(true);
   });
+  it("property: every element of every time series of the deferral case's input object (enumerated from the schema), the added positions included, is part of the definition", () => {
+    const control = auroraInvestmentPacket({exactDeferral: "control"}) as unknown as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
+    const deferred = control.cases.find((x) => x.id === "defer-12")!.result.contributions;
+    const n = (control.cases.find((x) => x.id === "base")!.result.contributions.find((x) => x.fieldPath.endsWith(".periodEnds"))!.value.value as unknown[]).length;
+    // The series of the case's input schema: every adopted input that is a list over the horizon.
+    const series = deferred.filter((x) => Array.isArray(x.value.value) && (x.value.value as unknown[]).length === n + 1).map((x) => x.fieldPath.replace(/^[^.]+\.[0-9a-f-]{36}\./, ""));
+    expect(series.length).toBeGreaterThan(25);
+    const other = (x: unknown) => {const t = String(x);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return `${t.slice(0, 8)}${t.slice(8) === "01" ? "02" : "01"}`;
+      return /^-?\d+(?:\.\d+)?$/.test(t) ? new Decimal(t).plus(1).toFixed() : `${t}_x`;};
+    const edit = (packet: Record<string, unknown>) => (c: CaseData) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c); c.deliberations.find((d) => d.id === "linha")!.recommendation = null;};
+    let checked = 0;
+    for (const field of series) for (const position of [0, n]) {
+      const packet = structuredClone(control);
+      const entry = packet.cases.find((x) => x.id === "defer-12")!.result.contributions.find((x) => x.fieldPath.endsWith(`.${field}`))!;
+      const xs = [...entry.value.value as unknown[]]; xs[position] = other(xs[position]); entry.value = {...entry.value, value: xs};
+      const sealed = reseal("analyze-investment-project", packet as unknown as Record<string, unknown>);
+      expect(() => withBoardSource("linha-embalagem", sealed, () => full(2, edit(sealed))), `${field}[${position}]`).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:1");
+      checked++;
+    }
+    expect(checked).toBe(series.length * 2);
+  }, 600000);
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
     const economy = original.cases.find((x) => x.id === "economy-4")!.result.contributions;

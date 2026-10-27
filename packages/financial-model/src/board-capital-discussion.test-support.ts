@@ -4,6 +4,7 @@ import type {AdoptedBoardCapitalDiscussionInput, BoardCapitalDiscussionAnalyses}
 import type {BoardCapitalDiscussionFacts} from "./board-capital-discussion-premises";
 import {prepareInvestmentDecisionPacket} from "./investment-decision-packet";
 import {c32PacketInput} from "./investment-decision-packet.test-support";
+import {boardDeferralRules, boardShiftDate} from "./board-capital-discussion-templates";
 import {prepareDebtTablePacket} from "./debt-table-packet";
 import {auroraDebtTableBasis} from "./debt-table.test-support";
 import Decimal from "decimal.js";
@@ -73,11 +74,13 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
 export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
-  economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string} = {}) {
+  economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string;
+  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
     : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy)
     : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears)
-    : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd) : c32PacketInput(), from = id(1001);
+    : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd)
+    : variant.exactDeferral !== undefined ? c32WithExactDeferral(variant.exactDeferral) : c32PacketInput(), from = id(1001);
   // The same analysis registered for another project: only the base case's label changes.
   if (variant.baseLabel) calibration.input.cases[0]!.label = variant.baseLabel;
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
@@ -108,6 +111,29 @@ function c32WithDeferralHorizon(years: number) {
     if (e.fieldPath.endsWith(".project.startup.retainedCapitalMultipliers")) e.value = {type: "list", value: ys.map((y) => y < 2028 || y === ys.at(-1) ? "0" : "1")};
   }
   f.input.cases[4] = {...f.input.cases[4]!, analysis: deferred};
+  return f;
+}
+/** The C32 cases with defer-12 rebuilt as the base moved uniformly by one period, series by series by the declared
+ * rules (regressions only), and one deviation at a time on top of it. */
+function c32WithExactDeferral(kind: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital") {
+  const f = c32PacketInput(), b = f.basis, field = (p: string) => p.split(".").slice(2).join(".");
+  const base = new Map(b.entries.filter((e) => e.dimensions.scenario === "base").map((e) => [field(e.fieldPath), e]));
+  const ends = base.get("periodEnds")!.value.value as string[], step = 12, k = 1;
+  for (const e of b.entries) {
+    if (e.dimensions.scenario !== "defer-12") continue;
+    const key = field(e.fieldPath), ref = base.get(key)!, rule = boardDeferralRules.series[key];
+    if (rule) {
+      const ys = ref.value.value as string[];
+      e.value = {...e.value, value: Array.from({length: ys.length + k}, (_, t) => rule === "calendar" ? boardShiftDate(ends[0]!, t * step) : rule === "index" ? String(t)
+        : t >= k ? ys[t - k]! : rule === "flow" || rule === "zero" ? "0" : ys[0]!)} as typeof e.value;
+    } else if (boardDeferralRules.shiftedDates.includes(key)) {
+      const v = ref.value.value;
+      e.value = {...e.value, value: Array.isArray(v) ? v.map((x) => boardShiftDate(String(x), k * step)) : boardShiftDate(String(v), k * step)} as typeof e.value;
+    } else e.value = structuredClone(ref.value);
+    if (kind === "lastPeriodEconomy" && key === "project.annualAvoidedOperatingCost") {const xs = [...e.value.value as string[]]; xs[xs.length - 1] = new Decimal(xs.at(-1)!).plus(1000000).toFixed(); e.value = {...e.value, value: xs} as typeof e.value;}
+    if (kind === "adoptedTimes" && key === "valuation.adoptedTimes") {const xs = [...e.value.value as string[]]; xs[xs.length - 1] = "11.5"; e.value = {...e.value, value: xs} as typeof e.value;}
+    if (kind === "startupCapital" && key === "project.startup.inventoryDays") e.value = {...e.value, value: "30"} as typeof e.value;
+  }
   return f;
 }
 /** The C32 cases with defer-12's one added period ending at another date (regressions only; 2037-12-31 is the
@@ -426,8 +452,8 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc|projeto=project-label",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
           "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason|motivo=informed:motivo-estrategico"],
-        recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
-        options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
+        recommendation: "topic.project_wait_quotes_registered|vpl=npv-defer|retorno=irr-defer" as string | null,
+        options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes_registered|vpl=npv-defer|retorno=irr-defer"]},
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|credor=cl-creditor|livre=cl-unused|termos=cl-terms"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],

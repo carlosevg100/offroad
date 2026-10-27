@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardCanonicalInputs, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardCanonicalInputs, boardIsUniformDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -521,59 +521,22 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
     if ("changedOnly" in c) {
       // The case's whole input object (every adopted contribution) against its reference's, in canonical form; only source
-      // anchors and link ids are ignored. Every named field must differ; every other field must be equal, or, for a
-      // deferral that extends the horizon, equal to the reference's with the same periods appended.
+      // anchors and link ids are ignored. Every named field must differ; every other field must be equal.
       const [method, pathA, pathB] = c.changedOnly;
       const a = boardCanonicalInputs(read(method, pathA)), b = boardCanonicalInputs(read(method, pathB));
       if (!a || !b) throw unverified(pathA);
-      const ends = (m: Map<string, BoardCanonicalInput>) => m.get("periodEnds")?.value;
-      const extra = c.horizon === "extended" ? (Array.isArray(ends(a)) && Array.isArray(ends(b)) ? (ends(a) as unknown[]).length - (ends(b) as unknown[]).length : -1) : 0;
-      if (c.horizon === "extended" && extra < 1) return false;
-      // "Na mesma medida", measured by dates: the horizon's extension (last period end of the case against the reference's,
-      // each equal to the period end its inputs declare), the capex shift and the first-operation shift, all in months, are
-      // equal; and every period of the case, the added ones included, lasts as long as the reference's periods.
-      if (c.shifted) {
-        const monthsOf = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7)) - 1;
-        const isoEnds = (m: Map<string, BoardCanonicalInput>) => {const v = ends(m); return Array.isArray(v) && v.every((x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x)) ? v as string[] : null;};
-        const refEnds = isoEnds(b), caseEnds = isoEnds(a);
-        if (!refEnds || !caseEnds || refEnds.length < 2) return false;
-        // Each declared horizon end (the period end of every input) is the last period end.
-        for (const [m, list] of [[a, caseEnds], [b, refEnds]] as const)
-          for (const entry of m.values()) {const end = (entry.dimensions as {periodEnd?: unknown} | undefined)?.periodEnd; if (end !== undefined && end !== list.at(-1)) return false;}
-        const step = monthsOf(refEnds[1]!) - monthsOf(refEnds[0]!);
-        const intervals = (xs: string[]) => xs.slice(1).map((x, k) => monthsOf(x) - monthsOf(xs[k]!));
-        if (step <= 0 || [...intervals(refEnds), ...intervals(caseEnds)].some((m) => m !== step)) return false;
-        const extension = monthsOf(caseEnds.at(-1)!) - monthsOf(refEnds.at(-1)!);
-        if (extension <= 0) return false;
-        for (const f of c.shifted.series) {
-          const x = a.get(f)?.value, y = b.get(f)?.value;
-          if (!Array.isArray(x) || !Array.isArray(y) || x.length !== caseEnds.length || y.length !== refEnds.length) return false;
-          const first = (xs: unknown[]) => xs.findIndex((v) => !new Exact(String(v)).eq(0));
-          const fx = first(x), fy = first(y);
-          if (fx < 0 || fy < 0 || monthsOf(caseEnds[fx]!) - monthsOf(refEnds[fy]!) !== extension) return false;
-          // The same series moved: equal values from the first disbursement on.
-          if (JSON.stringify(x.slice(fx, fx + y.length - fy)) !== JSON.stringify(y.slice(fy)) || x.slice(fx + y.length - fy).some((v) => !new Exact(String(v)).eq(0))) return false;
-        }
-        for (const f of c.shifted.dates) {
-          const x = a.get(f)?.value, y = b.get(f)?.value;
-          if (typeof x !== "string" || typeof y !== "string" || x.slice(8) !== y.slice(8) || monthsOf(x) - monthsOf(y) !== extension) return false;
-        }
-      }
       for (const key of new Set([...a.keys(), ...b.keys()])) {
         const x = a.get(key), y = b.get(key);
         if (c.fields.includes(key)) {if (!x || !y || JSON.stringify(x) === JSON.stringify(y)) return false; continue;}
-        if (!x || !y) return false;
-        if (extra === 0) {if (JSON.stringify(x) !== JSON.stringify(y)) return false; continue;}
-        // Horizon extended: the same entry with the period end moved and every list the reference's plus the new periods.
-        const {value: xv, dimensions: xd, ...xr} = x, {value: yv, dimensions: yd, ...yr} = y;
-        const {periodEnd: _x, ...xdr} = (xd ?? {}) as Record<string, unknown>, {periodEnd: _y, ...ydr} = (yd ?? {}) as Record<string, unknown>;
-        if (JSON.stringify(xr) !== JSON.stringify(yr) || JSON.stringify(xdr) !== JSON.stringify(ydr)) return false;
-        // A series by period (one value per period of the reference) gains the new periods; any other list stays equal.
-        const periods = (ends(b) as unknown[]).length;
-        if (Array.isArray(xv) && Array.isArray(yv) && yv.length === periods) {if (xv.length !== yv.length + extra || JSON.stringify(xv.slice(0, yv.length)) !== JSON.stringify(yv)) return false;}
-        else if (JSON.stringify(xv) !== JSON.stringify(yv)) return false;
+        if (!x || !y || JSON.stringify(x) !== JSON.stringify(y)) return false;
       }
       return true;
+    }
+    if ("deferredBy" in c) {
+      const [method, pathA, pathB] = c.deferredBy;
+      const a = boardCanonicalInputs(read(method, pathA)), b = boardCanonicalInputs(read(method, pathB));
+      if (!a || !b) throw unverified(pathA);
+      return boardIsUniformDeferral(a, b) !== null;
     }
     if ("scenarioDefines" in c) {
       // The scenario's whole input object: every contribution recorded under the scenario, provenance tags (origin) aside,
