@@ -144,7 +144,7 @@ function goldCases(): Case[] {
       {headline: ["f31-amendment"], cut: true, f19: ["amendment_in_force", true, false]},
       (p) => {const h = inv(p).decisionFindings!.filter((d) => /O covenant .* é o do aditamento/.test(d.statement)), f19 = inv(p).findings.find((f) => f.id === "f19-amendment")!;
         return {headline: h.map((d) => d.findingId), cut: h[0]!.statement.includes("O texto anterior dizia que o covenant é de 3,0x; o aditamento reduziu o covenant para 2,8x"),
-          f19: [f19.code, f19.statement.includes("elevou o covenant para 3,0x, depois substituído pelo aditamento de junho de 2024"), f19.decisionStatement?.includes("covenant") ?? false]};}),
+          f19: [f19.code, f19.statement.includes("fixava o covenant em 3,0x, substituído pelo texto vigente do aditamento de junho de 2024"), f19.decisionStatement?.includes("covenant") ?? false]};}),
     // Review r3 cases: one precedence, the text in force in two steps, identity for every file, pages within the file.
     observe("substitutes-of-one-hash-read-two-ways-are-suspended", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...auroraTurnTwoReadings()[0]!, fileId: "s03",
       clauses: [{type: "collateral_top_up", id: "reforco", at: {page: 7, section: null}, statement: "A página 7 dispensa reforço da cessão."}]}]}}),
@@ -161,9 +161,10 @@ function goldCases(): Case[] {
     observe("conflict-resolved-later-is-history", folderPacketInput({files: readings((r) => {for (const [id, ratio, ym] of [["f31", "3.5", "2023-06"], ["f32", "2.8", "2024-06"]] as const) r.push({...structuredClone(file(r, "f19")), fileId: id, fileName: `${id}.pdf`,
       sha256: createHash("sha256").update(id).digest("hex"), period: {label: ym, start: `${ym}-01`, end: `${ym}-30`}, instrument: {ref: `deb-${id}`, label: "aditamento", amends: "deb-aurora-1"},
       clauses: [{type: "financial_covenant", id: "covenant", at: {page: 2, section: null}, statement: `Dívida líquida / EBITDA de no máximo ${ratio.replace(".", ",")}x.`, metric: "net_debt_to_ebitda", maxRatio: ratio}]});})}),
-      {inForce: "f32", currentConflicts: [], history: ["amendment_conflict_superseded"], open: []},
+      {inForce: "f32", currentConflicts: [], history: [false, false], open: []},
       (p) => ({inForce: inv(p).effectiveTexts[0]!.clauses.find((c) => c.type === "financial_covenant")!.fileId, currentConflicts: inv(p).effectiveTexts[0]!.conflicts,
-        history: inv(p).findings.filter((f) => f.code === "amendment_conflict_superseded").map((f) => f.code), open: inv(p).findings.filter((f) => f.code === "amendment_conflict").map((f) => f.id)})),
+        history: ["f19", "f31"].map((id) => inv(p).findings.find((f) => f.id === `${id}-amendment`)!.changes!.find((c) => c.type === "financial_covenant")!.current),
+        open: inv(p).findings.filter((f) => f.code === "amendment_conflict").map((f) => f.id)})),
     observe("competing-originals-without-winner", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f18")), fileId: "f31", fileName: "f31.pdf", sha256: createHash("sha256").update("f31").digest("hex"),
       clauses: file(r, "f18").clauses.map((c) => c.type === "financial_covenant" ? {...c, maxRatio: "4", statement: "Dívida líquida / EBITDA de no máximo 4,0x."} : c)}))}),
       {effectiveTexts: [], conflict: true, f19: "amendment_not_in_force", ids: true},
@@ -178,6 +179,36 @@ function goldCases(): Case[] {
       {observation: true, covenantFrom: "f18", headline: false}, (p) => ({observation: inv(p).findings.some((f) => f.id === "f19-covenant-unanchored" && f.effect === null),
         covenantFrom: inv(p).effectiveTexts[0]!.clauses.find((c) => c.type === "financial_covenant")!.fileId,
         headline: inv(p).decisionFindings!.some((d) => d.statement.includes("é o do aditamento") && d.statement.includes("covenant para"))})),
+    // Review r4 cases: precedence as a filter, two clauses in one file, recovered pages before force, unread predecessor, future effect.
+    observe("cycle-of-numbers-is-an-explicit-conflict", folderPacketInput({files: readings((r) => {r.splice(r.indexOf(file(r, "f19")), 1);
+      for (const [id, ym, ordinal, ratio] of [["c1", "2023-06", 3, "3"], ["c2", "2024-06", 1, "3.5"], ["c3", null, 2, "4"]] as const) r.push({...structuredClone(file(auroraFolderReadings(), "f19")), fileId: id, fileName: `${id}.pdf`,
+        sha256: createHash("sha256").update(id).digest("hex"), period: {label: ym ?? "sem data", start: ym ? `${ym}-01` : null, end: ym ? `${ym}-30` : null}, version: {label: "registrado", status: "registered", ordinal, lastUpdated: null},
+        instrument: {ref: `deb-${id}`, label: "aditamento", amends: "deb-aurora-1"}, clauses: [{type: "financial_covenant", id: "covenant", at: {page: 2, section: null}, statement: `Dívida líquida / EBITDA de no máximo ${ratio.replace(".", ",")}x.`, metric: "net_debt_to_ebitda", maxRatio: ratio}]});})}),
+      {conflict: ["c1", "c2", "c3"], sources: 3}, (p) => ({conflict: inv(p).effectiveTexts[0]!.conflicts.find((c) => c.type === "financial_covenant")!.fileIds,
+        sources: inv(p).findings.find((f) => f.code === "amendment_conflict")!.sources.length})),
+    observe("two-covenants-in-one-amendment-are-a-conflict", folderPacketInput({files: readings((r) => file(r, "f19").clauses.push({type: "financial_covenant", id: "covenant-2", at: {page: 4, section: null}, statement: "Dívida líquida / EBITDA de no máximo 4,0x.", metric: "net_debt_to_ebitda", maxRatio: "4"}))}),
+      {covenantInForce: false, conflict: true}, (p) => ({covenantInForce: inv(p).effectiveTexts[0]!.clauses.some((c) => c.type === "financial_covenant"), conflict: inv(p).findings.some((f) => f.code === "clause_conflict")})),
+    observe("recovered-covenant-joins-the-text-in-force", folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, clauses: [{type: "financial_covenant" as const, id: "covenant-ccb", at: {page: 7, section: null}, statement: "Dívida líquida / EBITDA de no máximo 2,0x.", metric: "net_debt_to_ebitda" as const, maxRatio: "2"}]} : x)}}),
+      "Política de no máximo 2,5x, igual ou acima do covenant vigente de 2,0x.", (p) => inv(p).findings.find((f) => f.id === "f24-politica")!.statement),
+    observe("recovered-notice-does-not-revive-a-replaced-deadline", folderPacketInput({files: readings((r) => {const c = file(r, "f23"); c.clauses = c.clauses.filter((x) => x.type !== "auto_renewal");
+      c.legibility = {pageCount: 12, unreadablePages: [{page: 11, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};
+      r.push({...structuredClone(c), fileId: "f31", fileName: "f31.pdf", sha256: createHash("sha256").update("f31").digest("hex"), legibility: {pageCount: null, unreadablePages: [], wholeFile: null},
+        period: {label: "ago/2026", start: "2026-08-01", end: "2026-08-31"}, instrument: {ref: "contrato-embalagem-ad", label: "aditivo", amends: "contrato-embalagem"},
+        clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 1, section: null}, statement: "Renovação automática salvo aviso até 2/nov/26.", termEnd: "2026-12-31", noticeDeadline: "2026-11-02"}]});
+      r.push({...structuredClone(auroraTurnTwoReadings()[0]!), fileId: "p1", fileName: "p1.pdf", sha256: createHash("sha256").update("p1").digest("hex"), kind: "supplier_contract",
+        instrument: {ref: "contrato-embalagem", label: "contrato", amends: null}, substitutesPages: {instrumentRef: "contrato-embalagem", pages: [11]},
+        clauses: [{type: "auto_renewal", id: "renovacao", at: {page: 11, section: null}, statement: "Renovação automática salvo aviso até 2/out/26.", termEnd: "2026-12-31", noticeDeadline: "2026-10-02"}]});})}),
+      {deadlines: [["f31", "2026-11-02"]], history: "clause_superseded"}, (p) => ({deadlines: inv(p).followUps.flatMap((f) => f.kind === "notice_deadline" ? [[f.fileId, f.date]] : []),
+        history: inv(p).findings.find((f) => f.id === "f23-p1-renovacao-superseded")!.code})),
+    observe("unread-predecessor-is-not-absent", folderPacketInput({files: readings((r) => {const e = file(r, "f18"); e.clauses = e.clauses.filter((c) => c.type !== "financial_covenant");
+      e.legibility = {pageCount: 30, unreadablePages: [{page: 18, reason: "illegible_scan", expectedContent: "o covenant financeiro", expectedFrom: {page: 2, section: null}}], wholeFile: null};})}),
+      {covenantHeadline: false, before: null, amended: true}, (p) => ({covenantHeadline: inv(p).decisionFindings!.some((d) => /O covenant .* é o do aditamento/.test(d.statement)),
+        before: inv(p).findings.find((f) => f.id === "f19-amendment")!.changes!.find((c) => c.type === "financial_covenant")!.before,
+        amended: inv(p).findings.find((f) => f.id === "f18-amended")!.statement.includes("página não lida que pode conter a cláusula de covenant")})),
+    observe("future-amendment-is-not-current", folderPacketInput({files: readings((r) => {file(r, "f19").period = {label: "jan/2027", start: "2027-01-01", end: "2027-01-31"};})}),
+      {future: [{fileId: "f19", from: "2027-01-01"}], covenantFrom: "f18", policy: "Política de no máximo 2,5x, mais restritiva que o covenant vigente de 2,75x."},
+      (p) => ({future: inv(p).effectiveTexts[0]!.future, covenantFrom: inv(p).effectiveTexts[0]!.clauses.find((c) => c.type === "financial_covenant")!.fileId,
+        policy: inv(p).findings.find((f) => f.id === "f24-politica")!.statement})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];

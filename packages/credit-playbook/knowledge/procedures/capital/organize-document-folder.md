@@ -16,7 +16,7 @@ connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: document-folder-inventory-packet.v1
 unit_test_files: [packages/financial-model/src/document-folder-inventory.test.ts, packages/financial-model/src/document-folder-inventory-packet.test.ts, packages/financial-model/src/document-folder-inventory-premises.test.ts, packages/financial-model/src/document-folder-inventory-runs.test.ts, packages/financial-model/src/document-folder-inventory.properties.test.ts]
-gold_case_ids: [inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, substitutes-of-one-hash-read-two-ways-are-suspended, text-only-tie-is-a-conflict, dateless-amendment-does-not-prevail, conflict-resolved-later-is-history, competing-originals-without-winner, position-tie-broken-by-version, covenant-without-its-limit-text-has-no-effect, notice-deadline-followed-never-scheduled]
+gold_case_ids: [inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, substitutes-of-one-hash-read-two-ways-are-suspended, text-only-tie-is-a-conflict, dateless-amendment-does-not-prevail, conflict-resolved-later-is-history, competing-originals-without-winner, position-tie-broken-by-version, covenant-without-its-limit-text-has-no-effect, cycle-of-numbers-is-an-explicit-conflict, two-covenants-in-one-amendment-are-a-conflict, recovered-covenant-joins-the-text-in-force, recovered-notice-does-not-revive-a-replaced-deadline, unread-predecessor-is-not-absent, future-amendment-is-not-current, notice-deadline-followed-never-scheduled]
 adversarial_case_ids: [tampered-envelope, free-result-in-request, fabricated-grant-in-result, document-declared-validated, leverage-in-the-answer, three-open-questions, content-on-the-unreadable-page, content-on-the-unreadable-photo, drawn-above-limit, substitute-for-a-legible-page, update-of-another-folder, informed-fact-without-a-question, reading-under-another-file-slot, amendment-selection-left-out, unreadable-page-read-through-a-section, leverage-and-validation-in-free-text, forbidden-text-in-a-sheet-name, paraphrased-ratio-and-advice-in-a-quote, expected-content-without-legible-source, substitute-figure-outside-its-pages, page-beyond-the-file, expected-source-beyond-the-file, ratio-in-a-clause-that-is-not-its-limit, reading-without-page-or-section, record-read-in-another-scenario]
 e2e_scenario_ids: [domain:inventory-item-by-item-matches-the-answer-key]
 cost_eval_ids: [deterministic:no-model-calls]
@@ -62,8 +62,8 @@ Pacote de inventário da pasta: cada arquivo como uma linha, com o que é, entid
 # Sequência operacional
 1. [human_judgment] Enquadrar :: Organizar só, organizar para algo, ou organizar para a discussão da dívida; quais decisões estão em curso | evidence: contexto do projeto e pedido
 2. [deterministic] Identidade :: Duplicado exato pelo hash entre os arquivos; já no cofre pelo hash | evidence: hash de cada arquivo e do cofre
-3. [deterministic] Versões :: Uma só precedência para todas as famílias (mesmo período, mesma posição, originais concorrentes e aditamentos), em ordem fixa: garantia (auditado, assinado ou registrado acima dos demais; minuta e revisão em trabalho abaixo), depois a data da posição ou da vigência, depois o número de versão; critério ausente em um dos dois não conta e passa ao seguinte; sem critério que decida, nenhuma prevalece. A data vem antes do número porque o número só ordena versões da mesma data. Orçamento aprovado e revisão em trabalho ficam lado a lado por regra da casa | evidence: leituras adotadas
-4. [deterministic] Texto vigente :: Em dois passos: primeiro o original, resolvido pela mesma precedência (sem vencedor, o instrumento fica sem texto vigente e o conflito é declarado); depois, para cada tipo de cláusula, o aditamento que todos os demais antecedem; aditamentos sem ordem e com cláusulas não equivalentes (todos os campos tipados e o texto citado) são conflito; conflito superado por aditamento posterior vigente fica só como histórico; covenant sem o texto do limite citado é observação sem efeito | evidence: leituras adotadas
+3. [deterministic] Versões :: Uma só precedência para todas as famílias, aplicada como filtro sobre a família inteira: critérios em ordem fixa (garantia: auditado, assinado ou registrado acima dos demais, minuta e revisão em trabalho abaixo; data da posição ou da vigência, quando a família tem data; número de versão). Um critério só é usado se todos os candidatos ainda de pé tiverem valor nele, e mantém os de valor mais alto; se algum candidato não tiver o valor, o filtro para e os candidatos restantes são um conflito declarado com as fontes. Só há vencedor se sobrar um. A data vem antes do número porque o número só ordena versões da mesma data. Orçamento aprovado e revisão em trabalho ficam lado a lado por regra da casa | evidence: leituras adotadas
+4. [deterministic] Texto vigente :: Primeiro a leitura de cada instrumento é completada com as páginas recuperadas por substituto; só então a vigência é resolvida: o original pela mesma precedência (sem vencedor, instrumento sem texto vigente e conflito declarado), depois cada cláusula pelos aditamentos assinados ou registrados com vigência até a data da leitura. Aditamento com vigência posterior fica como texto futuro. Duas cláusulas do mesmo tipo e escopo no mesmo arquivo são conflito, salvo se disserem o mesmo. Equivalência exige todos os campos tipados e o texto citado. Predecessor em página não lida não é predecessor documentado: nada de elevou, reduziu ou ausência. Covenant sem o texto do limite citado é observação sem efeito | evidence: leituras adotadas
 5. [deterministic] Leitura incompleta :: Página ou arquivo ilegível registrado com o que o documento diz que ali está, sem inventar conteúdo | evidence: legibilidade por página
 6. [deterministic] Achados e conferências :: Cláusulas que restringem decisões, conflitos entre documentos, série mensal com mês faltando, unidades misturadas, total que soma limite não usado, mês contra o período | evidence: leituras adotadas
 7. [deterministic] Ordenar e pedir :: Achados pelas decisões em curso, lacunas por finalidade, no máximo duas perguntas | evidence: decisões em curso adotadas
@@ -105,7 +105,7 @@ Pacote de inventário da pasta: cada arquivo como uma linha, com o que é, entid
 - Aditamentos aplicados pela própria data e numeração, nunca pela chegada; dois da mesma data e numeração com termos diferentes deixam a cláusula sem texto vigente, com o conflito declarado. Cada alteração é lida contra a cláusula que substitui; a substituída fica como histórico, sem efeito e sem prazo ativo.
 - Hash lido de duas formas: todos os arquivos com esse hash ficam suspensos para qualquer uso (achados, conferências, versões, lacunas) até a leitura ser refeita.
 - Conteúdo esperado de página ilegível só com fonte legível ancorada; leitura de substituto só nas páginas declaradas; toda página citada existe no arquivo.
-- Identidade e suspensão por hash valem para todos os arquivos, substitutos inclusive; duas cópias da mesma página com leituras diferentes deixam a página sem leitura.
+- Identidade e suspensão por hash valem para todos os arquivos, substitutos inclusive; duas cópias da mesma página com leituras diferentes deixam a página sem leitura. Cláusula recuperada entra antes da vigência e nunca reativa prazo ou obrigação substituídos.
 - Resposta informada que não responde a uma pergunta feita: recusada.
 - O pacote não calcula índice, não projeta, não recomenda, não valida documento, não envia nada a terceiros e não publica nem altera a base.
 
@@ -131,7 +131,7 @@ Pacote de inventário da pasta: cada arquivo como uma linha, com o que é, entid
 - packages/financial-model/src/document-folder-inventory.test.ts: núcleo contra a chave da ficha, nomes trocados, empates sem critério, total que não fecha, aditamento sem original, atualização seletiva e suas recusas.
 - packages/financial-model/src/document-folder-inventory-packet.test.ts e packages/financial-model/src/document-folder-inventory-premises.test.ts: leitor adotado sobre duas bases, pacote e ida e volta das premissas.
 ## Gold
-- inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, substitutes-of-one-hash-read-two-ways-are-suspended, text-only-tie-is-a-conflict, dateless-amendment-does-not-prevail, conflict-resolved-later-is-history, competing-originals-without-winner, position-tie-broken-by-version, covenant-without-its-limit-text-has-no-effect, notice-deadline-followed-never-scheduled
+- inventory-item-by-item-matches-the-answer-key, counts-30-1-2-3-2-21, copy-found-by-hash, versions-resolved-none-deleted, amendment-is-the-text-in-force, seven-decision-findings-in-order-with-source, debt-is-130-not-140, unreadable-page-and-photo-not-invented, gaps-by-purpose-in-the-key-order, one-question-only-the-user-knows, no-numeric-analysis-nothing-validated, renaming-every-file-changes-nothing, misleading-names-do-not-move-the-version, later-draft-does-not-beat-the-audited, turn-2-updates-only-the-affected-rows, turn-2-page-7-read-and-semester-closes-month-by-month, turn-2-informed-fact-with-author-and-date, variation-organize-only, variation-for-the-debt-discussion, variation-empty-vault-no-decisions, variation-several-companies, unresolved-month-blocks-the-semester-sum, draft-amendment-changes-no-term, replaced-notice-is-history-not-a-deadline, same-hash-read-two-ways-is-declared, approved-amendment-is-not-in-force, tied-amendments-have-no-winner, later-cut-is-the-covenant-in-force, substitutes-of-one-hash-read-two-ways-are-suspended, text-only-tie-is-a-conflict, dateless-amendment-does-not-prevail, conflict-resolved-later-is-history, competing-originals-without-winner, position-tie-broken-by-version, covenant-without-its-limit-text-has-no-effect, cycle-of-numbers-is-an-explicit-conflict, two-covenants-in-one-amendment-are-a-conflict, recovered-covenant-joins-the-text-in-force, recovered-notice-does-not-revive-a-replaced-deadline, unread-predecessor-is-not-absent, future-amendment-is-not-current, notice-deadline-followed-never-scheduled
 ## Adversarial
 - Base adulterada, resultado livre no pedido, concessão fabricada, documento declarado validado, alavancagem na resposta, três perguntas abertas, conteúdo em página ilegível, conteúdo em foto ilegível, saldo acima do limite, substituto de página legível, atualização de outra pasta, resposta sem pergunta, leitura sob outro arquivo, seleção do aditamento omitida, página ilegível lida por aba, alavancagem e validação em texto livre, índice em cláusula fora do seu limite, texto proibido em nome de aba, página fora do arquivo, fonte esperada fora do arquivo, índice e conselho parafraseados em citação, conteúdo esperado sem fonte legível, figura de substituto fora das suas páginas, leitura sem página nem aba e registro lido em outro cenário são recusados.
 ## Aceitação
@@ -1981,6 +1981,29 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           }
                                         }
                                       }
+                                    },
+                                    "future": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "fileId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "from": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "date"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
                                     }
                                   }
                                 }
@@ -2020,12 +2043,14 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           "amendment_superseded",
                                           "amendment_not_in_force",
                                           "amendment_conflict",
-                                          "amendment_conflict_superseded",
+                                          "amendment_future",
                                           "amendment_without_original",
                                           "instrument_not_in_force",
                                           "instrument_superseded",
                                           "instrument_conflict",
+                                          "instrument_future",
                                           "clause_superseded",
+                                          "clause_conflict",
                                           "clause_not_in_force",
                                           "reading_conflict",
                                           "substitute_conflict",
@@ -3722,6 +3747,29 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           }
                                         }
                                       }
+                                    },
+                                    "future": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "fields": {
+                                            "fileId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "from": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "date"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
                                     }
                                   }
                                 }
@@ -3761,12 +3809,14 @@ Um documento presente na pasta não está validado; minuta não é auditada; uma
                                           "amendment_superseded",
                                           "amendment_not_in_force",
                                           "amendment_conflict",
-                                          "amendment_conflict_superseded",
+                                          "amendment_future",
                                           "amendment_without_original",
                                           "instrument_not_in_force",
                                           "instrument_superseded",
                                           "instrument_conflict",
+                                          "instrument_future",
                                           "clause_superseded",
+                                          "clause_conflict",
                                           "clause_not_in_force",
                                           "reading_conflict",
                                           "substitute_conflict",
