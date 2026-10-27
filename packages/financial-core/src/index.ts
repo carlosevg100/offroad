@@ -50,3 +50,4 @@ export * from "./quarter-update";
 export * from "./receivables-funding";
 export * from "./projection-challenge";
 export * from "./operating-projection";
+export * from "./evaluate-received-proposal";

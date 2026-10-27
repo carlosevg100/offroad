@@ -1,0 +1,47 @@
+import {describe, expect, it} from "vitest";
+import {prepareReceivedProposalPacket} from "./evaluate-received-proposal-packet";
+import {calculateAdoptedReceivedProposal} from "./adopted-evaluate-received-proposal";
+import {adoptedReceivedProposalOutputSchema} from "./evaluate-received-proposal-results";
+import {receivedProposalPacketExecutorContracts} from "./evaluate-received-proposal-contracts";
+import {auroraReceivedProposal, auroraReceivedProposalBasis, receivedProposalQuestion as question} from "./evaluate-received-proposal.test-support";
+
+const packet = (k = auroraReceivedProposal()) => prepareReceivedProposalPacket({schemaVersion: "received-proposal-packet-input.v1", question, analysis: auroraReceivedProposalBasis(k).seal()});
+const n = (v: string | null | undefined, p = 1) => Number(v).toFixed(p);
+describe("received proposal packet", {timeout: 180_000}, () => {
+  const p = packet(), r = p.readings!;
+  it("leads with firmness and the year the calendar already concentrates", () => {
+    expect(r.firmness).toEqual({firmness: "indicative", validUntil: "2026-09-13", bankSawIndenture: false, diligenceMayReopenStructure: true});
+    expect([r.liquidity.peakYear, n(r.liquidity.existingService), n(r.liquidity.proposalService), n(r.liquidity.availableForService), r.liquidity.peakQuarter, r.liquidity.firstBelowPolicyWith])
+      .toEqual([2027, "89.7", "12.2", "35.7", "2027-09-30", "2027-09-30"]);
+    expect(p.status).toBe("prepared_for_human_review");
+  });
+  it("reads collateral against the assignable portfolio and the aggregate basket", () => {
+    expect([r.collateral.required, r.collateral.nominallyFree, r.collateral.assignable, r.collateral.shortfallToAssignable]).toEqual(["39", "46", "25.41", "13.59"]);
+    expect(r.collateral.excluded.map((x) => x.id)).toEqual(["rede-a", "redes-c-d", "vencidos"]);
+    expect([r.negativePledge.remaining, r.negativePledge.excess, r.negativePledge.consentRequired, r.negativePledge.consentBy]).toEqual(["3", "36", true, "2026-09-13"]);
+  });
+  it("keeps facts, readings and recommendations apart, with what would change them and no verdict", () => {
+    expect(r.assessment).toEqual({
+      facts: ["proposal_indicative", "collateral_exceeds_assignable_portfolio", "assignment_prohibited_receivables_excluded", "indenture_consent_required",
+        "peak_year_service_exceeds_available_cash", "cash_below_minimum_with_proposal", "board_policy_breached_in_a_case", "lender_tests_more_often_than_indenture",
+        "restricted_account_requested", "coverage_at_top_of_reference"],
+      readings: ["term_longer_than_seasonal_use", "term_shorter_than_capex_use", "all_in_cost_well_above_nominal", "nominal_spread_above_median_within_range",
+        "improvement_partly_paid_in_collateral", "diligence_may_reopen_structure"],
+      recommendations: ["address_indenture_consent_before_signing", "ask_longer_grace_and_tenor", "ask_lower_coverage_and_no_restricted_account", "separate_uses_by_term", "keep_price_discussion_secondary"],
+      wouldChange: ["debtor_consent_for_restricted_receivables", "indenture_clause_wording", "other_free_asset_for_collateral", "seasonal_need_above_adopted", "committed_terms_after_diligence"]});
+    expect(r.questions).toEqual(["lender_covenant_definition", "reciprocity_expected_by_lender", "restricted_debtor_consent", "indenture_clause_wording", "other_free_asset"]);
+    expect(Object.keys(r)).not.toContain("verdict");
+  });
+  it("prices the asks and puts the nominal spread and the cost over the life side by side", () => {
+    expect([n(r.price.nominalSpread, 4), n(r.price.equivalentSpread, 4), n(r.price.equivalentSpreadNet, 4), r.price.marketPosition]).toEqual(["0.0210", "0.0490", "0.0324", "above_median_within_range"]);
+    expect(r.asks.map((a) => [a.id, n(a.peakYearServiceDelta), a.consentStillRequired])).toEqual([["carencia-12-prazo-48", "-6.0", true], ["carencia-12-prazo-60", "-6.4", true], ["cobertura-120-sem-conta", "0.0", true]]);
+  });
+  it("is partial without a comparable market and deterministic, validated and published", () => {
+    const k = auroraReceivedProposal(); k.market = {...k.market!, comparable: false};
+    const q = packet(k);
+    expect([q.status, q.readings!.price.marketPosition, q.readings!.assessment.recommendations.includes("keep_price_discussion_secondary")]).toEqual(["partial", null, false]);
+    expect(packet().fingerprint).toBe(p.fingerprint);
+    expect(adoptedReceivedProposalOutputSchema.parse(calculateAdoptedReceivedProposal(auroraReceivedProposalBasis().seal())).status).toBe("partial_composition");
+    expect(receivedProposalPacketExecutorContracts().executor).toEqual({module: "@offroad/financial-model", exportName: "prepareReceivedProposalPacket", version: "2026.10.27-v1"});
+  });
+});
