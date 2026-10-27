@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T16:23:04.804Z",
-    "finishedAt": "2026-10-27T16:23:04.804Z",
-    "commit": "f73cc990"
+    "startedAt": "2026-10-27T16:35:20.412Z",
+    "finishedAt": "2026-10-27T16:35:20.412Z",
+    "commit": "2f2b5c71"
   },
   "modelCalls": 0,
   "cases": [
@@ -691,7 +691,47 @@
       "expectation": "{\"compared\":false,\"later\":true,\"sideBySide\":[\"f13\",\"f14\"]}",
       "observed": "{\"compared\":false,\"later\":true,\"sideBySide\":[\"f13\",\"f14\"]}",
       "inputFingerprint": "0829aea0db8d79366177c9419e10eabb3645a7d779b4dd868f4a2aeb0b2f170b",
-      "outputFingerprint": "e6a7678ebd96237c9540aef95079c99c658a52c36ad553451a61acff380d5c98",
+      "outputFingerprint": "fd9c9e6dc05f69619f6eb0a1cd32fa2059f93c1df55aa5da60e85b519808737e",
+      "passed": true
+    },
+    {
+      "id": "budget-comparison-nominal",
+      "expectation": "{\"knowledge\":\"known\",\"compared\":true,\"preserved\":[\"f13\",\"f14\"]}",
+      "observed": "{\"knowledge\":\"known\",\"compared\":true,\"preserved\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "fe393debe09f3afa101f5e1a44fc779ccc489985f88f831f387713a6bf961eaf",
+      "outputFingerprint": "d8026c8280889db296b27598c6bf2ff37043af1410464f52ebcf8a06824de70e",
+      "passed": true
+    },
+    {
+      "id": "budget-comparison-future",
+      "expectation": "{\"knowledge\":\"future\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "observed": "{\"knowledge\":\"future\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "0829aea0db8d79366177c9419e10eabb3645a7d779b4dd868f4a2aeb0b2f170b",
+      "outputFingerprint": "fd9c9e6dc05f69619f6eb0a1cd32fa2059f93c1df55aa5da60e85b519808737e",
+      "passed": true
+    },
+    {
+      "id": "budget-comparison-page-not-read",
+      "expectation": "{\"knowledge\":\"unread\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "observed": "{\"knowledge\":\"unread\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "e47e05d80f6480180f57a3c8a34622ef6a29cf360fec08fd68f603964df6b3c0",
+      "outputFingerprint": "1ec5a37f211cbcabc2e9096f33fa9ecd4c5773f069a63da163bc3ab12512c2c3",
+      "passed": true
+    },
+    {
+      "id": "budget-comparison-conflicting-figures",
+      "expectation": "{\"knowledge\":\"conflict\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "observed": "{\"knowledge\":\"conflict\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "81e950dc5e49a9c5d02bbb663d2cb423eba14bea201d70aee2134b628925e209",
+      "outputFingerprint": "f19adf8fea591617bef826f8e6925dedfed2da6cc05eb68ff26216d01fb4b1e9",
+      "passed": true
+    },
+    {
+      "id": "budget-comparison-source-outside-the-registry",
+      "expectation": "{\"knowledge\":\"missing_source\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "observed": "{\"knowledge\":\"missing_source\",\"compared\":false,\"preserved\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "9b28817b4e8d7e7d767a8874405c606f3e5decff31c84295f85c1ca2be13a669",
+      "outputFingerprint": "9d5bb16f844e013229b86045491d4a27425f3ceb755bb37479c6a903a80bd728",
       "passed": true
     },
     {
@@ -704,6 +744,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "b5271c3cf694bb8c965c42b49b0d5080500f5c977422fc6aadb2041ae409311a",
+  "evidenceFingerprint": "805c6a12dbd95d69c50760b6673a1e945241bb0eb89d13b6c81c3ea371de8dc6",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

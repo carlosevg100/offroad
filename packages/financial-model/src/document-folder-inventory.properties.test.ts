@@ -1318,3 +1318,42 @@ describe("property: a budget revision dated after the reading is preserved, not 
     expect(o.families.find((x) => x.resolution === "side_by_side")!.sideBySide).toEqual(["f13", "f14"]);
   });
 });
+
+// Review r20: no finding fixes its own knowledge; every state comes from the guard.
+describe("property: a finding is known only while every document it stands on is known", () => {
+  const codes = (documentFolderInventoryOutputSchema.shape.findings.element.shape.code as unknown as {options: string[]}).options;
+  const base = () => [...auroraFolderReadings(), ...auroraTurnTwoReadings()];
+  const reference = run(base(), {asOf: "2026-09-02", informed: auroraTurnTwoInformed});
+  const known = reference.findings.filter((f) => f.knowledge === "known");
+  it("the calibration has known findings of several codes of the schema", () => {
+    expect(new Set(known.map((f) => f.code)).size).toBeGreaterThanOrEqual(8);
+    for (const f of reference.findings) expect(codes).toContain(f.code);
+  });
+  // Every known finding, with a date after the reading injected into its anchor (and every copy of the same bytes): if the
+  // finding is still stated, it is no longer known.
+  for (const f of known) it(`${f.id} (${f.code})`, () => {
+    const files = base(), d = file(files, f.anchor);
+    if (d.legibility.wholeFile) return;
+    for (const x of kin(files, d)) x.version = {...x.version, lastUpdated: "2027-01-15"};
+    const after = run(files, {asOf: "2026-09-02", informed: auroraTurnTwoInformed}).findings.find((x) => x.id === f.id);
+    if (after) expect(after.knowledge, f.id).not.toBe("known");
+  });
+});
+describe("property: the budget comparison stands under the common guard", () => {
+  const cases = [
+    ["nominal", () => undefined, "known", true],
+    ["future", (r: DocumentReading[]) => {file(r, "f14").version.lastUpdated = "2026-10-15";}, "future", false],
+    ["page not read", (r: DocumentReading[]) => {const f = file(r, "f14"); for (const x of f.figures) x.at = {page: 1, section: x.at.section};
+      f.legibility = {pageCount: 3, unreadablePages: [{page: 3, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};}, "unread", false],
+    ["conflict", (r: DocumentReading[]) => {const f = file(r, "f14"); const at = f.figures[0]!.at;
+      f.figures.push({id: "rl-1", metric: "net_revenue", value: "400", scale: "1000000", at}, {id: "rl-2", metric: "net_revenue", value: "410", scale: "1000000", at});}, "conflict", false],
+    ["source outside the registry", (r: DocumentReading[]) => {file(r, "f13").entity = {primaryId: "fora-do-cadastro", label: "x"}; file(r, "f14").entity = {primaryId: "fora-do-cadastro", label: "x"};}, "missing_source", false],
+  ] as const;
+  for (const [name, edit, state, compared] of cases) it(name, () => {
+    const o = run(readings(edit as (r: DocumentReading[]) => void));
+    const f = o.findings.find((x) => x.id === "f14-side-by-side");
+    expect(f!.knowledge).toBe(state);
+    expect(f!.statement.includes("revisto para")).toBe(compared);
+    expect(f!.statement).toContain("Preservar as duas");
+  });
+});

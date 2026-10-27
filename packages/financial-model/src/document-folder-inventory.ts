@@ -521,7 +521,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   const add = (f: Omit<Finding, "status" | "resolvedBy" | "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge"> & Partial<Pick<Finding, "topic" | "effect" | "decisionStatement" | "quoted" | "changes" | "knowledge">>) => {
     if (f.knowledge !== undefined) guarded.add(f.id);
     if (f.effect != null) {if (!recorder) throw new Error("document_inventory_untracked_effect"); recorder.emitted = true;}
-    findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "known", ...f, status: "open", resolvedBy: []});
+    // No finding fixes its own knowledge: a guarded one carries its guard's state; any other is filled below with the
+    // worst state of the documents it cites (the placeholder is replaced before the output is built).
+    findings.push({topic: null, effect: null, decisionStatement: null, quoted: null, changes: null, knowledge: "conflict", ...f, status: "open", resolvedBy: []});
   };
   /** Content gathered from a page copy is cited on the copy that holds it, wherever it is read. */
   const originAt = new Map<object, string>();
@@ -810,12 +812,21 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const approved = members.filter((m) => m.version.status === "approved");
       for (const rev of members.filter((m) => m.version.status === "working_revision")) {
         const a = approved.length === 1 ? figure(approved[0]!, "ebitda") : null, b = figure(rev, "ebitda");
-        // A version dated after this reading is not compared yet: both stay, and the sentence says why.
-        const later = future(rev) || approved.some((x) => future(x));
-        add({id: `${rev.fileId}-side-by-side`, code: "versions_side_by_side", anchor: rev.fileId, sources: [src(rev.fileId, later ? null : b?.at), ...approved.map((x) => src(x.fileId, later ? null : a?.at))],
-          knowledge: later ? "future" : "known",
-          statement: later ? "Preservar as duas: aprovado e revisão em trabalho. Uma das versões tem data posterior à desta leitura; a comparação fica para essa data."
-            : `${a && b ? `EBITDA de ${periodText(rev)} revisto para ${brl(b.value, b.scale)} contra ${brl(a.value, a.scale)} no aprovado. ` : ""}Preservar as duas: aprovado e revisão em trabalho.`});
+        // The comparison stands under the common guard over both versions: a version not known (dated after this reading,
+        // with a page not read, in conflict, of a source outside the registry) keeps both side by side, withholds the
+        // comparative sentence with its values, and declares the cause with the worst state.
+        effect(`budget:${rev.fileId}`, () => {
+          const g = guard([rev, ...approved]);
+          if (g.state !== "known") {
+            add({id: `${rev.fileId}-side-by-side`, code: "versions_side_by_side", anchor: rev.fileId, sources: g.sources.map((x) => src(x)), knowledge: g.state,
+              statement: g.state === "future" ? "Preservar as duas: aprovado e revisão em trabalho. Uma das versões tem data posterior à desta leitura; a comparação fica para essa data."
+                : `Preservar as duas: aprovado e revisão em trabalho. A comparação fica retida: depende de documento ${stateWords[g.state]}.`});
+            return;
+          }
+          recorder!.emitted = true;
+          add({id: `${rev.fileId}-side-by-side`, code: "versions_side_by_side", anchor: rev.fileId, sources: [src(rev.fileId, b?.at), ...approved.map((x) => src(x.fileId, a?.at))], knowledge: g.state,
+            statement: `${a && b ? `EBITDA de ${periodText(rev)} revisto para ${brl(b.value, b.scale)} contra ${brl(a.value, a.scale)} no aprovado. ` : ""}Preservar as duas: aprovado e revisão em trabalho.`});
+        });
       }
       continue;
     }
@@ -1075,7 +1086,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       block("text-in-force", original.fileId, `O texto vigente ${of(noun)}`, chainStates.get(chainKey)!);
     } else {
       const covenant = inForce.get("financial_covenant");
-      chainStates.set(chainKey, {state: "known", sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
+      chainStates.set(chainKey, {state: chainState, sources: [], covenant: covenant && covenant.h.c.type === "financial_covenant" ? covenant.h.c.maxRatio : null, debt: debtChain});
     }
     for (const [key, v] of inForce) if (typeOf(key) === "financial_covenant" && v.h.c.type === "financial_covenant") currentCovenants.push(v.h.c.maxRatio);
     if (!chain.length && !upcoming.length) return;
@@ -1107,7 +1118,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
         sources: [src(a.fileId, own[0]!.h.c.at), src(original.fileId)],
         changes: own.map((x) => ({type: x.key, current: x.current, after: clauseQuote(x.h), before: x.current && x.defined && x.prior ? clauseQuote(x.prior) : null})),
         statement: `${capital(sentence(phrases))}. ${current.length ? `É o texto vigente junto com ${noun}.` : "Fica como histórico."}`,
-        topic: binding.length ? "debt_covenant" : null, effect: binding.length ? "binding_limit" : null, ...binding.length ? {knowledge: "known" as const} : {},
+        topic: binding.length ? "debt_covenant" : null, effect: binding.length ? "binding_limit" : null, ...binding.length ? {knowledge: chainState} : {},
         decisionStatement: binding.length ? `${header} ${priorText}; o aditamento ${lower(sentence(binding.map((x) => describeChange(x.h.c, x.prior?.c ?? null, x.defined))))}. ${chain.length > 1 ? "Os textos precisam ser lidos juntos." : "As duas precisam ser lidas juntas."}` : null});
     }
     });
@@ -1215,16 +1226,16 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       if (matches) return;
       if (words.lines.length) {
         const unused = words.lines.every((l) => l.unused);
-        add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [words.at], knowledge: "known",
+        add({id: `${f.fileId}-debt-total`, code: "total_includes_unused_limit", anchor: f.fileId, sources: [words.at], knowledge: g.state,
           statement: fully ? `Soma ${words.total} porque ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}; ${unused ? "o saldo utilizado é zero" : "o saldo utilizado é menor"}. Dívida em ${words.period}: ${drawnShown}.`
             : `Soma ${words.total}; ${words.lines.map((l) => `${lineLabel[l.kind]} entra pelo limite (${l.limit})`).join(" e ")}, ${unused ? "com saldo utilizado zero" : "acima do saldo usado"}, mas isso não explica toda a diferença. Dívida em ${words.period}: ${drawnShown}.`,
           topic: "debt_position", effect: "figure_correction",
           decisionStatement: `A dívida em ${words.period} é de ${drawnShown}, não ${words.total}. A tabela soma o limite ${words.lines.map((l) => of(lineLabel[l.kind])).join(" e ")}, ${unused ? "que está sem uso" : "acima do saldo usado"}${fully ? "" : ", e há diferença sem causa identificada"}.`});
-        if (!fully) add({id: `${f.fileId}-debt-total-unexplained`, code: "total_difference_unexplained", anchor: f.fileId, sources: [words.at], knowledge: "known",
+        if (!fully) add({id: `${f.fileId}-debt-total-unexplained`, code: "total_difference_unexplained", anchor: f.fileId, sources: [words.at], knowledge: g.state,
           statement: [...unexplained.map((l) => `${capital(lineLabel[l.lineKind])} entra por ${brl(l.counted, t.scale)} contra saldo utilizado de ${brl(l.drawn, t.scale)}, sem limite que explique`),
             ...countedCloses ? [] : [`as linhas, como contadas, não fecham com o total informado de ${words.total}`]].join("; ") + ". A diferença restante não tem causa identificada na tabela."});
       } else {
-        add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [words.at], knowledge: "known",
+        add({id: `${f.fileId}-debt-total`, code: "total_not_recomposed", anchor: f.fileId, sources: [words.at], knowledge: g.state,
           statement: `O total informado de ${words.total} não fecha com as linhas, que somam ${drawnShown} de saldo utilizado.`, topic: "debt_position", effect: "figure_correction",
           decisionStatement: `A tabela de dívida de ${words.period} não fecha: o total informado é ${words.total} e as linhas somam ${drawnShown}.`});
       }
@@ -1341,9 +1352,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       }
       if (state || !docBinds || !docKnown) continue;
       const base = {id: `${f.fileId}-${from === f.fileId ? "" : `${from}:`}${c.id}`, code: "clause" as const, anchor: f.fileId, sources: [src(from, c.at)], quoted: cite(from, c.at, c.statement)};
-      if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction", knowledge: "known",
+      if (c.type === "assignment_prohibition") add({...base, statement: "Limita qualquer financiamento com cessão dessa carteira.", topic: "receivables_assignment", effect: "collateral_restriction", knowledge: docGuard.state,
         decisionStatement: `Os recebíveis ${of(policy[f.kind].noun)} não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão${c.receivablesShare ? `; a contraparte responde por ${percent(c.receivablesShare)} da carteira` : ""}. Isso reduz a carteira disponível para qualquer financiamento com cessão.`});
-      else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline", knowledge: "known",
+      else if (c.type === "auto_renewal") deadlines.set(base.id, {c, fileId: f.fileId}), add({...base, statement: `Aviso até ${longDate(c.noticeDeadline)} para renegociar preço ou não renovar.`, topic: "supplier_contract", effect: "deadline", knowledge: docGuard.state,
         decisionStatement: `${capital(policy[f.kind].noun)} renova sozinho em ${monthName(c.termEnd)}. Para renegociar preço ou não renovar, o aviso precisa sair até ${longDate(c.noticeDeadline)}.`});
       else if (c.type === "debt_policy") {
         const maxRatio = c.maxRatio, noun = policy[f.kind].noun, when = periodText(f);
@@ -1358,7 +1369,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
           return {lowest, tighter: new Exact(maxRatio).lt(lowest)};
         });
         const against = comparison ? `, ${comparison.tighter ? "mais restritiva que o" : "igual ou acima do"} covenant vigente de ${times(comparison.lowest)}.` : ".";
-        add({...base, statement: `Política de no máximo ${times(maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit", knowledge: "known",
+        add({...base, statement: `Política de no máximo ${times(maxRatio)}${against}`, topic: "debt_policy", effect: "policy_limit", knowledge: docGuard.state,
           decisionStatement: `Há uma política de endividamento aprovada pelo conselho. ${capital(noun)} de ${when} fixa dívida líquida de no máximo ${times(maxRatio)} o EBITDA${comparison
             ? `, ${comparison.tighter ? "abaixo do" : "não abaixo do"} covenant vigente de ${times(comparison.lowest)}.${comparison.tighter ? " Entre os limites lidos, é o mais restritivo." : ""}` : "."}`});
       } else add({...base, statement: from === f.fileId ? "Cláusula lida no documento." : `Cláusula lida na cópia legível da página ${c.at.page}.`});
@@ -1383,7 +1394,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const auditedKnown = auditedSubs.some(closes);
       if (!audited || !auditedKnown) gapsOut.push({need: "group_perimeter", item: "Demonstrações auditadas da controlada, se existirem", why: "perímetro da devedora e caixa disponível na controladora", quoted: null, findingId: g.state === "known" ? id : null, anchor: f.fileId, conditional: true});
       if (g.state !== "known") {block("perimeter", f.fileId, "O perímetro da controlada no consolidado", g); return;}
-      add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [at], knowledge: "known",
+      add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [at], knowledge: g.state,
         statement: `A consolidada inclui a controlada; a análise de crédito da devedora precisa do individual.${cashShown ? ` O caixa da controlada (${cashShown}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
         topic: "group_perimeter", effect: "perimeter",
         decisionStatement: `A controlada entra no consolidado.${cashShown ? ` O caixa dela, ${cashShown}, só chega à controladora por dividendo ou mútuo.` : ""}`});
@@ -1420,7 +1431,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
         if (g.state !== "known") {block(`revenue-${x.id}`, f.fileId, "A comparação da receita citada", g); return;}
         if (words.isNet) return;
         recorder!.emitted = true;
-        add({id: `${f.fileId}-${x.id}`, code: "figure_basis_differs", anchor: f.fileId, sources: words.sources, knowledge: "known",
+        add({id: `${f.fileId}-${x.id}`, code: "figure_basis_differs", anchor: f.fileId, sources: words.sources, knowledge: g.state,
           statement: words.isGross ? `Cita receita de ${words.cited}, que é a receita bruta; a líquida das demonstrações é ${words.net}.`
             : `Cita receita de ${words.cited}, que não coincide com a bruta nem com a líquida das demonstrações.`});
       });

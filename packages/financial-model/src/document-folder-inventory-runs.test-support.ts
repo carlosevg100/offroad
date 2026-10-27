@@ -368,6 +368,17 @@ function goldCases(): Case[] {
     observe("budget-revision-after-the-reading-is-not-compared", folderPacketInput({files: readings((r) => {file(r, "f14").version.lastUpdated = "2026-10-15";})}),
       {compared: false, later: true, sideBySide: ["f13", "f14"]}, (p) => {const f = inv(p).findings.find((x) => x.id === "f14-side-by-side")!;
         return {compared: f.statement.includes("revisto para"), later: f.statement.includes("posterior à desta leitura"), sideBySide: inv(p).families.find((x) => x.resolution === "side_by_side")!.sideBySide};}),
+    // Review r20 cases: the budget comparison under the common guard, the three states of the log and the two controls.
+    ...([["budget-comparison-nominal", () => undefined, "known", true],
+      ["budget-comparison-future", (r: DocumentReading[]) => {file(r, "f14").version.lastUpdated = "2026-10-15";}, "future", false],
+      ["budget-comparison-page-not-read", (r: DocumentReading[]) => {const f = file(r, "f14"); for (const x of f.figures) x.at = {page: 1, section: x.at.section};
+        f.legibility = {pageCount: 2, unreadablePages: [{page: 2, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};}, "unread", false],
+      ["budget-comparison-conflicting-figures", (r: DocumentReading[]) => {const f = file(r, "f14"); const at = f.figures[0]!.at;
+        f.figures.push({id: "rl-1", metric: "net_revenue", value: "400", scale: "1000000", at}, {id: "rl-2", metric: "net_revenue", value: "410", scale: "1000000", at});}, "conflict", false],
+      ["budget-comparison-source-outside-the-registry", (r: DocumentReading[]) => {for (const id of ["f13", "f14"]) file(r, id).entity = {primaryId: "fora-do-cadastro", label: "x"};}, "missing_source", false],
+    ] as const).map(([id, edit, state, compared]) => observe(id, folderPacketInput({files: readings(edit as (r: DocumentReading[]) => void)}),
+      {knowledge: state, compared, preserved: ["f13", "f14"]}, (p) => {const f = inv(p).findings.find((x) => x.id === "f14-side-by-side")!;
+        return {knowledge: f.knowledge, compared: f.statement.includes("revisto para"), preserved: inv(p).families.find((x) => x.resolution === "side_by_side")!.sideBySide};})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
