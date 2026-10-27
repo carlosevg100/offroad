@@ -22,9 +22,12 @@ export type BoardTextUse = (typeof boardTextUses)[number];
 /** A slot: its type and the one concept it admits. `from` lists the admissible [method, path] (selectors literal or
  * `$var`); `year` admits a year reading whose value matches (literal or `$var`); `action` is the deliberation action
  * a deadline slot announces. */
-export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [string, string])[]; year?: string; action?: string};
-/** An operand of a condition: a bound slot's source value, a literal, a shared variable or a field of the source
- * (`at`: [method, path], variables substituted); `year` compares the first four characters. */
+export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [string, string])[]; year?: string; action?: string;
+  /** For a label: the generic words shown when the source name is not an entry of the closed name dictionary. */
+  generic?: string};
+/** An operand of a condition: a bound slot's source value, a literal (variables written as `$name` substituted), a
+ * shared variable or a field of the source (`at`: [method, path], variables substituted); `year` compares the first
+ * four characters. */
 export type BoardOperand = {slot: string; year?: true} | {value: string} | {var: string} | {at: readonly [string, string]; year?: true};
 export type BoardComparison = "lt" | "le" | "gt" | "ge" | "eq";
 export type BoardCondition =
@@ -34,7 +37,13 @@ export type BoardCondition =
   /** The elements of a list whose flag is true are exactly one, and its key equals the operand. */
   | {onlyFlagged: readonly [string, string, string, string]; equals: BoardOperand}
   /** The element of a list with the largest value has its key equal to the operand. */
-  | {largest: readonly [string, string, string, string]; equals: BoardOperand};
+  | {largest: readonly [string, string, string, string]; equals: BoardOperand}
+  /** Binds a variable to a field of the source, for the conditions after it. */
+  | {bind: string; to: BoardOperand}
+  /** A list of the source (or a field of each element) contains the operand; `only` requires it to be the single element. */
+  | {includes: readonly [string, string, string | null]; value: BoardOperand; only?: true}
+  /** A list of the source has at least this many elements. */
+  | {atLeast: readonly [string, string]; count: number};
 export type BoardTemplate = {text: string; slots: Record<string, BoardSlotSpec>; use: readonly BoardTextUse[]; when: readonly BoardCondition[];
   /** For a deliberation's texts: the title template of the deliberation they belong to. */
   of?: string;
@@ -47,7 +56,7 @@ const DT = "build-company-debt-table", CV = "measure-covenant-headroom", WC = "p
 const s = (type: BoardSlotType, method: string, path: string): BoardSlotSpec => ({type, from: [[method, path]]});
 const yr = (year: string): BoardSlotSpec => ({type: "date", year});
 const dl = (action: string): BoardSlotSpec => ({type: "deadline", action});
-const op = (x: string): BoardOperand => /^-?\d+(?:\.\d+)?$/.test(x) ? {value: x} : x.startsWith("$") ? {var: x.slice(1)} : {slot: x};
+const op = (x: string): BoardOperand => /^-?\d+(?:\.\d+)?$/.test(x) ? {value: x} : /^\$[a-z]+$/.test(x) ? {var: x.slice(1)} : {slot: x};
 const cmp = (a: string | BoardOperand, how: BoardComparison, b: string | BoardOperand): BoardCondition => ({compare: [typeof a === "string" ? op(a) : a, how, typeof b === "string" ? op(b) : b]});
 const at = (method: string, path: string, year?: true): BoardOperand => year ? {at: [method, path], year} : {at: [method, path]};
 type Extra = {when?: BoardCondition[]; of?: string; answers?: string};
@@ -67,13 +76,20 @@ const metric = (type: BoardSlotType, caseId: string, field: string) => s(type, I
 const measurement = (type: BoardSlotType, id: string, field: string) => s(type, CV, `result.headroom.measurements[id=${id}].${field}`);
 const tightWeek = s("date", WC, "readings.tightestWeek.weekStart");
 /** The path rows share one sentence; only the reviewed name of the path changes, and every slot reads that path. */
-const pathRow = (name: string, id: string) => {
+const pathRow = (name: string, id: string, creditor: BoardCondition[] = []) => {
   const p = `readings.paths[id=${id}].`;
   return t("page.line", `${name}: caixa mínimo de {caixa}; alavancagem de {alavancagem}; custo de {custo}; dívida líquida {em:ano} de {divida}; nos critérios: {criterios}; anuência: {anuencia}.`,
-    {caixa: s("money", FP, p + "minimumCash.amount"), alavancagem: s("multiple", FP, p + "worstLeverage"), custo: s("money", FP, p + "horizonFinancingCost"), ano: yr("$y"),
-      divida: s("money", FP, p + "netDebtAtHorizon"), criterios: s("flag", FP, p + "eligible"), anuencia: s("flag", FP, p + "consentRequired")}, {when: [horizonYear]});
+    {...creditor.length ? {credor: creditorOf("$i")} : {}, caixa: s("money", FP, p + "minimumCash.amount"), alavancagem: s("multiple", FP, p + "worstLeverage"),
+      custo: s("money", FP, p + "horizonFinancingCost"), ano: yr("$y"), divida: s("money", FP, p + "netDebtAtHorizon"), criterios: s("flag", FP, p + "eligible"),
+      anuencia: s("flag", FP, p + "consentRequired")}, {when: [horizonYear, ...creditor]});
 };
 const negative = (...slots: string[]) => slots.map((x) => cmp(x, "lt", "0"));
+/** The creditor of one row of the debt table, by its registered creditor field; the fixed text never names it. */
+const creditorOf = (row: string, generic = "credor sem nome confirmado"): BoardSlotSpec => ({type: "label", from: [[DT, `result.table.rows[id=${row}].creditor`]], generic});
+/** The obligation the plan prepays (or replaces by its amended version) is the row whose creditor is shown. */
+const prepaidIn = (path: string): BoardCondition => ({includes: [FP, `result.evaluation.paths[id=${path}].prepayments`, "instrumentId"], value: {var: "i"}});
+/** The plan carries the amended version of the row (its id followed by -aditada) in place of the original. */
+const amendedIn = (path: string): BoardCondition[] => [{includes: [FP, `result.evaluation.paths[id=${path}].instrumentIds`, null], value: {value: "$i-aditada"}}];
 
 export const boardTemplates: Record<string, BoardTemplate> = {
   // Deliberations: title, subject, recommendation and dated actions, each bound to its deliberation.
@@ -101,7 +117,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {principal: s("money", DT, "result.table.profile.scheduleByYear[year=$y].principal"), ano: yr("$y"), parcela: s("rate", DT, "result.table.profile.dueWithinTwelveMonthsShare"),
       horizonte: s("date", DT, "result.table.profile.twelveMonthHorizon")}),
   "situation.debt_profile": t("page.line", "Prazo médio de {prazo}; maior credor: {credor}, com {participacao} da dívida.",
-    {prazo: s("years", DT, "result.table.profile.weightedAverageLifeYears"), credor: s("label", DT, "result.table.profile.largestCreditor.creditor"),
+    {prazo: s("years", DT, "result.table.profile.weightedAverageLifeYears"), credor: {type: "label", from: [[DT, "result.table.profile.largestCreditor.creditor"]], generic: "sem nome confirmado"},
       participacao: s("rate", DT, "result.table.profile.largestCreditor.share")}),
   "situation.cash_shortfall": t("page.title", "Sem ação, o caixa fica abaixo do mínimo {em:semana} e chega a {saldo} {fim:ano}",
     {semana: tightWeek, saldo: s("money", FP, "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=$y-12-31].closingAvailable"), ano: yr("$y")}, {when: [tightBelowMinimum]}),
@@ -114,9 +130,10 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "constraint.indenture_basket": t("page.title", "A escritura da debênture deixa só {saldo} de exceção para garantias de nova dívida",
     {saldo: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].remaining")},
     {when: [cmp("saldo", "ge", "0"), cmp("saldo", "lt", at(DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket"))]}),
-  "constraint.basket_usage": t("page.line", "Exceção de {cesta} para garantias, com {ocupado} ocupados pelas garantias da CCB do Bradesco.",
-    {cesta: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket"), ocupado: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].occupied")},
-    {when: [cmp("ocupado", "le", "cesta")]}),
+  "constraint.basket_usage": t("page.line", "Exceção de {cesta} para garantias, com {ocupado} ocupados pelas garantias da dívida com {credor}.",
+    {cesta: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].basket"), ocupado: s("money", DT, "result.table.negativePledgeBaskets[holderId=debenture-1].occupied"),
+      credor: creditorOf("$i")},
+    {when: [cmp("ocupado", "le", "cesta"), {includes: [DT, "result.table.negativePledgeBaskets[holderId=debenture-1].usedBy", null], value: {var: "i"}, only: true}]}),
   "constraint.covenant_policy": t("page.line", "Covenant de {covenant} na escritura; política do conselho de {politica}.", {covenant, politica: policy}),
   "topic.project_return": t("page.title", "A linha de embalagem rende {retorno}, acima do custo de capital de {custo}",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")}, {when: [cmp("retorno", "gt", "custo")]}),
@@ -145,14 +162,15 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {when: [maturityYear, {onlyFlagged: [FP, "readings.paths", "eligible", "id"], equals: at(FP, "readings.recommendation.pathId")}]}),
   "alternatives.row.no_line_debenture": pathRow("Sem a linha agora, com giro e debênture nova", "sem-linha-debenture"),
   "alternatives.row.defer_line": pathRow("Adiar a linha de embalagem", "adiar-linha"),
-  "alternatives.row.debenture_with_line": pathRow("Separar por uso e emitir debênture que substitui a atual e o Bradesco", "debenture-com-linha"),
+  "alternatives.row.debenture_with_line": pathRow("Separar por uso e emitir debênture que substitui a atual e a dívida com {credor}", "debenture-com-linha", [prepaidIn("debenture-com-linha")]),
   "alternatives.row.keep_and_roll": pathRow("Manter e rolar no vencimento", "manter"),
   "alternatives.row.short_bank_loan": pathRow("CCB curta para safra e capex", "ccb-tres-anos"),
   "alternatives.row.extend_with_bank": pathRow("Separar por uso e alongar com banco", "alongar-com-banco"),
-  "alternatives.row.extend_bradesco": pathRow("Alongar só o Bradesco", "alongar-bradesco"),
+  "alternatives.row.extend_bradesco": pathRow("Alongar só a dívida com {credor}", "alongar-bradesco", amendedIn("alongar-bradesco")),
   "recommendation.debenture": t("page.title", "Recomendamos sondar uma debênture de até {valor}, com prazo de {prazo}", {valor: issue, prazo: term}),
-  "recommendation.debenture_cost": t("page.line", "Resgata a debênture atual e pré-paga o Bradesco; custo efetivo entre CDI mais {baixo} e CDI mais {alto}.",
-    {baixo: s("rate", FP, L + "equivalentSpread"), alto: s("rate", FP, L + "equivalentSpreadAtCondition")}, {when: [cmp("baixo", "le", "alto")]}),
+  "recommendation.debenture_cost": t("page.line", "Resgata a debênture atual e pré-paga a dívida com {credor}; custo efetivo entre CDI mais {baixo} e CDI mais {alto}.",
+    {credor: creditorOf("$i"), baixo: s("rate", FP, L + "equivalentSpread"), alto: s("rate", FP, L + "equivalentSpreadAtCondition")},
+    {when: [cmp("baixo", "le", "alto"), {bind: "p", to: at(FP, "readings.recommendation.pathId")}, prepaidIn("$p"), {atLeast: [FP, "result.evaluation.paths[id=$p].prepayments"], count: 2}]}),
   "recommendation.amortization": t("page.line", "Amortização {de:inicio} {a:fim}.",
     {inicio: s("date", FP, L + "firstAmortizationYear"), fim: s("date", FP, L + "lastAmortizationYear")}, {when: [cmp("inicio", "le", "fim")]}),
   "recommendation.alternative": t("page.line", "Plano alternativo: alongamento bancário, com decisão até {prazo}.", {prazo: dl("delib.action.decide_route")}),
@@ -193,18 +211,18 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "appendix.plan_vs_base": t("appendix", "Plano da área financeira contra a base"),
   "appendix.sources": t("appendix", "Fontes e datas das análises"),
   // Likely questions and answers; an answer answers its own question.
-  "q.roll_bank": t("question", "Por que não rolar o Bradesco no vencimento?"),
-  "a.roll_bank": t("answer", "Rolar só o Bradesco deixa as parcelas da debênture sem fonte; faltam cerca de {falta}, com o Bradesco vencendo {em:vencimento}.",
-    {falta: s("money", FP, "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum"), vencimento: s("date", DT, "result.table.rows[id=ccb-bradesco].finalPayment")},
-    {answers: "q.roll_bank", when: [cmp("falta", "gt", "0")]}),
+  "q.roll_bank": t("question", "Por que não rolar a dívida com {credor} no vencimento?", {credor: creditorOf("$i")}),
+  "a.roll_bank": t("answer", "Rolar só a dívida com {credor} deixa as parcelas da debênture sem fonte; faltam cerca de {falta}, com vencimento {em:vencimento}.",
+    {credor: creditorOf("$i"), falta: s("money", FP, "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
+    {answers: "q.roll_bank", when: [cmp("falta", "gt", "0"), ...amendedIn("bradesco-sem-linha")]}),
   "q.term": t("question", "Por que {prazo} e não um prazo menor?", {prazo: term}),
   "a.term": t("answer", "Com prazo menor, a amortização {de:ano}, de {amortizacao}, passa o caixa disponível depois dos juros, de {disponivel}.",
     {ano: yr("$y"), amortizacao: s("money", FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$y].scheduledAmortization"),
       disponivel: s("money", FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$y].availableAfterInterest")},
     {answers: "q.term", when: [cmp("$p", "eq", at(FP, "readings.recommendation.pathId")), cmp("amortizacao", "gt", "disponivel")]}),
   "q.demand": t("question", "E se as gestoras não comprarem o volume todo?"),
-  "a.demand": t("answer", "Plano alternativo: alongamento bilateral de cerca de {valor} com waiver da debênture, decidido até {prazo}, antes do vencimento do Bradesco {em:vencimento}.",
-    {valor: s("money", FP, "readings.alternative.issueTarget"), prazo: dl("delib.action.decide_route"), vencimento: s("date", DT, "result.table.rows[id=ccb-bradesco].finalPayment")},
+  "a.demand": t("answer", "Plano alternativo: alongamento bilateral de cerca de {valor} com waiver da debênture, decidido até {prazo}, antes do vencimento da dívida com {credor} {em:vencimento}.",
+    {valor: s("money", FP, "readings.alternative.issueTarget"), prazo: dl("delib.action.decide_route"), credor: creditorOf("$i"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
     {answers: "q.demand", when: [cmp("prazo", "lt", "vencimento")]}),
   "q.cost": t("question", "Quanto custa?"),
   "a.cost": t("answer", "Custo efetivo entre CDI mais {baixo} e CDI mais {alto}; custo financeiro de cerca de {custo} {ate:ano}, com dívida líquida de {divida} {fim:ano_fim}.",
@@ -249,6 +267,14 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "requester.cfo": t("requester", "Diretor financeiro"),
   "authority.board_policy": t("authority", "Política de endividamento aprovada pelo conselho"),
 };
+
+/** The closed dictionary of names a material may show, in canonical spelling: financial institutions and named
+ * counterparties. A source label is shown only when it equals an entry exactly; otherwise the slot shows its
+ * generic words and the material records a gap of name. */
+export const boardNameDictionary = ["Itaú", "Bradesco", "Santander", "Banco do Brasil", "Caixa", "BTG Pactual", "Banco Safra", "BNDES", "XP", "Sicredi", "Sicoob", "Banrisul",
+  "Citi", "JPMorgan", "Debenturistas", "rede A", "rede B"] as const;
+/** Counterparties the fixed texts of this library describe by role (the retail chains of the receivables programs); never a creditor. */
+export const boardNamesAllowedInText: readonly string[] = ["rede A", "rede B"];
 
 /** A text reference as adopted: `template|slot=reading|slot=deadline:deliberation.deadline`. */
 export const boardTextRefPattern = /^[a-z][a-z0-9_.]{0,79}(?:\|[a-z][a-z0-9_]{0,30}=(?:deadline:)?[a-z0-9][a-z0-9.-]{0,80})*$/;
@@ -326,14 +352,21 @@ export function checkBoardTemplateLibrary() {
       if (spec.year) for (const m of spec.year.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
       if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : !spec.from && !spec.year) problems.push(`${id}:slot`);
       if (spec.year && spec.type !== "date") problems.push(`${id}:year`);
+      if ((spec.type === "label") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
     }
-    const operands = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : [c.equals]);
+    for (const c of x.when) if ("bind" in c) vars.add(c.bind);
+    const operands = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
+      : "atLeast" in c ? [] : [c.equals]);
+    const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]] : []);
+    for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
     for (const o of operands) {
       if ("slot" in o && !Object.hasOwn(x.slots, o.slot)) problems.push(`${id}:operand:${o.slot}`);
       if ("var" in o && !vars.has(o.var)) problems.push(`${id}:var:${o.var}`);
       if ("at" in o) for (const m of o.at[1].matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:at:${m[1]}`);
     }
     for (const m of x.text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)) if (!m[0].startsWith("{count:") && !Object.hasOwn(x.slots, m[1]!)) problems.push(`${id}:text:${m[1]}`);
+    // No fixed text names a creditor or a bank: names enter only through label slots.
+    for (const name of boardNameDictionary) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(x.text) && !boardNamesAllowedInText.includes(name)) problems.push(`${id}:names:${name}`);
     if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);
     if (["delib.subject", "delib.recommendation", "delib.action"].some((u) => x.use.includes(u as BoardTextUse)) && !x.of) problems.push(`${id}:of_missing`);
     if (x.use.includes("answer") !== Boolean(x.answers) || (x.answers && boardTemplates[x.answers]?.use[0] !== "question")) problems.push(`${id}:answers`);

@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -44,6 +44,20 @@ function observe(id: string, input: BoardCapitalDiscussionPacketInput, expected:
   return {id, expectation, observed, inputFingerprint: fingerprint(input), outputFingerprint: fingerprint(result), passed: expectation === observed};
 }
 const current = (p: Packet) => p.result.discussion!.versions.at(-1)!;
+/** Every text a version shows. */
+export const boardShownTexts = (p: Packet) => {const v = current(p); return [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]),
+  ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]), ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];};
+/** Names the debt-table method was made to produce for the largest creditor, none of them an entry of the dictionary. */
+export const boardOffDictionaryNames = ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Caixa Total",
+  "Bradesco Deve Dezassete Cêntimos", "Bradesco Deve Dezassete Biliões"];
+export const boardOffDictionaryExpected = {status: "partial", gap: "page.divida.line.1.label.largest-creditor", line: "Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.", shown: false};
+export const boardOffDictionaryReading = (p: Packet, name: string) => ({status: p.status,
+  gap: p.result.discussion!.gaps.find((g) => g.reason === "label_not_in_dictionary")?.item ?? null, line: current(p).pages.find((x) => x.id === "divida")!.lines[1],
+  shown: boardShownTexts(p).some((t) => t.includes(name) || t.includes(name.normalize("NFKC")))});
+export const boardRegisteredCreditorExpected = {basket: "Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Itaú.",
+  question: "Por que não rolar a dívida com Itaú no vencimento?", named: 7, bradesco: false, status: "prepared_for_human_review"};
+export const boardRegisteredCreditorReading = (p: Packet) => ({basket: current(p).pages.find((x) => x.id === "escritura")!.lines[0], question: current(p).questions[0]!.question,
+  named: boardShownTexts(p).filter((t) => t.includes("dívida com Itaú")).length, bradesco: boardShownTexts(p).some((t) => t.includes("Bradesco")), status: p.status});
 const pageOf = (p: Packet, id: string) => current(p).pages.find((x) => x.id === id)!;
 /** The number each reading shows (dates as shown), without the unit words the formatter adds. */
 const display = (p: Packet) => Object.fromEntries(p.result.discussion!.identity.map((x) => [x.figureId, ["date", "label", "flag", "calendar"].includes(x.unit) ? x.display : x.rounded.replace(".", ",")]));
@@ -173,6 +187,10 @@ function goldCases(): Case[] {
       line.options = line.options.slice(0, 2);
     }), {outcome: "refused", kept: ["npv-defer", "irr-defer"], recommendationKept: true},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds, recommendationKept: pageOf(p, "linha").recommendation !== null})),
+    ...boardOffDictionaryNames.map((name, k) => observe(`creditor-name-outside-the-dictionary-${k + 1}-shows-generic-words-and-a-gap`,
+      withBoardSource("tabela-divida", debtTableWithCreditor(name), () => boardPacketInput(2)), boardOffDictionaryExpected, (p) => boardOffDictionaryReading(p, name))),
+    observe("creditor-registered-as-another-bank-is-named-by-its-field", withBoardSource("tabela-divida", debtTableWithCreditor("Itaú", "Bradesco"), () => boardPacketInput(2)),
+      boardRegisteredCreditorExpected, boardRegisteredCreditorReading),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -272,7 +290,7 @@ function adversarialCases(): Case[] {
     ["false-number-in-an-option-not-yet-shown", () => boardPacketInput(2, (c) => {c.pages[4]!.options[1] = "Seguir em etapas: VPL de R$ 0,9 milhão.";}), "must match pattern"],
     ["paraphrase-that-drops-a-material-fact", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[1] = "topic.project_value|retorno=irr|custo=wacc|vpl=npv";}), "board_capital_material_fact_not_shown:payback"],
     ["percent-sign-written-after-a-rate", () => boardPacketInput(2, (c) => {c.pages[5]!.lines[0] = "Programas a CDI mais {spread-b}% a {spread-a}, em condições indicativas.";}), "must match pattern"],
-    ["question-text-used-as-an-answer", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "q.roll_bank";}), "board_capital_template_use_invalid:question.estrategica.answer"],
+    ["question-text-used-as-an-answer", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "q.cost";}), "board_capital_template_use_invalid:question.estrategica.answer"],
     // Review r7: every slot is a concept, every deadline an action, every fixed assertion a condition, every source label a name.
     ...boardConceptAttempts(boardPacketInput),
     ["tampered-envelope", () => boardPacketInput(2, undefined, (i) => {i.analysis.discussion.envelope = {...i.analysis.discussion.envelope, canonical: i.analysis.discussion.envelope.canonical.replace("2026-10-02", "2026-10-09")};}), "adoption_basis_integrity_mismatch"],
@@ -299,7 +317,8 @@ function adversarialCases(): Case[] {
  * method that is not a name. Shared by the recorded runs (sealed basis) and the property tests (full path). */
 export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData) => void) => unknown): [string, () => unknown, string][] {
   const row = (name: string, id: string) => `alternatives.row.${name}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`;
-  const label = (name: string) => () => withBoardSource("tabela-divida", debtTableWithCreditor(name), () => build(2, () => undefined));
+  const finame = (c: CaseData) => {c.extraReadings["finame-creditor"] = ["tabela-divida", "result.table.rows[id=finame].creditor", "-"];};
+  const covenant = "measure-covenant-headroom";
   return [
     ["return-and-cost-of-capital-swapped", () => build(2, (c) => {c.pages[4]!.title = "topic.project_return|retorno=wacc|custo=irr";}), "board_capital_slot_concept_mismatch:topic.project_return:retorno"],
     ["debt-total-bound-to-the-free-basket", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=basket-free|ano=year-2027";}), "board_capital_slot_concept_mismatch:situation.debt_total:total"],
@@ -319,10 +338,23 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["page-line-used-as-a-deliberation-subject", () => build(2, (c) => {c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";}),
       "board_capital_template_use_invalid:deliberation.linha.subject"],
     ["answer-to-another-question", () => build(2, (c) => {c.questions[0]!.answer = "a.peer|total=gap-bps|data=date-bps";}), "board_capital_answer_mismatch:bradesco"],
-    ["label-with-a-claim-produced-by-the-source", label("Debenturistas; dívida total de R$ 999 milhões"), "board_capital_label_not_a_name:largest-creditor"],
-    ["label-with-fullwidth-digits-produced-by-the-source", label("Bradesco \uff11\uff16"), "board_capital_label_not_a_name:largest-creditor"],
-    ["label-in-prose-produced-by-the-source", label("retorno de menos dezasseis por minuto"), "board_capital_label_not_a_name:largest-creditor"],
-    ["label-with-an-economic-word-produced-by-the-source", label("Caixa Total"), "board_capital_label_not_a_name:largest-creditor"],
+    // Review r8: one package per method, and a creditor named only by the creditor field of the right row.
+    ["second-package-of-the-same-method", () => withExtraBoardSource({id: "covenant-2", methodId: covenant, packet: covenantWithAdverseDebt("400")}, () => build(2, (c) => {
+      c.extraReadings["lev-adv27-b"] = ["covenant-2", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "8.04"];
+      c.pages[8]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27-b|ano=year-2027";
+    })), `board_capital_source_method_repeated:${covenant}`],
+    ["basket-occupied-by-the-creditor-of-another-row", () => build(2, (c) => {finame(c); c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=finame-creditor";}),
+      "board_capital_template_condition_failed:constraint.basket_usage"],
+    ["largest-creditor-in-a-row-creditor-slot", () => build(2, (c) => {c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=largest-creditor";}),
+      "board_capital_slot_concept_mismatch:constraint.basket_usage:credor"],
+    ["prepaid-creditor-the-plan-does-not-prepay", () => build(2, (c) => {finame(c); c.pages[7]!.lines[0] = "recommendation.debenture_cost|credor=finame-creditor|baixo=deb-cost-low|alto=deb-cost-high";}),
+      "board_capital_template_condition_failed:recommendation.debenture_cost"],
+    ["amended-creditor-the-plan-does-not-amend", () => build(2, (c) => {finame(c); c.pages[6]!.lines[6] = c.pages[6]!.lines[6]!.replace("credor=bradesco-creditor", "credor=finame-creditor");}),
+      "board_capital_template_condition_failed:alternatives.row.extend_bradesco"],
+    ["question-and-answer-name-different-creditors", () => build(2, (c) => {finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor";}), "board_capital_answer_mismatch:bradesco:credor"],
+    ["creditor-and-maturity-of-different-rows", () => build(2, (c) => {
+      finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor"; c.questions[0]!.answer = "a.roll_bank|credor=finame-creditor|falta=bradesco-gap|vencimento=bradesco-maturity";
+    }), "board_capital_slot_concept_mismatch:a.roll_bank:vencimento:variable_i"],
   ];
 }
 /** Changes one adopted reading inside the sealed basis and seals it again. */

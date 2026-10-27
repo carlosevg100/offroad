@@ -78,7 +78,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.table.reconciliation.principal": money("millions"), "result.table.profile.scheduleByYear[*].principal": money("millions"),
     "result.table.profile.scheduleByYear[*].year": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},
     "result.table.profile.dueWithinTwelveMonthsShare": rate("none"), "result.table.profile.weightedAverageLifeYears": plain("years"),
-    "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
+    "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.rows[*].creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
     "result.table.negativePledgeBaskets[*].basket": money("millions"), "result.table.negativePledgeBaskets[*].occupied": money("millions"),
     "result.table.negativePledgeBaskets[*].remaining": money("millions"), "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
     "result.table.profile.twelveMonthHorizon": date("month_year", "month_long")},

@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardMatchPath, boardMatchValue, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -162,33 +162,10 @@ export function checkBoardFreeText(text: string): string {
   if (issue) throw new Error(`board_capital_number_without_origin:${issue}:${text.slice(0, 80)}`);
   return text;
 }
-/** Economic words a source label may never carry: a label names a creditor, a retailer or an instrument, it states nothing. */
-export const boardLabelEconomicWords = ["dívida", "divida", "dívidas", "dividas", "total", "totais", "caixa", "saldo", "valor", "valores", "preço", "preco", "custo", "custos", "taxa",
-  "taxas", "juros", "spread", "prazo", "prazos", "aumento", "redução", "reducao", "mais", "menos", "retorno", "vpl", "tir", "ebitda", "alavancagem", "receita", "lucro",
-  "margem", "capital", "giro", "mínimo", "minimo", "máximo", "maximo", "limite", "covenant", "garantia", "garantias", "cesta", "positivo", "negativo", "positiva", "negativa",
-  "sinal", "por", "minuto", "minutos", "hora", "horas", "ganho", "perda", "acima", "abaixo", "igual", "cerca", "aproximadamente", "rating", "principal", "amortização",
-  "amortizacao", "vencimento", "parcela", "parcelas", "emissão", "emissao", "participação", "participacao", "vezes", "dezasseis", "terça", "terca", "terço", "terco"] as const;
-const labelEconomic = new Set<string>(boardLabelEconomicWords);
-const labelConnectors = new Set(["de", "da", "do", "das", "dos", "e", "&"]);
-/** The first reason a source label is refused as a proper name, or null: words with letters (a capital first),
- * acronyms, S.A. and Ltda, joined by de, da, do, das, dos, e or &; no digit of any script, no symbol, no word of the
- * closed lexicon or of economics, at most six words and sixty characters. */
-export function boardLabelIssue(text: string): string | null {
-  const t = text.normalize("NFKC");
-  if (t !== text) return "normalization";
-  if (!t.trim() || t.length > 60) return "length";
-  if (/\p{N}/u.test(t)) return "digit";
-  if (!/^[\p{L} .&'-]+$/u.test(t)) return "character";
-  const words = t.split(" ").filter(Boolean);
-  if (words.length > 6 || words.length !== t.split(" ").length) return "spacing";
-  for (const w of words) {
-    const lower = w.toLowerCase();
-    if (forbidden.has(lower) || labelEconomic.has(lower) || forbidden.has(lower.replace(/\.$/, "")) || labelEconomic.has(lower.replace(/\.$/, ""))) return `word:${w}`;
-    if (labelConnectors.has(w) || w === "S.A." || /^Ltda\.?$/.test(w) || /^\p{Lu}{2,6}$/u.test(w) || /^\p{Lu}\p{Ll}+(?:[-']\p{Lu}?\p{Ll}+)*$/u.test(w)) continue;
-    return `word:${w}`;
-  }
-  return null;
-}
+/** What the identity check records as the display of a source label that is not an entry of the name dictionary:
+ * the name itself is never shown; the slot shows its generic words and the material records a gap of name. */
+export const boardUnnamedLabel = "nome fora do dicionário";
+const dictionary = new Set<string>(boardNameDictionary);
 /** The reading ids a template names, with or without a date preposition; counts and deadlines excluded. */
 export function boardPlaceholderIds(ref: string): string[] {
   return boardRefReadingIds(ref);
@@ -204,7 +181,7 @@ export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figu
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 /** A reading as shown, with its origin (source, method, path and source value) so a slot can check its concept. */
-export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}} | {pending: true; methodId?: string};
+export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]};
 /** Which slot of which template a displayed field binds to which reading or deadline. */
 export type BoardBinding = {templateId: string; slot: string; figureId: string | null; deadlineId: string | null};
@@ -287,7 +264,7 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
  * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
-export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]} {
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]} {
   const {templateId, bindings, template} = parseBoardTextRef(ref);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
@@ -330,12 +307,16 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     values[slot] = {value: figure.origin.value, methodId: figure.origin.methodId, sourceId: figure.origin.sourceId};
   }
+  // One package per method: every reading of a method in one text comes from the same reviewed result.
+  for (const a of Object.values(values)) for (const b of Object.values(values))
+    if (a && b && a.methodId && a.methodId === b.methodId && a.sourceId !== b.sourceId) throw new Error(`board_capital_source_mixed:${templateId}:${a.methodId}`);
   // The conditions the fixed text asserts, against the bound readings and their sources.
   const unverified = (why: string) => new Error(`board_capital_template_condition_unverified:${templateId}:${why}`);
+  // The source a condition reads is the one package of its method in the material, the same one the slots bind.
   const sourceOf = (method: string) => {
-    const bound = Object.values(values).find((v) => v !== null && v.methodId === method);
-    const all = (context.sources ?? []).filter((x) => bound ? x.id === bound.sourceId : x.methodId === method);
+    const all = (context.sources ?? []).filter((x) => x.methodId === method);
     if (all.length !== 1) throw unverified(`source_${method}`);
+    if (Object.values(values).some((v) => v !== null && v.methodId === method && v.sourceId !== all[0]!.id)) throw new Error(`board_capital_source_mixed:${templateId}:${method}`);
     return all[0]!;
   };
   const read = (method: string, path: string) => {
@@ -347,7 +328,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     throw unverified(why);
   };
   const operand = (o: BoardOperand): string | undefined => {
-    if ("value" in o) return o.value;
+    if ("value" in o) return o.value.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
     if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var];}
     if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); return v === null ? undefined : o.year ? v.value.slice(0, 4) : v.value;}
     const v = scalar(read(o.at[0], o.at[1]), o.at[1]);
@@ -357,6 +338,15 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   const holds = (c: BoardCondition): boolean => {
     if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return a === undefined || b === undefined || compareBoard(a, c.compare[1], b);}
     if ("every" in c) {const than = operand(c.than); return than === undefined || list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
+    if ("bind" in c) {const v = operand(c.to); if (v === undefined) throw unverified(`bind_${c.bind}`); if (Object.hasOwn(vars, c.bind) && vars[c.bind] !== v) return false; vars[c.bind] = v; return true;}
+    if ("includes" in c) {
+      const [m, path, field] = c.includes, want = operand(c.value);
+      const xs = read(m, path);
+      if (!Array.isArray(xs)) throw unverified(path);
+      const items = xs.map((x) => scalar(field === null ? x : (x as Record<string, unknown>)[field], path));
+      return want === undefined || (items.includes(want) && (!c.only || items.length === 1));
+    }
+    if ("atLeast" in c) {const xs = read(c.atLeast[0], c.atLeast[1]); if (!Array.isArray(xs)) throw unverified(c.atLeast[1]); return xs.length >= c.count;}
     if ("onlyFlagged" in c) {
       const [m, path, flag, key] = c.onlyFlagged, equals = operand(c.equals);
       const flagged = list(m, path).filter((x) => x[flag] === true);
@@ -368,6 +358,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
   };
   template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
+  const unnamed: string[] = [];
   const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
     const spec = template.slots[slot], bound = bindings[slot];
@@ -377,9 +368,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       return `{${bound}}`;
     }
     if ((spec.type === "date") !== (prep !== undefined)) throw new Error(`board_capital_template_invalid:${templateId}:${slot}`);
+    // A source name outside the dictionary is never written: the template's generic words stand in its place.
+    const figure = context.figures.get(bound);
+    if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, context), bindings: out};
+  return {...renderBoardTemplate(text, context), bindings: out, unnamed};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -399,8 +393,8 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
     const text = r.display.slice(x.start, x.end);
     if (f && ("pending" in f || f.unit !== x.unit || (text !== f.display && !Object.values(datePrepositions).some((p) => text === `${p} ${f.display}`)))) fail("marker_text", x.id);
-    // A source label is a proper name: its inside passes the name rule, the whitelist and both lexicons.
-    if (x.kind === "text_figure") {const issue = boardLabelIssue(text) ?? boardFreeTextIssue(text); if (issue) fail(`label_${issue}`, x.id);}
+    // A source label is shown only as an entry of the closed name dictionary, never as a string of the source.
+    if (x.kind === "text_figure" && (!dictionary.has(text) || (f && !("pending" in f) && f.unnamed))) fail("label_not_in_dictionary", x.id);
   }
   let verified = 0;
   for (const t of boardNumberTokens(r.display)) {
@@ -476,7 +470,12 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   // Every displayed field records which slot of which template binds which reading or deadline.
-  const render = (t: string, field?: string) => {const r = renderBoardRef(t, context); if (field) bindings.push(...r.bindings.map((b) => ({field, ...b}))); return r;};
+  const nameGaps: {item: string; reason: "label_not_in_dictionary"}[] = [];
+  const render = (t: string, field?: string) => {
+    const r = renderBoardRef(t, context);
+    if (field) {bindings.push(...r.bindings.map((b) => ({field, ...b}))); nameGaps.push(...r.unnamed.map((id) => ({item: `${field}.label.${id}`, reason: "label_not_in_dictionary" as const})));}
+    return r;
+  };
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
   const drops = (t: string) => boardPlaceholderIds(t).some((id) => removed.figures.has(id));
   const neutralTopics = new Set(d.pages.filter((p) => removed.recommendations.has(p.id) && p.topicId !== null).map((p) => p.topicId!));
@@ -493,7 +492,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
       authorityBasis: x.authorityBasis === null ? null : render(x.authorityBasis).display, deadlines};
   });
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
-  const gaps: {item: string; reason: string}[] = [];
+  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary"}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
     const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
     const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));
@@ -540,7 +539,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   const body = {version, deliberations: deliberationOut, pages, summary: summary.display, summaryFigureIds: ids(summary, ["figure", "text_figure"]),
     appendix, questions, verifiedNumbers, bindings,
     agenda: {minutes: d.agendaMinutes, minutesPerPage: d.minutesPerPage, mainPages: mainCount, capacity, fits: capacity === null ? null : mainCount <= capacity}};
-  return {material: {...body, fingerprint: fingerprintOf(body)}, gaps};
+  return {material: {...body, fingerprint: fingerprintOf(body)}, gaps: [...gaps, ...nameGaps]};
 }
 type Version = ReturnType<typeof renderVersion>;
 
@@ -641,6 +640,9 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   for (const q of d.questions) {
     const question = use(q.question, "question", `question.${q.id}.question`).templateId, answer = use(q.answer, "answer", `question.${q.id}.answer`);
     if (answer.template.answers !== question) throw new Error(`board_capital_answer_mismatch:${q.id}:${answer.templateId}`);
+    // A slot the question and its answer share (the creditor named in both) binds the same reading.
+    const asked = parseBoardTextRef(q.question).bindings;
+    for (const [slot, bound] of Object.entries(answer.bindings)) if (Object.hasOwn(asked, slot) && asked[slot] !== bound) throw new Error(`board_capital_answer_mismatch:${q.id}:${slot}`);
   }
   for (const t of d.topics) use(t.label, "topic", `topic.${t.id}`);
   for (const x of d.indicative) use(x.reason, "note", `indicative.${x.figureId}`);
@@ -681,15 +683,17 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     if (boardEconomicUnits.includes(spec.kind) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
     const raw = readBoardSourcePath(s.packet, f.path);
     if (spec.kind === "label" && (typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw))) throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
-    // A label from the source, even produced by the method itself, is shown only when it is a proper name.
-    if (spec.kind === "label") {const issue = boardLabelIssue(raw as string); if (issue) throw new Error(`board_capital_label_not_a_name:${f.id}:${issue}`);}
+    // A label from the source, even produced by the method itself, is shown only when it is an entry of the closed
+    // name dictionary; any other string is never shown (the slot's generic words and a gap of name instead).
+    const unnamed = spec.kind === "label" && !dictionary.has(raw as string);
     const currency = (s.packet as {currency?: unknown}).currency;
     const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "");
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
-    figures.set(f.id, {display: check.display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: f.path, value: check.value}});
+    const display = unnamed ? boardUnnamedLabel : check.display;
+    figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: f.path, value: check.value}, ...unnamed ? {unnamed: true as const} : {}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
-      scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display: check.display, matches: true as const});
+      scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
   }
   return {figures, checks};
 }
@@ -715,6 +719,8 @@ export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, Boa
 /** The whole discussion: the outline always; the material only once the outline is confirmed or when
  * there is no time before the meeting to confirm it. Every version shows every material fact; each is kept. */
 export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: BoardSourceReading[]) {
+  // One reviewed result per method in a material: every reading and every condition of a method refers to that package.
+  for (const [i, x] of sources.entries()) if (sources.findIndex((y) => y.methodId === x.methodId) !== i) throw new Error(`board_capital_source_method_repeated:${x.methodId}`);
   validateBoardDiscussion(d);
   const {figures, checks} = resolveBoardFigures(d, sources);
   validateBoardDiscussion(d, figures);

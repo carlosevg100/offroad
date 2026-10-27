@@ -77,10 +77,26 @@ function buildSources() {
 }
 let cached: ReturnType<typeof buildSources> | null = null;
 let replaced: Record<string, Record<string, unknown>> = {};
+let added: {id: string; methodId: string; packet: Record<string, unknown>}[] = [];
 /** The reviewed results, computed once per process and handed out as copies. */
-export function auroraBoardSources() {
+export function auroraBoardSources(): {id: string; methodId: string; packet: Record<string, unknown>}[] {
   cached ??= buildSources();
-  return cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(replaced[s.id] ?? s.packet) as unknown as Record<string, unknown>}));
+  return [...cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(replaced[s.id] ?? s.packet) as unknown as Record<string, unknown>})),
+    ...added.map((s) => ({...s, packet: structuredClone(s.packet)}))];
+}
+/** Runs a case with a second reviewed result of a method already in the material, named in the basis beside the first. */
+export function withExtraBoardSource<T>(source: {id: string; methodId: string; packet: Record<string, unknown>}, run: () => T): T {
+  added = [...added, source];
+  try {return run();} finally {added = added.filter((x) => x !== source);}
+}
+/** The covenant test executed again by its own method with the adverse debt of December 2027 raised (same company, currency and version). */
+export function covenantWithAdverseDebt(debt: string) {
+  const c = auroraCovenantBasis();
+  const entry = c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"));
+  if (!entry) throw new Error("adverse debt entry not found");
+  entry.value = {type: "number", value: debt};
+  return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base",
+    analysis: c.seal()}) as unknown as Record<string, unknown>;
 }
 /** Runs a case with one reviewed result replaced by another execution of its method; the basis names the new one. */
 export function withBoardSource<T>(id: string, packet: Record<string, unknown>, run: () => T): T {
@@ -88,9 +104,9 @@ export function withBoardSource<T>(id: string, packet: Record<string, unknown>, 
   try {return run();} finally {const {[id]: _gone, ...rest} = replaced; replaced = rest;}
 }
 /** The debt table executed by its own method with the largest creditor adopted under another name. */
-export function debtTableWithCreditor(name: string) {
+export function debtTableWithCreditor(name: string, registered = "Debenturistas") {
   const b = auroraDebtTableBasis();
-  const entry = b.entries.find((e) => (e.value as {value?: unknown}).value === "Debenturistas");
+  const entry = b.entries.find((e) => e.fieldPath.endsWith(".creditor") && (e.value as {value?: unknown}).value === registered);
   if (!entry) throw new Error("creditor entry not found");
   entry.value = {type: "text", value: name};
   return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
@@ -119,6 +135,7 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "share-12m": ["tabela-divida", "result.table.profile.dueWithinTwelveMonthsShare", "0", "28"],
   "wal": ["tabela-divida", "result.table.profile.weightedAverageLifeYears", "1", "1.5"],
   "largest-creditor": ["tabela-divida", "result.table.profile.largestCreditor.creditor", "-"],
+  "bradesco-creditor": ["tabela-divida", "result.table.rows[id=ccb-bradesco].creditor", "-"],
   "largest-share": ["tabela-divida", "result.table.profile.largestCreditor.share", "0", "46"],
   "basket": ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].basket", "0", "15"],
   "basket-used": ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].occupied", "0", "12"],
@@ -222,7 +239,7 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "caixa", role: "situation", topicId: null, title: "situation.cash_shortfall|semana=tight-week|saldo=cash-end-2027|ano=year-2027", recommendation: null, options: [],
         lines: ["situation.cash_without_line|semana=sem-linha-week|saldo=sem-linha-min|minimo=min-cash", "situation.debt_service|ano=year-2027|servico=service-2027|disponivel=available-2027"]},
       {id: "escritura", role: "constraint", topicId: null, title: "constraint.indenture_basket|saldo=basket-free", recommendation: null, options: [],
-        lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
+        lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=bradesco-creditor", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
       {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
           "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason"],
@@ -231,9 +248,9 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|semana=tight-week"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
-        lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
+        lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}${["debenture-com-linha", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
       {id: "recomendacao", role: "recommendation", topicId: null, title: "recommendation.debenture|valor=debenture-amount|prazo=debenture-term", recommendation: null, options: [],
-        lines: ["recommendation.debenture_cost|baixo=deb-cost-low|alto=deb-cost-high", "recommendation.amortization|inicio=amort-first|fim=amort-last",
+        lines: ["recommendation.debenture_cost|credor=bradesco-creditor|baixo=deb-cost-low|alto=deb-cost-high", "recommendation.amortization|inicio=amort-first|fim=amort-last",
           "recommendation.alternative|prazo=deadline:vencimentos.rota"]},
       {id: "alavancagem", role: "risk", topicId: null, title: "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2027", recommendation: null, options: [],
         lines: ["risk.leverage_path|inicio=lev-dez26|data_inicio=dez26-date|fim=lev-dez27|data_fim=dez27-date", "risk.leverage_adverse|ano=year-2027|adverso=lev-adv27|politica=policy-limit"]},
@@ -255,9 +272,9 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "fontes", label: "appendix.sources", sourceIds: ["tabela-divida", "covenant", "caixa-semanal", "linha-embalagem", "projecao", "plano-fpa", "recebiveis", "custo-relativo", "plano-2027"]},
     ],
     questions: [
-      {id: "bradesco", question: "q.roll_bank", answer: "a.roll_bank|falta=bradesco-gap|vencimento=bradesco-maturity"},
+      {id: "bradesco", question: "q.roll_bank|credor=bradesco-creditor", answer: "a.roll_bank|credor=bradesco-creditor|falta=bradesco-gap|vencimento=bradesco-maturity"},
       {id: "prazo", question: "q.term|prazo=debenture-term", answer: "a.term|ano=amort-first|amortizacao=five-year-amort|disponivel=five-year-available"},
-      {id: "demanda", question: "q.demand", answer: "a.demand|valor=alt-amount|prazo=deadline:vencimentos.rota|vencimento=bradesco-maturity"},
+      {id: "demanda", question: "q.demand", answer: "a.demand|valor=alt-amount|prazo=deadline:vencimentos.rota|credor=bradesco-creditor|vencimento=bradesco-maturity"},
       {id: "custo", question: "q.cost", answer: "a.cost|baixo=deb-cost-low|alto=deb-cost-high|custo=cost-2028|ano=year-2028|divida=net-debt-2028|ano_fim=year-2028"},
       {id: "serra-verde", question: "q.peer", answer: "a.peer|total=gap-bps|data=date-bps"},
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},

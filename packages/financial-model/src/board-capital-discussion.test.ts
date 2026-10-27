@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {boardFreeTextIssue, boardLabelIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
+import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
   type BoardDeliberation, type BoardFigureDisplay, type BoardPage, type BoardSourceReading} from "./board-capital-discussion";
 import type {BoardFieldSpec} from "./board-capital-discussion-sources";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
@@ -81,10 +81,10 @@ describe("board discussion core", () => {
     expect(check("{d},{b}")).toBe(2);
     for (const [t, why] of [["{d}{b}", "glued_to_marker"], ["A dívida equivale a {em:y}", "preposition_before_marker"],  ["A dívida é de {em:y} CAD.", "number_without_origin"], ["Retorno de {r} ao mês", "number_without_origin"]] as const)
       expect(() => check(t), t).toThrow(why);
-    // A source label is a proper name; prose, digits or economic words inside it are refused on the final text.
-    for (const bad of ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Banco Mais Caixa"]) {
+    // A source label is shown only as an entry of the closed name dictionary; any other string is refused on the final text.
+    for (const bad of ["Debenturistas; dívida total de R$ 999 milhões", "Bradesco \uff11\uff16", "retorno de menos dezasseis por minuto", "Bradesco Deve Dezassete Cêntimos", "Banco Mais Caixa"]) {
       const f = new Map<string, BoardFigureDisplay>([["l", {display: bad, unit: "label"}]]);
-      expect(() => verifyBoardRendered("f", {display: bad, spans: [{start: 0, end: bad.length, kind: "text_figure", id: "l", unit: "label"}]}, f), bad).toThrow("label_");
+      expect(() => verifyBoardRendered("f", {display: bad, spans: [{start: 0, end: bad.length, kind: "text_figure", id: "l", unit: "label"}]}, f), bad).toThrow("label_not_in_dictionary");
     }
     expect(() => verifyBoardRendered("f", {display: "R$ 131 milhões", spans: [{start: 0, end: 14, kind: "figure", id: "d", unit: "money"}]}, figures)).toThrow("marker_text");
     expect(() => verifyBoardRendered("f", {display: "Dívida \uff11\uff13\uff10 e R$ 130 milhões", spans: [{start: 13, end: 27, kind: "figure", id: "d", unit: "money"}]}, figures)).toThrow("without_marker");
@@ -145,11 +145,5 @@ describe("board discussion core", () => {
     expect(() => render("next_steps.notice|prazo=deadline:v.rota")).toThrow("board_capital_deadline_action_mismatch:next_steps.notice:prazo:v.rota");
     // A condition whose source is not in the material cannot be verified.
     expect(() => renderBoardRef("situation.debt_total|total=d|ano=y", {...context, sources: []})).toThrow("board_capital_template_condition_unverified");
-  });
-  it("accepts as a source label only a proper name", () => {
-    for (const ok of ["Debenturistas", "Banco do Brasil", "Itaú Unibanco S.A.", "BTG Pactual", "Rede Alfa Ltda.", "Santos & Irmãos"]) expect(boardLabelIssue(ok), ok).toBeNull();
-    for (const [bad, why] of [["Debenturistas; dívida total de R$ 999 milhões", "digit"], ["Debenturistas; Bradesco", "character"], ["Bradesco \uff11\uff16", "normalization"], ["Bradesco 16", "digit"],
-      ["retorno de menos dezasseis por minuto", "word:retorno"], ["Caixa", "word:Caixa"], ["Banco Mais", "word:Mais"], ["Dívida Total", "word:Dívida"], ["Rede Doze", "word:Doze"],
-      ["Banco do Brasil Banco do Brasil Banco", "spacing"], ["", "length"]] as const) expect(boardLabelIssue(bad), bad).toContain(why);
   });
 });

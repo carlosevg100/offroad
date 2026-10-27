@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardPacketInput, boardPacketViaPremises} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardReadings, type BoardTurn} from "./board-capital-discussion.test-support";
+import {boardConceptAttempts, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+  boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
+import {auroraBoardReadings, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -21,7 +22,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|label_not_a_name)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -81,7 +82,8 @@ const meaning: Record<string, Record<string, string>> = {
   "situation.debt_service": {ano: "year", servico: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].service",
     disponivel: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].availableForService"},
   "constraint.indenture_basket": {saldo: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].remaining"},
-  "constraint.basket_usage": {cesta: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].basket", ocupado: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].occupied"},
+  "constraint.basket_usage": {cesta: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].basket", ocupado: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].occupied",
+    credor: DT + "result.table.rows[id=*].creditor"},
   "constraint.covenant_policy": {covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "topic.project_return": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
   "topic.project_value": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate", vpl: IP + "[caseId=base].netPresentValue"},
@@ -96,10 +98,10 @@ const meaning: Record<string, Record<string, string>> = {
   "topic.crop_overdraft": {semana: WC + "readings.tightestWeek.weekStart"},
   "alternatives.count": {caminhos: FP + "readings.horizon.candidatePaths", ano: "year"},
   "alternatives.row.no_line_debenture": pathRow("sem-linha-debenture"), "alternatives.row.defer_line": pathRow("adiar-linha"),
-  "alternatives.row.debenture_with_line": pathRow("debenture-com-linha"), "alternatives.row.keep_and_roll": pathRow("manter"), "alternatives.row.short_bank_loan": pathRow("ccb-tres-anos"),
-  "alternatives.row.extend_with_bank": pathRow("alongar-com-banco"), "alternatives.row.extend_bradesco": pathRow("alongar-bradesco"),
+  "alternatives.row.debenture_with_line": {...pathRow("debenture-com-linha"), credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.row.keep_and_roll": pathRow("manter"), "alternatives.row.short_bank_loan": pathRow("ccb-tres-anos"),
+  "alternatives.row.extend_with_bank": pathRow("alongar-com-banco"), "alternatives.row.extend_bradesco": {...pathRow("alongar-bradesco"), credor: DT + "result.table.rows[id=*].creditor"},
   "recommendation.debenture": {valor: LI + "issueTarget", prazo: LI + "termYears"},
-  "recommendation.debenture_cost": {baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition"},
+  "recommendation.debenture_cost": {credor: DT + "result.table.rows[id=*].creditor", baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition"},
   "recommendation.amortization": {inicio: LI + "firstAmortizationYear", fim: LI + "lastAmortizationYear"},
   "recommendation.alternative": {prazo: route},
   "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", ano: "year"},
@@ -119,11 +121,13 @@ const meaning: Record<string, Record<string, string>> = {
   "summary.opening.debt_and_cash": {principal: DT + "result.table.profile.scheduleByYear[year=*].principal", ano: "year", semana: WC + "readings.tightestWeek.weekStart"},
   "summary.closing.leverage": {alavancagem: CV + "result.headroom.measurements[id=dez26-base].ratio", data: CV + "result.headroom.measurements[id=dez26-base].date",
     politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
-  "a.roll_bank": {falta: FP + "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", vencimento: DT + "result.table.rows[id=ccb-bradesco].finalPayment"},
+  "q.roll_bank": {credor: DT + "result.table.rows[id=*].creditor"},
+  "a.roll_bank": {credor: DT + "result.table.rows[id=*].creditor", falta: FP + "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum",
+    vencimento: DT + "result.table.rows[id=*].finalPayment"},
   "q.term": {prazo: LI + "termYears"},
   "a.term": {ano: "year", amortizacao: FP + "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=*].scheduledAmortization",
     disponivel: FP + "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=*].availableAfterInterest"},
-  "a.demand": {valor: FP + "readings.alternative.issueTarget", prazo: route, vencimento: DT + "result.table.rows[id=ccb-bradesco].finalPayment"},
+  "a.demand": {valor: FP + "readings.alternative.issueTarget", prazo: route, credor: DT + "result.table.rows[id=*].creditor", vencimento: DT + "result.table.rows[id=*].finalPayment"},
   "a.cost": {baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition", custo: FP + "readings.recommendation.horizonFinancingCost", ano: "year",
     divida: FP + "readings.recommendation.netDebtAtHorizon", ano_fim: "year"},
   "a.peer": {total: RC + "decomposition.grossBps", data: RC + "result.bridge.steps[family=pricing_date].bps"},
@@ -153,13 +157,15 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
  * periodicity and presentation with its own rules; then removes from each displayed field every reading's text,
  * every deadline, the counts and ordinals, and requires that what remains passes its own whitelist and lexicon.
  * Every material fact must appear by its own formatted text. */
+const names = new Set(["Itaú", "Bradesco", "Santander", "Banco do Brasil", "Caixa", "BTG Pactual", "Banco Safra", "BNDES", "XP", "Sicredi", "Sicoob", "Banrisul", "Citi", "JPMorgan",
+  "Debenturistas", "rede A", "rede B"]);
 function oracle(p: Packet) {
   const v = current(p), d = p.result.discussion!;
   const D = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
   const short = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
   const long = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   const reformat = (x: (typeof d.identity)[number]) => {
-    if (x.unit === "label") return x.value;
+    if (x.unit === "label") return names.has(x.value) ? x.value : "nome fora do dicionário";
     if (x.unit === "flag") return x.value === "true" ? "sim" : "não";
     if (x.unit === "calendar") return x.value;
     if (x.unit === "date") {
@@ -213,6 +219,21 @@ function oracle(p: Packet) {
     if (/^-?\d+(\.\d+)?$/.test(x.value)) g.values[b.slot] = new D(x.value);
   }
   for (const [key, g] of groups) if (g.complete && claims[g.templateId] && !claims[g.templateId]!(g.values)) bad.push(`claim:${key}`);
+  // Names: the oracle's own dictionary. A label outside it is never shown and leaves a gap of name; one inside it is
+  // shown as registered. One package per method. A row's creditor is named only beside readings of that same row.
+  for (const x of d.identity.filter((i) => i.unit === "label")) {
+    if (names.has(x.value)) continue;
+    if (texts.some((t) => t.includes(x.value) || t.includes(x.value.normalize("NFKC")))) bad.push(`name_shown:${x.figureId}`);
+    if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.endsWith(`.label.${x.figureId}`))) bad.push(`name_gap:${x.figureId}`);
+  }
+  for (const method of new Set(d.identity.map((x) => x.methodId)))
+    if (new Set(d.identity.filter((x) => x.methodId === method).map((x) => `${x.sourceId}|${x.packetFingerprint}`)).size !== 1) bad.push(`packages_mixed:${method}`);
+  const rowsOf = new Map<string, Set<string>>();
+  for (const b of v.bindings) {
+    const x = b.figureId === null ? undefined : byId.get(b.figureId), row = x && x.methodId === "build-company-debt-table" ? /^result\.table\.rows\[id=([^\]]+)\]/.exec(x.path)?.[1] : undefined;
+    if (row) {const key = `${b.field}|${b.templateId}`; rowsOf.set(key, (rowsOf.get(key) ?? new Set()).add(row));}
+  }
+  for (const [key, rows] of rowsOf) if (rows.size > 1) bad.push(`creditor_row:${key}`);
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
   return {bad, missing};
 }
@@ -300,6 +321,16 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     for (const [id, build, message] of attempts) expect(() => prepareBoardCapitalDiscussionPacket(build() as Parameters<typeof prepareBoardCapitalDiscussionPacket>[0]), id).toThrow(message);
     expect(attempts.length).toBeGreaterThanOrEqual(18);
   });
+  it("regression r8: names outside the dictionary are never shown and a creditor is named by its row's field, through the full path", () => {
+    for (const name of boardOffDictionaryNames) {
+      const p = withBoardSource("tabela-divida", debtTableWithCreditor(name), () => full(2, () => undefined));
+      expect(boardOffDictionaryReading(p, name), name).toEqual(boardOffDictionaryExpected);
+      expect(oracle(p), name).toEqual({bad: [], missing: []});
+    }
+    const itau = withBoardSource("tabela-divida", debtTableWithCreditor("Itaú", "Bradesco"), () => full(2, () => undefined));
+    expect(boardRegisteredCreditorReading(itau)).toEqual(boardRegisteredCreditorExpected);
+    expect(oracle(itau)).toEqual({bad: [], missing: []});
+  });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);
     let probe: CaseData | null = null;
@@ -344,5 +375,14 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const read = oracle(forged).bad;
     expect(read).toContain("concept:page.linha.title:retorno:wacc");
     expect(read.some((x) => x.startsWith("claim:page.linha.line.2|topic.project_sensitivities"))).toBe(true);
+    const named = structuredClone(packet(2, () => undefined)), nv = named.result.discussion!.versions.at(-1)!;
+    const creditor = named.result.discussion!.identity.find((x) => x.figureId === "largest-creditor")!;
+    creditor.value = "Bradesco Deve Dezassete Cêntimos"; creditor.display = creditor.value;
+    nv.pages.find((x) => x.id === "divida")!.lines[1] = "Prazo médio de 1,5 anos; maior credor: Bradesco Deve Dezassete Cêntimos, com 46% da dívida.";
+    named.result.discussion!.identity.find((x) => x.figureId === "lev-adv27")!.packetFingerprint = "0".repeat(64);
+    named.result.discussion!.identity.find((x) => x.figureId === "bradesco-maturity")!.path = "result.table.rows[id=finame].finalPayment";
+    const flagged = oracle(named).bad;
+    for (const x of ["name_shown:largest-creditor", "name_gap:largest-creditor", "packages_mixed:measure-covenant-headroom"]) expect(flagged).toContain(x);
+    expect(flagged.some((x) => x.startsWith("creditor_row:question.bradesco.answer"))).toBe(true);
   });
 });
