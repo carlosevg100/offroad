@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardDebtorNames, boardInformedReasons, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -183,14 +183,16 @@ export function boardLiteralNumbers(template: string): string[] {
 
 /** A text as rendered, with the span of every marker it carries: a reading (with its unit words), a source
  * label, a pending figure, a deadline, a count of deliberations or an ordinal the method writes. */
-export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal" | "informed" | "debtor"; id: string; unit: BoardFigureUnit | null};
+export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal" | "informed" | "debtor" | "object"; id: string; unit: BoardFigureUnit | null};
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
 /** A reading as shown, with its origin (source, method, path and source value) so a slot can check its concept. */
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
-  debtors?: Map<string, string>};
+  debtors?: Map<string, string>;
+  /** The reviewed forms of the objects this text names, by the reading bound to the object slot. */
+  objects?: Map<string, string>};
 /** Which slot of which template a displayed field binds to which reading, deadline or informed fact. */
 export type BoardBinding = {templateId: string; slot: string; figureId: string | null; deadlineId: string | null; informedId: string | null};
 
@@ -238,6 +240,11 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
       if (context.nextMeetingDate === null) throw new Error("board_capital_number_without_origin:next_meeting_date");
       parts.push(count(context.deliberations.filter((d) => d.deadlines.some((x) => x.date < context.nextMeetingDate!)).length)); continue;
     }
+    if (token.startsWith("object:")) {
+      const form = context.objects?.get(token.slice(7));
+      if (!form) throw new Error(`board_capital_unknown_token:${token}`);
+      parts.push(marker(form, "object", token.slice(7), null)); continue;
+    }
     if (token.startsWith("debtor:")) {
       const name = context.debtors?.get(token.slice(7));
       if (!name) throw new Error(`board_capital_unknown_token:${token}`);
@@ -271,7 +278,7 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
 }
 
 /** The kinds of reading each slot type of the template library accepts. */
-const slotAccepts: Record<Exclude<BoardSlotType, "deadline" | "informed">, BoardFigureUnit[]> = {debtor: ["label"], money: ["money"], rate: ["rate"], multiple: ["multiple"], years: ["years"], months: ["months"],
+const slotAccepts: Record<Exclude<BoardSlotType, "deadline" | "informed">, BoardFigureUnit[]> = {debtor: ["label"], object: ["label"], money: ["money"], rate: ["rate"], multiple: ["multiple"], years: ["years"], months: ["months"],
   bps: ["bps"], count: ["count"], date: ["date", "calendar"], label: ["label"], flag: ["flag"]};
 /** Compares two values: as decimals when both are numbers, as text otherwise (dates, flags, ids). */
 function compareBoard(a: string, how: BoardComparison, b: string) {
@@ -285,7 +292,7 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
  * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
-export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]} {
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]} {
   const {templateId, bindings, template} = parseBoardTextRef(ref);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
@@ -547,6 +554,27 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (a === null || b === null) return false;
       return /^\d+$/.test(a) && /^\d+$/.test(b) ? Number(a) > Number(b) : a > b;
     }
+    if ("sameObject" in c || "registeredTerm" in c) {
+      // The registered texts: a field of the packet by path, or (path starting with ~) contributions whose field path ends so.
+      const [method, rawPath] = "sameObject" in c ? c.sameObject : c.registeredTerm;
+      const path = rawPath.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "\u0000");
+      const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
+      let texts: string[];
+      if (path.startsWith("~")) {
+        const pattern = new RegExp(`\\.${path.slice(1).split("*").map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+")}$`);
+        texts = (packet.result?.contributions ?? []).flatMap((e) => typeof e.fieldPath === "string" && pattern.test(e.fieldPath) && typeof e.value?.value === "string" ? [e.value.value] : []);
+      } else {
+        const v = readBoardSourcePath(packet, path);
+        texts = typeof v === "string" ? [v] : [];
+      }
+      if (texts.length === 0) return false;
+      const terms = texts.map((x) => boardObjectTerm(c.vocabulary, x));
+      if ("registeredTerm" in c) return terms.every((t) => t === c.term);
+      // Identity across sources: the bound reading names a term, and every registered text of the other source names that term.
+      const bound = values[c.slot];
+      const mine = bound ? boardObjectTerm(c.vocabulary, String(bound.value)) : null;
+      return mine !== null && terms.every((t) => t === mine);
+    }
     if ("contributedHas" in c) {
       const packet = sourceOf(c.contributedHas[0]).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
       const suffix = c.contributedHas[1].replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "");
@@ -567,7 +595,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
   };
   template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
-  const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>();
+  const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [];
   const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
     if (match.startsWith("{count:")) return match;
     const spec = template.slots[slot], bound = bindings[slot];
@@ -585,6 +613,17 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     // A debtor is named by the debtor key its item registers in the receivables result, through the closed dictionary;
     // the item's identifier and its free label never name it.
     const figure = context.figures.get(bound);
+    // An object is named only by a vocabulary term the bound registered text contains; otherwise generic words and a gap.
+    if (spec.type === "object") {
+      const raw = figure && !("pending" in figure) ? figure.origin?.value : undefined;
+      const term = typeof raw === "string" ? boardObjectTerm(spec.vocabulary!, raw) : null;
+      // A key of the path (a scenario or case id) that names another term of the same vocabulary contradicts the label.
+      const keyTerms = (spec.from ?? []).flatMap(([, path]) => [...path.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "").matchAll(/=([^\]&]+)/g)]
+        .map((m) => boardObjectTerm(spec.vocabulary!, m[1]!.replace(/-/g, " "))).filter((x): x is string => x !== null));
+      if (!term || keyTerms.some((k) => k !== term)) {unmatched.push(bound); return spec.generic!;}
+      objects.set(bound, boardVocabularies[spec.vocabulary!][term]![spec.form!]);
+      return `{object:${bound}}`;
+    }
     if (spec.type === "debtor") {
       const item = figure && !("pending" in figure) && figure.origin ? boardMatchPath(spec.from![0]![1], figure.origin.path) : null;
       const itemId = item ? Object.values(item)[0] : undefined;
@@ -600,7 +639,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, {...context, debtors}), bindings: out, unnamed, unconfirmed};
+  return {...renderBoardTemplate(text, {...context, debtors, objects}), bindings: out, unnamed, unconfirmed, unmatched};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -623,6 +662,7 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     // A source label is shown only as an entry of the closed name dictionary, never as a string of the source.
     if (x.kind === "text_figure" && (!dictionary.has(text) || (f && !("pending" in f) && f.unnamed))) fail("label_not_in_dictionary", x.id);
     if (x.kind === "debtor" && !Object.values(boardDebtorNames).includes(text)) fail("debtor_not_in_dictionary", x.id);
+    if (x.kind === "object" && !Object.values(boardVocabularies).some((v) => Object.values(v).some((forms) => Object.values(forms).includes(text)))) fail("object_not_in_vocabulary", x.id);
     // An informed fact is words only: the whitelist and the closed lexicon apply inside it as well.
     if (x.kind === "informed") {const issue = boardFreeTextIssue(text); if (issue) fail(`informed_${issue}`, x.id);}
   }
@@ -699,13 +739,14 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
   // Every displayed field records which slot of which template binds which reading or deadline.
-  const nameGaps: {item: string; reason: "label_not_in_dictionary" | "informed_reason_not_in_dictionary"}[] = [];
+  const nameGaps: {item: string; reason: "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary"}[] = [];
   const render = (t: string, field?: string) => {
     const r = renderBoardRef(t, context);
     if (field) {
       bindings.push(...r.bindings.map((b) => ({field, ...b})));
       nameGaps.push(...r.unnamed.map((id) => ({item: `${field}.label.${id}`, reason: "label_not_in_dictionary" as const})),
-        ...r.unconfirmed.map((id) => ({item: `${field}.informed.${id}`, reason: "informed_reason_not_in_dictionary" as const})));
+        ...r.unconfirmed.map((id) => ({item: `${field}.informed.${id}`, reason: "informed_reason_not_in_dictionary" as const})),
+        ...r.unmatched.map((id) => ({item: `${field}.object.${id}`, reason: "object_not_in_vocabulary" as const})));
     }
     return r;
   };
@@ -725,7 +766,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
       authorityBasis: x.authorityBasis === null ? null : render(x.authorityBasis).display, deadlines};
   });
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
-  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary" | "informed_reason_not_in_dictionary"}[] = [];
+  const gaps: {item: string; reason: "figure_pending_reviewed_result" | "layout_exceeds_page" | "pages_exceed_agenda" | "recommendation_removed_without_options" | "label_not_in_dictionary" | "informed_reason_not_in_dictionary" | "object_not_in_vocabulary"}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
     const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
     const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));

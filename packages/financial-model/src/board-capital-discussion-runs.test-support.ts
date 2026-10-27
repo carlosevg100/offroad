@@ -246,7 +246,7 @@ function goldCases(): Case[] {
     observe("program-sublimit-below-exposure-keeps-exposure-and-capacity-apart",
       withBoardSource("recebiveis", auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>, () => boardPacketInput(2, boardSublimitCase)),
       boardSublimitExpected, (p) => current(p).questions.find((q) => q.id === "rede-a")!.answer),
-    reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor de embalagem.",
+    reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.",
       informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}], figures: []},
       (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
         figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
@@ -275,6 +275,16 @@ function goldCases(): Case[] {
       {question: "Dependemos demais de um único cliente?", calledReda: false, gap: true},
       (p) => ({question: current(p).questions.find((q) => q.id === "rede-a")!.question, calledReda: boardShownTexts(p).some((t) => /rede A|Rede Z/.test(t)),
         gap: p.result.discussion!.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.includes("rede-a-label"))})),
+    // Review r18: an object is named only by its registered field in a closed vocabulary, the same in every source.
+    observe("sugar-scenario-is-never-called-wheat", withBoardSource("projecao", auroraProjectionPacket({shockLabel: "Informado, com açúcar +15% e repasse em quatro meses"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {generic: true, namesInput: false, gap: true},
+      (p) => ({generic: pageOf(p, "mudaria").lines[1]!.startsWith("No cenário do insumo "), namesInput: boardShownTexts(p).some((t) => /trigo|açúcar/i.test(t)),
+        gap: p.result.discussion!.gaps.some((g) => g.reason === "object_not_in_vocabulary" && g.item.endsWith(".object.wheat-label"))})),
+    observe("boiler-investment-with-a-boiler-plan-is-named-as-the-boiler", withBoardSource("linha-embalagem", auroraInvestmentPacket({baseLabel: "Caldeira, cronograma original"}) as unknown as Record<string, unknown>,
+      () => withBoardSource("plano-2027", auroraPlanPacket({projectNamed: "caldeira"}) as unknown as Record<string, unknown>, () => boardPacketInput(2))),
+      {title: true, firstPath: true, namesPackaging: false},
+      (p) => ({title: pageOf(p, "linha").title.startsWith("A caldeira rende "), firstPath: pageOf(p, "movimentos").lines[0]!.startsWith("Caminho A: sem a caldeira; "),
+        namesPackaging: boardShownTexts(p).some((t) => /linha de embalagem/i.test(t))})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -350,7 +360,7 @@ function adversarialCases(): Case[] {
     ["unknown-template-id", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total_reversed|total=divida-total|ano=year-2027";}), "board_capital_template_unknown"],
     ["slot-left-unbound", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total";}), "board_capital_slot_unbound"],
     ["slot-the-template-does-not-have", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2027|sinal=irr";}), "board_capital_slot_invalid"],
-    ["years-bound-to-a-months-slot", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}), "board_capital_slot_type_mismatch"],
+    ["years-bound-to-a-months-slot", () => boardPacketInput(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat|insumo=wheat-label";}), "board_capital_slot_type_mismatch"],
     ["value-bound-to-a-date-slot", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=divida-total";}), "board_capital_slot_type_mismatch"],
     ["prose-in-a-binding", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=menos divida-total|ano=year-2027";}), "must match pattern"],
     ["literal-number-in-a-title", () => boardPacketInput(2, (c) => {c.pages[1]!.title = "A dívida é de R$ 130 milhões, curta e concentrada em {year-2027}";}), "must match pattern"],
@@ -404,21 +414,21 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
   const finame = (c: CaseData) => {c.extraReadings["finame-creditor"] = ["tabela-divida", "result.table.rows[id=finame].creditor", "-"];};
   const covenant = "measure-covenant-headroom";
   return [
-    ["return-and-cost-of-capital-swapped", () => build(2, (c) => {c.pages[4]!.title = "topic.project_return|retorno=wacc|custo=irr";}), "board_capital_slot_concept_mismatch:topic.project_return:retorno"],
+    ["return-and-cost-of-capital-swapped", () => build(2, (c) => {c.pages[4]!.title = "topic.project_return|retorno=wacc|custo=irr|projeto=project-label";}), "board_capital_slot_concept_mismatch:topic.project_return:retorno"],
     ["debt-total-bound-to-the-free-basket", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=basket-free|ano=year-2027";}), "board_capital_slot_concept_mismatch:situation.debt_total:total"],
     ["program-cost-bound-to-debt-shares", () => build(2, (c) => {c.pages[5]!.lines.push("topic.crop_program_cost|taxa_b=share-12m|taxa_a=largest-share");}), "board_capital_slot_concept_mismatch:topic.crop_program_cost:taxa_b"],
     ["positive-npv-under-a-negative-claim", () => build(2, (c) => {c.pages[4]!.lines[2] = "topic.project_sensitivities|vpl_economia=npv|vpl_capex=npv-capex|vpl_partida=npv-slow";}),
       "board_capital_slot_concept_mismatch:topic.project_sensitivities:vpl_economia"],
     ["path-row-reading-another-path", () => build(2, (c) => {c.pages[6]!.lines[3] = row("keep_and_roll", "sem-linha-debenture");}), "board_capital_slot_concept_mismatch:alternatives.row.keep_and_roll:caixa"],
-    ["ebitda-of-another-year", () => build(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat";}),
+    ["ebitda-of-another-year", () => build(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat|insumo=wheat-label";}),
       "board_capital_slot_concept_mismatch:what_changes.wheat:ebitda:variable_y"],
     ["concentration-year-that-is-not-the-largest", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2028";}), "board_capital_template_condition_failed:situation.debt_total"],
     ["adverse-leverage-dated-in-another-year", () => build(2, (c) => {c.pages[9]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2026";}), "board_capital_template_condition_failed:risk.leverage"],
-    ["notice-dated-with-the-route-deadline", () => build(2, (c) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=deadline:vencimentos.rota";}), "board_capital_deadline_action_mismatch:next_steps.notice:prazo:vencimentos.rota"],
-    ["fallback-dated-with-the-sounding-deadline", () => build(2, (c) => {c.pages[8]!.lines[2] = "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.sondagem";}),
+    ["notice-dated-with-the-route-deadline", () => build(2, (c) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=deadline:vencimentos.rota|projeto=project-label";}), "board_capital_deadline_action_mismatch:next_steps.notice:prazo:vencimentos.rota"],
+    ["fallback-dated-with-the-sounding-deadline", () => build(2, (c) => {c.pages[8]!.lines[2] = "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.sondagem|projeto=project-label";}),
       "board_capital_deadline_action_mismatch:recommendation.alternative"],
     ["action-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.deadlines[0]!.action = "delib.action.decide_route";}), "board_capital_deliberation_text_mismatch:deliberation.linha.deadline.aviso"],
-    ["subject-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.subject = "delib.crop.subject|ano=year-2026";}), "board_capital_deliberation_text_mismatch:deliberation.linha.subject"],
+    ["subject-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.subject = "delib.crop.subject|ano=year-2026|ciclo=crop-question";}), "board_capital_deliberation_text_mismatch:deliberation.linha.subject"],
     ["page-line-used-as-a-deliberation-subject", () => build(2, (c) => {c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";}),
       "board_capital_template_use_invalid:deliberation.linha.subject"],
     ["answer-to-another-question", () => build(2, (c) => {c.questions[0]!.answer = "a.peer|total=gap-bps|ajustes=known-bps|data=date-bps|resto=unexplained-bps";}), "board_capital_answer_mismatch:bradesco"],
@@ -483,6 +493,9 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraProjectionPacket({receivablesOnlyIn2027: true}) as unknown as Record<string, unknown>;
       return withBoardSource("projecao", packet, () => build(2, (c) => {c.extraReadings["wc-60"] = boardWorkingCapitalReading(packet);}));
     }, "board_capital_template_condition_failed:what_changes.receivable_days"],
+    // Review r18: the investment analysed and the plan's project variants name different projects.
+    ["boiler-investment-against-the-packaging-plan", () => withBoardSource("linha-embalagem", auroraInvestmentPacket({baseLabel: "Caldeira, cronograma original"}) as unknown as Record<string, unknown>,
+      () => build(2, () => undefined)), "board_capital_template_condition_failed:alternatives.moves."],
     ["deferral-without-a-deferred-schedule", () => {
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
@@ -519,7 +532,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ...boardInformedProse.map((text, k) => [`informed-fact-as-prose-${k + 1}`, () => build(2, (c) => {c.informed[0]!.code = text;}), "must match pattern"] as [string, () => unknown, string]),
     ["reading-in-an-informed-fact-slot", () => build(2, (c) => {c.pages[4]!.lines[3] = "topic.project_strategic_reason|motivo=irr";}), "board_capital_slot_type_mismatch:topic.project_strategic_reason:motivo"],
     ["creditor-and-maturity-of-different-rows", () => build(2, (c) => {
-      finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor"; c.questions[0]!.answer = "a.roll_bank|credor=finame-creditor|falta=bradesco-gap|vencimento=bradesco-maturity";
+      finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor"; c.questions[0]!.answer = "a.roll_bank|credor=finame-creditor|falta=bradesco-gap|vencimento=bradesco-maturity|projeto=project-label";
     }), "board_capital_slot_concept_mismatch:a.roll_bank:vencimento:variable_i"],
   ];
 }

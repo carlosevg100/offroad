@@ -155,7 +155,7 @@ describe("board discussion core", () => {
     expect(() => render("situation.debt_total|total=p|ano=y")).toThrow("board_capital_slot_concept_mismatch:situation.debt_total:total:pending_method");
     // A deadline is the deadline of the action the template announces.
     expect(render("next_steps.route|prazo=deadline:v.rota|ano=y")).toBe("15/nov: decisão da rota para os vencimentos de 2027.");
-    expect(() => render("next_steps.notice|prazo=deadline:v.rota")).toThrow("board_capital_deadline_action_mismatch:next_steps.notice:prazo:v.rota");
+    expect(() => render("next_steps.notice|prazo=deadline:v.rota|projeto=project-label")).toThrow("board_capital_deadline_action_mismatch:next_steps.notice:prazo:v.rota");
     // A condition whose source is not in the material cannot be verified.
     expect(() => renderBoardRef("situation.debt_total|total=d|ano=y", {...context, sources: []})).toThrow("board_capital_template_condition_unverified");
   });

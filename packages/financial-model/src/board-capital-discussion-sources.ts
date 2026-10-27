@@ -93,11 +93,13 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.weekly.minimumCash": {...money("millions"), nature: "balance"}, "readings.sensitivities[*].minimum": {...money("millions"), nature: "balance"},
     "readings.sensitivities[*].weekStart": date("day_month", "day_long"), "readings.tightestWeek.weekStart": date("day_month", "day_long")},
   "analyze-investment-project": {
+    "cases[*].label": plain("label"), "question": plain("label"),
     "comparison.metrics[*].annualIrr": rate("annual"), "comparison.metrics[*].discountRate": rate("annual"),
     "comparison.metrics[*].netPresentValue": {...money("reais"), nature: "value"}, "comparison.metrics[*].paybackYears": plain("years"),
     "comparison.metrics[*].peakCumulativeCashNeed.amount": {...money("reais"), nature: "balance"}, "comparison.metrics[*].peakCumulativeCashNeed.periodEndDate": date("month_year", "month_long", "year"),
 },
   "build-operating-projection": {
+    "result.projection.projection.scenarios[*].label": plain("label"),
     "result.projection.projection.scenarios[*].inputCostShock.rate": rate("none"),
     "result.projection.projection.scenarios[*].inputCostShock.passThroughLagMonths": plain("months"),
     "readings.projected.scenarios[*].rows[*].ebitda": {...money("millions"), nature: "flow"},
@@ -105,6 +107,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
   "challenge-financial-projection": {"readings.gap.plan.ebitda": {...money("millions"), nature: "flow"}, "readings.gap.reference.ebitda": {...money("millions"), nature: "flow"}},
   // Receivables (C35): balance owed by each debtor, eligible capacity, program volume and sublimit are distinct concepts.
   "monetize-receivables-for-working-capital": {
+    "question": plain("label"),
     "readings.gross": {...money("millions"), concept: "carteira_bruta", nature: "balance"},
     "result.funding.portfolio.items[*].label": plain("label"),
     "result.funding.portfolio.items[*].amount": {...money("millions"), concept: "saldo_da_carteira_por_devedor", nature: "balance"},

@@ -148,6 +148,27 @@ const meaning: Record<string, Record<string, string>> = {
   "q.plan_vs_base": {plano: PC + "readings.gap.plan.ebitda", ano: "year", base: PC + "readings.gap.reference.ebitda"},
   "a.plan_vs_base": {base: PC + "readings.gap.reference.ebitda"},
 };
+// Named objects: the oracle's own reading of the registered field that names each one.
+const PROJECT = "analyze-investment-project|cases[id=base].label", INPUT = OP + "result.projection.projection.scenarios[id=informado-trigo-4m].label", SEASON = RF + "question";
+for (const [slot, want, ids] of [
+  ["projeto", PROJECT, ["delib.packaging_line", "delib.packaging_line.subject", "topic.project_return", "recommendation.alternative", "a.roll_bank", "a.demand", "q.strategic", "next_steps.notice",
+    ...["no_line_debenture", "defer_line", "debenture_with_line", "keep_and_roll", "short_bank_loan", "extend_with_bank", "extend_bradesco"].map((x) => `alternatives.moves.${x}`)]],
+  ["insumo", INPUT, ["what_changes.wheat", "a.wheat", "q.wheat"]],
+  ["ciclo", SEASON, ["delib.crop", "delib.crop.subject", "delib.crop.programs", "topic.crop_programs"]],
+] as const) for (const id of ids) meaning[id] = {...meaning[id], [slot]: want};
+/** The oracle's own closed vocabularies (its copy, written apart from the method's): every form a text may use. */
+const vocabularies: Record<string, Record<string, string[]>> = {
+  input: {trigo: ["trigo"], "açúcar": ["açúcar"], farinha: ["farinha"], embalagem: ["embalagem"]},
+  project: {"linha de embalagem": ["linha de embalagem"], caldeira: ["caldeira"]},
+  season: {safra: ["safra"]},
+};
+const word = (w: string) => new RegExp(`(?<![\\p{L}])${w}(?![\\p{L}])`, "iu");
+/** The one term a registered text names in a vocabulary (the longest wins over one it contains), or null. */
+const termOf = (vocabulary: string, text: string) => {
+  const hits = Object.keys(vocabularies[vocabulary]!).filter((x) => word(x).test(text));
+  const kept = hits.filter((h) => !hits.some((o) => o !== h && o.includes(h)));
+  return kept.length === 1 ? kept[0]! : null;
+};
 /** What the oracle reads in the numbers each fixed text asserts, on the source values of the identity check. */
 const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "situation.cash_without_line": (v) => v.saldo!.lt(v.minimo!), "situation.debt_service": (v) => v.servico!.gt(v.disponivel!),
@@ -250,12 +271,41 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   for (const [key, g] of groups) if (g.complete && claims[g.templateId] && !claims[g.templateId]!(g.values)) bad.push(`claim:${key}`);
   // Names: the oracle's own dictionary. A label outside it is never shown and leaves a gap of name; one inside it is
   // shown as registered. One package per method. A row's creditor is named only beside readings of that same row.
+  const objectPaths: [string, RegExp][] = [["project", /^analyze-investment-project\|cases\[id=[^\]]+\]\.label$/], ["input", /^build-operating-projection\|result\.projection\.projection\.scenarios\[id=[^\]]+\]\.label$/],
+    ["season", /^monetize-receivables-for-working-capital\|question$/]];
+  const vocabularyOf = (x: {methodId: string; path: string}) => objectPaths.find(([, r]) => r.test(`${x.methodId}|${x.path}`))?.[0];
   for (const x of d.identity.filter((i) => i.unit === "label")) {
+    if (vocabularyOf(x)) continue;
     if (names.has(x.value)) continue;
     // A debtor's free label is never shown; the debtor is named by its registered key (checked against the receivables result below).
     if (/portfolio\.items\[/.test(x.path)) {if (texts.some((t) => t.includes(x.value))) bad.push(`name_shown:${x.figureId}`); continue;}
     if (texts.some((t) => t.includes(x.value) || t.includes(x.value.normalize("NFKC")))) bad.push(`name_shown:${x.figureId}`);
     if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.endsWith(`.label.${x.figureId}`))) bad.push(`name_gap:${x.figureId}`);
+  }
+  // Named objects, by the oracle's own vocabularies: a term appears in a text only when a registered field bound in the
+  // material names it (and the key of its path names no other term); an unmatched field leaves a gap. The registered
+  // free text itself is never shown. Across sources, the plan's project variants name the project the investment names.
+  const objectTerms = new Map<string, Set<string>>();
+  for (const x of d.identity) {
+    const vocabulary = vocabularyOf(x);
+    if (!vocabulary) continue;
+    if (texts.some((t) => t.includes(x.value))) bad.push(`object_text_shown:${x.figureId}`);
+    const named = termOf(vocabulary, x.value), keys = [...x.path.matchAll(/=([^\]&]+)/g)].map((m) => termOf(vocabulary, m[1]!.replace(/-/g, " "))).filter((k) => k !== null);
+    const ok = named !== null && keys.every((k) => k === named);
+    if (ok) {const set = objectTerms.get(vocabulary) ?? new Set<string>(); set.add(named!); objectTerms.set(vocabulary, set);}
+    else if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "object_not_in_vocabulary" && g.item.endsWith(`.object.${x.figureId}`))) bad.push(`object_gap:${x.figureId}`);
+  }
+  for (const t of texts) for (const [vocabulary, terms] of Object.entries(vocabularies)) for (const term of Object.keys(terms)) {
+    // A shorter term inside a longer one of another vocabulary (embalagem inside linha de embalagem) is read as the longer.
+    const stripped = Object.values(vocabularies).flatMap((v) => Object.keys(v)).filter((o) => o !== term && o.includes(term)).reduce((acc, o) => acc.replace(new RegExp(o, "giu"), " "), t);
+    if (word(term).test(stripped) && !objectTerms.get(vocabulary)?.has(term)) bad.push(`object_unregistered:${term}@${t.slice(0, 60)}`);
+  }
+  const planIdentity = d.identity.find((x) => x.methodId === "evaluate-financing-paths");
+  const planPacket = (planIdentity ? sources.find((x) => x.packet.fingerprint === planIdentity.packetFingerprint)?.packet : undefined) as {result: {contributions: {fieldPath: string; value: {value: unknown}}[]}} | undefined;
+  const variantTerms = (planPacket?.result.contributions ?? []).filter((x) => /\.variant\.[a-z0-9-]+\.label$/.test(x.fieldPath)).map((x) => termOf("project", String(x.value.value)));
+  for (const t of texts.filter((x) => /^Caminho [A-G]:|^Plano alternativo:|^No caminho sem/.test(x))) {
+    const shown = Object.keys(vocabularies.project!).find((term) => word(term).test(t));
+    if (shown && (variantTerms.length === 0 || variantTerms.some((x) => x !== shown))) bad.push(`object_across_sources:${t.slice(0, 60)}`);
   }
   for (const method of new Set(d.identity.map((x) => x.methodId)))
     if (new Set(d.identity.filter((x) => x.methodId === method).map((x) => `${x.sourceId}|${x.packetFingerprint}`)).size !== 1) bad.push(`packages_mixed:${method}`);
@@ -291,7 +341,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const defined = (id: string) => {const x = scenarios.find((y) => y.id === id); return x ? [...x.overriddenDrivers, ...x.volumeGrowthRate !== null ? ["volume"] : [],
       ...x.volumeFactor !== null ? ["volume"] : [], ...x.inputCostShock ? ["shock"] : []].sort().join(",") : "missing";};
     const year = /\b(20\d\d)\b/.exec(t.split("fica")[0]!.split("EBITDA").at(-1)! + " " + t)?.[1];
-    if (/No cenário de trigo/.test(t) || /^No cenário de trigo|Com trigo/.test(t)) {
+    if (/No cenário d[oa] (?:insumo|trigo|açúcar|farinha|embalagem) /.test(t)) {
       const x = scenarios.find((y) => y.id === "informado-trigo-4m"), shown = /EBITDA de (20\d\d)/.exec(t)?.[1];
       if (defined("informado-trigo-4m") !== "shock" || !x?.inputCostShock || !shown || x.inputCostShock.fromPeriodId > `${shown}-12-31`) bad.push(`scenario_wheat:${t.slice(0, 60)}`);
     }
@@ -368,7 +418,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       if (!late || !before || !(late > before) || !repaid(a).lt(repaid(o))) bad.push(`path_extension:${t.slice(0, 60)}`);
     }
     // A plan deferral: every recorded component of the variant starts later than the reference variant's.
-    if (/linha de embalagem adiada/i.test(t) && !["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"]
+    if (/adiamento d[oa] /i.test(t) && !["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"]
       .every((f) => firstNonZero(variant("adiar-12", f) as string[]) > firstNonZero(variant("seguir", f) as string[]))) bad.push(`scenario_plan_deferral:${t.slice(0, 60)}`);
     // A flow is never read as a balance: a working-capital amount above a reference is said of its variation.
     if (/capital de giro/.test(t) && /acima/.test(t) && !/variação do capital de giro/.test(t)) bad.push(`nature:${t.slice(0, 60)}`);
@@ -407,7 +457,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   }
   // Informed reasons: the oracle's own dictionary of reviewed phrases; the shown words are the phrase of the adopted code,
   // or the generic words with a gap; the fact itself never carries text.
-  const reasons: Record<string, string> = {reduce_single_supplier_dependence: "reduzir a dependência de um único fornecedor de embalagem", diversify_suppliers: "diversificar fornecedores",
+  const reasons: Record<string, string> = {reduce_single_supplier_dependence: "reduzir a dependência de um único fornecedor do insumo principal", diversify_suppliers: "diversificar fornecedores",
     own_capacity: "ganhar capacidade própria de produção", reduce_operational_risk: "reduzir risco operacional", serve_customer_contract: "atender contrato de cliente"};
   for (const t of texts) {
     const said = /^Motivo estratégico apresentado pelo presidente do conselho: (.*)\.$/.exec(t)?.[1];
@@ -450,10 +500,10 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       ["missing-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total";}],
       ["extra-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2027|sinal=irr";}],
       ["repeated-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|total=basket|ano=year-2027";}],
-      ["years-in-a-months-slot", (c: CaseData) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat";}],
+      ["years-in-a-months-slot", (c: CaseData) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wal|ano=year-2027|ebitda=ebitda-wheat|insumo=wheat-label";}],
       ["rate-in-a-money-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=irr|ano=year-2027";}],
       ["value-in-a-date-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=divida-total";}],
-      ["reading-in-a-deadline-slot", (c: CaseData) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=tight-week";}],
+      ["reading-in-a-deadline-slot", (c: CaseData) => {c.pages[12]!.lines[0] = "next_steps.notice|prazo=tight-week|projeto=project-label";}],
       ["deadline-in-a-value-slot", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=deadline:linha.aviso|ano=year-2027";}],
       ["prose-in-a-binding", (c: CaseData) => {c.pages[1]!.title = "situation.debt_total|total=menos divida-total|ano=year-2027";}],
     ] as const) expect(() => full(2, edit), name).toThrow(refusal);
@@ -542,7 +592,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(relabelled, "economy-4")];
     }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
     const p = full(2, () => undefined);
-    expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor de embalagem.");
+    expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.");
     expect(() => full(2, (c) => {c.informed[0]!.author = "cfo";})).toThrow("board_capital_informed_fact_mismatch");
     expect(() => full(2, (c) => {c.informed[0]!.origin = "analysis";})).toThrow(refusal);
     // The oracle is not vacuous for the two: the calibrated material read against a covenant result whose policy is
@@ -683,6 +733,42 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const forgedZ = structuredClone(z);
     forgedZ.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rede-a")!.question = "Dependemos demais de rede A?";
     expect(oracle(forgedZ, [{packet: renamed}, ...auroraBoardSources()]).bad).toContain("debtor:rede A");
+  });
+  it("regression r18: an object is named only by its registered field in a closed vocabulary, and the same across sources (full path, oracle not vacuous)", () => {
+    // Sugar: the scenario's label names sugar while its key names wheat; the material names neither and leaves a gap.
+    const sugar = auroraProjectionPacket({shockLabel: "Informado, com açúcar +15% e repasse em quatro meses"}) as unknown as Record<string, unknown>;
+    const ps = withBoardSource("projecao", sugar, () => full(2, () => undefined));
+    const vs = ps.result.discussion!.versions.at(-1)!, wheatLine = vs.pages.find((x) => x.id === "mudaria")!.lines[1]!;
+    expect(wheatLine).toMatch(/^No cenário do insumo 15% mais caro com repasse em 4 meses/);
+    expect(vs.questions.find((q) => q.id === "trigo")!.question).toBe("E se o custo do insumo subir?");
+    const shown = (v: typeof vs) => [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]),
+      ...v.deliberations.flatMap((x) => [x.title, x.text]), ...v.questions.flatMap((x) => [x.question, x.answer])].join(" | ");
+    expect(shown(vs)).not.toMatch(/trigo|açúcar/i);
+    expect(ps.result.discussion!.gaps.filter((g) => g.reason === "object_not_in_vocabulary").map((g) => g.item)).toEqual(expect.arrayContaining([expect.stringMatching(/\.object\.wheat-label$/)]));
+    expect(oracle(ps, [{packet: sugar}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    // Boiler: the investment analysed is a boiler, the plan's variants are the packaging line; the path lines are refused.
+    const boiler = auroraInvestmentPacket({baseLabel: "Caldeira, cronograma original"}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("linha-embalagem", boiler, () => full(2, () => undefined))).toThrow(/board_capital_template_condition_failed:alternatives\.moves\./);
+    // With the plan registered for the same boiler, the identity holds in both sources and every text names the boiler.
+    const boilerPlan = auroraPlanPacket({projectNamed: "caldeira"}) as unknown as Record<string, unknown>;
+    const alone = withBoardSource("linha-embalagem", boiler, () => withBoardSource("plano-2027", boilerPlan, () => full(2, () => undefined)));
+    const va = alone.result.discussion!.versions.at(-1)!;
+    expect(va.pages.find((x) => x.id === "linha")!.title).toMatch(/^A caldeira rende /);
+    expect(shown(va)).not.toMatch(/linha de embalagem/i);
+    expect(va.pages.find((x) => x.id === "movimentos")!.lines[0]).toMatch(/^Caminho A: sem a caldeira; /);
+    expect(oracle(alone, [{packet: boiler}, {packet: boilerPlan}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    // Not vacuous: the old input on the sugar scenario, the packaging line on the boiler, and a plan whose variants name
+    // another project are each read by the oracle's own vocabularies.
+    const forgedS = structuredClone(ps);
+    forgedS.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!.lines[1] = wheatLine.replace("do insumo", "do trigo");
+    expect(oracle(forgedS, [{packet: sugar}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("object_unregistered:trigo"))).toBe(true);
+    const forgedB = structuredClone(alone);
+    forgedB.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.title = va.pages.find((x) => x.id === "linha")!.title.replace("A caldeira", "A linha de embalagem");
+    expect(oracle(forgedB, [{packet: boiler}, {packet: boilerPlan}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("object_unregistered:linha de embalagem"))).toBe(true);
+    const base = full(2, () => undefined), plan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
+    const otherPlan = structuredClone(plan.packet) as {result: {contributions: {fieldPath: string; value: {value: unknown}}[]}};
+    for (const x of otherPlan.result.contributions) if (/\.variant\.[a-z0-9-]+\.label$/.test(x.fieldPath)) x.value.value = String(x.value.value).replace(/linha de embalagem/i, "caldeira");
+    expect(oracle(base, [{packet: otherPlan as unknown as Record<string, unknown>}, ...auroraBoardSources().filter((x) => x !== plan && x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("object_across_sources:"))).toBe(true);
   });
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);

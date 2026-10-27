@@ -72,8 +72,10 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string} = {}) 
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
-export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true} = {}) {
+export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex() : c32PacketInput(), from = id(1001);
+  // The same analysis registered for another project: only the base case's label changes.
+  if (variant.baseLabel) calibration.input.cases[0]!.label = variant.baseLabel;
   for (const e of calibration.basis.entries) if (e.dimensions.entityId === from) e.dimensions.entityId = company;
   for (const x of calibration.input.cases) x.analysis.entityId = company;
   calibration.seal();
@@ -103,8 +105,10 @@ function c32WithMislabelledEconomy() {
 }
 /** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
  * days instead of the chains' receivable days, which stay as in the base. */
-export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true} = {}) {
+export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true; shockLabel?: string} = {}) {
   const b = operatingProjectionBasis({informed: true});
+  // The same shock registered under another input: only the scenario's label changes.
+  if (variant.shockLabel) (b.input as unknown as {scenarios: {id: string; label: string}[]}).scenarios.find((x) => x.id === "informado-trigo-4m")!.label = variant.shockLabel;
   if (variant.shockFrom2028) b.entries.find((e) => e.fieldPath.endsWith("scenario.informado-trigo-4m.shock.fromPeriodEnd"))!.value = {type: "date", value: "2028-12-31"};
   if (variant.receivablesOnlyIn2027) b.entries.find((e) => e.fieldPath.endsWith("scenario.prazo-60.override.receivableDays"))!.value = {type: "list", value: ["50", "60", "60"]};
   if (variant.shorterThanParentWithInventory) {
@@ -137,8 +141,10 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
 /** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
-  amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true} = {}) {
+  amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string} = {}) {
   const k = auroraCapitalPathsKernel();
+  // The same plan registered for another project: only the project variants' labels change.
+  if (variant.projectNamed) for (const v of k.projectVariants as unknown as {label: string}[]) v.label = v.label.replace(/linha de embalagem/i, variant.projectNamed);
   const instrument = (id: string) => (k as unknown as {instruments: Record<string, unknown>[]}).instruments.find((x) => x.id === id)!;
   if (variant.amendmentWithoutExtension) {
     const original = instrument("ccb-bradesco"), amended = instrument("ccb-bradesco-aditada");
@@ -298,6 +304,9 @@ export const auroraBoardReadings: Record<string, Reading> = {
   "cl-unused": ["tabela-divida", "result.table.creditLines[id=conta-garantida].unused", "0", "10"],
   "debenture-creditor": ["tabela-divida", "result.table.rows[id=debenture-1].creditor", "-"],
   "rede-a-label": ["recebiveis", "result.funding.portfolio.items[itemId=rede-a].label", "-"],
+  "project-label": ["linha-embalagem", "cases[id=base].label", "-"],
+  "wheat-label": ["projecao", "result.projection.projection.scenarios[id=informado-trigo-4m].label", "-"],
+  "crop-question": ["recebiveis", "question", "-"],
   "cash-end-2027": ["plano-2027", "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=2027-12-31].closingAvailable", "0", "-79"],
   "service-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service", "0", "90"],
   "available-2027": ["plano-2027", "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService", "0", "36"],
@@ -341,7 +350,7 @@ export function auroraBoardCase(turn: BoardTurn) {
     agendaMinutes: turn === 1 ? null : "45", nextMeetingDate: null as string | null, template: turn === 1 ? null : "conselho-jun26.pptx", outlineConfirmed: turn !== 1,
     topics: [{id: "linha-embalagem", label: "topic.packaging_review", seen: turn === 1 ? null : false}, {id: "safra", label: "topic.crop_financing", seen: false as boolean | null}],
     deliberations: [
-      {id: "linha", topicId: "linha-embalagem" as string | null, title: "delib.packaging_line", subject: "delib.packaging_line.subject",
+      {id: "linha", topicId: "linha-embalagem" as string | null, title: "delib.packaging_line|projeto=project-label", subject: "delib.packaging_line.subject|projeto=project-label",
         recommendation: "delib.packaging_line.wait" as string | null, authority: "board" as const, authorityBasis: null as string | null,
         deadlines: [{id: "aviso", date: "2026-10-02", action: "delib.action.supplier_notice"}]},
       {id: "vencimentos", topicId: null, title: "delib.maturities|ano=year-2027", subject: "delib.maturities.subject|ano=year-2027",
@@ -349,7 +358,7 @@ export function auroraBoardCase(turn: BoardTurn) {
         authority: "board" as const, authorityBasis: null, deadlines: [{id: "sondagem", date: "2026-10-31", action: "delib.action.finish_sounding"}, {id: "rota", date: "2026-11-15", action: "delib.action.decide_route"}]},
       {id: "politica", topicId: null, title: "delib.policy", subject: "delib.policy.definition|limite=policy-limit", recommendation: null,
         authority: "board" as const, authorityBasis: null, deadlines: []},
-      {id: "safra", topicId: "safra", title: "delib.crop|ano=year-2026", subject: "delib.crop.subject|ano=year-2026", recommendation: "delib.crop.programs",
+      {id: "safra", topicId: "safra", title: "delib.crop|ano=year-2026|ciclo=crop-question", subject: "delib.crop.subject|ano=year-2026|ciclo=crop-question", recommendation: "delib.crop.programs|ciclo=crop-question",
         authority: "board" as const, authorityBasis: null, deadlines: [{id: "adesao", date: "2026-10-16", action: "delib.action.join_programs"}]},
     ],
     pages: [
@@ -361,29 +370,29 @@ export function auroraBoardCase(turn: BoardTurn) {
         lines: ["situation.cash_without_line|semana=sem-linha-week|saldo=sem-linha-min|minimo=min-cash", "situation.debt_service|ano=year-2027|servico=service-2027|disponivel=available-2027"]},
       {id: "escritura", role: "constraint", topicId: null, title: "constraint.indenture_basket|titular=debenture-creditor|saldo=basket-free", recommendation: null, options: [],
         lines: ["constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=bradesco-creditor", "constraint.covenant_policy|covenant=cov-limit|politica=policy-limit"]},
-      {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc",
+      {id: "linha", role: "topic", topicId: "linha-embalagem", title: "topic.project_return|retorno=irr|custo=wacc|projeto=project-label",
         lines: ["topic.project_value|retorno=irr|custo=wacc|vpl=npv", "topic.project_payback|payback=payback|pico=peak-need|data=peak-date",
           "topic.project_sensitivities|vpl_economia=npv-economy|vpl_capex=npv-capex|vpl_partida=npv-slow", "topic.project_strategic_reason|motivo=informed:motivo-estrategico"],
         recommendation: "topic.project_wait_quotes|vpl=npv-defer|retorno=irr-defer" as string | null,
         options: ["option.go_now|vpl=npv|retorno=irr", "option.staged|vpl=stages-npv", "option.wait_quotes|vpl=npv-defer|retorno=irr-defer"]},
-      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
+      {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak|ciclo=crop-question", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|credor=cl-creditor|livre=cl-unused|termos=cl-terms"]},
       {id: "caminhos", role: "alternatives", topicId: null, title: "alternatives.count|caminhos=n-paths|ano=year-2027", recommendation: null, options: [],
         lines: auroraPaths.map(([id]) => `alternatives.row.${auroraPathRows[id]}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
       {id: "movimentos", role: "alternatives", topicId: null, title: "alternatives.moves.title|caminhos=n-paths", recommendation: null, options: [],
-        lines: auroraPaths.map(([id]) => `alternatives.moves.${auroraPathRows[id]}${["sem-linha-debenture", "debenture-com-linha", "alongar-com-banco", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}`)},
+        lines: auroraPaths.map(([id]) => `alternatives.moves.${auroraPathRows[id]}|projeto=project-label${["sem-linha-debenture", "debenture-com-linha", "alongar-com-banco", "alongar-bradesco"].includes(id) ? "|credor=bradesco-creditor" : ""}`)},
       {id: "recomendacao", role: "recommendation", topicId: null, title: "recommendation.debenture|valor=debenture-amount|prazo=debenture-term", recommendation: null, options: [],
         lines: ["recommendation.debenture_cost|credor=bradesco-creditor|baixo=deb-cost-low|alto=deb-cost-high", "recommendation.amortization|inicio=amort-first|fim=amort-last",
-          "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.rota"]},
+          "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.rota|projeto=project-label"]},
       {id: "alavancagem", role: "risk", topicId: null, title: "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2027", recommendation: null, options: [],
         lines: ["risk.leverage_path|inicio=lev-dez26|data_inicio=dez26-date|fim=lev-dez27|data_fim=dez27-date", "risk.leverage_adverse|ano=year-2027|adverso=lev-adv27|politica=policy-limit"]},
       {id: "politica", role: "risk", topicId: null, title: "risk.policy_definition|politica=policy-limit", recommendation: null, options: [],
         lines: ["risk.policy_readings|gerencial=lev-ger-dez26|escritura=lev-dez26|data=dez26-date"]},
       {id: "mudaria", role: "what_changes", topicId: null, title: "what_changes.title|piso=issue-floor", recommendation: null, options: [],
-        lines: ["what_changes.demand|piso=issue-floor|alvo=debenture-amount", "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat",
+        lines: ["what_changes.demand|piso=issue-floor|alvo=debenture-amount", "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|insumo=wheat-label",
           "what_changes.receivable_days|ano=year-2026|giro=wc-60"]},
       {id: "passos", role: "next_steps", topicId: null, title: "next_steps.title", recommendation: null, options: [],
-        lines: ["next_steps.notice|prazo=deadline:linha.aviso", "next_steps.programs|prazo=deadline:safra.adesao",
+        lines: ["next_steps.notice|prazo=deadline:linha.aviso|projeto=project-label", "next_steps.programs|prazo=deadline:safra.adesao",
           "next_steps.sounding|prazo=deadline:vencimentos.sondagem", "next_steps.route|prazo=deadline:vencimentos.rota|ano=year-2027"]},
     ] as {id: string; role: string; topicId: string | null; title: string; lines: string[]; recommendation: string | null; options: string[]}[],
     summary: {opening: "summary.opening.debt_and_cash|principal=principal-2027|ano=year-2027|semana=tight-week",
@@ -395,14 +404,14 @@ export function auroraBoardCase(turn: BoardTurn) {
       {id: "fontes", label: "appendix.sources", sourceIds: ["tabela-divida", "covenant", "caixa-semanal", "linha-embalagem", "projecao", "plano-fpa", "recebiveis", "custo-relativo", "plano-2027"]},
     ],
     questions: [
-      {id: "bradesco", question: "q.roll_bank|credor=bradesco-creditor", answer: "a.roll_bank|credor=bradesco-creditor|falta=bradesco-gap|vencimento=bradesco-maturity"},
+      {id: "bradesco", question: "q.roll_bank|credor=bradesco-creditor", answer: "a.roll_bank|credor=bradesco-creditor|falta=bradesco-gap|vencimento=bradesco-maturity|projeto=project-label"},
       {id: "prazo", question: "q.term|prazo=debenture-term", answer: "a.term|ano=amort-first|amortizacao=five-year-amort|disponivel=five-year-available"},
-      {id: "demanda", question: "q.demand", answer: "a.demand|valor=alt-amount|prazo=deadline:vencimentos.rota|credor=bradesco-creditor|vencimento=bradesco-maturity"},
+      {id: "demanda", question: "q.demand", answer: "a.demand|valor=alt-amount|prazo=deadline:vencimentos.rota|credor=bradesco-creditor|vencimento=bradesco-maturity|projeto=project-label"},
       {id: "custo", question: "q.cost", answer: "a.cost|baixo=deb-cost-low|alto=deb-cost-high|custo=cost-2028|ano=year-2028|divida=net-debt-2028|ano_fim=year-2028"},
       {id: "serra-verde", question: "q.peer", answer: "a.peer|total=gap-bps|ajustes=known-bps|data=date-bps|resto=unexplained-bps"},
       {id: "rating", question: "q.rating", answer: "a.rating|baixo=rating-low|alto=rating-high"},
-      {id: "estrategica", question: "q.strategic", answer: "a.strategic|retorno=irr|custo=wacc"},
-      {id: "trigo", question: "q.wheat", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit"},
+      {id: "estrategica", question: "q.strategic|projeto=project-label", answer: "a.strategic|retorno=irr|custo=wacc"},
+      {id: "trigo", question: "q.wheat|insumo=wheat-label", answer: "a.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2027|ebitda=ebitda-wheat|ebitda_adverso=ebitda-adv27|alavancagem=lev-adv27|covenant=cov-limit|insumo=wheat-label"},
       {id: "rede-a", question: "q.anchor|rede=rede-a-label", answer: "a.anchor|rede=rede-a-label|saldo=rede-a|carteira=carteira|volume=program-a-volume|taxa=spread-a"},
       {id: "fpa", question: "q.plan_vs_base|plano=fpa-2028|ano=year-2028|base=ref-2028", answer: "a.plan_vs_base|base=ref-2028"},
     ],
