@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T20:39:47.336Z",
-    "finishedAt": "2026-10-27T20:41:09.346Z"
+    "startedAt": "2026-10-27T20:59:05.503Z",
+    "finishedAt": "2026-10-27T21:00:29.530Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -486,6 +486,14 @@
       "passed": true
     },
     {
+      "id": "one-year-deferral-with-a-one-year-extension-keeps-the-same-measure",
+      "expectation": "{\"sameMeasure\":true}",
+      "observed": "{\"sameMeasure\":true}",
+      "inputFingerprint": "7e69d85071cbd0cb5822447e695d103689de5def591aac0bd136f21f5af88a25",
+      "outputFingerprint": "b4f7ad3e5fe0e4cebccd7124c01bb68a5666b17e9a6d6f3cc3243ed4ea7df37d",
+      "passed": true
+    },
+    {
       "id": "input-label-corn-up-wheat-unchanged-never-names-an-input",
       "expectation": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "observed": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
@@ -535,6 +543,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "3de2823c52b07f4fc45f9739b79c4d06b0c3ea726c58818c2fc8aeeff20b393e",
+  "evidenceFingerprint": "39598075685c85a4c9a7adbb614de3c083fb6f51b6b3fa0904bdb4b8ded88bbb",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -150,7 +150,10 @@ type BoardConditionBody =
   | {atMost: readonly [string, string]; count: number}
   /** Two definitions (objects of the source, flattened, source anchors ignored) differ exactly in the named fields: each
    * changes somewhere and nothing else changes. */
-  | {changedOnly: readonly [string, string, string]; fields: readonly string[]; horizon?: "extended"}
+  | {changedOnly: readonly [string, string, string]; fields: readonly string[]; horizon?: "extended";
+    /** With an extended horizon: series that must be the reference's moved later by exactly the added periods, and dates
+     * moved later by exactly the added periods' length (so the sentence may say "na mesma medida"). */
+    shifted?: {series: readonly string[]; dates: readonly string[]}}
   /** A projection scenario changes exactly the named drivers against the scenario it derives from (its overrides, its
    * volume rule and its input-cost shock are its whole definition). */
   | {scenarioDefines: readonly [string, string]; drivers: readonly string[]}
@@ -242,8 +245,8 @@ const caseRows = (caseId: string, field: string): BoardSeries => ({list: [IP, `c
 const inherited = (v: string, caseId: string): BoardCondition => ({bind: v, to: at(IP, `cases[id=${caseId}].result.inheritedScenario`)});
 const vsRef = (caseId: string, v: string, field: string, op: "gt" | "lt" | "eq"): BoardCondition => ({dominates: [caseRows(caseId, field), caseRows(`$${v}`, field)], op});
 // The case's whole input object: its adopted contributions, compared field by field with the reference case's.
-const exactly = (caseId: string, v: string, fields: string[], horizon?: "extended"): BoardCondition =>
-  ({changedOnly: [IP, `cases[id=${caseId}].result.contributions`, `cases[id=${v.startsWith("$") ? v : `$${v}`}].result.contributions`], fields, ...horizon ? {horizon} : {}});
+const exactly = (caseId: string, v: string, fields: string[], horizon?: "extended", shifted?: {series: string[]; dates: string[]}): BoardCondition =>
+  ({changedOnly: [IP, `cases[id=${caseId}].result.contributions`, `cases[id=${v.startsWith("$") ? v : `$${v}`}].result.contributions`], fields, ...horizon ? {horizon} : {}, ...shifted ? {shifted} : {}});
 const smallerEconomy = scenario("economia menor", inherited("refe", "economy-4"),
   exactly("economy-4", "refe", ["project.annualAvoidedOperatingCost", "project.annualVariableOperatingCost", "project.annualFixedOperatingCost"]), vsRef("economy-4", "refe", "operands.annualAvoidedOperatingCost", "lt"));
 const largerCapex = scenario("capex e depreciação maiores", inherited("refc", "capex-120"), exactly("capex-120", "refc", ["project.growthCapexPaid", "project.annualDepreciation"]),
@@ -252,7 +255,8 @@ const slowerStart = scenario("partida mais lenta", inherited("refs", "slower-sta
   cmp(at(IP, "cases[id=slower-start].result.ramp[0].operands.operationStartMonth"), "gt", at(IP, "cases[id=$refs].result.ramp[0].operands.operationStartMonth")));
 const caseStart = (field: string) => ({startsLater: [caseRows("defer-12", field), caseRows("$refd", field)]} as BoardCondition);
 const deferral = scenario("capex e início de operação adiados", {bind: "refd", to: at(IP, "cases[role=base].id")},
-  exactly("defer-12", "$refd", ["project.growthCapexPaid", "project.startup.retainedCapitalMultipliers", "project.ramp.operationStartMonth"], "extended"), caseStart("operands.growthCapexPaid"),
+  exactly("defer-12", "$refd", ["project.growthCapexPaid", "project.startup.retainedCapitalMultipliers", "project.ramp.operationStartMonth"], "extended",
+    {series: ["project.growthCapexPaid"], dates: ["project.ramp.operationStartMonth"]}), caseStart("operands.growthCapexPaid"),
   caseStart("operands.activeYearFraction"), caseStart("incrementalEbitda"), caseStart("operands.closingIncrementalWorkingCapital.inventory"));
 /** A plan path's project variant against the variant of the path that keeps the debt and goes on with the line. */
 const planVariant = (path: string, kind: "project" | "none"): BoardCondition[] => [{bind: "pv", to: at(FP, `result.evaluation.paths[id=${path}].projectVariantId`)},
@@ -596,7 +600,7 @@ export function boardTemplateClaims() {
     : "dominates" in c ? `série ${series(c.dominates[0])} ${c.op === "gt" ? "domina por cima" : c.op === "lt" ? "domina por baixo" : "igual a"} ${series(c.dominates[1])}`
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
-    : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}${c.horizon ? ", com o horizonte estendido (o resto igual, com os períodos novos acrescentados)" : ""}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}${c.horizon ? ", com o horizonte estendido (o resto igual, com os períodos novos acrescentados)" : ""}${c.shifted ? `; períodos acrescentados exatamente iguais ao deslocamento de ${[...c.shifted.series, ...c.shifted.dates].join(", ")}` : ""}; ignorados: ${boardInputIgnored.join(", ")}`
     : "scenarioDefines" in c ? `objeto de entrada inteiro do cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva (origem do valor ignorada)`
     : "atKey" in c ? `${series(c.atKey[0])} ${c.op} ${series(c.atKey[1])} em ${describe(c.key)}`
     : "startsLater" in c ? `${series(c.startsLater[0])} começa estritamente depois de ${series(c.startsLater[1])}`

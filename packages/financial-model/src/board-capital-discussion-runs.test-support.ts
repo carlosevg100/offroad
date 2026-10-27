@@ -56,6 +56,12 @@ export const boardSublimitCase = (c: CaseData) => {
 };
 export const boardSublimitExpected = "A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.";
 /** The NPV of a case of an investment packet in millions with one decimal, as a reading states it (test side only). */
+/** The deferral case's NPV and IRR as the case states them, from a given investment packet (test side only). */
+export const boardDeferralReadings = (packet: Record<string, unknown>) => (c: CaseData) => {
+  const irr = (packet.comparison as {metrics: {caseId: string; annualIrr: string}[]}).metrics.find((m) => m.caseId === "defer-12")!.annualIrr;
+  c.extraReadings["npv-defer"] = ["linha-embalagem", "comparison.metrics[caseId=defer-12].netPresentValue", "1", boardStatedMillions(packet, "defer-12")];
+  c.extraReadings["irr-defer"] = ["linha-embalagem", "comparison.metrics[caseId=defer-12].annualIrr", "0", new Decimal(irr).times(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toFixed(0)];
+};
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
   return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
@@ -285,6 +291,9 @@ function goldCases(): Case[] {
       {title: true, firstPath: true, namesPackaging: false},
       (p) => ({title: pageOf(p, "linha").title.startsWith("A caldeira rende "), firstPath: pageOf(p, "movimentos").lines[0]!.startsWith("Caminho A: sem a caldeira; "),
         namesPackaging: boardShownTexts(p).some((t) => /linha de embalagem/i.test(t))})),
+    // Review r21: the control, a one-year deferral on a horizon one year longer, keeps "na mesma medida".
+    observe("one-year-deferral-with-a-one-year-extension-keeps-the-same-measure", withBoardSource("linha-embalagem", auroraInvestmentPacket({deferralHorizonYears: 1}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
+      {sameMeasure: true}, (p) => ({sameMeasure: (pageOf(p, "linha").recommendation ?? "").includes("horizonte da análise estendido na mesma medida")})),
     // Review r19: whole-field identity; a joint program is never the client's own, and its volume is the client's.
     observe("input-label-corn-up-wheat-unchanged-never-names-an-input", withBoardSource("projecao", auroraProjectionPacket({shockLabel: "Milho 15% mais caro, com trigo inalterado"}) as unknown as Record<string, unknown>, () => boardPacketInput(2)),
       {generic: true, namesInput: false, gap: true},
@@ -488,6 +497,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
     }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    // Review r21: "estendido na mesma medida" only when the periods added equal the deferral exactly.
+    ...[2, 3, 5].flatMap((years) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-a-${years}-year-extension-turn-${turn}`, () => {
+      const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(turn, boardDeferralReadings(packet)));
+    }, "board_capital_template_condition_failed:topic.project_wait_quotes"] as [string, () => unknown, string])),
     // Review r20: an exact definition compares the case's whole input object; a discount rate changed with the economy,
     // or alone (positive NPV at 15%, negative at 30%), is never presented as a smaller economy.
     ...([["smaller-economy-with-a-30-percent-discount-rate", true], ["base-operations-at-a-30-percent-discount-rate-called-smaller-economy", false]] as const).map(([name, withEconomy]) => [name, () => {

@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardDeferralReadings, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
@@ -408,6 +408,15 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
           && [...x.keys()].every((l) => y.has(l) || l.endsWith(".periodEnd") || /^\.value\.value\[\d+\]$/.test(l));
       });
       if (!ok) bad.push(`scenario_deferral_whole:${t.slice(0, 60)}`);
+      // "Na mesma medida": the periods added, the capex shift and the first-operation shift, all in periods, are equal.
+      if (/na mesma medida/.test(t)) {
+        const value = (m: ReturnType<typeof inputLeaves>, f: string) => [...(m.get(f) ?? new Map()).entries()].filter(([l]) => /^\.value\.value(\[\d+\])?$/.test(l)).map(([, v]) => v);
+        const added = value(a, "periodEnds").length - value(b, "periodEnds").length;
+        const nonZero = (xs: string[]) => xs.findIndex((v) => !new D(v).eq(0)), capexShift = nonZero(value(a, "project.growthCapexPaid")) - nonZero(value(b, "project.growthCapexPaid"));
+        const month = (x: string | undefined) => x ? Number(x.slice(0, 4)) * 12 + Number(x.slice(5, 7)) : NaN;
+        const startShift = (month(value(a, "project.ramp.operationStartMonth")[0]) - month(value(b, "project.ramp.operationStartMonth")[0])) / 12;
+        if (!(added >= 1 && added === capexShift && added === startShift)) bad.push(`deferral_measure:${t.slice(0, 60)}`);
+      }
     }
     // Deferrals: the first disbursement and the first operation strictly later than the reference's.
     const firstNonZero = (xs: string[] | undefined) => xs ? xs.findIndex((v) => !new D(v).eq(0)) : -1;
@@ -876,6 +885,25 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const {fingerprint: _f, ...payload} = schema.parse(packet);
     return {...packet, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
   };
+  it("regression r21: a one-year deferral with a longer horizon is never \"estendido na mesma medida\"; the one-year control keeps it (full path, oracle not vacuous)", () => {
+    const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
+    const control = auroraInvestmentPacket({deferralHorizonYears: 1}) as unknown as Record<string, unknown>;
+    const pc = withBoardSource("linha-embalagem", control, () => full(2, () => undefined));
+    expect(pc.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation).toContain("horizonte da análise estendido na mesma medida");
+    expect(oracle(pc, [{packet: control}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+    const claimsOf = (id: string) => boardTemplates[id]!.when.map((w) => JSON.stringify({...w, claim: undefined}));
+    expect(claimsOf("option.wait_quotes").filter((x) => x.includes("shifted"))).toEqual(claimsOf("topic.project_wait_quotes").filter((x) => x.includes("shifted")));
+    expect(claimsOf("option.wait_quotes").some((x) => x.includes("shifted"))).toBe(true);
+    for (const years of [2, 3, 5]) {
+      const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
+      // Turn 2 and turn 3 (the option stays after the recommendation is withdrawn; both carry the same exact check).
+      expect(() => withBoardSource("linha-embalagem", packet, () => full(2, boardDeferralReadings(packet))), `${years}`).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes");
+      expect(() => withBoardSource("linha-embalagem", packet, () => full(3, boardDeferralReadings(packet))), `${years}`).toThrow(/board_capital_template_condition_failed:(topic\.project_wait_quotes|option\.wait_quotes)/);
+      // Not vacuous: the calibration's texts read against this result (same fingerprint) are refused by the oracle.
+      const forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("deferral_measure:")), `${years}`).toBe(true);
+    }
+  });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};
     const economy = original.cases.find((x) => x.id === "economy-4")!.result.contributions;

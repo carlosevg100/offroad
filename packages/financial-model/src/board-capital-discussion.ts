@@ -529,6 +529,22 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const ends = (m: Map<string, BoardCanonicalInput>) => m.get("periodEnds")?.value;
       const extra = c.horizon === "extended" ? (Array.isArray(ends(a)) && Array.isArray(ends(b)) ? (ends(a) as unknown[]).length - (ends(b) as unknown[]).length : -1) : 0;
       if (c.horizon === "extended" && extra < 1) return false;
+      // "Na mesma medida": the periods added equal the deferral exactly. Each shifted series is the reference's moved later
+      // by exactly the added periods (zeros before); each shifted date moves by exactly that many periods of the reference.
+      if (c.shifted) {
+        const refEnds = (ends(b) as unknown[]).map(String), monthsOf = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7)) - 1;
+        const steps = refEnds.slice(1).map((x, k) => monthsOf(x) - monthsOf(refEnds[k]!));
+        if (!steps.length || steps.some((m) => m !== steps[0])) return false;
+        for (const f of c.shifted.series) {
+          const x = a.get(f)?.value, y = b.get(f)?.value;
+          if (!Array.isArray(x) || !Array.isArray(y) || x.length !== y.length + extra) return false;
+          if (x.slice(0, extra).some((v) => !new Exact(String(v)).eq(0)) || JSON.stringify(x.slice(extra)) !== JSON.stringify(y)) return false;
+        }
+        for (const f of c.shifted.dates) {
+          const x = a.get(f)?.value, y = b.get(f)?.value;
+          if (typeof x !== "string" || typeof y !== "string" || x.slice(8) !== y.slice(8) || monthsOf(x) - monthsOf(y) !== extra * steps[0]!) return false;
+        }
+      }
       for (const key of new Set([...a.keys(), ...b.keys()])) {
         const x = a.get(key), y = b.get(key);
         if (c.fields.includes(key)) {if (!x || !y || JSON.stringify(x) === JSON.stringify(y)) return false; continue;}
