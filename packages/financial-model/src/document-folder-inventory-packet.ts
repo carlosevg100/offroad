@@ -1,10 +1,12 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {adoptedDocumentFolderInventoryOutputSchema, calculateAdoptedDocumentFolderInventory, documentFolderInventoryAnalysesSchema} from "./adopted-document-folder-inventory";
-import {inventoryModes} from "./document-folder-inventory";
+import {documentFolderInventoryLimits as L, inventoryModes} from "./document-folder-inventory";
 
 export const documentFolderInventoryPacketVersion = "2026.10.27-v1";
-const text = z.string().trim().min(1).max(2000), key = z.string().trim().min(1).max(160), hash = z.string().regex(/^[a-f0-9]{64}$/);
+// Limits from the kernel's one source; a statement of the method may name every line of a debt table.
+const text = z.string().trim().min(1).max(L.text), key = z.string().trim().min(1).max(L.id), hash = z.string().regex(/^[a-f0-9]{64}$/);
+const statement = z.string().trim().min(1).max(L.statement);
 const decimal = z.string().regex(/^-?\d{1,30}(?:\.\d{1,20})?$/);
 const source = z.strictObject({fileId: key, page: z.number().int().nullable(), section: text.nullable()});
 
@@ -26,24 +28,24 @@ export const documentFolderInventoryPacketOutputSchema = z.strictObject({
   /** What the answer says, in order: the size and how it was organized, what matters for the decisions in course,
    * the versions, what was not read, what is missing by purpose, and at most two questions. */
   readings: z.strictObject({
-    opening: z.strictObject({files: z.number().int(), groups: z.array(text).max(200), duplicates: z.number().int(), superseded: z.number().int(), inVault: z.number().int()}),
-    decisionFindings: z.array(z.strictObject({rank: z.number().int(), statement: text, decisionIds: z.array(key).min(1), sources: z.array(source).min(1)})).max(100).nullable(),
-    generalFindings: z.array(z.strictObject({rank: z.number().int(), statement: text})).max(100).nullable(),
-    versions: z.array(z.strictObject({familyId: key, resolution: key, prevails: z.array(key), superseded: z.array(key), sideBySide: z.array(key), highlighted: z.boolean()})).max(100),
+    opening: z.strictObject({files: z.number().int(), groups: z.array(text).max(L.groupsOut), duplicates: z.number().int(), superseded: z.number().int(), inVault: z.number().int()}),
+    decisionFindings: z.array(z.strictObject({rank: z.number().int(), statement, decisionIds: z.array(key).min(1), sources: z.array(source).min(1).max(L.sources)})).max(L.findings).nullable(),
+    generalFindings: z.array(z.strictObject({rank: z.number().int(), statement})).max(L.findings).nullable(),
+    versions: z.array(z.strictObject({familyId: key, resolution: key, prevails: z.array(key), superseded: z.array(key), sideBySide: z.array(key), highlighted: z.boolean()})).max(L.files),
     /** What the documents say, quoted with file and page or sheet; kept apart from everything the method states. */
-    documentary: z.array(z.strictObject({findingId: z.string().min(1).max(80), fileId: key, page: z.number().int().nullable(), section: text.nullable(), text})).max(500),
-    notRead: z.array(z.strictObject({fileId: key, pages: z.array(z.number().int()).nullable(), statement: text})).max(250),
-    gaps: z.array(z.strictObject({item: text, why: text, purposes: z.array(key).min(1), conditional: z.boolean()})).max(100),
-    questions: z.array(text).max(2),
+    documentary: z.array(z.strictObject({findingId: key, fileId: key, page: z.number().int().nullable(), section: text.nullable(), text})).max(L.findings + L.gaps),
+    notRead: z.array(z.strictObject({fileId: key, pages: z.array(z.number().int()).nullable(), statement})).max(L.findings),
+    gaps: z.array(z.strictObject({item: statement, why: statement, purposes: z.array(key).min(1), conditional: z.boolean()})).max(L.gaps),
+    questions: z.array(statement).max(2),
     /** A later turn: only the rows what arrived touches, the identity checks it allows, and the facts recorded with author and date. */
-    update: z.strictObject({rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(), newFindings: z.array(z.strictObject({statement: text, quoted: z.strictObject({fileId: key, page: z.number().int().nullable(), section: text.nullable(), text}).nullable()})),
+    update: z.strictObject({rowsUpdated: z.array(key), rowsAdded: z.array(key), rowsPreserved: z.number().int(), newFindings: z.array(z.strictObject({statement, quoted: z.strictObject({fileId: key, page: z.number().int().nullable(), section: text.nullable(), text}).nullable()})),
       identityChecks: z.array(z.strictObject({id: key, status: z.enum(["matches", "differs", "not_run"]), reported: decimal.nullable(), recomposed: decimal.nullable()})),
-      informed: z.array(z.strictObject({statement: text, author: text, date: z.iso.date()})), stillOpen: z.array(text)}).nullable(),
+      informed: z.array(z.strictObject({statement: text, author: text, date: z.iso.date()})), stillOpen: z.array(statement)}).nullable(),
     /** Set when the update could not be read: everything above is the prior inventory, as history. */
     historical: z.strictObject({inventoryFingerprint: hash, reason: z.literal("update_not_read")}).nullable(),
     numericAnalysis: z.literal("none"), documentsValidated: z.literal(false),
   }).nullable(),
-  gaps: z.array(z.strictObject({operand: text, reason: text})).max(1024),
+  gaps: z.array(z.strictObject({operand: text, reason: text})).max(L.entities + L.decisions + L.vault + L.files + L.informed + 1),
   status: z.enum(["framed", "partial", "prepared_for_human_review"]),
   exclusions: z.array(z.enum(packetExclusions)).length(5).refine((v) => v.join("|") === packetExclusions.join("|"), "Exact exclusion ledger required"),
   grantsExecution: z.literal(false), grantsPublication: z.literal(false), fingerprint: hash,

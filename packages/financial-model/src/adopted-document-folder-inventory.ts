@@ -3,30 +3,34 @@ import {z} from "zod";
 import {adoptionBasisEntrySchema, readContextualBasis} from "@offroad/reconciliation";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
-import {documentFolderInventoryOutputSchema, documentFolderInventoryVersion, documentReadingSchema, inventoryFingerprint, inventoryModes, organizeDocumentFolder,
+import {documentFolderInventoryLimits as L, documentFolderInventoryOutputSchema, documentFolderInventoryVersion, documentReadingSchema, inventoryFingerprint, inventoryModes, organizeDocumentFolder,
   type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 
-const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/), text = z.string().trim().min(1).max(2000), hash = z.string().regex(/^[a-f0-9]{64}$/);
+// The same limits as the kernel's, from the one source: what is read here is what the inventory can hold.
+const key = z.string().regex(new RegExp(`^[a-z0-9][a-z0-9-]{0,${L.key - 1}}$`)), text = z.string().trim().min(1).max(L.text), hash = z.string().regex(/^[a-f0-9]{64}$/);
+const label = z.string().trim().min(1).max(L.label);
+/** Every slot the reader may read: one gap, one binding and one contribution at most each. */
+const slots = L.entities + L.decisions + L.vault + L.baseFiles + L.updateFiles + L.informed + 1;
 /** One adopted record is one canonical JSON text: a file reading, an entity, a decision in course, a vault entry or an informed fact. */
-const record = <T extends z.ZodType>(schema: T) => z.string().min(2).max(400000).transform((s, ctx) => {
+const record = <T extends z.ZodType>(schema: T) => z.string().min(2).max(L.record).transform((s, ctx) => {
   try {return JSON.parse(s) as unknown;} catch {ctx.addIssue({code: "custom", message: "document_inventory_record_not_json"}); return z.NEVER;}
 }).pipe(schema);
-export const inventoryEntityRecordSchema = z.strictObject({label: text, groupId: key, groupLabel: text, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
-export const inventoryDecisionRecordSchema = z.strictObject({label: text, kind: z.enum(["financing_plan", "investment_project", "debt_discussion"])});
-export const inventoryVaultRecordSchema = z.strictObject({sha256: hash, label: text, instrumentRef: key.nullable()});
-export const inventoryInformedRecordSchema = z.strictObject({questionId: z.string().min(1).max(80), statement: text, author: text, date: z.iso.date()});
+export const inventoryEntityRecordSchema = z.strictObject({label, groupId: key, groupLabel: label, parentId: key.nullable(), ownership: z.string().regex(/^\d{1,4}(?:\.\d{1,8})?$/).nullable()});
+export const inventoryDecisionRecordSchema = z.strictObject({label, kind: z.enum(["financing_plan", "investment_project", "debt_discussion"])});
+export const inventoryVaultRecordSchema = z.strictObject({sha256: hash, label, instrumentRef: key.nullable()});
+export const inventoryInformedRecordSchema = z.strictObject({questionId: z.string().min(1).max(L.id), statement: text, author: text, date: z.iso.date()});
 const slot = z.strictObject({id: key, value: selection});
 
 /** The folder as adopted: the registry of the company's entities, the decisions in course, the vault, and
  * one reading per file in arrival order. The analysis period runs to the reading date. */
 export const adoptedDocumentFolderInventoryInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: text,
-  entities: z.array(slot).min(1).max(50), decisions: z.array(slot).max(12), vault: z.array(slot).max(200), files: z.array(slot).min(1).max(200),
+  entities: z.array(slot).min(1).max(L.entities), decisions: z.array(slot).max(L.decisions), vault: z.array(slot).max(L.vault), files: z.array(slot).min(1).max(L.baseFiles),
 }).refine((i) => i.endDate > i.openingDate, "Invalid reading window");
 /** What arrived later, on its own basis: the readings, the facts the person informed, and the basis it updates by fingerprint. */
 export const adoptedDocumentFolderUpdateInputSchema = adoptedAnalysisContextSchema.safeExtend({
   analysisId: z.uuid(), scenario: text, priorFingerprint: selection,
-  files: z.array(slot).max(50), informed: z.array(slot).max(20),
+  files: z.array(slot).max(L.updateFiles), informed: z.array(slot).max(L.informed),
 });
 export const documentFolderInventoryAnalysesSchema = z.strictObject({base: adoptedDocumentFolderInventoryInputSchema, update: adoptedDocumentFolderUpdateInputSchema.nullable()});
 export type DocumentFolderInventoryAnalyses = z.infer<typeof documentFolderInventoryAnalysesSchema>;
@@ -39,9 +43,9 @@ export const adoptedDocumentFolderInventoryOutputSchema = z.strictObject({
   base: reference, update: reference.nullable(),
   /** The inventory of the latest basis; when an update is read, the base inventory stays as it was produced. */
   inventory: documentFolderInventoryOutputSchema.nullable(), priorInventory: documentFolderInventoryOutputSchema.nullable(),
-  gaps: z.array(z.strictObject({operand: text, reason: text})).max(1024),
-  bindings: z.array(z.strictObject({operand: text, decisionId: z.uuid().nullable(), interpretationDecisionIds: z.array(z.uuid())})).max(1024),
-  contributions: z.array(adoptionBasisEntrySchema).max(512),
+  gaps: z.array(z.strictObject({operand: text, reason: text})).max(slots),
+  bindings: z.array(z.strictObject({operand: text, decisionId: z.uuid().nullable(), interpretationDecisionIds: z.array(z.uuid())})).max(slots),
+  contributions: z.array(adoptionBasisEntrySchema).max(slots),
   status: z.enum(["complete", "base_only", "missing_inputs"]),
   derivedDependencies: z.array(z.strictObject({result: text, decisionIds: z.array(z.uuid())})),
   classification: z.enum(["working_hypothesis", "working_selection"]),

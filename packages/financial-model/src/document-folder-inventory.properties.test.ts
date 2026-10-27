@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -719,5 +719,107 @@ describe("property: gathered items keep the identity of their source", () => {
     const o = run([...base, copy]);
     expect(o.findings.find((f) => f.id === `f20-${id}`)!.quoted).toMatchObject({fileId: "f20", page: 6, text: "Nota do documento."});
     expect(o.findings.find((f) => f.id === `f20-s01:${id}`)!.quoted).toMatchObject({fileId: "s01", page: 7, text: "Nota da cópia."});
+  });
+});
+
+// Review r12: every limit comes from one source; inputs at the maximum accepted produce an inventory.
+describe("property: inputs at the maximum limits accepted produce an inventory", () => {
+  const L = documentFolderInventoryLimits;
+  const id = (prefix: string, n: number) => `${prefix}-${String(n).padStart(4, "0")}`.padEnd(L.key, "a");
+  const words = (n: number) => "Texto lido no documento ".repeat(Math.ceil(n / 24)).slice(0, n).trim();
+  const maxed = (seed: number) => readings((list) => {
+    const r = random(seed);
+    // Entities at their limit, with labels at the label limit.
+    // The CCB at the limits: 99 own clauses with ids and scopes at the key limit, figures, observations and units at theirs.
+    const f20 = file(list, "f20");
+    f20.clauses = Array.from({length: L.clauses - 1}, (_, n) => ({type: pick(r, ["prepayment", "collateral_top_up"] as const), id: id("c", n), scope: id("s", n), at: {page: 1 + (n % 6), section: null}, statement: words(L.text)}));
+    f20.figures = Array.from({length: L.figures}, (_, n) => ({id: id("v", n), metric: "cash" as const, value: "1", scale: "1000000" as const, at: {page: 1 + (n % 6), section: null}}));
+    f20.observations = Array.from({length: L.observations - 1}, (_, n) => ({id: id("o", n), at: {page: 1 + (n % 6), section: null}, topic: "other" as const, statement: words(L.text)}));
+    f20.legibility = {pageCount: L.pageNumber, unreadablePages: [7, ...Array.from({length: L.unreadable - 1}, (_, n) => 100 + n)].map((page) => ({page, reason: "illegible_scan" as const, expectedContent: null, expectedFrom: null})), wholeFile: null};
+    // The debt table at its line limit, every line counted by its limit: the statement names each line.
+    const f16 = file(list, "f16");
+    f16.debtTable = {lines: Array.from({length: L.debtLines}, (_, n) => ({id: id("l", n), lineKind: "overdraft" as const, label: words(L.text), drawn: "0", limit: "1", counted: "1"})), reportedTotal: String(L.debtLines), scale: "1000000", at: f16.debtTable!.at};
+    const f12 = file(list, "f12");
+    f12.units = [...f12.units, ...Array.from({length: L.units - f12.units.length}, (_, n) => ({section: id("aba", n).padEnd(L.section, "b"), currency: "BRL", scale: "1" as const}))];
+  });
+  const copy = () => ({...auroraTurnTwoReadings()[0]!, fileId: id("copia", 1), fileName: "c".repeat(L.fileName), sha256: hex("max-copy"),
+    clauses: [{type: "prepayment" as const, id: id("c", 1), scope: id("s", 1), at: {page: 7, section: null}, statement: words(L.text)}],
+    observations: [{id: id("o", 1), at: {page: 7, section: null}, topic: "other" as const, statement: words(L.text)}]});
+  const fillers = (n: number) => Array.from({length: n}, (_, k) => ({...structuredClone(file(auroraFolderReadings(), "f29")), fileId: id("arq", k), fileName: `${"n".repeat(L.fileName - 8)}${String(k).padStart(4, "0")}.jpg`, sha256: hex(`filler-${k}`)}));
+  const entities = () => [...auroraKernelInput().entities.map((e) => ({...e, label: e.label.padEnd(L.label, "."), groupLabel: e.groupLabel.padEnd(L.label, ".")})),
+    ...Array.from({length: L.entities - auroraKernelInput().entities.length}, (_, n) => ({id: id("ent", n), label: "Entidade".padEnd(L.label, "."), groupId: "aurora", groupLabel: "Aurora", parentId: "aurora", ownership: "1"}))];
+  for (const seed of [1, 2, 3]) it(`kernel at the limits, seed ${seed}`, () => {
+    const files = [...maxed(86000 + seed), copy()];
+    const all = [...files, ...fillers(L.files - files.length)];
+    expect(all).toHaveLength(L.files);
+    const o = run(all, {entities: entities()});
+    expect(o.rows).toHaveLength(L.files - 1);
+    expect(o.findings.find((f) => f.id === `f20-${id("copia", 1)}:${id("o", 1)}`)).toBeDefined();
+    expect(o.findings.find((f) => f.id === "f16-debt-total")!.statement.length).toBeGreaterThan(L.text);
+    expect(Math.max(...o.findings.map((f) => f.id.length))).toBeLessThanOrEqual(L.id);
+  });
+  it("the packet carries a maximal folder through the reader", () => {
+    const p = prepareDocumentFolderInventoryPacket(folderPacketInput({files: [...maxed(86010), copy()], entities: entities() as never}));
+    expect(p.result.inventory).not.toBeNull();
+  });
+  it("a gathered reading above a reading's limit is refused before execution", () => {
+    const files = [...maxed(86020), {...copy(), clauses: [...copy().clauses, {type: "collateral_top_up" as const, id: id("c", 2), at: {page: 7, section: null}, statement: words(100)}]}];
+    expect(() => run(files)).toThrow("document_inventory_gathered_reading_above_limit");
+  });
+});
+
+// Review r12: the same bytes are one reading whatever their local ids; an exact duplicate is a pointer; continuity.
+describe("property: readings of one hash differing only in local ids are one reading", () => {
+  for (const what of ["figures", "clauses", "observations", "debt-lines"] as const) it(`local ids of ${what} renamed on the copy`, () => {
+    const reference = run(auroraFolderReadings());
+    const o = run(readings((list) => {
+      const f30 = file(list, "f30"), f16copy = {...structuredClone(file(list, "f16")), fileId: "f31", fileName: "f31.xlsx"};
+      list.push(f16copy);
+      if (what === "figures") f30.figures = f30.figures.map((x) => ({...x, id: `${x.id}-z`}));
+      if (what === "clauses") file(list, "f19").clauses.reverse();
+      if (what === "observations") f30.observations = f30.observations.map((x) => ({...x, id: `${x.id}-z`}));
+      if (what === "debt-lines") f16copy.debtTable = {...f16copy.debtTable!, lines: f16copy.debtTable!.lines.map((l) => ({...l, id: `${l.id}-z`}))};
+    }));
+    expect(o.readingConflicts).toEqual([]);
+    expect(o.rows.find((x) => x.fileId === "f02")!.situationLabel).toBe(reference.rows.find((x) => x.fileId === "f02")!.situationLabel);
+    expect(o.rows.find((x) => x.fileId === "f31")!.situation.duplicateOf).toBe("f16");
+  });
+});
+describe("property: an exact duplicate reads as the document it repeats, recovered pages included", () => {
+  for (const [target, n] of [["f20", 1], ["f20", 2], ["f19", 1], ["f19", 2]] as const) it(`${n} duplicate(s) of ${target}`, () => {
+    const page = target === "f20" ? 7 : 3;
+    const edit = (list: DocumentReading[]) => {
+      if (target === "f19") {const a = file(list, "f19"); a.clauses = a.clauses.filter((c) => c.at.page !== 3); a.legibility = {pageCount: 4, unreadablePages: [{page: 3, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};}
+      const t = file(list, target);
+      for (let k = 0; k < n; k++) list.push({...structuredClone(t), fileId: `d${k + 1}`, fileName: `d${k + 1}.pdf`});
+    };
+    const copy = target === "f20" ? auroraTurnTwoReadings()[0]! : {...structuredClone(file(auroraFolderReadings(), "f19")), fileId: "s09", fileName: "s09.pdf", sha256: hex("ad1-p3"),
+      legibility: {pageCount: null, unreadablePages: [], wholeFile: null}, substitutesPages: {instrumentRef: "deb-aurora-1-ad1", pages: [3]}, clauses: file(auroraFolderReadings(), "f19").clauses.filter((c) => c.at.page === 3)};
+    const withDup = run([...readings(edit), copy], {asOf: "2026-09-02"});
+    const plain = run([...readings((list) => {if (target === "f19") {const a = file(list, "f19"); a.clauses = a.clauses.filter((c) => c.at.page !== 3); a.legibility = {pageCount: 4, unreadablePages: [{page: 3, reason: "illegible_scan", expectedContent: null, expectedFrom: null}], wholeFile: null};}}), copy], {asOf: "2026-09-02"});
+    // Every duplicate row shows the original's final reading, and the text in force is the one recovered without duplicates.
+    for (let k = 0; k < n; k++) expect(withDup.rows.find((x) => x.fileId === `d${k + 1}`)!.situation).toMatchObject({read: "complete", unreadablePages: [], pagesFrom: [{page}], duplicateOf: target});
+    expect(withDup.effectiveTexts).toEqual(plain.effectiveTexts);
+    expect(withDup.findings.find((f) => f.id === "f24-politica")?.statement ?? null).toBe(plain.findings.find((f) => f.id === "f24-politica")?.statement ?? null);
+  });
+});
+describe("property: continuity across turns; the reading date moving is a transition of its own", () => {
+  it("a third turn with the same files keeps every resolved finding resolved and changes nothing", () => {
+    const base = auroraFolderReadings(), p1 = run(base), two = [...base, ...auroraTurnTwoReadings()];
+    const p2 = run(two, {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: p1, fingerprint: inventoryFingerprint(p1)}});
+    const p3 = run(two, {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: p2, fingerprint: inventoryFingerprint(p2)}});
+    expect(p3.findings.filter((f) => f.status === "resolved")).toEqual(p2.findings.filter((f) => f.status === "resolved"));
+    expect(p3.update).toMatchObject({rowsUpdated: [], rowsAdded: [], findingsResolved: [], findingsAdded: []});
+    expect(p3.rows).toEqual(p2.rows);
+  });
+  for (const [id, field] of [["f19", "lastUpdated"], ["f24", "lastUpdated"], ["f16", "lastUpdated"]] as const) it(`${id} dated after the first reading becomes current at the second`, () => {
+    const base = readings((list) => {file(list, id).version[field] = "2026-09-02";});
+    const p1 = run(base), p2 = run(base, {asOf: "2026-09-02", prior: {inventory: p1, fingerprint: inventoryFingerprint(p1)}});
+    const fresh = run(base, {asOf: "2026-09-02"});
+    // Same conclusions as a fresh reading at the new date; what the date resolved is linked to the document that crossed it.
+    expect(p2.effectiveTexts).toEqual(fresh.effectiveTexts);
+    expect(p2.identityChecks).toEqual(fresh.identityChecks);
+    for (const f of p2.findings.filter((x) => p2.update!.findingsResolved.includes(x.id))) expect(f.resolvedBy.length).toBeGreaterThan(0);
+    expect(p2.update!.findingsResolved.length).toBeGreaterThan(0);
   });
 });

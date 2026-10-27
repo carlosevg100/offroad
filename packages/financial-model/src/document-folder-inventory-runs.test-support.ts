@@ -273,6 +273,13 @@ function goldCases(): Case[] {
     observe("same-local-id-on-document-and-copy-keeps-both", folderPacketInput({files: readings((r) => {file(r, "f20").observations.push({id: "nota", at: {page: 6, section: null}, topic: "other", statement: "Nota do documento."});}),
       turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, observations: [{id: "nota", at: {page: 7, section: null}, topic: "other" as const, statement: "Nota da cópia."}]} : x)}}),
       [["f20-nota", "f20", 6], ["f20-s01:nota", "s01", 7]], (p) => p.readings!.documentary.filter((d) => d.findingId.endsWith("nota")).map((d) => [d.findingId, d.fileId, d.page]).sort()),
+    // Review r12 cases: one reading per hash whatever the local ids, duplicates as pointers, the reading date as a transition.
+    observe("local-ids-alone-are-not-a-reading-conflict", folderPacketInput({files: readings((r) => {const f30 = file(r, "f30"); f30.figures = f30.figures.map((x) => ({...x, id: `${x.id}-z`}));})}),
+      {conflicts: 0, f02: "lida; superada pela auditada"}, (p) => ({conflicts: inv(p).readingConflicts.length, f02: inv(p).rows.find((r) => r.fileId === "f02")!.situationLabel})),
+    observe("duplicate-of-the-ccb-reads-the-recovered-page", folderPacketInput({files: readings((r) => {r.push({...structuredClone(file(r, "f20")), fileId: "f31", fileName: "CCB Bradesco copia.pdf"});}), turnTwo: true}),
+      {copy: "complete", policy: true}, (p) => ({copy: inv(p).rows.find((r) => r.fileId === "f31")!.situation.read, policy: inv(p).findings.some((f) => f.id === "f24-politica" && f.statement.includes("covenant vigente"))})),
+    observe("reading-date-makes-the-amendment-current", folderPacketInput({files: readings((r) => {file(r, "f19").version.lastUpdated = "2026-09-02";}), turnTwo: true}),
+      {text: "known", resolved: true}, (p) => ({text: inv(p).effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")!.knowledge, resolved: inv(p).update!.findingsResolved.includes("f19-future")})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
@@ -322,6 +329,9 @@ function adversarialCases(): Case[] {
     ["second-debt-table-from-a-copy", () => folderPacketInput({files: readings((r) => {file(r, "f20").debtTable = {lines: [{id: "ccb", lineKind: "bank_credit", label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000", at: {page: 3, section: null}};}),
       turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, debtTable: {lines: [{id: "ccb", lineKind: "bank_credit" as const, label: "CCB", drawn: "30", limit: null, counted: "30"}], reportedTotal: "30", scale: "1000000" as const, at: {page: 7, section: null}}} : x)}}),
       "document_inventory_unsupported_substitute_content:debt_table"],
+    ["gathered-reading-above-the-limit", () => folderPacketInput({files: readings((r) => {file(r, "f20").clauses = Array.from({length: 100}, (_, n) => ({type: "prepayment" as const, id: `c${n}`, scope: `s${n}`, at: {page: 1, section: null}, statement: "Pré-pagamento previsto."}));}),
+      turnTwo: true}), "document_inventory_gathered_reading_above_limit"],
+    ["entity-label-above-the-limit", () => folderPacketInput({entities: auroraEntities.map((e) => ({...e, label: "Aurora ".repeat(30)}))}), "Too big"],
     ["record-read-in-another-scenario", () => {const b = auroraFolderBasis(); b.entries.find((e) => e.fieldPath.endsWith("file.f16.reading"))!.dimensions.scenario = "adverse";
       return {schemaVersion: "document-folder-inventory-packet-input.v1", question: folderQuestion, mode: "organize", analysis: {base: b.seal(), update: null}};}, "analysis_basis_context_mismatch"],
   ];
