@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardPacketInput, boardPacketViaPremises} from "./board-capital-discussion-runs.test-support";
+import {boardConceptAttempts, boardPacketInput, boardPacketViaPremises} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardReadings, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates} from "./board-capital-discussion-templates";
 
@@ -21,7 +21,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|label_not_a_name)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -56,6 +56,98 @@ const families: [string, (c: CaseData, add: string) => void][] = [
 const attacks = [" Retorno de menos {irr}.", " VPL de menos {npv}.", " O prazo médio é de dezasseis.", " A dívida é a terça parte de {divida-total}.", " Retorno de {irr} por minuto.",
   " Prazo médio de {wal} (leia-se em minutos).", " Dívida {divida-total} bilhões.", " Prazo de {wal} meses.", " A dívida é de {year-2027} BRL.", " A taxa é de １６%.",
   " A dívida equivale a {em:year-2027} ienes.", " Custo de {divida-total} e centavos.", " Retorno de {irr} por semana.", " Dívida -{divida-total}."];
+
+/** The oracle's own reading of what each slot means, written apart from the library: the method and path a reading
+ * must come from (`*` stands for any selector value), `year` for a year reading, or the action text a deadline must
+ * belong to. A displayed binding outside this table is a divergence. */
+const DT = "build-company-debt-table|", CV = "measure-covenant-headroom|", WC = "project-weekly-cash|", IP = "analyze-investment-project|comparison.metrics",
+  OP = "build-operating-projection|", PC = "challenge-financial-projection|", RF = "monetize-receivables-for-working-capital|", RC = "analyze-relative-debt-cost|",
+  FP = "evaluate-financing-paths|", LI = FP + "readings.recommendation.longInstrument.";
+const pathRow = (id: string) => ({caixa: `${FP}readings.paths[id=${id}].minimumCash.amount`, alavancagem: `${FP}readings.paths[id=${id}].worstLeverage`,
+  custo: `${FP}readings.paths[id=${id}].horizonFinancingCost`, ano: "year", divida: `${FP}readings.paths[id=${id}].netDebtAtHorizon`,
+  criterios: `${FP}readings.paths[id=${id}].eligible`, anuencia: `${FP}readings.paths[id=${id}].consentRequired`});
+const notice = "deadline:enviar ao fornecedor atual o aviso para renegociar o contrato", programs = "deadline:aderir aos programas",
+  sounding = "deadline:concluir a sondagem", route = "deadline:decidir a rota";
+const meaning: Record<string, Record<string, string>> = {
+  "delib.crop": {ano: "year"}, "delib.crop.subject": {ano: "year"}, "delib.maturities": {ano: "year"}, "delib.maturities.subject": {ano: "year"},
+  "delib.maturities.sounding": {valor: LI + "issueTarget", prazo: LI + "termYears"},
+  "delib.policy.definition": {limite: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "situation.debt_total": {total: DT + "result.table.reconciliation.principal", ano: "year"},
+  "situation.debt_maturity": {principal: DT + "result.table.profile.scheduleByYear[year=*].principal", ano: "year", parcela: DT + "result.table.profile.dueWithinTwelveMonthsShare",
+    horizonte: DT + "result.table.profile.twelveMonthHorizon"},
+  "situation.debt_profile": {prazo: DT + "result.table.profile.weightedAverageLifeYears", credor: DT + "result.table.profile.largestCreditor.creditor", participacao: DT + "result.table.profile.largestCreditor.share"},
+  "situation.cash_shortfall": {semana: WC + "readings.tightestWeek.weekStart", saldo: FP + "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=*].closingAvailable", ano: "year"},
+  "situation.cash_without_line": {semana: WC + "readings.sensitivities[caseId=sem-linha].weekStart", saldo: WC + "readings.sensitivities[caseId=sem-linha].minimum", minimo: WC + "result.weekly.minimumCash"},
+  "situation.debt_service": {ano: "year", servico: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].service",
+    disponivel: FP + "result.evaluation.paths[id=manter].debtServiceByYear[year=*].availableForService"},
+  "constraint.indenture_basket": {saldo: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].remaining"},
+  "constraint.basket_usage": {cesta: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].basket", ocupado: DT + "result.table.negativePledgeBaskets[holderId=debenture-1].occupied"},
+  "constraint.covenant_policy": {covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "topic.project_return": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
+  "topic.project_value": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate", vpl: IP + "[caseId=base].netPresentValue"},
+  "topic.project_payback": {payback: IP + "[caseId=base].paybackYears", pico: IP + "[caseId=base].peakCumulativeCashNeed.amount", data: IP + "[caseId=base].peakCumulativeCashNeed.periodEndDate"},
+  "topic.project_sensitivities": {vpl_economia: IP + "[caseId=economy-4].netPresentValue", vpl_capex: IP + "[caseId=capex-120].netPresentValue", vpl_partida: IP + "[caseId=slower-start].netPresentValue"},
+  "topic.project_wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
+  "option.go_now": {vpl: IP + "[caseId=base].netPresentValue", retorno: IP + "[caseId=base].annualIrr"},
+  "option.staged": {vpl: "pending:analyze-investment-project"},
+  "option.wait_quotes": {vpl: IP + "[caseId=defer-12].netPresentValue", retorno: IP + "[caseId=defer-12].annualIrr"},
+  "topic.crop_programs": {valor: RF + "readings.plan[optionId=risco-sacado-a].cumulative"},
+  "topic.crop_program_cost": {taxa_b: RF + "readings.options[id=risco-sacado-b].spreadOverDi", taxa_a: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
+  "topic.crop_overdraft": {semana: WC + "readings.tightestWeek.weekStart"},
+  "alternatives.count": {caminhos: FP + "readings.horizon.candidatePaths", ano: "year"},
+  "alternatives.row.no_line_debenture": pathRow("sem-linha-debenture"), "alternatives.row.defer_line": pathRow("adiar-linha"),
+  "alternatives.row.debenture_with_line": pathRow("debenture-com-linha"), "alternatives.row.keep_and_roll": pathRow("manter"), "alternatives.row.short_bank_loan": pathRow("ccb-tres-anos"),
+  "alternatives.row.extend_with_bank": pathRow("alongar-com-banco"), "alternatives.row.extend_bradesco": pathRow("alongar-bradesco"),
+  "recommendation.debenture": {valor: LI + "issueTarget", prazo: LI + "termYears"},
+  "recommendation.debenture_cost": {baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition"},
+  "recommendation.amortization": {inicio: LI + "firstAmortizationYear", fim: LI + "lastAmortizationYear"},
+  "recommendation.alternative": {prazo: route},
+  "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", ano: "year"},
+  "risk.leverage_path": {inicio: CV + "result.headroom.measurements[id=dez26-base].ratio", data_inicio: CV + "result.headroom.measurements[id=dez26-base].date",
+    fim: CV + "result.headroom.measurements[id=dez27-base].ratio", data_fim: CV + "result.headroom.measurements[id=dez27-base].date"},
+  "risk.leverage_adverse": {ano: "year", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "risk.policy_definition": {politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "risk.policy_readings": {gerencial: CV + "result.headroom.measurements[id=dez26-gerencial].ratio", escritura: CV + "result.headroom.measurements[id=dez26-base].ratio",
+    data: CV + "result.headroom.measurements[id=dez26-base].date"},
+  "what_changes.title": {piso: LI + "issueFloorInsideGates"},
+  "what_changes.demand": {piso: LI + "issueFloorInsideGates", alvo: LI + "issueTarget"},
+  "what_changes.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
+    defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
+    ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda"},
+  "what_changes.receivable_days": {giro: OP + "readings.projected.scenarios[id=prazo-60].rows[periodId=*].effects.changeInWorkingCapital"},
+  "next_steps.notice": {prazo: notice}, "next_steps.programs": {prazo: programs}, "next_steps.sounding": {prazo: sounding}, "next_steps.route": {prazo: route, ano: "year"},
+  "summary.opening.debt_and_cash": {principal: DT + "result.table.profile.scheduleByYear[year=*].principal", ano: "year", semana: WC + "readings.tightestWeek.weekStart"},
+  "summary.closing.leverage": {alavancagem: CV + "result.headroom.measurements[id=dez26-base].ratio", data: CV + "result.headroom.measurements[id=dez26-base].date",
+    politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "a.roll_bank": {falta: FP + "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", vencimento: DT + "result.table.rows[id=ccb-bradesco].finalPayment"},
+  "q.term": {prazo: LI + "termYears"},
+  "a.term": {ano: "year", amortizacao: FP + "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=*].scheduledAmortization",
+    disponivel: FP + "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=*].availableAfterInterest"},
+  "a.demand": {valor: FP + "readings.alternative.issueTarget", prazo: route, vencimento: DT + "result.table.rows[id=ccb-bradesco].finalPayment"},
+  "a.cost": {baixo: LI + "equivalentSpread", alto: LI + "equivalentSpreadAtCondition", custo: FP + "readings.recommendation.horizonFinancingCost", ano: "year",
+    divida: FP + "readings.recommendation.netDebtAtHorizon", ano_fim: "year"},
+  "a.peer": {total: RC + "decomposition.grossBps", data: RC + "result.bridge.steps[family=pricing_date].bps"},
+  "a.rating": {baixo: RC + "levers[label=Rating, ganho menor e custo maior].netOfKnownCosts", alto: RC + "levers[label=Rating, ganho maior e custo menor].netOfKnownCosts"},
+  "a.strategic": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
+  "a.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
+    defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
+    ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda", ebitda_adverso: CV + "result.headroom.measurements[id=dez27-adverso].reportedEbitda",
+    alavancagem: CV + "result.headroom.measurements[id=dez27-adverso].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
+  "a.anchor": {rede: RF + "readings.options[id=risco-sacado-a].volume", carteira: RF + "readings.gross", taxa: RF + "readings.options[id=risco-sacado-a].spreadOverDi"},
+  "q.plan_vs_base": {plano: PC + "readings.gap.plan.ebitda", ano: "year", base: PC + "readings.gap.reference.ebitda"},
+  "a.plan_vs_base": {base: PC + "readings.gap.reference.ebitda"},
+};
+/** What the oracle reads in the numbers each fixed text asserts, on the source values of the identity check. */
+const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
+  "situation.cash_without_line": (v) => v.saldo!.lt(v.minimo!), "situation.debt_service": (v) => v.servico!.gt(v.disponivel!),
+  "constraint.indenture_basket": (v) => v.saldo!.gte(0), "constraint.basket_usage": (v) => v.ocupado!.lte(v.cesta!),
+  "topic.project_return": (v) => v.retorno!.gt(v.custo!), "topic.project_sensitivities": (v) => [v.vpl_economia, v.vpl_capex, v.vpl_partida].every((x) => x!.lt(0)),
+  "recommendation.debenture_cost": (v) => v.baixo!.lte(v.alto!), "recommendation.amortization": (v) => v.inicio!.lte(v.fim!),
+  "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
+  "what_changes.demand": (v) => v.piso!.lt(v.alvo!), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
+  "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!),
+  "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.rede!.lte(v.carteira!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
+};
 
 /** An independent reader of the final text. It formats every reading again from its source value, kind, scale,
  * periodicity and presentation with its own rules; then removes from each displayed field every reading's text,
@@ -99,6 +191,28 @@ function oracle(p: Packet) {
     const word = lexicon.exec(rest);
     if (word) bad.push(`${word[0]}@${t.slice(0, 60)}`);
   }
+  // Text to concept: every displayed binding reads what the oracle's own table names for that slot, and every
+  // assertion of the fixed text holds on the source values.
+  const byId = new Map(d.identity.map((x) => [x.figureId, x]));
+  const pattern = (want: string) => new RegExp(`^${want.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\*/g, "[^\\]]+")}$`);
+  const groups = new Map<string, {templateId: string; values: Record<string, Decimal>; complete: boolean}>();
+  for (const b of v.bindings) {
+    const want = meaning[b.templateId]?.[b.slot], key = `${b.field}|${b.templateId}`;
+    const g = groups.get(key) ?? {templateId: b.templateId, values: {}, complete: true}; groups.set(key, g);
+    if (!want) {bad.push(`concept_unknown:${b.templateId}.${b.slot}`); continue;}
+    if (b.deadlineId !== null) {
+      const [dId, tId] = b.deadlineId.split(".");
+      const t = v.deliberations.find((x) => x.id === dId)?.deadlines.find((x) => x.id === tId);
+      if (want !== `deadline:${t?.action}`) bad.push(`concept_deadline:${b.field}:${b.slot}`);
+      continue;
+    }
+    const x = byId.get(b.figureId!);
+    if (!x) {if (!want.startsWith("pending:")) bad.push(`concept_pending:${b.field}:${b.slot}`); g.complete = false; continue;}
+    const ok = want === "year" ? x.unit === "calendar" : pattern(want).test(`${x.methodId}|${x.path}`);
+    if (!ok) bad.push(`concept:${b.field}:${b.slot}:${b.figureId}`);
+    if (/^-?\d+(\.\d+)?$/.test(x.value)) g.values[b.slot] = new D(x.value);
+  }
+  for (const [key, g] of groups) if (g.complete && claims[g.templateId] && !claims[g.templateId]!(g.values)) bad.push(`claim:${key}`);
   const missing = d.materialFacts.figures.filter((id) => {const x = d.identity.find((i) => i.figureId === id); return x !== undefined && !joined.includes(reformat(x));});
   return {bad, missing};
 }
@@ -165,14 +279,8 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     });
     expect(recommendation.readings!.omissions[0]).toMatchObject({outcome: "refused", keptFigureIds: ["npv-defer", "irr-defer"]});
     expect(() => packet(2, (c) => {c.pages.find((x) => x.id === "linha")!.lines[1] = "topic.project_value|retorno=irr|custo=wacc|vpl=npv";})).toThrow("board_capital_material_fact_not_shown:payback");
-    for (const order of [["peak-date", "dez27-date"], ["dez27-date", "peak-date"]]) {
-      const p = packet(2, (c) => {
-        c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";
-        c.omissions = order.map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "requester.chair"}));
-      });
-      expect(p.readings!.omissions.map((o) => o.outcome)).toEqual(["refused", "refused"]);
-      expect(oracle(p)).toEqual({bad: [], missing: []});
-    }
+    // A page line can no longer stand in for a deliberation's subject, so the hidden subject cannot be built.
+    expect(() => packet(2, (c) => {c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";})).toThrow("board_capital_template_use_invalid");
   });
   it("regression r3 and r4: a contribution cannot choose the unit, the scale, the periodicity or a date format of a field", () => {
     const tries: [string, string[]][] = [
@@ -187,23 +295,33 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     for (const [id, reading] of tries)
       expect(() => full(2, (c) => {(c.extraReadings as Record<string, unknown>)[id] = reading; c.pages[1]!.title = `situation.debt_total|total=${id}|ano=year-2027`;}), id).toThrow(refusal);
   });
-  it("property: generated contributions (template ids and bindings at random) are refused or read clean by the independent oracle (fixed seed)", () => {
+  it("regression r7: every evasion by meaning is refused through the full path, including labels produced by the source method", () => {
+    const attempts = boardConceptAttempts((turn, edit) => boardPacketViaPremises(turn, edit));
+    for (const [id, build, message] of attempts) expect(() => prepareBoardCapitalDiscussionPacket(build() as Parameters<typeof prepareBoardCapitalDiscussionPacket>[0]), id).toThrow(message);
+    expect(attempts.length).toBeGreaterThanOrEqual(18);
+  });
+  it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);
-    const ids = Object.keys(boardTemplates), readings = Object.keys(auroraBoardReadings);
+    let probe: CaseData | null = null;
+    boardPacketInput(2, (c) => {probe = structuredClone(c);});
+    const fields = textFields(probe!).filter(([, , ref]) => /^[a-z]/.test(ref) && !ref.includes(" "));
+    const refs = fields.map(([, , ref]) => ref), ids = Object.keys(boardTemplates), readings = [...Object.keys(auroraBoardReadings), "stages-npv"];
     const deadlines = ["deadline:linha.aviso", "deadline:safra.adesao", "deadline:vencimentos.sondagem", "deadline:vencimentos.rota"];
+    const anyBinding = () => r() < 0.2 ? pick(r, deadlines) : pick(r, readings);
     let refused = 0, accepted = 0;
-    for (let run = 0; run < 60; run++) {
-      const id = pick(r, ids), template = boardTemplates[id]!;
-      const bindings = Object.keys(template.slots).map((slot) => `${slot}=${r() < 0.2 ? pick(r, deadlines) : pick(r, readings)}`);
-      if (r() < 0.15) bindings.push(`extra=${pick(r, readings)}`);
-      const ref = [r() < 0.1 ? `${id}_x` : id, ...bindings].join("|");
-      const family = pick(r, families);
+    for (let run = 0; run < 90; run++) {
+      const [name, , own] = pick(r, fields), mode = r();
+      let ref: string;
+      if (mode < 0.15) ref = own;
+      else if (mode < 0.5) {const parts = own.split("|"); if (parts.length > 1) {const k = 1 + Math.floor(r() * (parts.length - 1)); parts[k] = `${parts[k]!.split("=")[0]}=${anyBinding()}`;} ref = parts.join("|");}
+      else if (mode < 0.8) ref = pick(r, refs);
+      else {const id = pick(r, ids); ref = [id, ...Object.keys(boardTemplates[id]!.slots).map((slot) => `${slot}=${anyBinding()}`)].join("|");}
       try {
-        const p = full(2, (c) => {family[1](c, ""); const f = textFields(c); pick(r, f)[1](ref);});
+        const p = full(2, (c) => {textFields(c).find(([n]) => n === name)![1](ref);});
         accepted++;
-        expect(oracle(p), ref).toEqual({bad: [], missing: []});
+        expect(oracle(p), `${name} ${ref}`).toEqual({bad: [], missing: []});
       } catch (error) {
-        expect(String(error), ref).toMatch(refusal);
+        expect(String(error), `${name} ${ref}`).toMatch(refusal);
         refused++;
       }
     }
@@ -215,5 +333,16 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   it("the independent oracle reads the calibration clean at every turn, through the full path as well", () => {
     for (const turn of [2, 3] as const) expect(oracle(packet(turn, () => undefined))).toEqual({bad: [], missing: []});
     expect(oracle(full(2, () => undefined))).toEqual({bad: [], missing: []});
+    // The oracle is not vacuous: a forged binding (return read from the cost of capital) and a forged assertion
+    // (a sensitivity made positive) in an otherwise clean packet are both read as divergences.
+    const forged = structuredClone(packet(2, () => undefined));
+    const v = forged.result.discussion!.versions.at(-1)!;
+    const swap = v.bindings.find((b) => b.templateId === "topic.project_return" && b.slot === "retorno")!;
+    swap.figureId = "wacc";
+    const sensitivity = forged.result.discussion!.identity.find((x) => x.figureId === "npv-economy")!;
+    sensitivity.value = sensitivity.value.replace("-", "");
+    const read = oracle(forged).bad;
+    expect(read).toContain("concept:page.linha.title:retorno:wacc");
+    expect(read.some((x) => x.startsWith("claim:page.linha.line.2|topic.project_sensitivities"))).toBe(true);
   });
 });

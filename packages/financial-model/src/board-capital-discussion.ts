@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {boardRefReadingIds, parseBoardTextRef, type BoardSlotType} from "./board-capital-discussion-templates";
+import {boardMatchPath, boardMatchValue, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -162,6 +162,33 @@ export function checkBoardFreeText(text: string): string {
   if (issue) throw new Error(`board_capital_number_without_origin:${issue}:${text.slice(0, 80)}`);
   return text;
 }
+/** Economic words a source label may never carry: a label names a creditor, a retailer or an instrument, it states nothing. */
+export const boardLabelEconomicWords = ["dívida", "divida", "dívidas", "dividas", "total", "totais", "caixa", "saldo", "valor", "valores", "preço", "preco", "custo", "custos", "taxa",
+  "taxas", "juros", "spread", "prazo", "prazos", "aumento", "redução", "reducao", "mais", "menos", "retorno", "vpl", "tir", "ebitda", "alavancagem", "receita", "lucro",
+  "margem", "capital", "giro", "mínimo", "minimo", "máximo", "maximo", "limite", "covenant", "garantia", "garantias", "cesta", "positivo", "negativo", "positiva", "negativa",
+  "sinal", "por", "minuto", "minutos", "hora", "horas", "ganho", "perda", "acima", "abaixo", "igual", "cerca", "aproximadamente", "rating", "principal", "amortização",
+  "amortizacao", "vencimento", "parcela", "parcelas", "emissão", "emissao", "participação", "participacao", "vezes", "dezasseis", "terça", "terca", "terço", "terco"] as const;
+const labelEconomic = new Set<string>(boardLabelEconomicWords);
+const labelConnectors = new Set(["de", "da", "do", "das", "dos", "e", "&"]);
+/** The first reason a source label is refused as a proper name, or null: words with letters (a capital first),
+ * acronyms, S.A. and Ltda, joined by de, da, do, das, dos, e or &; no digit of any script, no symbol, no word of the
+ * closed lexicon or of economics, at most six words and sixty characters. */
+export function boardLabelIssue(text: string): string | null {
+  const t = text.normalize("NFKC");
+  if (t !== text) return "normalization";
+  if (!t.trim() || t.length > 60) return "length";
+  if (/\p{N}/u.test(t)) return "digit";
+  if (!/^[\p{L} .&'-]+$/u.test(t)) return "character";
+  const words = t.split(" ").filter(Boolean);
+  if (words.length > 6 || words.length !== t.split(" ").length) return "spacing";
+  for (const w of words) {
+    const lower = w.toLowerCase();
+    if (forbidden.has(lower) || labelEconomic.has(lower) || forbidden.has(lower.replace(/\.$/, "")) || labelEconomic.has(lower.replace(/\.$/, ""))) return `word:${w}`;
+    if (labelConnectors.has(w) || w === "S.A." || /^Ltda\.?$/.test(w) || /^\p{Lu}{2,6}$/u.test(w) || /^\p{Lu}\p{Ll}+(?:[-']\p{Lu}?\p{Ll}+)*$/u.test(w)) continue;
+    return `word:${w}`;
+  }
+  return null;
+}
 /** The reading ids a template names, with or without a date preposition; counts and deadlines excluded. */
 export function boardPlaceholderIds(ref: string): string[] {
   return boardRefReadingIds(ref);
@@ -176,8 +203,11 @@ export function boardLiteralNumbers(template: string): string[] {
 export type BoardSpan = {start: number; end: number; kind: "figure" | "text_figure" | "pending" | "deadline" | "count" | "ordinal"; id: string; unit: BoardFigureUnit | null};
 export type BoardRich = {display: string; spans: BoardSpan[]};
 type Resolved = BoardRich & {figureIds: string[]; pendingFigureIds: string[]; deadlineIds: string[]};
-export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit} | {pending: true};
-type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null};
+/** A reading as shown, with its origin (source, method, path and source value) so a slot can check its concept. */
+export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}} | {pending: true; methodId?: string};
+type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]};
+/** Which slot of which template a displayed field binds to which reading or deadline. */
+export type BoardBinding = {templateId: string; slot: string; figureId: string | null; deadlineId: string | null};
 
 /** The prepositions a date marker carries, written by the method. */
 const datePrepositions = {em: "em", ate: "até", desde: "desde", para: "para", fim: "no fim de", de: "de", a: "a"} as const;
@@ -246,27 +276,110 @@ export function renderBoardTemplate(template: string, context: Context): Resolve
 /** The kinds of reading each slot type of the template library accepts. */
 const slotAccepts: Record<Exclude<BoardSlotType, "deadline">, BoardFigureUnit[]> = {money: ["money"], rate: ["rate"], multiple: ["multiple"], years: ["years"], months: ["months"],
   bps: ["bps"], count: ["count"], date: ["date", "calendar"], label: ["label"], flag: ["flag"]};
-/** Renders one text of the closed library: the template's fixed text with each slot bound to a reading of the
- * slot's type (a pending reading fits any value slot), a deadline of a deliberation, or the method's counts.
- * Anything the library does not define is refused by name; the contribution writes no text. */
-export function renderBoardRef(ref: string, context: Context): Resolved {
+/** Compares two values: as decimals when both are numbers, as text otherwise (dates, flags, ids). */
+function compareBoard(a: string, how: BoardComparison, b: string) {
+  const numeric = /^-?\d+(?:\.\d+)?$/;
+  const c = numeric.test(a) && numeric.test(b) ? new Exact(a).cmp(b) : a < b ? -1 : a > b ? 1 : 0;
+  return how === "lt" ? c < 0 : how === "le" ? c <= 0 : how === "gt" ? c > 0 : how === "ge" ? c >= 0 : c === 0;
+}
+/** Renders one text of the closed library. Each slot is checked against its concept before anything is written:
+ * the reading's method and path match the admissible origin (shared variables equal across slots), a year matches
+ * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
+ * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
+ * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]} {
   const {templateId, bindings, template} = parseBoardTextRef(ref);
-  const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
-    if (match.startsWith("{count:")) return match;
-    const type = template.slots[slot], bound = bindings[slot];
-    if (!type || bound === undefined) throw new Error(`board_capital_slot_invalid:${templateId}:${slot}`);
-    if (type === "deadline") {
-      if (prep || !bound.startsWith("deadline:")) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}`);
-      return `{${bound}}`;
+  const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
+  const vars: Record<string, string> = {};
+  const share = (slot: string, got: Record<string, string>) => {
+    for (const [k, v] of Object.entries(got)) {if (Object.hasOwn(vars, k) && vars[k] !== v) throw concept(slot, `variable_${k}`); vars[k] = v;}
+  };
+  const values: Record<string, {value: string; methodId: string; sourceId: string} | null> = {};
+  const out: BoardBinding[] = [];
+  for (const [slot, spec] of Object.entries(template.slots)) {
+    const bound = bindings[slot]!;
+    if (spec.type === "deadline") {
+      if (!bound.startsWith("deadline:")) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}`);
+      const [deliberationId, deadlineId] = bound.slice(9).split(".");
+      const deadline = context.deliberations.find((d) => d.id === deliberationId)?.deadlines.find((x) => x.id === deadlineId);
+      if (!deadline) throw new Error(`board_capital_unknown_token:${bound}`);
+      // The deadline shown is the deadline of the action the template announces, never another one.
+      if (parseBoardTextRef(deadline.action).templateId !== spec.action) throw new Error(`board_capital_deadline_action_mismatch:${templateId}:${slot}:${bound.slice(9)}`);
+      values[slot] = {value: deadline.date, methodId: "", sourceId: ""};
+      out.push({templateId, slot, figureId: null, deadlineId: bound.slice(9)});
+      continue;
     }
     if (bound.startsWith("deadline:")) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}`);
     const figure = context.figures.get(bound);
     if (!figure) throw new Error(`board_capital_unknown_token:${bound}`);
-    if (!("pending" in figure) && !slotAccepts[type].includes(figure.unit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${figure.unit}`);
-    if ((type === "date") !== (prep !== undefined)) throw new Error(`board_capital_template_invalid:${templateId}:${slot}`);
+    out.push({templateId, slot, figureId: bound, deadlineId: null});
+    if ("pending" in figure) {
+      if (!figure.methodId || !(spec.from ?? []).some(([m]) => m === figure.methodId)) throw concept(slot, "pending_method");
+      values[slot] = null; continue;
+    }
+    if (!slotAccepts[spec.type].includes(figure.unit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${figure.unit}`);
+    if (!figure.origin) throw concept(slot, "origin_unknown");
+    if (spec.year !== undefined) {
+      const got = figure.unit === "calendar" ? boardMatchValue(spec.year, figure.origin.value) : null;
+      if (!got) throw concept(slot, "year");
+      share(slot, got);
+    } else {
+      const got = (spec.from ?? []).filter(([m]) => m === figure.origin!.methodId).map(([, path]) => boardMatchPath(path, figure.origin!.path)).find((x) => x !== null);
+      if (!got) throw concept(slot, "origin");
+      share(slot, got);
+    }
+    values[slot] = {value: figure.origin.value, methodId: figure.origin.methodId, sourceId: figure.origin.sourceId};
+  }
+  // The conditions the fixed text asserts, against the bound readings and their sources.
+  const unverified = (why: string) => new Error(`board_capital_template_condition_unverified:${templateId}:${why}`);
+  const sourceOf = (method: string) => {
+    const bound = Object.values(values).find((v) => v !== null && v.methodId === method);
+    const all = (context.sources ?? []).filter((x) => bound ? x.id === bound.sourceId : x.methodId === method);
+    if (all.length !== 1) throw unverified(`source_${method}`);
+    return all[0]!;
+  };
+  const read = (method: string, path: string) => {
+    const filled = path.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
+    return readBoardSourcePath(sourceOf(method).packet, filled);
+  };
+  const scalar = (raw: unknown, why: string) => {
+    if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") return String(raw);
+    throw unverified(why);
+  };
+  const operand = (o: BoardOperand): string | undefined => {
+    if ("value" in o) return o.value;
+    if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var];}
+    if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); return v === null ? undefined : o.year ? v.value.slice(0, 4) : v.value;}
+    const v = scalar(read(o.at[0], o.at[1]), o.at[1]);
+    return o.year ? v.slice(0, 4) : v;
+  };
+  const list = (method: string, path: string) => {const xs = read(method, path); if (!Array.isArray(xs) || !xs.length) throw unverified(path); return xs as Record<string, unknown>[];};
+  const holds = (c: BoardCondition): boolean => {
+    if ("compare" in c) {const a = operand(c.compare[0]), b = operand(c.compare[2]); return a === undefined || b === undefined || compareBoard(a, c.compare[1], b);}
+    if ("every" in c) {const than = operand(c.than); return than === undefined || list(c.every[0], c.every[1]).every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than));}
+    if ("onlyFlagged" in c) {
+      const [m, path, flag, key] = c.onlyFlagged, equals = operand(c.equals);
+      const flagged = list(m, path).filter((x) => x[flag] === true);
+      return equals === undefined || (flagged.length === 1 && scalar(flagged[0]![key], key) === equals);
+    }
+    const [m, path, field, key] = c.largest, equals = operand(c.equals);
+    const xs = list(m, path).map((x) => ({value: new Exact(scalar(x[field], field)), key: scalar(x[key], key)}));
+    const top = xs.reduce((best, x) => x.value.gt(best.value) ? x : best, xs[0]!);
+    return equals === undefined || (xs.filter((x) => x.value.eq(top.value)).length === 1 && compareBoard(top.key, "eq", equals));
+  };
+  template.when.forEach((c, i) => {if (!holds(c)) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);});
+  const text = template.text.replace(/\{(?:(em|ate|desde|para|fim|de|a):)?([a-z_]+)\}/g, (match: string, prep: string | undefined, slot: string) => {
+    if (match.startsWith("{count:")) return match;
+    const spec = template.slots[slot], bound = bindings[slot];
+    if (!spec || bound === undefined) throw new Error(`board_capital_slot_invalid:${templateId}:${slot}`);
+    if (spec.type === "deadline") {
+      if (prep) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}`);
+      return `{${bound}}`;
+    }
+    if ((spec.type === "date") !== (prep !== undefined)) throw new Error(`board_capital_template_invalid:${templateId}:${slot}`);
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return renderBoardTemplate(text, context);
+  return {...renderBoardTemplate(text, context), bindings: out};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -286,6 +399,8 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     const f = x.kind === "figure" || x.kind === "text_figure" ? figures.get(x.id) : null;
     const text = r.display.slice(x.start, x.end);
     if (f && ("pending" in f || f.unit !== x.unit || (text !== f.display && !Object.values(datePrepositions).some((p) => text === `${p} ${f.display}`)))) fail("marker_text", x.id);
+    // A source label is a proper name: its inside passes the name rule, the whitelist and both lexicons.
+    if (x.kind === "text_figure") {const issue = boardLabelIssue(text) ?? boardFreeTextIssue(text); if (issue) fail(`label_${issue}`, x.id);}
   }
   let verified = 0;
   for (const t of boardNumberTokens(r.display)) {
@@ -302,7 +417,7 @@ export function verifyBoardRendered(field: string, r: BoardRich, figures: Map<st
     at = Math.max(at, x.end);
   }
   for (const x of r.spans) {
-    if (x.kind !== "figure") continue;
+    if (x.kind !== "figure" && x.kind !== "text_figure") continue;
     const before = r.display.slice(0, x.start), after = r.display.slice(x.end);
     if (/[\p{L}\p{N}]$/u.test(before) || /^[\p{L}\p{N}]/u.test(after)) fail("glued_to_marker", x.id);
     if ((x.unit === "date" || x.unit === "calendar") && prepositionBeforeDate.test(before)) fail("preposition_before_marker", x.id);
@@ -355,19 +470,21 @@ const LIMITS = {title: 120, line: 240, lines: 7, summary: 1400};
 /** One version of the material: deliberations in urgency order, pages in narrative order, the summary,
  * the appendix and the questions. Every displayed field is rendered first and then verified number by number
  * on its final text; what a field shows (its markers) is what counts as shown, nothing else. */
-function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, removed: Removed, version: number) {
-  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate};
+function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, removed: Removed, version: number, sources: BoardSourceReading[]) {
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources};
+  const bindings: (BoardBinding & {field: string})[] = [];
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
-  const render = (t: string) => renderBoardRef(t, context);
+  // Every displayed field records which slot of which template binds which reading or deadline.
+  const render = (t: string, field?: string) => {const r = renderBoardRef(t, context); if (field) bindings.push(...r.bindings.map((b) => ({field, ...b}))); return r;};
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
   const drops = (t: string) => boardPlaceholderIds(t).some((id) => removed.figures.has(id));
   const neutralTopics = new Set(d.pages.filter((p) => removed.recommendations.has(p.id) && p.topicId !== null).map((p) => p.topicId!));
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
-    const ask = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation) : render(x.subject);
-    const title = shown(`deliberation.${x.id}.title`, render(x.title));
+    const ask = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation, `deliberation.${x.id}.text`) : render(x.subject, `deliberation.${x.id}.text`);
+    const title = shown(`deliberation.${x.id}.title`, render(x.title, `deliberation.${x.id}.title`));
     const deadlines = x.deadlines.map((t) => {
-      const action = shown(`deliberation.${x.id}.deadline.${t.id}`, render(t.action));
+      const action = shown(`deliberation.${x.id}.deadline.${t.id}`, render(t.action, `deliberation.${x.id}.deadline.${t.id}`));
       return {id: t.id, date: t.date, rich: {display: dayMonth(t.date), spans: [{start: 0, end: dayMonth(t.date).length, kind: "deadline" as const, id: `${x.id}.${t.id}`, unit: null}]}, action};
     });
     const text = shown(`deliberation.${x.id}.text`, deliberationText(ask, deadlines.map((t) => ({action: t.action, display: t.rich}))));
@@ -378,12 +495,12 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   const ordered = orderBoardPages(d.pages.filter((p) => !removed.pages.has(p.id)), d.topics);
   const gaps: {item: string; reason: string}[] = [];
   const page = (p: BoardPage, placement: "main" | "appendix") => {
-    const title = shown(`page.${p.id}.title`, render(p.title));
-    const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l)));
+    const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
+    const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));
     if (p.role === "decisions") for (const x of deliberations) lines.push(shown(`page.${p.id}.decision.${x.id}`, x.line));
     const withoutRecommendation = removed.recommendations.has(p.id);
-    const recommendation = p.recommendation !== null && !withoutRecommendation ? shown(`page.${p.id}.recommendation`, render(p.recommendation)) : null;
-    const options = withoutRecommendation ? p.options.filter((o) => !drops(o)).map((o, j) => shown(`page.${p.id}.option.${j}`, render(o))) : [];
+    const recommendation = p.recommendation !== null && !withoutRecommendation ? shown(`page.${p.id}.recommendation`, render(p.recommendation, `page.${p.id}.recommendation`)) : null;
+    const options = withoutRecommendation ? p.options.filter((o) => !drops(o)).map((o, j) => shown(`page.${p.id}.option.${j}`, render(o, `page.${p.id}.option.${j}`))) : [];
     if (withoutRecommendation && !options.length) gaps.push({item: `page.${p.id}`, reason: "recommendation_removed_without_options"});
     const parts = [title, ...lines, ...recommendation ? [recommendation] : [], ...options];
     const figureIds = [...new Set(parts.flatMap((x) => ids(x, ["figure", "text_figure"])))], pendingFigureIds = [...new Set(parts.flatMap((x) => ids(x, ["pending"])))];
@@ -400,11 +517,11 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   if (pages[0]?.role !== "decisions") throw new Error("board_capital_material_without_decisions");
   const asks: (string | BoardRich)[] = [];
   deliberations.forEach((x, i) => asks.push(i === 0 ? "" : i === deliberations.length - 1 ? "; e " : "; ", "(", ordinal(x.number), ") ", x.text));
-  const summary = shown("summary", joinBoardRich([render(d.summary.opening), " Pedimos ao conselho: ", ...asks, ". ", render(d.summary.closing)]));
+  const summary = shown("summary", joinBoardRich([render(d.summary.opening, "summary.opening"), " Pedimos ao conselho: ", ...asks, ". ", render(d.summary.closing, "summary.closing")]));
   if (summary.display.length > LIMITS.summary) gaps.push({item: "summary", reason: "layout_exceeds_page"});
   for (const f of ids(summary, ["pending"])) gaps.push({item: `summary.figure.${f}`, reason: "figure_pending_reviewed_result"});
   const questions = d.questions.map((q) => {
-    const t = shown(`question.${q.id}.question`, render(q.question)), a = shown(`question.${q.id}.answer`, render(q.answer));
+    const t = shown(`question.${q.id}.question`, render(q.question, `question.${q.id}.question`)), a = shown(`question.${q.id}.answer`, render(q.answer, `question.${q.id}.answer`));
     return {id: q.id, question: t.display, answer: a.display, figureIds: [...new Set([...ids(t, ["figure", "text_figure"]), ...ids(a, ["figure", "text_figure"])])],
       pendingFigureIds: [...new Set([...ids(t, ["pending"]), ...ids(a, ["pending"])])]};
   });
@@ -416,12 +533,12 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
       figureIds: [...new Set(both.flatMap((r) => ids(r, ["figure", "text_figure"])))], pendingFigureIds: [...new Set(both.flatMap((r) => ids(r, ["pending"])))]};
   });
   for (const x of deliberationOut) for (const f of x.pendingFigureIds) gaps.push({item: `deliberation.${x.id}.figure.${f}`, reason: "figure_pending_reviewed_result"});
-  const appendix = d.appendix.map((a) => {const label = shown(`appendix.${a.id}`, render(a.label)); return {id: a.id, label: label.display, sourceIds: a.sourceIds, figureIds: ids(label, ["figure", "text_figure"])};});
+  const appendix = d.appendix.map((a) => {const label = shown(`appendix.${a.id}`, render(a.label, `appendix.${a.id}`)); return {id: a.id, label: label.display, sourceIds: a.sourceIds, figureIds: ids(label, ["figure", "text_figure"])};});
   const mainCount = pages.filter((p) => p.placement === "main").length;
   const capacity = d.agendaMinutes === null ? null : Math.floor(d.agendaMinutes / d.minutesPerPage);
   if (capacity !== null && mainCount > capacity) gaps.push({item: "pages", reason: "pages_exceed_agenda"});
   const body = {version, deliberations: deliberationOut, pages, summary: summary.display, summaryFigureIds: ids(summary, ["figure", "text_figure"]),
-    appendix, questions, verifiedNumbers,
+    appendix, questions, verifiedNumbers, bindings,
     agenda: {minutes: d.agendaMinutes, minutesPerPage: d.minutesPerPage, mainPages: mainCount, capacity, fits: capacity === null ? null : mainCount <= capacity}};
   return {material: {...body, fingerprint: fingerprintOf(body)}, gaps};
 }
@@ -449,7 +566,7 @@ export function boardMissingFacts(d: BoardDiscussion, figures: Map<string, Board
 /** The omission rule, applied request by request on the rendered material: a request is applied only when
  * the version it produces still shows every material fact; otherwise it is refused with one sentence and
  * the facts it would have removed are named. A recommendation may be withdrawn; a deadline never is. */
-export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>) {
+export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, sources: BoardSourceReading[] = []) {
   const removed = noRemoval();
   const economic = new Set(boardMaterialFacts(d, figures).figures);
   const decisions: BoardOmissionDecision[] = d.omissions.map((o) => {
@@ -457,7 +574,7 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
     const attempt = (apply: (r: Removed) => void, applied: string): BoardOmissionDecision => {
       const next = {recommendations: new Set(removed.recommendations), pages: new Set(removed.pages), figures: new Set(removed.figures)};
       apply(next);
-      const lost = boardMissingFacts(d, figures, renderVersion(d, figures, next, 2).material);
+      const lost = boardMissingFacts(d, figures, renderVersion(d, figures, next, 2, sources).material);
       if (lost.figures.length || lost.deadlines.length) return done("refused", sentences.materialKept, lost.figures);
       apply(removed);
       return done("applied", applied);
@@ -505,6 +622,30 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   for (const t of [...d.pages.flatMap((p) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options]),
     ...d.deliberations.flatMap((x) => [x.title, x.subject, ...x.recommendation ? [x.recommendation] : [], ...x.deadlines.map((t) => t.action)]),
     d.summary.opening, d.summary.closing, ...d.appendix.map((a) => a.label), ...d.questions.flatMap((q) => [q.question, q.answer])]) parseBoardTextRef(t);
+  // Each template is used only in the field it is written for; a deliberation's texts belong to it; an answer answers its question.
+  const use = (t: string, u: BoardTextUse, field: string) => {const r = parseBoardTextRef(t); if (!r.template.use.includes(u)) throw new Error(`board_capital_template_use_invalid:${field}:${r.templateId}`); return r;};
+  for (const p of d.pages) {
+    use(p.title, "page.title", `page.${p.id}.title`); p.lines.forEach((l, j) => use(l, "page.line", `page.${p.id}.line.${j}`));
+    if (p.recommendation) use(p.recommendation, "page.recommendation", `page.${p.id}.recommendation`); p.options.forEach((o, j) => use(o, "page.option", `page.${p.id}.option.${j}`));
+  }
+  for (const x of d.deliberations) {
+    const title = use(x.title, "delib.title", `deliberation.${x.id}.title`).templateId;
+    const own = (t: string, u: BoardTextUse, field: string) => {const r = use(t, u, field); if (r.template.of !== title) throw new Error(`board_capital_deliberation_text_mismatch:${field}:${r.templateId}`);};
+    own(x.subject, "delib.subject", `deliberation.${x.id}.subject`);
+    if (x.recommendation) own(x.recommendation, "delib.recommendation", `deliberation.${x.id}.recommendation`);
+    x.deadlines.forEach((t) => own(t.action, "delib.action", `deliberation.${x.id}.deadline.${t.id}`));
+    if (x.authorityBasis !== null) use(x.authorityBasis, "authority", `deliberation.${x.id}.authorityBasis`);
+  }
+  use(d.summary.opening, "summary.opening", "summary.opening"); use(d.summary.closing, "summary.closing", "summary.closing");
+  for (const a of d.appendix) use(a.label, "appendix", `appendix.${a.id}`);
+  for (const q of d.questions) {
+    const question = use(q.question, "question", `question.${q.id}.question`).templateId, answer = use(q.answer, "answer", `question.${q.id}.answer`);
+    if (answer.template.answers !== question) throw new Error(`board_capital_answer_mismatch:${q.id}:${answer.templateId}`);
+  }
+  for (const t of d.topics) use(t.label, "topic", `topic.${t.id}`);
+  for (const x of d.indicative) use(x.reason, "note", `indicative.${x.figureId}`);
+  for (const f of d.figures) if (f.kind === "pending") use(f.reason, "note", `figure.${f.id}`);
+  for (const o of d.omissions) use(o.requestedBy, "requester", `omission.${o.id}`);
   // Texts shown without any reading: topics, notes, requesters and authority bases have no slot.
   for (const t of [...d.topics.map((x) => x.label), ...d.indicative.map((x) => x.reason), ...d.omissions.map((x) => x.requestedBy),
     ...d.deliberations.flatMap((x) => x.authorityBasis === null ? [] : [x.authorityBasis]),
@@ -512,7 +653,7 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   if (!shown) return;
   const economic = new Set([...shown].filter(([, f]) => "pending" in f || boardEconomicUnits.includes(f.unit)).map(([id]) => id));
   const hasEconomic = (t: string[]) => t.flatMap(boardRefReadingIds).some((x) => economic.has(x));
-  const hasDeadline = (t: string) => {const r = parseBoardTextRef(t); return Object.entries(r.template.slots).some(([, type]) => type === "deadline");};
+  const hasDeadline = (t: string) => {const r = parseBoardTextRef(t); return Object.entries(r.template.slots).some(([, spec]) => spec.type === "deadline");};
   for (const p of d.pages) {
     if (p.role === "decisions") continue;
     if (p.role === "next_steps") {if (![p.title, ...p.lines].some(hasDeadline)) throw new Error(`board_capital_page_without_number:${p.id}`); continue;}
@@ -531,7 +672,7 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     scale: BoardFieldSpec["scale"]; period: BoardFieldSpec["period"]; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
   const figures = new Map<string, BoardFigureDisplay>();
   for (const f of d.figures) {
-    if (f.kind === "pending") {figures.set(f.id, {pending: true}); continue;}
+    if (f.kind === "pending") {figures.set(f.id, {pending: true, methodId: f.requiredMethodId}); continue;}
     const s = byId.get(f.sourceId);
     if (!s) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     const spec = boardFieldOf(s.methodId, f.path);
@@ -540,11 +681,13 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     if (boardEconomicUnits.includes(spec.kind) && f.stated === null) throw new Error(`board_capital_figure_without_statement:${f.id}`);
     const raw = readBoardSourcePath(s.packet, f.path);
     if (spec.kind === "label" && (typeof raw !== "string" || /^\s*[-\u2212]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw))) throw new Error(`board_capital_text_reading_not_a_label:${f.id}`);
+    // A label from the source, even produced by the method itself, is shown only when it is a proper name.
+    if (spec.kind === "label") {const issue = boardLabelIssue(raw as string); if (issue) throw new Error(`board_capital_label_not_a_name:${f.id}:${issue}`);}
     const currency = (s.packet as {currency?: unknown}).currency;
     const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "");
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
-    figures.set(f.id, {display: check.display, unit: spec.kind});
+    figures.set(f.id, {display: check.display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: f.path, value: check.value}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
       scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display: check.display, matches: true as const});
   }
@@ -553,8 +696,8 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
 
 /** The outline proposed before any material: the deliberations in urgency order, the narrative and
  * only the questions that change the material (template, time on the agenda, what the board has seen). */
-export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>) {
-  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate};
+export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, sources: BoardSourceReading[] = []) {
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources};
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
     const r = renderBoardRef(x.recommendation ?? x.subject, context);
     const deadlines = x.deadlines.map((t) => ({id: t.id, date: t.date, rich: {display: dayMonth(t.date), spans: [{start: 0, end: dayMonth(t.date).length, kind: "deadline" as const, id: `${x.id}.${t.id}`, unit: null}]},
@@ -575,23 +718,23 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   validateBoardDiscussion(d);
   const {figures, checks} = resolveBoardFigures(d, sources);
   validateBoardDiscussion(d, figures);
-  const outline = proposeBoardOutline(d, figures);
+  const outline = proposeBoardOutline(d, figures, sources);
   const daysBefore = Math.round((Date.parse(`${d.meetingDate}T00:00:00Z`) - Date.parse(`${d.askedOn}T00:00:00Z`)) / 86400000);
   if (daysBefore < 0) throw new Error("board_capital_meeting_before_request");
   const timeToAlign = daysBefore >= d.leadDays;
   const produce = d.outlineConfirmed || !timeToAlign;
-  const first = produce ? renderVersion(d, figures, noRemoval(), 1) : null;
+  const first = produce ? renderVersion(d, figures, noRemoval(), 1, sources) : null;
   // The composed material shows every material fact of the basis, or it is refused by name.
   if (first) {const lost = boardMissingFacts(d, figures, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}
-  const {decisions, removed} = produce ? decideBoardOmissions(d, figures) : {decisions: [], removed: noRemoval()};
+  const {decisions, removed} = produce ? decideBoardOmissions(d, figures, sources) : {decisions: [], removed: noRemoval()};
   const changed = removed.recommendations.size + removed.pages.size + removed.figures.size > 0;
-  const second = produce && changed ? renderVersion(d, figures, removed, 2) : null;
+  const second = produce && changed ? renderVersion(d, figures, removed, 2, sources) : null;
   // Checked again on the version that will be read: no transformation may leave a material fact out.
   if (second) {const lost = boardMissingFacts(d, figures, second.material); if (lost.figures.length || lost.deadlines.length) throw new Error("board_capital_material_fact_omitted");}
   const current = second ?? first;
   const used = new Set(current ? [...current.material.pages.flatMap((p) => p.figureIds), ...current.material.questions.flatMap((q) => q.figureIds),
     ...current.material.deliberations.flatMap((x) => x.figureIds), ...current.material.summaryFigureIds] : []);
-  const shownText = (ref: string) => renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate}).display;
+  const shownText = (ref: string) => renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources}).display;
   const pending = {
     indicative: d.indicative.filter((x) => used.has(x.figureId)).map((x) => ({figureId: x.figureId, reason: shownText(x.reason)})),
     sources: sources.filter((s) => s.status !== "prepared_for_human_review").map((s) => ({sourceId: s.id, methodId: s.methodId, status: s.status, reasons: [...new Set(s.gaps.map((g) => g.reason))]})),

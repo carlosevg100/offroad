@@ -76,10 +76,24 @@ function buildSources() {
   ] as const;
 }
 let cached: ReturnType<typeof buildSources> | null = null;
+let replaced: Record<string, Record<string, unknown>> = {};
 /** The reviewed results, computed once per process and handed out as copies. */
 export function auroraBoardSources() {
   cached ??= buildSources();
-  return cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(s.packet) as unknown as Record<string, unknown>}));
+  return cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(replaced[s.id] ?? s.packet) as unknown as Record<string, unknown>}));
+}
+/** Runs a case with one reviewed result replaced by another execution of its method; the basis names the new one. */
+export function withBoardSource<T>(id: string, packet: Record<string, unknown>, run: () => T): T {
+  replaced = {...replaced, [id]: packet};
+  try {return run();} finally {const {[id]: _gone, ...rest} = replaced; replaced = rest;}
+}
+/** The debt table executed by its own method with the largest creditor adopted under another name. */
+export function debtTableWithCreditor(name: string) {
+  const b = auroraDebtTableBasis();
+  const entry = b.entries.find((e) => (e.value as {value?: unknown}).value === "Debenturistas");
+  if (!entry) throw new Error("creditor entry not found");
+  entry.value = {type: "text", value: name};
+  return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
 }
 
 /** [source, path, decimals or date format, stated]; the unit, scale and periodicity come from the field registry. */

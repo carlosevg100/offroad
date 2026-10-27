@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardReadings, auroraBoardSources, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -82,9 +82,9 @@ function goldCases(): Case[] {
     reuse("outline-in-the-same-urgency-order", p1, t1, ["linha", "safra", "vencimentos", "politica"], (p) => p.readings!.deliberations.map((d) => d.id)),
     reuse("deliberations-with-authority-and-the-supposed-authority-declared", p2, t2, {authority: ["board", "board", "board", "board"], pending: ["linha", "vencimentos", "politica", "safra"]},
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
-    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, curta e concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em 21 de dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura da debênture deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
+    reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "Sem ação, o caixa fica abaixo do mínimo em 21 de dezembro e chega a R$ -79 milhões no fim de 2027", "A escritura da debênture deixa só R$ 3 milhões de exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano contra custo de capital de 15% ao ano e disputa o caixa mais apertado", "A safra pode ser financiada com R$ 23,5 milhões dos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "A safra pode ser financiada com R$ 23,5 milhões dos programas dos clientes, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
     reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação mudaria com demanda abaixo de R$ 74,44 milhões, trigo mais caro ou redes pagando mais tarde", "Próximos passos e datas"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
@@ -173,11 +173,6 @@ function goldCases(): Case[] {
       line.options = line.options.slice(0, 2);
     }), {outcome: "refused", kept: ["npv-defer", "irr-defer"], recommendationKept: true},
       (p) => ({outcome: p.readings!.omissions[0]!.outcome, kept: p.readings!.omissions[0]!.keptFigureIds, recommendationKept: pageOf(p, "linha").recommendation !== null})),
-    ...(["peak-date", "dez27-date"] as const).map((first, k) => observe(`refuses-hidden-subject-omissions-order-${k + 1}`, boardPacketInput(2, (c) => {
-      c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";
-      c.omissions = [first, first === "peak-date" ? "dez27-date" : "peak-date"].map((id, i) => ({id: `pedido-${i}`, target: "figure" as const, targetId: id, requestedBy: "requester.chair"}));
-    }), {outcomes: ["refused", "refused"], shown: true},
-      (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), shown: ["Payback de cerca de 6 anos", "R$ -21,7 milhões", "R$ -6,4 milhões"].every((n) => JSON.stringify(current(p)).includes(n))}))),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
   ];
@@ -270,14 +265,16 @@ function adversarialCases(): Case[] {
       const canonical = JSON.stringify(e); i.analysis.discussion.envelope = {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")};
     }), "Invalid option"],
     ["extra-result-beside-the-named-ones", () => boardPacketInput(2, undefined, (i) => {i.analysis.sources.push({id: "extra", packet: i.analysis.sources[0]!.packet});}), "board_capital_source_not_named"],
-    ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "delib.policy";}), "board_capital_title_without_number:escritura"],
-    ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[11]!.lines = ["delib.action.join_programs"];}), "board_capital_page_without_number:passos"],
+    ["title-without-an-economic-number", () => boardPacketInput(2, (c) => {c.pages[3]!.title = "next_steps.title";}), "board_capital_title_without_number:escritura"],
+    ["next-steps-without-a-deadline", () => boardPacketInput(2, (c) => {c.pages[11]!.lines = ["topic.project_strategic_reason"];}), "board_capital_page_without_number:passos"],
     ["false-number-in-a-deliberation-title", () => boardPacketInput(2, (c) => {c.deliberations[0]!.title = "Linha de embalagem com retorno de 16,1%";}), "must match pattern"],
     ["false-number-in-an-appendix-label", () => boardPacketInput(2, (c) => {c.appendix[0]!.label = "Tabela de dívida de R$ 130,1 milhões";}), "must match pattern"],
     ["false-number-in-an-option-not-yet-shown", () => boardPacketInput(2, (c) => {c.pages[4]!.options[1] = "Seguir em etapas: VPL de R$ 0,9 milhão.";}), "must match pattern"],
     ["paraphrase-that-drops-a-material-fact", () => boardPacketInput(2, (c) => {c.pages[4]!.lines[1] = "topic.project_value|retorno=irr|custo=wacc|vpl=npv";}), "board_capital_material_fact_not_shown:payback"],
     ["percent-sign-written-after-a-rate", () => boardPacketInput(2, (c) => {c.pages[5]!.lines[0] = "Programas a CDI mais {spread-b}% a {spread-a}, em condições indicativas.";}), "must match pattern"],
-    ["answer-without-an-economic-number", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "q.roll_bank";}), "board_capital_answer_without_number:estrategica"],
+    ["question-text-used-as-an-answer", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "q.roll_bank";}), "board_capital_template_use_invalid:question.estrategica.answer"],
+    // Review r7: every slot is a concept, every deadline an action, every fixed assertion a condition, every source label a name.
+    ...boardConceptAttempts(boardPacketInput),
     ["tampered-envelope", () => boardPacketInput(2, undefined, (i) => {i.analysis.discussion.envelope = {...i.analysis.discussion.envelope, canonical: i.analysis.discussion.envelope.canonical.replace("2026-10-02", "2026-10-09")};}), "adoption_basis_integrity_mismatch"],
     ["free-material-in-request", () => ({...boardPacketInput(2), material: {pages: []}}), "Unrecognized key"],
     ["fabricated-grant-in-result", forge("grantsExecution"), "grantsExecution"],
@@ -296,6 +293,37 @@ function adversarialCases(): Case[] {
     }
     return {id, expectation: "rejected by expected boundary", observed, inputFingerprint: fingerprint(input ?? null), outputFingerprint: fingerprint({observed}), passed};
   });
+}
+/** The evasions of review r7, by meaning: each binds a valid reading of the right dimension to the wrong concept, a
+ * valid deadline to the wrong action, a text to the wrong field or deliberation, or a label produced by the source
+ * method that is not a name. Shared by the recorded runs (sealed basis) and the property tests (full path). */
+export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData) => void) => unknown): [string, () => unknown, string][] {
+  const row = (name: string, id: string) => `alternatives.row.${name}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-2028|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`;
+  const label = (name: string) => () => withBoardSource("tabela-divida", debtTableWithCreditor(name), () => build(2, () => undefined));
+  return [
+    ["return-and-cost-of-capital-swapped", () => build(2, (c) => {c.pages[4]!.title = "topic.project_return|retorno=wacc|custo=irr";}), "board_capital_slot_concept_mismatch:topic.project_return:retorno"],
+    ["debt-total-bound-to-the-free-basket", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=basket-free|ano=year-2027";}), "board_capital_slot_concept_mismatch:situation.debt_total:total"],
+    ["program-cost-bound-to-debt-shares", () => build(2, (c) => {c.pages[5]!.lines.push("topic.crop_program_cost|taxa_b=share-12m|taxa_a=largest-share");}), "board_capital_slot_concept_mismatch:topic.crop_program_cost:taxa_b"],
+    ["positive-npv-under-a-negative-claim", () => build(2, (c) => {c.pages[4]!.lines[2] = "topic.project_sensitivities|vpl_economia=npv|vpl_capex=npv-capex|vpl_partida=npv-slow";}),
+      "board_capital_slot_concept_mismatch:topic.project_sensitivities:vpl_economia"],
+    ["path-row-reading-another-path", () => build(2, (c) => {c.pages[6]!.lines[3] = row("keep_and_roll", "sem-linha-debenture");}), "board_capital_slot_concept_mismatch:alternatives.row.keep_and_roll:caixa"],
+    ["ebitda-of-another-year", () => build(2, (c) => {c.pages[10]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat";}),
+      "board_capital_slot_concept_mismatch:what_changes.wheat:ebitda:variable_y"],
+    ["concentration-year-that-is-not-the-largest", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2028";}), "board_capital_template_condition_failed:situation.debt_total"],
+    ["adverse-leverage-dated-in-another-year", () => build(2, (c) => {c.pages[8]!.title = "risk.leverage|politica=policy-limit|adverso=lev-adv27|ano=year-2026";}), "board_capital_template_condition_failed:risk.leverage"],
+    ["notice-dated-with-the-route-deadline", () => build(2, (c) => {c.pages[11]!.lines[0] = "next_steps.notice|prazo=deadline:vencimentos.rota";}), "board_capital_deadline_action_mismatch:next_steps.notice:prazo:vencimentos.rota"],
+    ["fallback-dated-with-the-sounding-deadline", () => build(2, (c) => {c.pages[7]!.lines[2] = "recommendation.alternative|prazo=deadline:vencimentos.sondagem";}),
+      "board_capital_deadline_action_mismatch:recommendation.alternative"],
+    ["action-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.deadlines[0]!.action = "delib.action.decide_route";}), "board_capital_deliberation_text_mismatch:deliberation.linha.deadline.aviso"],
+    ["subject-of-another-deliberation", () => build(2, (c) => {c.deliberations[0]!.subject = "delib.crop.subject|ano=year-2026";}), "board_capital_deliberation_text_mismatch:deliberation.linha.subject"],
+    ["page-line-used-as-a-deliberation-subject", () => build(2, (c) => {c.deliberations[0]!.subject = "topic.project_payback|payback=payback|pico=peak-need|data=peak-date";}),
+      "board_capital_template_use_invalid:deliberation.linha.subject"],
+    ["answer-to-another-question", () => build(2, (c) => {c.questions[0]!.answer = "a.peer|total=gap-bps|data=date-bps";}), "board_capital_answer_mismatch:bradesco"],
+    ["label-with-a-claim-produced-by-the-source", label("Debenturistas; dívida total de R$ 999 milhões"), "board_capital_label_not_a_name:largest-creditor"],
+    ["label-with-fullwidth-digits-produced-by-the-source", label("Bradesco \uff11\uff16"), "board_capital_label_not_a_name:largest-creditor"],
+    ["label-in-prose-produced-by-the-source", label("retorno de menos dezasseis por minuto"), "board_capital_label_not_a_name:largest-creditor"],
+    ["label-with-an-economic-word-produced-by-the-source", label("Caixa Total"), "board_capital_label_not_a_name:largest-creditor"],
+  ];
 }
 /** Changes one adopted reading inside the sealed basis and seals it again. */
 function alterReading(figureId: string, change: (reading: string[]) => void) {

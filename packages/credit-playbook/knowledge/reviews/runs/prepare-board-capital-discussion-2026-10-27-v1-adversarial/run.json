@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T14:24:00.267Z",
-    "finishedAt": "2026-10-27T14:24:11.654Z"
+    "startedAt": "2026-10-27T14:52:16.689Z",
+    "finishedAt": "2026-10-27T14:52:28.766Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -417,7 +417,7 @@
       "id": "title-without-an-economic-number",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "61fc934166499de617e09ffebf2a6d6eeb9ef945feebdab35dc0b2cca8926483",
+      "inputFingerprint": "51a72dac2026ed70464316ea38df796909c6f280cefe819670feb0b6638c14f5",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -425,7 +425,7 @@
       "id": "next-steps-without-a-deadline",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a5bdae3de756da93fdc4903e3f84637a2de16bc3cc4d08b4a0dffca71512931e",
+      "inputFingerprint": "fb9a0918268c489656c9aa15db82c26b1e1e114595ebe22d1d6c7bbaa5b7b936",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -470,10 +470,154 @@
       "passed": true
     },
     {
-      "id": "answer-without-an-economic-number",
+      "id": "question-text-used-as-an-answer",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
       "inputFingerprint": "bfcb81d436a19545d8f5520350954666fa334bdcf6eb63ec646a7706db3edce8",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "return-and-cost-of-capital-swapped",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "00d5530a28fc1b410a33fb715b9095831c3c1241fc7a05a7aba458cf95740097",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "debt-total-bound-to-the-free-basket",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b3b742005e35cca8e0811a0d74307b16968c2aca5d3861fe8f8a97cc319a4039",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "program-cost-bound-to-debt-shares",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "62ed5f7d505bea3ecd3f41ac87e952e676835f490c65ed3f649965167d2aeb13",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "positive-npv-under-a-negative-claim",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9752467138225b629da5df6480f785db8a2bfec98a8b371c8e191ccd455f989b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "path-row-reading-another-path",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "1c494aca04dc8320c34708c580edd42ebba157efa6c2acd78859569832cbae20",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "ebitda-of-another-year",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "070c044f14c489e59fa28b316edbc4a214525b60999b412d45dfc8b1e496774d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "concentration-year-that-is-not-the-largest",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "bef4a850a17d156f971ddd87133eb26f2ab85a5d26d4703df363972eeccf94cb",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "adverse-leverage-dated-in-another-year",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8875f5f538f5951196ffc3bd458776b9901b19610a443b128411b41d1212284e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "notice-dated-with-the-route-deadline",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "99cd410d69095994c5f69e4d90f2bc49ac5d355c132e6229e3185dff027cc228",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fallback-dated-with-the-sounding-deadline",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7832d1058cc3386e16af75c0ce00ed3d2444a23440a8be27ec775cfcb22ff9a6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "action-of-another-deliberation",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "63e54761b4cf677c07cbd783199928a0fd078f123b6e68a9017a64b6c41ea97a",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "subject-of-another-deliberation",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b5351a4da431e6d9b727d6de61b12f3ae25d42afdba092b896ee41743597b1a9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "page-line-used-as-a-deliberation-subject",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b56b4fa28ec2f2f5ba4504eea294b6ef6a2bb515049c184501cbc701e6a602c7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "answer-to-another-question",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c16f442760423cfca31490c9db9fe22657980fd83cf08aefc166226afcfa3682",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "label-with-a-claim-produced-by-the-source",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "94765f0a476c41b02ee5f9c0b2733f660cef2aaa90c97cd09f8af444c383e10d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "label-with-fullwidth-digits-produced-by-the-source",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4d54669daa06f82b561f5f5b6c0969d411e266437e1cf65227d1e87ae305f18c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "label-in-prose-produced-by-the-source",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "fdbf4e5ac3a210eee20cb2941a7f8431a3838e4590d55340ed42b06099d6df29",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "label-with-an-economic-word-produced-by-the-source",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "fb3476547fb254d09b3d27035953197d86dbc0341af81e1208973cd69db656aa",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -519,6 +663,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "f36f97e49ceeb10abc14ff6123f27418c23a6be4a7b9ddef9deb27d11491e007",
+  "evidenceFingerprint": "23033b3846ef99b42f358f3c4d8507327f8c49e72847d7f05997e8c6ccd4bb0a",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

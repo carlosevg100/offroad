@@ -18,6 +18,8 @@ export const boardMaterialSchema = z.strictObject({version: z.number().int().min
   questions: z.array(z.strictObject({id: key, question: text, answer: text, figureIds: ids, pendingFigureIds: ids})).max(24),
   /** Numbers of the final text verified against their markers (render, then verify). */
   verifiedNumbers: z.number().int().min(0),
+  /** Which slot of which library template each displayed field binds to which reading or deadline (concept checked). */
+  bindings: z.array(z.strictObject({field: text, templateId: key, slot: key, figureId: key.nullable(), deadlineId: key.nullable()})).max(1200),
   agenda: z.strictObject({minutes: z.number().int().nullable(), minutesPerPage: z.number().int(), mainPages: z.number().int(), capacity: z.number().int().nullable(), fits: z.boolean().nullable()}),
   fingerprint: hash});
 export type BoardMaterial = z.infer<typeof boardMaterialSchema>;
