@@ -110,8 +110,11 @@ function goldCases(): Case[] {
         uses: [...new Set(inv(p).gaps.flatMap((g) => g.purposes).filter((x) => x !== "inventario"))].sort()})),
     observe("variation-several-companies", folderPacketInput({files: readings((r) => r.push({...structuredClone(file(r, "f03")), fileId: "f31", fileName: "balanco serra.pdf", sha256: "a".repeat(64),
       description: "Demonstrações financeiras auditadas", entity: {primaryId: "pastificio-serra", label: "Pastifício Serra Ltda."}}))}),
-      {partitioned: true, partitions: ["aurora", "pastificio-serra", "nao-identificada"], question: ["Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?", ["f31"]]},
-      (p) => ({partitioned: inv(p).partitionByEntity, partitions: [...new Set(inv(p).groups.map((g) => g.partition))], question: [p.readings!.questions[0], inv(p).questions[0]!.fileIds]})),
+      // Separation by entity: parent and subsidiary in their own partitions, the economic group kept as an attribute.
+      {partitioned: true, partitions: ["aurora", "aurora-log", "pastificio-serra", "nao-identificada"], groups: [["f01", "aurora", "aurora"], ["f04", "aurora-log", "aurora"], ["f31", "pastificio-serra", null]],
+        question: ["Há documentos de uma empresa que não está no cadastro da companhia. Ela entra no perímetro deste trabalho?", ["f31"]]},
+      (p) => ({partitioned: inv(p).partitionByEntity, partitions: [...new Set(inv(p).groups.map((g) => g.partition))],
+        groups: ["f01", "f04", "f31"].map((id) => {const r = inv(p).rows.find((x) => x.fileId === id)!; return [id, r.partition, r.economicGroup];}), question: [p.readings!.questions[0], inv(p).questions[0]!.fileIds]})),
     // Review r1 cases.
     observe("unresolved-month-blocks-the-semester-sum", folderPacketInput({turnTwo: true, files: readings((r) => {file(r, "f09").version.ordinal = null; file(r, "f10").version.ordinal = null;})}),
       {status: "not_run", reason: "conflict:unresolved_versions:2026-05", recomposed: null},
@@ -280,6 +283,17 @@ function goldCases(): Case[] {
       {copy: "complete", policy: true}, (p) => ({copy: inv(p).rows.find((r) => r.fileId === "f31")!.situation.read, policy: inv(p).findings.some((f) => f.id === "f24-politica" && f.statement.includes("covenant vigente"))})),
     observe("reading-date-makes-the-amendment-current", folderPacketInput({files: readings((r) => {file(r, "f19").version.lastUpdated = "2026-09-02";}), turnTwo: true}),
       {text: "known", resolved: true}, (p) => ({text: inv(p).effectiveTexts.find((t) => t.instrumentRef === "deb-aurora-1")!.knowledge, resolved: inv(p).update!.findingsResolved.includes("f19-future")})),
+    // Review r13 cases: equivalence among the surviving candidates, exact amounts.
+    observe("eliminated-amendment-does-not-split-identical-later-ones", folderPacketInput({files: readings((r) => {for (const id of ["f31", "f32"]) r.push({...structuredClone(file(r, "f19")), fileId: id, fileName: `${id}.pdf`,
+      sha256: createHash("sha256").update(id).digest("hex"), period: {label: "jun/2024", start: "2024-06-01", end: "2024-06-30"}, version: {label: "registrado", status: "registered", ordinal: 2, lastUpdated: null},
+      referenceDate: {kind: "update", date: "2024-06-30", origin: "stated_month"}, instrument: {ref: `deb-aurora-1-${id}`, label: "aditamento", amends: "deb-aurora-1"},
+      clauses: [{type: "financial_covenant", id: "covenant", at: {page: 2, section: null}, statement: "Dívida líquida / EBITDA de no máximo 3,5x.", metric: "net_debt_to_ebitda", maxRatio: "3.5"}]});})}),
+      {knowledge: "known", covenant: "3.5"}, (p) => {const t = inv(p).effectiveTexts.find((x) => x.instrumentRef === "deb-aurora-1")!;
+        return {knowledge: t.knowledge, covenant: (() => {const c = t.clauses.find((x) => x.type === "financial_covenant"); return c ? "3.5" : null;})()};}),
+    observe("small-exception-and-close-totals-are-shown-exactly", folderPacketInput({files: readings((r) => {const g = file(r, "f19").clauses.find((c) => c.type === "negative_pledge")!;
+      Object.assign(g, {statement: "Exceção de R$ 25.000 em valor agregado de garantias.", exceptionAmount: "25000", scale: "1"}); const t = file(r, "f16").debtTable!; t.reportedTotal = "130.04";})}),
+      {exception: true, total: true}, (p) => ({exception: inv(p).findings.find((f) => f.id === "f19-amendment")!.statement.includes("R$ 25 mil"),
+        total: inv(p).findings.find((f) => f.id === "f16-debt-total")!.statement.includes("R$ 130,04 milhões")})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];

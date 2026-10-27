@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentStatuses, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -821,5 +822,82 @@ describe("property: continuity across turns; the reading date moving is a transi
     expect(p2.identityChecks).toEqual(fresh.identityChecks);
     for (const f of p2.findings.filter((x) => p2.update!.findingsResolved.includes(x.id))) expect(f.resolvedBy.length).toBeGreaterThan(0);
     expect(p2.update!.findingsResolved.length).toBeGreaterThan(0);
+  });
+});
+
+// Review r13: equivalence among survivors, exact amounts, informed facts across turns, separation by entity.
+describe("property: an amendment the precedence eliminated never splits identical later ones", () => {
+  const later = (id: string, ratio: string) => ({...structuredClone(file(auroraFolderReadings(), "f19")), fileId: id, fileName: `${id}.pdf`, sha256: hex(id),
+    period: {label: "jun/2024", start: "2024-06-01", end: "2024-06-30"}, version: {label: "registrado", status: "registered" as const, ordinal: 2, lastUpdated: null},
+    referenceDate: {kind: "update" as const, date: "2024-06-30", origin: "stated_month" as const}, instrument: {ref: `deb-aurora-1-${id}`, label: "aditamento", amends: "deb-aurora-1"},
+    clauses: [covenantClause(ratio, "covenant", 2)]});
+  // The covenant in force, read back from the clause the text in force names.
+  const covenantOf = (o: DocumentFolderInventory, files: DocumentReading[]) => {const t = o.effectiveTexts.find((x) => x.instrumentRef === "deb-aurora-1")!;
+    const c = t.clauses.find((x) => x.type === "financial_covenant"), clause = c && files.find((f) => f.fileId === c.fileId)!.clauses.find((x) => x.id === c.clauseId);
+    return [t.knowledge, clause && clause.type === "financial_covenant" ? times(clause.maxRatio) : null];};
+  const go = (files: DocumentReading[]) => covenantOf(run(files), files);
+  for (const ratio of ["3.5", "2.5", "3"]) {
+    it(`three amendments: the old one and two identical later ones at ${ratio}`, () => {
+      expect(go([...readings(), later("f31", ratio), later("f32", ratio)])).toEqual(["known", times(ratio)]);
+    });
+    it(`control without the old one at ${ratio}`, () => {
+      expect(go([...readings((r) => r.splice(r.indexOf(file(r, "f19")), 1)), later("f31", ratio), later("f32", ratio)])).toEqual(["known", times(ratio)]);
+    });
+    it(`control with the old one and a single later one at ${ratio}`, () => {
+      expect(go([...readings(), later("f31", ratio)])).toEqual(["known", times(ratio)]);
+    });
+  }
+  it("two later ones that differ are still a conflict", () => {
+    expect(go([...readings(), later("f31", "3.5"), later("f32", "4")])[0]).toBe("conflict");
+  });
+});
+describe("property: the method's text keeps every amount exact", () => {
+  for (let n = 1; n <= 60; n++) it(`amounts ${n}`, () => {
+    const r = random(87000 + n), scale = pick(r, ["1", "1000", "1000000"] as const);
+    const digits = () => `${Math.floor(r() * 10 ** pick(r, [1, 3, 6, 9]))}${r() < 0.5 ? `.${Math.floor(r() * 10 ** pick(r, [1, 2, 4, 8]))}` : ""}`;
+    const a = digits(), b = r() < 0.3 ? a : digits();
+    const fa = formatInventoryAmount(a, scale), fb = formatInventoryAmount(b, scale);
+    const va = new Decimal(a).mul(scale), vb = new Decimal(b).mul(scale);
+    // Different values read differently; a value that is not zero never reads as zero.
+    expect(fa === fb).toBe(va.eq(vb));
+    if (!va.isZero()) expect(fa).not.toMatch(/^R\$ 0( |$)/);
+    // The text reads back to the exact value.
+    const [, num, unit] = fa.match(/^R\$ ([\d,]+)(?: (milhão|milhões|mil))?$/)!;
+    expect(new Decimal(num!.replace(",", ".")).mul(unit === "mil" ? 1000 : unit ? 1000000 : 1).eq(va)).toBe(true);
+  });
+  it("a small exception and close totals reach the findings exactly", () => {
+    const o = run(readings((r) => {Object.assign(file(r, "f19").clauses.find((c) => c.type === "negative_pledge")!, {statement: "Exceção de R$ 25.000 em valor agregado de garantias.", exceptionAmount: "25000", scale: "1"});
+      file(r, "f16").debtTable!.reportedTotal = "130.04";}));
+    expect(o.findings.find((f) => f.id === "f19-amendment")!.statement).toContain("R$ 25 mil");
+    expect(o.findings.find((f) => f.id === "f16-debt-total")!.statement).toContain("R$ 130,04 milhões");
+    expect(o.findings.find((f) => f.id === "f16-debt-total")!.statement).toContain("R$ 130 milhões");
+  });
+});
+describe("property: informed facts persist across turns without being sent again", () => {
+  for (const resend of [false, true]) it(`third turn, facts ${resend ? "sent again" : "not sent again"}`, () => {
+    const base = auroraFolderReadings(), p1 = run(base), two = [...base, ...auroraTurnTwoReadings()];
+    const p2 = run(two, {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: p1, fingerprint: inventoryFingerprint(p1)}});
+    const p3 = run(two, {asOf: "2026-09-03", informed: resend ? auroraTurnTwoInformed : [], prior: {inventory: p2, fingerprint: inventoryFingerprint(p2)}});
+    expect(p3.informed).toEqual(p2.informed);
+    expect(p3.questions).toEqual(p2.questions);
+    expect(p3.questions.find((q) => q.id === "circulacao-f02")).toMatchObject({status: "answered", answeredBy: "minuta-nao-circulou"});
+  });
+});
+describe("property: several companies are separated by entity; the economic group stays as an attribute", () => {
+  for (const extra of ["registered-other-group", "unregistered"] as const) it(extra, () => {
+    const o = run(readings((r) => r.push({...structuredClone(file(r, "f03")), fileId: "f31", fileName: "f31.pdf", sha256: hex(`other-${extra}`),
+      entity: {primaryId: extra === "unregistered" ? "pastificio-serra" : "outra-sa", label: "Outra companhia"}})),
+    extra === "registered-other-group" ? {entities: [...auroraKernelInput().entities, {id: "outra-sa", label: "Outra S.A.", groupId: "outra", groupLabel: "Outra", parentId: null, ownership: null}]} : {});
+    expect(o.partitionByEntity).toBe(true);
+    const row = (id: string) => o.rows.find((x) => x.fileId === id)!;
+    expect([row("f01").partition, row("f01").economicGroup]).toEqual(["aurora", "aurora"]);
+    expect([row("f04").partition, row("f04").economicGroup]).toEqual(["aurora-log", "aurora"]);
+    expect([row("f31").partition, row("f31").economicGroup]).toEqual(extra === "unregistered" ? ["pastificio-serra", null] : ["outra-sa", "outra"]);
+    for (const g of o.groups) for (const id of g.fileIds) expect(row(id).partition).toBe(g.partition);
+  });
+  it("one economic group is not partitioned, and keeps its group on every row", () => {
+    const o = run(auroraFolderReadings());
+    expect(o.partitionByEntity).toBe(false);
+    expect(o.rows.find((x) => x.fileId === "f04")!.economicGroup).toBe("aurora");
   });
 });

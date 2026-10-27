@@ -252,7 +252,7 @@ const situationSchema = z.strictObject({read: z.enum(["complete", "partial", "un
   sideBySideWith: z.array(key).max(L.files), inVault: key.nullable()});
 /** The descriptive fields of a row quote the file's own reading, anchored on the row's file. */
 const rowSchema = z.strictObject({fileId: key, fileName: z.string().min(1).max(L.fileName), sha256: hash, order: z.number().int().min(0),
-  partition: key.nullable(), group: z.enum(groupIds), groupLabel: text, kind: z.enum(documentKinds),
+  partition: key.nullable(), economicGroup: key.nullable(), group: z.enum(groupIds), groupLabel: text, kind: z.enum(documentKinds),
   description: text, entity: text, period: text, version: text, status: z.enum(documentStatuses).nullable(),
   situation: situationSchema, situationLabel: statement, findingIds: z.array(derivedId).max(L.findings),
   /** Presence is not confirmation: no document is ever declared validated. */
@@ -360,12 +360,17 @@ const months = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "jul
 const longDate = (d: string) => `${Number(d.slice(8, 10))} de ${months[Number(d.slice(5, 7)) - 1]} de ${d.slice(0, 4)}`;
 const monthName = (d: string) => `${months[Number(d.slice(5, 7)) - 1]} de ${d.slice(0, 4)}`;
 const comma = (v: Decimal) => v.toFixed().replace(".", ",");
-/** Amounts in the reading's own scale, shown in millions of reais. */
-function brl(value: string, s: string) {
-  const m = new Exact(value).mul(s).div(1000000);
-  const shown = m.isInteger() ? m.toFixed(0) : comma(m.toDecimalPlaces(1));
-  return `R$ ${shown} ${m.abs().lt(2) ? "milhão" : "milhões"}`;
+/** An amount in reais, shown exactly: in millions from a million up, in thousands from a thousand up, in reais below,
+ * with every decimal the value has. Nothing is rounded, so two different values never read the same and a value that
+ * is not zero never reads as zero. */
+export function formatInventoryAmount(value: string, s: string) {
+  const reais = new Exact(value).mul(s), abs = reais.abs();
+  const [v, unit] = abs.gte(1000000) ? [reais.div(1000000), (x: Decimal) => (x.abs().lt(2) ? "milhão" : "milhões")] as const
+    : abs.gte(1000) ? [reais.div(1000), () => "mil"] as const : [reais, () => ""] as const;
+  const shown = comma(new Exact(v.toFixed()));
+  return `R$ ${shown}${unit(v) ? ` ${unit(v)}` : ""}`;
 }
+const brl = formatInventoryAmount;
 const times = (r: string) => {const v = new Exact(r); return `${(v.isInteger() ? v.toFixed(1) : v.toFixed()).replace(".", ",")}x`;};
 const percent = (r: string) => `${comma(new Exact(r).mul(100))}%`;
 const scaleLabel: Record<string, string> = {"1": "R$", "1000": "R$ mil", "1000000": "R$ milhões"};
@@ -959,7 +964,9 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const rk = resolveFamily(setters, chainCriteria, (f) => f.period.start);
       const contenders = rk.winner ? [rk.winner] : rk.candidates;
       // With no winner, the text stands only if every amendment that sets this clause says the same.
-      const es = (rk.winner ? contenders : setters).map((f) => entriesOf(f).get(key)!);
+      // Equivalence only among the candidates the precedence leaves standing: an amendment the filter eliminated never
+      // makes identical later clauses a conflict.
+      const es = contenders.map((f) => entriesOf(f).get(key)!);
       const holder = es.every((e) => "one" in e) && es.every((e) => equivalent((e as {one: Held}).one.c, (es[0] as {one: Held}).one.c))
         ? [...contenders].sort((a, b) => byKey(a.fileId, b.fileId))[0]! : null;
       let unreadHolder = false;
@@ -1291,9 +1298,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     quoted: null, findingId: stale?.id ?? null, anchor: stale?.anchor ?? null, conditional: false});
 
   // Partition by entity first when the folder spans more than one group or an entity outside the registry.
-  const partitionOf = (f: DocumentReading) => f.entity.primaryId === null ? "nao-identificada" : registry.get(f.entity.primaryId)?.groupId ?? f.entity.primaryId;
+  // Separation by entity: each company in its own partition; the economic group stays as an attribute of the row.
+  const partitionOf = (f: DocumentReading) => f.entity.primaryId ?? "nao-identificada";
+  const groupOf = (f: DocumentReading) => f.entity.primaryId !== null ? registry.get(f.entity.primaryId)?.groupId ?? null : null;
   const unregistered = [...new Set(live.flatMap((f) => f.entity.primaryId !== null && !registry.has(f.entity.primaryId) ? [f.entity.primaryId] : []))];
-  const partitionByEntity = new Set(live.filter((f) => f.entity.primaryId !== null).map(partitionOf)).size > 1 || unregistered.length > 0;
+  // The folder is separated by entity when it spans more than one economic group or an entity outside the registry.
+  const partitionByEntity = new Set(live.filter((f) => f.entity.primaryId !== null).map((f) => groupOf(f) ?? f.entity.primaryId)).size > 1 || unregistered.length > 0;
 
   // Rows, in arrival order. A suspended hash is shown without its reading.
   const rows: Row[] = documents.map((own) => {
@@ -1306,11 +1316,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       ...sup ? [sup.reason === "audited_over_draft" ? "superada pela auditada" : sup.reason === "later_version" ? `superada pela v${byId.get(sup.fileId)!.version.ordinal}` : sup.reason === "higher_assurance" ? "superada pela versão de maior asseguração" : "superada"] : [],
       ...inVault ? ["já estava no cofre"] : []].join("; ");
     const entityOf = f.entity.primaryId ? registry.get(f.entity.primaryId) : undefined;
-    if (conflicted) return {fileId: own.fileId, fileName: own.fileName, sha256: own.sha256, order: order.get(own.fileId)!, partition: partitionByEntity ? "nao-identificada" : null,
+    if (conflicted) return {fileId: own.fileId, fileName: own.fileName, sha256: own.sha256, order: order.get(own.fileId)!, partition: partitionByEntity ? "nao-identificada" : null, economicGroup: null,
       group: "other" as const, groupLabel: groupLabel.other, kind: "unidentified" as const, description: "Leitura em conflito: refazer a leitura", entity: "não definida", period: "não definido",
       version: "não definida", status: null, situation: {read, unreadablePages: [], pagesFrom: [], duplicateOf: dup, supersededBy: null, sideBySideWith: [], inVault},
       situationLabel: label, findingIds: [], validated: false as const};
-    return {fileId: own.fileId, fileName: own.fileName, sha256: own.sha256, order: order.get(own.fileId)!, partition: partitionByEntity ? partitionOf(f) : null,
+    return {fileId: own.fileId, fileName: own.fileName, sha256: own.sha256, order: order.get(own.fileId)!, partition: partitionByEntity ? partitionOf(f) : null, economicGroup: groupOf(f),
       group: policy[f.kind].group, groupLabel: groupLabel[policy[f.kind].group], kind: f.kind,
       // Rule for a copy: it carries the reading of the document it repeats (same hash, same content). Its row names that
       // document and shows the economic group as entity, since the full reading is on the original's row. The name is shown, never read.
@@ -1394,6 +1404,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       need: g.need, item: g.item, why: g.why, quoted: g.quoted, purposes: p, findingId: g.findingId, conditional: g.conditional, status: "open" as const, resolvedBy: [] as string[]}));
   if (input.prior) for (const p of input.prior.inventory.gaps) {
     if (gaps.some((g) => g.id === p.id)) continue;
+    if (p.status === "resolved") {gaps.push(p); continue;}
     const arrivals = [...newFiles, ...substitutes.map((x) => x.fileId).filter((id) => !input.prior!.inventory.rows.some((r) => r.fileId === id))];
     const resolvedFinding = findings.find((x) => x.id === p.findingId && x.status === "resolved")?.resolvedBy ?? [];
     const by = resolvedFinding.length ? resolvedFinding : arrivals;
@@ -1401,8 +1412,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     gaps.push({...p, status: "resolved", resolvedBy: by});
   }
 
+  // Facts the person informed persist across turns from the prior inventory, with author and date; what is sent again
+  // under the same id is the same fact.
+  const informedAll = [...input.informed, ...(input.prior?.inventory.informed ?? []).filter((p) => !input.informed.some((i) => i.id === p.id))
+    .map(({origin: _origin, ...rest}) => rest)];
   // Questions only the person knows: whether a superseded draft went to a third party, and the perimeter.
-  const answered = new Map(input.informed.map((i) => [i.questionId, i.id]));
+  const answered = new Map(informedAll.map((i) => [i.questionId, i.id]));
   const outside = live.filter((f) => f.entity.primaryId !== null && unregistered.includes(f.entity.primaryId)).map((f) => f.fileId).sort(byKey);
   const candidates = [
     ...unregistered.length ? [{id: "perimetro", fileIds: outside, findingId: null,
@@ -1412,6 +1427,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       return {id: `circulacao-${f.fileId}`, fileIds: [f.fileId], findingId: x.id,
         text: `A minuta ${of(policy[f.kind].noun)} de ${periodText(f)} foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.`};}),
   ];
+  // What arrives now answers a question asked; what was informed before stays recorded as it was.
   for (const i of input.informed) if (!candidates.some((c) => c.id === i.questionId)) throw new Error("document_inventory_informed_without_question");
   const questions = candidates.slice(0, 2).map((c) => ({...c, status: answered.has(c.id) ? "answered" as const : "open" as const, answeredBy: answered.get(c.id) ?? null}));
 
@@ -1466,7 +1482,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     // Everything but the rows is ordered by content, so the arrival of the files never reorders what the folder says.
     rows, groups, families: families.sort((a, b) => byKey(a.id, b.id)), effectiveTexts: effectiveTexts.sort((a, b) => byKey(a.instrumentRef, b.instrumentRef)),
     findings, readingConflicts, decisionFindings, generalFindings, identityChecks: identityChecks.sort((a, b) => byKey(a.id, b.id)), gaps, questions,
-    informed: input.informed.map((i) => ({...i, origin: "informed" as const})), followUps,
+    informed: informedAll.map((i) => ({...i, origin: "informed" as const})), followUps,
     counts: {files: rows.length, duplicates: rows.filter((r) => r.situation.duplicateOf).length, incompleteReadings: rows.filter((r) => r.situation.read !== "complete").length,
       superseded: rows.filter((r) => r.situation.supersededBy).length, inVault: rows.filter((r) => r.situation.inVault).length,
       withFinding: rows.filter((r) => r.findingIds.length).length, pageSubstitutes: substitutes.length},

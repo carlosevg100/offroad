@@ -34,7 +34,8 @@ describe("recorded document folder inventory evaluations", () => {
       "recovered-page-read-against-another-page-leaves-the-row-partial",
       "recovered-table-and-note-join-the-document", "new-version-in-the-update-supersedes-the-prior-winner",
       "equivalent-copies-in-another-order-agree", "new-debt-position-passes-the-old-total-to-history", "same-local-id-on-document-and-copy-keeps-both",
-      "local-ids-alone-are-not-a-reading-conflict", "duplicate-of-the-ccb-reads-the-recovered-page", "reading-date-makes-the-amendment-current", "notice-deadline-followed-never-scheduled"]);
+      "local-ids-alone-are-not-a-reading-conflict", "duplicate-of-the-ccb-reads-the-recovered-page", "reading-date-makes-the-amendment-current",
+      "eliminated-amendment-does-not-split-identical-later-ones", "small-exception-and-close-totals-are-shown-exactly", "notice-deadline-followed-never-scheduled"]);
     expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(38);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });
