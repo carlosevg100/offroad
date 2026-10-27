@@ -40,7 +40,8 @@ describe("recorded document folder inventory evaluations", () => {
       "competing-originals-with-different-readings-have-no-winner", "policy-compared-only-within-its-entity", "registry-dated-after-the-reading-does-not-close-the-gap",
       "subsidiary-forecast-does-not-resolve-the-company-gap", "unused-limit-explains-only-part-of-the-difference",
       "individual-audited-does-not-supersede-consolidated-draft", "individual-forecast-does-not-close-consolidated-liquidity", "individual-month-blocks-the-consolidated-semester",
-      "registry-name-never-enters-the-method-voice", "revenue-not-confronted-across-perimeters", "revenue-not-confronted-across-perimeters-reverse", "revenue-confronted-within-the-perimeter", "notice-deadline-followed-never-scheduled"]);
+      "registry-name-never-enters-the-method-voice", "revenue-not-confronted-across-perimeters", "revenue-not-confronted-across-perimeters-reverse", "revenue-confronted-within-the-perimeter",
+      "double-counted-month-never-sums", "double-counted-month-never-agrees", "outdated-registry-does-not-resolve-the-gap", "current-registry-resolves-the-gap", "budget-revision-after-the-reading-is-not-compared", "notice-deadline-followed-never-scheduled"]);
     expect(records.get(documentFolderInventoryRunIds.adversarial)!.cases).toHaveLength(45);
     expect(records.get(documentFolderInventoryRunIds.consistency)!.cases).toHaveLength(6);
   });

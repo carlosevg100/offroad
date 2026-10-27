@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T16:06:11.368Z",
-    "finishedAt": "2026-10-27T16:06:11.368Z",
-    "commit": "7fbd45bd"
+    "startedAt": "2026-10-27T16:23:04.804Z",
+    "finishedAt": "2026-10-27T16:23:04.804Z",
+    "commit": "f73cc990"
   },
   "modelCalls": 0,
   "cases": [
@@ -655,6 +655,46 @@
       "passed": true
     },
     {
+      "id": "double-counted-month-never-sums",
+      "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:slot_unresolved:2026-01\"}",
+      "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:slot_unresolved:2026-01\"}",
+      "inputFingerprint": "5d4aca52911c1485096b36bcfa3e46122709eaa4458476abacca5589d71848b7",
+      "outputFingerprint": "483239dcbeff093393322589fccf462104108e896d42a851844ff8150c8de0ac",
+      "passed": true
+    },
+    {
+      "id": "double-counted-month-never-agrees",
+      "expectation": "{\"status\":\"not_run\",\"reason\":\"conflict:slot_unresolved:2026-01\"}",
+      "observed": "{\"status\":\"not_run\",\"reason\":\"conflict:slot_unresolved:2026-01\"}",
+      "inputFingerprint": "81c39ec1778264724c06245a138f083ca7c65ed80f84fa4f3651741c143dc670",
+      "outputFingerprint": "1b2144a078049f95d961046bb3639a2ae43595f89fdf65bfc1e0b9d875331755",
+      "passed": true
+    },
+    {
+      "id": "outdated-registry-does-not-resolve-the-gap",
+      "expectation": "\"open\"",
+      "observed": "\"open\"",
+      "inputFingerprint": "ab39381ff905fb28874d8e381c3bf01bc937dae8d7776b5b5960ee3fec874e51",
+      "outputFingerprint": "c9cb26646cfdb2ac671258a257a6b549d501e8cf9771e8b0b07980b90cdc2e93",
+      "passed": true
+    },
+    {
+      "id": "current-registry-resolves-the-gap",
+      "expectation": "\"resolved\"",
+      "observed": "\"resolved\"",
+      "inputFingerprint": "193cea246f573a82d39c53f0e44b6fa13fa7f488a53e92d874f5e7b7f64fd489",
+      "outputFingerprint": "24800c8d72598e2cb58ba502474dc1272e5f706d7f3407c04b1e919d3a9779fd",
+      "passed": true
+    },
+    {
+      "id": "budget-revision-after-the-reading-is-not-compared",
+      "expectation": "{\"compared\":false,\"later\":true,\"sideBySide\":[\"f13\",\"f14\"]}",
+      "observed": "{\"compared\":false,\"later\":true,\"sideBySide\":[\"f13\",\"f14\"]}",
+      "inputFingerprint": "0829aea0db8d79366177c9419e10eabb3645a7d779b4dd868f4a2aeb0b2f170b",
+      "outputFingerprint": "e6a7678ebd96237c9540aef95079c99c658a52c36ad553451a61acff380d5c98",
+      "passed": true
+    },
+    {
       "id": "notice-deadline-followed-never-scheduled",
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
@@ -664,6 +704,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "bc5ebf86041ba0e5d5bcf35efb910b014023814f054b0bd2558bd943f7a36294",
+  "evidenceFingerprint": "b5271c3cf694bb8c965c42b49b0d5080500f5c977422fc6aadb2041ae409311a",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

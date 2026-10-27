@@ -810,8 +810,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       const approved = members.filter((m) => m.version.status === "approved");
       for (const rev of members.filter((m) => m.version.status === "working_revision")) {
         const a = approved.length === 1 ? figure(approved[0]!, "ebitda") : null, b = figure(rev, "ebitda");
-        add({id: `${rev.fileId}-side-by-side`, code: "versions_side_by_side", anchor: rev.fileId, sources: [src(rev.fileId, b?.at), ...approved.map((x) => src(x.fileId, a?.at))],
-          statement: `${a && b ? `EBITDA de ${periodText(rev)} revisto para ${brl(b.value, b.scale)} contra ${brl(a.value, a.scale)} no aprovado. ` : ""}Preservar as duas: aprovado e revisão em trabalho.`});
+        // A version dated after this reading is not compared yet: both stay, and the sentence says why.
+        const later = future(rev) || approved.some((x) => future(x));
+        add({id: `${rev.fileId}-side-by-side`, code: "versions_side_by_side", anchor: rev.fileId, sources: [src(rev.fileId, later ? null : b?.at), ...approved.map((x) => src(x.fileId, later ? null : a?.at))],
+          knowledge: later ? "future" : "known",
+          statement: later ? "Preservar as duas: aprovado e revisão em trabalho. Uma das versões tem data posterior à desta leitura; a comparação fica para essa data."
+            : `${a && b ? `EBITDA de ${periodText(rev)} revisto para ${brl(b.value, b.scale)} contra ${brl(a.value, a.scale)} no aprovado. ` : ""}Preservar as duas: aprovado e revisão em trabalho.`});
       }
       continue;
     }
@@ -1129,6 +1133,25 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
    * after the reading date, its source identified) and it is of the right entity and scope and covers the period the
    * purpose asks for. One rule per need of the schema; presence alone never closes a gap. */
   const closes = (f: DocumentReading) => stateOf(f) === "known";
+  /** Being read and known is necessary, not sufficient: each need also asks for a document current enough for its
+   * purpose. The date that proves currency is one the document states (its reference date as stated, or its last
+   * update); a date derived from the period proves nothing. An outdated version is never current. */
+  const currencyDays: Record<Need, number | null> = {
+    monthly_series: null,        // the month itself is the time the need asks for
+    reading_substitute: null,    // the same document, by identity
+    real_collateral: 30,         // a registry certificate is current for 30 days, the usual term banks accept
+    group_perimeter: null,       // statements of the same period as the subsidiary's under review
+    liquidity_projection: 30,    // a cash forecast updated within 30 days of the reading date, reaching it
+  };
+  const statedDate = (f: DocumentReading) => [f.referenceDate && (f.referenceDate.origin === "stated" || f.referenceDate.origin === "stated_month") ? f.referenceDate.date : null, f.version.lastUpdated]
+    .filter((d): d is string => d !== null).sort().at(-1) ?? null;
+  const daysBetween = (a: string, b: string) => (Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000;
+  const current = (f: DocumentReading, need: Need) => {
+    const days = currencyDays[need];
+    if (days === null) return true;
+    const d = statedDate(f);
+    return f.version.status !== "outdated" && d !== null && d <= input.asOf && daysBetween(d, input.asOf) <= days;
+  };
   /** The company the folder is about, as the input names it. */
   const company = input.subjectEntityId;
   const gapClosure: Record<Need, string> = {
@@ -1221,19 +1244,27 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       .map((f) => f.period.start!.slice(0, 7)))].sort();
     // A month with versions and no winner blocks the sum: neither version is counted, and never both.
     const undecided = [...new Set(live.filter((f) => inWindow(f) && unresolved.has(f.fileId)).map((f) => f.period.start!.slice(0, 7)))].sort();
-    const series = live.filter((f) => inWindow(f) && !unresolved.has(f.fileId)).sort((a, b) => byKey(a.period.start!, b.period.start!));
-    const missing = window.filter((m) => !series.some((f) => f.period.start!.startsWith(m)) && !undecided.includes(m));
+    // Exactly one resolved reading per slot (entity, month, measure, perimeter asked) before any sum: readings of both
+    // perimeters and individual readings of the same month compete for the slot; without a winner by precedence, the
+    // month is a conflict and the sum does not run.
+    const slotCandidates = live.filter((f) => inWindow(f) && !unresolved.has(f.fileId));
+    const series: DocumentReading[] = [], slotConflicts: {month: string; fileIds: string[]}[] = [];
+    for (const [m, cands] of [...bucket(slotCandidates, (f) => f.period.start!.slice(0, 7))].sort(([a], [b]) => byKey(a, b))) {
+      const w = cands.length === 1 ? cands[0]! : resolveFamily(cands, ["guarantee", "ordinal"], () => null).winner;
+      if (w) series.push(w); else slotConflicts.push({month: m, fileIds: ids(cands)});
+    }
+    const missing = window.filter((m) => !series.some((f) => f.period.start!.startsWith(m)) && !undecided.includes(m) && !slotConflicts.some((c) => c.month === m));
     // The sum stands on every version of the report and on every document of every month in the window, all versions included.
     const deps = [...documents.filter((f) => f.kind === report.kind && f.entity.primaryId === report.entity.primaryId && f.period.start === report.period.start && f.period.end === report.period.end),
       ...documents.filter((f) => policy[f.kind].monthly && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7)))];
     effect(`check:${report.fileId}-months`, () => {
       const withoutFigure = series.filter((f) => figureState(f, "ebitda") === "missing_source");
       const r = figure(report, "ebitda"), values = series.map((f) => figure(f, "ebitda"));
-      const g = guard(deps, [missing.length || withoutFigure.length || !r ? "missing_source" : "known"]);
+      const g = guard(deps, [slotConflicts.length ? "conflict" : "known", missing.length || withoutFigure.length || !r ? "missing_source" : "known"]);
       if (g.state !== "known") {
         const onlyOther = missing.filter((m) => otherPerimeter.includes(m));
-        const detail = undecided.length ? `unresolved_versions:${undecided.join(",")}` : onlyOther.length ? `perimeter_mismatch:${onlyOther.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
-        identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...g.sources])], status: "not_run",
+        const detail = slotConflicts.length ? `slot_unresolved:${slotConflicts.map((c) => c.month).join(",")}` : undecided.length ? `unresolved_versions:${undecided.join(",")}` : onlyOther.length ? `perimeter_mismatch:${onlyOther.join(",")}` : missing.length ? `missing_months:${missing.join(",")}` : withoutFigure.length ? "month_without_figure" : g.sources.join(",");
+        identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [...new Set([report.fileId, ...series.map((f) => f.fileId), ...slotConflicts.flatMap((c) => c.fileIds), ...g.sources])], status: "not_run",
           reported: null, recomposed: null, currency: input.currency, reason: `${g.state}:${detail}`});
         return;
       }
@@ -1359,7 +1390,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     });
   }
   for (const f of live.filter((x) => x.kind === "appraisal_report" && x.asset)) {
-    if (live.some((x) => x.kind === "property_registry" && x.asset?.id === f.asset!.id && x.entity.primaryId === f.entity.primaryId && closes(x))) continue;
+    if (live.some((x) => x.kind === "property_registry" && x.asset?.id === f.asset!.id && x.entity.primaryId === f.entity.primaryId && closes(x) && current(x, "real_collateral"))) continue;
     const v = figure(f, "appraised_value"), id = `${f.fileId}-registry`;
     add({id, code: "appraisal_without_registry", anchor: f.fileId, sources: [src(f.fileId, v?.at)],
       statement: `${v ? `Valor de ${brl(v.value, v.scale)}. ` : ""}Sem matrícula atualizada não dá para saber se o imóvel avaliado está livre de ônus.`});
@@ -1403,7 +1434,7 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // close it. Without a subsidiary in the registry, its individual forecast is its whole perimeter.
   const hasSubsidiary = input.entities.some((e) => e.parentId === company);
   const forecasts = live.filter((f) => policy[f.kind].forecast && settled(f) && f.entity.primaryId === company && (hasSubsidiary ? covers(f.perimeter, "consolidated") : f.perimeter !== "not_applicable")
-    && f.period.end !== null && f.period.end >= input.asOf && closes(f));
+    && f.period.end !== null && f.period.end >= input.asOf && closes(f) && current(f, "liquidity_projection"));
   const stale = findings.find((x) => x.code === "stale_forecast" && byId.get(x.anchor)?.entity.primaryId === company);
   if (!forecasts.length) gapsOut.push({need: "liquidity_projection", item: "Projeção ou fluxo de caixa de 13 semanas atualizado", why: `liquidez a partir de ${monthName(input.asOf)}${stale ? "; o fluxo da pasta não chega a essa data" : ""}`,
     quoted: null, findingId: stale?.id ?? null, anchor: stale?.anchor ?? null, conditional: false});

@@ -349,6 +349,25 @@ function goldCases(): Case[] {
     observe("revenue-confronted-within-the-perimeter", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = "consolidated";
       const f28 = file(r, "f28"); f28.kind = "management_report"; f28.perimeter = "consolidated";})}),
       true, (p) => inv(p).findings.some((f) => f.code === "figure_basis_differs")),
+    // Review r19 cases: one reading per month slot, currency of what closes a gap, budgets dated after the reading.
+    ...([null, "31300"] as const).map((reported) => observe(reported ? "double-counted-month-never-agrees" : "double-counted-month-never-sums", folderPacketInput({files: readings((r) => {
+      file(r, "f12").perimeter = "individual"; if (reported) file(r, "f12").figures[0]!.value = reported;
+      for (const m of r.filter((x) => x.kind === "trial_balance")) m.perimeter = "individual";
+      file(r, "f06").perimeter = "individual_and_consolidated";
+      r.push({...structuredClone(file(r, "f06")), fileId: "f31", fileName: "balancete jan26 individual.xlsx", sha256: createHash("sha256").update("f31-jan").digest("hex"), perimeter: "individual"});}),
+      turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s02" ? {...x, perimeter: "individual" as const} : x)}}),
+      {status: "not_run", reason: "conflict:slot_unresolved:2026-01"}, (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "period_against_months")!; return {status: c.status, reason: c.reason};})),
+    observe("outdated-registry-does-not-resolve-the-gap", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f27")), fileId: "s07", fileName: "matricula antiga.pdf",
+      sha256: createHash("sha256").update("s07-old").digest("hex"), kind: "property_registry" as const, description: "Matrícula do imóvel", period: {label: "jan/2020", start: "2020-01-31", end: "2020-01-31"},
+      version: {label: "desatualizada", status: "outdated" as const, ordinal: null, lastUpdated: "2020-01-31"}, referenceDate: {kind: "update" as const, date: "2020-01-31", origin: "stated" as const}, figures: []}]}}),
+      "open", (p) => inv(p).gaps.find((g) => g.need === "real_collateral")!.status),
+    observe("current-registry-resolves-the-gap", folderPacketInput({turnTwo: {files: [...auroraTurnTwoReadings(), {...structuredClone(file(auroraFolderReadings(), "f27")), fileId: "s07", fileName: "matricula.pdf",
+      sha256: createHash("sha256").update("s07-current").digest("hex"), kind: "property_registry" as const, description: "Matrícula do imóvel", period: {label: "ago/2026", start: "2026-08-25", end: "2026-08-25"},
+      version: {label: "certidão", status: "registered" as const, ordinal: null, lastUpdated: "2026-08-25"}, referenceDate: {kind: "update" as const, date: "2026-08-25", origin: "stated" as const}, figures: []}]}}),
+      "resolved", (p) => inv(p).gaps.find((g) => g.need === "real_collateral")!.status),
+    observe("budget-revision-after-the-reading-is-not-compared", folderPacketInput({files: readings((r) => {file(r, "f14").version.lastUpdated = "2026-10-15";})}),
+      {compared: false, later: true, sideBySide: ["f13", "f14"]}, (p) => {const f = inv(p).findings.find((x) => x.id === "f14-side-by-side")!;
+        return {compared: f.statement.includes("revisto para"), later: f.statement.includes("posterior à desta leitura"), sideBySide: inv(p).families.find((x) => x.resolution === "side_by_side")!.sideBySide};}),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];

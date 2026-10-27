@@ -1245,3 +1245,76 @@ describe("property: the cited revenue is confronted only with statements of a co
     expect(blocked !== undefined).toBe(!compatible);
   });
 });
+
+// Review r19: one reading per month slot, current enough for the need, and budgets dated after the reading.
+describe("property: no month enters the sum twice", () => {
+  const perimeters = ["individual", "consolidated", "individual_and_consolidated"] as const;
+  const ran = {summed: 0, notRun: 0};
+  for (let n = 1; n <= 30; n++) it(`months ${n}`, () => {
+    const r = random(91000 + n), reportPerimeter = pick(r, ["individual", "consolidated"] as const), extra = pick(r, [0, 1, 2]);
+    const files = readings((list) => {
+      file(list, "f12").perimeter = reportPerimeter;
+      for (const m of list.filter((x) => x.kind === "trial_balance")) m.perimeter = pick(r, perimeters);
+      for (let k = 0; k < extra; k++) {
+        const base = pick(r, list.filter((x) => x.kind === "trial_balance" && x.fileId !== "f09"));
+        list.push({...structuredClone(base), fileId: `m${k}`, fileName: `m${k}.xlsx`, sha256: hex(`month-${n}-${k}`), perimeter: pick(r, perimeters),
+          version: {...base.version, ordinal: pick(r, [null, 1, 3])}});
+      }
+    });
+    const o = run([...files, {...auroraTurnTwoReadings()[1]!, perimeter: pick(r, perimeters)}], {asOf: "2026-09-02"});
+    const c = o.identityChecks.find((x) => x.kind === "period_against_months")!;
+    if (c.status === "not_run") {ran.notRun++; return;}
+    ran.summed++;
+    const byId = new Map([...files, auroraTurnTwoReadings()[1]!].map((f) => [f.fileId, f]));
+    const months = c.fileIds.filter((id) => byId.get(id)?.kind === "trial_balance").map((id) => byId.get(id)!.period.start!.slice(0, 7));
+    expect(new Set(months).size, JSON.stringify(c)).toBe(months.length);
+    expect(months).toHaveLength(6);
+  });
+  it("the generated months reach both outcomes", () => {expect(ran.summed).toBeGreaterThan(0); expect(ran.notRun).toBeGreaterThan(0);});
+  const overlap = (reported: string | null) => readings((list) => {
+    file(list, "f12").perimeter = "individual"; if (reported) file(list, "f12").figures[0]!.value = reported;
+    for (const m of list.filter((x) => x.kind === "trial_balance")) m.perimeter = "individual";
+    file(list, "f06").perimeter = "individual_and_consolidated";
+    list.push({...structuredClone(file(list, "f06")), fileId: "f31", fileName: "jan ind.xlsx", sha256: hex("jan-individual"), perimeter: "individual"});
+  });
+  for (const reported of [null, "31300"]) it(`overlapping January ${reported ? "with a report matching the double count" : "against the semester"} does not run`, () => {
+    const c = run([...overlap(reported), {...auroraTurnTwoReadings()[1]!, perimeter: "individual"}], {asOf: "2026-09-02"}).identityChecks.find((x) => x.kind === "period_against_months")!;
+    expect([c.status, c.reason]).toEqual(["not_run", "conflict:slot_unresolved:2026-01"]);
+    expect(c.fileIds).toEqual(expect.arrayContaining(["f06", "f31"]));
+  });
+  it("control: individual months without overlap close in 27", () => {
+    const files = readings((list) => {file(list, "f12").perimeter = "individual"; for (const m of list.filter((x) => x.kind === "trial_balance")) m.perimeter = "individual";});
+    const c = run([...files, {...auroraTurnTwoReadings()[1]!, perimeter: "individual"}], {asOf: "2026-09-02"}).identityChecks.find((x) => x.kind === "period_against_months")!;
+    expect([c.status, c.recomposed]).toEqual(["matches", "27000000"]);
+  });
+});
+describe("property: a gap closes only with a document current enough for its need", () => {
+  const registry = (date: string, status: "registered" | "outdated") => ({...structuredClone(file(auroraFolderReadings(), "f27")), fileId: "s07", fileName: "matricula.pdf", sha256: hex(`registry-${date}-${status}`),
+    kind: "property_registry" as const, description: "Matrícula do imóvel", period: {label: "certidão", start: date, end: date}, version: {label: status === "outdated" ? "desatualizada" : "certidão", status, ordinal: null, lastUpdated: date},
+    referenceDate: {kind: "update" as const, date, origin: "stated" as const}, figures: []});
+  const cases = [["2026-08-25", "registered", true], ["2026-06-30", "registered", false], ["2020-01-31", "outdated", false], ["2026-08-25", "outdated", false]] as const;
+  for (const [date, status, closes] of cases) {
+    it(`registry ${status} of ${date}, base: ${closes ? "closes" : "stays open"}`, () => {
+      expect(run([...auroraFolderReadings(), registry(date, status)], {asOf: "2026-09-02"}).gaps.some((g) => g.need === "real_collateral" && g.status === "open")).toBe(!closes);
+    });
+    it(`registry ${status} of ${date}, update: ${closes ? "resolves" : "does not resolve"}`, () => {
+      const base = auroraFolderReadings(), prior = run(base);
+      const o = run([...base, registry(date, status)], {asOf: "2026-09-02", prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+      expect(o.gaps.find((g) => g.need === "real_collateral")!.status).toBe(closes ? "resolved" : "open");
+    });
+  }
+  for (const [updated, closes] of [["2026-08-31", true], ["2026-07-15", false]] as const) it(`a forecast updated on ${updated} ${closes ? "closes" : "does not close"} the liquidity gap`, () => {
+    const forecast = {...structuredClone(file(auroraFolderReadings(), "f15")), fileId: "s06", fileName: "fluxo.xlsx", sha256: hex(`forecast-${updated}`), period: {label: "set/26 a dez/26", start: "2026-09-01", end: "2026-12-31"},
+      version: {label: "atualizado", status: "management" as const, ordinal: null, lastUpdated: updated}, referenceDate: {kind: "update" as const, date: updated, origin: "stated" as const}};
+    expect(run([...auroraFolderReadings(), forecast], {asOf: "2026-09-02"}).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")).toBe(!closes);
+  });
+});
+describe("property: a budget revision dated after the reading is preserved, not compared", () => {
+  for (const later of [true, false]) it(`revision ${later ? "dated after the reading" : "of the reading (control)"}`, () => {
+    const o = run(readings((r) => {if (later) file(r, "f14").version.lastUpdated = "2026-10-15";}));
+    const f = o.findings.find((x) => x.id === "f14-side-by-side")!;
+    expect(f.statement.includes("revisto para")).toBe(!later);
+    expect(f.statement.includes("posterior à desta leitura")).toBe(later);
+    expect(o.families.find((x) => x.resolution === "side_by_side")!.sideBySide).toEqual(["f13", "f14"]);
+  });
+});
