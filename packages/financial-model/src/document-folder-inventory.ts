@@ -226,7 +226,7 @@ const rowSchema = z.strictObject({fileId: key, fileName: z.string().min(1).max(2
   validated: z.literal(false)});
 const findingCodes = ["duplicate", "draft_superseded", "version_superseded", "position_superseded", "versions_side_by_side", "versions_unresolved", "series_gap", "mixed_units",
   "stale_forecast", "total_includes_unused_limit", "total_not_recomposed", "amended_original", "amendment_in_force", "amendment_superseded", "amendment_not_in_force",
-  "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "effect_blocked", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
+  "amendment_conflict", "amendment_future", "amendment_without_original", "clause_unread", "effect_blocked", "substitute_not_binding", "clause_future", "figure_conflict", "instrument_not_in_force", "instrument_superseded", "instrument_conflict", "instrument_future", "clause_superseded", "clause_conflict",
   "clause_not_in_force", "reading_conflict", "substitute_conflict", "page_unreadable",
   "file_unreadable", "clause", "observation", "subsidiary_in_consolidated", "appraisal_without_registry", "figure_basis_differs"] as const;
 const findingSchema = z.strictObject({id: z.string().min(1).max(80), code: z.enum(findingCodes),
@@ -557,6 +557,14 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       }
       const g = guard([target, ...list], [], {ignoreUnread: [targetId]});
       if (g.state !== "known" || !usable.length) {block(`page-${page}`, targetId, `O conteúdo da página ${page} recuperada`, g); return;}
+      // A copy carries its own documentary force: it fills the page only if it is signed or registered and at least as
+      // strong as the target. A draft, an approval or a final version never inherits the original's signature.
+      const weak = usable.filter((x) => !binds(x.version.status) || guarantee(x.version.status) < guarantee(target.version.status));
+      if (weak.length) {
+        add({id: `${targetId}-weak-copy-p${page}`, code: "substitute_not_binding", anchor: targetId, sources: ids(weak).map((x) => src(x, {page, section: null})), knowledge: "unread",
+          statement: `A cópia da página ${page} não tem assinatura nem registro, ou tem força menor que o original; a página continua sem leitura.`});
+        return;
+      }
       // Same reading of the page in every copy: the lowest file id carries it.
       const s = [...usable].sort((a, b) => byKey(a.fileId, b.fileId))[0]!;
       pagesFrom.set(targetId, [...pagesFrom.get(targetId) ?? [], {page, fileId: s.fileId, sha256: s.sha256}].sort((a, b) => a.page - b.page));
@@ -936,6 +944,11 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
     });
   }
   for (const report of live.filter((f) => f.kind === "management_report" && settled(f) && f.period.start && f.period.end && figureList(f, "ebitda").length)) {
+    // The report's period must be exactly whole months, first day to last day; a partial period is never matched by whole months.
+    if (!report.period.start!.endsWith("-01") || report.period.end !== lastDay(report.period.end!.slice(0, 7))) {
+      identityChecks.push({id: `${report.fileId}-months`, kind: "period_against_months", fileIds: [report.fileId], status: "not_run", reported: null, recomposed: null, currency: input.currency, reason: "partial_period"});
+      continue;
+    }
     const window = monthsBetween(report.period.start!, report.period.end!);
     const inWindow = (f: DocumentReading) => policy[f.kind].monthly && prevailing(f) && isMonth(f) && f.entity.primaryId === report.entity.primaryId && window.includes(f.period.start!.slice(0, 7));
     // A month with versions and no winner blocks the sum: neither version is counted, and never both.
@@ -1051,7 +1064,8 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   for (const f of live.filter((x) => x.kind === "annual_financial_statements" && settled(x) && x.entity.primaryId && registry.get(x.entity.primaryId)?.parentId)) {
     const sub = registry.get(f.entity.primaryId!)!, parent = registry.get(sub.parentId!)!;
     if (!live.some((x) => x.kind === "annual_financial_statements" && x.entity.primaryId === parent.id)) continue;
-    const members = documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || x.entity.primaryId === sub.id) && x.period.start === f.period.start);
+    // Judged: every statement of the parent, in any period (its existence enables the finding), and those of the subsidiary for the period.
+    const members = documents.filter((x) => x.kind === "annual_financial_statements" && (x.entity.primaryId === parent.id || (x.entity.primaryId === sub.id && x.period.start === f.period.start)));
     const id = `${f.fileId}-subsidiary`;
     effect(`perimeter:${f.fileId}`, () => {
       const cash = figure(f, "cash"), cashShown = cash ? brl(cash.value, cash.scale) : null, at = src(f.fileId, cash?.at), audited = f.version.status === "audited";

@@ -405,32 +405,76 @@ describe("property: dependencies proven by tracking; every state injected into e
       return null;
     },
   };
-  const baseline = traced();
-  const emitted = baseline.traces.filter((t) => t.emitted);
-  it("every effect read only what its guard judged, and the schema's effects are all present", () => {
-    expect([...new Set(baseline.inventory.findings.flatMap((f) => f.effect ? [f.effect] : []))].sort()).toEqual([...effectCodes].sort());
-    expect(emitted.length).toBeGreaterThanOrEqual(10);
-    for (const t of baseline.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
-    for (const t of emitted) expect(t.state, t.effect).toBe("known");
+  /** The injection matrix over any input: every state into every document an emitted effect judged. */
+  function matrix(name: string, variant: (files: DocumentReading[]) => void) {
+    const baseline = traced(variant);
+    const emitted = baseline.traces.filter((t) => t.emitted);
+    it(`${name}: every effect read only what its guard judged`, () => {
+      expect(emitted.length).toBeGreaterThanOrEqual(5);
+      for (const t of baseline.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
+      for (const t of emitted) expect(t.state, t.effect).toBe("known");
+    });
+    const all = () => {const f = [...auroraFolderReadings(), ...auroraTurnTwoReadings()]; variant(f); return f;};
+    const judged = [...new Set(emitted.flatMap((t) => t.guarded))].filter((x) => !x.endsWith("-x")).sort();
+    for (const id of judged) for (const state of ["unread", "conflict", "future", "missing_source"] as const) it(`${name}: ${id} ${state}`, () => {
+      let expected: State | null = null;
+      const o = traced((files) => {variant(files); expected = inject[state](files, id);});
+      if (expected === null) return;
+      for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
+      const files = all(), sha = file(files, id).sha256, same = files.filter((f) => f.sha256 === sha).map((f) => f.fileId);
+      for (const b of emitted) {
+        const after = o.traces.find((t) => t.effect === b.effect);
+        const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
+        if (!touched) {expect(after?.emitted, `control ${b.effect}`).toBe(true); continue;}
+        expect(after?.emitted ?? false, `${b.effect} withheld`).toBe(false);
+        const rank = (x: string) => ["known", "future", "unread", "missing_source", "conflict"].indexOf(x);
+        const declared = after ? rank(after.state) >= rank(expected!)
+          : o.inventory.findings.some((f) => f.knowledge === expected && (f.anchor === id || f.sources.some((x) => x.fileId === id || b.guarded.includes(x.fileId))));
+        expect(declared, `${b.effect} declared as ${expected}`).toBe(true);
+      }
+    });
+  }
+  it("the schema's effects are all present in the full calibration", () => {
+    expect([...new Set(traced().inventory.findings.flatMap((f) => f.effect ? [f.effect] : []))].sort()).toEqual([...effectCodes].sort());
   });
-  const judged = [...new Set(emitted.flatMap((t) => t.guarded))].filter((x) => !x.endsWith("-x")).sort();
-  for (const id of judged) for (const state of ["unread", "conflict", "future", "missing_source"] as const) it(`${id} ${state}`, () => {
-    let expected: State | null = null;
-    const o = traced((files) => {expected = inject[state](files, id);});
-    if (expected === null) return;
-    for (const t of o.traces) for (const x of t.tracked) expect(t.guarded, `${t.effect} read ${x}`).toContain(x);
-    for (const b of emitted) {
-      const after = o.traces.find((t) => t.effect === b.effect);
-      // The injected reading reaches every file with the same bytes.
-      const same = [...auroraFolderReadings(), ...auroraTurnTwoReadings()].filter((f) => f.sha256 === file([...auroraFolderReadings(), ...auroraTurnTwoReadings()], id).sha256).map((f) => f.fileId);
-      const touched = same.some((x) => b.guarded.includes(x) && !(expected === "unread" && b.ignoreUnread.includes(x)));
-      if (!touched) {expect(after?.emitted, `control ${b.effect}`).toBe(true); continue;}
-      expect(after?.emitted ?? false, `${b.effect} withheld`).toBe(false);
-      // Declared with the injected state, or a worse one it caused (a page left unread by a future copy is unread).
-      const rank = (x: string) => ["known", "future", "unread", "missing_source", "conflict"].indexOf(x);
-      const declared = after ? rank(after.state) >= rank(expected!)
-        : o.inventory.findings.some((f) => f.knowledge === expected && (f.anchor === id || f.sources.some((x) => x.fileId === id || b.guarded.includes(x.fileId))));
-      expect(declared, `${b.effect} declared as ${expected}`).toBe(true);
-    }
+  matrix("calibration", () => undefined);
+  // Generated inputs off the nominal configuration.
+  matrix("parent statements of another period only", (files) => {for (const id of ["f01", "f02", "f30"]) files.splice(files.indexOf(file(files, id)), 1);});
+  matrix("covenant recovered on a signed page", (files) => {const s01 = file(files, "s01"); s01.clauses = [covenantClause("2", "covenant-ccb", 7)];});
+  matrix("two amendments in a row", (files) => files.push({...structuredClone(file(files, "f19")), fileId: "f31", fileName: "f31.pdf", sha256: hex("f31-chain"),
+    period: {label: "jun/2024", start: "2024-06-01", end: "2024-06-30"}, referenceDate: {kind: "update", date: "2024-06-30", origin: "stated_month"}, instrument: {ref: "deb-aurora-1-ad2", label: "2º aditamento", amends: "deb-aurora-1"},
+    clauses: [covenantClause("2.8")]}));
+
+});
+
+describe("property: a check runs only on whole months matching the report's period exactly", () => {
+  for (let n = 1; n <= 24; n++) it(`period ${n}`, () => {
+    const r = random(70000 + n), startDay = pick(r, [1, 1, 2, 15] as const), endDay = pick(r, [30, 30, 29, 15] as const);
+    const start = `2026-01-${String(startDay).padStart(2, "0")}`, end = `2026-06-${String(endDay).padStart(2, "0")}`;
+    const files = [...readings((list) => {file(list, "f12").period = {label: "1S26", start, end};}), auroraTurnTwoReadings()[1]!];
+    const c = run(files).identityChecks.find((x) => x.kind === "period_against_months")!;
+    const whole = startDay === 1 && endDay === 30;
+    expect([c.status, c.reason]).toEqual(whole ? ["matches", null] : ["not_run", "partial_period"]);
+  });
+});
+
+describe("property: a recovered page carries the copy's own documentary force", () => {
+  for (const status of documentStatuses) it(`copy ${status}`, () => {
+    const two = auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, version: {...x.version, status}, clauses: [covenantClause("1", "covenant-ccb", 7)]} : x);
+    const prior = run(auroraFolderReadings());
+    const o = run([...auroraFolderReadings(), ...two], {asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    const strong = binds(status);
+    expect(o.rows.find((x) => x.fileId === "f20")!.situation.read).toBe(strong ? "complete" : "partial");
+    expect(o.findings.some((f) => f.code === "substitute_not_binding")).toBe(!strong);
+    expect(o.findings.find((f) => f.id === "f24-politica")!.statement.includes("covenant vigente de 1,0x")).toBe(strong);
+  });
+});
+
+describe("property: an existence that enables an effect is judged with it", () => {
+  for (const when of [null, "2026-05-01", "2027-01-15"]) it(`parent statements of another period, updated ${when}`, () => {
+    const o = organizeDocumentFolderTraced(auroraKernelInput({files: readings((list) => {for (const id of ["f01", "f02", "f30"]) list.splice(list.indexOf(file(list, id)), 1); file(list, "f03").version.lastUpdated = when;})}));
+    const t = o.traces.find((x) => x.effect === "perimeter:f04")!;
+    expect(t.guarded).toContain("f03");
+    expect(t.emitted).toBe(when !== "2027-01-15");
   });
 });

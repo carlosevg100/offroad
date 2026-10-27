@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T13:15:26.587Z",
-    "finishedAt": "2026-10-27T13:15:26.587Z",
-    "commit": "ff54c180"
+    "startedAt": "2026-10-27T13:27:22.323Z",
+    "finishedAt": "2026-10-27T13:27:22.323Z",
+    "commit": "d998ea9d"
   },
   "modelCalls": 0,
   "cases": [
@@ -431,6 +431,30 @@
       "passed": true
     },
     {
+      "id": "partial-period-is-not-summed",
+      "expectation": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
+      "observed": "{\"status\":\"not_run\",\"reason\":\"partial_period\"}",
+      "inputFingerprint": "a8d9cd51dd58defa752d9003ef4db58416ae5d8e0801db2f563f3cad5183e4f9",
+      "outputFingerprint": "fdc04a9531655b01409db7a0fa129cec84965ad4b1b272595b34fbbbec240365",
+      "passed": true
+    },
+    {
+      "id": "draft-copy-does-not-fill-the-page",
+      "expectation": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
+      "observed": "{\"ccb\":\"partial\",\"cause\":\"unread\"}",
+      "inputFingerprint": "52e884a646c3ef7f2920e521a74c72b62b00a5444c51829c7d835223ef2db289",
+      "outputFingerprint": "f61a82ff22618b825032de3ed573d258b6da80b056a0b7ed0da1cf2d091bb1d0",
+      "passed": true
+    },
+    {
+      "id": "future-parent-statements-of-another-period-block-the-perimeter",
+      "expectation": "{\"perimeter\":false,\"blocked\":\"future\"}",
+      "observed": "{\"perimeter\":false,\"blocked\":\"future\"}",
+      "inputFingerprint": "98e772f49c0bb334f1eff40e25e7d037a5940594bd332b9ff9d9af24d0eb7df3",
+      "outputFingerprint": "f82fb1f2ddfdbcebe3c652f68b1ff30514f67d753e2a89d996811264ab4fab65",
+      "passed": true
+    },
+    {
       "id": "notice-deadline-followed-never-scheduled",
       "expectation": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
       "observed": "[{\"kind\":\"notice_deadline\",\"date\":\"2026-10-02\",\"fileId\":\"f23\",\"clauseId\":\"renovacao\",\"decisionIds\":[\"linha-embalagem\"],\"scheduled\":false}]",
@@ -440,6 +464,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "fda7d991ea9ce4d62dafde4e3594fc40b36a81abb06a6aa5f579406fceda57e7",
+  "evidenceFingerprint": "c6c72538219aa823c91084a77c3d1e2ddcfc67346ad1ec0ac0ebe4b13ed537d7",
   "notes": "Synthetic deterministic execution calibrated on ficha C09. Expectations do not constitute independent review, content approval, live access verification or publication."
 }

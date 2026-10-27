@@ -237,6 +237,13 @@ function goldCases(): Case[] {
     observe("update-not-read-shows-the-prior-as-history", (() => {const i = folderPacketInput({turnTwo: true});
       i.analysis.update = {...i.analysis.update!, files: i.analysis.update!.files.map((f) => f.id === "s02" ? {...f, value: {...f.value, decisionId: null, missingReason: "Leitura do balancete de março pendente"}} : f)}; return i;})(),
       {status: "partial", historical: "update_not_read", decisionFindings: null}, (p) => ({status: p.status, historical: p.readings!.historical?.reason ?? null, decisionFindings: p.readings!.decisionFindings})),
+    // Review r8 cases: exact periods, the copy's own force, existence judged.
+    observe("partial-period-is-not-summed", folderPacketInput({turnTwo: true, files: readings((r) => {file(r, "f12").period = {label: "1S26", start: "2026-01-02", end: "2026-06-30"};})}),
+      {status: "not_run", reason: "partial_period"}, (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "period_against_months")!; return {status: c.status, reason: c.reason};}),
+    observe("draft-copy-does-not-fill-the-page", folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s01" ? {...x, version: {...x.version, status: "draft" as const}} : x)}}),
+      {ccb: "partial", cause: "unread"}, (p) => ({ccb: inv(p).rows.find((r) => r.fileId === "f20")!.situation.read, cause: inv(p).findings.find((f) => f.code === "substitute_not_binding")?.knowledge ?? null})),
+    observe("future-parent-statements-of-another-period-block-the-perimeter", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f02", "f30"]) r.splice(r.indexOf(file(r, id)), 1); file(r, "f03").version.lastUpdated = "2027-01-15";})}),
+      {perimeter: false, blocked: "future"}, (p) => ({perimeter: inv(p).findings.some((f) => f.effect === "perimeter"), blocked: inv(p).findings.find((f) => f.id === "f04-blocked-perimeter")?.knowledge ?? null})),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
