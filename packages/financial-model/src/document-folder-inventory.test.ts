@@ -25,7 +25,7 @@ describe("document folder inventory kernel", () => {
     expect(d[3]).toBe("O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.");
     expect(d[4]).toBe("A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.");
     expect(d[5]).toContain("A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões");
-    expect(d[6]).toBe("A controlada Aurora Logística entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.");
+    expect(d[6]).toBe("A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.");
   });
   it("never reads the file name: swapping every name leaves the inventory unchanged but for the names", () => {
     const names = auroraFolderReadings().map((r) => r.fileName).reverse();

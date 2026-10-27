@@ -16,9 +16,9 @@
     "exportName": "buildDocumentFolderInventoryRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T15:56:28.371Z",
-    "finishedAt": "2026-10-27T15:56:28.371Z",
-    "commit": "d288fe6f"
+    "startedAt": "2026-10-27T16:06:11.368Z",
+    "finishedAt": "2026-10-27T16:06:11.368Z",
+    "commit": "7fbd45bd"
   },
   "modelCalls": 0,
   "cases": [

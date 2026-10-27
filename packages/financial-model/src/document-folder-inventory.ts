@@ -38,7 +38,10 @@ const label = z.string().trim().min(1).max(L.label);
  * symbol, and no economic word (leverage, debt, ratio, EBITDA, cash, amounts, "x", percent). */
 const economicLexicon = /(^|[^\p{L}])(alavancagem|d[ií]vidas?|[ií]ndices?|ebitda|caixa|milh[aã]o|milh[oõ]es|mil|bilh[aã]o|bilh[oõ]es|receitas?|lucros?|margem|margens|covenants?|juros|taxas?|x|m[uú]ltiplos?|liquidez|endividamento|faturamento|valor|valores|pre[cç]o|percentual|reais|real|brl|r\$)(?=$|[^\p{L}])/iu;
 export const registryName = label.refine((v) => /^\p{L}[\p{L}\p{M} .&'’-]*$/u.test(v) && !economicLexicon.test(v), "document_inventory_registry_name_not_a_name");
-const statement = z.string().trim().min(1).max(L.statement);
+/** The method's own sentences: closed templates over typed data and closed roles ("a companhia", "a controlada");
+ * never a registry name, which appears only in label fields of a row or of the registry. */
+export const methodStatement = z.string().trim().min(1).max(L.statement);
+const statement = methodStatement;
 const derivedId = z.string().min(1).max(L.id);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const amount = z.string().regex(/^-?\d{1,24}(?:\.\d{1,8})?$/);
@@ -1347,12 +1350,12 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
       // The perimeter gap stays open unless audited statements of the subsidiary for the period are known, whatever
       // happens to the finding itself.
       const auditedKnown = auditedSubs.some(closes);
-      if (!audited || !auditedKnown) gapsOut.push({need: "group_perimeter", item: `Demonstrações auditadas da ${sub.label}, se existirem`, why: "perímetro da devedora e caixa disponível na controladora", quoted: null, findingId: g.state === "known" ? id : null, anchor: f.fileId, conditional: true});
+      if (!audited || !auditedKnown) gapsOut.push({need: "group_perimeter", item: "Demonstrações auditadas da controlada, se existirem", why: "perímetro da devedora e caixa disponível na controladora", quoted: null, findingId: g.state === "known" ? id : null, anchor: f.fileId, conditional: true});
       if (g.state !== "known") {block("perimeter", f.fileId, "O perímetro da controlada no consolidado", g); return;}
       add({id, code: "subsidiary_in_consolidated", anchor: f.fileId, sources: [at], knowledge: "known",
-        statement: `A consolidada inclui a ${sub.label}; a análise de crédito da devedora precisa do individual.${cashShown ? ` O caixa da controlada (${cashShown}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
+        statement: `A consolidada inclui a controlada; a análise de crédito da devedora precisa do individual.${cashShown ? ` O caixa da controlada (${cashShown}) só sobe à controladora por dividendos ou mútuo.` : ""}`,
         topic: "group_perimeter", effect: "perimeter",
-        decisionStatement: `A controlada ${sub.label} entra no consolidado.${cashShown ? ` O caixa dela, ${cashShown}, só chega à controladora por dividendo ou mútuo.` : ""}`});
+        decisionStatement: `A controlada entra no consolidado.${cashShown ? ` O caixa dela, ${cashShown}, só chega à controladora por dividendo ou mútuo.` : ""}`});
     });
   }
   for (const f of live.filter((x) => x.kind === "appraisal_report" && x.asset)) {
@@ -1366,7 +1369,16 @@ function organizeTraced(raw: DocumentFolderInventoryInput, traces: EffectTrace[]
   // Both operands, gross and net, must be read; otherwise the comparison is withheld whole.
   for (const f of live.filter((x) => policy[x.kind].group !== "statements")) {
     for (const x of f.figures.filter((y) => y.metric === "revenue")) {
-      const statements = live.filter((s) => s.kind === "annual_financial_statements" && settled(s) && s.version.status === "audited" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end);
+      // The cited figure is confronted only with statements of a compatible perimeter: the same one, or statements of
+      // both perimeters; a document with no perimeter of its own is confronted only with statements of both.
+      const compatible = (st: DocumentReading) => f.perimeter === "not_applicable" || f.perimeter === "individual_and_consolidated"
+        ? st.perimeter === "individual_and_consolidated" : covers(st.perimeter, f.perimeter);
+      const candidates = live.filter((s) => s.kind === "annual_financial_statements" && settled(s) && s.version.status === "audited" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end);
+      const statements = candidates.filter(compatible);
+      if (candidates.length && !statements.length) {
+        block(`revenue-${x.id}`, f.fileId, "A comparação da receita citada", {state: "missing_source", sources: [f.fileId, ...ids(candidates)]});
+        continue;
+      }
       if (statements.length !== 1) continue;
       const members = [f, ...documents.filter((s) => s.kind === "annual_financial_statements" && s.entity.primaryId === f.entity.primaryId && s.period.start === f.period.start && s.period.end === f.period.end)];
       effect(`revenue:${f.fileId}:${x.id}`, () => {

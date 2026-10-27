@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
-import {documentFolderInventoryInputSchema, documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentReadingSchema, registryName, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
+import {documentFolderInventoryInputSchema, documentFolderInventoryLimits, documentFolderInventoryOutputSchema, documentReadingSchema, methodStatement, registryName, documentStatuses, formatInventoryAmount, inventoryFingerprint, organizeDocumentFolder, organizeDocumentFolderTraced, type DocumentFolderInventory, type DocumentReading} from "./document-folder-inventory";
 import {prepareDocumentFolderInventoryPacket} from "./document-folder-inventory-packet";
 import {auroraFolderReadings, auroraKernelInput, auroraTurnTwoInformed, auroraTurnTwoReadings} from "./document-folder-inventory.test-support";
 import {folderPacketInput} from "./document-folder-inventory-runs.test-support";
@@ -1189,4 +1189,59 @@ describe("property: every registry name inserted in the method's voice is a name
     for (const v of bad) it(`${field} refuses "${v}"`, () => {expect(() => organizeDocumentFolder(set(v))).toThrow("document_inventory_registry_name_not_a_name");});
     for (const v of good) it(`${field} accepts "${v}"`, () => {expect(() => organizeDocumentFolder(set(v))).not.toThrow();});
   }
+});
+
+// Review r18: no registry name in the method's voice; every confrontation between documents within compatible perimeters.
+describe("property: no sentence of the method carries a registry name", () => {
+  // Every field the output schema types as the method's statement, found by walking the schema.
+  type Def = {type: string; shape?: Record<string, unknown>; element?: unknown; innerType?: unknown; options?: unknown[]; in?: unknown; out?: unknown};
+  const def = (s: unknown) => (s as {_zod: {def: Def}})._zod.def;
+  const paths: string[] = [];
+  const walk = (s: unknown, path: string): void => {
+    if (s === methodStatement) {paths.push(path); return;}
+    const d = def(s);
+    if (d.type === "nullable" || d.type === "optional" || d.type === "default") return walk(d.innerType, path);
+    if (d.type === "pipe") return walk(d.in, path);
+    if (d.type === "array") return walk(d.element, `${path}[]`);
+    if (d.type === "union") return (d.options ?? []).forEach((o) => walk(o, path));
+    if (d.type === "object") for (const [k, v] of Object.entries(d.shape!)) walk(v, `${path}.${k}`);
+  };
+  walk(documentFolderInventoryOutputSchema, "inventory");
+  const values = (o: unknown, path: string): string[] => {
+    const [head, ...rest] = path.split(".").slice(1);
+    if (head === undefined) return typeof o === "string" ? [o] : [];
+    const isList = head.endsWith("[]"), k = head.replace("[]", ""), v = (o as Record<string, unknown> | null)?.[k];
+    if (v === null || v === undefined) return [];
+    return isList ? (v as unknown[]).flatMap((x) => values(x, `.${rest.join(".")}`)) : values(v, `.${rest.join(".")}`);
+  };
+  it("the schema types the method's sentences", () => {
+    expect(paths).toEqual(expect.arrayContaining(["inventory.findings[].statement", "inventory.findings[].decisionStatement", "inventory.gaps[].item", "inventory.gaps[].why", "inventory.questions[].text"]));
+  });
+  const names = ["Aurora Logística com passivo de nove vezes o patrimônio", "Aurora Logistics leverage of nine times", "Serra Alimentos", "Companhia Paulista de Trigo", "Grupo Boa Vista e Filhos",
+    "Plano de expansão norte", "Escritura antiga", "Nordeste Grãos Ltda.", "Holding Sul S.A.", "Contrato mestre"];
+  for (let n = 1; n <= 12; n++) it(`registry names ${n}`, () => {
+    const r = random(90000 + n), pickName = () => pick(r, names);
+    const base = auroraKernelInput();
+    const entities = base.entities.map((e) => ({...e, label: pickName(), groupLabel: pickName()}));
+    const decisions = base.decisions.map((d) => ({...d, label: pickName()}));
+    const vault = base.vault.map((v) => ({...v, label: pickName()}));
+    const used = [...new Set([...entities.flatMap((e) => [e.label, e.groupLabel]), ...decisions.map((d) => d.label), ...vault.map((v) => v.label)])];
+    const prior = run(auroraFolderReadings(), {entities, decisions, vault});
+    const o = run([...auroraFolderReadings(), ...auroraTurnTwoReadings()], {entities, decisions, vault, asOf: "2026-09-02", informed: auroraTurnTwoInformed, prior: {inventory: prior, fingerprint: inventoryFingerprint(prior)}});
+    for (const path of paths) for (const text of values(o, path)) for (const name of used) expect(text.includes(name), `${path}: ${text}`).toBe(false);
+    // The subsidiary's finding speaks by role.
+    expect(o.findings.find((f) => f.code === "subsidiary_in_consolidated")!.decisionStatement).toBe("A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.");
+  });
+});
+describe("property: the cited revenue is confronted only with statements of a compatible perimeter", () => {
+  const perimeters = ["individual", "consolidated", "individual_and_consolidated"] as const;
+  for (const statements of perimeters) for (const cited of [...perimeters, "not_applicable"] as const) it(`statements ${statements}, citing report ${cited}`, () => {
+    const o = run(readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = statements;
+      const f28 = file(r, "f28"); if (cited !== "not_applicable") {f28.kind = "management_report"; f28.perimeter = cited;}}));
+    const compatible = cited === "not_applicable" || cited === "individual_and_consolidated" ? statements === "individual_and_consolidated" : statements === cited || statements === "individual_and_consolidated";
+    const finding = o.findings.find((f) => f.code === "figure_basis_differs");
+    const blocked = o.findings.find((f) => f.id.startsWith("f28-blocked-revenue"));
+    expect(finding !== undefined).toBe(compatible);
+    expect(blocked !== undefined).toBe(!compatible);
+  });
 });

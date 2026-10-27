@@ -38,6 +38,7 @@ export const c09AnswerKeyGaps: [string, string][] = [
   ["Balancete de março de 2026", "fechar o semestre mês a mês e o fluxo de caixa realizado"],
   ["Página 7 legível da CCB do Bradesco", "cláusula de reforço da cessão, que afeta o pré-pagamento e novas garantias"],
   ["Matrícula atualizada do imóvel da fábrica", "saber se o imóvel está livre para uma garantia"],
-  ["Demonstrações auditadas da Aurora Logística, se existirem", "perímetro da devedora e caixa disponível na controladora"],
+  // The ficha names the subsidiary here; the method speaks by role and never interpolates a registry name (review r18).
+  ["Demonstrações auditadas da controlada, se existirem", "perímetro da devedora e caixa disponível na controladora"],
   ["Projeção do segundo semestre ou fluxo de 13 semanas atualizado", "liquidez até a safra"],
 ];

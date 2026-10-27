@@ -335,6 +335,20 @@ function goldCases(): Case[] {
       true, (p) => inv(p).gaps.some((g) => g.need === "liquidity_projection" && g.status === "open")),
     observe("individual-month-blocks-the-consolidated-semester", folderPacketInput({turnTwo: {files: auroraTurnTwoReadings().map((x) => x.fileId === "s02" ? {...x, perimeter: "individual" as const} : x)}}),
       {status: "not_run", reason: "missing_source:perimeter_mismatch:2026-03"}, (p) => {const c = inv(p).identityChecks.find((x) => x.kind === "period_against_months")!; return {status: c.status, reason: c.reason};}),
+    // Review r18 cases: names never in the method's voice; confrontations only within compatible perimeters.
+    observe("registry-name-never-enters-the-method-voice", folderPacketInput({entities: auroraEntities.map((e) => e.id === "aurora-log" ? {...e, label: "Aurora Logística com passivo de nove vezes o patrimônio"} : e)}),
+      {statement: "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.", leaked: false},
+      (p) => ({statement: inv(p).findings.find((f) => f.code === "subsidiary_in_consolidated")!.decisionStatement,
+        leaked: JSON.stringify([inv(p).findings.map((f) => [f.statement, f.decisionStatement]), inv(p).gaps.map((g) => [g.item, g.why]), p.readings]).includes("passivo de nove vezes")})),
+    observe("revenue-not-confronted-across-perimeters", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = "individual";
+      const f28 = file(r, "f28"); f28.kind = "management_report"; f28.perimeter = "consolidated";})}),
+      {finding: false, blocked: "missing_source"}, (p) => ({finding: inv(p).findings.some((f) => f.code === "figure_basis_differs"), blocked: inv(p).findings.find((f) => f.id.startsWith("f28-blocked-revenue"))?.knowledge ?? null})),
+    observe("revenue-not-confronted-across-perimeters-reverse", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = "consolidated";
+      const f28 = file(r, "f28"); f28.kind = "management_report"; f28.perimeter = "individual";})}),
+      {finding: false, blocked: "missing_source"}, (p) => ({finding: inv(p).findings.some((f) => f.code === "figure_basis_differs"), blocked: inv(p).findings.find((f) => f.id.startsWith("f28-blocked-revenue"))?.knowledge ?? null})),
+    observe("revenue-confronted-within-the-perimeter", folderPacketInput({files: readings((r) => {for (const id of ["f01", "f30"]) file(r, id).perimeter = "consolidated";
+      const f28 = file(r, "f28"); f28.kind = "management_report"; f28.perimeter = "consolidated";})}),
+      true, (p) => inv(p).findings.some((f) => f.code === "figure_basis_differs")),
     reuse("notice-deadline-followed-never-scheduled", [{kind: "notice_deadline", date: "2026-10-02", fileId: "f23", clauseId: "renovacao", decisionIds: ["linha-embalagem"], scheduled: false}],
       (p) => inv(p).followUps.filter((f) => f.kind === "notice_deadline")),
   ];
