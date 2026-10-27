@@ -541,6 +541,23 @@ describe("canonical ficha objective routing", () => {
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
 
+  // Independent review, round 25: a refusal of the object or the need ("não quero uma revisão", "não preciso de uma
+  // projeção", "dispensamos") never selects lote 3; possession ("não temos projeção pronta") keeps the C24 ficha.
+  it.each([
+    ["Não quero uma revisão da projeção operacional por enquanto.", "ambiguous", "documents_to_case"],
+    ["Não preciso de uma projeção operacional.", "ambiguous", "documents_to_case"],
+    ["Não precisamos de business plan agora.", "ambiguous", "documents_to_case"],
+    ["Dispensamos a revisão da projeção financeira.", "ambiguous", "documents_to_case"],
+    ["Não queremos uma projeção por drivers.", "ambiguous", "documents_to_case"],
+    ["Não queremos uma nova revisão do business plan.", "ambiguous", "documents_to_case"],
+    ["Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", "operating_projection", "operating_projection"],
+    ["Não temos business plan, ajuda a montar.", "operating_projection", "operating_projection"],
+    ["Nós não temos business plan, ajuda a montar.", "operating_projection", "operating_projection"],
+  ] as const)("round 25: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
+  });
+
   it("targets the task specs of each lote 3 objective", () => {
     const targets = (message: string) => compileObjectiveToPlan({message, hasAttachments: false}).targetTaskIds;
     expect(targets("Me ajuda a montar o business plan.")).toEqual(["C07"]);
