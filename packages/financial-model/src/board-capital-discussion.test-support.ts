@@ -237,8 +237,17 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
   amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
-  deferredCapexFactor?: number; longInstrumentLabel?: string} = {}) {
+  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true} = {}) {
   const k = auroraCapitalPathsKernel();
+  // Regressions only: the horizon after the plan reaches 2034 and the tested alternative profile pays its last third in 2034.
+  if (variant.alternativeEndingIn2034) {
+    const kk = k as unknown as {index: {afterHorizon: {year: number; annualRate: string}[]}; postHorizon: Record<string, unknown>; instruments: Record<string, unknown>[]};
+    kk.index.afterHorizon = [...kk.index.afterHorizon, {year: 2034, annualRate: "0.12"}];
+    for (const [key, v] of Object.entries(kk.postHorizon)) kk.postHorizon[key] = key === "years" ? [...v as number[], 2034] : [...v as string[], (v as string[]).at(-1)!];
+    const long = kk.instruments.find((x) => x.id === "debenture-80")! as {afterHorizon: {shares: {year: number; share: string}[]; alternatives: {id: string; label: string; shares: {year: number; share: string}[]}[]}};
+    const third = long.afterHorizon.alternatives[0]!.shares[0]!.share;
+    long.afterHorizon.alternatives = [{id: "cinco-anos", label: "Amortização de 2029 a 2034", shares: [{year: 2029, share: third}, {year: 2030, share: third}, {year: 2034, share: third}]}];
+  }
   // Regressions only: the deferred variant's capex multiplied (a deferral that also changes magnitude).
   if (variant.deferredCapexFactor) {
     const later = k.projectVariants.find((v) => v.id === "adiar-12") as unknown as {effects: Record<string, string[]>};

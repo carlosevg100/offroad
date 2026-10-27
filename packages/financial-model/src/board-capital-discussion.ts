@@ -394,6 +394,16 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("value" in o) return o.value.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
     if ("var" in o) {if (!Object.hasOwn(vars, o.var)) throw unverified(`variable_${o.var}`); return vars[o.var]!;}
     if ("slot" in o) {const v = values[o.slot]; if (v === undefined) throw unverified(`slot_${o.slot}`); if (v === null) throw indefinite(`slot_${o.slot}`); return o.year ? v.value.slice(0, 4) : v.value;}
+    if ("firstPaid" in o || "lastPaid" in o || "lastListed" in o) {
+      const [method, path, key, field] = "firstPaid" in o ? o.firstPaid : "lastPaid" in o ? o.lastPaid : [...o.lastListed, ""];
+      const rows = read(method, path);
+      if (!Array.isArray(rows) || !rows.length) throw indefinite(`schedule_${path}_absent`);
+      const keyed = rows.map((r) => ({k: scalar((r as Record<string, unknown>)[key], key), v: field ? (r as Record<string, unknown>)[field] : null}));
+      if ("lastListed" in o) return keyed.at(-1)!.k;
+      const paid = keyed.filter((r) => !new Exact(scalar(r.v, field)).eq(0));
+      if (!paid.length) throw indefinite(`schedule_${path}_without_payment`);
+      return "firstPaid" in o ? paid[0]!.k : paid.at(-1)!.k;
+    }
     if ("contributed" in o) {
       // An adopted term the result records: exactly one contribution whose field path ends with the given suffix.
       const [method, rawSuffix] = o.contributed, packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
@@ -408,7 +418,20 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   const ordering = (op: string) => ["lt", "le", "gt", "ge"].includes(op);
   // The value of an operand as the text shows it: a bound figure's display, read back in the field's own scale; any
   // operand the text does not show (a constant, a source field) is its exact value.
+  // A source field the sentence does not show, but another field of the material does: its one presentation.
+  const atFigure = (o: {at: readonly [string, string]}, f: BoardFigureDisplay) => !("pending" in f) && !!f.origin && f.origin.methodId === o.at[0]
+    && f.origin.path === o.at[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "\u0000");
+  const shownFigure = (f: BoardFigureDisplay): string => {
+    if ("pending" in f || !f.origin) throw indefinite("figure_pending");
+    if (["calendar", "date", "label", "flag"].includes(f.unit)) return f.origin.value;
+    const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(f.display.replace(/\u2212/g, "-"));
+    if (!m) return f.origin.value;
+    const n = new Exact(m[0].replace(/\./g, "").replace(",", "."));
+    const scale = boardFieldOf(f.origin.methodId, f.origin.path)?.scale;
+    return (scale === "reais" ? n.times(1000000) : scale === "ratio" ? n.div(100) : n).toFixed();
+  };
   const shownOperand = (o: BoardOperand, exact: string): string => {
+    if (typeof o === "object" && "at" in o && !o.year) {const hit = [...context.figures.values()].find((f) => atFigure(o, f)); return hit ? shownFigure(hit) : exact;}
     if (typeof o !== "object" || !("slot" in o)) return exact;
     const f = context.figures.get(bindings[o.slot]!);
     if (!f || "pending" in f || !f.origin || ["calendar", "date", "label", "flag"].includes(f.unit) || o.year) return exact;
@@ -464,7 +487,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     return out;
   };
-  let shownLost: {slots: string[]; betweenTwoShown: boolean} | null = null;
+  let shownLost: {figures: string[]; betweenTwoShown: boolean} | null = null;
   const holds = (c: BoardCondition): boolean => {
     if ("compare" in c) {
       const a = operand(c.compare[0]), b = operand(c.compare[2]);
@@ -473,7 +496,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         const sa = shownOperand(c.compare[0], a), sb = shownOperand(c.compare[2], b);
         if (!compareBoard(sa, c.compare[1], sb)) {
           const slots = [c.compare[0], c.compare[2]].flatMap((o) => typeof o === "object" && "slot" in o ? [o.slot] : []);
-          shownLost = {slots, betweenTwoShown: slots.length === 2 && ["gt", "lt"].includes(c.compare[1])};
+          const shownElsewhere = [c.compare[0], c.compare[2]].flatMap((o) => typeof o === "object" && "at" in o ? [...context.figures].filter(([, f]) => atFigure(o, f)).map(([id]) => id) : []);
+          shownLost = {figures: [...slots.map((x) => bindings[x]!), ...shownElsewhere], betweenTwoShown: slots.length === 2 && ["gt", "lt"].includes(c.compare[1])};
         }
       }
       return true;
@@ -484,12 +508,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (ordering(c.op)) {
         // The members of the list shown in the same sentence are compared as shown with the reference as shown.
         const sThan = shownOperand(c.than, than), listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
-        for (const [slot, id] of Object.entries(bindings)) {
-          const f = context.figures.get(id);
-          if (!f || "pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
+        // Every member shown anywhere in the material (each reading has one presentation in the whole material).
+        for (const [id, f] of context.figures) {
+          if ("pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
           if (!new RegExp(`^${listPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\[[^\\]]+\\]\\.${c.every[2]}$`).test(f.origin.path)) continue;
-          if (!compareBoard(shownOperand({slot}, f.origin.value), c.op, sThan))
-            shownLost = {slots: [slot, ...typeof c.than === "object" && "slot" in c.than ? [c.than.slot] : []], betweenTwoShown: false};
+          if (!compareBoard(shownFigure(f), c.op, sThan))
+            shownLost = {figures: [id, ...typeof c.than === "object" && "slot" in c.than ? [bindings[c.than.slot]!] : []], betweenTwoShown: false};
         }
       }
       return true;
@@ -701,9 +725,9 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (value === "undefined") throw new Error(`board_capital_template_condition_undefined:${templateId}:${i}`);
     if (!value) throw new Error(`board_capital_template_condition_failed:${templateId}:${i}`);
     if (shownLost) {
-      const lost = shownLost as {slots: string[]; betweenTwoShown: boolean};
+      const lost = shownLost as {figures: string[]; betweenTwoShown: boolean};
       if (lost.betweenTwoShown && template.nearlyEqual) {shownText = template.nearlyEqual; return;}
-      throw new Error(`board_capital_display_order_lost:${templateId}:${i}:${lost.slots.map((x) => bindings[x]).join(",")}`);
+      throw new Error(`board_capital_display_order_lost:${templateId}:${i}:${[...new Set(lost.figures)].join(",")}`);
     }
   });
   const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [], unknownSpecies: string[] = [];
@@ -1100,6 +1124,13 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: f.path, value: check.value}, ...unnamed ? {unnamed: true as const} : {}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
       scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
+  }
+  // One presentation per reading in the whole material: the same field of the same result is never shown at two precisions.
+  const presentations = new Map<string, {ids: string[]; presentation: string}>();
+  for (const f of d.figures) if (f.kind === "reading") {
+    const k = `${f.sourceId}|${f.path}`, seen = presentations.get(k);
+    if (seen && seen.presentation !== f.presentation) throw new Error(`board_capital_reading_presentation_not_unique:${[...seen.ids, f.id].join(",")}`);
+    presentations.set(k, {ids: [...seen?.ids ?? [], f.id], presentation: f.presentation});
   }
   return {figures, checks};
 }

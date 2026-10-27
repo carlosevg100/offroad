@@ -228,7 +228,10 @@ export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [str
  * four characters. */
 export type BoardOperand = {slot: string; year?: true} | {value: string} | {var: string} | {at: readonly [string, string]; year?: true}
   /** An adopted term the result records among its contributions, by the end of its field path (a contract clause). */
-  | {contributed: readonly [string, string]};
+  | {contributed: readonly [string, string]}
+  /** In a schedule (a list of the source, by key), the key of the first or last effective payment (field not zero), or
+   * the schedule's last listed key. */
+  | {firstPaid: readonly [string, string, string, string]} | {lastPaid: readonly [string, string, string, string]} | {lastListed: readonly [string, string, string]};
 export type BoardComparison = "lt" | "le" | "gt" | "ge" | "eq" | "ne" | "prefix";
 /** Every condition may name the material assertion of the fixed text it sustains; the library is swept by these. */
 export type BoardCondition = BoardConditionBody & {claim?: string};
@@ -404,6 +407,7 @@ const bankReserve = claim("a linha bancária fica só como reserva", cmp(at(RF, 
 const L = "readings.recommendation.longInstrument.";
 const issue = s("money", FP, L + "issueTarget", "value"), term = s("years", FP, L + "termYears");
 const policy = s("multiple", CV, "result.headroom.limits[id=politica].maximumRatio"), covenant = s("multiple", CV, "result.headroom.limits[id=aditamento].maximumRatio");
+const schedule = (profile: string) => `result.evaluation.paths[id=$p].amortizationTests[profileId=${profile}].years`;
 const metric = (type: BoardSlotType, caseId: string, field: string, nature?: "balance" | "flow" | "value") => s(type, IP, `comparison.metrics[caseId=${caseId}].${field}`, nature);
 const measurement = (type: BoardSlotType, id: string, field: string, nature?: "balance" | "flow" | "value") => s(type, CV, `result.headroom.measurements[id=${id}].${field}`, nature);
 const tightWeek = s("date", WC, "readings.tightestWeek.weekStart");
@@ -578,7 +582,10 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("o caminho recomendado tem exatamente estes movimentos, entre eles o pré-pagamento da debênture atual e da dívida nomeada",
         moves("$p", {added: [bankShort, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}))]}),
   "recommendation.amortization": t("page.line", "Amortização {de:inicio} {a:fim}.",
-    {inicio: s("date", FP, L + "firstAmortizationYear"), fim: s("date", FP, L + "lastAmortizationYear")}, {when: claim("o início vem antes do fim", cmp("inicio", "le", "fim"))}),
+    {inicio: s("date", FP, L + "firstAmortizationYear"), fim: s("date", FP, L + "lastAmortizationYear")}, {when: [...claim("o início vem antes do fim", cmp("inicio", "le", "fim")),
+      // The span shown is the schedule's: first and last effective payments of the adopted profile of the recommended path.
+      ...claim("o início e o fim são o primeiro e o último pagamento efetivo do perfil adotado", {bind: "p", to: at(FP, "readings.recommendation.pathId")},
+        cmp("inicio", "eq", {firstPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}), cmp("fim", "eq", {lastPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}))]}),
   "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
     {projeto: project("o"), credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: [...bankFallback, ...sameProject]}),
   "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
@@ -634,10 +641,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {answers: "q.term", when: [...claim("as leituras são do caminho recomendado", cmp("$p", "eq", at(FP, "readings.recommendation.pathId"))),
       ...claim("a amortização supera o caixa disponível no ano mostrado, o primeiro em que o perfil falha", cmp("amortizacao", "gt", "disponivel"),
         cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].firstShortfallYear"), "eq", "ano")),
-      ...claim("o perfil testado termina antes do adotado", cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].passes"), "eq", {value: "false"}),
-        cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=adopted].passes"), "eq", {value: "true"}),
-        {bind: "last", to: at(FP, L + "lastAmortizationYear")},
-        cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$last].scheduledAmortization"), "eq", {value: "0"}))]}),
+      ...claim("o perfil testado falha e o adotado passa", cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].passes"), "eq", {value: "false"}),
+        cmp(at(FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=adopted].passes"), "eq", {value: "true"})),
+      // "Mais curto": the tested profile's last effective payment comes before the adopted one's, by the years of the
+      // schedules, and the tested schedule is known to end (its last payment is not its last listed year).
+      ...claim("o perfil testado termina antes do adotado: último pagamento efetivo anterior, pelas datas dos dois cronogramas",
+        cmp({lastPaid: [FP, schedule("cinco-anos"), "year", "scheduledAmortization"]}, "lt", {lastPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}),
+        cmp({lastPaid: [FP, schedule("cinco-anos"), "year", "scheduledAmortization"]}, "lt", {lastListed: [FP, schedule("cinco-anos"), "year"]}))]}),
   "q.demand": t("question", "E se as gestoras não comprarem o volume todo?"),
   "a.demand": t("answer", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo de cerca de {valor}, com amortização programada, que pré-paga a dívida com {credor}, com waiver e anuência dos {species:titulares:existing}, decidido até {prazo}, antes do vencimento dessa dívida {em:vencimento}.",
     {projeto: project("o"), valor: s("money", FP, "readings.alternative.issueTarget", "value"), prazo: dl("delib.action.decide_route"), credor: creditorOf("$i"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
@@ -713,6 +723,9 @@ export const boardTemplates: Record<string, BoardTemplate> = {
  * fields and the condition that sustain it. A template whose fixed text asserts nothing beyond its readings has none. */
 export function boardTemplateClaims() {
   const describe = (o: BoardOperand): string => "slot" in o ? `posição ${o.slot}` : "value" in o ? `"${o.value}"` : "var" in o ? `$${o.var}`
+    : "firstPaid" in o ? `primeiro pagamento efetivo de ${o.firstPaid[0]} ${o.firstPaid[1]} (${o.firstPaid[3]} não nulo, por ${o.firstPaid[2]})`
+    : "lastPaid" in o ? `último pagamento efetivo de ${o.lastPaid[0]} ${o.lastPaid[1]} (${o.lastPaid[3]} não nulo, por ${o.lastPaid[2]})`
+    : "lastListed" in o ? `último ${o.lastListed[2]} listado em ${o.lastListed[0]} ${o.lastListed[1]}`
     : "at" in o ? `${o.at[0]} ${o.at[1]}${o.year ? " (ano)" : ""}` : `contrato ${o.contributed[0]} ${o.contributed[1]}`;
   const series = (x: BoardSeries) => "list" in x ? `${x.list[0]} ${x.list[1]}[*].${x.field} por ${x.key}` : "contributed" in x ? `termo adotado ${x.contributed[0]} ${x.contributed[1]}`
     : "projectionRows" in x ? `${x.projectionRows[0]} cenário ${x.projectionRows[1]} linhas .${x.field}` : `${x.projectionDriver[0]} driver ${x.projectionDriver[2]} do cenário ${x.projectionDriver[1]} (ou do cenário de que deriva)`;

@@ -25,7 +25,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(reading_presentation_not_unique|template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -558,6 +558,25 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (longSays && planSpecies.long !== (longSays[3] ?? longSays[5])) bad.push(`species_long:${t.slice(0, 60)}`);
     const existingSays = /(debênture|nota comercial) atual|debenturistas|waiver da (debênture|nota comercial)/.exec(t);
     if (existingSays && planSpecies.existing !== (existingSays[0] === "debenturistas" ? "debênture" : existingSays[1] ?? existingSays[2])) bad.push(`species_existing:${t.slice(0, 60)}`);
+  }
+  // Coherence across fields: a text that puts every measurement below the policy holds for every measurement shown
+  // anywhere in the material, at its one presentation.
+  for (const t of texts) {
+    const below = /abaixo d(?:a política de|e) (-?[\d.,]+)x nos cenários avaliados/.exec(t);
+    if (!below) continue;
+    const limit = new D(below[1]!.replace(/\./g, "").replace(",", "."));
+    for (const x of d.identity.filter((i) => /headroom\.measurements\[id=[^\]]+\]\.ratio$/.test(i.path)))
+      if (!new D(/-?[\d.]+(?:,\d+)?/.exec(x.display)![0].replace(/\./g, "").replace(",", ".")).lt(limit)) bad.push(`order_across_fields:${x.figureId}`);
+  }
+  // A shorter profile ends earlier: the last effective payment of the tested profile comes before the adopted one's, by
+  // the years of the two schedules, and the tested schedule shows its end.
+  const fpSource = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "evaluate-financing-paths")?.packetFingerprint)?.packet as
+    {readings?: {recommendation?: {pathId?: string}}; result?: {evaluation?: {paths?: {id: string; amortizationTests?: {profileId: string; years: {year: number; scheduledAmortization: string}[]}[]}[]}}} | undefined;
+  for (const t of texts.filter((x) => /perfil de amortização mais curto testado/.test(x))) {
+    const tests = fpSource?.result?.evaluation?.paths?.find((p) => p.id === fpSource.readings?.recommendation?.pathId)?.amortizationTests ?? [];
+    const last = (id: string) => {const ys = tests.find((x) => x.profileId === id)?.years ?? []; const paid = ys.filter((y) => !new D(y.scheduledAmortization).eq(0)); return {last: paid.at(-1)?.year, listed: ys.at(-1)?.year};};
+    const tested = last("cinco-anos"), adopted = last("adopted");
+    if (!(tested.last !== undefined && adopted.last !== undefined && tested.last < adopted.last && tested.last < tested.listed!)) bad.push(`term_last_payment:${t.slice(0, 60)}`);
   }
   // Orders as shown: a text that says one shown figure is above or below another says so of the numbers as shown.
   for (const t of texts) {
@@ -1174,6 +1193,34 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       page.lines = page.lines.map((l) => l.replace("R$ -0,01 milhão", "R$ 0,0 milhão"));
       expect(oracle(forged, [{packet: investment}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("sign_as_shown:"))).toBe(true);
     }
+  });
+  it("regression r27: one presentation per reading across the material, and a shorter profile by its last effective payment (full path, oracle not vacuous)", () => {
+    // The adverse leverage of 2,459 shown as 2,5x only in the wheat answer, the summary saying below 2,5x in every scenario.
+    const covenant = auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>;
+    const edit = (places: string, stated: string) => (c: CaseData) => {
+      c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", places, stated];
+      const page = c.pages.find((x) => x.id === "alavancagem")!;
+      page.title = "risk.policy_definition|politica=policy-limit"; page.lines = page.lines.filter((l) => !l.startsWith("risk.leverage_adverse"));
+    };
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, edit("1", "2.5")))).toThrow(/board_capital_display_order_lost:summary\.closing\.leverage:0:lev-adv27/);
+      const p = withBoardSource("covenant", covenant, () => full(turn, edit("2", "2.46")));
+      expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the same material with the adverse leverage shown as 2,5x elsewhere.
+      const forged = structuredClone(p);
+      forged.result.discussion!.identity.find((x) => x.figureId === "lev-adv27")!.display = "2,5x";
+      expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("order_across_fields:lev-adv27"))).toBe(true);
+    }
+    // The same reading at two precisions is refused.
+    expect(() => full(2, (c) => {c.extraReadings["lev-adv27-short"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.4"];
+      c.questions.find((q) => q.id === "trigo")!.answer = c.questions.find((q) => q.id === "trigo")!.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-short");}))
+      .toThrow("board_capital_reading_presentation_not_unique");
+    // The tested profile that ends in 2034, after the adopted one's 2033: never "mais curto".
+    const plan = auroraPlanPacket({alternativeEndingIn2034: true}) as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const) expect(() => withBoardSource("plano-2027", plan, () => full(turn, () => undefined))).toThrow("board_capital_template_condition_failed:a.term");
+    const calibrationPlan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
+    const forged = {...plan, fingerprint: (calibrationPlan.packet as {fingerprint: string}).fingerprint};
+    expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("term_last_payment:"))).toBe(true);
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

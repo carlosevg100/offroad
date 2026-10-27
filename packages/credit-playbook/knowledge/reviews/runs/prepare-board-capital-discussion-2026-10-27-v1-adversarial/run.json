@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T23:14:06.501Z",
-    "finishedAt": "2026-10-27T23:16:36.376Z"
+    "startedAt": "2026-10-27T23:45:17.003Z",
+    "finishedAt": "2026-10-27T23:47:55.040Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,46 @@
       "passed": true
     },
     {
+      "id": "summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "951281ef39da79a4155d624d15dbee378d09d8313ad6c6d3942509450737f262",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "tested-profile-ending-in-2034-called-shorter-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a53fe936e2e1bc4e80fa7bd5ee276e9d5c7b32fa2b5118a4b3be9d0910a12304",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "1042279509859c17eb51fd85c53bd1a895ad74ebaf724f97d1d0516ce801531f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "tested-profile-ending-in-2034-called-shorter-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ffa499d0e119b1c14376b17b4f1341ebcf6c9a94f9725e2be1aa5f7761cba77c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "same-reading-at-two-precisions",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "84741ec70d5ce781dee5e7b84f3ea07493d6f22ea5accb32da4ec063e7e5c5b2",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "adverse-leverage-2-459-shown-as-the-policy-2-5-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1191,6 +1231,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "801e334c7f09a93b217b5053107cd35f45028ba80f071494a4f386ba80286edf",
+  "evidenceFingerprint": "94304f2d1988dc65bc79936a4cac7a34539b8708c081f3bed5976c33995868e0",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

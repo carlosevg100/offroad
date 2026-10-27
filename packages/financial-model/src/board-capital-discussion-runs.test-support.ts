@@ -316,6 +316,11 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r27: the adverse leverage with two decimals, shown only in the wheat answer, keeps the summary's order.
+    observe("summary-below-the-policy-with-the-adverse-shown-with-two-decimals", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
+        const page = c.pages.find((x) => x.id === "alavancagem")!; page.title = "risk.policy_definition|politica=policy-limit"; page.lines = page.lines.filter((l) => !l.startsWith("risk.leverage_adverse"));})),
+      {wheat: true}, (p) => ({wheat: current(p).questions.find((q) => q.id === "trigo")!.answer.includes("a alavancagem fica em 2,46x")})),
     // Review r26: the same figures stated with two decimals keep the order and the sign as shown.
     observe("adverse-leverage-stated-with-two-decimals-keeps-the-order", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];})),
@@ -539,6 +544,17 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r27: one presentation per reading across the material; a shorter profile by its last effective payment.
+    ...([2, 3] as const).flatMap((turn) => [
+      [`summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
+        () => build(turn, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.5"];
+          const page = c.pages.find((x) => x.id === "alavancagem")!; page.title = "risk.policy_definition|politica=policy-limit"; page.lines = page.lines.filter((l) => !l.startsWith("risk.leverage_adverse"));})),
+        "board_capital_display_order_lost:summary.closing.leverage:0:lev-adv27"],
+      [`tested-profile-ending-in-2034-called-shorter-turn-${turn}`, () => withBoardSource("plano-2027", auroraPlanPacket({alternativeEndingIn2034: true}) as unknown as Record<string, unknown>, () => build(turn, () => undefined)),
+        "board_capital_template_condition_failed:a.term"],
+    ] as [string, () => unknown, string][]),
+    ["same-reading-at-two-precisions", () => build(2, (c) => {c.extraReadings["lev-adv27-short"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.4"];
+      const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-short");}), "board_capital_reading_presentation_not_unique"],
     // Review r26: an order or a sign that the shown figures do not keep.
     ...([2, 3] as const).flatMap((turn) => [
       [`adverse-leverage-2-459-shown-as-the-policy-2-5-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
