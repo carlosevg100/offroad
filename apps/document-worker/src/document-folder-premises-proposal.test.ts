@@ -69,7 +69,8 @@ const withoutInformedIds = (p: DocumentFolderInventoryPacket) => ({...p.result.i
 
 /** The reading jobs as the database runs them: one per bytes and registry, each reading the stored layer by content,
  * kept and returned to the turn by document. `pending` leaves the named documents without a reading yet. */
-function readingStore(evidence: () => DocumentFolderEvidence, read: (r: DocumentFolderReadingRequest) => Promise<unknown>, pending: ReadonlySet<string> = new Set()) {
+function readingStore(evidence: () => DocumentFolderEvidence, read: (r: DocumentFolderReadingRequest) => Promise<unknown>, pending: ReadonlySet<string> = new Set(),
+  refused: ReadonlyMap<string, string> = new Map()) {
   const kept = new Map<string, Promise<DocumentFolderReadingOutcome>>();
   return async (request: {readerVersion: string; context: unknown; files: {documentId: string}[]}) => {
     expect(request.readerVersion).toBe(documentFolderReaderVersion);
@@ -77,6 +78,7 @@ function readingStore(evidence: () => DocumentFolderEvidence, read: (r: Document
     return {contextFingerprint: "c".repeat(64), queued: 0, files: await Promise.all(request.files.map(async ({documentId}) => {
       const f = evidence().files.find((x) => x.documentId === documentId)!;
       if (pending.has(documentId)) return {documentId, sha256: f.sha256, status: "pending", reading: null, refusalCode: null};
+      if (refused.has(documentId)) return {documentId, sha256: f.sha256, status: "refused", reading: null, refusalCode: refused.get(documentId)!};
       const key = `${f.sha256}:${ctx}`;
       if (!kept.has(key)) kept.set(key, readDocumentFolderFile({mimeType: f.mimeType, layer: f.layer!}, request.context as never, read));
       const r = await kept.get(key)!;
@@ -86,13 +88,13 @@ function readingStore(evidence: () => DocumentFolderEvidence, read: (r: Document
 }
 
 async function run(o: {message: string; readings: DocumentReading[]; extraction?: DocumentFolderExtraction; earlier?: string[]; prior?: unknown; date?: string; author?: string | null;
-  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]; pending?: Set<string>; resume?: {framing: DocumentFolderFraming}; framings?: unknown[]; onExtract?: () => void}) {
+  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]; pending?: Set<string>; refused?: Map<string, string>; resume?: {framing: DocumentFolderFraming}; framings?: unknown[]; onExtract?: () => void}) {
   const events: string[] = [], requests = o.requests ?? [];
   const all = [...s.auroraFolderReadings(), ...s.auroraTurnTwoReadings()];
   const evidence = o.evidence ?? evidenceOf(o.readings);
   const result = await proposeDocumentFolderPremisesForTurn({message: o.message, hasAttachments: true, recentUserMessages: o.earlier ?? [], projectId,
     messageDate: o.date ?? "2026-09-01", author: o.author === undefined ? "Controller da Aurora" : o.author,
-    loadFolder: async () => evidence, loadPrior: async () => ({prior: o.prior ?? null}), loadReadings: async (request) => {o.framings?.push(request.framing); return readingStore(() => evidence, reader(all, requests), o.pending)(request);}, ...o.resume ? {resume: o.resume} : {},
+    loadFolder: async () => evidence, loadPrior: async () => ({prior: o.prior ?? null}), loadReadings: async (request) => {o.framings?.push(request.framing); return readingStore(() => evidence, reader(all, requests), o.pending, o.refused)(request);}, ...o.resume ? {resume: o.resume} : {},
     extract: async () => {o.onExtract?.(); return o.extraction ?? turn({mode: {value: "organize", origin: "informed", source: "Organiza e me diz o que tem"}});}, log: (event) => {events.push(event);}, asks});
   return {result, events, requests};
 }
@@ -192,6 +194,13 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     evidence.files[photo] = {...evidence.files[photo]!, layer: {...evidence.files[photo]!.layer!, pages: [{n: 1, blocks: [], tables: [], scanned: true}]} as never};
     const p = (await run({message: runs.folderQuestion, readings, evidence})).result!;
     expect(p.forAdvisor).toMatchObject({status: "missing", missing: [`files.${photo + 1}.unreadable`]});
+  });
+
+  it("names a file whose use was withdrawn, and one whose reading kept failing, by position, never from a stored reading", async () => {
+    const readings = s.auroraFolderReadings();
+    const r = (await run({message: runs.folderQuestion, readings,
+      refused: new Map([[readings[1]!.fileId, "source_rights_revoked"], [readings[2]!.fileId, "reading_failed"]])})).result!;
+    expect(r.forAdvisor).toMatchObject({status: "missing", missing: ["files.2.rights_withdrawn", "files.3.reading"]});
   });
 
   it("keeps the person's framing while the files are read, and the resumed turn organizes the folder as asked without a new message", async () => {

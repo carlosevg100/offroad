@@ -159,9 +159,10 @@ declare f text:=pg_get_functiondef('private.worker_can_access_document_storage_v
 begin
  if private.worker_can_access_document_storage_v1('document-layers','a/b/c.json',false) or private.worker_can_access_document_storage_v1('document-layers','a/b/c.json',true) then
   raise exception 'storage gate open without a job';end if;
- -- The conversation reads no layer; only the folder reading job, read-only, for the one file it was queued for.
+ -- The conversation reads no layer; only the folder reading job, read-only, for the one file it was queued for (the job's
+ -- source_document_id, whose own rights its authority checks).
  if position('agent_operation_brief' in f)>0 or position('document_folder_reading' in f)=0 or position('not coalesce(p_write,true)' in f)=0
-  or position('ds.capital_project_id=j.work_id' in f)=0 or position('l.source_document_id::text=j.payload->>''source_document_id''' in f)=0
+  or position('ds.capital_project_id=j.work_id' in f)=0 or position('l.source_document_id=j.source_document_id' in f)=0
   or position('j.payload->>''layer_object_path''' in f)=0 then raise exception 'storage gate shape changed';end if;
  raise notice 'PASS: storage gate reads only';
 end $$;

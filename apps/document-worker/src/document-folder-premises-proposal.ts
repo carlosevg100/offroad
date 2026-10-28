@@ -221,6 +221,8 @@ export function assembleDocumentFolderReadings(files: readonly FolderFile[], reg
     if (f.locked || !readable(f)) return at("unreadable");
     const r = stored.get(f.documentId);
     if (!r || r.status === "pending") return at("reading_pending");
+    // The database refuses by name a file whose own rights the person no longer holds; its stored reading is never given.
+    if (r.status === "refused" && r.refusalCode === "source_rights_revoked") return at("rights_withdrawn");
     if (r.status === "refused") return at((documentFolderRefusals as readonly string[]).includes(r.refusalCode ?? "") ? r.refusalCode! : "reading");
     const value = documentFolderStoredReadingSchema.safeParse(r.reading);
     if (!value.success) return at("reading");

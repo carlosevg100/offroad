@@ -1,8 +1,9 @@
 -- Lote 4, ficha C09: each file of a folder is read in a job of its own, outside the conversation turn and its
--- budget. The turn asks for the readings of its work's files; a file without one gets one reading job (one per
--- bytes, reader version and registry, at most 50 waiting per organization), and the turn names it as "in reading"
--- until it is ready or refused by name. A reading is kept per organization, bytes, reader version and registry,
--- so the same bytes in another work of the organization are not read again. Nothing here grants a client anything.
+-- budget. The turn asks for the readings of its work's files; a file without one gets one reading job of its own
+-- wait (its work and person; at most 50 waiting per organization), and the turn names it as "in reading" until it is
+-- ready or refused by name. A reading is kept per organization, bytes, reader version and registry, so the same bytes
+-- in another work of the organization are not read again; it is given only for a file whose own rights the person
+-- still holds. Nothing here grants a client anything.
 
 -- 1. The kind.
 alter table public.processing_jobs drop constraint processing_jobs_kind_check;
@@ -96,8 +97,32 @@ language sql volatile security definer set search_path='' as $$
 $$;
 revoke all on function private.document_folder_reading_lock_v1(uuid,text,text) from public,anon,authenticated,service_role;
 
--- One reading job per pending file of a wait that has none, while fewer than 50 wait in the organization; the jobs of
--- one call share one run, created by the wait's person, and run with that person's authority (the job trigger rechecks it).
+-- The state of one file for a person and a wait: refused when the person no longer holds the file's own rights (its
+-- session and document, revocation included), the stored reading when there is one, refused when its wait's reading
+-- jobs for those bytes ended three times without a reading, otherwise pending.
+create function private.document_folder_file_state_v1(p_org uuid,p_document uuid,p_subject uuid,p_wait uuid,p_reader_version text,p_context_fingerprint text) returns jsonb
+language plpgsql stable security definer set search_path='' as $$
+declare d public.source_documents;r private.document_folder_readings;
+begin
+ select * into d from public.source_documents where organization_id=p_org and id=p_document;
+ if d.id is null or not private.source_use_allowed_v1(p_org,d.id,p_subject,'process','analysis') or not private.source_use_allowed_v1(p_org,d.id,p_subject,'store','analysis') then
+  return jsonb_build_object('status','refused','reading',null,'refusalCode','source_rights_revoked');
+ end if;
+ select * into r from private.document_folder_readings where organization_id=p_org and sha256=d.sha256 and reader_version=p_reader_version and context_fingerprint=p_context_fingerprint;
+ if r.status is not null then return jsonb_build_object('status',r.status,'reading',r.reading,'refusalCode',r.refusal_code);end if;
+ if p_wait is not null and (select count(*) from public.processing_jobs j where j.organization_id=p_org and j.kind='document_folder_reading'
+   and j.status in ('failed','poison','cancelled') and j.payload->>'document_folder_wait_id'=p_wait::text and j.payload->>'sha256'=d.sha256
+   and j.payload->>'reader_version'=p_reader_version and j.payload->>'context_fingerprint'=p_context_fingerprint)>=3 then
+  return jsonb_build_object('status','refused','reading',null,'refusalCode','reading_failed');
+ end if;
+ return jsonb_build_object('status','pending','reading',null,'refusalCode',null);
+end $$;
+revoke all on function private.document_folder_file_state_v1(uuid,uuid,uuid,uuid,text,text) from public,anon,authenticated,service_role;
+
+-- One reading job per pending file of a wait that has none of its own, while fewer than 50 wait in the organization. A
+-- job belongs to one wait: the jobs of one call share one run, created by the wait's person, run with that person's
+-- authority (the job trigger rechecks it) and carry the target file in source_document_id, so the job's authority checks
+-- that file's own rights. Another wait's job for the same bytes is never relied on.
 create function private.document_folder_reading_enqueue_v1(p_org uuid,p_wait uuid,p_documents uuid[]) returns integer
 language plpgsql volatile security definer set search_path='' as $$
 declare w private.document_folder_reading_waits;waiting integer;run uuid;queued integer:=0;d record;
@@ -111,9 +136,9 @@ begin
  for d in select distinct on (sd.sha256) sd.id,sd.sha256 from unnest(p_documents) with ordinality u(id,n) join public.source_documents sd on sd.organization_id=p_org and sd.id=u.id
   join public.document_intake_sessions ss on ss.organization_id=sd.organization_id and ss.id=sd.intake_session_id and ss.capital_project_id=w.work_id
   where sd.sha256 ~ '^[a-f0-9]{64}$'
-   and not exists(select 1 from private.document_folder_readings r where r.organization_id=p_org and r.sha256=sd.sha256 and r.reader_version=w.reader_version and r.context_fingerprint=w.context_fingerprint)
+   and private.document_folder_file_state_v1(p_org,sd.id,w.subject_id,w.id,w.reader_version,w.context_fingerprint)->>'status'='pending'
    and not exists(select 1 from public.processing_jobs j where j.organization_id=p_org and j.kind='document_folder_reading' and j.status in ('queued','leased')
-    and j.payload->>'sha256'=sd.sha256 and j.payload->>'reader_version'=w.reader_version and j.payload->>'context_fingerprint'=w.context_fingerprint)
+    and j.payload->>'document_folder_wait_id'=w.id::text and j.payload->>'sha256'=sd.sha256)
   order by sd.sha256,u.n loop
   exit when waiting>=50;
   if run is null then
@@ -122,8 +147,8 @@ begin
     'manual','document-folder-reading-v1',w.subject_id,jsonb_build_object('perJob',private.document_folder_reading_budget_v1()))
    returning id into run;
   end if;
-  insert into public.processing_jobs(organization_id,processing_run_id,intake_session_id,kind,payload,max_attempts)
-  values(p_org,run,w.intake_session_id,'document_folder_reading',jsonb_build_object('source_document_id',d.id,'sha256',d.sha256,'reader_version',w.reader_version,
+  insert into public.processing_jobs(organization_id,processing_run_id,intake_session_id,source_document_id,kind,payload,max_attempts)
+  values(p_org,run,w.intake_session_id,d.id,'document_folder_reading',jsonb_build_object('source_document_id',d.id,'sha256',d.sha256,'reader_version',w.reader_version,
    'context_fingerprint',w.context_fingerprint,'context',w.context,'document_folder_wait_id',w.id,'model_budget',private.document_folder_reading_budget_v1()),2);
   waiting:=waiting+1;queued:=queued+1;
  end loop;
@@ -137,7 +162,7 @@ revoke all on function private.document_folder_reading_enqueue_v1(uuid,uuid,uuid
 create function private.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb,p_framing jsonb) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
 declare job_row public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);org uuid;work uuid;ctx text;conversation uuid;source uuid;wait uuid;
- f record;r private.document_folder_readings;out jsonb:='[]'::jsonb;pending uuid[]:='{}';named uuid[]:='{}';queued integer:=0;
+ f record;st jsonb;open_wait uuid;out jsonb:='[]'::jsonb;pending uuid[]:='{}';named uuid[]:='{}';queued integer:=0;
 begin
  if job_row.kind<>'agent_operation_brief' then raise exception 'agent_operation_brief_capability_required' using errcode='42501';end if;
  org:=job_row.organization_id;
@@ -148,6 +173,8 @@ begin
   or (p_framing is not null and (jsonb_typeof(p_framing) is distinct from 'object' or octet_length(p_framing::text)>65536)) then raise exception 'document_folder_readings_invalid' using errcode='22023';end if;
  ctx:=encode(extensions.digest(p_context::text,'sha256'),'hex');
  perform private.document_folder_reading_lock_v1(org,p_reader_version,ctx);
+ select id into open_wait from private.document_folder_reading_waits where organization_id=org and work_id=work and reader_version=p_reader_version
+  and context_fingerprint=ctx and consumed_at is null;
  for f in select x.n,d.id,d.sha256 from jsonb_array_elements(p_files) with ordinality x(v,n)
   left join public.source_documents d on d.organization_id=org and d.id::text=x.v->>'documentId' and d.sha256 ~ '^[a-f0-9]{64}$'
    and exists(select 1 from public.document_intake_sessions s where s.organization_id=d.organization_id and s.id=d.intake_session_id and s.capital_project_id=work)
@@ -155,9 +182,11 @@ begin
   -- Only a file of the job's own work is answered; anything else is refused by name, never looked up.
   if f.id is null then raise exception 'document_folder_reading_file_denied' using errcode='42501';end if;
   named:=named||f.id;
-  select * into r from private.document_folder_readings where organization_id=org and sha256=f.sha256 and reader_version=p_reader_version and context_fingerprint=ctx;
-  if r.status is not null then
-   out:=out||jsonb_build_array(jsonb_build_object('documentId',f.id,'sha256',f.sha256,'status',r.status,'reading',r.reading,'refusalCode',r.refusal_code));
+  -- The file's own rights under the job's person come first: a file whose rights were withdrawn is refused, its stored
+  -- reading never given and nothing queued for it.
+  st:=private.document_folder_file_state_v1(org,f.id,job_row.authorization_subject_id,open_wait,p_reader_version,ctx);
+  if st->>'status'<>'pending' then
+   out:=out||jsonb_build_array(jsonb_build_object('documentId',f.id,'sha256',f.sha256,'status',st->>'status','reading',st->'reading','refusalCode',st->>'refusalCode'));
   else
    pending:=pending||f.id;
    out:=out||jsonb_build_array(jsonb_build_object('documentId',f.id,'sha256',f.sha256,'status','pending','reading',null,'refusalCode',null));
@@ -200,7 +229,10 @@ language plpgsql volatile security definer set search_path='' as $$
 declare job_row public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);d public.source_documents;l public.document_layers;
 begin
  if job_row.kind<>'document_folder_reading' then raise exception 'document_folder_reading_capability_required' using errcode='42501';end if;
- select sd.* into d from public.source_documents sd where sd.organization_id=job_row.organization_id and sd.id::text=job_row.payload->>'source_document_id'
+ -- The capability already holds the target file's own rights (source_document_id); checked again here by name.
+ if job_row.source_document_id is null or not private.source_use_allowed_v1(job_row.organization_id,job_row.source_document_id,job_row.authorization_subject_id,'process','analysis')
+  then raise exception 'document_folder_reading_rights_revoked' using errcode='42501';end if;
+ select sd.* into d from public.source_documents sd where sd.organization_id=job_row.organization_id and sd.id=job_row.source_document_id
   and exists(select 1 from public.document_intake_sessions s where s.organization_id=sd.organization_id and s.id=sd.intake_session_id and s.capital_project_id=job_row.work_id);
  if d.id is null or d.sha256 is distinct from job_row.payload->>'sha256' then raise exception 'document_folder_reading_file_changed' using errcode='42501';end if;
  select * into l from public.document_layers where organization_id=d.organization_id and source_document_id=d.id and status='ready' order by document_version desc,created_at desc limit 1;
@@ -230,16 +262,18 @@ begin
  for w in select * from private.document_folder_reading_waits where organization_id=p_org and consumed_at is null order by created_at,id for update loop
   -- A wait whose person lost access to the work is left as it is: nothing is queued in that person's name.
   if not private.resource_access_as_subject_v1(w.organization_id,private.resource_root_v1(w.organization_id,w.intake_session_id),w.subject_id,'work') then continue;end if;
-  select coalesce(array_agg(sd.id),'{}') into missing from unnest(w.document_ids) u(id) join public.source_documents sd on sd.organization_id=w.organization_id and sd.id=u.id
-  where not exists(select 1 from private.document_folder_readings r where r.organization_id=w.organization_id and r.sha256=sd.sha256
-   and r.reader_version=w.reader_version and r.context_fingerprint=w.context_fingerprint);
+  select coalesce(array_agg(u.id),'{}') into missing from unnest(w.document_ids) u(id)
+  where private.document_folder_file_state_v1(w.organization_id,u.id,w.subject_id,w.id,w.reader_version,w.context_fingerprint)->>'status'='pending';
   if cardinality(missing)>0 then
    perform private.document_folder_reading_enqueue_v1(w.organization_id,w.id,missing);
    continue;
   end if;
-  -- One continuation at a time: scheduled again only when the last one ended without consuming the set.
+  -- One continuation at a time: scheduled again only when the last one ended without consuming the set, at most three
+  -- for a wait, and only by a worker account (the continuation's message is the system's, written by that account).
   if w.resume_message_id is not null and exists(select 1 from public.processing_jobs j where j.organization_id=w.organization_id and j.kind='agent_operation_brief'
     and j.payload->>'message_id'=w.resume_message_id::text and j.status in ('queued','leased','awaiting_approval','succeeded')) then continue;end if;
+  if auth.uid() is null or (select count(*) from public.agent_messages m where m.organization_id=w.organization_id and m.conversation_id=w.conversation_id
+    and m.metadata->>'kind'='document_folder_resume' and m.metadata->>'waitId'=w.id::text)>=3 then continue;end if;
   message:=gen_random_uuid();
   insert into public.processing_runs(organization_id,intake_session_id,run_no,trigger,status,pipeline_version,budget,versions,created_by)
   values(w.organization_id,w.intake_session_id,(select coalesce(max(run_no),0)+1 from public.processing_runs where organization_id=w.organization_id and intake_session_id=w.intake_session_id),
@@ -285,8 +319,25 @@ language sql volatile security invoker set search_path='' as $$ select private.w
 revoke all on function public.worker_record_document_folder_reading_v1(uuid,text,text,jsonb,text) from public,anon,authenticated,service_role;
 grant execute on function public.worker_record_document_folder_reading_v1(uuid,text,text,jsonb,text) to authenticated;
 
+-- A reading job or a continuation that ends without its result (failed for good, poison, or cancelled, by the outbox
+-- when its person lost access included) carries on the same drain: every open wait of the organization is queued
+-- again under its own person, and a complete wait gets its continuation again. Bounded by the three ended jobs per
+-- file and the three continuations per wait above.
+create function private.document_folder_reading_job_ended_v1() returns trigger
+language plpgsql security definer set search_path='' as $$
+begin
+ perform private.document_folder_reading_advance_v1(new.organization_id);
+ return null;
+end $$;
+revoke all on function private.document_folder_reading_job_ended_v1() from public,anon,authenticated,service_role;
+create trigger processing_jobs_document_folder_reading_ended after update of status on public.processing_jobs for each row
+ when (new.status in ('failed','poison','cancelled') and old.status is distinct from new.status
+  and (new.kind='document_folder_reading' or (new.kind='agent_operation_brief' and new.payload ? 'document_folder_resume')))
+ execute function private.document_folder_reading_job_ended_v1();
+
 -- 7. The storage gate: the document pipeline keeps its access; a leased folder reading job may read, never write, the
--- ready layer of the one file it was queued for, of its own organization and work. The conversation reads no layer.
+-- ready layer of the one file it was queued for (source_document_id, whose own rights the job's authority checks), of
+-- its own organization and work. The conversation reads no layer.
 create or replace function private.worker_can_access_document_storage_v1(p_bucket text,p_object_path text,p_write boolean)
  returns boolean
  language sql
@@ -300,7 +351,7 @@ as $function$
  and ((not p_write and p_bucket='opportunity-documents' and p_object_path=d.object_path)
  or (p_bucket='document-layers' and p_object_path=j.payload->>'layer_object_path')))
  or (not coalesce(p_write,true) and p_bucket='document-layers' and exists(select 1 from public.processing_jobs j
- join public.document_layers l on l.organization_id=j.organization_id and l.source_document_id::text=j.payload->>'source_document_id'
+ join public.document_layers l on l.organization_id=j.organization_id and l.source_document_id=j.source_document_id
   and l.bucket_id='document-layers' and l.object_path=p_object_path and l.status='ready'
  join public.source_documents d on d.organization_id=l.organization_id and d.id=l.source_document_id and d.sha256=j.payload->>'sha256'
  join public.document_intake_sessions ds on ds.organization_id=d.organization_id and ds.id=d.intake_session_id

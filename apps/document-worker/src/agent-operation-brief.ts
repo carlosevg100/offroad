@@ -409,7 +409,8 @@ Rules:
   company. When its status is missing, ask for the missing items in one short list, each with the reason; an
   unreadable or protected file is asked as a legible copy, by its position and name. A file whose missing item ends in
   reading_pending is still being read: say how many files are in reading and that the inventory comes when they are
-  read; never ask the person for them. A missing item ending in contradiction is a question answered two ways: ask which
+  read; never ask the person for them. A missing item ending in rights_withdrawn is a file whose use is no longer
+  allowed: name it by position as not available and never describe its content. A missing item ending in contradiction is a question answered two ways: ask which
   answer holds, quoting both, and never pick one.
 - financingPathsPremises is the premise proposal for the financing paths on one basis. When proposed, the debt in
   force, the indenture and its basket, the projection, the variants of the investment, each instrument and each path

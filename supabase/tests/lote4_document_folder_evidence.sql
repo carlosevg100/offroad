@@ -150,7 +150,8 @@ begin
 end $$;
 
 -- 2. The readings: the conversation reads no layer. It asks for the readings of its work's files; a file without one gets
--- one reading job, never two, and a file of another work is refused.
+-- one reading job, never two, that names its target file (whose own rights its authority checks), and a file of another
+-- work is refused.
 do $$
 declare r jsonb;
 begin
@@ -165,7 +166,8 @@ begin
  if (select payload->>'sha256' from public.processing_jobs where kind='document_folder_reading')<>repeat('1',64)
   or (select work_id from public.processing_jobs where kind='document_folder_reading')<>'30000000-0000-4000-8000-000000000711'
   or (select authorization_subject_id from public.processing_jobs where kind='document_folder_reading')<>'10000000-0000-4000-8000-000000000711'
-  or (select source_document_id from public.processing_jobs where kind='document_folder_reading') is not null then raise exception 'reading job wrong';end if;
+  or (select source_document_id from public.processing_jobs where kind='document_folder_reading') is distinct from 'a0000000-0000-4000-8000-000000000001'
+  then raise exception 'reading job wrong';end if;
  begin perform public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1','{}'::jsonb,
   '[{"documentId":"a0000000-0000-4000-8000-000000000004"}]'::jsonb,null); raise exception 'another work file answered';
  exception when insufficient_privilege then null; end;
@@ -321,6 +323,112 @@ begin
  if ev->'author'<>'null'::jsonb then raise exception 'system continuation read as the person: %',ev->'author';end if;
  if has_table_privilege('authenticated','private.document_folder_reading_waits','SELECT') then raise exception 'waits exposed';end if;
  raise notice 'PASS: the continuation is never the person''s message, and the wait closes when the set is read';
+end $$;
+
+-- 3d. A file's own rights: a second session of the same work holds a file with bytes already read; once its rights are
+-- withdrawn, the conversation of the first session is refused that file by name (the stored reading of the same bytes is
+-- never given for it, nothing is queued), and a reading job queued for it reads neither its input nor its layer.
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000711","role":"authenticated","aal":"aal1"}', true);
+insert into public.document_intake_sessions (id, organization_id, capital_project_id, started_by, journey, locale) values
+ ('40000000-0000-4000-8000-000000000712','20000000-0000-4000-8000-000000000711','30000000-0000-4000-8000-000000000711','10000000-0000-4000-8000-000000000711','company','pt-BR');
+insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,byte_size,sha256,created_by,processing_status,created_at) values
+ ('a0000000-0000-4000-8000-000000000008','20000000-0000-4000-8000-000000000711','40000000-0000-4000-8000-000000000712','20000000-0000-4000-8000-000000000711/40000000-0000-4000-8000-000000000712/h.pdf',
+  'balanco-copia.pdf','application/pdf',10,repeat('1',64),'10000000-0000-4000-8000-000000000711','ready',now());
+insert into private.source_version_verifications(organization_id,source_version_id,job_id,observed_sha256,observed_byte_size,receipt_id)
+values('20000000-0000-4000-8000-000000000711','a0000000-0000-4000-8000-000000000008',gen_random_uuid(),repeat('1',64),10,'synthetic-folder-h');
+select private.set_source_rights_v1('a0000000-0000-4000-8000-000000000008',0,array['read','process','store','derive','export'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+insert into public.document_layers(organization_id,source_document_id,layer_kind,object_path,sha256) values
+ ('20000000-0000-4000-8000-000000000711','a0000000-0000-4000-8000-000000000008','pdf','20000000-0000-4000-8000-000000000711/layers/h.json',repeat('8',64));
+update public.processing_jobs j set authorization_revision=r.revision from private.authorization_revisions r
+ where j.id='80000000-0000-4000-8000-000000000711' and r.organization_id=j.organization_id and r.resource_id=j.authorization_resource_id and r.subject_user_id=j.authorization_subject_id;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare r jsonb;
+begin
+ -- While the rights hold, the stored reading of the same bytes is given and another registry queues a job naming the file.
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000008"}]'::jsonb,null);
+ if r#>>'{files,0,status}'<>'ready' then raise exception 'held file not read: %',r;end if;
+ perform public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"h3","label":"H","groupLabel":"G"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000008"}]'::jsonb,null);
+ if not exists(select 1 from public.processing_jobs where kind='document_folder_reading' and source_document_id='a0000000-0000-4000-8000-000000000008' and status='queued')
+  then raise exception 'job for the second session file not queued';end if;
+end $$;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000711","role":"authenticated","aal":"aal1"}', true);
+select private.set_source_rights_v1('a0000000-0000-4000-8000-000000000008',(select max(revision) from private.source_rights_versions where source_version_id='a0000000-0000-4000-8000-000000000008'),
+ array['read'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+ lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('h',64),'sha256')
+ where kind='document_folder_reading' and source_document_id='a0000000-0000-4000-8000-000000000008' and status='queued';
+-- The withdrawal raises the work's revision: the conversation's next turn and the reading job are taken under the current
+-- one, so what refuses the file below is the file's own rights, not a stale revision.
+update public.processing_jobs j set authorization_revision=r.revision from private.authorization_revisions r
+ where (j.id='80000000-0000-4000-8000-000000000711' or j.source_document_id='a0000000-0000-4000-8000-000000000008')
+  and r.organization_id=j.organization_id and r.resource_id=j.authorization_resource_id and r.subject_user_id=j.authorization_subject_id;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare r jsonb;j uuid:=(select id from public.processing_jobs where kind='document_folder_reading' and source_document_id='a0000000-0000-4000-8000-000000000008');
+begin
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,
+  '[{"documentId":"a0000000-0000-4000-8000-000000000001"},{"documentId":"a0000000-0000-4000-8000-000000000008"}]'::jsonb,null);
+ if r#>>'{files,0,status}'<>'ready' then raise exception 'the first session file lost its reading';end if;
+ if r#>>'{files,1,status}'<>'refused' or r#>>'{files,1,refusalCode}'<>'source_rights_revoked' or r#>'{files,1,reading}'<>'null'::jsonb or (r->>'queued')::int<>0
+  then raise exception 'withdrawn file answered from the stored reading: %',r;end if;
+ begin perform public.worker_document_folder_reading_input_v1(j,repeat('h',64)); raise exception 'withdrawn file input read';
+ exception when insufficient_privilege then null; end;
+ if private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/h.json',false) then raise exception 'withdrawn file layer readable';end if;
+ raise notice 'PASS: a file whose own rights were withdrawn is refused by name, its reading and layer never given';
+end $$;
+
+-- 3e. Recovery without a recorded reading: a wait that got no place is queued when a place frees; a reading job that ends
+-- without its reading (cancelled by the outbox, failed for good) queues the file again under the wait's own person, at
+-- most three times, after which the file is refused by name and the wait completes; a continuation that fails is
+-- scheduled again, at most three for a wait. Another session's jobs take every place first.
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000711","role":"authenticated","aal":"aal1"}', true);
+insert into public.processing_jobs(organization_id,processing_run_id,intake_session_id,kind,payload,max_attempts)
+select '20000000-0000-4000-8000-000000000711','70000000-0000-4000-8000-000000000711','40000000-0000-4000-8000-000000000711','document_folder_reading',
+ jsonb_build_object('sha256',encode(extensions.digest('pad'||g,'sha256'),'hex'),'reader_version','document-folder-reading.2026.10.27-v1','context_fingerprint',repeat('0',64)),2
+from generate_series(1,50-(select count(*) from public.processing_jobs j where j.kind='document_folder_reading' and j.status in ('queued','leased')
+ and not exists(select 1 from private.document_folder_readings r where r.organization_id=j.organization_id and r.sha256=j.payload->>'sha256'
+  and r.reader_version=j.payload->>'reader_version' and r.context_fingerprint=j.payload->>'context_fingerprint'))::int) g;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare c jsonb:='{"registry":[{"id":"r3e","label":"R","groupLabel":"G"}]}';r jsonb;w uuid;j uuid;k integer;
+begin
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000721',repeat('w',64),'document-folder-reading.2026.10.27-v1',c,
+  '[{"documentId":"a0000000-0000-4000-8000-000000000003"}]',null);
+ select id into w from private.document_folder_reading_waits where work_id='30000000-0000-4000-8000-000000000721' and context=c and consumed_at is null;
+ if (r->>'queued')::int<>0 or w is null then raise exception 'queue not full for the test: %',r;end if;
+ -- Another session's job ends: the place goes to the waiting file, in its own wait and person.
+ update public.processing_jobs set status='cancelled' where id=(select id from public.processing_jobs where kind='document_folder_reading' and status='queued'
+  and payload->>'context_fingerprint'=repeat('0',64) limit 1);
+ for k in 1..3 loop
+  select id into j from public.processing_jobs where kind='document_folder_reading' and status='queued' and payload->>'document_folder_wait_id'=w::text
+   and source_document_id='a0000000-0000-4000-8000-000000000003' and intake_session_id='40000000-0000-4000-8000-000000000721'
+   and authorization_subject_id='10000000-0000-4000-8000-000000000711';
+  if j is null then raise exception 'file not queued again after % ended jobs',k-1;end if;
+  -- The first ends cancelled, as the outbox cancels it; the others fail for good.
+  update public.processing_jobs set status=case when k=1 then 'cancelled' else 'failed' end,capability_sha256=null,lease_expires_at=null,leased_by=null where id=j;
+ end loop;
+ if exists(select 1 from public.processing_jobs where kind='document_folder_reading' and status='queued' and payload->>'document_folder_wait_id'=w::text)
+  then raise exception 'file queued a fourth time';end if;
+ if (select count(*) from public.agent_messages where metadata->>'waitId'=w::text)<>1 then raise exception 'completed wait not resumed';end if;
+ -- The continuation fails: scheduled again, at most three for the wait.
+ for k in 1..3 loop
+  update public.processing_jobs set status='failed' where kind='agent_operation_brief' and status='queued' and payload#>>'{document_folder_resume,wait_id}'=w::text;
+ end loop;
+ if (select count(*) from public.agent_messages where metadata->>'waitId'=w::text)<>3 then raise exception 'failed continuation not scheduled again, or more than three';end if;
+ raise notice 'PASS: ended reading jobs and failed continuations carry the wait on, bounded';
+end $$;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare st jsonb;
+begin
+ st:=private.document_folder_file_state_v1('20000000-0000-4000-8000-000000000711','a0000000-0000-4000-8000-000000000003','10000000-0000-4000-8000-000000000711',
+  (select id from private.document_folder_reading_waits where work_id='30000000-0000-4000-8000-000000000721' and context='{"registry":[{"id":"r3e","label":"R","groupLabel":"G"}]}'),
+  'document-folder-reading.2026.10.27-v1',encode(extensions.digest('{"registry": [{"id": "r3e", "label": "R", "groupLabel": "G"}]}','sha256'),'hex'));
+ if st->>'refusalCode' is distinct from 'reading_failed' then raise exception 'exhausted file not refused by name: %',st;end if;
 end $$;
 
 -- 4. The priors as the worker reads them: none yet; and every door refuses a forged capability.
