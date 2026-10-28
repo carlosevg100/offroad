@@ -6,7 +6,7 @@ import type {ExecutionContractBasis} from "./contract";
 
 const id = (n: number) => `a4700000-0000-4000-9000-${String(n).padStart(12, "0")}`;
 const sha = (text: string) => createHash("sha256").update(text).digest("hex");
-type Source = {id: string; methodId: string; packet: Record<string, unknown>};
+type Source = {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: "reais" | "millions"};
 let facts: BoardCapitalDiscussionFacts, sources: Source[];
 beforeAll(async () => {
   const f = await import(new URL("../../financial-model/src/board-capital-discussion.test-support.ts", import.meta.url).href) as {auroraBoardFacts: (t: number) => BoardCapitalDiscussionFacts; auroraBoardSources: () => Source[]};
@@ -22,7 +22,8 @@ function basis(): ExecutionContractBasis {
   return {envelope: {canonical, fingerprint: sha(canonical)}, workId, purpose, versionId, sources: [{resourceId: id(60), sourceVersionId: id(61), contentHash: "1".repeat(64), rightsRevision: "1"}]} as unknown as ExecutionContractBasis;
 }
 const priors = (): BoardMaterialPriorResult[] => sources.map((s, n) => ({role: s.id as BoardMaterialRole, methodId: s.methodId, executionId: id(700 + n), result: JSON.stringify(s.packet),
-  resultFingerprint: s.packet.fingerprint as string, sources: [{resourceId: id(60 + n % 2), sourceVersionId: id(61 + (n % 2) * 2), contentHash: "1".repeat(64), rightsRevision: "1"}]}));
+  resultFingerprint: s.packet.fingerprint as string, sources: [{resourceId: id(60 + n % 2), sourceVersionId: id(61 + (n % 2) * 2), contentHash: "1".repeat(64), rightsRevision: "1"}],
+  moneyScale: s.moneyScale}));
 const ask = {question: "Conselho na quarta. Prepara a discussão de estrutura de capital.", objectives: [], asOf: "2026-09-30", situationIds: []};
 
 describe("board material over the stored results of the work (C47)", () => {
@@ -36,6 +37,10 @@ describe("board material over the stored results of the work (C47)", () => {
     expect(boardMaterialPriorResults(basis(), [...all, {...all[0]!, executionId: id(799)}])).toBeNull();
     expect(boardMaterialPriorResults(basis(), all.map((p, n) => n === 2 ? {...p, resultFingerprint: "0".repeat(64)} : p))).toBeNull();
     expect(boardMaterialPriorResults(basis(), all.map((p, n) => n === 2 ? {...p, methodId: "assess-debt-capacity"} : p))).toBeNull();
+    // The scale the database records for the method must be the one the card adopted, and known.
+    expect(boardMaterialNamedSources(basis())?.map((n) => n.moneyScale)).toEqual(sources.map((s) => s.moneyScale));
+    expect(boardMaterialPriorResults(basis(), all.map((p, n) => n === 2 ? {...p, moneyScale: p.moneyScale === "reais" ? "millions" : "reais"} : p))).toBeNull();
+    expect(boardMaterialPriorResults(basis(), all.map((p, n) => n === 2 ? {...p, moneyScale: null} : p))).toBeNull();
   });
   it("composes the packet with each stored result verbatim, and the method prepares the material", () => {
     const refs = boardMaterialPriorResults(basis(), priors())!;

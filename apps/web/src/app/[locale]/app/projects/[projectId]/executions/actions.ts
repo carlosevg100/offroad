@@ -170,7 +170,7 @@ const priorsSchema = z.object({weeklyCash: priorSchema.nullable(), covenant: pri
 /** board_material_prior_results_v1: the latest completed execution of each source role of the board material. */
 const boardRole = z.enum(Object.keys(boardMaterialRoles) as [keyof typeof boardMaterialRoles, ...(keyof typeof boardMaterialRoles)[]]);
 const boardPriorsSchema = z.object({priors: z.array(z.object({role: boardRole, methodId: z.string(), executionId: z.uuid(), result: z.string().min(2),
-  resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin)}).loose()).max(16)}).loose();
+  resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin), moneyScale: z.enum(["reais", "millions"]).nullable()}).loose()).max(16)}).loose();
 /** document_folder_prior_v1: the latest completed inventory of the work, or null. */
 const folderPriorSchema = z.object({prior: z.object({executionId: z.uuid(), resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), inputSnapshot: z.string().min(2)}).loose().nullable()}).loose();
 
@@ -229,7 +229,8 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
     const found = boardPriorsSchema.safeParse(read.data);
     if (!found.success) return failure(null);
     if (!checkBoardMaterialPins(summary, found.data.priors).ok) return {ok: false, error: "superseded"};
-    boardPriors = found.data.priors.map((p) => ({role: p.role, methodId: p.methodId, executionId: p.executionId, result: p.result, resultFingerprint: p.resultFingerprint, sources: p.sources}));
+    boardPriors = found.data.priors.map((p) => ({role: p.role, methodId: p.methodId, executionId: p.executionId, result: p.result, resultFingerprint: p.resultFingerprint, sources: p.sources,
+      moneyScale: p.moneyScale}));
   }
   // The folder: an inventory card goes ahead while the work has no completed inventory; an update card only over the inventory it pinned.
   let documentFolder: DocumentFolderAsk | undefined;

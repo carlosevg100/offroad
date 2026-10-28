@@ -51,6 +51,7 @@ import {createCapitalPublicCaptureStorage} from "./capital-public-capture-storag
 import {createJobStorageClient} from "./job-storage";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processWorkConversationJob} from "./work-conversation";
+import {processDocumentFolderReadingJob} from "./document-folder-reading-job";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {createCapitalMaterialRuntime} from "./capital-material-production-runtime";
@@ -579,6 +580,8 @@ async function main(): Promise<void> {
               })
       : job.kind === "work_conversation"
         ? processWorkConversationJob(job, {queue, gateway: gatewayRun.gateway, log})
+      : job.kind === "document_folder_reading"
+        ? processDocumentFolderReadingJob(job, {queue, gateway: gatewayRun.gateway, log})
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {
             queue,

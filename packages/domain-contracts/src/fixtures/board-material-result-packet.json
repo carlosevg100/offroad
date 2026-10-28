@@ -3,7 +3,7 @@
  "executorVersion": "2026.10.27-v1",
  "financialCoreVersion": "2026.10.07-v29",
  "question": "Conselho na quarta. Prepara a discussão de estrutura de capital.",
- "basisFingerprint": "086e404d91d48957a9d319eebcf5b5bf4d6d51886e3fac627e8191afcf21b07c",
+ "basisFingerprint": "eeea3ee84c144070f8c7705885197b34a0600d5cb9fe6864d04f310399a6789e",
  "scope": {
   "workId": "ac400000-0000-4000-9000-000000000007",
   "purpose": "synthetic adopted financial analysis",
@@ -20,7 +20,7 @@
   },
   "entityId": "ac400000-0000-4000-9000-000000000001",
   "currency": "BRL",
-  "basisFingerprint": "086e404d91d48957a9d319eebcf5b5bf4d6d51886e3fac627e8191afcf21b07c",
+  "basisFingerprint": "eeea3ee84c144070f8c7705885197b34a0600d5cb9fe6864d04f310399a6789e",
   "status": "partial_composition",
   "gaps": [],
   "bindings": [],
@@ -30,7 +30,7 @@
   "classification": "working_hypothesis",
   "grantsExecution": false,
   "grantsPublication": false,
-  "fingerprint": "2bc0c62d361419c423be66bc22daeeed82fcc4a1630d5eab4a863cec0ed9be6f",
+  "fingerprint": "b261b8d1f595fa2096d85dd1d9e689e0908fc50565a50e454a76692255a24773",
   "schemaVersion": "adopted-board-capital-discussion.v1",
   "analysisId": "ac400000-0000-4000-9000-000000000095",
   "perimeter": "standalone",
@@ -42,6 +42,7 @@
     "executorVersion": "2026.10.23-v1",
     "packetSchemaVersion": "debt-table-packet.v1",
     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+    "moneyScale": "millions",
     "status": "prepared_for_human_review"
    },
    {
@@ -51,6 +52,7 @@
     "executorVersion": "2026.10.23-v1",
     "packetSchemaVersion": "covenant-headroom-packet.v1",
     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+    "moneyScale": "millions",
     "status": "partial"
    },
    {
@@ -60,6 +62,7 @@
     "executorVersion": "2026.10.23-v1",
     "packetSchemaVersion": "weekly-cash-packet.v1",
     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+    "moneyScale": "millions",
     "status": "prepared_for_human_review"
    },
    {
@@ -69,6 +72,7 @@
     "executorVersion": "2026.10.09-v1",
     "packetSchemaVersion": "investment-decision-packet.v1",
     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+    "moneyScale": "reais",
     "status": "prepared_for_human_review"
    },
    {
@@ -78,6 +82,7 @@
     "executorVersion": "2026.10.26-v1",
     "packetSchemaVersion": "operating-projection-packet.v1",
     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+    "moneyScale": "millions",
     "status": "prepared_for_human_review"
    },
    {
@@ -87,6 +92,7 @@
     "executorVersion": "2026.10.26-v1",
     "packetSchemaVersion": "projection-challenge-packet.v1",
     "packetFingerprint": "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc",
+    "moneyScale": "millions",
     "status": "prepared_for_human_review"
    },
    {
@@ -96,6 +102,7 @@
     "executorVersion": "2026.10.26-v1",
     "packetSchemaVersion": "receivables-funding-packet.v1",
     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+    "moneyScale": "millions",
     "status": "partial"
    },
    {
@@ -105,6 +112,7 @@
     "executorVersion": "2026.10.19-v1",
     "packetSchemaVersion": "relative-debt-cost-packet.v1",
     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+    "moneyScale": "reais",
     "status": "prepared_for_human_review"
    },
    {
@@ -114,6 +122,7 @@
     "executorVersion": "2026.10.27-v1",
     "packetSchemaVersion": "capital-structure-paths-packet.v1",
     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+    "moneyScale": "millions",
     "status": "prepared_for_human_review"
    }
   ],
@@ -4023,5 +4032,5 @@
  ],
  "grantsExecution": false,
  "grantsPublication": false,
- "fingerprint": "a430a89669d5a5c5bda67a9a70cfe36b0ff22f8025f4607d302b80b193027422"
+ "fingerprint": "60223f042631164b8a118cd2f3a5f93310580fa53b9f2e310f460fc390c814e6"
 }

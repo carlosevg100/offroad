@@ -73,8 +73,7 @@ import {projectionChallengeExtractionContract, proposeProjectionChallengePremise
 import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
 import {proposeQuarterUpdatePremisesForTurn, quarterUpdateExtractionContract, shouldProposeQuarterUpdatePremises} from "./quarter-update-premises-proposal";
 import {proposeReceivedProposalPremisesForTurn, receivedProposalExtractionContract, shouldProposeReceivedProposalPremises} from "./received-proposal-premises-proposal";
-import {documentFolderExtractionContract, documentFolderReadingExtractionContract, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises}
-  from "./document-folder-premises-proposal";
+import {documentFolderExtractionContract, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises} from "./document-folder-premises-proposal";
 import {financingPathsExtractionContract, proposeFinancingPathsPremisesForTurn, shouldProposeFinancingPathsPremises} from "./financing-paths-premises-proposal";
 import {boardMaterialExtractionContract, proposeBoardMaterialPremisesForTurn, shouldProposeBoardMaterialPremises} from "./board-material-premises-proposal";
 
@@ -405,7 +404,9 @@ Rules:
   its origin. Give the reading first: what the folder holds, which version of each document counts, and what was not
   read, and that the inventory comes after the user confirms. Never calculate, project or give an opinion on the
   company. When its status is missing, ask for the missing items in one short list, each with the reason; an
-  unreadable or protected file is asked as a legible copy, by its position and name.
+  unreadable or protected file is asked as a legible copy, by its position and name. A file whose missing item ends in
+  reading_pending is still being read: say how many files are in reading and that the inventory comes when they are
+  read; never ask the person for them.
 - financingPathsPremises is the premise proposal for the financing paths on one basis. When proposed, the debt in
   force, the indenture and its basket, the projection, the variants of the investment, each instrument and each path
   appear in a card below your reply, each with its origin. Give the reading first: what happens without action, each
@@ -776,7 +777,7 @@ export async function processAgentOperationBriefJob(
     const board = !boardExtract || !queue.loadBoardMaterialPriors ? null
       : await proposeBoardMaterialPremisesForTurn({...lote2Input, today: saoPauloDate(turnDate), extract: boardExtract, loadPriors: () => queue.loadBoardMaterialPriors!(job)});
     const folderExtract = lote3("document_folder", documentFolderExtractionContract);
-    const folderEvidence = !folderExtract || !queue.loadDocumentFolder || !queue.loadDocumentFolderPrior ? null
+    const folderEvidence = !folderExtract || !queue.loadDocumentFolder || !queue.loadDocumentFolderPrior || !queue.loadDocumentFolderReadings ? null
       : await queue.loadDocumentFolder(job).catch((error: unknown) => {
         log("document_folder_premises.failed", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"});
         return null;
@@ -784,14 +785,9 @@ export async function processAgentOperationBriefJob(
     const folder = !folderExtract || !folderEvidence ? null : await proposeDocumentFolderPremisesForTurn({...lote2Input,
       messageDate: turnDate, author: folderAuthor(folderEvidence),
       loadFolder: async () => folderEvidence, loadPrior: () => queue.loadDocumentFolderPrior!(job),
-      // Each file is read alone, from its stored text. A photo is described from its text only: the production gateway
-      // reserves only text requests, so image parts are not sent.
-      readFile: async (request) => (await gateway.complete({
-        ...documentFolderReadingExtractionContract,
-        input: [{type: "text", text: request.text}],
-        dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
-        metadata: {jobId: job.job_id, messageId: context.message_id, sessionId: context.session_id},
-      })).output,
+      // Each file is read in a reading job of its own, outside this turn and its budget; the turn reads what is ready
+      // and names the rest as in reading.
+      loadReadings: (request) => queue.loadDocumentFolderReadings!(job, request),
       extract: folderExtract});
     const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({

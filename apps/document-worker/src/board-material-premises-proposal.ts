@@ -112,7 +112,9 @@ export function boardMaterialConversation(e: BoardMaterialExtraction): {conversa
 
 /** The prior results of the work as the worker reads them from the database: by source method, the latest completed
  * execution with its stored result, or null. */
-const priorSchema = z.looseObject({methodId: z.string(), executionId: z.uuid(), resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), released: z.boolean(), packet: z.looseObject({})});
+const priorSchema = z.looseObject({methodId: z.string(), executionId: z.uuid(), resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), released: z.boolean(),
+  /** The scale the database records for the source method (worker_board_material_priors_v1); null when unknown, never inferred. */
+  moneyScale: z.enum(["reais", "millions"]).nullable(), packet: z.looseObject({})});
 export const boardMaterialPriorsSchema = z.looseObject({priors: z.array(priorSchema).max(32)});
 export function boardMaterialPriorsByMethod(raw: unknown): Partial<Record<string, BoardMaterialPrior | null>> {
   const parsed = boardMaterialPriorsSchema.parse(raw);
@@ -140,7 +142,7 @@ export const boardMaterialSituation = "board-capital-discussion";
 const sourceLabels: Record<string, string> = {"tabela-divida": "Tabela de dívida", covenant: "Covenant e política", "caixa-semanal": "Caixa semanal", "linha-embalagem": "Projeto de investimento",
   projecao: "Projeção por drivers", "plano-fpa": "Crítica ao plano da área financeira", recebiveis: "Recebíveis", "custo-relativo": "Custo relativo da dívida", "plano-2027": "Plano de financiamento"};
 const omittedReasons: Record<string, string> = {not_executed: "análise ainda não concluída neste trabalho", not_released: "método ainda não liberado para execução",
-  version_not_released: "resultado de versão não liberada", result_not_verified: "resultado não conferido", reading_unavailable: "o resultado não registra o número que o texto usa",
+  version_not_released: "resultado de versão não liberada", scale_unknown: "escala monetária do método não registrada", result_not_verified: "resultado não conferido", reading_unavailable: "o resultado não registra o número que o texto usa",
   date_not_stated: "prazo não informado", reason_not_informed: "motivo do presidente não informado", source_unavailable: "fonte não disponível", answer_without_number: "resposta sem número revisado"};
 const said = (x: {origin: string; source: string}) => ({origin: x.origin === "analysis" ? "document" as const : x.origin as Lote2SummaryItem["origin"], source: x.source});
 
@@ -192,19 +194,28 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
       const {conversation, missing} = boardMaterialConversation(extraction);
       if (missing.length) return {status: "missing", missing};
       const planned = planBoardMaterial({ids: {discussionId: id, definitionVersionId: id}, today: input.today, perimeter: "standalone", currency: "BRL", priors, conversation,
-        check: (facts) => boardMaterialCheck(priors, verifiedPins(facts))(facts)});
+        check: (facts) => {
+          try { return boardMaterialCheck(priors, verifiedPins(facts))(facts); }
+          catch (error) { return error instanceof Error ? error.message : String(error); }
+        }});
       if (planned.status === "missing") return {status: "missing", missing: planned.missing};
       verified = {facts: planned.facts, pins: planned.pins, omitted: planned.omitted};
       return {status: "complete", facts: planned.facts, situationId: boardMaterialSituation, housePremiseKeys: planned.housePremiseKeys};
     },
     build: (facts) => buildBoardMaterialPremiseProposal(facts, verified!.pins, verified!.omitted),
-    readerCheck: (facts) => verified?.facts === facts ? [] : boardMaterialReaderGaps(facts, priors, verifiedPins(facts))}, {...input, entry, projectId: input.projectId,
+    readerCheck: (facts) => {
+      if (verified?.facts === facts) return [];
+      try { return boardMaterialReaderGaps(facts, priors, verifiedPins(facts)); }
+      catch (error) { return [`readerRefused.${error instanceof Error ? error.message : "unknown"}`]; }
+    }}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({today: input.today, documentFields: await input.loadEvidence()})});
-  /** The pins of the sources the facts name, in their order. */
+  /** The pins of the sources the facts name, in their order, each with the scale the database records for its method:
+   * a fact that names another scale is refused by name. */
   function verifiedPins(facts: BoardCapitalDiscussionFacts): BoardMaterialPin[] {
     return facts.sources.map((s) => {
       const methodId = s.value.methodId as keyof typeof boardMaterialSourceIds, prior = priors[methodId]!;
-      return {role: s.value.id as BoardMaterialPin["role"], methodId, executionId: prior.executionId, resultFingerprint: prior.resultFingerprint};
+      if (prior.moneyScale === null || prior.moneyScale !== s.value.moneyScale) throw new Error("board_material_prior_scale_mismatch");
+      return {role: s.value.id as BoardMaterialPin["role"], methodId, executionId: prior.executionId, resultFingerprint: prior.resultFingerprint, moneyScale: prior.moneyScale};
     });
   }
 }

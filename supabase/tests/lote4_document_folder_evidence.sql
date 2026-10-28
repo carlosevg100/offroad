@@ -121,6 +121,9 @@ insert into public.capital_project_objective_preflights(organization_id,capital_
  readiness_schema_version,readiness_fingerprint,readiness_status,terminal_reachable,objective_plan,preflight_decision,created_by)
 values('20000000-0000-4000-8000-000000000711','30000000-0000-4000-8000-000000000721','60000000-0000-4000-8000-000000000711','80000000-0000-4000-8000-000000000711','debt_table',
  'objective-plan.v1',repeat('a',64),'objective-plan-readiness.v1',repeat('b',64),'ready',true,'{}','{}','10000000-0000-4000-8000-000000000711');
+update public.profiles set full_name='Mariana Souza',job_title='Controller' where id='10000000-0000-4000-8000-000000000711';
+insert into public.profiles(id,full_name,job_title) select '10000000-0000-4000-8000-000000000711','Mariana Souza','Controller'
+ where not exists(select 1 from public.profiles where id='10000000-0000-4000-8000-000000000711');
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
 
 -- 1. The evidence, as the worker reads it.
@@ -141,20 +144,71 @@ begin
  if ev#>>'{files,0,layerObjectPath}' is distinct from '20000000-0000-4000-8000-000000000711/layers/a.json' or ev#>>'{files,0,status}'<>'ready' or ev#>'{files,0,locked}'<>'null'::jsonb
   or ev#>>'{files,1,status}'<>'failed' or ev#>>'{files,1,locked}' is distinct from 'password_protected' or ev#>'{files,1,layerObjectPath}'<>'null'::jsonb or ev#>'{files,0,layer}'<>'null'::jsonb
   then raise exception 'file detail wrong: %',ev->'files';end if;
+ -- The author and the date of the turn's message, for the answers to open questions.
+ if ev->>'author' is distinct from 'Mariana Souza, Controller' or ev->>'messageDate' is null then raise exception 'author wrong: % %',ev->'author',ev->'messageDate';end if;
  raise notice 'PASS: folder evidence reads the work, its registry, open works and vault';
 end $$;
 
--- 2. The storage gate: the job reads the layer of its own work, never writes it, never reads another work's.
+-- 2. The readings: the conversation reads no layer. It asks for the readings of its work's files; a file without one gets
+-- one reading job, never two, and a file of another work is refused.
 do $$
+declare r jsonb;
 begin
+ if private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/a.json',false) then raise exception 'the conversation reads a layer';end if;
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+ if r#>>'{files,0,status}'<>'pending' or (r->>'queued')::int<>1 then raise exception 'reading not queued: %',r;end if;
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+ if (r->>'queued')::int<>0 or (select count(*) from public.processing_jobs where organization_id='20000000-0000-4000-8000-000000000711' and kind='document_folder_reading')<>1
+  then raise exception 'reading queued twice';end if;
+ if (select payload->>'sha256' from public.processing_jobs where kind='document_folder_reading')<>repeat('1',64)
+  or (select work_id from public.processing_jobs where kind='document_folder_reading')<>'30000000-0000-4000-8000-000000000711'
+  or (select authorization_subject_id from public.processing_jobs where kind='document_folder_reading')<>'10000000-0000-4000-8000-000000000711'
+  or (select source_document_id from public.processing_jobs where kind='document_folder_reading') is not null then raise exception 'reading job wrong';end if;
+ begin perform public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1','{}'::jsonb,
+  '[{"documentId":"a0000000-0000-4000-8000-000000000004"}]'::jsonb); raise exception 'another work file answered';
+ exception when insufficient_privilege then null; end;
+ raise notice 'PASS: readings asked by the conversation, one reading job per file';
+end $$;
+
+-- 3. The reading job: its input, the storage gate (its own file's ready layer, read-only, nothing else), and its record.
+update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+ lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('s',64),'sha256') where kind='document_folder_reading';
+do $$
+declare j uuid:=(select id from public.processing_jobs where kind='document_folder_reading');r jsonb;
+begin
+ r:=public.worker_document_folder_reading_input_v1(j,repeat('s',64));
+ if r->>'layerObjectPath' is distinct from '20000000-0000-4000-8000-000000000711/layers/a.json' or r->>'sha256'<>repeat('1',64) or r#>>'{context,registry,0,id}'<>'aurora' then raise exception 'input wrong: %',r;end if;
+ begin perform public.worker_document_folder_reading_input_v1('80000000-0000-4000-8000-000000000711',repeat('r',64)); raise exception 'the conversation read a reading input';
+ exception when insufficient_privilege then null; end;
  if not private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/a.json',false) then raise exception 'own layer not readable';end if;
  if private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/a.json',true) then raise exception 'own layer writable';end if;
  if private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/d.json',false) then raise exception 'another work layer readable';end if;
  if private.worker_can_access_document_storage_v1('opportunity-documents','20000000-0000-4000-8000-000000000711/40000000-0000-4000-8000-000000000711/a.pdf',false) then raise exception 'original document readable';end if;
- raise notice 'PASS: storage gate reads only the own work layers';
+ begin perform public.worker_record_document_folder_reading_v1(j,repeat('s',64),'ready',null,null); raise exception 'empty reading recorded';
+ exception when invalid_parameter_value then null; end;
+ r:=public.worker_record_document_folder_reading_v1(j,repeat('s',64),'ready','{"extraction":{},"pageCount":3,"pagesWithoutText":[2]}'::jsonb,null);
+ if r->>'recorded'<>'true' then raise exception 'reading not recorded';end if;
+ r:=public.worker_record_document_folder_reading_v1(j,repeat('s',64),'refused',null,'reading');
+ if r->>'recorded'<>'false' or (select status from private.document_folder_readings where sha256=repeat('1',64))<>'ready' then raise exception 'reading overwritten';end if;
+ if has_table_privilege('authenticated','private.document_folder_readings','SELECT') or has_table_privilege('service_role','private.document_folder_readings','SELECT') then raise exception 'readings exposed';end if;
+ raise notice 'PASS: the reading job reads its own file and records once';
+end $$;
+do $$
+declare r jsonb;
+begin
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+ if r#>>'{files,0,status}'<>'ready' or r#>>'{files,0,reading,pageCount}'<>'3' then raise exception 'ready reading not returned: %',r;end if;
+ -- Another registry is another reading.
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
+  '{"registry":[]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+ if r#>>'{files,0,status}'<>'pending' then raise exception 'reading of another registry reused';end if;
+ raise notice 'PASS: the conversation reads the stored reading';
 end $$;
 
--- 3. The priors as the worker reads them: none yet; and every door refuses a forged capability.
+-- 4. The priors as the worker reads them: none yet; and every door refuses a forged capability.
 do $$
 begin
  if public.worker_document_folder_prior_v1('80000000-0000-4000-8000-000000000711',repeat('r',64))<>'{"prior":null}'::jsonb then raise exception 'folder prior invented';end if;
@@ -166,7 +220,7 @@ begin
  raise notice 'PASS: priors read through the capability only';
 end $$;
 
--- 4. Another account holding the token is refused.
+-- 5. Another account holding the token is refused.
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000712","role":"authenticated","aal":"aal1"}', true);
 do $$
 begin

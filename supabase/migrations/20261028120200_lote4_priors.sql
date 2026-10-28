@@ -87,6 +87,27 @@ language sql immutable set search_path='' as $$
 $$;
 revoke all on function private.board_material_prior_scale_v1(text,text,text) from public,anon,authenticated,service_role;
 
+-- The scale the discussion's basis declares for one source: the third element of the adopted source.<id> list that
+-- analysis.discussion.sources names by decision, read from the basis canonical text the snapshot carries. Null when the
+-- basis does not name it as [method, packet fingerprint, scale]; the verdict then refuses the scale as invalid.
+create function private.board_material_declared_scale_v1(p_snapshot jsonb,p_id text) returns text
+language plpgsql immutable set search_path='' as $$
+declare basis jsonb;decision text;scale text;
+begin
+ if jsonb_typeof(p_snapshot#>'{analysis,discussion,sources}') is distinct from 'array'
+  or jsonb_typeof(p_snapshot#>'{analysis,discussion,envelope,canonical}') is distinct from 'string' then return null;end if;
+ select d.v#>>'{reading,decisionId}' into decision from jsonb_array_elements(p_snapshot#>'{analysis,discussion,sources}') d(v) where d.v->>'id'=p_id limit 1;
+ if decision is null then return null;end if;
+ basis:=(p_snapshot#>>'{analysis,discussion,envelope,canonical}')::jsonb;
+ if jsonb_typeof(basis->'entries') is distinct from 'array' then return null;end if;
+ select e.v#>>'{value,value,2}' into scale from jsonb_array_elements(basis->'entries') e(v)
+  where e.v->>'decisionId'=decision and e.v->>'fieldPath' like '%.source.'||p_id and e.v#>>'{value,type}'='list'
+   and jsonb_typeof(e.v#>'{value,value}')='array' and jsonb_array_length(e.v#>'{value,value}')=3 limit 1;
+ return scale;
+exception when data_exception then return null;
+end $$;
+revoke all on function private.board_material_declared_scale_v1(jsonb,text) from public,anon,authenticated,service_role;
+
 -- 4. The verdicts, over row data only. Identity first: an execution of another organization or of another
 -- work is reported as not found, so a refusal never tells whether it exists outside this work; an execution
 -- without a succeeded result is refused by name.
@@ -202,7 +223,8 @@ begin
     and m.payload#>>'{method,methodId}'=expected->>'methodId' and m.payload#>>'{method,methodVersion}'=expected->>'methodVersion'
     and p.prior_method_id=expected->>'methodId' and p.prior_method_version=expected->>'methodVersion'
     and s.payload_fingerprint=p.prior_input_fingerprint and r.result->>'fingerprint'=p.prior_result_fingerprint
-    and r.canonical_result=src->>'packet' and private.board_material_prior_scale_v1(src->>'moneyScale',expected->>'methodId',expected->>'methodVersion') is null) then return false;end if;
+    and r.canonical_result=src->>'packet'
+    and private.board_material_prior_scale_v1(private.board_material_declared_scale_v1(p_payload,src->>'id'),expected->>'methodId',expected->>'methodVersion') is null) then return false;end if;
  end loop;
  return true;
 exception when data_exception then return false;
@@ -268,7 +290,9 @@ begin
    if private.board_material_prior_method_v1(src->>'id') is null then raise exception 'board_material_priors_invalid' using errcode='22023';end if;
    select x.v into ref from jsonb_array_elements(p_prior_results) x(v) where x.v->>'role'=src->>'id';
    if ref is null then raise exception 'board_material_priors_invalid' using errcode='22023';end if;
-   resolved:=resolved||jsonb_build_array(private.lote4_prior_resolve_v1(kind,org,work,src->>'id',ref,src,c#>'{inputs,sources}',auth.uid()));
+   -- The declared scale is the basis's own, never a field the request adds beside the stored packet.
+   resolved:=resolved||jsonb_build_array(private.lote4_prior_resolve_v1(kind,org,work,src->>'id',ref,
+    src||jsonb_build_object('moneyScale',private.board_material_declared_scale_v1(s,src->>'id')),c#>'{inputs,sources}',auth.uid()));
    ref:=null;
   end loop;
  else
@@ -453,12 +477,21 @@ create function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capab
 language plpgsql volatile security definer set search_path='' as $$
 declare job_row public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);org uuid;work uuid;subject uuid;company uuid;
  dossier_ids uuid[];subject_entity uuid;parent_entity uuid;group_id uuid;group_label text;entities jsonb;decisions jsonb;vault jsonb;files jsonb;others uuid[];
+ author text;message_date timestamptz;
 begin
  if job_row.kind<>'agent_operation_brief' then raise exception 'agent_operation_brief_capability_required' using errcode='42501';end if;
  org:=job_row.organization_id;subject:=job_row.authorization_subject_id;
+ -- The person who wrote the turn's message and when: the author and date of any answer to an open question.
+ -- The name and the job title come from the profile, the role in the organization when there is no title.
+ select left(nullif(btrim(concat_ws(', ',nullif(btrim(pr.full_name),''),coalesce(nullif(btrim(pr.job_title),''),om.role))),''),200),m.created_at
+  into author,message_date
+ from public.agent_messages m
+ left join public.profiles pr on pr.id=coalesce(m.human_author_id,m.created_by)
+ left join public.organization_memberships om on om.organization_id=m.organization_id and om.user_id=coalesce(m.human_author_id,m.created_by) and om.status='active'
+ where m.organization_id=org and m.id=nullif(job_row.payload->>'message_id','')::uuid and m.role='user' and nullif(btrim(pr.full_name),'') is not null;
  select capital_project_id into work from public.document_intake_sessions where organization_id=org and id=job_row.intake_session_id;
  if work is null or subject is null then
-  return jsonb_build_object('subjectEntityId',null,'entities','[]'::jsonb,'decisions','[]'::jsonb,'vault','[]'::jsonb,'files','[]'::jsonb);
+  return jsonb_build_object('subjectEntityId',null,'entities','[]'::jsonb,'decisions','[]'::jsonb,'vault','[]'::jsonb,'files','[]'::jsonb,'author',author,'messageDate',message_date);
  end if;
  select company_id into company from public.capital_projects where organization_id=org and id=work;
  dossier_ids:=private.document_folder_work_dossiers_v1(org,work,subject);
@@ -512,7 +545,7 @@ begin
    order by x.document_version desc,x.created_at desc limit 1) l on true
   where sd.organization_id=org and ss.capital_project_id=work and sd.sha256 ~ '^[a-f0-9]{64}$'
   order by sd.created_at,sd.id limit 1000) f;
- return jsonb_build_object('subjectEntityId',subject_entity,'entities',entities,'decisions',decisions,'vault',vault,'files',files);
+ return jsonb_build_object('subjectEntityId',subject_entity,'entities',entities,'decisions',decisions,'vault',vault,'files',files,'author',author,'messageDate',message_date);
 end $$;
 revoke all on function private.worker_document_folder_evidence_v1(uuid,text) from public,anon,authenticated,service_role;
 grant execute on function private.worker_document_folder_evidence_v1(uuid,text) to authenticated;
@@ -520,27 +553,3 @@ create function public.worker_document_folder_evidence_v1(p_job_id uuid,p_capabi
 language sql volatile security invoker set search_path='' as $$ select private.worker_document_folder_evidence_v1(p_job_id,p_capability_token); $$;
 revoke all on function public.worker_document_folder_evidence_v1(uuid,text) from public,anon,authenticated,service_role;
 grant execute on function public.worker_document_folder_evidence_v1(uuid,text) to authenticated;
-
--- 10. The storage gate: a leased conversation job may read, never write, the ready layer of a file of its own
--- work, so the folder method reads each file as the pipeline stored it. The document pipeline's access is unchanged.
-create or replace function private.worker_can_access_document_storage_v1(p_bucket text, p_object_path text, p_write boolean)
- returns boolean
- language sql
- stable security definer
- set search_path to ''
-as $function$
- select auth.uid() is not null and (exists(select 1 from public.processing_jobs j
- join public.source_documents d on d.organization_id=j.organization_id and d.id=j.source_document_id
- where j.kind='document_pipeline' and j.status='leased' and j.lease_expires_at>now()
- and j.leased_account_user_id=auth.uid() and private.job_authority_is_current_v1(j.id)
- and ((not p_write and p_bucket='opportunity-documents' and p_object_path=d.object_path)
- or (p_bucket='document-layers' and p_object_path=j.payload->>'layer_object_path')))
- or (not coalesce(p_write,true) and p_bucket='document-layers' and exists(select 1 from public.processing_jobs j
- join public.document_intake_sessions js on js.organization_id=j.organization_id and js.id=j.intake_session_id
- join public.document_layers l on l.organization_id=j.organization_id and l.bucket_id='document-layers' and l.object_path=p_object_path and l.status='ready'
- join public.source_documents d on d.organization_id=l.organization_id and d.id=l.source_document_id
- join public.document_intake_sessions ds on ds.organization_id=d.organization_id and ds.id=d.intake_session_id
- where j.kind='agent_operation_brief' and j.status='leased' and j.lease_expires_at>now()
- and j.leased_account_user_id=auth.uid() and private.job_authority_is_current_v1(j.id)
- and js.capital_project_id is not null and ds.capital_project_id=js.capital_project_id)));
-$function$

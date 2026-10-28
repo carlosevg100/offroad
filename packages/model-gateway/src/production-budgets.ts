@@ -81,6 +81,13 @@ export const productionModelCeilingsUsd = {
    */
   agentOperationBrief: 2.7,
   /**
+   * Database: the job's payload (`private.document_folder_reading_budget_v1`), 2 calls. One file of a folder read
+   * alone (ficha C09): the largest content one reading holds (400k characters, 200 registry entries) and the 16k
+   * extraction reserve 0.87 on Sonnet 5 and 0.82 through the Terra fallback; the primary billed at its bound and the
+   * fallback reserved is 1.61, so the ceiling is 1.7 (worker test production-budgets).
+   */
+  documentFolderReading: 1.7,
+  /**
    * Database: 0.25 and 1 call (`private.enqueue_work_turn_v1`, and a literal of the worker's job
    * schema). Largest request 0.1867 (Sonnet 5, 0.0886 old); x1.10 = 0.2054. The value stays.
    */

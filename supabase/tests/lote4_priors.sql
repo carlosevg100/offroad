@@ -159,9 +159,34 @@ declare f text:=pg_get_functiondef('private.worker_can_access_document_storage_v
 begin
  if private.worker_can_access_document_storage_v1('document-layers','a/b/c.json',false) or private.worker_can_access_document_storage_v1('document-layers','a/b/c.json',true) then
   raise exception 'storage gate open without a job';end if;
- if position('agent_operation_brief' in f)=0 or position('not coalesce(p_write,true)' in f)=0 or position('ds.capital_project_id=js.capital_project_id' in f)=0
+ -- The conversation reads no layer; only the folder reading job, read-only, for the one file it was queued for.
+ if position('agent_operation_brief' in f)>0 or position('document_folder_reading' in f)=0 or position('not coalesce(p_write,true)' in f)=0
+  or position('ds.capital_project_id=j.work_id' in f)=0 or position('l.source_document_id::text=j.payload->>''source_document_id''' in f)=0
   or position('j.payload->>''layer_object_path''' in f)=0 then raise exception 'storage gate shape changed';end if;
  raise notice 'PASS: storage gate reads only';
+end $$;
+
+-- 8b. The scale a board source declares is read from the discussion's adopted basis, never from a field beside the packet.
+do $$
+declare basis jsonb:=jsonb_build_object('entries',jsonb_build_array(
+  jsonb_build_object('decisionId','d0000000-0000-4000-8000-000000000001','fieldPath','board_capital.a0000000-0000-4000-8000-000000000001.source.plano-2027','value',
+   jsonb_build_object('type','list','value',jsonb_build_array('evaluate-financing-paths',repeat('f',64),'millions'))),
+  jsonb_build_object('decisionId','d0000000-0000-4000-8000-000000000002','fieldPath','board_capital.a0000000-0000-4000-8000-000000000001.source.tabela-divida','value',
+   jsonb_build_object('type','list','value',jsonb_build_array('build-company-debt-table',repeat('e',64))))));
+ snap jsonb;
+begin
+ snap:=jsonb_build_object('analysis',jsonb_build_object('sources',jsonb_build_array(jsonb_build_object('id','plano-2027','packet','{}','moneyScale','reais')),
+  'discussion',jsonb_build_object('envelope',jsonb_build_object('canonical',basis::text),'sources',jsonb_build_array(
+   jsonb_build_object('id','plano-2027','reading',jsonb_build_object('decisionId','d0000000-0000-4000-8000-000000000001')),
+   jsonb_build_object('id','tabela-divida','reading',jsonb_build_object('decisionId','d0000000-0000-4000-8000-000000000002'))))));
+ if private.board_material_declared_scale_v1(snap,'plano-2027') is distinct from 'millions' then raise exception 'declared scale not read from the basis';end if;
+ if private.board_material_declared_scale_v1(snap,'tabela-divida') is not null then raise exception 'a basis without the scale declared one';end if;
+ if private.board_material_declared_scale_v1(snap,'outra') is not null or private.board_material_declared_scale_v1('{}'::jsonb,'plano-2027') is not null then raise exception 'scale invented';end if;
+ if private.board_material_prior_scale_v1(private.board_material_declared_scale_v1(snap,'plano-2027'),'evaluate-financing-paths','2026.10.27-v1') is not null
+  or private.board_material_prior_scale_v1(private.board_material_declared_scale_v1(snap,'tabela-divida'),'build-company-debt-table','2026.10.23-v1') is distinct from 'board_material_prior_scale_invalid'
+  then raise exception 'scale verdict wrong';end if;
+ if has_function_privilege('authenticated','private.board_material_declared_scale_v1(jsonb,text)','EXECUTE') then raise exception 'declared scale helper exposed';end if;
+ raise notice 'PASS: board source scale read from the adopted basis';
 end $$;
 
 -- 9. Grants: the doors for authenticated only; every helper and the pins closed.

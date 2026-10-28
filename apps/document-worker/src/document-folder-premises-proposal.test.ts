@@ -3,7 +3,8 @@ import {composeBoundDocumentFolderInventory, prepareDocumentFolderInventoryPacke
   type ProposedHypothesis} from "@offroad/financial-model";
 import type {DocumentLayer} from "@offroad/document-intelligence";
 import {compileObjectiveToPlan} from "@offroad/work-plan";
-import {completeDocumentFolderFacts, documentFolderEntry, documentFolderLayerContent, documentFolderReading, proposeDocumentFolderPremisesForTurn, type DocumentFolderEvidence,
+import {completeDocumentFolderFacts, documentFolderEntry, documentFolderLayerContent, documentFolderReaderVersion, documentFolderReading, proposeDocumentFolderPremisesForTurn,
+  readDocumentFolderFile, type DocumentFolderEvidence, type DocumentFolderReadingOutcome,
   type DocumentFolderExtraction, type DocumentFolderReadingExtraction, type DocumentFolderReadingRequest, type DocumentFolderRequestTest, type DocumentFolderTurnPremises} from "./document-folder-premises-proposal";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {financialModelFixture} from "./lote2-premises.test-support";
@@ -32,7 +33,8 @@ function layerOf(r: DocumentReading): DocumentLayer {
   const base = {documentId: r.fileId, documentVersion: 1, scaleDeclarations: []};
   if (r.format === "xlsx" || r.format === "xls" || r.format === "csv") return {...base, kind: "spreadsheet", sheets: [{name: "Conteúdo", hidden: false, cells: [{ref: "A1", v: marker(r), t: "s"}], tables: []}], stats: {}};
   if (r.format === "pptx") return {...base, kind: "pptx", slides: [{n: 1, blocks: [{id: "sl1.b1", kind: "text", text: marker(r)}], tables: []}], stats: {}};
-  if (r.format === "jpg" || r.format === "png") return {...base, kind: "image", pages: [{n: 1, blocks: [], tables: [], scanned: true}], stats: {}};
+  // A photo is read by the text its scan yields (the gateway takes no image): the marker stands for that text.
+  if (r.format === "jpg" || r.format === "png") return {...base, kind: "image", pages: [{n: 1, blocks: [{id: "p1.b1", kind: "text", text: marker(r)}], tables: [], scanned: true}], stats: {}};
   const count = r.substitutesPages ? 1 : r.legibility.pageCount ?? 1, unread = new Set(r.legibility.unreadablePages.map((p) => p.page));
   return {...base, kind: "pdf", stats: r.legibility.pageCount === null ? {} : {pageCount: r.legibility.pageCount},
     pages: Array.from({length: count}, (_, k) => unread.has(k + 1) ? {n: k + 1, blocks: [], tables: [], scanned: true}
@@ -51,7 +53,7 @@ const evidenceOf = (readings: DocumentReading[]): DocumentFolderEvidence => ({su
 function reader(all: DocumentReading[], requests: DocumentFolderReadingRequest[]) {
   return async (request: DocumentFolderReadingRequest) => {
     requests.push(request);
-    const found = request.imageDocumentId ? all.find((r) => r.fileId === request.imageDocumentId) : all.find((r) => request.text.includes(marker(r)));
+    const found = all.find((r) => request.text.includes(marker(r)));
     if (!found) throw new Error("unknown content");
     return extractionOf(found);
   };
@@ -64,13 +66,32 @@ const confirm = (p: {hypotheses: unknown[]}, version: number) => inMemoryBasis((
 const withoutInformedIds = (p: DocumentFolderInventoryPacket) => ({...p.result.inventory!, informed: p.result.inventory!.informed.map((i) => ({...i, id: "-"})),
   questions: p.result.inventory!.questions.map((q) => ({...q, answeredBy: q.answeredBy && "-"}))});
 
+/** The reading jobs as the database runs them: one per bytes and registry, each reading the stored layer by content,
+ * kept and returned to the turn by document. `pending` leaves the named documents without a reading yet. */
+function readingStore(evidence: () => DocumentFolderEvidence, read: (r: DocumentFolderReadingRequest) => Promise<unknown>, pending: ReadonlySet<string> = new Set()) {
+  const kept = new Map<string, Promise<DocumentFolderReadingOutcome>>();
+  return async (request: {readerVersion: string; context: unknown; files: {documentId: string}[]}) => {
+    expect(request.readerVersion).toBe(documentFolderReaderVersion);
+    const ctx = JSON.stringify(request.context);
+    return {contextFingerprint: "c".repeat(64), queued: 0, files: await Promise.all(request.files.map(async ({documentId}) => {
+      const f = evidence().files.find((x) => x.documentId === documentId)!;
+      if (pending.has(documentId)) return {documentId, sha256: f.sha256, status: "pending", reading: null, refusalCode: null};
+      const key = `${f.sha256}:${ctx}`;
+      if (!kept.has(key)) kept.set(key, readDocumentFolderFile({mimeType: f.mimeType, layer: f.layer!}, request.context as never, read));
+      const r = await kept.get(key)!;
+      return {documentId, sha256: f.sha256, status: r.status, reading: r.status === "ready" ? r.reading : null, refusalCode: r.status === "refused" ? r.refusalCode : null};
+    }))};
+  };
+}
+
 async function run(o: {message: string; readings: DocumentReading[]; extraction?: DocumentFolderExtraction; earlier?: string[]; prior?: unknown; date?: string; author?: string | null;
-  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]}) {
+  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]; pending?: Set<string>}) {
   const events: string[] = [], requests = o.requests ?? [];
   const all = [...s.auroraFolderReadings(), ...s.auroraTurnTwoReadings()];
+  const evidence = o.evidence ?? evidenceOf(o.readings);
   const result = await proposeDocumentFolderPremisesForTurn({message: o.message, hasAttachments: true, recentUserMessages: o.earlier ?? [], projectId,
     messageDate: o.date ?? "2026-09-01", author: o.author === undefined ? "Controller da Aurora" : o.author,
-    loadFolder: async () => o.evidence ?? evidenceOf(o.readings), loadPrior: async () => ({prior: o.prior ?? null}), readFile: reader(all, requests),
+    loadFolder: async () => evidence, loadPrior: async () => ({prior: o.prior ?? null}), loadReadings: readingStore(() => evidence, reader(all, requests), o.pending),
     extract: async () => o.extraction ?? turn({mode: {value: "organize", origin: "informed", source: "Organiza e me diz o que tem"}}), log: (event) => {events.push(event);}, asks});
   return {result, events, requests};
 }
@@ -131,6 +152,10 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     const wrong = turn({informed: [{questionId: "outra", statement: "Nada.", origin: "informed", source: "mensagem"}]});
     const asked = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings, extraction: wrong, prior, date: "2026-09-02", author: null})).result!;
     expect(asked.forAdvisor).toMatchObject({status: "missing", missing: ["informed.1.questionId", "informed.1.author"]});
+    // The author and date the database gives for the message (worker_document_folder_evidence_v1) prevail and close the gap.
+    const named = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings, extraction: wrong, prior, date: "2026-09-02", author: null,
+      evidence: {...evidenceOf(readings), author: "Mariana Souza, Controller", messageDate: "2026-09-02T14:00:00Z"}})).result!;
+    expect(named.forAdvisor).toMatchObject({status: "missing", missing: ["informed.1.questionId"]});
     const none = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings, extraction: turn(), prior, date: "2026-09-02"})).result!;
     expect(none.forAdvisor).toMatchObject({status: "missing", missing: ["nothingArrived"]});
   });
@@ -143,6 +168,18 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     expect([packet.readings!.decisionFindings, packet.readings!.generalFindings]).toEqual([null, null]);
     const r = (await run({message: runs.folderQuestion, readings, extraction: turn()})).result!;
     expect(r.forAdvisor).toMatchObject({status: "proposed", housePremises: ["openingDate", "mode"]});
+  });
+
+  it("names the files still in reading and proposes no card until every reading is ready or refused by name", async () => {
+    const readings = s.auroraFolderReadings();
+    const r = (await run({message: runs.folderQuestion, readings, pending: new Set([readings[1]!.fileId, readings[3]!.fileId])})).result!;
+    expect(r.forAdvisor).toEqual({status: "missing", missing: ["files.2.reading_pending", "files.4.reading_pending"],
+      files: [{position: 2, name: readings[1]!.fileName}, {position: 4, name: readings[3]!.fileName}]});
+    // A file with no text in any page, a photo whose scan yields none among them, is refused by the reading job and asked as a legible copy.
+    const evidence = evidenceOf(readings), photo = evidence.files.findIndex((f) => f.mimeType === "image/jpeg");
+    evidence.files[photo] = {...evidence.files[photo]!, layer: {...evidence.files[photo]!.layer!, pages: [{n: 1, blocks: [], tables: [], scanned: true}]} as never};
+    const p = (await run({message: runs.folderQuestion, readings, evidence})).result!;
+    expect(p.forAdvisor).toMatchObject({status: "missing", missing: [`files.${photo + 1}.unreadable`]});
   });
 
   it("names what it cannot read or adopt, never drops a file and never proposes on another intent", async () => {

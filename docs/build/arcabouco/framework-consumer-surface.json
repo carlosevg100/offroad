@@ -584,13 +584,14 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "cea195b1f28914b55d6526074c9786431034f66c1ef31f8e94e6de8cef8dc175",
+      "sha256": "451f0b52d1b8791422372fdd2775f9089ac98e48d66514d73617d5dba2d2a3dd",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
         "worker_apply_receivables_method_supplement_patch_v1",
         "worker_authorize_capital_project_material_upload_v1",
         "worker_bind_receivables_information_request_fields_v1",
+        "worker_board_material_priors_v1",
         "worker_capture_execution_brief_inputs_v1",
         "worker_claim_job_v4",
         "worker_commit_documentary_execution_v1",
@@ -601,6 +602,10 @@
         "worker_complete_job",
         "worker_create_artifact_revision_v1",
         "worker_document_advisor_authorization",
+        "worker_document_folder_evidence_v1",
+        "worker_document_folder_prior_v1",
+        "worker_document_folder_reading_input_v1",
+        "worker_document_folder_readings_v1",
         "worker_enqueue_receivables_method_refresh_v1",
         "worker_fail_job",
         "worker_finish_capital_project_task",
@@ -643,6 +648,7 @@
         "worker_record_case_snapshot",
         "worker_record_controlled_execution",
         "worker_record_deal_state_object",
+        "worker_record_document_folder_reading_v1",
         "worker_record_document_result",
         "worker_record_execution_brief_proposal_v2",
         "worker_record_initial_institutional_candidate_v2",
@@ -670,7 +676,9 @@
       "decision": "preserve governed consumer",
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
-        "apps/document-worker/src/queue.test.ts"
+        "apps/document-worker/src/queue.test.ts",
+        "supabase/tests/lote4_priors.sql",
+        "supabase/tests/lote4_document_folder_evidence.sql"
       ]
     },
     {
@@ -1143,21 +1151,25 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
-      "sha256": "85de4a0cc0551a3ebc0b894adf072575df9c41b86be7be05cc1b305f67cac6d1",
+      "sha256": "2a9be3bc898c151d91793c47e9d9c4e234e28aa401640235e262f9c0fdd70652",
       "entrypoint": true,
       "rpcs": [
+        "board_material_prior_results_v1",
         "confirm_work_premise_proposal_v1",
+        "document_folder_prior_v1",
         "execution_contract_basis_v2",
         "quarter_update_prior_results_v1",
         "record_definition_version_v1",
         "request_work_execution_v2",
-        "request_work_execution_v3"
+        "request_work_execution_v3",
+        "request_work_execution_v4"
       ],
       "decision": "preserve governed consumer",
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "supabase/tests/lote4_priors.sql"
       ]
     },
     {

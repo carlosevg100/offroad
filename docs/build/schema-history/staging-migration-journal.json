@@ -2823,7 +2823,12 @@
     {
       "name": "lote4_priors",
       "version": "20261028120200",
-      "statements_md5": "e22d11807588e6620415cdd4be3d7da7"
+      "statements_md5": "98d7773b947c04555cfa6bcc858fd95f"
+    },
+    {
+      "name": "lote4_folder_reading",
+      "version": "20261028120300",
+      "statements_md5": "80770d824c0349bb039e7ba7cfc565dc"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",

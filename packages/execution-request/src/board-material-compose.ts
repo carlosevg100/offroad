@@ -15,25 +15,27 @@ export const boardMaterialRoles = {
   recebiveis: "monetize-receivables-for-working-capital", "custo-relativo": "analyze-relative-debt-cost", "plano-2027": "evaluate-financing-paths",
 } as const;
 export type BoardMaterialRole = keyof typeof boardMaterialRoles;
-/** One prior completed execution as the server returned it: its stored result (verbatim), the result fingerprint and
- * the sources its contract pinned. */
-export type BoardMaterialPriorResult = {role: BoardMaterialRole; methodId: string; executionId: string; result: string; resultFingerprint: string; sources: ExecutionContractBasis["sources"]};
+/** One prior completed execution as the server returned it: its stored result (verbatim), the result fingerprint, the
+ * sources its contract pinned and the money scale the database records for its method (null when unknown). */
+export type BoardMaterialPriorResult = {role: BoardMaterialRole; methodId: string; executionId: string; result: string; resultFingerprint: string;
+  sources: ExecutionContractBasis["sources"]; moneyScale: "reais" | "millions" | null};
 export type BoardMaterialPriorReference = {role: BoardMaterialRole; executionId: string; resultFingerprint: string};
 
 const roleOf = new RegExp(`^board_capital\\.[0-9a-f-]{36}\\.source\\.([a-z0-9][a-z0-9-]{0,39})$`);
-/** The results the basis names, by role, with the method and packet fingerprint each was adopted as. */
-export function boardMaterialNamedSources(basis: Pick<ExecutionContractBasis, "envelope" | "workId" | "purpose" | "versionId">): {role: string; methodId: string; fingerprint: string}[] | null {
+/** The results the basis names, by role, with the method, packet fingerprint and money scale each was adopted as. */
+export function boardMaterialNamedSources(basis: Pick<ExecutionContractBasis, "envelope" | "workId" | "purpose" | "versionId">):
+  {role: string; methodId: string; fingerprint: string; moneyScale: string}[] | null {
   try {
     const read = readContextualBasis(basis.envelope, {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId});
     return read.entries.flatMap((e) => {
       const m = roleOf.exec(e.fieldPath), v = e.value.value;
-      return m && Array.isArray(v) && v.length === 2 ? [{role: m[1]!, methodId: String(v[0]), fingerprint: String(v[1])}] : [];
+      return m && Array.isArray(v) && v.length === 3 ? [{role: m[1]!, methodId: String(v[0]), fingerprint: String(v[1]), moneyScale: String(v[2])}] : [];
     });
   } catch { return null; }
 }
 
 /** The references the request carries: exactly the results the basis names, each one the latest completed execution the
- * server returned for its role with the same method and packet fingerprint. Anything else is null: the card was
+ * server returned for its role with the same method, packet fingerprint and recorded money scale. Anything else is null: the card was
  * proposed over other results and is superseded. */
 export function boardMaterialPriorResults(basis: Pick<ExecutionContractBasis, "envelope" | "workId" | "purpose" | "versionId">, priors: readonly BoardMaterialPriorResult[]): BoardMaterialPriorReference[] | null {
   const named = boardMaterialNamedSources(basis);
@@ -41,7 +43,8 @@ export function boardMaterialPriorResults(basis: Pick<ExecutionContractBasis, "e
   const out: BoardMaterialPriorReference[] = [];
   for (const n of named) {
     const p = priors.filter((x) => x.role === n.role);
-    if (p.length !== 1 || boardMaterialRoles[n.role as BoardMaterialRole] !== n.methodId || p[0]!.methodId !== n.methodId || p[0]!.resultFingerprint !== n.fingerprint) return null;
+    if (p.length !== 1 || boardMaterialRoles[n.role as BoardMaterialRole] !== n.methodId || p[0]!.methodId !== n.methodId || p[0]!.resultFingerprint !== n.fingerprint
+      || p[0]!.moneyScale === null || p[0]!.moneyScale !== n.moneyScale) return null;
     out.push({role: p[0]!.role, executionId: p[0]!.executionId, resultFingerprint: p[0]!.resultFingerprint});
   }
   return out;

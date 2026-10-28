@@ -58,6 +58,8 @@ const folderFileSchema = z.object({
   /** Set when the scan or the parser could not open the file at all. */
   locked: z.enum(["password_protected", "unsupported_format"]).nullable().default(null),
   layer: documentLayerSchema.nullable(),
+  /** Where the pipeline stored the layer; the reading job reads it from there. */
+  layerObjectPath: z.string().min(1).max(1024).nullable().optional(), layerSha256: hash.nullable().optional(),
 });
 export const documentFolderEvidenceSchema = z.object({
   /** The company the dossier names as its subject, by its registry id. */
@@ -70,6 +72,8 @@ export const documentFolderEvidenceSchema = z.object({
   vault: z.array(z.object({documentId: key, sha256: hash, label: z.string().min(1).max(300), instrumentRef: key.nullable()})).max(2000),
   /** The work's files in arrival order. */
   files: z.array(folderFileSchema).max(1000),
+  /** The person who wrote the turn's message (name and title or role) and when: the author and date of an answer. */
+  author: z.string().min(1).max(200).nullable().optional(), messageDate: z.string().nullable().optional(),
 });
 export type DocumentFolderEvidence = z.infer<typeof documentFolderEvidenceSchema>;
 type FolderFile = z.infer<typeof folderFileSchema>;
@@ -151,7 +155,8 @@ export function documentFolderLayerContent(layer: DocumentLayer) {
 type Read = {reading: DocumentReading} | {missing: string[]};
 /** The reading of one file: the extraction's view of the content, joined to what the product knows deterministically
  * (identity, hash, format, page count, pages without text). Whatever the method's reading refuses is named by path. */
-export function documentFolderReading(file: FolderFile, extraction: DocumentFolderReadingExtraction, content: ReturnType<typeof documentFolderLayerContent>, registryIds: ReadonlySet<string>): Read {
+export function documentFolderReading(file: FolderFile, extraction: DocumentFolderReadingExtraction, content: Pick<ReturnType<typeof documentFolderLayerContent>, "pageCount" | "pagesWithoutText">,
+  registryIds: ReadonlySet<string>): Read {
   const e = extraction, whole = !e.legible;
   if (e.entity.registryId !== null && !registryIds.has(e.entity.registryId)) return {missing: ["entity"]};
   const primaryId = whole ? null : e.entity.registryId ?? (e.entity.outsideRegistryName ? stableKey(e.entity.outsideRegistryName) : null);
@@ -171,39 +176,61 @@ export function documentFolderReading(file: FolderFile, extraction: DocumentFold
     : i.message.replace(/^document_inventory_/, "").replace(/[^a-z0-9_]+/gi, "_").slice(0, 60)))]};
 }
 
-/** Reads every file of the turn by content. Files with the same bytes are read once and share the reading; a file
- * that cannot be read (locked, without any text, too long, still processing, of an unsupported format) or whose
- * reading the method refuses is a named gap at its arrival position, never a dropped file. */
-export async function readDocumentFolder(files: readonly FolderFile[], registry: DocumentFolderEvidence["entities"], readFile: (r: DocumentFolderReadingRequest) => Promise<unknown>,
-  log: (event: string, detail: Record<string, unknown>) => void): Promise<{readings: DocumentReading[]; missing: string[]}> {
-  const ids = new Set(registry.map((e) => e.id)), byHash = new Map<string, Promise<DocumentFolderReadingExtraction | null>>();
-  const registryText = registry.map((e) => ({id: e.id, label: e.label, groupLabel: e.groupLabel}));
-  const out: Read[] = [];
-  const queue: (() => Promise<void>)[] = [];
-  files.forEach((f, n) => {
-    const fail = (why: string) => {out[n] = {missing: [why]};};
-    const format = formats[f.mimeType ?? ""];
-    if (f.status !== "ready") return fail("processing");
-    if (!format) return fail("format");
-    if (f.locked || !f.layer) return fail("unreadable");
-    const content = documentFolderLayerContent(f.layer), image = format === "jpg" || format === "png";
-    if (!image && !content.pages.length && !content.sections.length) return fail("unreadable");
-    if (content.characters > maxDocumentFolderContent) return fail("tooLong");
-    queue.push(async () => {
-      if (!byHash.has(f.sha256)) byHash.set(f.sha256, (async () => {
-        const text = JSON.stringify({registry: registryText, file: {format, pageCount: content.pageCount, pagesWithoutText: content.pagesWithoutText, pages: content.pages, sections: content.sections}});
-        try { return documentFolderReadingExtractionSchema.parse(await readFile({text, imageDocumentId: image ? f.documentId : null})); }
-        catch (error) { log("document_folder_premises.reading_failed", {message: error instanceof Error ? error.message.slice(0, 200) : "unknown"}); return null; }
-      })());
-      const extraction = await byHash.get(f.sha256)!;
-      out[n] = extraction ? documentFolderReading(f, extraction, content, ids) : {missing: ["reading"]};
-    });
-  });
-  // Four readings at a time.
-  for (let k = 0; k < queue.length; k += 4) await Promise.all(queue.slice(k, k + 4).map((job) => job()));
-  const missing = out.flatMap((r, n) => "missing" in r ? r.missing.map((m) => `files.${n + 1}.${m}`) : []);
-  return {readings: out.flatMap((r) => "reading" in r ? [r.reading] : []), missing};
+/** The reading a folder reading job stores for one file: the extraction of its content and what the layer says about
+ * its pages, joined in the turn to what the product knows of the file. Kept per organization, bytes, reader version
+ * and registry, so the same bytes are read once. */
+export const documentFolderReaderVersion = "document-folder-reading.2026.10.27-v1";
+export const documentFolderStoredReadingSchema = z.strictObject({extraction: documentFolderReadingExtractionSchema,
+  pageCount: z.number().int().min(1).max(5000).nullable(), pagesWithoutText: z.array(z.number().int().min(1).max(5000)).max(5000)});
+export type DocumentFolderStoredReading = z.infer<typeof documentFolderStoredReadingSchema>;
+/** Why a file was not read, by name: no text in any page or sheet, more content than one reading holds, or a reading the extraction refused. */
+export const documentFolderRefusals = ["unreadable", "tooLong", "reading"] as const;
+export type DocumentFolderReadingOutcome = {status: "ready"; reading: DocumentFolderStoredReading} | {status: "refused"; refusalCode: (typeof documentFolderRefusals)[number]};
+/** The registry the readings resolve entities against: part of the key a reading is kept under. */
+export const documentFolderReadingContext = (registry: DocumentFolderEvidence["entities"]) => ({registry: registry.map((e) => ({id: e.id, label: e.label, groupLabel: e.groupLabel}))});
+
+/** One file read by content, as the reading job runs it, never with the file's name. A photo is read from its text only:
+ * the production gateway reserves text requests and refuses image parts, so a photo without text is not read. */
+export async function readDocumentFolderFile(file: {mimeType: string | null; layer: DocumentLayer}, context: ReturnType<typeof documentFolderReadingContext>,
+  readFile: (r: DocumentFolderReadingRequest) => Promise<unknown>): Promise<DocumentFolderReadingOutcome> {
+  const format = formats[file.mimeType ?? ""], content = documentFolderLayerContent(file.layer);
+  if (!content.pages.length && !content.sections.length) return {status: "refused", refusalCode: "unreadable"};
+  if (content.characters > maxDocumentFolderContent) return {status: "refused", refusalCode: "tooLong"};
+  const text = JSON.stringify({registry: context.registry, file: {format, pageCount: content.pageCount, pagesWithoutText: content.pagesWithoutText, pages: content.pages, sections: content.sections}});
+  const parsed = documentFolderReadingExtractionSchema.safeParse(await readFile({text, imageDocumentId: null}));
+  return parsed.success ? {status: "ready", reading: {extraction: parsed.data, pageCount: content.pageCount, pagesWithoutText: content.pagesWithoutText}}
+    : {status: "refused", refusalCode: "reading"};
 }
+
+/** The readings of the work's files as the database returns them (worker_document_folder_readings_v1), by document. */
+export const documentFolderReadingsSchema = z.object({contextFingerprint: hash, queued: z.number().int().min(0),
+  files: z.array(z.object({documentId: key, sha256: hash, status: z.enum(["ready", "refused", "pending"]), reading: z.unknown().nullable(),
+    refusalCode: z.string().nullable()})).max(1000)});
+
+/** The turn's view of the folder: each file in arrival order joined to its stored reading. What the product decides
+ * without reading (still processing, a format the method does not read, a locked file, a file without a stored layer)
+ * and what was refused is named at the file's position; a file whose reading is still being made is named as in
+ * reading, and no card leaves until every reading of the folder is ready or refused by name. */
+export function assembleDocumentFolderReadings(files: readonly FolderFile[], registry: DocumentFolderEvidence["entities"],
+  stored: ReadonlyMap<string, z.infer<typeof documentFolderReadingsSchema>["files"][number]>): {readings: DocumentReading[]; missing: string[]} {
+  const ids = new Set(registry.map((e) => e.id)), readings: DocumentReading[] = [], missing: string[] = [];
+  files.forEach((f, n) => {
+    const at = (why: string) => missing.push(`files.${n + 1}.${why}`);
+    if (f.status !== "ready") return at("processing");
+    if (!formats[f.mimeType ?? ""]) return at("format");
+    if (f.locked || !readable(f)) return at("unreadable");
+    const r = stored.get(f.documentId);
+    if (!r || r.status === "pending") return at("reading_pending");
+    if (r.status === "refused") return at((documentFolderRefusals as readonly string[]).includes(r.refusalCode ?? "") ? r.refusalCode! : "reading");
+    const value = documentFolderStoredReadingSchema.safeParse(r.reading);
+    if (!value.success) return at("reading");
+    const read = documentFolderReading(f, value.data.extraction, value.data, ids);
+    if ("reading" in read) readings.push(read.reading); else for (const m of read.missing) at(m);
+  });
+  return {readings, missing};
+}
+/** A file the reading job can read: a stored layer, given inline or by its object path. */
+const readable = (f: FolderFile) => f.layer !== null || (f.layerObjectPath ?? null) !== null;
 
 // ---------------------------------------------------------------------------------------------
 // The turn: how the person framed the request, decisions they named, and answers to the open questions.
@@ -382,10 +409,14 @@ export type DocumentFolderTurnPremises = {
  * completed inventory, what arrived since then as its update. One step per turn; it never fails the turn. */
 export async function proposeDocumentFolderPremisesForTurn(input: {
   message: string; hasAttachments: boolean; recentUserMessages: string[]; projectId: string | null;
-  /** The message date, ISO, and the person who wrote it as the product names them (author of informed facts). */
+  /** The message date, ISO, and the person who wrote it as the product names them (author of informed facts). The
+   * folder's evidence, when it names them, prevails: the database knows who wrote the message and when. */
   messageDate: string; author: string | null;
   loadFolder: () => Promise<unknown>; loadPrior: () => Promise<unknown>;
-  readFile: (request: DocumentFolderReadingRequest) => Promise<unknown>; extract: (text: string) => Promise<unknown>;
+  /** The stored reading of each named file of the work, queuing a reading job for each that has none
+   * (worker_document_folder_readings_v1). The turn never reads a file itself. */
+  loadReadings: (request: {readerVersion: string; context: ReturnType<typeof documentFolderReadingContext>; files: {documentId: string}[]}) => Promise<unknown>;
+  extract: (text: string) => Promise<unknown>;
   log: (event: string, detail: Record<string, unknown>) => void; asks?: DocumentFolderRequestTest;
 }): Promise<DocumentFolderTurnPremises | null> {
   const entry = input.projectId ? documentFolderEntry(input.message, input.hasAttachments, input.recentUserMessages, input.asks) : null;
@@ -407,10 +438,16 @@ export async function proposeDocumentFolderPremisesForTurn(input: {
       return {forAdvisor: {status: "missing" as const, missing, files: positions.map((position) => ({position, name: files[position - 1]?.fileName ?? ""}))}, proposal: null};
     };
     if (files.length > (prior ? 50 : 200)) return missingOf(["tooManyFiles"]);
-    const read = await readDocumentFolder(files, evidence.entities, input.readFile, input.log);
-    const readingDate = input.messageDate.slice(0, 10);
+    // Only the files the reading job can read are asked for; the rest are named without reading.
+    const eligible = files.filter((f) => f.status === "ready" && formats[f.mimeType ?? ""] && !f.locked && readable(f));
+    const stored = eligible.length ? documentFolderReadingsSchema.parse(await input.loadReadings({readerVersion: documentFolderReaderVersion,
+      context: documentFolderReadingContext(evidence.entities), files: eligible.map((f) => ({documentId: f.documentId}))})) : null;
+    const read = assembleDocumentFolderReadings(files, evidence.entities, new Map((stored?.files ?? []).map((r) => [r.documentId, r])));
+    if (read.missing.some((m) => m.endsWith(".reading_pending"))) input.log("document_folder_premises.reading", {pending: read.missing.filter((m) => m.endsWith(".reading_pending")).length, queued: stored?.queued ?? 0});
+    const author = evidence.author ?? input.author;
+    const readingDate = (evidence.messageDate ?? input.messageDate).slice(0, 10);
     const completed = prior
-      ? completeDocumentFolderUpdateFacts({prior, readings: read.readings, extraction, updateId: uuidV5(`offroad:document-folder-update:${input.projectId}`), readingDate, author: input.author})
+      ? completeDocumentFolderUpdateFacts({prior, readings: read.readings, extraction, updateId: uuidV5(`offroad:document-folder-update:${input.projectId}`), readingDate, author})
       : completeDocumentFolderFacts({evidence, readings: read.readings, extraction, readingDate,
         ids: (() => {const id = uuidV5(`offroad:document-folder:${input.projectId}`); return {inventoryId: id, entityId: id, definitionVersionId: id};})()});
     const missing = [...read.missing, ...completed.status === "missing" ? completed.missing : []];

@@ -1,4 +1,4 @@
-import {boardCapitalDiscussionFactsSchema, boardFieldOf, boardReleasedSources, formatBoardReading, readBoardSourcePath, verifyBoardSource, type BoardCapitalDiscussionFacts} from "@offroad/financial-model";
+import {boardCapitalDiscussionFactsSchema, boardEffectiveScale, boardFieldOf, boardReleasedSources, formatBoardReading, readBoardSourcePath, verifyBoardSource, type BoardCapitalDiscussionFacts} from "@offroad/financial-model";
 
 /** The deterministic planner of a board discussion (ficha C47, prepare-board-capital-discussion 2026.10.27-v1).
  * Pages, deliberations, numbers and questions never come from a model: the plan below is the closed library's own
@@ -20,8 +20,11 @@ export const boardMaterialSourceMethods = Object.keys(boardMaterialSourceIds) as
 
 /** The latest completed execution of one source method in the same work, as the database returns it; released says
  * whether the method is released for execution in this organization. */
-export type BoardMaterialPrior = {methodId: string; executionId: string; resultFingerprint: string; released: boolean; packet: Record<string, unknown>};
-export type BoardMaterialPin = {role: BoardMaterialSourceId; methodId: BoardMaterialSourceMethod; executionId: string; resultFingerprint: string};
+/** One prior as the database returns it. `moneyScale` is the scale the source method adopts its basis in, as the database
+ * records it per method and version (null when unknown); it is never inferred from the packet. */
+export type BoardMaterialPrior = {methodId: string; executionId: string; resultFingerprint: string; released: boolean; moneyScale: "reais" | "millions" | null;
+  packet: Record<string, unknown>};
+export type BoardMaterialPin = {role: BoardMaterialSourceId; methodId: BoardMaterialSourceMethod; executionId: string; resultFingerprint: string; moneyScale: "reais" | "millions"};
 
 type Said = "informed" | "document";
 type Fact<T> = {value: T; origin: Said; source: string};
@@ -270,9 +273,10 @@ function readAnchors(packets: Map<string, Record<string, unknown>>): Anchors {
 }
 
 /** One reading resolved in its result: the value stated is the result's own, rounded as the plan presents it. */
-function resolveReading(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, [source, path, presentation]: Reading): string[] | null {
-  const packet = packets.get(source), methodId = methods.get(source);
-  if (!packet || !methodId || path.includes("[year=_]") || path.includes("=_]") || path.includes("_-12-31")) return null;
+function resolveReading(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, scales: Map<string, "reais" | "millions">,
+  [source, path, presentation]: Reading): string[] | null {
+  const packet = packets.get(source), methodId = methods.get(source), moneyScale = scales.get(source);
+  if (!packet || !methodId || !moneyScale || path.includes("[year=_]") || path.includes("=_]") || path.includes("_-12-31")) return null;
   const spec = boardFieldOf(methodId, path);
   if (!spec) return null;
   const raw = readBoardSourcePath(packet, path);
@@ -280,7 +284,8 @@ function resolveReading(packets: Map<string, Record<string, unknown>>, methods: 
   const months = spec.period === "derived" ? spec.horizonMonths?.(packet, path) ?? null : null;
   const currency = typeof packet.currency === "string" ? packet.currency : "";
   let check: ReturnType<typeof formatBoardReading>;
-  try { check = formatBoardReading(raw, spec, presentation, null, currency, months); } catch { return null; }
+  // A money reading is shown in the scale the database records for its source method, never one read off the packet.
+  try { check = formatBoardReading(raw, {...spec, scale: boardEffectiveScale(spec, {id: source, moneyScale})}, presentation, null, currency, months); } catch { return null; }
   if (!check) return null;
   return spec.kind === "label" || spec.kind === "flag" ? [source, path, presentation] : [source, path, presentation, check.rounded];
 }
@@ -296,23 +301,26 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   const omitted: BoardMaterialOmitted[] = [], missing: string[] = [], house: string[] = [];
   const conv = input.conversation;
   // 1. The sources: the latest completed result of each released method, checked by identity before anything is read.
-  const packets = new Map<string, Record<string, unknown>>(), methods = new Map<string, string>(), pins: BoardMaterialPin[] = [];
+  const packets = new Map<string, Record<string, unknown>>(), methods = new Map<string, string>(), scales = new Map<string, "reais" | "millions">(), pins: BoardMaterialPin[] = [];
   let entityId: string | null = null;
   for (const methodId of boardMaterialSourceMethods) {
     const id = boardMaterialSourceIds[methodId], prior = input.priors[methodId] ?? null;
     if (!prior) {omitted.push({item: `sources.${id}`, reason: "not_executed"}); continue;}
     if (!prior.released) {omitted.push({item: `sources.${id}`, reason: "not_released"}); continue;}
+    // A source whose money scale the database does not know is never read: its numbers could be off by a million.
+    if (prior.moneyScale !== "reais" && prior.moneyScale !== "millions") {omitted.push({item: `sources.${id}`, reason: "scale_unknown"}); continue;}
+    const moneyScale = prior.moneyScale;
     const released = boardReleasedSources[methodId];
     if (prior.methodId !== methodId || prior.packet.schemaVersion !== released.packet || prior.packet.executorVersion !== released.executorVersion
       || prior.packet.fingerprint !== prior.resultFingerprint) {omitted.push({item: `sources.${id}`, reason: "version_not_released"}); continue;}
     const packetEntity = text(prior.packet.entityId);
-    try { verifyBoardSource({id, methodId, packetFingerprint: prior.resultFingerprint}, prior.packet, {entityId: packetEntity ?? "", currency: input.currency}); }
+    try { verifyBoardSource({id, methodId, packetFingerprint: prior.resultFingerprint, moneyScale}, prior.packet, {entityId: packetEntity ?? "", currency: input.currency}); }
     catch { omitted.push({item: `sources.${id}`, reason: "result_not_verified"}); continue; }
     // Every result is of one company: a result of another company is never read beside the others.
     if (entityId !== null && packetEntity !== entityId) {missing.push(`sources.${id}.entity`); continue;}
     entityId = packetEntity;
-    packets.set(id, prior.packet); methods.set(id, methodId);
-    pins.push({role: id, methodId, executionId: prior.executionId, resultFingerprint: prior.resultFingerprint});
+    packets.set(id, prior.packet); methods.set(id, methodId); scales.set(id, moneyScale);
+    pins.push({role: id, methodId, executionId: prior.executionId, resultFingerprint: prior.resultFingerprint, moneyScale});
   }
   if (!packets.size || entityId === null) return {status: "missing", missing: [...new Set([...missing, "sources"])], omitted};
   if (!conv.meetingDate) missing.push("meetingDate");
@@ -321,10 +329,10 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   // 2. The readings each text may bind, resolved in the results.
   const anchors = readAnchors(packets);
   const declared = new Map<string, {reading: string[]} | {pending: [string, string, string]}>();
-  for (const [id, r] of readingsFor(anchors)) if (!declared.has(id)) {const x = resolveReading(packets, methods, r); if (x) declared.set(id, {reading: x});}
+  for (const [id, r] of readingsFor(anchors)) if (!declared.has(id)) {const x = resolveReading(packets, methods, scales, r); if (x) declared.set(id, {reading: x});}
   for (const [id, r, methodId, reason] of pendingReadings) {
     if (!packets.has(r[0])) continue;
-    const x = resolveReading(packets, methods, r);
+    const x = resolveReading(packets, methods, scales, r);
     declared.set(id, x ? {reading: x} : {pending: [methodId, r[1], reason]});
   }
 
@@ -441,7 +449,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
       minutesPerPage: {value: "3", origin: "house", source: "Uma página a cada três minutos de pauta"},
       agendaMinutes: conv.agendaMinutes, nextMeetingDate: conv.nextMeetingDate, template: conv.template,
       outlineConfirmed: conv.outlineConfirmed ?? {value: false, origin: "house", source: "Roteiro ainda não confirmado"},
-      sources: pins.map((p) => ({value: {id: p.role, methodId: p.methodId, packetFingerprint: p.resultFingerprint}, origin: "analysis", source: `Resultado revisado, execução ${short(p.role)}`})),
+      sources: pins.map((p) => ({value: {id: p.role, methodId: p.methodId, packetFingerprint: p.resultFingerprint, moneyScale: p.moneyScale}, origin: "analysis", source: `Resultado revisado, execução ${short(p.role)}`})),
       topics,
       deliberations: [...deliberations.values()].map((d) => {
         const informedDate = d.dates.find((x) => x.origin !== "analysis");

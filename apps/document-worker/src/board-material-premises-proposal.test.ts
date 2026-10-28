@@ -8,7 +8,7 @@ import {inMemoryBasis} from "./lote3-reader-check";
 import {comparableHypotheses, financialModelFixture, nonAnswering} from "./lote2-premises.test-support";
 import {uuidV5} from "./investment-premises-proposal";
 
-type Source = {id: string; methodId: string; packet: Record<string, unknown>};
+type Source = {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: "reais" | "millions"};
 let gold: (turn: 1 | 2 | 3) => BoardCapitalDiscussionFacts;
 let sources: Source[];
 beforeAll(async () => {
@@ -19,7 +19,7 @@ beforeAll(async () => {
 const hex = (n: number) => `a0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 /** The latest completed execution of each source method of the work, as the database returns them. */
 const priorsRead = (edit: (p: BoardMaterialPrior) => BoardMaterialPrior | null = (p) => p) => ({priors: sources.flatMap((s, n) => {
-  const p = edit({methodId: s.methodId, executionId: hex(700 + n), resultFingerprint: s.packet.fingerprint as string, released: true, packet: structuredClone(s.packet)});
+  const p = edit({methodId: s.methodId, executionId: hex(700 + n), resultFingerprint: s.packet.fingerprint as string, released: true, moneyScale: s.moneyScale, packet: structuredClone(s.packet)});
   return p ? [p] : [];
 })});
 const none = {value: null, origin: null, source: null};
@@ -87,6 +87,19 @@ describe("board material: ficha C47 through the conversation", () => {
     for (const intent of nonAnswering) expect((await runTurn(2, undefined, {...turns[2].extraction, turnIntent: intent})).result).toBeNull();
     const {result} = await runTurn(1, () => null);
     expect(result?.forAdvisor).toEqual({status: "missing", missing: ["sources"]});
+  }, 120_000);
+
+  it("reads each source in the scale the database records for its method, and leaves out by name a source without one", async () => {
+    const {result} = await runTurn(2, (p) => p.methodId === "analyze-relative-debt-cost" ? {...p, moneyScale: null} : p);
+    expect(result?.forAdvisor.status).toBe("proposed");
+    const facts = result!.proposal!.facts as BoardCapitalDiscussionFacts;
+    expect(facts.sources.map((s) => s.value.id)).not.toContain("custo-relativo");
+    expect(facts.sources.every((s) => s.value.moneyScale === sources.find((x) => x.methodId === s.value.methodId)!.moneyScale)).toBe(true);
+    const items = (result!.proposal!.summary as {items: {label: string; labelKey: string | null; source: string}[]}).items.filter((i) => i.labelKey === "boardOmitted");
+    expect(items.find((i) => i.label === "sources.custo-relativo")?.source).toBe("escala monetária do método não registrada");
+    // The pins the card carries name each source's scale as the database gave it.
+    const pins = (result!.proposal!.summary as unknown as {boardSources: {role: string; moneyScale: string}[]}).boardSources;
+    expect(pins.every((p) => p.moneyScale === sources.find((x) => x.id === p.role)!.moneyScale)).toBe(true);
   }, 120_000);
 
   it("leaves out by name what an unreleased or unexecuted method would have supplied, never a page of its own", async () => {

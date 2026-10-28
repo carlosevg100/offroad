@@ -75738,9 +75738,9 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 526,
-          "anchor": "create or replace function private.worker_can_access_document_storage_v1(p_bucket text, p_object_path text, p_write boolean)",
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 137,
+          "anchor": "create or replace function private.worker_can_access_document_storage_v1(p_bucket text,p_object_path text,p_write boolean)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -343926,7 +343926,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 338,
+          "line": 362,
           "anchor": "create function private.board_material_latest_priors_v1(p_org uuid,p_work uuid,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343980,7 +343980,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 115,
+          "line": 136,
           "anchor": "create function private.board_material_prior_content_v1(p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,",
           "mechanism": "direct_ddl"
         }
@@ -344098,7 +344098,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 351,
+          "line": 375,
           "anchor": "create function private.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344260,7 +344260,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 184,
+          "line": 205,
           "anchor": "create function private.board_material_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
@@ -344314,7 +344314,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 433,
+          "line": 457,
           "anchor": "create function private.document_folder_decision_kind_v1(p_objective text) returns text",
           "mechanism": "direct_ddl"
         }
@@ -344368,7 +344368,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 135,
+          "line": 156,
           "anchor": "create function private.document_folder_prior_content_v1(p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,p_prior_snapshot jsonb,",
           "mechanism": "direct_ddl"
         }
@@ -344476,7 +344476,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 214,
+          "line": 236,
           "anchor": "create function private.document_folder_prior_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
@@ -344540,7 +344540,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 390,
+          "line": 414,
           "anchor": "create function private.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344594,7 +344594,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 442,
+          "line": 466,
           "anchor": "create function private.document_folder_work_dossiers_v1(p_org uuid,p_work uuid,p_subject uuid) returns uuid[]",
           "mechanism": "direct_ddl"
         }
@@ -344864,7 +344864,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 312,
+          "line": 336,
           "anchor": "create function private.lote4_latest_prior_v1(p_org uuid,p_work uuid,p_expected jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344918,7 +344918,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 93,
+          "line": 114,
           "anchor": "create function private.lote4_prior_identity_v1(p_kind text,p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text",
           "mechanism": "direct_ddl"
         }
@@ -344972,7 +344972,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 154,
+          "line": 175,
           "anchor": "create function private.lote4_prior_resolve_v1(p_kind text,p_org uuid,p_work uuid,p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345134,7 +345134,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 103,
+          "line": 124,
           "anchor": "create function private.prior_sources_pinned_v1(p_prior_contract jsonb,p_contract_sources jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
@@ -345198,7 +345198,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 242,
+          "line": 264,
           "anchor": "create function private.request_work_execution_producer_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345262,7 +345262,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 371,
+          "line": 395,
           "anchor": "create function private.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345326,7 +345326,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 452,
+          "line": 476,
           "anchor": "create function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345390,7 +345390,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 410,
+          "line": 434,
           "anchor": "create function private.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345454,7 +345454,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 364,
+          "line": 388,
           "anchor": "create function public.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345518,7 +345518,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 404,
+          "line": 428,
           "anchor": "create function public.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345582,7 +345582,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 303,
+          "line": 327,
           "anchor": "create function public.request_work_execution_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345646,7 +345646,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 384,
+          "line": 408,
           "anchor": "create function public.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345710,7 +345710,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 519,
+          "line": 552,
           "anchor": "create function public.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345774,8 +345774,702 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 423,
+          "line": 447,
           "anchor": "create function public.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_declared_scale_v1(p_snapshot jsonb, p_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_declared_scale_v1(p_snapshot jsonb, p_id text)",
+          "kind": "function",
+          "name": "board_material_declared_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_snapshot jsonb, p_id text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.board_material_declared_scale_v1(p_snapshot jsonb, p_id text)",
+          "kind": "function",
+          "name": "board_material_declared_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_snapshot jsonb, p_id text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Escala monetária de cada fonte da discussão do conselho lida da base adotada; autor e data da mensagem na evidência da pasta.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 93,
+          "anchor": "create function private.board_material_declared_scale_v1(p_snapshot jsonb,p_id text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_reading_budget_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_reading_budget_v1()",
+          "kind": "function",
+          "name": "document_folder_reading_budget_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.document_folder_reading_budget_v1()",
+          "kind": "function",
+          "name": "document_folder_reading_budget_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 39,
+          "anchor": "create function private.document_folder_reading_budget_v1() returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_reading_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_reading_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 95,
+          "anchor": "create function private.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+          "kind": "function",
+          "name": "worker_document_folder_readings_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+          "kind": "function",
+          "name": "worker_document_folder_readings_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 46,
+          "anchor": "create function private.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+          "kind": "function",
+          "name": "worker_record_document_folder_reading_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+          "kind": "function",
+          "name": "worker_record_document_folder_reading_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 115,
+          "anchor": "create function private.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_reading_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_document_folder_reading_input_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_reading_input_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 109,
+          "anchor": "create function public.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+          "kind": "function",
+          "name": "worker_document_folder_readings_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
+          "kind": "function",
+          "name": "worker_document_folder_readings_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 89,
+          "anchor": "create function public.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+          "kind": "function",
+          "name": "worker_record_document_folder_reading_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
+          "kind": "function",
+          "name": "worker_record_document_folder_reading_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 130,
+          "anchor": "create function public.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.document_folder_readings.document_folder_readings_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.document_folder_readings.document_folder_readings_deny",
+          "kind": "policy",
+          "name": "document_folder_readings_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "document_folder_readings",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.document_folder_readings.document_folder_readings_deny",
+          "kind": "policy",
+          "name": "document_folder_readings_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "document_folder_readings",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 33,
+          "anchor": "create policy document_folder_readings_deny on private.document_folder_readings as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.document_folder_readings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.document_folder_readings",
+          "rls": true,
+          "kind": "table",
+          "name": "document_folder_readings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.document_folder_readings",
+          "rls": true,
+          "kind": "table",
+          "name": "document_folder_readings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 13,
+          "anchor": "create table private.document_folder_readings (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.document_folder_readings.document_folder_readings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.document_folder_readings.document_folder_readings_immutable",
+          "kind": "trigger",
+          "name": "document_folder_readings_immutable",
+          "table": "document_folder_readings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER document_folder_readings_immutable BEFORE DELETE OR UPDATE ON private.document_folder_readings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.document_folder_readings.document_folder_readings_immutable",
+          "kind": "trigger",
+          "name": "document_folder_readings_immutable",
+          "table": "document_folder_readings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER document_folder_readings_immutable BEFORE DELETE OR UPDATE ON private.document_folder_readings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 35,
+          "anchor": "create trigger document_folder_readings_immutable before update or delete on private.document_folder_readings for each row execute function private.guard_contribution_immutable_v1();",
           "mechanism": "direct_ddl"
         }
       ]
@@ -353723,6 +354417,13 @@
       "decision": "preservar",
       "stage": "fichas C47 e C09, resultados anteriores",
       "reason": "Resultados anteriores da discussão do conselho (C47) e da atualização da pasta (C09), produtor v4, evidência da pasta e porta de leitura das camadas."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Job de leitura de arquivo da pasta (C09): tipo novo em processing_jobs, tabela privada de leituras, comandos do turno e do job, porta de storage restrita ao job de leitura."
     }
   ],
   "staging_archive": [
