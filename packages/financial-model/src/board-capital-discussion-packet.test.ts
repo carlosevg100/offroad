@@ -12,8 +12,8 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.readings!.materialWithheld).toBe(true);
     expect(p.result.discussion!.versions).toEqual([]);
     expect(p.readings!.deliberations.map((d) => d.text)).toEqual([
-      "não emitir o pedido de compra até as cotações firmes, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out",
-      "financiar o capital de giro sazonal começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
+      "não emitir o pedido de compra antes das cotações, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out",
+      "financiar o capital de giro começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
       "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
       "definir qual EBITDA mede o limite de 2,5x"]);
     expect(p.result.discussion!.outline.narrative).toEqual(["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"]);
@@ -40,7 +40,7 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
       keptFigureIds: ["irr", "wacc", "npv", "payback", "peak-need", "npv-economy", "npv-capex", "npv-slow", "npv-defer", "irr-defer"]}]);
     expect(p.result.discussion!.versions.map((v) => v.version)).toEqual([1, 2]);
     expect(p.readings!.material!.priorVersionFingerprint).toBe(p.result.discussion!.versions[0]!.fingerprint);
-    expect(current(p).deliberations[0]!.text).toBe("decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out");
+    expect(current(p).deliberations[0]!.text).toBe("decidir o caminho da linha de embalagem, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out");
   });
   it("is deterministic and publishes its contracts", () => {
     expect(prepareBoardCapitalDiscussionPacket(boardPacketInput(3)).fingerprint).toBe(prepareBoardCapitalDiscussionPacket(boardPacketInput(3)).fingerprint);

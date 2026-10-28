@@ -289,7 +289,7 @@ type BoardConditionBody =
   /** The first key at which a series is not zero comes strictly after the second series' first such key. */
   | {startsLater: readonly [BoardSeries, BoardSeries]}
   /** The complete set of moves of a plan path, read from the instruments' terms: kinds of new or amended instruments
-   * (aditamento, debenture_nova, fomento, bancario_curto, bancario_longo), existing ones removed, prepaid and charged
+   * (aditamento, debenture_nova, fomento, bancario_sem_amortizacao_programada, bancario_programado), existing ones removed, prepaid and charged
    * (debenture_atual, or $i for the named row), and whether the project variant is the status quo's. */
   | {pathMoves: readonly [string, string]; added: readonly string[]; removed: readonly string[]; prepaid: readonly string[]; charges: readonly string[]; variant: "same" | "other"}
   /** An extension of the named instrument: an amended instrument replaces it, pays finally later and repays less principal. */
@@ -367,7 +367,7 @@ export const boardScenarioDefinitions = [
 ] as const;
 /** Scenarios no template names because the released result does not hold their definition. */
 export const boardScenariosNotNamed = [
-  {scenario: "sem a linha da safra (caixa de curto prazo)", method: "project-weekly-cash",
+  {scenario: "sem a linha da safra (projeção semanal de caixa)", method: "project-weekly-cash",
     reason: "o resultado publicado não registra quais fluxos cada caso carrega; a linha mostra o caso alternativo de menor caixa, sem nomear o que o define"},
 ] as const;
 const scenario = (name: (typeof boardScenarioDefinitions)[number]["scenario"], ...conditions: BoardCondition[]) => claim(`cenário: ${name}`, ...conditions);
@@ -400,12 +400,17 @@ const longerReceivables = (id: string) => scenario("prazo maior de recebimento d
 /** The complete moves of a plan path against the status quo; anything the sentence does not declare refuses it. */
 const moves = (path: string, m: {added?: string[]; removed?: string[]; prepaid?: string[]; charges?: string[]; variant: "same" | "other"}): BoardCondition =>
   ({pathMoves: [FP, path], added: m.added ?? [], removed: m.removed ?? [], prepaid: m.prepaid ?? [], charges: m.charges ?? [], variant: m.variant});
-const bankShort = "bancario_curto", bankScheduled = "bancario_programado";
+// New bank credit without a scheduled amortization after the horizon (repaid within it or released seasonally): a
+// kind by the terms only; the words "de curto prazo" come from the {bankcredit:path} token, proven by the term.
+/** The declared limit for "curto prazo": an effective term registered by the plan (termYears of the instrument's cost,
+ * from the start of its draw period to its last payment) of at most twelve months, the usual convention. */
+export const boardShortTermYears = "1";
+const bankUnscheduled = "bancario_sem_amortizacao_programada", bankScheduled = "bancario_programado";
 const keptDebt = scenario("dívida mantida como está", moves("manter", {variant: "same"}));
 /** The plan's alternative: no line, crop working capital and a bank extension that prepays the named row, with the debenture waiver and consent. */
-const bankFallback = claim("o plano alternativo do resultado é exatamente: sem a linha, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida da linha nomeada, com waiver da debênture e anuência",
+const bankFallback = claim("o plano alternativo do resultado é exatamente: sem a linha, crédito bancário novo sem amortização programada após o horizonte e financiamento bancário novo com amortização programada que pré-paga a dívida da linha nomeada, com waiver da debênture e anuência",
   {bind: "alt", to: at(FP, "readings.alternative.pathId")},
-  moves("$alt", {added: [bankShort, bankScheduled], prepaid: ["$i"], charges: ["waiver|debenture_atual"], variant: "other"}),
+  moves("$alt", {added: [bankUnscheduled, bankScheduled], prepaid: ["$i"], charges: ["waiver|debenture_atual"], variant: "other"}),
   cmp(at(FP, "readings.paths[id=$alt].consentRequired"), "eq", {value: "true"}), {bind: "av", to: at(FP, "result.evaluation.paths[id=$alt].projectVariantId")},
   cmp({contributed: [FP, "variant.$av.kind"]}, "eq", {value: "none"}));
 const longIsDebenture = claim("o instrumento longo recomendado é de mercado de capitais (debênture), pelos termos do plano",
@@ -485,13 +490,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   // Deliberations: title, subject, recommendation and dated actions, each bound to its deliberation.
   "delib.packaging_line": t("delib.title", "{projeto}", {projeto: project("Nome")}),
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho {projeto}", {projeto: project("de")}, {of: "delib.packaging_line"}),
-  "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra até as cotações firmes", {}, {of: "delib.packaging_line",
+  "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra antes das cotações", {}, {of: "delib.packaging_line",
     when: [...claim("o caso que a análise registra como adiamento tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))),
       ...registeredDeferral]}),
-  "delib.crop": t("delib.title", "Capital de giro sazonal {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.subject": t("delib.subject", "decidir o financiamento do capital de giro sazonal {de:ano}", {ano: yr("$y")},
+  "delib.crop": t("delib.title", "Capital de giro {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
+  "delib.crop.subject": t("delib.subject", "decidir o financiamento do capital de giro {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.programs": t("delib.recommendation", "financiar o capital de giro sazonal começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
+  "delib.crop.programs": t("delib.recommendation", "financiar o capital de giro começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
     {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve, ...noBankStep]}),
   "delib.maturities": t("delib.title", "Vencimentos {de:ano}", {ano: yr("$y")}, {when: [maturityYear]}),
   "delib.maturities.subject": t("delib.subject", "decidir a rota para os vencimentos {de:ano}", {ano: yr("$y")}, {of: "delib.maturities", when: [maturityYear]}),
@@ -499,7 +504,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {valor: issue, prazo: term}, {of: "delib.maturities", when: [...longIsDebenture, ...claim("o resultado tem plano alternativo", {bind: "alt", to: at(FP, "readings.alternative.pathId")})]}),
   "delib.policy": t("delib.title", "Política de endividamento"),
   "delib.policy.definition": t("delib.subject", "definir qual EBITDA mede o limite de {limite}", {limite: policy}, {of: "delib.policy", when: [...policyIsBoard, ...policyUndefined]}),
-  "delib.action.supplier_notice": t("delib.action", "enviar ao fornecedor atual o aviso para renegociar o contrato", {}, {of: "delib.packaging_line"}),
+  "delib.action.supplier_notice": t("delib.action", "enviar ao fornecedor o aviso para renegociar o contrato", {}, {of: "delib.packaging_line"}),
   "delib.action.join_programs": t("delib.action", "aderir aos programas", {}, {of: "delib.crop"}),
   "delib.action.finish_sounding": t("delib.action", "concluir a sondagem", {}, {of: "delib.maturities"}),
   "delib.action.decide_route": t("delib.action", "decidir a rota", {}, {of: "delib.maturities"}),
@@ -517,7 +522,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {semana: tightWeek, saldo: s("money", FP, "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=$y-12-31].closingAvailable", "balance"), ano: yr("$y")},
     {when: [tightBelowMinimum, ...keptDebt]}),
   // The released weekly result does not record which flows each case carries, so the cause of this case is not asserted.
-  "situation.cash_without_line": t("page.line", "No caso alternativo de menor caixa da análise de curto prazo, o caixa {em:semana} é de {saldo}, contra o mínimo de {minimo}.",
+  "situation.cash_without_line": t("page.line", "No caso alternativo de menor caixa, o caixa {em:semana} é de {saldo}, contra o mínimo de {minimo}.",
     {semana: s("date", WC, "readings.sensitivities[caseId=sem-linha].weekStart"), saldo: s("money", WC, "readings.sensitivities[caseId=sem-linha].minimum", "balance"),
       minimo: s("money", WC, "result.weekly.minimumCash", "balance")}, {when: [...claim("o caixa sem a linha fica abaixo do mínimo", cmp("saldo", "lt", "minimo")),
       ...claim("o caso é alternativo e o de menor caixa entre os casos alternativos", cmp(at(WC, "result.weekly.cases[id=sem-linha].role"), "eq", {value: "alternative"}),
@@ -549,12 +554,12 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: com economia menor, {vpl_economia}; com capex e depreciação maiores, {vpl_capex}; com partida mais lenta, {vpl_partida}.",
     {vpl_economia: metric("money", "economy-4", "netPresentValue", "value"), vpl_capex: metric("money", "capex-120", "netPresentValue", "value"), vpl_partida: metric("money", "slower-start", "netPresentValue", "value")},
     {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart]}),
-  "topic.project_wait_quotes_registered": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em {vpl} e o retorno em {retorno}.",
+  "topic.project_wait_quotes_registered": t("page.recommendation", "Recomendamos pedir cotações antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em {vpl} e o retorno em {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")},
     {when: [...claim("o caso registrado como adiamento tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...registeredDeferral]}),
   "option.wait_quotes_registered": t("page.option", "Esperar as cotações, no caso que a análise registra como adiamento: VPL de {vpl} e retorno de {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: registeredDeferral}),
-  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações firmes antes do pedido de compra; com capex e início de operação adiados e horizonte da análise estendido na mesma medida, o VPL fica em {vpl} e o retorno em {retorno}.",
+  "topic.project_wait_quotes": t("page.recommendation", "Recomendamos pedir cotações antes do pedido de compra; com capex e início de operação adiados e horizonte da análise estendido na mesma medida, o VPL fica em {vpl} e o retorno em {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")},
     // The definition first (conditions 0 and 1), then the comparison with going on now (condition 2).
     {when: [...deferral, ...claim("o caso com capex e início de operação adiados tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))]}),
@@ -563,8 +568,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "option.wait_quotes": t("page.option", "Esperar as cotações, com capex e início de operação adiados e horizonte da análise estendido na mesma medida: VPL de {vpl} e retorno de {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")}, {when: deferral}),
   // An informed fact, attributed: the chair's strategic reason, adopted as informed by the chair; never a financial conclusion.
-  "topic.project_strategic_reason": t("page.line", "Motivo estratégico apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
-  "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico sazonal de {pico}, sem dívida bancária nova",
+  "topic.project_strategic_reason": t("page.line", "Motivo apresentado pelo presidente do conselho: {motivo}.", {motivo: {type: "informed", author: "chair", generic: "a confirmar"}}),
+  "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico de {pico}, sem dívida bancária nova",
     {valor: rf("money", "readings.plan[optionId=$o].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
       pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")},
     {when: [...programsFirst, ...noBankStep, ...twoProgramsOnly, ...claim("o valor é o acumulado do plano até o segundo programa", cmp("$o", "eq", {var: "osecond"}))]}),
@@ -591,37 +596,37 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "alternatives.row.extend_with_bank": pathRow("Caminho F", "alongar-com-banco"),
   "alternatives.row.extend_bradesco": pathRow("Caminho G", "alongar-bradesco"),
   "alternatives.moves.title": t("page.title", "Os {caminhos} caminhos combinam estes movimentos da dívida e do projeto", {caminhos: s("count", FP, "readings.horizon.candidatePaths")}),
-  "alternatives.moves.no_line_debenture": pathMovesLine("Caminho A: sem {projeto}; crédito bancário de curto prazo; {species:nova:new@sem-linha-debenture}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
-    "sem-linha-debenture", {added: [bankShort, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}, claim("o caminho fica sem o projeto da linha", ...planVariant("sem-linha-debenture", "none")), true, "o"),
+  "alternatives.moves.no_line_debenture": pathMovesLine("Caminho A: sem {projeto}; {bankcredit:sem-linha-debenture}; {species:nova:new@sem-linha-debenture}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
+    "sem-linha-debenture", {added: [bankUnscheduled, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}, claim("o caminho fica sem o projeto da linha", ...planVariant("sem-linha-debenture", "none")), true, "o"),
   // The plan's deferral: the path's variant is the reference variant moved uniformly (boardDeferralRules, fixed horizon).
-  "alternatives.moves.defer_line": pathMovesLine("Caminho B: adiamento {projeto}; crédito bancário de curto prazo.", "adiar-linha", {added: [bankShort], variant: "other"},
+  "alternatives.moves.defer_line": pathMovesLine("Caminho B: adiamento {projeto}; {bankcredit:adiar-linha}.", "adiar-linha", {added: [bankUnscheduled], variant: "other"},
     scenario("projeto adiado", ...planVariant("adiar-linha", "project"), {planDeferred: [FP, "$pv", "$pr"]}), false, "de"),
   // Otherwise: the variant by its verified components only, with no word of deferral.
-  "alternatives.moves.defer_line_generic": pathMovesLine("Caminho B: outra variante {projeto}, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.",
-    "adiar-linha", {added: [bankShort], variant: "other"},
+  "alternatives.moves.defer_line_generic": pathMovesLine("Caminho B: outra variante {projeto}, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; {bankcredit:adiar-linha}.",
+    "adiar-linha", {added: [bankUnscheduled], variant: "other"},
     [...claim("a variante do caminho é de projeto, contra a variante de referência do caminho que mantém a dívida", ...planVariant("adiar-linha", "project")), ...claim("cada componente da variante começa estritamente depois do componente da variante de referência", ...["growthCapex", "ebitda", "depreciation", "maintenanceCapex", "startupWorkingCapitalCashFlow"].map((field) =>
       ({startsLater: [{contributed: [FP, `variant.$pv.${field}`]}, {contributed: [FP, `variant.$pr.${field}`]}]}) as BoardCondition))], false, "de"),
-  "alternatives.moves.debenture_with_line": pathMovesLine("Caminho C: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; {species:nova:new@debenture-com-linha}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
-    "debenture-com-linha", {added: [bankShort, "fomento", "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "same"}, [], true),
+  "alternatives.moves.debenture_with_line": pathMovesLine("Caminho C: {projeto} no cronograma informado, com financiamento de banco de fomento; {bankcredit:debenture-com-linha}; {species:nova:new@debenture-com-linha}; pré-pagamento {species:atual_de:existing} e da dívida com {credor}.",
+    "debenture-com-linha", {added: [bankUnscheduled, "fomento", "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "same"}, [], true),
   "alternatives.moves.keep_and_roll": t("page.line", "Caminho D: dívida mantida como está, com {projeto} no cronograma informado.", {projeto: project("o")}, {when: [...keptDebt, ...sameProject]}),
   "alternatives.moves.short_bank_loan": pathMovesLine("Caminho E: financiamento bancário novo com amortização programada; {projeto} no cronograma informado.", "ccb-tres-anos",
     {added: [bankScheduled], variant: "same"}),
-  "alternatives.moves.extend_with_bank": pathMovesLine("Caminho F: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}; waiver {species:de:existing}.",
-    "alongar-com-banco", {added: [bankShort, "fomento", bankScheduled], prepaid: ["$i"], charges: ["waiver|debenture_atual"], variant: "same"}, [], true),
-  "alternatives.moves.extend_bradesco": pathMovesLine("Caminho G: {projeto} no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; dívida com {credor} alongada por aditamento.",
-    "alongar-bradesco", {added: [bankShort, "fomento", "aditamento"], removed: ["$i"], variant: "same"}, claim("a dívida nomeada é alongada: vencimento final posterior e menos principal pago", {extendsDebt: [FP, "$i"]}), true),
+  "alternatives.moves.extend_with_bank": pathMovesLine("Caminho F: {projeto} no cronograma informado, com financiamento de banco de fomento; {bankcredit:alongar-com-banco}; financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}; waiver {species:de:existing}.",
+    "alongar-com-banco", {added: [bankUnscheduled, "fomento", bankScheduled], prepaid: ["$i"], charges: ["waiver|debenture_atual"], variant: "same"}, [], true),
+  "alternatives.moves.extend_bradesco": pathMovesLine("Caminho G: {projeto} no cronograma informado, com financiamento de banco de fomento; {bankcredit:alongar-bradesco}; dívida com {credor} alongada por aditamento.",
+    "alongar-bradesco", {added: [bankUnscheduled, "fomento", "aditamento"], removed: ["$i"], variant: "same"}, claim("a dívida nomeada é alongada: vencimento final posterior e menos principal pago", {extendsDebt: [FP, "$i"]}), true),
   "recommendation.debenture": t("page.title", "Recomendamos sondar {species:um:long} de até {valor}, com prazo de {prazo}", {valor: issue, prazo: term}, {when: longIsDebenture}),
   "recommendation.debenture_cost": t("page.line", "Resgata {species:atual_o:existing} e pré-paga a dívida com {credor}; custo efetivo entre CDI mais {baixo} e CDI mais {alto}.",
     {credor: creditorOf("$i"), baixo: s("rate", FP, L + "equivalentSpread"), alto: s("rate", FP, L + "equivalentSpreadAtCondition")},
     {when: [...claim("a faixa vai do menor ao maior custo", cmp("baixo", "le", "alto")), ...claim("as leituras de pré-pagamento são do caminho recomendado", {bind: "p", to: at(FP, "readings.recommendation.pathId")}), prepaidIn("$p"),
       ...claim("o caminho recomendado tem exatamente estes movimentos, entre eles o pré-pagamento da debênture atual e da dívida nomeada",
-        moves("$p", {added: [bankShort, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}))]}),
+        moves("$p", {added: [bankUnscheduled, "debenture_nova"], prepaid: ["debenture_atual", "$i"], variant: "other"}))]}),
   "recommendation.amortization": t("page.line", "Amortização {de:inicio} {a:fim}.",
     {inicio: s("date", FP, L + "firstAmortizationYear"), fim: s("date", FP, L + "lastAmortizationYear")}, {when: [...claim("o início vem antes do fim", cmp("inicio", "le", "fim")),
       // The span shown is the schedule's: first and last effective payments of the adopted profile of the recommended path.
       ...claim("o início e o fim são o primeiro e o último pagamento efetivo do perfil adotado", {bind: "p", to: at(FP, "readings.recommendation.pathId")},
         cmp("inicio", "eq", {firstPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}), cmp("fim", "eq", {lastPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}))]}),
-  "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
+  "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, {bankcredit:$alt} e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
     {projeto: project("o"), credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: [...bankFallback, ...sameProject]}),
   "risk.leverage": t("page.title", "A alavancagem chega a {adverso} no adverso {de:ano}, abaixo da política de {politica}{definition:politica:$ma}",
     {politica: policy, adverso: measurement("multiple", "$ma", "ratio"), ano: yr("$y")},
@@ -666,10 +671,10 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "appendix.sources": t("appendix", "Fontes e datas das análises"),
   // Likely questions and answers; an answer answers its own question.
   "q.roll_bank": t("question", "Por que não rolar a dívida com {credor} no vencimento?", {credor: creditorOf("$i")}),
-  "a.roll_bank": t("answer", "No caminho sem {projeto}, com crédito bancário de curto prazo e a dívida com {credor} alongada por aditamento, o caixa fica abaixo do mínimo da política: faltam cerca de {falta}, com vencimento {em:vencimento}.",
+  "a.roll_bank": t("answer", "No caminho sem {projeto}, com {bankcredit:bradesco-sem-linha} e a dívida com {credor} alongada por aditamento, o caixa fica abaixo do mínimo da política: faltam cerca de {falta}, com vencimento {em:vencimento}.",
     {projeto: project("o"), credor: creditorOf("$i"), falta: s("money", FP, "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", "balance"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
     {answers: "q.roll_bank", when: [...claim("falta caixa contra o mínimo da política", cmp("falta", "gt", "0")),
-      ...claim("o caminho tem exatamente estes movimentos", moves("bradesco-sem-linha", {added: [bankShort, "aditamento"], removed: ["$i"], variant: "other"}), ...planVariant("bradesco-sem-linha", "none"), {extendsDebt: [FP, "$i"]}), ...sameProject]}),
+      ...claim("o caminho tem exatamente estes movimentos", moves("bradesco-sem-linha", {added: [bankUnscheduled, "aditamento"], removed: ["$i"], variant: "other"}), ...planVariant("bradesco-sem-linha", "none"), {extendsDebt: [FP, "$i"]}), ...sameProject]}),
   "q.term": t("question", "Por que {prazo} e não um prazo menor?", {prazo: term}),
   "a.term": t("answer", "No perfil de amortização mais curto testado, a amortização {de:ano}, de {amortizacao}, passa o caixa disponível depois dos juros, de {disponivel}; o perfil adotado passa em todo o horizonte.",
     {ano: yr("$y"), amortizacao: s("money", FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$y].scheduledAmortization", "flow"),
@@ -685,7 +690,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
         cmp({lastPaid: [FP, schedule("cinco-anos"), "year", "scheduledAmortization"]}, "lt", {lastPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}),
         cmp({lastPaid: [FP, schedule("cinco-anos"), "year", "scheduledAmortization"]}, "lt", {lastListed: [FP, schedule("cinco-anos"), "year"]}))]}),
   "q.demand": t("question", "E se as gestoras não comprarem o volume todo?"),
-  "a.demand": t("answer", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo de cerca de {valor}, com amortização programada, que pré-paga a dívida com {credor}, com waiver e anuência dos {species:titulares:existing}, decidido até {prazo}, antes do vencimento dessa dívida {em:vencimento}.",
+  "a.demand": t("answer", "Plano alternativo: sem {projeto}, {bankcredit:$alt} e financiamento bancário novo de cerca de {valor}, com amortização programada, que pré-paga a dívida com {credor}, com waiver e anuência dos {species:titulares:existing}, decidido até {prazo}, antes do vencimento dessa dívida {em:vencimento}.",
     {projeto: project("o"), valor: s("money", FP, "readings.alternative.issueTarget", "value"), prazo: dl("delib.action.decide_route"), credor: creditorOf("$i"), vencimento: s("date", DT, "result.table.rows[id=$i].finalPayment")},
     {answers: "q.demand", when: [...bankFallback, ...claim("a decisão vem antes do vencimento", cmp("prazo", "lt", "vencimento")), ...sameProject]}),
   "q.cost": t("question", "Quanto custa?"),
@@ -703,19 +708,19 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("a ponte não atribui causa ao restante", cmp(at(RC, "result.bridge.causalAttribution"), "eq", {value: "false"})),
       ...claim("o restante sem explicação é o que a fonte registra", cmp("resto", "gt", "0"))]}),
   "q.rating": t("question", "Vale contratar rating?"),
-  "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores {species:de:long}. Sugerimos avaliação preliminar não publicada.",
+  "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores {species:de:long}. Sugerimos ouvir uma agência de rating antes de decidir.",
     {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
     {answers: "q.rating", when: [...claim("os dois extremos da faixa cobrem o mesmo horizonte registrado", {samePeriod: ["baixo", "alto"]}),
       ...claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto")), ...ratingCoverage("complete_for_stated_horizon")]}),
   // With incomplete cost coverage the benefit is net of the known costs only, and the sentence says the costs are pending.
-  "a.rating_known_costs": t("answer", "Pelo spread, o ganho líquido dos custos conhecidos fica entre {baixo} e {alto}, com custos ainda não levantados; a decisão depende do acesso a investidores {species:de:long}. Sugerimos avaliação preliminar não publicada.",
+  "a.rating_known_costs": t("answer", "Pelo spread, o ganho líquido dos custos conhecidos fica entre {baixo} e {alto}, com custos ainda não levantados; a decisão depende do acesso a investidores {species:de:long}. Sugerimos ouvir uma agência de rating antes de decidir.",
     {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
     {answers: "q.rating", when: [...claim("os dois extremos da faixa cobrem o mesmo horizonte registrado", {samePeriod: ["baixo", "alto"]}),
       ...claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto")), ...ratingCoverage("incomplete")]}),
   "q.strategic": t("question", "{projeto} não é um investimento estratégico?", {projeto: project("O")}),
-  "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.",
+  "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. As cotações decidem.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")},
-    {answers: "q.strategic", nearlyEqual: "O retorno de {retorno} fica praticamente igual ao custo de capital de {custo}, e o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
+    {answers: "q.strategic", nearlyEqual: "O retorno de {retorno} fica praticamente igual ao custo de capital de {custo}, e o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. As cotações decidem.", when: [...claim("o retorno supera o custo de capital", cmp("retorno", "gt", "custo")),
       ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0"))),
       ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "q.wheat": t("question", "E se o custo {insumo} subir?", {insumo: input("de")}),
@@ -750,7 +755,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   // Topics, pending notes, requesters and authority bases.
   // Topics carry no reading, so they never name an object of a vocabulary: the generic words stand.
   "topic.packaging_review": t("topic", "revisão do projeto de investimento"),
-  "topic.crop_financing": t("topic", "financiamento do capital de giro sazonal"),
+  "topic.crop_financing": t("topic", "financiamento do capital de giro"),
   "note.program_indicative": t("note", "Condições dos programas de antecipação indicativas até a confirmação do banco de cada programa",
     {}, {when: [...twoProgramsOnly, ...claim("as condições dos dois primeiros programas do plano são indicativas", {bind: "ofirst", to: at(RF, "result.funding.plan.steps[0].optionId")},
       {bind: "osecond", to: at(RF, "result.funding.plan.steps[1].optionId")}, ...["$ofirst", "$osecond"].map((o) => cmp(at(RF, `result.funding.options[id=${o}].indicative`), "eq", {value: "true"})))]}),
@@ -895,6 +900,78 @@ export function boardMatchPath(pattern: string, path: string): Record<string, st
 
 /** The library checks itself: every condition names slots and variables the template has, every deadline slot an
  * action of the library, every deliberation text a title, every answer a question. */
+/** Qualifying words of an object in the fixed text (templates, the "praticamente igual" wording, slot generics). Each
+ * occurrence must sit in a registered phrase whose proof the template carries: a condition or a slot reading the field
+ * named (regular expression over the template's slots and conditions), the question form (a question asserts nothing),
+ * the declared wording of two shown values equal on display, or the generic words written only with a gap. A word of the
+ * watch list outside every registered phrase, or with its proof absent, is refused by the library self-check. */
+export type BoardQualifierProof = RegExp | "question" | "nearly_equal" | "gap";
+export const boardQualifiers: readonly {words: readonly string[]; phrase: RegExp; field: string; rule: string; proof: BoardQualifierProof}[] = [
+  {words: ["curto"], phrase: /perfil de amortização mais curto testado/, field: "amortizationTests[cinco-anos|adopted].years", rule: "último pagamento efetivo do perfil testado anterior ao do adotado (lastPaid)", proof: /"lastPaid".*"lt",\{"lastPaid"/},
+  {words: ["testado", "adotado"], phrase: /perfil de amortização mais curto testado|o perfil adotado/, field: "amortizationTests[profileId=cinco-anos|adopted]", rule: "os dois perfis registrados do caminho recomendado", proof: /profileId=adopted/},
+  {words: ["abaixo", "mínimo"], phrase: /caixa fica abaixo do mínimo/, field: "project-weekly-cash readings.tightestWeek.belowMinimum | evaluate-financing-paths shortfallVsPolicyMinimum", rule: "abaixo do mínimo registrado (belowMinimum verdadeiro, ou falta contra o mínimo maior que zero)", proof: /belowMinimum"\]\},"eq",\{"value":"true"\}|shortfallVsPolicyMinimum.*\{"slot":"falta"\},"gt",\{"value":"0"\}/},
+  {words: ["abaixo"], phrase: /\{[a-z_]+\}[^;.]*abaixo d[aoe]s? (?:política de |covenant de )?\{[a-z_]+\}|abaixo de \{politica\} nos cenários avaliados/, field: "os dois valores mostrados", rule: "comparação estrita registrada entre os valores (lt), em exato e no exibido", proof: /,"lt",\{"slot"|"op":"lt","than":\{"slot"/},
+  {words: ["acima", "abaixo", "mínimo"], phrase: /demanda acima de \{piso\}|Demanda \{species:[^}]+\} abaixo de \{piso\}, o mínimo/, field: "readings.recommendation.longInstrument.issueFloorInsideGates", rule: "o piso é o mínimo registrado de demanda que mantém a emissão dentro dos critérios", proof: /issueFloorInsideGates/},
+  {words: ["acima"], phrase: /\{[a-z_]+\}, acima do custo de capital|fica acima do custo de capital|fica \{giro\} acima/, field: "os dois valores mostrados", rule: "comparação estrita registrada (gt)", proof: /,"gt",\{"slot"|\{"slot":"giro"\},"gt",\{"value":"0"\}/},
+  {words: ["mínimo"], phrase: /caixa mínimo de \{caixa\}|contra o mínimo de \{minimo\}/, field: "minimumCash", rule: "o valor mostrado é o campo de caixa mínimo registrado", proof: /minimumCash/},
+  {words: ["menor"], phrase: /de menor caixa/, field: "project-weekly-cash readings.sensitivities[*].minimum", rule: "o caso mostrado tem o menor mínimo entre os casos alternativos (every ge)", proof: /"every":\["project-weekly-cash","readings.sensitivities","minimum"\],"op":"ge"/},
+  {words: ["alternativo"], phrase: /No caso alternativo/, field: "result.weekly.cases[id].role", rule: "papel registrado alternative", proof: /\.role"\]\},"eq",\{"value":"alternative"\}/},
+  {words: ["alternativo", "apresentado"], phrase: /[Pp]lano alternativo(?: apresentado no material)?/, field: "readings.alternative.pathId", rule: "plano alternativo do resultado; o material o apresenta (alternative_not_presented)", proof: /readings\.alternative\.pathId/},
+  {words: ["menor", "maiores", "lenta"], phrase: /economia menor|capex e depreciação maiores|partida mais lenta/, field: "cases[id].result.contributions e linhas do projeto", rule: "cenário que muda só os campos nomeados, dominando a referência período a período (changedOnly, dominates)", proof: /"changedOnly".*"dominates"/},
+  {words: ["negativo"], phrase: /VPL fica negativo/, field: "comparison.metrics[caseId].netPresentValue", rule: "valor registrado menor que zero (lt 0)", proof: /,"lt",\{"value":"0"\}/},
+  {words: ["maior"], phrase: /maior credor/, field: "result.table.rows[*].creditor e principal", rule: "maior principal somado por credor, único (largestGroup)", proof: /"largestGroup"/},
+  {words: ["maior"], phrase: /prazo maior de recebimento/, field: "projectionDriver receivableDays", rule: "prazo do cenário maior que o da referência no ano mostrado (atKey gt)", proof: /"atKey".*"op":"gt"/},
+  {words: ["concentrada"], phrase: /concentrada \{em:ano\}/, field: "result.table.profile.scheduleByYear[*].principal", rule: "ano de maior vencimento de principal (largest)", proof: /"largest":\["build-company-debt-table","result.table.profile.scheduleByYear"/},
+  {words: ["médio"], phrase: /Prazo médio/, field: "result.table.profile.weightedAverageLifeYears", rule: "o valor mostrado é o prazo médio ponderado registrado", proof: /weightedAverageLifeYears/},
+  {words: ["mantida"], phrase: /(?:dívida )?mantida(?: a dívida)? como está/, field: "path manter: termos, instrumentos, pré-pagamentos e encargos", rule: "caminho de status quo sem nenhum movimento (pathMoves vazio, mesma variante)", proof: /"pathMoves":\["evaluate-financing-paths","manter"\],"added":\[\],"removed":\[\],"prepaid":\[\],"charges":\[\],"variant":"same"/},
+  {words: ["disponível"], phrase: /caixa disponível/, field: "availableForService | availableAfterInterest", rule: "o valor mostrado é o caixa disponível registrado", proof: /availableForService|availableAfterInterest/},
+  {words: ["só", "livres", "nova"], phrase: /tem só \{saldo\} livres na exceção para garantias de nova dívida/, field: "result.table.negativePledgeBaskets[holderId].remaining e basket", rule: "saldo restante registrado da exceção de garantias, menor que a exceção (lt)", proof: /negativePledgeBaskets\[holderId=\$h\]\.remaining.*"lt",\{"at":\["build-company-debt-table","result.table.negativePledgeBaskets/},
+  {words: ["ocupados"], phrase: /\{ocupado\} ocupados/, field: "result.table.negativePledgeBaskets[holderId].occupied", rule: "o valor mostrado é o ocupado registrado, só pela dívida nomeada (includes only)", proof: /\.occupied".*"only":true/},
+  {words: ["só", "recomendado"], phrase: /só o recomendado passa em todos os critérios/, field: "readings.paths[*].eligible e readings.recommendation.pathId", rule: "só o caminho recomendado é elegível (onlyFlagged)", proof: /"onlyFlagged"/},
+  {words: ["próprios", "só", "bancária"], phrase: /programas de antecipação dos próprios clientes, com a linha bancária só como reserva/, field: "result.funding.plan.steps, options[id].kind, plan.reserve, bankLine", rule: "dois primeiros passos de tipo anchor_program, a linha bancária é a reserva e nenhum passo bancário", proof: /"value":"anchor_program".*result.funding.plan.reserve.*"count":0/},
+  {words: ["sem", "bancária", "nova"], phrase: /sem dívida bancária nova/, field: "readings.options[id].measuredDebtAdded", rule: "dívida medida adicionada zero nos dois programas", proof: /measuredDebtAdded"\]\},"eq",\{"value":"0"\}/},
+  {words: ["acumulado"], phrase: /fluxo acumulado do projeto/, field: "comparison.metrics[caseId=base].peakCumulativeCashNeed", rule: "o valor mostrado é o pico do fluxo acumulado registrado", proof: /peakCumulativeCashNeed/},
+  {words: ["praticamente", "igual"], phrase: /praticamente igual/, field: "os dois valores mostrados", rule: "redação declarada quando a ordem exata não se mantém no exibido entre dois valores mostrados", proof: "nearly_equal"},
+  {words: ["adiamento"], phrase: /registra como adiamento/, field: "cases[id=defer-12].role", rule: "papel registrado deferral", proof: /"value":"deferral"/},
+  {words: ["adiamento"], phrase: /adiamento \{projeto\}/, field: "variant do caminho e do status quo", rule: "variante do caminho é a de referência deslocada (planDeferred)", proof: /"planDeferred"/},
+  {words: ["adiados", "estendido", "mesma"], phrase: /capex e início de operação adiados e horizonte da análise estendido na mesma medida/, field: "cases[id].result.contributions", rule: "caso é a referência deslocada por inteiro (deferredBy)", proof: /"deferredBy"/},
+  {words: ["apresentado"], phrase: /Motivo apresentado pelo presidente do conselho/, field: "fato informado com autor presidente", rule: "fato informado pelo presidente, do dicionário fechado", proof: /"type":"informed","author":"chair"/},
+  {words: ["indicativo"], phrase: /Custo indicativo dos programas/, field: "result.funding.options[id].indicative", rule: "condição indicativa registrada nos dois programas", proof: /indicative"\]\},"eq",\{"value":"true"\}/},
+  {words: ["indicativas"], phrase: /programas de antecipação indicativas/, field: "result.funding.options[id].indicative", rule: "condição indicativa registrada nos dois programas", proof: /indicative"\]\},"eq",\{"value":"true"\}/},
+  {words: ["primeiro", "segundo"], phrase: /no primeiro e CDI mais \{taxa_a\} no segundo/, field: "result.funding.plan.steps[0|1].optionId", rule: "ordem registrada dos passos do plano", proof: /steps\[0\].*steps\[1\]/},
+  {words: ["registrada", "livre"], phrase: /Linha de crédito registrada com \{credor\}, com limite livre/, field: "result.table.creditLines[id].unused", rule: "linha da tabela de dívida; limite não usado registrado, maior que zero", proof: /creditLines\[id=\$c\]\.unused.*\{"slot":"livre"\},"gt",\{"value":"0"\}/},
+  {words: ["outra"], phrase: /outra variante \{projeto\}/, field: "path.terms[1] contra o status quo", rule: "variante diferente da do status quo (variant other)", proof: /"variant":"other"/},
+  {words: ["informado"], phrase: /no cronograma informado/, field: "path.terms[1] contra o status quo", rule: "mesma variante do status quo (variant same)", proof: /"variant":"same"/},
+  {words: ["bancário", "novo", "programada"], phrase: /financiamento bancário novo(?: de cerca de \{valor\},)? com amortização programada/, field: "instrument.terms: papel, credor, amortização após o horizonte", rule: "instrumento novo de banco com amortização programada após o horizonte", proof: /bancario_programado/},
+  {words: ["alongada"], phrase: /alongada por aditamento/, field: "instrument.replaces, finalPaymentDate, amortization", rule: "aditamento que substitui a dívida nomeada, vence depois e paga menos principal (extendsDebt)", proof: /"extendsDebt"/},
+  {words: ["sem"], phrase: /[Ss]em \{projeto\}/, field: "variant.kind do caminho", rule: "variante do caminho de tipo none (sem o projeto)", proof: /variant\.\$[a-z]+\.kind"\]\},"eq",\{"value":"none"\}|"pathMoves":\["evaluate-financing-paths","sem-linha-debenture"\][^}]*"variant":"other".*"value":"none"/},
+  {words: ["caro"], phrase: /mais caro/, field: "scenarios[id].inputCostShock.rate", rule: "choque registrado maior que zero", proof: /inputCostShock.rate"\]\},"gt",\{"value":"0"\}/},
+  {words: ["adverso"], phrase: /no adverso|o adverso/, field: "measurements[id].scenario", rule: "medição do cenário registrado adverse", proof: /"value":"adverse"/},
+  {words: ["efetivo"], phrase: /[Cc]usto efetivo/, field: "readings.recommendation.longInstrument.equivalentSpread", rule: "custo equivalente registrado do instrumento", proof: /equivalentSpread/},
+  {words: ["líquida"], phrase: /dívida líquida/, field: "netDebtAtHorizon", rule: "o valor mostrado é a dívida líquida registrada", proof: /netDebtAtHorizon/},
+  {words: ["líquido", "conhecidos"], phrase: /ganho líquido(?: dos custos conhecidos)?/, field: "levers[role=rating].netOfKnownCosts", rule: "ganho registrado líquido dos custos conhecidos", proof: /netOfKnownCosts/},
+  {words: ["levantados"], phrase: /custos ainda não levantados/, field: "result.actions[actionId].result.operands.costCoverage", rule: "cobertura de custos registrada incompleta", proof: /costCoverage"\]\},"eq",\{"value":"incomplete"\}/},
+  {words: ["conhecidos"], phrase: /os ajustes conhecidos somam \{ajustes\}/, field: "result.bridge.knownAdjustmentsBps", rule: "o valor mostrado é a soma registrada dos ajustes conhecidos", proof: /knownAdjustmentsBps/},
+  {words: ["sem"], phrase: /\{resto\} ficam sem explicação/, field: "result.bridge.causalAttribution", rule: "a ponte não atribui causa ao restante", proof: /causalAttribution"\]\},"eq",\{"value":"false"\}/},
+  {words: ["total"], phrase: /de um total de \{carteira\}/, field: "readings.gross", rule: "carteira bruta registrada", proof: /readings\.gross/},
+  {words: ["sem"], phrase: /veda a cessão sem consentimento/, field: "item.contract", rule: "contrato registrado prohibited_without_consent", proof: /prohibited_without_consent/},
+  {words: ["sem", "regresso"], phrase: /sem regresso/, field: "result.funding.options[id].recourse", rule: "recurso registrado without_recourse", proof: /without_recourse/},
+  {words: ["próprio"], phrase: /o programa próprio dele/, field: "option.anchorItemIds", rule: "programa de tipo anchor_program ligado na fonte só a esse cliente", proof: /anchorItemIds"\],"value":\{"var":"d"\},"only":true/},
+  {words: ["fixos", "sem", "apresentada"], phrase: /custos fixos sem evidência apresentada/, field: "readings.assumptions[*].drivers e evidenceStatus", rule: "drivers registrados com evidência not_presented", proof: /"fixedCosts".*"not_presented"/},
+  {words: ["sem"], phrase: /sem investimento/, field: "readings.capacity.aboveWithoutInvestment, investmentInPlan", rule: "volume acima da capacidade e investimento fora do plano", proof: /investmentInPlan"\]\},"eq",\{"value":"false"\}/},
+  {words: ["revisados"], phrase: /casos revisados/, field: "comparison.metrics[*].caseId", rule: "a opção não está entre os casos com métricas (includes none)", proof: /"value":\{"value":"staged"\},"none":true/},
+  {words: ["aprovada"], phrase: /aprovada pelo conselho/, field: "result.headroom.limits[id=politica].kind e status", rule: "limite registrado board_policy em vigor", proof: /"value":"board_policy".*"value":"in_force"/},
+  {words: ["menor", "concorrente", "demais", "estratégico"], phrase: /^[^?]*\?$/, field: "nenhum", rule: "pergunta do conselho; não afirma", proof: "question"},
+  {words: ["único"], phrase: /um único cliente/, field: "result.funding.portfolio.items[itemId=$d]", rule: "palavras genéricas de um único devedor lido, escritas só com lacuna", proof: "gap"},
+  {words: ["sem"], phrase: /sem nome confirmado/, field: "rótulo do credor", rule: "palavras genéricas de um credor cujo rótulo não está no dicionário, escritas só com lacuna", proof: "gap"},
+  {words: ["analisado"], phrase: /[Pp]rojeto analisado/, field: "cases[id=base].label", rule: "palavras genéricas do projeto lido, escritas só com lacuna", proof: "gap"},
+];
+/** Words that qualify an object and therefore need a registered phrase and proof wherever they appear. */
+export const boardQualifierWatch = [...new Set([...boardQualifiers.flatMap((q) => q.words),
+  "longo", "longa", "nova", "novo", "novos", "atual", "atuais", "próprio", "própria", "próprios", "livre", "livres", "adiado", "adiada", "adiados", "alongado", "alongada",
+  "programado", "programada", "indicativo", "indicativa", "indicativas", "firme", "firmes", "regresso", "vigente", "vigentes", "único", "única", "maior", "maiores", "menor", "menores",
+  "curto", "curta", "sazonal", "sazonais", "estratégico", "estratégica", "preliminar", "publicada", "barato", "caro", "elevado", "elevada", "baixo", "alto", "forte", "fraco", "sólido", "saudável", "confortável", "apertado"])];
+
 export function checkBoardTemplateLibrary() {
   const problems: string[] = [];
   // The dictionaries shown as text (informed reasons, debtor names) never name an object of a vocabulary.
@@ -954,6 +1031,33 @@ export function checkBoardTemplateLibrary() {
     if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);
     if (["delib.subject", "delib.recommendation", "delib.action"].some((u) => x.use.includes(u as BoardTextUse)) && !x.of) problems.push(`${id}:of_missing`);
     if (x.use.includes("answer") !== Boolean(x.answers) || (x.answers && boardTemplates[x.answers]?.use[0] !== "question")) problems.push(`${id}:answers`);
+  }
+  // Qualifiers: every watched word of the fixed text sits in a registered phrase whose proof the template carries.
+  for (const [id, x] of Object.entries(boardTemplates)) {
+    const facts = JSON.stringify({slots: x.slots, when: x.when});
+    const texts: [string, "text" | "nearly_equal" | "gap"][] = [[x.text, "text"], ...(x.nearlyEqual ? [[x.nearlyEqual, "nearly_equal"] as [string, "nearly_equal"]] : []),
+      ...Object.values(x.slots).flatMap((spec) => spec.generic ? [[spec.generic, "gap"] as [string, "gap"]] : [])];
+    for (const [raw, kind] of texts) {
+      // Words are read with every token masked; phrases are matched on the text with its tokens.
+      const text = raw, masked = raw.replace(/\{[^}]*\}/g, (t) => "_".repeat(t.length));
+      for (const m of masked.matchAll(/\p{L}+/gu)) {
+        const word = m[0].toLowerCase();
+        if (!boardQualifierWatch.includes(word)) continue;
+        const proven = boardQualifiers.some((q) => q.words.includes(word) && [...text.matchAll(new RegExp(q.phrase.source, `${q.phrase.flags.replace("g", "")}g`))]
+          .some((p) => p.index! <= m.index! && m.index! < p.index! + p[0].length)
+          && (q.proof === "question" ? x.use.includes("question") && kind === "text" : q.proof === "nearly_equal" ? kind === "nearly_equal" : q.proof === "gap" ? kind === "gap" : q.proof.test(facts)));
+        if (!proven) problems.push(`${id}:qualifier_unproved:${word}`);
+      }
+    }
+    // "De curto prazo" for bank credit: the token names a path whose moves condition counts unscheduled bank credit.
+    for (const m of x.text.matchAll(/\{bankcredit:([^}]+)\}/g))
+      if (!x.when.some((c) => "pathMoves" in c && c.pathMoves[1] === m[1] && c.added.includes(bankUnscheduled))) problems.push(`${id}:bankcredit_unproved:${m[1]}`);
+    // Species forms: "atual" only of the existing instrument, "nova"/"novo" only of a path's new one.
+    for (const m of x.text.matchAll(/\{species:([a-z_]+):([^}]+)\}/g)) {
+      const forms = [...Object.values(boardVocabularies.species).map((v) => v[m[1] as BoardObjectForm] ?? ""), boardObjectGenerics.species[m[1] as BoardObjectForm] ?? ""];
+      if (forms.some((f) => /(?<![\p{L}])atua(?:l|is)(?![\p{L}])/u.test(f)) && m[2] !== "existing") problems.push(`${id}:species_qualifier:${m[1]}:${m[2]}`);
+      if (forms.some((f) => /(?<![\p{L}])nov[oa]s?(?![\p{L}])/u.test(f)) && !m[2]!.startsWith("new@")) problems.push(`${id}:species_qualifier:${m[1]}:${m[2]}`);
+    }
   }
   return problems;
 }

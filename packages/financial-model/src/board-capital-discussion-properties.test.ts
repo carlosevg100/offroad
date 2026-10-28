@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
@@ -70,7 +70,7 @@ const DT = "build-company-debt-table|", CV = "measure-covenant-headroom|", WC = 
 const pathRow = (id: string) => ({caixa: `${FP}readings.paths[id=${id}].minimumCash.amount`, alavancagem: `${FP}readings.paths[id=${id}].worstLeverage`,
   custo: `${FP}readings.paths[id=${id}].horizonFinancingCost`, ano: "year", divida: `${FP}readings.paths[id=${id}].netDebtAtHorizon`,
   criterios: `${FP}readings.paths[id=${id}].eligible`, anuencia: `${FP}readings.paths[id=${id}].consentRequired`});
-const notice = "deadline:enviar ao fornecedor atual o aviso para renegociar o contrato", programs = "deadline:aderir aos programas",
+const notice = "deadline:enviar ao fornecedor o aviso para renegociar o contrato", programs = "deadline:aderir aos programas",
   sounding = "deadline:concluir a sondagem", route = "deadline:decidir a rota";
 const meaning: Record<string, Record<string, string>> = {
   "delib.crop": {ano: "year"}, "delib.crop.subject": {ano: "year"}, "delib.maturities": {ano: "year"}, "delib.maturities.subject": {ano: "year"},
@@ -502,6 +502,30 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     };
     for (const [label, [id, want]] of Object.entries(expected)) if (t.startsWith(`${label} `) && !/caixa mínimo/.test(t) && JSON.stringify(pathMoves(id)) !== JSON.stringify(want)) bad.push(`path_moves:${label}`);
     if (/mantida a dívida como está/.test(t) && JSON.stringify(pathMoves("manter")) !== JSON.stringify(expected["Caminho D:"]![1])) bad.push(`path_kept:${t.slice(0, 60)}`);
+    // "De curto prazo" for bank credit, the oracle's own reading: the path the sentence names; each of its new bank
+    // instruments without a scheduled amortization after the horizon runs, from the start of its first draw period to
+    // its final payment, at most twelve months by the dates, and its registered termYears agrees with the dates.
+    if (/crédito bancário de curto prazo/.test(t)) {
+      const plan = sourceOf("evaluate-financing-paths") as {readings?: {alternative?: {pathId?: string}}; result?: {evaluation?: {openingDate: string; periodEnds: string[];
+        instrumentCosts: {instrumentId: string; termYears?: string; finalPaymentDate?: string}[]}}} | undefined;
+      const allPaths = planContributions.flatMap((x) => {const m = /\.path\.([a-z0-9-]+)\.instruments$/.exec(x.fieldPath); return m ? [m[1]!] : [];});
+      const label = Object.keys(expected).find((l) => t.startsWith(`${l} `));
+      const named = label ? [expected[label]![0]] : /^Plano alternativo:/.test(t) ? [plan?.readings?.alternative?.pathId ?? ""]
+        : /^No caminho sem .*alongada por aditamento/.test(t) ? allPaths.filter((id) => ((term(`.path.${id}.instruments`) as string[]) ?? []).some((x) => termsOf(x)[0] === "amended")
+          && variant(((term(`.path.${id}.terms`) as string[] | undefined) ?? [])[1] ?? "", "kind") === "none") : [];
+      const ev = plan?.result?.evaluation;
+      const monthIndex = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7));
+      const months = named.length === 1 && ev ? ((term(`.path.${named[0]}.instruments`) as string[] | undefined) ?? []).filter((x) => {const [role, lender, , , , , , , after] = termsOf(x);
+        return role === "new" && lender === "bank" && (after === "none" || after === "seasonal_release");}).map((x) => {
+        const draws = (term(`.instrument.${x}.draws`) as string[] | undefined) ?? [], k = draws.findIndex((v) => new D(v).gt(0));
+        const cost = ev.instrumentCosts.find((c) => c.instrumentId === x);
+        if (k < 0 || !cost?.finalPaymentDate || !cost.termYears) return null;
+        // Draw at the start of its period: the month after the previous period end (or after the opening date).
+        const start = monthIndex(k === 0 ? ev.openingDate : ev.periodEnds[k - 1]!) + 1, byDates = monthIndex(cost.finalPaymentDate) - start + 1;
+        return {byDates, registered: new D(cost.termYears).times(12)};
+      }) : [];
+      if (!months.length || months.some((m) => m === null || !m.registered.eq(m.byDates) || m.byDates > 12)) bad.push(`bank_term:${t.slice(0, 60)}`);
+    }
     // An extension: the amended instrument pays finally later and repays no more principal than the original in any period.
     if (/alongada por aditamento/.test(t)) {
       const amended = planContributions.find((x) => x.fieldPath.endsWith(".replaces") && x.value.value === creditorRow)?.fieldPath.match(/\.instrument\.([a-z0-9-]+)\.replaces$/)?.[1];
@@ -714,7 +738,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   const reasons: Record<string, string> = {reduce_single_supplier_dependence: "reduzir a dependência de um único fornecedor do insumo principal", diversify_suppliers: "diversificar fornecedores",
     own_capacity: "ganhar capacidade própria de produção", reduce_operational_risk: "reduzir risco operacional", serve_customer_contract: "atender contrato de cliente"};
   for (const t of texts) {
-    const said = /^Motivo estratégico apresentado pelo presidente do conselho: (.*)\.$/.exec(t)?.[1];
+    const said = /^Motivo apresentado pelo presidente do conselho: (.*)\.$/.exec(t)?.[1];
     if (said === undefined) continue;
     const fact = d.informed[0], want = fact ? reasons[fact.code] : undefined;
     if (want ? said !== want : !(said === "a confirmar" && d.gaps.some((g) => g.reason === "informed_reason_not_in_dictionary"))) bad.push(`informed:${said.slice(0, 40)}`);
@@ -847,7 +871,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(relabelled, "economy-4")];
     }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
     const p = full(2, () => undefined);
-    expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.");
+    expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.");
     expect(() => full(2, (c) => {c.informed[0]!.author = "cfo";})).toThrow("board_capital_informed_fact_mismatch");
     expect(() => full(2, (c) => {c.informed[0]!.origin = "analysis";})).toThrow(refusal);
     // The oracle is not vacuous for the two: the calibrated material read against a covenant result whose policy is
@@ -888,7 +912,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
     expect(oracle(calibrated, [{packet: {...shorter, fingerprint: fingerprintOf("build-operating-projection")}}, ...auroraBoardSources()]).bad.some((x) => x.startsWith("scenario_receivables:"))).toBe(true);
     const forged = structuredClone(calibrated), line = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "caixa")!;
-    line.lines[0] = line.lines[0]!.replace("No caso alternativo de menor caixa da análise de curto prazo", "Sem a linha da safra");
+    line.lines[0] = line.lines[0]!.replace("No caso alternativo de menor caixa", "Sem a linha da safra");
     expect(oracle(forged).bad.some((x) => x.startsWith("scenario_weekly_line:"))).toBe(true);
     expect(oracle(calibrated)).toEqual({bad: [], missing: []});
   });
@@ -956,14 +980,14 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   it("regression r16: an informed fact is a dictionary code and a decomposition keeps its remainder (full path, oracle not vacuous)", () => {
     for (const text of boardInformedProse) expect(() => full(2, (c) => {c.informed[0]!.code = text;}), text).toThrow(/must match pattern|Invalid/);
     const unknown = full(2, (c) => {c.informed[0]!.code = "a_divida_corresponde_a_um_bilhao";});
-    expect(unknown.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo estratégico apresentado pelo presidente do conselho: a confirmar.");
+    expect(unknown.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo apresentado pelo presidente do conselho: a confirmar.");
     expect(oracle(unknown)).toEqual({bad: [], missing: []});
     const calibrated = packet(2, () => undefined);
     expect(calibrated.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "serra-verde")!.answer).toContain("55 pontos ficam sem explicação");
     // Not vacuous: an attribution of the remainder and a free informed text, forged into the calibrated material, are both read.
     const forged = structuredClone(calibrated), v = forged.result.discussion!.versions.at(-1)!;
     v.questions.find((q) => q.id === "serra-verde")!.answer = "Da diferença de 125 pontos, 60 pontos vêm da data de contratação; o restante se divide entre prazo, garantia, distribuição do instrumento e escala.";
-    v.pages.find((x) => x.id === "linha")!.lines[3] = "Motivo estratégico apresentado pelo presidente do conselho: a dívida corresponde a um bilião.";
+    v.pages.find((x) => x.id === "linha")!.lines[3] = "Motivo apresentado pelo presidente do conselho: a dívida corresponde a um bilião.";
     const read = oracle(forged).bad;
     expect(read.some((x) => x.startsWith("decomposition:"))).toBe(true);
     expect(read.some((x) => x.startsWith("informed:"))).toBe(true);
@@ -1100,7 +1124,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
     // The calibration: not a uniform shift (costs on calendar, company series, maintenance and depreciation from the start).
     const p = full(2, () => undefined), rec = p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.recommendation!;
-    expect(rec).toBe("Recomendamos pedir cotações firmes antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em R$ 1,4 milhão e o retorno em 17% ao ano.");
+    expect(rec).toBe("Recomendamos pedir cotações antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em R$ 1,4 milhão e o retorno em 17% ao ano.");
     expect(() => full(2, boardStrictDeferral)).toThrow("board_capital_template_condition_failed:topic.project_wait_quotes:1");
     const edit = (packet: Record<string, unknown>, registered: boolean) => (c: CaseData) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);
       c.deliberations.find((d) => d.id === "linha")!.recommendation = null;
@@ -1602,5 +1626,49 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const flagged = oracle(named).bad;
     for (const x of ["name_shown:largest-creditor", "name_gap:largest-creditor", "packages_mixed:measure-covenant-headroom"]) expect(flagged).toContain(x);
     expect(flagged.some((x) => x.startsWith("creditor_row:question.bradesco.answer"))).toBe(true);
+  });
+  it("regression r35: 'curto prazo' only with a registered effective term of up to twelve months; every qualifier proven (full path, turns 2 and 3, oracle not vacuous)", () => {
+    const termOf = (plan: Record<string, unknown>) => (plan as {result: {evaluation: {instrumentCosts: {instrumentId: string; termYears: string; finalPaymentDate: string}[]}}}).result.evaluation.instrumentCosts.find((c) => c.instrumentId === "giro-4t26-17")!;
+    const calibrated = packet(2, () => undefined), planFingerprint = calibrated.result.discussion!.identity.find((x) => x.methodId === "evaluate-financing-paths")!.packetFingerprint;
+    // Control (0,5 ano, the calibration's quarter) and the two terms the reviewer registered (1,25 and 2,25 anos).
+    for (const [period, years, finalPayment] of [[2, "0.5", "2027-03-31"], [5, "1.25", "2027-12-31"], [9, "2.25", "2028-12-31"]] as const) {
+      const plan = auroraPlanPacket({giroPaidInPeriod: period}) as unknown as Record<string, unknown>;
+      expect(termOf(plan).termYears).toBe(years);
+      expect(termOf(plan).finalPaymentDate).toBe(finalPayment);
+      const short = years === "0.5";
+      for (const turn of [2, 3] as const) {
+        const p = withBoardSource("plano-2027", plan, () => full(turn, boardRestateSource("plano-2027", "evaluate-financing-paths", plan))), texts = boardShownTexts(p);
+        const withGiro17 = [texts.find((x) => x.startsWith("Caminho A: sem "))!, texts.find((x) => x.startsWith("Plano alternativo: sem a linha de embalagem, crédito bancário") && x.includes("com waiver da"))!,
+          texts.find((x) => x.startsWith("Plano alternativo: sem a linha de embalagem, crédito bancário") && x.includes("de cerca de"))!, texts.find((x) => x.startsWith("No caminho sem a linha de embalagem, com crédito bancário"))!];
+        expect(withGiro17.every(Boolean), `${years}:${turn}`).toBe(true);
+        for (const x of withGiro17) expect(x.includes("crédito bancário de curto prazo"), `${years}:${turn}:${x}`).toBe(short);
+        if (!short) {
+          expect(withGiro17[0]).toBe("Caminho A: sem a linha de embalagem; crédito bancário; debênture nova; pré-pagamento da debênture atual e da dívida com Bradesco.");
+          expect(withGiro17[1]).toContain("Plano alternativo: sem a linha de embalagem, crédito bancário e financiamento bancário novo com amortização programada");
+        }
+        // Paths with the six-month crop loans keep the proven words in the same material.
+        expect(texts.find((x) => x.startsWith("Caminho B: adiamento "))).toContain("crédito bancário de curto prazo");
+        expect(oracle(p, [{packet: plan}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]), `${years}:${turn}`).toEqual({bad: [], missing: []});
+        // Not vacuous: the calibrated texts read against this source are flagged exactly when the term exceeds twelve months.
+        const flagged = oracle(turn === 2 ? calibrated : packet(3, () => undefined), [{packet: {...plan, fingerprint: planFingerprint}}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]).bad
+          .filter((x) => x.startsWith("bank_term:"));
+        expect(flagged.length > 0, `${years}:${turn}`).toBe(!short);
+      }
+    }
+    // The library refuses a qualifier without its proof: "de curto prazo" written as fixed text, and the token on a path
+    // whose moves carry no unscheduled bank credit; a qualifier removed from the registry's phrase is refused too.
+    const original = boardTemplates["alternatives.moves.short_bank_loan"]!, roll = boardTemplates["a.roll_bank"]!;
+    boardTemplates["alternatives.moves.short_bank_loan"] = {...original, text: original.text.replace("financiamento bancário novo", "crédito bancário de curto prazo e financiamento bancário novo")};
+    boardTemplates["a.roll_bank"] = {...roll, text: roll.text.replace("{bankcredit:bradesco-sem-linha}", "{bankcredit:ccb-tres-anos}")};
+    try {
+      const problems = checkBoardTemplateLibrary();
+      expect(problems).toContain("alternatives.moves.short_bank_loan:qualifier_unproved:curto");
+      expect(problems).toContain("a.roll_bank:bankcredit_unproved:ccb-tres-anos");
+    } finally {boardTemplates["alternatives.moves.short_bank_loan"] = original; boardTemplates["a.roll_bank"] = roll;}
+    const supplier = boardTemplates["delib.action.supplier_notice"]!;
+    boardTemplates["delib.action.supplier_notice"] = {...supplier, text: supplier.text.replace("ao fornecedor", "ao fornecedor atual")};
+    try {expect(checkBoardTemplateLibrary()).toEqual(["delib.action.supplier_notice:qualifier_unproved:atual"]);}
+    finally {boardTemplates["delib.action.supplier_notice"] = supplier;}
+    expect(checkBoardTemplateLibrary()).toEqual([]);
   });
 });

@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -635,14 +635,14 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
       if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return false;
       if (list(`path.${path}.terms`).length !== 2 || list(`path.${path}.chargeAmounts`).length !== list(`path.${path}.chargeSlots`).length) return false;
-      // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit repaid
-      // within the horizon or seasonally (short), bank credit with a scheduled amortization after the horizon.
+      // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit without
+      // a scheduled amortization after the horizon (no term implied), bank credit with one. "Curto prazo" is never a kind.
       const kind = (id: string) => {
         const [role, lender, , , , , , , after] = terms(id);
         if (role === "amended") return "aditamento";
         if (lender === "capital_markets") return "debenture_nova";
         if (lender === "development_bank") return "fomento";
-        if (lender === "bank") return after === "none" || after === "seasonal_release" ? "bancario_curto" : after === "scheduled" ? "bancario_programado" : `bancario:${after}`;
+        if (lender === "bank") return after === "none" || after === "seasonal_release" ? "bancario_sem_amortizacao_programada" : after === "scheduled" ? "bancario_programado" : `bancario:${after}`;
         return `outro:${lender}`;
       };
       // An existing instrument touched by a prepayment or a charge: the named row by the shared id, an existing debenture by its kind.
@@ -860,6 +860,15 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     const kinds = [...new Set(chosen.map(definitionOf))];
     if (!chosen.length || kinds.includes(null)) throw new Error(`board_capital_limit_definition_unregistered:${templateId}:${limit}`);
     return ` ${kinds.sort().map((k) => k === "escritura" ? "pela definição da escritura" : "pelo EBITDA gerencial").join(" e ")}`;
+  });
+  // New bank credit of a path without a scheduled amortization after the horizon: "de curto prazo" only when every such
+  // instrument has a registered effective term (termYears of its cost, status calculated) of at most the declared limit;
+  // otherwise the neutral words the source supports. The path is the one the template's moves condition reads.
+  shownText = shownText.replace(/\{bankcredit:([$a-z0-9-]+)\}/g, (_m: string, selector: string) => {
+    const path = selector.replace(/\$([a-z]+)/g, (_x: string, k: string) => {if (!Object.hasOwn(vars, k)) throw new Error(`board_capital_bank_credit_unbound:${templateId}:${k}`); return vars[k]!;});
+    const ids = boardUnscheduledBankCredit(sourceOf("evaluate-financing-paths").packet, path);
+    if (!ids.length) throw new Error(`board_capital_bank_credit_absent:${templateId}:${path}`);
+    return ids.every((x) => x.termYears !== null && new Exact(x.termYears).lte(boardShortTermYears)) ? "crédito bancário de curto prazo" : "crédito bancário";
   });
   const speciesText = shownText.replace(/\{species:([a-z_]+):([^}]+)\}/g, (_m: string, form: string, selector: string) => {
     const plan = sourceOf("evaluate-financing-paths").packet as {readings?: {recommendation?: {longInstrument?: {id?: unknown}}}; result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
@@ -1157,6 +1166,25 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
 /** Structural refusals that do not depend on the reviewed results. Every text the material shows passes the
  * literal-number check; a page title (other than the decisions and the next steps) and every answer carry an
  * economic reading; the next steps carry a deadline. */
+/** The new bank instruments of a plan path without a scheduled amortization after the horizon, each with its registered
+ * effective term in years (termYears of its cost, only when the cost is calculated and the term is a
+ * positive decimal; otherwise null). Read from the plan's terms and costs, never from identifiers or labels. */
+export function boardUnscheduledBankCredit(packet: unknown, path: string) {
+  const p = packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]; evaluation?: {instrumentCosts?: {instrumentId?: unknown; status?: unknown; termYears?: unknown}[]}}};
+  const contributions = p.result?.contributions ?? [];
+  const term = (suffix: string) => {const hits = contributions.filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`)); return hits.length === 1 ? hits[0]!.value?.value : undefined;};
+  const mine = term(`path.${path}.instruments`);
+  if (!Array.isArray(mine)) return [];
+  return mine.map(String).filter((id) => {
+    const t = term(`instrument.${id}.terms`);
+    return Array.isArray(t) && t[0] === "new" && t[1] === "bank" && (t[8] === "none" || t[8] === "seasonal_release");
+  }).map((id) => {
+    const costs = (p.result?.evaluation?.instrumentCosts ?? []).filter((c) => c.instrumentId === id);
+    const years = costs.length === 1 && costs[0]!.status === "calculated" && typeof costs[0]!.termYears === "string" && /^\d+(\.\d+)?$/.test(costs[0]!.termYears) ? costs[0]!.termYears : null;
+    return {instrumentId: id, termYears: years !== null && new Exact(years).gt(0) ? years : null};
+  });
+}
+
 export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, BoardFigureDisplay>) {
   if (!d.deliberations.length) throw new Error("board_capital_material_without_decisions");
   if (d.pages.filter((p) => p.role === "decisions").length !== 1) throw new Error("board_capital_material_without_decisions");

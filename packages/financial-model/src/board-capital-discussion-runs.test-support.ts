@@ -196,7 +196,7 @@ function goldCases(): Case[] {
       (p) => ({authority: current(p).deliberations.map((d) => d.authority), pending: p.readings!.pending.authority})),
     reuse("titles-pages-1-to-4-conclusion-and-number", p2, t2, ["Pedimos quatro decisões; três têm prazo", "A dívida é de R$ 130 milhões, concentrada em 2027", "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027", "O contrato da dívida com Debenturistas tem só R$ 3 milhões livres na exceção para garantias de nova dívida"],
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
-    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico sazonal de R$ 25 milhões, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
+    reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
     reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
@@ -234,7 +234,7 @@ function goldCases(): Case[] {
         safraSaysIndicative: pageOf(p, "safra").lines[0]!.includes("indicativo")})),
     reuse("line-before-the-recommendation-when-the-board-has-not-seen-it", p2, t2, {line: 5, recommendation: 9, placement: "main", sideBySide: true},
       (p) => ({line: pageOf(p, "linha").number, recommendation: pageOf(p, "recomendacao").number, placement: pageOf(p, "linha").placement,
-        sideBySide: pageOf(p, "linha").lines.some((l) => l.startsWith("Retorno")) && pageOf(p, "linha").lines.some((l) => l.startsWith("Motivo estratégico apresentado pelo presidente do conselho"))})),
+        sideBySide: pageOf(p, "linha").lines.some((l) => l.startsWith("Retorno")) && pageOf(p, "linha").lines.some((l) => l.startsWith("Motivo apresentado pelo presidente do conselho"))})),
     observe("line-the-board-has-seen-goes-to-the-appendix", boardPacketInput(2, (c) => {c.topics[0]!.seen = true;}), {placement: "appendix", mainPages: 12},
       (p) => ({placement: pageOf(p, "linha").placement, mainPages: p.readings!.material!.mainPages})),
     reuse("thirteen-pages-fit-forty-five-minutes", p2, t2, {mainPages: 13, capacity: 15, fits: true}, (p) => ({mainPages: current(p).agenda.mainPages, capacity: current(p).agenda.capacity, fits: current(p).agenda.fits})),
@@ -247,7 +247,7 @@ function goldCases(): Case[] {
       ["Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.", "Seguir em etapas: VPL de [pendente].", "Esperar as cotações, no caso que a análise registra como adiamento: VPL de R$ 1,4 milhão e retorno de 17% ao ano."],
       (p) => pageOf(p, "linha").options),
     reuse("turn-3-deliberation-becomes-the-choice-and-the-notice-stays", p3, t3,
-      "decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
+      "decidir o caminho da linha de embalagem, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out", (p) => current(p).deliberations[0]!.text),
     reuse("turn-3-prior-version-kept", p3, t3, {versions: [1, 2], priorRecommendation: true, priorFingerprint: true},
       (p) => {const v = p.result.discussion!.versions; return {versions: v.map((x) => x.version), priorRecommendation: v[0]!.pages.find((x) => x.id === "linha")!.recommendation !== null,
         priorFingerprint: p.readings!.material!.priorVersionFingerprint === v[0]!.fingerprint};}),
@@ -292,7 +292,7 @@ function goldCases(): Case[] {
     observe("program-sublimit-below-exposure-keeps-exposure-and-capacity-apart",
       withBoardSource("recebiveis", auroraReceivablesPacket({sublimitA: "10"}) as unknown as Record<string, unknown>, () => boardPacketInput(2, boardSublimitCase)),
       boardSublimitExpected, (p) => current(p).questions.find((q) => q.id === "rede-a")!.answer),
-    reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.",
+    reuse("strategic-reason-shown-as-the-chair-s-informed-fact", p2, t2, {line: "Motivo apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.",
       informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}], figures: []},
       (p) => ({line: pageOf(p, "linha").lines[3], informed: p.result.discussion!.informed,
         figures: current(p).bindings.filter((b) => b.templateId === "topic.project_strategic_reason").flatMap((b) => b.figureId ? [b.figureId] : [])})),
@@ -308,7 +308,7 @@ function goldCases(): Case[] {
       (p) => ({outcomes: p.readings!.omissions.map((o) => o.outcome), versions: p.result.discussion!.versions.length,
         movesShown: current(p).pages.some((x) => x.id === "movimentos"), amortizationShown: boardShownTexts(p).some((t) => t.includes("Amortização de 2029 a 2033"))})),
     observe("informed-reason-outside-the-dictionary-shows-generic-words-and-a-gap", boardPacketInput(2, (c) => {c.informed[0]!.code = "a_divida_corresponde_a_um_bilhao";}),
-      {line: "Motivo estratégico apresentado pelo presidente do conselho: a confirmar.", gap: "page.linha.line.3.informed.motivo-estrategico", status: "partial", shown: false},
+      {line: "Motivo apresentado pelo presidente do conselho: a confirmar.", gap: "page.linha.line.3.informed.motivo-estrategico", status: "partial", shown: false},
       (p) => ({line: pageOf(p, "linha").lines[3], gap: p.result.discussion!.gaps.find((g) => g.reason === "informed_reason_not_in_dictionary")?.item ?? null, status: p.status,
         shown: boardShownTexts(p).some((t) => /bilhão|bilião|corresponde a um|a_divida/i.test(t))})),
     reuse("peer-cost-keeps-the-unexplained-remainder", p2, t2,
@@ -349,6 +349,11 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r35: "de curto prazo" only with a registered effective term of up to twelve months (0,5, 1,25 and 2,25 anos).
+    ...([[2, "six"], [5, "fifteen"], [9, "twenty-seven"]] as const).map(([period, months]) => observe(`bank-credit-of-${months}-months-${period === 2 ? "called-short-term" : "described-without-short-term"}`, (() => {
+      const packet = auroraPlanPacket({giroPaidInPeriod: period}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => boardPacketInput(2, boardRestateSource("plano-2027", "evaluate-financing-paths", packet)));
+    })(), {line: true, short: period === 2}, (p) => {const line = boardShownTexts(p).find((t) => t.startsWith("Caminho A: sem ")); return {line: Boolean(line), short: Boolean(line?.includes("crédito bancário de curto prazo"))};})),
     // Review r34: the annual projection keeps "EBITDA de 2027".
     observe("annual-projection-row-shown-as-the-year", (() => {
       const packet = auroraProjectionPacket() as unknown as Record<string, unknown>;
