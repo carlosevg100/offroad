@@ -1,13 +1,18 @@
 {
   "source": "Mensagem direta do fundador nesta tarefa, 26 de outubro de 2026, autorizando publicar e preparar em produção a ativação das fichas do lote 3",
   "author": "Carlos Eduardo Vasques Galves",
-  "scope": "Preparação em produção da ativação do método build-operating-projection 2026.10.26-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "scope": "Preparação em produção da ativação do método build-operating-projection 2026.10.26-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), e, por ato posterior, liberação da capacidade para todas as organizações. Não aprova outro método nem efeito externo.",
   "release": "build-operating-projection-2026.10.26-v1",
   "manifestHash": "4caf3653c36d13d238967cc35b0f34f3a4f641fe55cb5f42b60f471127a5614a",
   "acts": [
     {
       "verbatim": "Aprovo o conteúdo das fichas C24, C26, C35 e C54 (projeção operacional, desafio à projeção, antecipação de recebíveis e atualização do trimestre), versão 2026.10.26-v1, e autorizo publicar os métodos, capturar os executores, registrar os perfis, aplicar as migrações e montar a ponte com a conversa, com as capacidades desligadas até a liberação final.",
       "recordedAt": "2026-10-26T19:27:21Z"
+    },
+    {
+      "verbatim": "Libero para uso as fichas C24, C26, C35 e C54 (projeção operacional, desafio à projeção, antecipação de recebíveis e atualização do trimestre), versão 2026.10.26-v1, para todos os clientes.",
+      "recordedAt": "2026-10-27T10:26:30.661604+00:00",
+      "effect": "Capacidade method.build-operating-projection.2026.10.26-v1 liberada com exposição universal em produção, após a fusão das PRs 952 e 953, a aplicação das migrações da ponte (20261027010222, 20261027010322, 20261027010426) e a verificação do deploy da web e do worker no commit dd99e9e8. Perfil b7d4f5a9-4b98-5f45-a2b0-d40b16ed70cc."
     }
   ]
 }
