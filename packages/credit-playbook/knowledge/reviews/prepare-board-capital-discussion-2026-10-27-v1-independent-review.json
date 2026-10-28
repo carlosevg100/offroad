@@ -13,13 +13,13 @@
     "kind": "method",
     "id": "prepare-board-capital-discussion",
     "version": "2026.10.27-v1",
-    "fingerprint": "e77ae5bb39f8a52e5d0e19d812780e3b1fd5d2297117c4c479e39faf17687023"
+    "fingerprint": "7df6b45a450a5b4c6bb163a4f3feb946e5cd8b76b90b4de00bad2d5e80ab7900"
   },
   "run": {
-    "id": "c47-r47",
-    "startedAt": "2026-10-28T15:48:36Z",
-    "finishedAt": "2026-10-28T15:54:17Z",
-    "commit": "4a67c2f2fe0e6b23d4ff196d75eea6070cba80fb"
+    "id": "c47-r49",
+    "startedAt": "2026-10-28T20:33:39Z",
+    "finishedAt": "2026-10-28T20:41:08Z",
+    "commit": "cbe06f5007333f377435b62921304a6fabcc2be0"
   },
   "checks": {
     "sourcesRevisited": true,
@@ -32,73 +32,73 @@
   },
   "evidence": [
     {
-      "claim": "Os 14 arquivos fixados conferem com os SHA-256 da base indicada e com os bytes do commit solicitado. As duas referências profissionais também conferem. A impressão da base é a indicada no objeto deste parecer.",
+      "claim": "Os 15 arquivos fixados conferem com os SHA-256 da base fornecida e com os bytes do commit solicitado. As duas referências profissionais também conferem.",
       "source": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
       "result": "confirmed",
-      "note": "O HEAD atual havia avançado. Usei a base indicada no worktree para identificar os hashes e extraí os arquivos do commit solicitado. A base armazenada nesse commit ainda contém metadados da rodada anterior."
+      "note": "O HEAD atual havia avançado. Usei os hashes da base indicada no worktree e uma cópia temporária do commit solicitado. A base armazenada dentro desse commit ainda contém metadados anteriores."
     },
     {
-      "claim": "Contra o commit da rodada 46, a única mudança entre os 14 arquivos fixados é a regra Escala por fonte do procedimento. Os outros 13 permanecem idênticos. Fora deles, mudaram somente os metadados da base de revisão e três hashes do manifesto gerado.",
-      "source": "git diff 7517bcfcc717d5aac77b90a7f4670abc58a9909b 4a67c2f2fe0e6b23d4ff196d75eea6070cba80fb",
-      "result": "confirmed"
-    },
-    {
-      "claim": "A única condição da rodada 46 foi atendida: o procedimento exige validar a escala declarada pela convenção de adoção da ponte do método e da versão executados, recusando escala desconhecida, misturada ou divergente. Explicita que a dimensão de escala vale \"1\" nas duas escalas e não distingue reais de milhões.",
-      "source": "packages/credit-playbook/knowledge/procedures/capital/prepare-board-capital-discussion.md",
-      "anchor": "Regra Escala por fonte, linha 114",
-      "result": "confirmed"
-    },
-    {
-      "claim": "Revisitei procedimento, registro de fontes, premissas, compositor, leitor adotado, kernel e pacote. O percurso completo por fatos, premissas, composição e leitura produziu a mesma discussão da base de calibração direta.",
+      "claim": "Revisitei procedimento, fontes, premissas, compositor, leitor adotado, kernel, biblioteca e contrato do pacote. O percurso por premissas e compositor reproduziu a discussão direta nos três turnos.",
       "source": "packages/financial-model/src/board-capital-discussion*.ts; adopted-board-capital-discussion.ts; adopted-analysis-binding.ts",
       "result": "confirmed",
-      "note": "As fontes vêm das calibrações dos métodos de origem. A alteração documental não modifica resultados, valores ou execução."
+      "note": "As nove fontes são executadas pelas calibrações dos métodos de origem. As adaptações declaradas de identidade e contexto não substituem os valores calculados por respostas da ficha."
     },
     {
-      "claim": "O comando solicitado passou sob Node 24.19.0: seis arquivos e 78 testes, em 278,63 segundos.",
-      "source": "npx vitest run src/board-capital-discussion",
-      "anchor": "packages/financial-model da cópia temporária do commit solicitado",
+      "claim": "O comando solicitado passou sob Node 24.19.0: sete arquivos e 83 testes, em 360,61 segundos. Foram reproduzidos integralmente 94 casos de ouro, 213 adversariais e seis de consistência, incluindo seus fingerprints.",
+      "source": "npx vitest run src/board-capital-discussion; packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-*/run.json",
       "result": "confirmed"
     },
     {
-      "claim": "As corridas registradas foram reproduzidas com seus casos e fingerprints: 91 casos de ouro, 195 adversariais e seis de consistência.",
-      "source": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-*/run.json",
-      "anchor": "board-capital-discussion-runs.test.ts",
+      "claim": "Conferi independentemente os 124 campos de origem de cada turno e recalculei com Decimal do Python suas 90 leituras econômicas, incluindo 58 monetárias. Caminho, escala, arredondamento, valor escrito e exibição conferem. Recalculei os nove fingerprints de origem.",
+      "source": "Pacotes dos três turnos e nove fontes reproduzidos na cópia temporária",
       "result": "confirmed",
-      "note": "Ouro: de41e0e6dd7fead0dcb23a0e895d7962518d7046b9dde08c7d06394630ba826c. Adversarial: 41eda7226bb852a3ee58922483628c0eb9cde77ad9928483ae7e539f3aea39a6. Consistência: 51aa2c97e483ba4a37e20b4705c958a62c0b0666492b862be1146b3542addac4."
+      "note": "Nos materiais dos turnos 2 e 3, todos os dígitos foram associados às leituras dos respectivos campos ou aos prazos e ordinais gerados. A conferência abrangeu 90 campos exibidos na primeira versão e 92 na versão ajustada."
     },
     {
-      "claim": "Recalculei independentemente com Decimal do Python as 90 leituras econômicas de cada turno, incluindo 58 monetárias. Caminho, valor de origem, escala, arredondamento e valor escrito conferem. Recalculei também os fingerprints dos nove pacotes de origem.",
-      "source": "Pacotes dos três turnos reproduzidos na cópia temporária; result.discussion.identity; nove pacotes de origem",
-      "result": "confirmed",
-      "note": "A conferência independente vinculou todos os tokens numéricos das páginas, perguntas e síntese às leituras formatadas, aos prazos adotados ou aos ordinais gerados: 173 ocorrências na primeira versão e 175 na versão ajustada."
-    },
-    {
-      "claim": "As divergências declaradas permanecem sustentadas pelos resultados de origem, preservando as conclusões da rodada 46.",
-      "source": "packages/financial-model/src/board-capital-discussion.test-support.ts; pacotes reproduzidos; referências profissionais C47",
+      "claim": "As divergências numéricas da ficha seguem os resultados reproduzidos dos métodos de origem.",
+      "source": "board-capital-discussion.test-support.ts; boardFichaDivergences; referências C47; conferência independente",
       "result": "corrected",
-      "note": "Prazo médio: 1,451141144531085353, exibido como 1,5 ano. Fluxo acumulado do projeto: -21,7 milhões em dezembro de 2027. Payback: 5,85360438703604711444 anos, sem meta inventada. Programas: 23,5 milhões, CDI mais 1,2% e 1,5%. Debênture: CDI mais 3,46% a 3,56%, mantendo a correção da rodada 46 à faixa citada no pedido. Rede A: 19,8 milhões sobre 62 milhões, sem participação recalculada. Rating: -0,17 a 0,03 milhão por ano. Piso de demanda: 74,44 milhões."
+      "note": "Prazo médio: 1,451141144531085353, exibido como 1,5 ano. Fluxo acumulado do projeto: -21,7 milhões em dezembro de 2027. Payback: 5,85360438703604711444 anos, sem meta inventada. Programas: 23,5 milhões, CDI mais 1,2% e 1,5%. Debênture: CDI mais 3,46% a 3,56%, corrigindo a faixa citada no pedido. Piso: 74,44 milhões. Rede A: 19,8 milhões sobre 62 milhões, sem inventar participação publicada. Rating: -0,17 a 0,03 milhão por ano."
     },
     {
-      "claim": "Os 16 ensaios próprios passaram. Foram recusados número alterado em uma casa decimal, leitura sem fonte, fonte de outra companhia ou versão e pacote editado conservando o fingerprint anterior.",
-      "source": "Ensaios independentes r47 na cópia temporária; prepareBoardCapitalDiscussionPacket; verifyBoardSource",
+      "claim": "As condições da rodada 48 foram atendidas: coincidência de vencimento e spread deixou de estabelecer identidade entre instrumentos. O par depende de vínculo adotado e da ausência de divergência nos termos registrados nas duas fontes.",
+      "source": "packages/financial-model/src/board-capital-discussion.ts",
+      "anchor": "boardLinkedInstrument; validateBoardDiscussion",
       "result": "confirmed",
-      "note": "A alteração do VPL escrito de 0,7 para 0,8 produziu figure_diverges. Outra companhia com fingerprint recalculado produziu context_mismatch; outra versão produziu version_mismatch; edição do pacote com impressão antiga produziu fingerprint_mismatch."
+      "note": "Reexecutei debtTableWithCreditor(\"Itaú\", \"Bradesco\"): com vínculo adotado, o material nomeia Itaú pela tabela; sem vínculo, recusa link_absent. Isso é coerente com a decisão técnica: o rótulo livre do plano não registra credor. O vínculo é uma premissa explícita de identidade, não uma identidade inferida pelos números."
     },
     {
-      "claim": "Permutar as deliberações preservou a ordem linha, safra, vencimentos e política. Sem roteiro confirmado, o material permaneceu retido. Ausência da página de decisões ou de deliberações foi recusada. Pedidos de retirar número, página ou prazo foram recusados com uma frase.",
-      "source": "Ensaios independentes r47; orderBoardDeliberations; prepareBoardCapitalDiscussion; decideBoardOmissions",
+      "claim": "Os reproduzidores de spread nulo e TLP passaram pelas barreiras definidas, e os ataques ao vínculo foram recusados quando inválidos.",
+      "source": "Ensaios independentes; board-capital-discussion-roles.test.ts; boardLinkAttempts",
       "result": "confirmed",
-      "note": "Uma solicitação parafraseada no campo da pergunta não retirou fatos. Prosa livre no pedido adotado foi recusada pelo esquema. No terceiro turno, a versão anterior permaneceu idêntica à do segundo turno."
+      "note": "Spread nulo foi aceito somente com vínculo adotado. Reexecutei a tabela com TLP: recusa link_mismatch:index_rate. Instrumento inexistente, instrumento novo, outra fonte, tupla incompleta, linha duplicada, instrumento duplicado e edição com selo antigo foram recusados. As dez regressões nomeadas passaram, incluindo vencimento, taxa prefixada e ausência de vínculo após renomeação total."
     },
     {
-      "claim": "O conteúdo preserva a substância e a sequência das doze páginas da ficha, acrescentando a página de movimentos dos caminhos. Há síntese, apêndice e dez perguntas com respostas numéricas. Mantêm-se as conclusões profissionais da rodada 46.",
+      "claim": "As alegações de vínculo por papel da rodada 48 se mantêm nos casos exercitados. A renomeação total dos registros preservou o material, inclusive com uma semente independente.",
+      "source": "packages/financial-model/src/board-capital-discussion-roles.test.ts; board-capital-discussion-templates.ts; ensaios independentes",
+      "result": "confirmed",
+      "note": "A biblioteca passou no exame de identificadores literais. Os casos registrados recusaram papéis ausentes ou ambíguos de caminhos, limites, sensibilidades e caixa mínimo. O percurso pelo compositor também preservou os prazos após a retirada do order.deadlines redundante para prazo único."
+    },
+    {
+      "claim": "Os ataques próprios preservaram as barreiras numéricas, de contexto, de roteiro e de omissão. A ordem das deliberações segue a urgência.",
+      "source": "25 verificações independentes sobre prepareBoardCapitalDiscussionPacket e o percurso por premissas",
+      "result": "confirmed",
+      "note": "VPL escrito de 0,8 contra 0,7, leitura sem fonte, outra companhia, outra versão, pacote editado com fingerprint antigo e material sem decisões foram recusados. Inverter a entrada manteve linha, safra, vencimentos e política. Sem roteiro confirmado, o material ficou retido. Substituição que eliminava o payback foi recusada; pedido de retirar retorno também. A versão anterior do terceiro turno permaneceu idêntica à do segundo."
+    },
+    {
+      "claim": "O material preserva a substância e a sequência das doze páginas da ficha, acrescentando a página de movimentos dos caminhos, além de síntese, apêndice e dez perguntas com respostas numéricas.",
       "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C47/corpo.html; estudo.html; material reproduzido",
       "result": "confirmed",
-      "note": "Os títulos apresentam conclusões sustentadas por números. A redação separa fatos atribuídos, leituras e recomendações, sem crítica à companhia. Permanecem explícitos os termos desconhecidos da linha de crédito, as alçadas sem comprovação, as condições indicativas e a opção em etapas sem caso revisado. O template recebido é declarado como não aplicado."
+      "note": "As treze páginas cabem nos 45 minutos adotados. A redação separa fatos atribuídos, leituras e recomendações, sem crítica à companhia. O tema não visto precede a recomendação; o visto vai ao apêndice. No terceiro turno, a recomendação da linha sai, os fatos e o aviso ficam, e a opção em etapas permanece pendente."
+    },
+    {
+      "claim": "O pacote declara suas pendências e os limites desta versão.",
+      "source": "Procedimento; campos pending, pendingFigures, gaps e exclusions dos pacotes reproduzidos",
+      "result": "limitation",
+      "note": "Permanecem declarados os termos desconhecidos da linha de crédito, as alçadas sem comprovação, as condições indicativas, a definição de EBITDA pendente e o caso em etapas ausente. O template consta como recebido sem aplicação. O método não renderiza a apresentação da companhia, não apresenta e não envia material."
     }
   ],
   "result": "pass",
   "conditions": [],
-  "notes": "A condição documental da rodada 46 está satisfeita. Os demais arquivos fixados permaneceram idênticos, e as verificações desta rodada sustentam suas conclusões técnicas e profissionais. Não encontrei número divergente da fonte, omissão material aplicada ou ordenação incorreta das deliberações. A conferência de evaluate-financing-paths como fonte não substitui sua revisão econômica separada. O parecer cobre a composição determinística do conteúdo; não comprova renderização do template da companhia, apresentação, distribuição, aprovação humana ou promoção do método. Os testes, scripts, exportações e logs foram executados ou escritos na cópia temporária fora do repositório. Essa cópia foi removida antes do encerramento. Nenhum arquivo rastreado foi alterado."
+  "notes": "As duas condições técnicas da rodada 48 foram resolvidas no contrato de entrada autorizado pelo líder técnico. O vínculo adotado fornece a identidade que o plano não registra; os termos compartilhados funcionam como controles de contradição. Ausência de termo não é usada como prova de identidade. A aceitação de outro nome de credor sob vínculo adotado é coerente com esse contrato, pois o material usa o credor registrado na tabela. Esta revisão verifica o comportamento determinístico e a integridade das leituras, sem substituir a confirmação humana do vínculo, a aprovação profissional do conteúdo ou a revisão econômica separada de evaluate-financing-paths. Nenhum arquivo foi escrito dentro do repositório. As dependências e os caches dos testes ficaram na cópia temporária, que foi removida antes do encerramento."
 }
