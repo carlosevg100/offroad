@@ -134,3 +134,24 @@ describe("withdrawal reported, modified or complemented", () => {
     });
 });
 
+// Independent review, round 10: a quote after a colon or a dash ends the reported segment at its closing quote; the
+// person's own cancellation after it withdraws, the same act inside the quote does not, for every quote style.
+describe("withdrawal after a quoted report", () => {
+  const quoteStyles: [string, string][] = [['"', '"'], ["'", "'"], ["“", "”"], ["‘", "’"], ["«", "»"]];
+  const at = (content: string) => ({message_id: "00000000-0000-4000-8000-000000000099", recent_messages: [
+    {id: "00000000-0000-4000-8000-000000000001", role: "user", content: "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.", created_at: "2026-10-28T10:00:00Z"},
+    {id: "00000000-0000-4000-8000-000000000010", role: "user", content, created_at: "2026-10-28T10:01:00Z"},
+    {id: "00000000-0000-4000-8000-000000000099", role: "user", content: "Leitura da pasta concluída.", created_at: "2026-10-28T10:09:00Z"}]});
+  it.each(quoteStyles.flatMap(([o, c]) => [":", " \u2014", ""].map((lead) => [o, c, lead] as const)))("quote %s%s after '%s'", (o, c, lead) => {
+    const after = `O diretor escreveu${lead} ${o}Os documentos estão prontos${c}. Pode cancelar a organização.`;
+    const inside = `O diretor escreveu${lead} ${o}Pode cancelar a organização${c}.`;
+    expect(withdrawsDocumentFolderRequest(after)).toBe(true);
+    expect(documentFolderResumeWithdrawn(at(after), "00000000-0000-4000-8000-000000000001")).toBe(true);
+    expect(withdrawsDocumentFolderRequest(inside)).toBe(false);
+    expect(documentFolderResumeWithdrawn(at(inside), "00000000-0000-4000-8000-000000000001")).toBe(false);
+  });
+  it("the reviewer's case", () => {
+    expect(documentFolderResumeWithdrawn(at("O diretor escreveu: 'Os documentos estão prontos'. Pode cancelar a organização."), "00000000-0000-4000-8000-000000000001")).toBe(true);
+  });
+});
+

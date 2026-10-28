@@ -343,6 +343,22 @@ describe("canonical ficha objective routing", () => {
     expect(["board_capital_discussion", "received_proposal"]).toContain(compileObjectiveToPlan({message, hasAttachments}).objectiveKind);
   });
 
+  // Round 10: a quote after a colon or a dash ends the reported segment at its closing quote. A request after the quote
+  // is the person's and promotes; the same request inside the quote does not, for every quote style.
+  const quoteStyles: [string, string][] = [['"', '"'], ["'", "'"], ["“", "”"], ["‘", "’"], ["«", "»"]];
+  const lote4Kinds = ["board_capital_discussion", "received_proposal", "document_folder", "financing_paths"];
+  it.each(quoteStyles.flatMap(([o, c]) => [":", " \u2014"].flatMap((lead) => [false, true].map((a) => [o, c, lead, a] as const))))(
+    "quoted report %s%s after%s: only what follows the quote counts (attachments %s)", (o, c, lead, hasAttachments) => {
+      const after = `O diretor escreveu${lead} ${o}Os documentos estão prontos${c}. Prepare a discussão da dívida para o conselho.`;
+      const inside = `O diretor escreveu${lead} ${o}Prepare a discussão da dívida para o conselho${c}.`;
+      const proposal = `O gerente disse${lead} ${o}A proposta chegou ontem${c}. Pode avaliar a proposta de crédito que o Bradesco mandou?`;
+      const proposalInside = `O gerente disse${lead} ${o}Pode avaliar a proposta de crédito que o Bradesco mandou?${c}`;
+      expect(compileObjectiveToPlan({message: after, hasAttachments}).objectiveKind).toBe("board_capital_discussion");
+      expect(compileObjectiveToPlan({message: proposal, hasAttachments}).objectiveKind).toBe("received_proposal");
+      expect(lote4Kinds).not.toContain(compileObjectiveToPlan({message: inside, hasAttachments}).objectiveKind);
+      expect(lote4Kinds).not.toContain(compileObjectiveToPlan({message: proposalInside, hasAttachments}).objectiveKind);
+    });
+
   // The neighbours of the lote 4 methods keep the route origin/main gives them (plain, with attachments).
   it.each([
     // C01: several proposals, a comparison, a concept, a non-financing proposal, a bare proposal, only reading the term sheet.
