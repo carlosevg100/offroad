@@ -111079,6 +111079,52 @@
       "enabled": "O",
       "function": "private.document_folder_reading_job_ended_v1()",
       "definition": "CREATE TRIGGER processing_jobs_document_folder_reading_ended AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.status = ANY (ARRAY['failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status) AND ((new.kind = 'document_folder_reading'::text) OR ((new.kind = 'agent_operation_brief'::text) AND (new.payload ? 'document_folder_resume'::text))))) EXECUTE FUNCTION private.document_folder_reading_job_ended_v1()"
+    },
+    {
+      "id": "function:private.worker_cancel_document_folder_wait_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_cancel_document_folder_wait_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_cancel_document_folder_wait_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_cancel_document_folder_wait_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"

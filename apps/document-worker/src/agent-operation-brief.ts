@@ -73,7 +73,7 @@ import {projectionChallengeExtractionContract, proposeProjectionChallengePremise
 import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
 import {proposeQuarterUpdatePremisesForTurn, quarterUpdateExtractionContract, shouldProposeQuarterUpdatePremises} from "./quarter-update-premises-proposal";
 import {proposeReceivedProposalPremisesForTurn, receivedProposalExtractionContract, shouldProposeReceivedProposalPremises} from "./received-proposal-premises-proposal";
-import {documentFolderExtractionContract, documentFolderResumeOf, isDocumentFolderResumeNotice, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises}
+import {documentFolderExtractionContract, documentFolderResumeOf, documentFolderWaitWithdrawn, isDocumentFolderResumeNotice, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises}
   from "./document-folder-premises-proposal";
 import {financingPathsExtractionContract, proposeFinancingPathsPremisesForTurn, shouldProposeFinancingPathsPremises} from "./financing-paths-premises-proposal";
 import {boardMaterialExtractionContract, proposeBoardMaterialPremisesForTurn, shouldProposeBoardMaterialPremises} from "./board-material-premises-proposal";
@@ -119,6 +119,22 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
   if (shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages)) return "receivables_funding";
   if (shouldProposeQuarterUpdatePremises(message, hasAttachments, earlierUserMessages)) return "quarter_update";
   return "investment";
+}
+
+/** The objectives a message keeps the folder wait under: the folder itself, or nothing specific. Any other objective is
+ * a change of request. */
+const folderKeepingKinds = new Set<string>(["document_folder", "ambiguous", "documents_to_case", "information_organization", "factual_question"]);
+/** Whether the person withdrew a folder wait after it opened, read from their messages after the one it came from. */
+export function documentFolderResumeWithdrawn(context: {message_id: string; recent_messages: {id: string; role: string; content: string; created_at: string}[]},
+  sourceMessageId: string): boolean {
+  return documentFolderWaitWithdrawn(laterUserMessages(context, sourceMessageId),
+    (message) => !folderKeepingKinds.has(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind));
+}
+/** The person's messages after the one a folder wait came from, without the system's continuation notices. */
+function laterUserMessages(context: {message_id: string; recent_messages: {id: string; role: string; content: string; created_at: string}[]}, sourceMessageId: string): string[] {
+  const source = context.recent_messages.find((m) => m.id === sourceMessageId);
+  return context.recent_messages.filter((m) => m.role === "user" && m.id !== context.message_id && m.id !== sourceMessageId
+    && !isDocumentFolderResumeNotice(m.content) && (!source || m.created_at > source.created_at)).map((m) => m.content);
 }
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
@@ -402,6 +418,9 @@ Rules:
   reason; a reference coverage is asked with what it is for.
 - systemContinuation document_folder_readings_completed means the person wrote nothing new: the folder files they sent were
   read and the organization continues. Never treat it as something the person said; open with the folder's reading.
+- systemContinuation document_folder_wait_withdrawn means the folder files finished reading after the person cancelled or
+  changed the request: nothing is organized and no card follows. Say so in one short sentence, never describe the files,
+  and never treat it as something the person said.
 - documentFolderPremises is the premise proposal for organizing a folder. When proposed, each file read with what it
   is, of whom and of when, the registry, the open decisions and the vault appear in a card below your reply, each with
   its origin. Give the reading first: what the folder holds, which version of each document counts, and what was not
@@ -707,9 +726,22 @@ export async function processAgentOperationBriefJob(
     // The system's continuation notices are not the person's words: they are never read as an answer or a request.
     const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id && !isDocumentFolderResumeNotice(message.content))
       .map((message) => message.content);
-    // A continuation the folder readings resumed (document_folder_resume) runs the folder step with the framing the person gave.
-    const folderResume = documentFolderResumeOf(job.payload.document_folder_resume);
-    const premiseStep = !premiseStepOpen ? null : folderResume ? "document_folder" : premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages);
+    // A continuation the folder readings resumed (document_folder_resume) runs the folder step with the framing the person
+    // gave, unless the person withdrew the request after the wait opened: a later message of theirs that cancels or refuses
+    // the folder, or asks for another method. Then the wait closes as cancelled, no card is proposed and the turn proposes
+    // no premises (the person's later message had its own turn on its own route).
+    const resumed = documentFolderResumeOf(job.payload.document_folder_resume);
+    const folderWithdrawn = resumed !== null && documentFolderResumeWithdrawn(context, resumed.sourceMessageId);
+    if (folderWithdrawn) {
+      const closed = await queue.cancelDocumentFolderWait?.(job).catch((error: unknown) => {
+        log("document_folder_premises.failed", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"});
+        return false;
+      });
+      log("document_folder_premises.withdrawn", {job: job.job_id, closed: closed === true});
+    }
+    const folderResume = folderWithdrawn ? null : resumed;
+    const premiseStep = !premiseStepOpen || folderWithdrawn ? null : folderResume ? "document_folder"
+      : premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages);
     const comparisonTurn = premiseStep === "comparison";
     const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
@@ -850,8 +882,8 @@ export async function processAgentOperationBriefJob(
               collaborativeAdvisoryPolicy,
               recentConversation: context.recent_messages.filter((m) => !(m.role === "user" && isDocumentFolderResumeNotice(m.content))).map(({role, content}) => ({role, content})),
               // A turn the folder readings resumed has no message of the person: the system continues it.
-              latestUserMessage: folderResume ? null : context.message,
-              systemContinuation: folderResume ? "document_folder_readings_completed" : null,
+              latestUserMessage: resumed ? null : context.message,
+              systemContinuation: !resumed ? null : folderWithdrawn ? "document_folder_wait_withdrawn" : "document_folder_readings_completed",
               investmentPremises: premises?.forAdvisor ?? null,
               comparisonPremises: comparison?.forAdvisor ?? null,
               capacityPremises: capacity?.forAdvisor ?? null,

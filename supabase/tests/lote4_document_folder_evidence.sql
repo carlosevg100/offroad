@@ -465,6 +465,28 @@ end $$;
 update public.document_intake_sessions set status='review_ready',current_run_id=null where id='40000000-0000-4000-8000-000000000711';
 update public.source_documents set processing_status='ready' where id in ('a0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000005');
 
+-- 3g. The person cancelled after the wait opened: the continuation turn closes the wait as cancelled, once, and only the
+-- brief job carrying that wait's own resume may.
+update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+ lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('g',64),'sha256')
+ where kind='agent_operation_brief' and status='queued' and payload#>>'{document_folder_resume,wait_id}'=(select id::text from private.document_folder_reading_waits
+  where work_id='30000000-0000-4000-8000-000000000711' and context='{"registry":[{"id":"h3","label":"H","groupLabel":"G"}]}' and consumed_at is null);
+do $$
+declare j uuid:=(select id from public.processing_jobs where capability_sha256=extensions.digest(repeat('g',64),'sha256'));w private.document_folder_reading_waits;
+begin
+ if j is null then raise exception 'no continuation to cancel';end if;
+ begin perform public.worker_cancel_document_folder_wait_v1('80000000-0000-4000-8000-000000000711',repeat('r',64)); raise exception 'a turn without the resume cancelled a wait';
+ exception when insufficient_privilege then null; end;
+ if not public.worker_cancel_document_folder_wait_v1(j,repeat('g',64)) then raise exception 'wait not cancelled';end if;
+ select * into w from private.document_folder_reading_waits where work_id='30000000-0000-4000-8000-000000000711' and context='{"registry":[{"id":"h3","label":"H","groupLabel":"G"}]}';
+ if w.consumed_at is null or w.cancelled_at is null then raise exception 'cancelled wait still open';end if;
+ if public.worker_cancel_document_folder_wait_v1(j,repeat('g',64)) then raise exception 'wait cancelled twice';end if;
+ -- A closed wait schedules nothing more.
+ perform private.document_folder_reading_advance_v1('20000000-0000-4000-8000-000000000711');
+ if (select count(*) from public.agent_messages where metadata->>'waitId'=w.id::text)<>1 then raise exception 'cancelled wait resumed again';end if;
+ raise notice 'PASS: a wait the person cancelled closes as cancelled, without a card or another continuation';
+end $$;
+
 -- 4. The priors as the worker reads them: none yet; and every door refuses a forged capability.
 do $$
 begin

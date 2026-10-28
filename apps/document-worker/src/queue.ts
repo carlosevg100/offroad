@@ -425,6 +425,8 @@ export type QueueClient = {
   loadDocumentFolder?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The stored reading of each named file of the work, ready, refused or pending, queuing one reading job per pending file. */
   loadDocumentFolderReadings?(job: AgentOperationBriefJob, request: {readerVersion: string; context: unknown; files: {documentId: string}[]; framing: unknown}): Promise<unknown>;
+  /** Closes the folder wait this continuation resumes as cancelled: the person withdrew the request after it opened. */
+  cancelDocumentFolderWait?(job: AgentOperationBriefJob): Promise<boolean>;
   /** The reading job's file: the bytes it was queued for, its latest ready layer and the registry. */
   loadDocumentFolderReadingInput?(job: DocumentFolderReadingJob): Promise<unknown>;
   /** The layer of the reading job's file, as stored, under the job's own storage authority. */
@@ -1295,6 +1297,10 @@ export function createQueueClient(
     async loadDocumentFolderReadings(job, request) {
       return call("worker_document_folder_readings_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
         p_reader_version: request.readerVersion, p_context: request.context, p_files: request.files, p_framing: request.framing});
+    },
+
+    async cancelDocumentFolderWait(job) {
+      return (await call("worker_cancel_document_folder_wait_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token})) === true;
     },
 
     async loadDocumentFolderReadingInput(job) {

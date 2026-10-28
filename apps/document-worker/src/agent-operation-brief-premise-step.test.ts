@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {premiseStepForTurn} from "./agent-operation-brief";
+import {documentFolderResumeWithdrawn, premiseStepForTurn} from "./agent-operation-brief";
 
 describe("one premise step per turn", () => {
   it.each([
@@ -51,3 +51,34 @@ describe("one premise step per turn", () => {
     expect(premiseStepForTurn("Monta a tabela de dívida com tudo que temos.", false, [proposal])).toBe("debt_table");
   });
 });
+
+// Independent review, round 7: a folder wait resumes only while the person still wants it. A later message of theirs
+// that cancels or refuses the folder, or asks for another method, withdraws it (the continuation closes the wait as
+// cancelled and proposes no card); a plain answer keeps it.
+describe("the folder wait after it opened", () => {
+  const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const turn = (later: string[]) => ({message_id: id(99), recent_messages: [
+    {id: id(1), role: "user", content: "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.", created_at: "2026-10-28T10:00:00Z"},
+    {id: id(2), role: "assistant", content: "Estou lendo os arquivos.", created_at: "2026-10-28T10:00:05Z"},
+    ...later.map((content, n) => ({id: id(10 + n), role: "user", content, created_at: `2026-10-28T10:0${n + 1}:00Z`})),
+    // The system's continuation notice is never the person's words.
+    {id: id(99), role: "user", content: "Leitura da pasta concluída.", created_at: "2026-10-28T10:09:00Z"},
+  ]});
+  it.each([
+    ["cancelled after the wait", ["Cancele a organização da pasta. Não quero mais este inventário."], true],
+    ["refused after the wait", ["Esqueça a pasta, não precisa organizar."], true],
+    ["a change of subject after the wait", ["Agora monta a tabela de dívida com tudo que temos."], true],
+    ["another lote 4 request after the wait", ["O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1. É boa?"], true],
+    ["a plain answer after the wait", ["A minuta não foi para nenhum banco."], false],
+    ["a plain answer with a file after the wait", ["Segue a página 7 legível e o balancete de março."], false],
+    ["nothing after the wait", [], false],
+  ] as const)("%s", (_, later, withdrawn) => {
+    expect(documentFolderResumeWithdrawn(turn([...later]), id(1))).toBe(withdrawn);
+  });
+  it("reads only what came after the wait's own message", () => {
+    const before = turn([]);
+    before.recent_messages.unshift({id: id(0), role: "user", content: "Cancele a organização da pasta antiga.", created_at: "2026-10-28T09:00:00Z"});
+    expect(documentFolderResumeWithdrawn(before, id(1))).toBe(false);
+  });
+});
+

@@ -65,12 +65,15 @@ create table private.document_folder_reading_waits (
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now(),
  consumed_at timestamptz,
+ -- A wait the person cancelled or replaced after it opened: closed without a card (consumed_at set with it).
+ cancelled_at timestamptz,
  resume_message_id uuid,
  constraint document_folder_reading_waits_pkey primary key(organization_id,id),
  constraint document_folder_reading_waits_work_fkey foreign key(organization_id,work_id) references public.capital_projects(organization_id,id) on delete cascade,
  constraint document_folder_reading_waits_session_fkey foreign key(organization_id,intake_session_id) references public.document_intake_sessions(organization_id,id) on delete cascade,
  constraint document_folder_reading_waits_shape_check check(locale in ('pt-BR','en-US') and context_fingerprint ~ '^[a-f0-9]{64}$' and cardinality(document_ids) between 1 and 1000
-  and (framing is null or (jsonb_typeof(framing)='object' and octet_length(framing::text)<=65536)) and octet_length(context::text)<=262144)
+  and (framing is null or (jsonb_typeof(framing)='object' and octet_length(framing::text)<=65536)) and octet_length(context::text)<=262144),
+ constraint document_folder_reading_waits_cancelled_check check(cancelled_at is null or consumed_at is not null)
 );
 create unique index document_folder_reading_waits_open_idx on private.document_folder_reading_waits(organization_id,work_id,reader_version,context_fingerprint) where consumed_at is null;
 alter table private.document_folder_reading_waits enable row level security;
@@ -334,6 +337,29 @@ create trigger processing_jobs_document_folder_reading_ended after update of sta
  when (new.status in ('failed','poison','cancelled') and old.status is distinct from new.status
   and (new.kind='document_folder_reading' or (new.kind='agent_operation_brief' and new.payload ? 'document_folder_resume')))
  execute function private.document_folder_reading_job_ended_v1();
+
+-- The continuation turn of a wait, when the person cancelled, refused or changed the request after the wait opened,
+-- closes it as cancelled: no card, no further continuation. Only the brief job that carries the wait's own resume.
+create function private.worker_cancel_document_folder_wait_v1(p_job_id uuid,p_capability_token text) returns boolean
+language plpgsql volatile security definer set search_path='' as $$
+declare job_row public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);w private.document_folder_reading_waits;
+begin
+ if job_row.kind<>'agent_operation_brief' or nullif(job_row.payload#>>'{document_folder_resume,wait_id}','') is null then
+  raise exception 'document_folder_resume_required' using errcode='42501';end if;
+ select * into w from private.document_folder_reading_waits where organization_id=job_row.organization_id
+  and id=(job_row.payload#>>'{document_folder_resume,wait_id}')::uuid and intake_session_id=job_row.intake_session_id;
+ if w.id is null then raise exception 'document_folder_resume_required' using errcode='42501';end if;
+ perform private.document_folder_reading_lock_v1(w.organization_id,w.reader_version,w.context_fingerprint);
+ update private.document_folder_reading_waits set consumed_at=now(),cancelled_at=now(),updated_at=now()
+ where organization_id=w.organization_id and id=w.id and consumed_at is null and resume_message_id::text=job_row.payload->>'message_id';
+ return found;
+end $$;
+revoke all on function private.worker_cancel_document_folder_wait_v1(uuid,text) from public,anon,authenticated,service_role;
+grant execute on function private.worker_cancel_document_folder_wait_v1(uuid,text) to authenticated;
+create function public.worker_cancel_document_folder_wait_v1(p_job_id uuid,p_capability_token text) returns boolean
+language sql volatile security invoker set search_path='' as $$ select private.worker_cancel_document_folder_wait_v1(p_job_id,p_capability_token); $$;
+revoke all on function public.worker_cancel_document_folder_wait_v1(uuid,text) from public,anon,authenticated,service_role;
+grant execute on function public.worker_cancel_document_folder_wait_v1(uuid,text) to authenticated;
 
 -- 7. The storage gate: the document pipeline keeps its access; a leased folder reading job may read, never write, the
 -- ready layer of the one file it was queued for (source_document_id, whose own rights the job's authority checks), of

@@ -1,9 +1,11 @@
 /**
  * Lote 4, the conservative condition of a promotion (C47, C01, C09; C32 takes only its whole ficha constructions). A lote 4
  * method is chosen only when the message asks the advisor for its action: the verb in the imperative at the start of a
- * clause, its infinitive governed by an explicit request ("quero", "preciso", "pode", "vamos"), or its subjunctive after
- * "quero que", never an action someone else does ("o banco vai avaliar"); or, for the received proposal and the folder,
- * the question the ficha answers ("é boa?", "me diz o que tem"); with the method's object named in the message; and only
+ * clause, its infinitive after a first person request ("quero", "preciso", "vamos") or after a modal ("pode",
+ * "consegue") that opens the clause or has "você" as its subject, or its subjunctive after "quero que"; never an action
+ * someone else does ("o banco vai avaliar", "a diretoria pode preparar"); or, for the received proposal, the question the
+ * ficha answers asked directly ("é boa?", never "o banco disse que é boa"), and for the folder "me diz o que tem"; with
+ * the method's object named in the message; and only
  * when the message holds, at no point and in no clause, a negation or a refusal ("não", "nunca", "sem", "jamais", "nem",
  * "dispense", "evite", "cancele", "recuso", "desista", "abandone", "esqueça", "deixe de", "pare de") or a request for
  * guidance ("como", "de que forma", "qual a melhor forma de", "ensine", "oriente", "explique"). Otherwise the route
@@ -15,20 +17,25 @@
 export type Lote4RequestKind = "board_capital_discussion" | "received_proposal" | "document_folder";
 
 /** Where a request addressed to the advisor starts: the start of a clause, or a joined clause ("e", "então", "depois"),
- * after an optional courtesy or the addressee ("por favor", "agora", "você", "me"). */
-const opening = String.raw`(?:^|[.!?;,:]\s*|\b(?:e|entao|depois)\s+)(?:(?:por favor|agora|entao|so|apenas|voce|vc|me|nos)\s+)*`;
-/** An explicit request to the advisor that governs an infinitive ("quero", "preciso", "pode", "vamos", "me ajude a"). */
-const asking = String.raw`\b(?:quero|queremos|queria|preciso|precisamos|gostaria(?:mos)?(?: de)?|pode|podes|poderia|poderiam|consegue|conseguiria|da para|da pra|tem como|vamos|bora|me ajud\w* a|seria bom)\s+(?:(?:voce|vc|me|nos|ja|agora|por favor)\s+)*`;
+ * after an optional courtesy or vocative ("por favor", "agora", "você", "me"). */
+const opening = String.raw`(?:^|[.!?;,:]\s*|\b(?:e|entao|depois)\s+)(?:(?:por favor|agora|entao|so|apenas|voce|voces|vc|me|nos)\s+)*`;
+/** A request in the first person ("quero", "preciso", "vamos", "me ajude a"): the verb itself names who asks. */
+const wanting = String.raw`\b(?:quero|queremos|queria|preciso|precisamos|gostaria(?:mos)?(?: de)?|vamos|bora|me ajud\w* a|seria bom)\s+(?:(?:voce|vc|me|nos|ja|agora|por favor)\s+)*`;
+/** A modal ("pode", "consegue", "poderia", "conseguiria", "tem como", "dá para") is a request only when it opens the
+ * clause (after a vocative or "por favor" at most) or when its subject is "você" or "vocês"; any other subject before it
+ * ("o banco pode", "a diretoria consegue", "quando eles podem") makes it someone else's action. */
+const modal = String.raw`(?:pode|podem|podes|poderia|poderiam|consegue|conseguem|conseguiria|conseguiriam|tem como|da para|da pra)\s+(?:(?:me|nos|ja|agora|por favor)\s+)*`;
+const modalAsked = [String.raw`${opening}${modal}`, String.raw`\b(?:voce|voces|vc)\s+${modal}`];
 /** A request for someone to do it, in the subjunctive ("quero que você prepare"). */
-const askingThat = String.raw`\b(?:quero|queremos|queria|preciso|precisamos|gostaria(?:mos)?|peco|pedimos)\s+que\s+(?:(?:voce|vc)\s+)?`;
+const askingThat = String.raw`\b(?:quero|queremos|queria|preciso|precisamos|gostaria(?:mos)?|peco|pedimos)\s+que\s+(?:(?:voce|voces|vc)\s+)?`;
 
 /** The request of a method addressed to the advisor: its verb in the imperative at the start of a clause, its infinitive
- * governed by an explicit request, or its subjunctive after "quero que"; never an action someone else does ("o banco
- * vai avaliar", "a diretoria vai preparar"). Stems are first conjugation; `imperative`, `infinitive` and `subjunctive`
- * add the irregular forms. */
+ * after a first person request or an addressed modal, or its subjunctive after "quero que"; never an action someone else
+ * does ("o banco vai avaliar", "a diretoria pode preparar"). Stems are first conjugation; `imperative`, `infinitive` and
+ * `subjunctive` add the irregular forms. */
 const addressed = (stems: string, extra: {imperative: string; infinitive: string; subjunctive: string}) => [
   String.raw`${opening}(?:(?:${stems})(?:a|e|em)|${extra.imperative})\b`,
-  String.raw`${asking}(?:(?:${stems})ar|${extra.infinitive})\b`,
+  ...[wanting, ...modalAsked].map((before) => String.raw`${before}(?:(?:${stems})ar|${extra.infinitive})\b`),
   String.raw`${askingThat}(?:(?:${stems})(?:e|em)|${extra.subjunctive})\b`,
 ];
 
@@ -39,17 +46,26 @@ const requests: Record<Lote4RequestKind, RegExp> = {
   received_proposal: new RegExp([
     ...addressed("avali|analis|olh|opin|revis|examin|negoci", {imperative: "le|leia|ve|veja|da uma olhada|de uma olhada|me diz se|me diga se|diz se|diga se",
       infinitive: "ler|ver|dar uma olhada|saber se|ver se", subjunctive: "leia|veja|de uma olhada"}),
-    String.raw`\bme (?:diz|diga) se\b`,
-    // The question the ficha answers about the proposal: is it good, worth it, to be taken, what to make of it.
-    String.raw`\b(?:e|esta|ta|parece|seria) (?:boa|bom|ruim|razoavel|competitiva|justa|cara|barata|de mercado|interessante|adequada|atrativa|vantajosa)\b`,
-    String.raw`\bvale a pena\b|\b(?:vale|compensa|presta)\s*\?|\b(?:devo|devemos|deveria|deveriamos|posso|podemos) (?:aceitar|fechar|assinar|topar|seguir com|pegar|tomar)\b`,
-    String.raw`\bo que (?:voce |vc )?(?:acha|achou|me diz)\b|\bfaz sentido\b|\bo que (?:eu |a gente |nos )?(?:peco|pedimos|pedir|negocio|negociamos|negociar|contraproponho|contrapropor)\b`,
   ].join("|"), "g"),
   document_folder: new RegExp([
     ...addressed("organiz|arrum|separ|inventari|classific|catalog|list|mapei|orden", {imperative: "da uma olhada|de uma olhada", infinitive: "dar uma olhada", subjunctive: "de uma olhada"}),
     String.raw`\b(?:me (?:diz|diga|fala|fale|mostra|mostre) o que (?:tem|ha|falta)|o que (?:tem|ha) (?:ai|nela|neles|nisso|n?esses|n?estes|nos|na|nesta|nessa)|o que falta)\b`,
   ].join("|"), "g"),
 };
+
+/** The question the received proposal ficha answers (is it good, worth it, to be taken, what to make of it). It is a
+ * request only as a direct question to the advisor: its sentence ends in "?" and the message reports no one else's
+ * view ("o banco disse que", "segundo o gerente", "de acordo com eles"). */
+const evaluative = new RegExp([
+  String.raw`\b(?:e|esta|ta|parece|seria) (?:boa|bom|ruim|razoavel|competitiva|justa|cara|barata|de mercado|interessante|adequada|atrativa|vantajosa)\b`,
+  String.raw`\bvale a pena\b|\b(?:vale|compensa|presta)\b|\b(?:devo|devemos|deveria|deveriamos|posso|podemos) (?:aceitar|fechar|assinar|topar|seguir com|pegar|tomar)\b`,
+  String.raw`\bo que (?:voce |vc )?(?:acha|achou|me diz)\b|\bfaz sentido\b|\bo que (?:eu |a gente |nos )?(?:peco|pedimos|pedir|negocio|negociamos|negociar|contraproponho|contrapropor)\b`,
+].join("|"), "g");
+const reported = /\b(?!(?:voce|voces|vc|eu|nos)\s)\w+\s+(?:disse|disseram|diz|dizem|falou|falaram|fala|falam|afirmou|afirmaram|afirma|acha|acham|achou|acharam|garantiu|garante|comentou|contou|avaliou|considera|consideram)\s+que\b|\bsegundo (?:o|a|os|as|ele|ela|eles|elas)\b|\bde acordo com\b/;
+const directQuestion = (text: string) => !reported.test(text) && [...text.matchAll(evaluative)].some((m) => {
+  const rest = text.slice(m.index! + m[0].length), end = /[.!?;]/.exec(rest);
+  return end?.[0] === "?";
+});
 
 /** The method's object, named in the message (the route of each method then reads which object it is). */
 const objects: Record<Lote4RequestKind, RegExp> = {
@@ -73,7 +89,7 @@ export type Lote4RequestReading = {requested: boolean; voided: boolean};
  * negation, a refusal or a request for guidance anywhere. */
 export function readLote4Request(folded: string, kind: Lote4RequestKind): Lote4RequestReading {
   const text = folded.replace(/\s+/g, " ").trim();
-  const requested = objects[kind].test(text) && [...text.matchAll(requests[kind])].length > 0;
+  const requested = objects[kind].test(text) && ([...text.matchAll(requests[kind])].length > 0 || (kind === "received_proposal" && directQuestion(text)));
   return {requested, voided: negation.test(text) || guidance.test(text)};
 }
 
@@ -82,4 +98,10 @@ export function readLote4Request(folded: string, kind: Lote4RequestKind): Lote4R
 export function asksForLote4Action(folded: string, kind: Lote4RequestKind): boolean {
   const r = readLote4Request(folded, kind);
   return r.requested && !r.voided;
+}
+
+/** Whether a folded message refuses, cancels or gives up anything (the conservative veto's vocabulary): a lote 4 wait
+ * the person withdraws after it opened is read with the same words (document-folder-premises-proposal.ts). */
+export function holdsLote4Refusal(folded: string): boolean {
+  return negation.test(folded.replace(/\s+/g, " ").trim());
 }

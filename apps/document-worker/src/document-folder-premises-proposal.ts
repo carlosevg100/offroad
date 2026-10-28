@@ -4,10 +4,10 @@ import {composeBoundDocumentFolderInventory, documentFolderInventoryFactsSchema,
   inventoryInformedRecordSchema, inventoryModes, prepareDocumentFolderInventoryPacket, proposeDocumentFolderInventoryHypotheses, proposeDocumentFolderUpdateHypotheses, registryName,
   type DocumentFolderInventoryFacts, type DocumentFolderUpdateFacts, type DocumentReading, type ProposedHypothesis} from "@offroad/financial-model";
 import {documentLayerSchema, type DocumentLayer} from "@offroad/document-intelligence";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
+import {compileObjectiveToPlan, holdsLote4Refusal} from "@offroad/work-plan";
 import {uuidV5} from "./investment-premises-proposal";
 import {extractedOrigin, factsOrGaps, itemSource, sourced, stableKey, stated, type Lote2Origin, type Lote2SummaryItem} from "./lote2-premises";
-import {asksOrExplains, premiseCueKind, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {asksOrExplains, foldCue, premiseCueKind, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 
 /** The method these premises feed, pinned to its implemented version (ficha C09). */
@@ -256,6 +256,14 @@ export type DocumentFolderFraming = z.infer<typeof documentFolderFramingSchema>;
 export function documentFolderResumeOf(resume: unknown): {framing: DocumentFolderFraming; sourceMessageId: string} | null {
   const m = z.object({wait_id: z.uuid(), source_message_id: z.uuid(), framing: documentFolderFramingSchema}).safeParse(resume);
   return m.success ? {framing: m.data.framing, sourceMessageId: m.data.source_message_id} : null;
+}
+/** The folder named as the object of a withdrawal: the folder, its files, its inventory or its organization. */
+const withdrawnFolder = /\b(?:pastas?|arquivos|documentos|materia(?:l|is)|inventario|organiz\w*|arrum\w*|leitura)\b/;
+/** Whether the person withdrew the folder request after the wait opened: a later message of theirs that refuses, cancels
+ * or gives up the folder (the conservative veto's vocabulary, about the folder), or that asks for something else
+ * (`changed`, the route of that message). A plain answer ("A minuta não foi para nenhum banco.") keeps the wait. */
+export function documentFolderWaitWithdrawn(laterMessages: readonly string[], changed: (message: string) => boolean): boolean {
+  return laterMessages.some((m) => {const t = foldCue(m); return (holdsLote4Refusal(t) && withdrawnFolder.test(t)) || changed(m);});
 }
 /** The texts of the system's continuation message (private.document_folder_reading_advance_v1 writes them, origin system):
  * never the person's words, so they are left out of what the person said. */

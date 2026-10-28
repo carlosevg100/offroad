@@ -584,7 +584,7 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "b113af5b0e9225d9881b47e05938ea04613d12c0ab0c7baae057e32968bd33d5",
+      "sha256": "bacfd0bf55a8a41ba35cf817d5c128a46a115cb69175f97220cbbc3bcf306dd0",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
@@ -592,6 +592,7 @@
         "worker_authorize_capital_project_material_upload_v1",
         "worker_bind_receivables_information_request_fields_v1",
         "worker_board_material_priors_v1",
+        "worker_cancel_document_folder_wait_v1",
         "worker_capture_execution_brief_inputs_v1",
         "worker_claim_job_v4",
         "worker_commit_documentary_execution_v1",
