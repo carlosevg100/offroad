@@ -58,7 +58,13 @@ const bankMoves = new Set(["sem-linha-debenture", "debenture-com-linha", "alonga
 /** The anchors read from the results before planning: the year of largest maturity, the crop year (the tightest
  * week), the plan's horizon year, the plan target year of the challenged projection, and the first two programs of
  * the receivables plan with the debtor the second one is linked to. None is chosen; each is read. */
-type Anchors = {Y: string | null; C: string | null; H: string | null; P: string | null; O1: string | null; O2: string | null; D: string | null};
+type Anchors = {Y: string | null; C: string | null; H: string | null; P: string | null; O1: string | null; O2: string | null; D: string | null;
+  /** Covenant measurements by the role the result registers: the headline test, the base test and the adverse test at the
+   * end of the year of largest maturity, and the test of the board policy alone at the headline's date. */
+  MH: string | null; ME: string | null; MA: string | null; MG: string | null;
+  /** Debt table records by what the results register: the row the plan's alternative prepays, the holder of the basket
+   * that row occupies, and the one credit line with a free limit. */
+  I: string | null; HB: string | null; CL: string | null};
 
 /** The readings the plan may bind, in the order the basis lists them: [source, path, decimals or date format]. */
 function readingsFor(a: Anchors): [string, Reading][] {
@@ -74,19 +80,19 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["share-12m", ["tabela-divida", "result.table.profile.dueWithinTwelveMonthsShare", "0"]],
     ["wal", ["tabela-divida", "result.table.profile.weightedAverageLifeYears", "1"]],
     ["largest-creditor", ["tabela-divida", "result.table.profile.largestCreditor.creditor", "-"]],
-    ["bradesco-creditor", ["tabela-divida", "result.table.rows[id=ccb-bradesco].creditor", "-"]],
+    ["bradesco-creditor", ["tabela-divida", `result.table.rows[id=${y(a.I)}].creditor`, "-"]],
     ["largest-share", ["tabela-divida", "result.table.profile.largestCreditor.share", "0"]],
-    ["basket", ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].basket", "0"]],
-    ["basket-used", ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].occupied", "0"]],
-    ["basket-free", ["tabela-divida", "result.table.negativePledgeBaskets[holderId=debenture-1].remaining", "0"]],
-    ["bradesco-maturity", ["tabela-divida", "result.table.rows[id=ccb-bradesco].finalPayment", "month_long"]],
+    ["basket", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].basket`, "0"]],
+    ["basket-used", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].occupied`, "0"]],
+    ["basket-free", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].remaining`, "0"]],
+    ["bradesco-maturity", ["tabela-divida", `result.table.rows[id=${y(a.I)}].finalPayment`, "month_long"]],
     ["cov-limit", ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1"]],
     ["policy-limit", ["covenant", "result.headroom.limits[id=politica].maximumRatio", "1"]],
-    ["lev-dez26", ["covenant", "result.headroom.measurements[id=dez26-base].ratio", "1"]],
-    ["lev-dez27", ["covenant", "result.headroom.measurements[id=dez27-base].ratio", "2"]],
-    ["lev-adv27", ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2"]],
-    ["ebitda-adv27", ["covenant", "result.headroom.measurements[id=dez27-adverso].reportedEbitda", "1"]],
-    ["lev-ger-dez26", ["covenant", "result.headroom.measurements[id=dez26-gerencial].ratio", "1"]],
+    ["lev-dez26", ["covenant", `result.headroom.measurements[id=${y(a.MH)}].ratio`, "1"]],
+    ["lev-dez27", ["covenant", `result.headroom.measurements[id=${y(a.ME)}].ratio`, "2"]],
+    ["lev-adv27", ["covenant", `result.headroom.measurements[id=${y(a.MA)}].ratio`, "2"]],
+    ["ebitda-adv27", ["covenant", `result.headroom.measurements[id=${y(a.MA)}].reportedEbitda`, "1"]],
+    ["lev-ger-dez26", ["covenant", `result.headroom.measurements[id=${y(a.MG)}].ratio`, "1"]],
     ["min-cash", ["caixa-semanal", "result.weekly.minimumCash", "0"]],
     ["sem-linha-min", ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].minimum", "1"]],
     ["sem-linha-week", ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].weekStart", "day_long"]],
@@ -121,9 +127,9 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["unexplained-bps", ["custo-relativo", "result.bridge.unexplainedAfterKnownAdjustmentsBps", "0"]],
     ["rating-low", ["custo-relativo", "levers[role=rating&scenario=low].netOfKnownCosts", "2"]],
     ["rating-high", ["custo-relativo", "levers[role=rating&scenario=high].netOfKnownCosts", "2"]],
-    ["cl-creditor", ["tabela-divida", "result.table.creditLines[id=conta-garantida].creditor", "-"]],
-    ["cl-unused", ["tabela-divida", "result.table.creditLines[id=conta-garantida].unused", "0"]],
-    ["debenture-creditor", ["tabela-divida", "result.table.rows[id=debenture-1].creditor", "-"]],
+    ["cl-creditor", ["tabela-divida", `result.table.creditLines[id=${y(a.CL)}].creditor`, "-"]],
+    ["cl-unused", ["tabela-divida", `result.table.creditLines[id=${y(a.CL)}].unused`, "0"]],
+    ["debenture-creditor", ["tabela-divida", `result.table.rows[id=${y(a.HB)}].creditor`, "-"]],
     ["rede-a-label", ["recebiveis", `result.funding.portfolio.items[itemId=${y(a.D)}].label`, "-"]],
     ["project-label", ["linha-embalagem", "cases[id=base].label", "-"]],
     ["wheat-label", ["projecao", "result.projection.projection.scenarios[id=informado-trigo-4m].label", "-"]],
@@ -146,17 +152,25 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["cost-2028", ["plano-2027", "readings.recommendation.horizonFinancingCost", "0"]],
     ["net-debt-2028", ["plano-2027", "readings.recommendation.netDebtAtHorizon", "0"]],
     year(a.C), year(a.Y), year(a.H), year(a.P),
-    ["dez26-date", ["covenant", "result.headroom.measurements[id=dez26-base].date", "month_long"]],
-    ["dez27-date", ["covenant", "result.headroom.measurements[id=dez27-base].date", "month_long"]],
+    ["dez26-date", ["covenant", `result.headroom.measurements[id=${y(a.MH)}].date`, "month_long"]],
+    ["dez27-date", ["covenant", `result.headroom.measurements[id=${y(a.ME)}].date`, "month_long"]],
     ["horizon-12m", ["tabela-divida", "result.table.profile.twelveMonthHorizon", "month_long"]],
     ...paths,
   ];
 }
 /** Readings that, when the result does not register them, stand as pending with the library's reason. */
-const pendingReadings: [string, Reading, string, string][] = [
+const pendingReadingsFor = (a: Anchors): [string, Reading, string, string][] => [
   ["stages-npv", ["linha-embalagem", "comparison.metrics[caseId=staged].netPresentValue", "1"], "analyze-investment-project", "note.case_not_reviewed"],
-  ["cl-terms", ["tabela-divida", "result.table.creditLines[id=conta-garantida].terms", "-"], "build-company-debt-table", "note.credit_line_terms_not_registered"],
+  ["cl-terms", ["tabela-divida", `result.table.creditLines[id=${a.CL ?? "_"}].terms`, "-"], "build-company-debt-table", "note.credit_line_terms_not_registered"],
 ];
+/** Record ids the method's closed library writes literally in its templates (slots and conditions): a result whose record
+ * carries another id cannot be shown by that template, whatever the record is. The planner never renames a result; such a
+ * text is left out and named, and only a new version of the method can read the record by what it is. */
+export const boardLibraryFixedRecords: Readonly<Record<string, readonly string[]>> = {
+  "plano-2027": ["sem-linha-debenture", "adiar-linha", "debenture-com-linha", "manter", "ccb-tres-anos", "alongar-com-banco", "alongar-bradesco", "bradesco-sem-linha", "cinco-anos"],
+  "linha-embalagem": ["base", "economy-4", "capex-120", "slower-start", "defer-12", "staged"],
+  projecao: ["informado-trigo-4m", "prazo-60"], covenant: ["politica", "aditamento"], "caixa-semanal": ["sem-linha"],
+};
 /** Readings listed whether or not a text binds them (the question the receivables result answers, kept for reference). */
 const contextReadings = new Set(["crop-question"]);
 /** The material facts the plan marks on top of every economic reading. */
@@ -268,8 +282,32 @@ function readAnchors(packets: Map<string, Record<string, unknown>>): Anchors {
       .map((c) => (c.value as {value?: unknown} | undefined)?.value);
     if (linked.length === 1 && Array.isArray(linked[0]) && linked[0].length === 1 && typeof linked[0][0] === "string") D = linked[0][0];
   }
+  const one = (xs: (string | null)[]) => {const set = [...new Set(xs.filter((x): x is string => x !== null))]; return set.length === 1 ? set[0]! : null;};
+  // Covenant measurements by registered role, scenario, date and the kinds of the limits each one tests.
+  const limits = get("covenant", "result.headroom.limits"), measured = get("covenant", "result.headroom.measurements");
+  const kindOf = new Map((Array.isArray(limits) ? limits.filter(isRecord) : []).map((l) => [String(l.id), String(l.kind)]));
+  const ms = (Array.isArray(measured) ? measured.filter(isRecord) : []).map((m) => ({id: text(m.id), role: text(m.role), scenario: text(m.scenario), date: text(m.date),
+    kinds: (Array.isArray(m.tests) ? m.tests.filter(isRecord) : []).map((t) => kindOf.get(String(t.limitId)) ?? "")}));
+  const MH = text(get("covenant", "readings.headline.measurementId"));
+  const headline = ms.find((m) => m.id === MH && m.role === "test" && m.scenario === "base") ?? null;
+  const end = Y === null ? null : `${Y}-12-31`;
+  const both = (m: {kinds: string[]}) => m.kinds.includes("contractual") && m.kinds.includes("board_policy");
+  const ME = end === null ? null : one(ms.filter((m) => m.role === "test" && m.scenario === "base" && m.date === end && both(m)).map((m) => m.id));
+  const MA = end === null ? null : one(ms.filter((m) => m.role === "test" && m.scenario === "adverse" && m.date === end && both(m)).map((m) => m.id));
+  const MG = headline === null ? null : one(ms.filter((m) => m.role === "test" && m.scenario === "base" && m.date === headline.date && m.id !== MH
+    && m.kinds.length > 0 && m.kinds.every((k) => k === "board_policy")).map((m) => m.id));
+  // The row the plan's alternative prepays, by the instrument id both results register; the basket it occupies; the free line.
+  const rows = get("tabela-divida", "result.table.rows"), rowIds = new Set((Array.isArray(rows) ? rows.filter(isRecord) : []).map((r) => String(r.id)));
+  const alt = text(get("plano-2027", "readings.alternative.pathId"));
+  const prepaid = alt === null ? undefined : get("plano-2027", `result.evaluation.paths[id=${alt}].prepayments`);
+  const I = one((Array.isArray(prepaid) ? prepaid.filter(isRecord) : []).map((x) => text(x.instrumentId)).filter((x) => x !== null && rowIds.has(x)));
+  const baskets = get("tabela-divida", "result.table.negativePledgeBaskets");
+  const HB = I === null ? null : one((Array.isArray(baskets) ? baskets.filter(isRecord) : []).filter((b) => Array.isArray(b.usedBy) && b.usedBy.includes(I)).map((b) => text(b.holderId)));
+  const lines = get("tabela-divida", "result.table.creditLines");
+  const CL = one((Array.isArray(lines) ? lines.filter(isRecord) : []).filter((l) => Number(l.unused) > 0).map((l) => text(l.id)));
   return {Y, C: yearOf(get("caixa-semanal", "readings.tightestWeek.weekStart")), H: yearOf(get("plano-2027", "readings.horizon.lastPeriodEnd")),
-    P: (() => {const v = get("plano-fpa", "readings.gap.targetPeriodId"); return typeof v === "string" && /^\d{4}/.test(v) ? v.slice(0, 4) : typeof v === "number" ? String(v) : null;})(), O1, O2, D};
+    P: (() => {const v = get("plano-fpa", "readings.gap.targetPeriodId"); return typeof v === "string" && /^\d{4}/.test(v) ? v.slice(0, 4) : typeof v === "number" ? String(v) : null;})(), O1, O2, D,
+    MH: headline ? MH : null, ME, MA, MG, I, HB, CL};
 }
 
 /** One reading resolved in its result: the value stated is the result's own, rounded as the plan presents it. */
@@ -329,8 +367,23 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   // 2. The readings each text may bind, resolved in the results.
   const anchors = readAnchors(packets);
   const declared = new Map<string, {reading: string[]} | {pending: [string, string, string]}>();
-  for (const [id, r] of readingsFor(anchors)) if (!declared.has(id)) {const x = resolveReading(packets, methods, scales, r); if (x) declared.set(id, {reading: x});}
-  for (const [id, r, methodId, reason] of pendingReadings) {
+  // Why a reading did not resolve, named for the card: its result is absent, the record it needs is not identified in
+  // the results, the method's library fixes a record id the result does not carry, or the result does not register it.
+  const unresolved = new Map<string, string>();
+  const reasonOf = ([source, path]: Reading) => {
+    if (!packets.has(source)) return `source_unavailable:${source}`;
+    if (/=_\]|_-12-31/.test(path)) return "record_not_identified";
+    for (const v of boardLibraryFixedRecords[source] ?? []) {
+      const at = path.indexOf(`=${v}]`);
+      if (at >= 0 && readBoardSourcePath(packets.get(source)!, path.slice(0, at + v.length + 2)) === undefined) return `library_fixed_record:${v}`;
+    }
+    return "reading_unavailable";
+  };
+  for (const [id, r] of readingsFor(anchors)) if (!declared.has(id) && !unresolved.has(id)) {
+    const x = resolveReading(packets, methods, scales, r);
+    if (x) declared.set(id, {reading: x}); else unresolved.set(id, reasonOf(r));
+  }
+  for (const [id, r, methodId, reason] of pendingReadingsFor(anchors)) {
     if (!packets.has(r[0])) continue;
     const x = resolveReading(packets, methods, scales, r);
     declared.set(id, x ? {reading: x} : {pending: [methodId, r[1], reason]});
@@ -368,32 +421,57 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
     const dates = d.deadlines.flatMap((x) => {const at = dated.get(x.code); return at ? [{id: x.id, date: at.date, action: x.action, origin: at.origin}] : [];});
     deliberations.set(d.id, {...d, dates});
   }
-  const resolvable = (ref: string, scope: {deliberations: Map<string, {dates: {id: string}[]}>}) => {
+  /** Why a text cannot be planned (the first binding that does not resolve, named), or null when every binding resolves. */
+  const why = (ref: string, scope: {deliberations: Map<string, {dates: {id: string}[]}>}): string | null => {
     const b = boardRefBindings(ref);
-    return b.figures.every((id) => declared.has(id)) && b.informed.every((id) => informed.some((x) => x.value.id === id))
-      && b.deadlines.every((x) => {const [d, t] = x.split("."); return scope.deliberations.get(d!)?.dates.some((y) => y.id === t) ?? false;});
+    const figure = b.figures.find((id) => !declared.has(id));
+    if (figure !== undefined) {const r = unresolved.get(figure) ?? "reading_unavailable"; return r.startsWith("library_fixed_record:") || r.startsWith("source_unavailable:") ? r : `${r}:${figure}`;}
+    if (!b.informed.every((id) => informed.some((x) => x.value.id === id))) return "reason_not_informed";
+    if (!b.deadlines.every((x) => {const [d, t] = x.split("."); return scope.deliberations.get(d!)?.dates.some((y) => y.id === t) ?? false;})) return "date_not_stated";
+    return null;
   };
   const drop = (item: string, reason: string) => omitted.push({item, reason});
   // Deliberations first: one whose title or subject does not resolve is left out with every text that carries its deadlines.
   for (const [id, d] of [...deliberations]) {
-    if (!resolvable(d.title, {deliberations}) || !resolvable(d.subject, {deliberations})) {deliberations.delete(id); drop(`deliberation.${id}`, "reading_unavailable"); continue;}
-    if (d.recommendation && !resolvable(d.recommendation, {deliberations})) {drop(`deliberation.${id}.recommendation`, "reading_unavailable"); d.recommendation = null;}
+    const head = why(d.title, {deliberations}) ?? why(d.subject, {deliberations});
+    if (head) {deliberations.delete(id); drop(`deliberation.${id}`, head); continue;}
+    const r = d.recommendation ? why(d.recommendation, {deliberations}) : null;
+    if (r) {drop(`deliberation.${id}.recommendation`, r); d.recommendation = null;}
     for (const x of d.deadlines) if (!d.dates.some((y) => y.id === x.id)) drop(`deliberation.${id}.deadline.${x.id}`, "date_not_stated");
   }
   if (!deliberations.size) return {status: "missing", missing: ["deliberations"], omitted};
   const scope = {deliberations};
   const pages: Page[] = [];
+  // The two pages of paths present the whole set the plan evaluates: each row and each line of moves is bound by the
+  // library to one path id, so the pages are planned only when the result's candidate paths are exactly those ids, and a
+  // line of moves only with its path's row. Otherwise both pages are left out, each path named.
+  const plannedPaths = pathRows.map(([id]) => id), candidates = (() => {
+    const p = packets.get("plano-2027"), all = p ? readBoardSourcePath(p, "result.evaluation.paths") : undefined;
+    return Array.isArray(all) ? all.filter(isRecord).filter((x) => x.role !== "companion").map((x) => String(x.id)) : null;
+  })();
+  const pathSetIssue = candidates === null ? null : [...plannedPaths.filter((id) => !candidates.includes(id)).map((id) => `library_fixed_record:${id}`),
+    ...candidates.filter((id) => !plannedPaths.includes(id)).map((id) => `path_without_library_row:${id}`)];
   for (const p of plan.pages) {
     if (p.role === "decisions") {pages.push({...p}); continue;}
-    if (!resolvable(p.title, scope)) {drop(`page.${p.id}`, "reading_unavailable"); continue;}
-    const lines = p.lines.filter((l, j) => resolvable(l, scope) || (drop(`page.${p.id}.line.${j + 1}`, l.startsWith("topic.project_strategic_reason") ? "reason_not_informed" : "reading_unavailable"), false));
-    const recommendation = p.recommendation && resolvable(p.recommendation, scope) ? p.recommendation : (p.recommendation && drop(`page.${p.id}.recommendation`, "reading_unavailable"), null);
-    const options = p.options.filter((o, j) => resolvable(o, scope) || (drop(`page.${p.id}.option.${j + 1}`, "reading_unavailable"), false));
+    const head = why(p.title, scope);
+    if (head) {drop(`page.${p.id}`, head); continue;}
+    const isPaths = p.id === "caminhos" || p.id === "movimentos";
+    const lineWhy = (l: string, j: number) => why(l, scope) ?? (p.id === "movimentos" ? why(plan.pages.find((x) => x.id === "caminhos")!.lines[j]!, scope) : null);
+    if (isPaths && pathSetIssue?.length) {drop(`page.${p.id}`, "path_set_incomplete"); for (const r of pathSetIssue) drop(`page.${p.id}.paths`, r); continue;}
+    const lineDrops: [number, string][] = [];
+    const lines = p.lines.filter((l, j) => {const r = lineWhy(l, j); if (r) lineDrops.push([j, r]); return r === null;});
+    if (isPaths && lineDrops.length) {drop(`page.${p.id}`, "path_set_incomplete"); for (const [j, r] of lineDrops) drop(`page.${p.id}.line.${j + 1}`, r); continue;}
+    for (const [j, r] of lineDrops) drop(`page.${p.id}.line.${j + 1}`, r);
+    const rr = p.recommendation ? why(p.recommendation, scope) : null;
+    if (rr) drop(`page.${p.id}.recommendation`, rr);
+    const recommendation = rr ? null : p.recommendation;
+    const options = p.options.filter((o, j) => {const r = why(o, scope); if (r) drop(`page.${p.id}.option.${j + 1}`, r); return r === null;});
     if (p.role === "next_steps" && !lines.length) {drop(`page.${p.id}`, "date_not_stated"); continue;}
     pages.push({...p, lines, recommendation, options});
   }
-  if (!resolvable(plan.summary.opening, scope) || !resolvable(plan.summary.closing, scope)) return {status: "missing", missing: ["summary"], omitted};
-  const questions = plan.questions.filter((q) => (resolvable(q.question, scope) && resolvable(q.answer, scope)) || (drop(`question.${q.id}`, "reading_unavailable"), false));
+  const summaryWhy = why(plan.summary.opening, scope) ?? why(plan.summary.closing, scope);
+  if (summaryWhy) return {status: "missing", missing: [`summary.${summaryWhy}`], omitted};
+  const questions = plan.questions.filter((q) => {const r = why(q.question, scope) ?? why(q.answer, scope); if (r) drop(`question.${q.id}`, r); return r === null;});
   const appendix = plan.appendix.flatMap((a) => {
     const ids = a.sourceIds.filter((s) => packets.has(s));
     if (a.id === "fontes") return ids.length ? [{...a, sourceIds: ids}] : [];

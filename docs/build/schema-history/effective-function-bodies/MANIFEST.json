@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-10-05T18:37:54Z",
-  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() from local replay through 20261028120400 (folder reading waits), pending live capture",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -45,7 +45,7 @@
     {
       "signature": "private.bind_job_authority_v1()",
       "file": "private.bind_job_authority_v1().sql",
-      "sha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
+      "sha256": "6f74d7b9fad343df21ade0bf4e5cac4bca2b48e1eb5fa412b0f34cf8acc65fc1"
     },
     {
       "signature": "private.can_read_presentation_template_v1(uuid,uuid)",

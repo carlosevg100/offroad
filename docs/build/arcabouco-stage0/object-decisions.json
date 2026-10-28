@@ -8569,6 +8569,12 @@
           "line": 36,
           "anchor": " original:=pg_get_functiondef('private.bind_job_authority_v1()'::regprocedure);",
           "mechanism": "generated_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 315,
+          "anchor": "create or replace function private.bind_job_authority_v1()",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -75745,7 +75751,7 @@
         },
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 253,
+          "line": 290,
           "anchor": "create or replace function private.worker_can_access_document_storage_v1(p_bucket text,p_object_path text,p_write boolean)",
           "mechanism": "direct_ddl"
         }
@@ -345952,7 +345958,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 164,
+          "line": 198,
           "anchor": "create function private.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346016,7 +346022,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 228,
+          "line": 264,
           "anchor": "create function private.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346080,7 +346086,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 178,
+          "line": 212,
           "anchor": "create function public.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346144,7 +346150,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 246,
+          "line": 283,
           "anchor": "create function public.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346353,114 +346359,6 @@
       ]
     },
     {
-      "id": "function:private.document_folder_reading_advance_v1(p_job processing_jobs)",
-      "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.document_folder_reading_advance_v1(p_job processing_jobs)",
-          "kind": "function",
-          "name": "document_folder_reading_advance_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job processing_jobs",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.document_folder_reading_advance_v1(p_job processing_jobs)",
-          "kind": "function",
-          "name": "document_folder_reading_advance_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job processing_jobs",
-          "security_definer": true
-        }
-      },
-      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
-      "decision": "preservar",
-      "stage": "ficha C09, leitura de arquivo fora do turno",
-      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
-      "sources": [
-        {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 190,
-          "anchor": "create function private.document_folder_reading_advance_v1(p_job public.processing_jobs) returns integer",
-          "mechanism": "direct_ddl"
-        }
-      ]
-    },
-    {
-      "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[])",
-      "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[])",
-          "kind": "function",
-          "name": "document_folder_reading_enqueue_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[]",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[])",
-          "kind": "function",
-          "name": "document_folder_reading_enqueue_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[]",
-          "security_definer": true
-        }
-      },
-      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
-      "decision": "preservar",
-      "stage": "ficha C09, leitura de arquivo fora do turno",
-      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
-      "sources": [
-        {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 80,
-          "anchor": "create function private.document_folder_reading_enqueue_v1(p_org uuid,p_session uuid,p_subject uuid,p_reader_version text,p_context jsonb,p_documents uuid[]) returns integer",
-          "mechanism": "direct_ddl"
-        }
-      ]
-    },
-    {
       "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb)",
       "kind": "function",
       "catalogues": {
@@ -346518,7 +346416,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 109,
+          "line": 137,
           "anchor": "create function private.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb,p_framing jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346582,7 +346480,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 158,
+          "line": 189,
           "anchor": "create function public.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb,p_framing jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -346628,7 +346526,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 74,
+          "line": 77,
           "anchor": "create policy document_folder_reading_waits_deny on private.document_folder_reading_waits as restrictive for all to public using(false) with check(false);",
           "mechanism": "direct_ddl"
         }
@@ -346746,8 +346644,224 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
-          "line": 46,
+          "line": 48,
           "anchor": "create table private.document_folder_reading_waits (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_reading_advance_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_reading_advance_v1(p_org uuid)",
+          "kind": "function",
+          "name": "document_folder_reading_advance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_reading_advance_v1(p_org uuid)",
+          "kind": "function",
+          "name": "document_folder_reading_advance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 226,
+          "anchor": "create function private.document_folder_reading_advance_v1(p_org uuid) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_wait uuid, p_documents uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_wait uuid, p_documents uuid[])",
+          "kind": "function",
+          "name": "document_folder_reading_enqueue_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_wait uuid, p_documents uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_wait uuid, p_documents uuid[])",
+          "kind": "function",
+          "name": "document_folder_reading_enqueue_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_wait uuid, p_documents uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 101,
+          "anchor": "create function private.document_folder_reading_enqueue_v1(p_org uuid,p_wait uuid,p_documents uuid[]) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_reading_lock_v1(p_org uuid, p_reader_version text, p_context_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_reading_lock_v1(p_org uuid, p_reader_version text, p_context_fingerprint text)",
+          "kind": "function",
+          "name": "document_folder_reading_lock_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_reader_version text, p_context_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_reading_lock_v1(p_org uuid, p_reader_version text, p_context_fingerprint text)",
+          "kind": "function",
+          "name": "document_folder_reading_lock_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_reader_version text, p_context_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 93,
+          "anchor": "create function private.document_folder_reading_lock_v1(p_org uuid,p_reader_version text,p_context_fingerprint text) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_wait_job_subject_v1(p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_wait_job_subject_v1(p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid)",
+          "kind": "function",
+          "name": "document_folder_wait_job_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_wait_job_subject_v1(p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid)",
+          "kind": "function",
+          "name": "document_folder_wait_job_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (leitura da pasta)",
+      "decision": "preservar",
+      "stage": "ficha C09, leitura de arquivo fora do turno",
+      "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 83,
+          "anchor": "create function private.document_folder_wait_job_subject_v1(p_org uuid,p_wait uuid,p_session uuid,p_run uuid,p_root uuid) returns uuid",
           "mechanism": "direct_ddl"
         }
       ]

@@ -109691,42 +109691,6 @@
       "definition": "CREATE TRIGGER document_folder_readings_immutable BEFORE DELETE OR UPDATE ON private.document_folder_readings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
-      "id": "function:private.document_folder_reading_advance_v1(p_job processing_jobs)",
-      "kind": "function",
-      "name": "document_folder_reading_advance_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job processing_jobs",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[])",
-      "kind": "function",
-      "name": "document_folder_reading_enqueue_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[]",
-      "security_definer": true
-    },
-    {
       "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb)",
       "kind": "function",
       "name": "worker_document_folder_readings_v1",
@@ -109835,6 +109799,78 @@
       ],
       "schema": "private",
       "force_rls": true
+    },
+    {
+      "id": "function:private.document_folder_reading_advance_v1(p_org uuid)",
+      "kind": "function",
+      "name": "document_folder_reading_advance_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_wait uuid, p_documents uuid[])",
+      "kind": "function",
+      "name": "document_folder_reading_enqueue_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_wait uuid, p_documents uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_reading_lock_v1(p_org uuid, p_reader_version text, p_context_fingerprint text)",
+      "kind": "function",
+      "name": "document_folder_reading_lock_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_reader_version text, p_context_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_wait_job_subject_v1(p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid)",
+      "kind": "function",
+      "name": "document_folder_wait_job_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_wait uuid, p_session uuid, p_run uuid, p_root uuid",
+      "security_definer": true
     }
   ],
   "captured_at": "2026-10-06T17:27:04.083708+00:00"

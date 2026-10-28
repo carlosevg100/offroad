@@ -144,6 +144,20 @@ const sourceLabels: Record<string, string> = {"tabela-divida": "Tabela de dívid
 const omittedReasons: Record<string, string> = {not_executed: "análise ainda não concluída neste trabalho", not_released: "método ainda não liberado para execução",
   version_not_released: "resultado de versão não liberada", scale_unknown: "escala monetária do método não registrada", result_not_verified: "resultado não conferido", reading_unavailable: "o resultado não registra o número que o texto usa",
   date_not_stated: "prazo não informado", reason_not_informed: "motivo do presidente não informado", source_unavailable: "fonte não disponível", answer_without_number: "resposta sem número revisado"};
+/** Why something was left out, in words, with the record or reading it names. */
+export function boardOmittedReason(reason: string): string {
+  const at = reason.indexOf(":"), code = at < 0 ? reason : reason.slice(0, at), detail = at < 0 ? "" : reason.slice(at + 1);
+  const named: Record<string, string> = {
+    template_not_applicable: "o texto da biblioteca não se sustenta nestes resultados",
+    library_fixed_record: "o modelo da biblioteca do método lê este registro por um identificador fixo que o resultado não traz; só uma nova versão do método o lê pelo que ele é",
+    record_not_identified: "o registro não é identificado de forma única nos resultados",
+    path_set_incomplete: "o quadro precisa mostrar todos os caminhos avaliados e algum não pode ser lido",
+    path_without_library_row: "o resultado avalia um caminho sem linha na biblioteca do método",
+    reading_unavailable: omittedReasons.reading_unavailable!, source_unavailable: omittedReasons.source_unavailable!,
+  };
+  const words = omittedReasons[reason] ?? named[code] ?? reason;
+  return detail && !omittedReasons[reason] ? `${words} (${detail})` : words;
+}
 const said = (x: {origin: string; source: string}) => ({origin: x.origin === "analysis" ? "document" as const : x.origin as Lote2SummaryItem["origin"], source: x.source});
 
 /** The card: the meeting, each reviewed result read (pinned by execution and fingerprint), each deliberation with its
@@ -163,8 +177,7 @@ export function boardMaterialSummary(facts: BoardCapitalDiscussionFacts, pins: r
     ...facts.topics.map((t) => row("premise", t.value.id, said(t), `boardTopicSeen.${t.value.seen === null ? "unknown" : t.value.seen ? "yes" : "no"}`)),
     ...facts.informed.map((x) => row("premise", x.value.code, said(x), "boardInformedReason")),
     ...facts.omissions.map((o) => row("item", o.value.targetId, said(o), `boardOmission.${o.value.target}`)),
-    ...omitted.map((o) => row("item", o.item, {origin: "house", source: omittedReasons[o.reason]
-      ?? (o.reason.startsWith("template_not_applicable:") ? `o texto da biblioteca não se sustenta nestes resultados (${o.reason.slice(24)})` : o.reason)}, "boardOmitted")),
+    ...omitted.map((o) => row("item", o.item, {origin: "house", source: boardOmittedReason(o.reason)}, "boardOmitted")),
   ]};
 }
 export function buildBoardMaterialPremiseProposal(facts: BoardCapitalDiscussionFacts, pins: readonly BoardMaterialPin[], omitted: readonly BoardMaterialOmitted[]) {

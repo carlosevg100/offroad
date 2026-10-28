@@ -646,14 +646,32 @@ export const lote4FichaExceptions: ReadonlyArray<{ficha: string; from: Workspace
  * discussion (C47, from a board decision, and one ficha exception from material preparation), the received proposal
  * (C01) and the document folder (C09), each from its own promotable kinds only. */
 function lote4Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
-  const paths = financingPathsRoute(text, existing);
+  const paths = lote4Vetoed(text, "financing_paths") ? existing : financingPathsRoute(text, existing);
   if (paths !== existing) return paths;
-  // A refusal of the action or of the need, or a request to understand, never promotes to the board discussion: the lote 3 vetoes.
-  const board = negatedAction.test(text) || negatedNeed.test(text) || conceptualMarker.test(text) ? existing : boardMaterialRoute(text, existing);
+  const board = lote4Vetoed(text, "board_capital_discussion") ? existing : boardMaterialRoute(text, existing);
   if (board !== existing) return board;
-  const proposal = receivedProposalRoute(text, existing);
+  const proposal = lote4Vetoed(text, "received_proposal") ? existing : receivedProposalRoute(text, existing);
   if (proposal !== existing) return proposal;
-  return documentFolderRoute(text, existing);
+  return lote4Vetoed(text, "document_folder") ? existing : documentFolderRoute(text, existing);
+}
+
+/** The actions each lote 4 method does, as verbs and as the nouns that name them: refusing one of these, or avoiding or
+ * dispensing with it, refuses that method. A refusal of another action ("Só organiza, não analisa ainda") keeps it. */
+const lote4Actions: Record<"financing_paths" | "board_capital_discussion" | "received_proposal" | "document_folder", string> = {
+  financing_paths: String.raw`financi\w*|alongar|alongamento|captar|captacao|caminhos?`,
+  board_capital_discussion: String.raw`prepar\w*|mont\w*|fa(?:z|ca|zer)\b|elabor\w*|organiz\w*|discussao|material|pagina|deck|pauta|roteiro`,
+  received_proposal: String.raw`avali\w*|analis\w*|olh\w*|opin\w*|aceit\w*|ler\b|leia\b|leitura|proposta`,
+  document_folder: String.raw`organiz\w*|arrum\w*|separ(?:a|e|ar)\b|inventari\w*|classific\w*|catalog\w*|pasta|arquivos|documentos|material`,
+};
+const lote4Refusals = Object.fromEntries(Object.entries(lote4Actions).map(([k, actions]) => [k, new RegExp(
+  // A negation (with an auxiliary, a need or a request between) of the action, or avoiding, dispensing, cancelling or skipping it.
+  String.raw`\b(?:nao|nunca|jamais)\s+(?:(?:quero|queremos|quer|preciso|precisamos|precisa|vou|vamos|devo|devemos|deve|e para|pode|podem|posso|tem que|temos que|tenho que|gostaria de|vale a pena)\s+(?:mais\s+|ainda\s+|de\s+)*)?`
+  + String.raw`(?:que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?)?(?:(?:a|o|as|os|uma?)\s+)?(?:${actions})`
+  + String.raw`|\b(?:dispens\w*|evit\w*|cancel\w*|pul(?:e|a|ar)|deixe de|deixa de|sem)\s+(?:(?:a|o|as|os|uma?)\s+)?(?:${actions})`)])) as Record<keyof typeof lote4Actions, RegExp>;
+/** The lote 3 vetoes, in one place for the four lote 4 promotions: a request to understand (explain, how it works, what
+ * it is) or a refusal of the method's action or of its need keeps the route origin/main gives. */
+function lote4Vetoed(text: string, kind: keyof typeof lote4Actions): boolean {
+  return conceptualMarker.test(text) || negatedNeed.test(text) || lote4Refusals[kind].test(text);
 }
 
 /** The routes of lotes 1 and 2, byte for byte as on origin/main. */

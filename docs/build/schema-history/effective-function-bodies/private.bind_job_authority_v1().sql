@@ -29,6 +29,11 @@ begin
   and r.work_id=e.work_id and r.pipeline_version='pinned-work-execution-v1'
   and m.payload->>'principalId'=p.id::text and m.payload->>'workId'=e.work_id::text;
   if subject_id is null then raise exception 'job_authorization_denied' using errcode='42501';end if;
+ elsif new.kind in ('document_folder_reading','agent_operation_brief') and coalesce(new.payload->>'document_folder_wait_id',new.payload#>>'{document_folder_resume,wait_id}') is not null then
+  -- A folder reading job or a continuation turn queued for a wait runs as the wait's person, rechecked here (ficha C09).
+  subject_id:=private.document_folder_wait_job_subject_v1(new.organization_id,coalesce(new.payload->>'document_folder_wait_id',new.payload#>>'{document_folder_resume,wait_id}')::uuid,
+   new.intake_session_id,new.processing_run_id,root_id);
+  if subject_id is null then raise exception 'job_authorization_denied' using errcode='42501';end if;
  elsif new.kind='agent_operation_brief' and new.payload ? 'institutional_recompute_candidate_id' then
   subject_id:=private.institutional_recompute_job_subject_v1(new.organization_id,(new.payload->>'institutional_recompute_candidate_id')::uuid,nullif(new.payload->>'message_id','')::uuid,new.intake_session_id,new.processing_run_id,root_id);
   if subject_id is null then raise exception 'job_authorization_denied' using errcode='42501';end if;
