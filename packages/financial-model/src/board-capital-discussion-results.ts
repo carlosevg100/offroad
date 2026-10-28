@@ -47,6 +47,8 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
   materialFacts: z.strictObject({figures: ids, deadlines: ids}),
   /** Facts informed in the conversation, adopted with origin and author; shown only attributed to that author. */
   informed: z.array(z.strictObject({id: key, origin: z.literal("informed"), author: z.enum(["chair", "cfo", "ceo"]), code: z.string().regex(/^[a-z][a-z_]{0,59}$/)})).max(12),
+  /** The adopted identities between an existing instrument of the plan and a row of the debt table. */
+  links: z.array(z.strictObject({id: key, planSourceId: key, instrumentId: key, tableSourceId: key, rowId: key})).max(12),
   priorVersionsKept: z.literal(true), sentToThirdParties: z.literal(false), presented: z.literal(false),
 });
 
